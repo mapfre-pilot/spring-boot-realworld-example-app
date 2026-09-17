@@ -33,3 +33,10 @@ Requirements: `bash`, `curl`, `tar`. `uv` and Python 3.13 are installed automati
   }
 }
 ```
+
+## Skills
+
+`.agents/skills/appian/` contains the official [Appian Dev MCP skills](https://github.com/appian/dev-mcp-skills)
+(commit e6404a7, Apache-2.0). They give the agent the domain knowledge (naming conventions,
+dependency order, relationship rules, SAIL patterns) that the MCP tool schemas cannot express.
+Configured for Appian version 26.6 (see `SKILL.md` → Configuration).
