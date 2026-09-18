@@ -1,0 +1,761 @@
+{
+ "connectedSystems": {
+  "total": 0,
+  "items": []
+ },
+ "folders": {
+  "total": 4,
+  "items": [
+   {
+    "uuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20033032",
+    "name": "SMK Rules and Constants",
+    "folderType": "RULES_FOLDER",
+    "description": "Stores expression rules, interfaces, and constants for the application",
+    "createdAt": "2026-09-17T13:33:52+00:00",
+    "modifiedAt": "2026-09-18T09:10:11+00:00",
+    "parentFolderUuid": "SYSTEM_RULES_ROOT"
+   },
+   {
+    "uuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20033046",
+    "name": "SMK Artifacts",
+    "folderType": "KNOWLEDGE_FOLDER",
+    "description": "Stores application artifacts such as icons and logos",
+    "createdAt": "2026-09-17T13:33:52+00:00",
+    "modifiedAt": "2026-09-17T13:33:52+00:00",
+    "parentFolderUuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20033039"
+   },
+   {
+    "uuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20033057",
+    "name": "SMK Application Documentation",
+    "folderType": "KNOWLEDGE_FOLDER",
+    "description": "Stores documents added as supporting documentation for the application",
+    "createdAt": "2026-09-17T13:33:53+00:00",
+    "modifiedAt": "2026-09-17T13:33:53+00:00",
+    "parentFolderUuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20033039"
+   },
+   {
+    "uuid": "_g-0000f061-6411-8000-6415-7f0000014e7a_708",
+    "name": "SMK Process Models",
+    "folderType": "PROCESS_MODEL_FOLDER",
+    "description": ""
+   }
+  ]
+ },
+ "constants": {
+  "total": 2,
+  "items": [
+   {
+    "uuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20033052",
+    "name": "SMK_ARTIFACTS_FOLDER",
+    "type": "FOLDER",
+    "value": "_a-0000f061-6420-8000-9cc5-011c48011c48_20033046",
+    "description": "",
+    "multiple": false
+   },
+   {
+    "uuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20034271",
+    "name": "SMK_PM_EJECUTAR_PRUEBAS",
+    "type": "PROCESS_MODEL",
+    "value": "0000f068-c618-8000-64a1-7f0000014e7a",
+    "description": "Runner de pruebas de humo (SMK Ejecutar Pruebas)",
+    "multiple": false
+   }
+  ]
+ },
+ "integrations": {
+  "total": 72,
+  "items": [
+   {
+    "uuid": "0ac64636-8481-447a-951b-40712986bf8c",
+    "name": "SMK_INT_HTTP_mapfrespain_dev_appiancloud_com",
+    "description": "Smoke test de conectividad al host mapfrespain-dev.appiancloud.com (Connected System: ADM API Appian). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ef01-013f-8000-9cac-011c48011c48_18624248"
+   },
+   {
+    "uuid": "df51f96f-bf65-4cc1-bc85-8e96f9abe328",
+    "name": "SMK_INT_HTTP_api_claims_dev_reef_health_es_mapfre_com",
+    "description": "Smoke test de conectividad al host api-claims.dev.reef.health.es.mapfre.com (Connected System: ISS Services REEF). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eeb5-6054-8000-9ca3-011c48011c48_18083392"
+   },
+   {
+    "uuid": "655a52d1-1ede-4863-8a54-40a06c277880",
+    "name": "SMK_INT_HTTP_api_gw_core_pfgop_dev_es_plataforma_aws_mapfre_net",
+    "description": "Smoke test de conectividad al host api-gw.core.pfgop.dev.es.plataforma.aws.mapfre.net (Connected System: API GW Core PFGOP). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000f036-fd58-8000-9cc1-011c48011c48_19990986"
+   },
+   {
+    "uuid": "1c979d89-5463-4b1c-af13-3a1dabdd96c7",
+    "name": "SMK_INT_HTTP_api_pgm_digital_private_pre_mapfredigitalhealth_com_26033",
+    "description": "Smoke test de conectividad al host api-pgm.digital.private.pre.mapfredigitalhealth.com:26033 (Connected System: API PGM Digital). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19270558"
+   },
+   {
+    "uuid": "b582708f-1988-42dc-af55-ec29ff8420f4",
+    "name": "SMK_INT_HTTP_api_product_sgc_digital_private_pre_mapfredigitalhealth_com_443",
+    "description": "Smoke test de conectividad al host api-product-sgc.digital.private.pre.mapfredigitalhealth.com:443 (Connected System: API Product SGC). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000f036-fd58-8000-9cc1-011c48011c48_19914595"
+   },
+   {
+    "uuid": "592e2f6f-e7f7-41d0-8879-2c4d5239a117",
+    "name": "SMK_INT_HTTP_api_ateneaes_mapfrees_dev_apps_emea_aws_mapfre_net_25053",
+    "description": "Smoke test de conectividad al host api.ateneaes.mapfrees.dev.apps.emea.aws.mapfre.net:25053 (Connected System: API AteneaES). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000efd5-13e8-8000-9cb8-011c48011c48_19438720"
+   },
+   {
+    "uuid": "14005c41-6598-4b09-8d6a-5cca8188583f",
+    "name": "SMK_INT_HTTP_api_digital_dev_mapfredigitalhealth_com",
+    "description": "Smoke test de conectividad al host api.digital.dev.mapfredigitalhealth.com (Connected System: API Digital). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17670739"
+   },
+   {
+    "uuid": "d2318283-6485-4ea0-a597-41badd7893ec",
+    "name": "SMK_INT_HTTP_api_github_com",
+    "description": "Smoke test de conectividad al host api.github.com (Connected System: GitHub API). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18421756"
+   },
+   {
+    "uuid": "ce00d7c8-3b69-4d11-ad5e-91b4e959c47b",
+    "name": "SMK_INT_HTTP_api_tecuidamos_pre_mapfredigitalhealth_com",
+    "description": "Smoke test de conectividad al host api.tecuidamos.pre.mapfredigitalhealth.com (Connected System: API Tecuidamos). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000e90a-e4b4-8000-9bfa-011c48011c48_4169994"
+   },
+   {
+    "uuid": "8dc41a41-3c04-42c3-a93f-995027f814d4",
+    "name": "SMK_INT_HTTP_apicontext_tecuidamos_pre_mapfredigitalhealth_com",
+    "description": "Smoke test de conectividad al host apicontext.tecuidamos.pre.mapfredigitalhealth.com (Connected System: API Context Tecuidamos). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ec95-047c-8000-9c80-011c48011c48_14723174"
+   },
+   {
+    "uuid": "07505d5e-12f1-4a0d-8221-aabbf2f929ee",
+    "name": "SMK_INT_HTTP_apioauth_platform_pre_mapfredigitalhealth_com",
+    "description": "Smoke test de conectividad al host apioauth.platform.pre.mapfredigitalhealth.com (Connected System: OAuth Platform). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19073697"
+   },
+   {
+    "uuid": "0288cfb7-2ce4-4580-af09-f65a4e8c01d4",
+    "name": "SMK_INT_HTTP_apisb_mapfre_com",
+    "description": "Smoke test de conectividad al host apisb.mapfre.com (Connected System: API SB MAPFRE). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000e700-629a-8000-9bc5-011c48011c48_2019184"
+   },
+   {
+    "uuid": "271aa61f-439c-4408-a4be-93fb9485089f",
+    "name": "SMK_INT_HTTP_apisb_mapfre_net_25003",
+    "description": "Smoke test de conectividad al host apisb.mapfre.net:25003 (Connected System: API SB MAPFRE NET). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ec95-047c-8000-9c80-011c48011c48_14803850"
+   },
+   {
+    "uuid": "a5fcb3cb-5860-431c-b737-28b5ee81a047",
+    "name": "SMK_INT_HTTP_apisbint_mapfre_net_26003",
+    "description": "Smoke test de conectividad al host apisbint.mapfre.net:26003 (Connected System: CW API Claim). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9444345"
+   },
+   {
+    "uuid": "f886f9f1-3230-482e-85af-d1bae9fc25f5",
+    "name": "SMK_INT_HTTP_ays_api_core_pfgop_dev_es_plataforma_aws_mapfre_net_25036",
+    "description": "Smoke test de conectividad al host ays-api.core.pfgop.dev.es.plataforma.aws.mapfre.net:25036 (Connected System: AYS API Core PFGOP). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18774771"
+   },
+   {
+    "uuid": "cb011fea-1df6-4c4b-b130-692b1068678e",
+    "name": "SMK_INT_HTTP_backend_pgo_mapfre_net",
+    "description": "Smoke test de conectividad al host backend.pgo.mapfre.net (Connected System: Backend PGO). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17655621"
+   },
+   {
+    "uuid": "b0fcef91-c70c-475c-8921-96954093ddae",
+    "name": "SMK_INT_HTTP_bwctc_conecta_orange_es",
+    "description": "Smoke test de conectividad al host bwctc.conecta.orange.es (Connected System: BWCTC Conecta Orange). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000e9c5-be46-8000-9c07-011c48011c48_6518079"
+   },
+   {
+    "uuid": "42c0406b-a25c-43d9-9ea4-53fa697d6560",
+    "name": "SMK_INT_HTTP_clientes_private_pre_mapfredigitalhealth_com_26030",
+    "description": "Smoke test de conectividad al host clientes.private.pre.mapfredigitalhealth.com:26030 (Connected System: Clientes Digital Health). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ef5f-2b36-8000-9cb2-011c48011c48_18948968"
+   },
+   {
+    "uuid": "08bbd82c-2949-44f1-b721-36bfc236ffa6",
+    "name": "SMK_INT_HTTP_cloud_uipath_com",
+    "description": "Smoke test de conectividad al host cloud.uipath.com (Connected System: UiPath Cloud). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000f036-fd58-8000-9cc1-011c48011c48_19992776"
+   },
+   {
+    "uuid": "ed4dc52f-87ec-4d89-aef2-28fa2e65b436",
+    "name": "SMK_INT_HTTP_cltv_atenea_es_dataprod_dev_emea_aws_mapfre_net_25052",
+    "description": "Smoke test de conectividad al host cltv.atenea.es.dataprod.dev.emea.aws.mapfre.net:25052 (Connected System: CLTV Atenea). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19171468"
+   },
+   {
+    "uuid": "ae64fa00-cdcd-412e-bc99-9670735de96b",
+    "name": "SMK_INT_HTTP_core7_desa_mapfre_net_25007",
+    "description": "Smoke test de conectividad al host core7.desa.mapfre.net:25007 (Connected System: Core7 Desa). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eb01-1576-8000-9c2c-011c48011c48_10241429"
+   },
+   {
+    "uuid": "abd5a16e-e75b-421a-bb94-5fbdfae25c8f",
+    "name": "SMK_INT_HTTP_core7_pre_mapfre_net_26007",
+    "description": "Smoke test de conectividad al host core7.pre.mapfre.net:26007 (Connected System: ANL PCA CORE). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9628647"
+   },
+   {
+    "uuid": "05e9b84e-d7ae-4a35-8173-8475e473c38b",
+    "name": "SMK_INT_HTTP_core8_pre_mapfre_net_26025",
+    "description": "Smoke test de conectividad al host core8.pre.mapfre.net:26025 (Connected System: Core8 Pre). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eb8a-166b-8000-9c4c-011c48011c48_11802596"
+   },
+   {
+    "uuid": "b8fe884e-9f40-48fd-a0e1-351d34adfc95",
+    "name": "SMK_INT_HTTP_cyc_api_core_pfgop_dev_es_plataforma_aws_mapfre_net_25037",
+    "description": "Smoke test de conectividad al host cyc-api.core.pfgop.dev.es.plataforma.aws.mapfre.net:25037 (Connected System: CYC API Core PFGOP). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18532084"
+   },
+   {
+    "uuid": "4285fe13-0bb7-4bb3-b8f4-4a3c137bc104",
+    "name": "SMK_INT_HTTP_denodo_desa_es_mapfre_net_25014",
+    "description": "Smoke test de conectividad al host denodo-desa.es.mapfre.net:25014 (Connected System: GCD Denodo). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ee2c-eaef-8000-9c9c-011c48011c48_17527926"
+   },
+   {
+    "uuid": "ed2ae2de-42e4-450e-8ae5-d184f5945da1",
+    "name": "SMK_INT_HTTP_denodo_prep_es_mapfre_net_26014",
+    "description": "Smoke test de conectividad al host denodo-prep.es.mapfre.net:26014 (Connected System: Denodo Prep). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000e901-9c41-8000-9bf7-011c48011c48_3590265"
+   },
+   {
+    "uuid": "d309448b-540f-4d89-bc58-50135fc05521",
+    "name": "SMK_INT_HTTP_esb_desa_mapfre_net_25005",
+    "description": "Smoke test de conectividad al host esb.desa.mapfre.net:25005 (Connected System: ESB Desa). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000e82e-adf5-8000-9bcf-011c48011c48_1028408"
+   },
+   {
+    "uuid": "608dda7b-fdc7-4add-a011-6a2feff7a5c7",
+    "name": "SMK_INT_HTTP_esb_pre_mapfre_net_26005",
+    "description": "Smoke test de conectividad al host esb.pre.mapfre.net:26005 (Connected System: ESB Pre). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ebb9-d1d3-8000-9c5d-011c48011c48_12518578"
+   },
+   {
+    "uuid": "c97750e2-88f9-44da-a1cf-492ef1acc497",
+    "name": "SMK_INT_HTTP_esp_cvm2_emc_api_core_pfadmsop_dev_es_plataforma_aws_mapfre_net_25047",
+    "description": "Smoke test de conectividad al host esp-cvm2-emc-api.core.pfadmsop.dev.es.plataforma.aws.mapfre.net:25047 (Connected System: CVM2 EMC API). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19086021"
+   },
+   {
+    "uuid": "335b252f-91ec-49b0-9589-0cfff827b8e5",
+    "name": "SMK_INT_HTTP_esp_cvm2_empleadoscomerciales_backend_core_pfadmsop_dev_es_plataforma_aws_mapfre_net_250544",
+    "description": "Smoke test de conectividad al host esp-cvm2-empleadoscomerciales-backend.core.pfadmsop.dev.es.plataforma.aws.mapfre.net:250544 (Connected System: CVM2 Empleados Comerciales). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19085624"
+   },
+   {
+    "uuid": "853b7dd8-a36d-472e-8275-1e423b428884",
+    "name": "SMK_INT_HTTP_esp_cvm2_esc_api_core_pfadmsop_dev_es_plataforma_aws_mapfre_net_25048",
+    "description": "Smoke test de conectividad al host esp-cvm2-esc-api.core.pfadmsop.dev.es.plataforma.aws.mapfre.net:25048 (Connected System: CVM2 ESC API). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19086139"
+   },
+   {
+    "uuid": "b145b6ba-78b2-485e-a098-e747bb35ff67",
+    "name": "SMK_INT_HTTP_esp_cvm2_estructuracomercial_backend_core_pfadmsop_dev_es_plataforma_aws_mapfre_net_25041",
+    "description": "Smoke test de conectividad al host esp-cvm2-estructuracomercial-backend.core.pfadmsop.dev.es.plataforma.aws.mapfre.net:25041 (Connected System: CVM2 Estructura Comercial). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19085371"
+   },
+   {
+    "uuid": "f3b78f91-7280-4e00-be07-1ddc1107084c",
+    "name": "SMK_INT_HTTP_esp_cvm2_ges_api_core_pfadmsop_dev_es_plataforma_aws_mapfre_net_25045",
+    "description": "Smoke test de conectividad al host esp-cvm2-ges-api.core.pfadmsop.dev.es.plataforma.aws.mapfre.net:25045 (Connected System: CVM2 GES API). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19085778"
+   },
+   {
+    "uuid": "53be9d6b-c9e4-4354-8e7c-1e7a1cd9d19c",
+    "name": "SMK_INT_HTTP_esp_cvm2_gestion_bff_core_pfadmsop_dev_es_plataforma_aws_mapfre_net_25038",
+    "description": "Smoke test de conectividad al host esp-cvm2-gestion-bff.core.pfadmsop.dev.es.plataforma.aws.mapfre.net:25038 (Connected System: PADS Gestión BFF). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ef5f-2b36-8000-9cb2-011c48011c48_18929125"
+   },
+   {
+    "uuid": "237c7214-364d-4f0c-a99b-54ac781cd1ee",
+    "name": "SMK_INT_HTTP_esp_cvm2_med_api_core_pfadmsop_dev_es_plataforma_aws_mapfre_net_25046",
+    "description": "Smoke test de conectividad al host esp-cvm2-med-api.core.pfadmsop.dev.es.plataforma.aws.mapfre.net:25046 (Connected System: CVM2 MED API). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19085904"
+   },
+   {
+    "uuid": "28a2012e-3a57-4f02-b4e7-d6616a4da603",
+    "name": "SMK_INT_HTTP_esp_cvm2_mediadores_backend_core_pfadmsop_dev_es_plataforma_aws_mapfre_net_25039",
+    "description": "Smoke test de conectividad al host esp-cvm2-mediadores-backend.core.pfadmsop.dev.es.plataforma.aws.mapfre.net:25039 (Connected System: PADS Mediadores). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ef5f-2b36-8000-9cb2-011c48011c48_18926632"
+   },
+   {
+    "uuid": "7f145ec6-bcef-4d06-885b-736a9bf01c6d",
+    "name": "SMK_INT_HTTP_esp_pgoappp_gd_backend_core_pfgop_dev_es_plataforma_aws_mapfre_net_25058",
+    "description": "Smoke test de conectividad al host esp-pgoappp-gd-backend.core.pfgop.dev.es.plataforma.aws.mapfre.net:25058 (Connected System: PGO App PGD Backend). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000f016-d236-8000-9cbf-011c48011c48_19866847"
+   },
+   {
+    "uuid": "5221ed0e-eca9-453d-8184-a7a60f2a69ac",
+    "name": "SMK_INT_HTTP_ev_api_core_pfgop_dev_es_plataforma_aws_mapfre_net_25057",
+    "description": "Smoke test de conectividad al host ev-api.core.pfgop.dev.es.plataforma.aws.mapfre.net:25057 (Connected System: EV API Core PFGOP). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18804839"
+   },
+   {
+    "uuid": "f3d3a914-1331-4130-9cc6-cbca0922fd1e",
+    "name": "SMK_INT_HTTP_gd_api_core_pfgop_dev_es_plataforma_aws_mapfre_net_25043",
+    "description": "Smoke test de conectividad al host gd-api.core.pfgop.dev.es.plataforma.aws.mapfre.net:25043 (Connected System: GD API Core PFGOP). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18832147"
+   },
+   {
+    "uuid": "edd15c64-bc03-4ec9-8402-dcd6c4c6ad92",
+    "name": "SMK_INT_HTTP_graph_microsoft_com",
+    "description": "Smoke test de conectividad al host graph.microsoft.com (Connected System: MBM Graph API). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ec95-047c-8000-9c80-011c48011c48_15004979"
+   },
+   {
+    "uuid": "8846e13b-c779-48a2-a749-9635b78b8cf2",
+    "name": "SMK_INT_HTTP_int_denodo_inf_es_mapfre_net_25051",
+    "description": "Smoke test de conectividad al host int.denodo.inf.es.mapfre.net:25051 (Connected System: Denodo Integración). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19330882"
+   },
+   {
+    "uuid": "6faaf4e7-8350-4d8a-bfde-083c2377d229",
+    "name": "SMK_INT_mapfrespain_newreleases_appiancloud_com",
+    "description": "Smoke test de conectividad al host mapfrespain-newreleases.appiancloud.com (Connected System: Appian New Releases). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18692536"
+   },
+   {
+    "uuid": "3603e287-f66f-4364-82b2-6572d1493abe",
+    "name": "SMK_INT_HTTP_mapfrespain_test_appiancloud_com",
+    "description": "Smoke test de conectividad al host mapfrespain-test.appiancloud.com (Connected System: Appian Test). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18525124"
+   },
+   {
+    "uuid": "79f2b309-9e7e-48e8-8cf5-ac8e655122b4",
+    "name": "SMK_INT_HTTP_misv_pre_mapfre_net_26024",
+    "description": "Smoke test de conectividad al host misv.pre.mapfre.net:26024 (Connected System: MISV). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ecf1-045c-8000-9c82-011c48011c48_15583962"
+   },
+   {
+    "uuid": "07fcbddf-b24c-4005-a99f-288bd665a8aa",
+    "name": "SMK_INT_HTTP_neurona_pre_verti_es_mapfre_net_26017",
+    "description": "Smoke test de conectividad al host neurona-pre.verti.es.mapfre.net:26017 (Connected System: Neurona Verti). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ea29-dd2e-8000-9c14-011c48011c48_7549457"
+   },
+   {
+    "uuid": "dde69dc8-c3e7-4961-a49d-0caaddaeb3f6",
+    "name": "SMK_INT_HTTP_pre_plataformaretos_com",
+    "description": "Smoke test de conectividad al host pre.plataformaretos.com (Connected System: Plataforma Retos). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18493124"
+   },
+   {
+    "uuid": "ef2e1b1c-90d7-4acf-ab2d-8f4d9f63238f",
+    "name": "SMK_INT_HTTP_preprod_verti_es",
+    "description": "Smoke test de conectividad al host preprod.verti.es (Connected System: CMP PlexusHost Token). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ee2c-eaef-8000-9c9c-011c48011c48_17517991"
+   },
+   {
+    "uuid": "1d8c1078-7018-4805-96e2-284c196c66f7",
+    "name": "SMK_INT_HTTP_scgd_desa_mapfre_net_25012",
+    "description": "Smoke test de conectividad al host scgd.desa.mapfre.net:25012 (Connected System: SCGD Desa). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ea92-10b3-8000-9c1b-011c48011c48_8635782"
+   },
+   {
+    "uuid": "65542c31-0d74-4800-b73c-03b087e0513b",
+    "name": "SMK_INT_HTTP_scgd_pre_mapfre_net_26012",
+    "description": "Smoke test de conectividad al host scgd.pre.mapfre.net:26012 (Connected System: SCGD Pre). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ec84-a247-8000-9c7f-011c48011c48_14681204"
+   },
+   {
+    "uuid": "3cd10372-8148-4691-83e4-3628ba46d566",
+    "name": "SMK_INT_HTTP_ses000a103542_es_mapfre_net_25023",
+    "description": "Smoke test de conectividad al host ses000a103542.es.mapfre.net:25023 (Connected System: SES 103542). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eb9f-62a6-8000-9c55-011c48011c48_12123453"
+   },
+   {
+    "uuid": "af33effb-4833-4963-8d28-b9ad4307ddd1",
+    "name": "SMK_INT_HTTP_ses000a107158_es_mapfre_net_25031",
+    "description": "Smoke test de conectividad al host ses000a107158.es.mapfre.net:25031 (Connected System: SES 107158). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ebf6-689c-8000-9c69-011c48011c48_13379215"
+   },
+   {
+    "uuid": "b52ac163-e03b-46ce-9d33-417a836c0afc",
+    "name": "SMK_INT_HTTP_ses000a204616_es_mapfre_net_26023",
+    "description": "Smoke test de conectividad al host ses000a204616.es.mapfre.net:26023 (Connected System: SES 204616). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18497697"
+   },
+   {
+    "uuid": "c18546cc-b7dc-4d91-8bdc-a2a07de2c8dc",
+    "name": "SMK_INT_HTTP_sgc_es_pre_azure_mapfre_com",
+    "description": "Smoke test de conectividad al host sgc.es.pre.azure.mapfre.com (Connected System: SGC Azure). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000e9e3-1b2e-8000-9c0e-011c48011c48_6794355"
+   },
+   {
+    "uuid": "f2fb0018-4472-4b1e-93e9-28f1164d5d61",
+    "name": "SMK_INT_HTTP_sgc3_pre_keyvault_vault_azure_net",
+    "description": "Smoke test de conectividad al host sgc3-pre-keyvault.vault.azure.net (Connected System: SGC3 Key Vault). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ea07-f170-8000-9c11-011c48011c48_7184167"
+   },
+   {
+    "uuid": "fb8c7b97-5857-4ea6-b924-fd7146efecb6",
+    "name": "SMK_INT_HTTP_soa7_desa_mapfre_net_25006",
+    "description": "Smoke test de conectividad al host soa7.desa.mapfre.net:25006 (Connected System: SOA7 Desa). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eba7-4ece-8000-9c59-011c48011c48_12347778"
+   },
+   {
+    "uuid": "9dead57f-5946-4a3d-b3e9-b92b02bfdb14",
+    "name": "SMK_INT_HTTP_soa7_pre_mapfre_net_26006",
+    "description": "Smoke test de conectividad al host soa7.pre.mapfre.net:26006 (Connected System: SOA7 Pre). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eb73-e3da-8000-9c41-011c48011c48_11566217"
+   },
+   {
+    "uuid": "53c35f8d-3026-45b8-8b89-90bc5ceee4ec",
+    "name": "SMK_INT_HTTP_vbs70364_live_dynatrace_com",
+    "description": "Smoke test de conectividad al host vbs70364.live.dynatrace.com (Connected System: ADM Ingesta Dynatrace). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17600546"
+   },
+   {
+    "uuid": "4aa1d507-8c83-46c6-9619-893fa1bb8285",
+    "name": "SMK_INT_HTTP_virtualapps_pre_mapfre_net_26009",
+    "description": "Smoke test de conectividad al host virtualapps.pre.mapfre.net:26009 (Connected System: Virtual Apps). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000e7bf-b70c-8000-9bba-011c48011c48_254442"
+   },
+   {
+    "uuid": "d7bff8c3-acc0-4ed6-b506-0bd3976867fe",
+    "name": "SMK_INT_HTTP_webservices_desa_mapfre_net",
+    "description": "Smoke test de conectividad al host webservices.desa.mapfre.net (Connected System: CMD_GD_API). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ea68-355f-8000-9c18-011c48011c48_8169258"
+   },
+   {
+    "uuid": "2fba5586-eb7f-4355-9b81-e11140eaaf82",
+    "name": "SMK_INT_HTTP_webservices_desa_mapfre_net_25004",
+    "description": "Smoke test de conectividad al host webservices.desa.mapfre.net:25004 (Connected System: API Webservices). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ed39-4f94-8000-9c84-011c48011c48_16099141"
+   },
+   {
+    "uuid": "ccad6b82-9467-4865-af12-1e2dcc27f083",
+    "name": "SMK_INT_HTTP_webservices_desa_mapfre_net_25004_2",
+    "description": "Smoke test de conectividad al host webservices.desa.mapfre.net:25004 (Connected System: API Webservices alternativo). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000e8f9-9770-8000-9bf2-011c48011c48_3546395"
+   },
+   {
+    "uuid": "51820afb-051b-4362-9ac9-aea143f37ebd",
+    "name": "SMK_INT_HTTP_webservices_pre_mapfre_net_26004",
+    "description": "Smoke test de conectividad al host webservices.pre.mapfre.net:26004 (Connected System: VIDA API Life). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9628841"
+   },
+   {
+    "uuid": "3bea35e3-ea83-4c37-8804-007a86255b57",
+    "name": "SMK_INT_HTTP_webservicesemision_pre_mapfre_net_26040",
+    "description": "Smoke test de conectividad al host webservicesemision.pre.mapfre.net:26040 (Connected System: Webservices Emision). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000ef5f-2b36-8000-9cb2-011c48011c48_18917830"
+   },
+   {
+    "uuid": "78ddf3b7-6a76-437c-ac0d-a7a5cc3aa44f",
+    "name": "SMK_INT_HTTP_wmapfre_pre_mapfre_net_26016",
+    "description": "Smoke test de conectividad al host wmapfre.pre.mapfre.net:26016 (Connected System: WMapfre Pre). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000e954-c778-8000-9c03-011c48011c48_4834608"
+   },
+   {
+    "uuid": "59889584-47b3-4295-826c-cff83bd974a1",
+    "name": "SMK_INT_HTTP_wmbig1is_desa_mapfre_net_25018",
+    "description": "Smoke test de conectividad al host wmbig1is.desa.mapfre.net:25018 (Connected System: WMBIG1IS Desa). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9634931"
+   },
+   {
+    "uuid": "32383349-8743-4164-82bf-a116e86de354",
+    "name": "SMK_INT_HTTP_wmbig3is_pre_mapfre_net_26019",
+    "description": "Smoke test de conectividad al host wmbig3is.pre.mapfre.net:26019 (Connected System: WMBIG3IS Pre). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eb7f-c182-8000-9c48-011c48011c48_11632270"
+   },
+   {
+    "uuid": "08f563f7-b09c-480f-b3fb-10cad154540c",
+    "name": "SMK_INT_HTTP_wportalinterno_desa_mapfre_net_25001",
+    "description": "Smoke test de conectividad al host wportalinterno.desa.mapfre.net:25001 (Connected System: WPortal Interno Desa). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000e7dd-f179-8000-9bc1-011c48011c48_501993"
+   },
+   {
+    "uuid": "250f219c-d739-466e-a601-a18bf4f0e015",
+    "name": "SMK_INT_HTTP_wportalinterno_pre_mapfre_net_26001",
+    "description": "Smoke test de conectividad al host wportalinterno.pre.mapfre.net:26001 (Connected System: WPortal Interno Pre). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9634950"
+   },
+   {
+    "uuid": "a337d7a2-2346-4df3-b17a-43560bf9d308",
+    "name": "SMK_INT_HTTP_ws_gdu_pre_azure_mapfre_net_25021",
+    "description": "Smoke test de conectividad al host ws-gdu.pre.azure.mapfre.net:25021 (Connected System: WS GDU Azure). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eb01-1576-8000-9c2c-011c48011c48_10027094"
+   },
+   {
+    "uuid": "487eee17-c2bc-4101-ba3b-c69588c32e8c",
+    "name": "SMK_INT_HTTP_www_apisb_mapfre_net_25003",
+    "description": "Smoke test de conectividad al host www.apisb.mapfre.net:25003 (Connected System: WWW API SB). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0000eb01-1576-8000-9c2c-011c48011c48_10049900"
+   },
+   {
+    "uuid": "3ca8c880-c9b0-4e8b-83a2-37804df204aa",
+    "name": "SMK_INT_S3_ListBuckets",
+    "description": "Smoke test S3: listar buckets (solo lectura)",
+    "connectedSystemUuid": "_a-0000ec31-13b0-8000-9c78-011c48011c48_13979606"
+   },
+   {
+    "uuid": "08318015-cb49-4d3d-ab87-2bacd53e5029",
+    "name": "SMK_INT_HTTP_mapfrespain_newreleases_appiancloud_com",
+    "description": "Smoke test de conectividad al host mapfrespain-newreleases.appiancloud.com (Connected System: ADM API Appian PRO). GET ligero; cualquier respuesta HTTP = host alcanzable.",
+    "connectedSystemUuid": "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18692536"
+   }
+  ]
+ },
+ "agents": {
+  "total": 0,
+  "items": []
+ },
+ "documents": {
+  "total": 0,
+  "items": []
+ },
+ "aiSkills": {
+  "total": 0,
+  "items": []
+ },
+ "expressionRules": {
+  "total": 8,
+  "items": [
+   {
+    "uuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20033632",
+    "name": "SMK_seleccionarPruebas",
+    "description": "Devuelve las pruebas activas del catálogo SMK Test filtradas por códigos/categorías/sistemas (vacío = todas)."
+   },
+   {
+    "uuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20033686",
+    "name": "SMK_resumenEjecucion",
+    "description": "Rollup de una ejecución a partir de SMK Resultado: totales por estado y estado global."
+   },
+   {
+    "uuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20033690",
+    "name": "SMK_evaluarIntegracion",
+    "description": "Convierte el resultado de una integración genérica en el contrato {resultado, mensaje, detalle}."
+   },
+   {
+    "uuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20033694",
+    "name": "SMK_evaluarHttp",
+    "description": "Convierte el resultado de una integración HTTP de conectividad en el contrato {resultado, mensaje, detalle}."
+   },
+   {
+    "uuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20033719",
+    "name": "SMK_ejecutarPrueba",
+    "description": "Dispatcher: ejecuta la prueba de humo indicada por código y devuelve {resultado, mensaje, detalle}."
+   },
+   {
+    "uuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20033723",
+    "name": "SMK_construirResultado",
+    "description": "Construye el registro SMK Resultado de una prueba aplicando el umbral de latencia."
+   },
+   {
+    "uuid": "_a-0000f069-4f37-8000-9cc8-011c48011c48_20037624",
+    "name": "SMK_catalogoBase",
+    "description": "Catálogo base de pruebas de humo (fuente de verdad para sincronizar SMK_TEST en cada entorno)."
+   },
+   {
+    "uuid": "_a-0000f069-4f37-8000-9cc8-011c48011c48_20037630",
+    "name": "SMK_catalogoPendiente",
+    "description": "Pruebas del catálogo base que faltan en SMK_TEST, como registros listos para a!writeRecords."
+   }
+  ]
+ },
+ "groups": {
+  "total": 2,
+  "items": [
+   {
+    "uuid": "_e-0000f061-6399-8000-9c15-01075c01075c_8047",
+    "groupName": "SMK Administrators",
+    "displayName": "SMK Administrators",
+    "description": "Assigns Administrator permissions to users for objects in the application"
+   },
+   {
+    "uuid": "_e-0000f061-6399-8000-9c15-01075c01075c_8049",
+    "groupName": "SMK Users",
+    "displayName": "SMK Users",
+    "description": "Assigns Viewer permissions to users for objects in the application"
+   }
+  ]
+ },
+ "webApis": {
+  "total": 4,
+  "items": [
+   {
+    "uuid": "23ea3a3b-cb66-4d44-a9ef-f4fb2de38108",
+    "name": "SMK_API_lanzarPruebas",
+    "description": "Lanza una ejecución de pruebas de humo. Body JSON: codigos/categorias/sistemas/motivo/origen. Devuelve ejecucionId.",
+    "urlAlias": "smoke_runs",
+    "httpMethod": "POST",
+    "requestBodyType": "NONE",
+    "isPublic": false,
+    "loggingEnabled": false
+   },
+   {
+    "uuid": "75918739-c981-4256-9881-231cfab97f6b",
+    "name": "SMK_API_estadoEjecucion",
+    "description": "Estado y totales de una ejecución (?id=).",
+    "urlAlias": "smoke_run",
+    "httpMethod": "GET",
+    "requestBodyType": "NONE",
+    "isPublic": false,
+    "loggingEnabled": false
+   },
+   {
+    "uuid": "b4ff7287-fef2-4d76-adbb-107644937145",
+    "name": "SMK_API_catalogoPruebas",
+    "description": "Catálogo de pruebas de humo activas (?categoria=&sistema=).",
+    "urlAlias": "smoke_tests",
+    "httpMethod": "GET",
+    "requestBodyType": "NONE",
+    "isPublic": false,
+    "loggingEnabled": false
+   },
+   {
+    "uuid": "29110d8f-a9ac-4fef-ba23-f865875c80e9",
+    "name": "SMK_API_resultadosEjecucion",
+    "description": "Resultados por prueba de una ejecución (?id=&resultado=KO,WARN).",
+    "urlAlias": "smoke_run_results",
+    "httpMethod": "GET",
+    "requestBodyType": "NONE",
+    "isPublic": false,
+    "loggingEnabled": false
+   }
+  ]
+ },
+ "sites": {
+  "total": 1,
+  "items": [
+   {
+    "uuid": "3fbde4a5-20b7-4436-958f-ca60d087c7c1",
+    "name": "SMK Pruebas de Humo",
+    "displayName": "Pruebas de Humo",
+    "webAddressIdentifier": "smoke-tests",
+    "description": "",
+    "layout": "SIDEBAR",
+    "pages": [
+     {
+      "name": "Panel",
+      "targetUuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20034325",
+      "uuid": "78aaa47a-f165-4eb2-ab09-7c54369f5587",
+      "type": "INTERFACE",
+      "description": "",
+      "webAddressIdentifier": "5n8kYw",
+      "visibilityExpr": "=true"
+     },
+     {
+      "name": "Ejecutar",
+      "targetUuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20034319",
+      "uuid": "1e3b3187-b9a0-4c06-9db0-ab627947c2e3",
+      "type": "INTERFACE",
+      "description": "",
+      "webAddressIdentifier": "V-7_8g",
+      "visibilityExpr": "=true"
+     },
+     {
+      "name": "Histórico",
+      "targetUuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20034331",
+      "uuid": "c931ce0c-6a14-4fee-85da-154ff245d45b",
+      "type": "INTERFACE",
+      "description": "",
+      "webAddressIdentifier": "A-Xn7g",
+      "visibilityExpr": "=true"
+     },
+     {
+      "name": "Catálogo",
+      "targetUuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20034343",
+      "uuid": "83a786f1-639f-46f3-9ebf-87a4e0c6fe40",
+      "type": "INTERFACE",
+      "description": "",
+      "webAddressIdentifier": "phw5WA",
+      "visibilityExpr": "=true"
+     }
+    ],
+    "versionId": "1"
+   }
+  ]
+ },
+ "processModels": {
+  "total": 2,
+  "items": [
+   {
+    "uuid": "0000f068-c618-8000-64a1-7f0000014e7a",
+    "name": {
+     "es": "SMK Ejecutar Pruebas"
+    },
+    "description": {
+     "es": "Runner de pruebas de humo: selecciona pruebas del catálogo, crea la SMK Ejecucion, lanza un subproceso por prueba y consolida el resultado."
+    }
+   },
+   {
+    "uuid": "0002f068-c618-8000-64a1-7f0000014e7a",
+    "name": {
+     "es": "SMK Ejecutar Prueba"
+    },
+    "description": {
+     "es": "Subproceso: ejecuta una prueba de humo (SMK_ejecutarPrueba) y persiste su SMK Resultado."
+    }
+   }
+  ]
+ },
+ "processes": {
+  "total": 0,
+  "items": []
+ },
+ "recordTypes": {
+  "total": 3,
+  "items": [
+   {
+    "uuid": "8cb90847-702c-4704-aae6-03acd830a9b7",
+    "name": "SMK Test",
+    "description": "Catálogo de pruebas de humo. Cada fila es una prueba ejecutable por el dispatcher SMK_ejecutarPrueba.",
+    "pluralName": "SMK Tests"
+   },
+   {
+    "uuid": "e0fef5cc-80d6-491b-b74b-71d623d7a0ec",
+    "name": "SMK Ejecucion",
+    "description": "Ejecución (run) de un conjunto de pruebas de humo.",
+    "pluralName": "SMK Ejecuciones"
+   },
+   {
+    "uuid": "bf6adbc0-a010-4ed4-8868-ec70acc74366",
+    "name": "SMK Resultado",
+    "description": "Resultado de una prueba dentro de una ejecución.",
+    "pluralName": "SMK Resultados"
+   }
+  ]
+ },
+ "portals": {
+  "total": 0,
+  "items": []
+ },
+ "interfaces": {
+  "total": 5,
+  "items": [
+   {
+    "uuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20034319",
+    "name": "SMK_UI_Lanzar",
+    "description": "Formulario para lanzar ejecuciones de pruebas de humo"
+   },
+   {
+    "uuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20034325",
+    "name": "SMK_UI_Panel",
+    "description": "Panel de administración y seguimiento de pruebas de humo"
+   },
+   {
+    "uuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20034331",
+    "name": "SMK_UI_Historico",
+    "description": "Histórico de ejecuciones de pruebas de humo"
+   },
+   {
+    "uuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20034337",
+    "name": "SMK_UI_DetalleEjecucion",
+    "description": "Detalle y resultados de una ejecución de pruebas de humo"
+   },
+   {
+    "uuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20034343",
+    "name": "SMK_UI_Catalogo",
+    "description": "Catálogo de pruebas de humo activas"
+   }
+  ]
+ },
+ "roboticTasks": {
+  "total": 0,
+  "items": []
+ }
+}

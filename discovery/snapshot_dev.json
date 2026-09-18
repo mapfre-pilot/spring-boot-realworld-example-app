@@ -1,0 +1,2562 @@
+{
+ "env": "dev",
+ "fecha": "2026-09-18T09:18:59.542826",
+ "connectedSystems": {
+  "_a-0000ec13-1536-8000-9c71-011c48011c48_13687075": {
+   "uuid": "_a-0000ec13-1536-8000-9c71-011c48011c48_13687075",
+   "name": "GCD BBDD",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "Sistema conectado correspondiente a la bbdd de la aplicación GCD en AWS",
+   "apps": [
+    " GCD - Gestor Reclamaciones OCCPD"
+   ]
+  },
+  "_a-0000ee2c-eaef-8000-9c9c-011c48011c48_17527926": {
+   "uuid": "_a-0000ee2c-eaef-8000-9c9c-011c48011c48_17527926",
+   "name": "GCD Denodo",
+   "type": "system.http",
+   "description": "Sistema Conectado para Denodo",
+   "apps": [
+    " GCD - Gestor Reclamaciones OCCPD"
+   ],
+   "baseUrl": "http://denodo-desa.es.mapfre.net:25014/",
+   "authType": "Basic"
+  },
+  "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18812302": {
+   "uuid": "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18812302",
+   "name": "LCK DB AWS",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "Sistema conectado para la base de datos de AWS",
+   "apps": [
+    "(LCK) Object Locking"
+   ]
+  },
+  "_a-0000eaf3-a06d-8000-9c28-011c48011c48_10000135": {
+   "uuid": "_a-0000eaf3-a06d-8000-9c28-011c48011c48_10000135",
+   "name": "ADM adm_administracion AWS",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "Sistema conectado con la base de datos de AWS para el schema de adm_administracion",
+   "apps": [
+    "ADM Administracion"
+   ]
+  },
+  "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17600546": {
+   "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17600546",
+   "name": "ADM Ingesta Dynatrace",
+   "type": "system.http",
+   "description": "Sistema conectado para realizar la ingesta de Dynatrace",
+   "apps": [
+    "ADM Administracion"
+   ],
+   "baseUrl": "https://vbs70364.live.dynatrace.com/",
+   "authType": "API Key"
+  },
+  "_a-0000eeb5-6054-8000-9ca3-011c48011c48_18134571": {
+   "uuid": "_a-0000eeb5-6054-8000-9ca3-011c48011c48_18134571",
+   "name": "ADM API Appian",
+   "type": "system.http",
+   "description": "Sistema conectado para utilizar las APIs de Appian",
+   "apps": [
+    "ADM Administracion"
+   ],
+   "baseUrl": "https://mapfrespain-dev.appiancloud.com",
+   "authType": "API Key"
+  },
+  "_a-0000eed3-5c82-8000-9cab-011c48011c48_18421756": {
+   "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18421756",
+   "name": "ADM API Devops",
+   "type": "system.http",
+   "description": "Sistema conectado para la api de los repos de devops",
+   "apps": [
+    "ADM Administracion"
+   ],
+   "baseUrl": "https://api.github.com/repos/mapfre-tech/",
+   "authType": "API Key"
+  },
+  "_a-0000ef01-013f-8000-9cac-011c48011c48_18624248": {
+   "uuid": "_a-0000ef01-013f-8000-9cac-011c48011c48_18624248",
+   "name": "ADM API Appian DEV",
+   "type": "system.http",
+   "description": "Endpoint de Appian DEV",
+   "apps": [
+    "ADM Administracion"
+   ],
+   "baseUrl": "https://mapfrespain-dev.appiancloud.com",
+   "authType": "API Key"
+  },
+  "_a-0000ef01-013f-8000-9cac-011c48011c48_18627744": {
+   "uuid": "_a-0000ef01-013f-8000-9cac-011c48011c48_18627744",
+   "name": "ADM API Graphql",
+   "type": "system.http",
+   "description": "API Para hacer el commit and push",
+   "apps": [
+    "ADM Administracion"
+   ],
+   "baseUrl": "https://api.github.com/graphql",
+   "authType": "API Key"
+  },
+  "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18692536": {
+   "uuid": "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18692536",
+   "name": "ADM API Appian PRO",
+   "type": "system.http",
+   "description": "Endpoint de la API de Appian de PRODUCCIÓN.",
+   "apps": [
+    "ADM Administracion"
+   ],
+   "baseUrl": "https://mapfrespain-newreleases.appiancloud.com/",
+   "authType": "API Key"
+  },
+  "_a-0000eaca-9685-8000-9c24-011c48011c48_9628615": {
+   "uuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9628615",
+   "name": "ANL STCAT",
+   "type": "system.http",
+   "description": "webservices: stcatservicios_be-web/ws",
+   "apps": [
+    "Anulaciones"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/stcatservicios_be-web/ws/",
+   "authType": "Basic"
+  },
+  "_a-0000eaca-9685-8000-9c24-011c48011c48_9628647": {
+   "uuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9628647",
+   "name": "ANL PCA CORE",
+   "type": "system.http",
+   "description": "core7: PCA_CORECFSA_HTTPRouter",
+   "apps": [
+    "Anulaciones"
+   ],
+   "baseUrl": "https://core7.pre.mapfre.net:26007/PCA_CORECFSA_HTTPRouter/",
+   "authType": "None"
+  },
+  "_a-0000eaca-9685-8000-9c24-011c48011c48_9628841": {
+   "uuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9628841",
+   "name": "ANL NSE",
+   "type": "system.http",
+   "description": "webservices: evt21_nse_servicios_be-web/ws",
+   "apps": [
+    "Anulaciones"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/evt21_nse_servicios_be-web/ws/",
+   "authType": "None"
+  },
+  "_a-0000eaca-9685-8000-9c24-011c48011c48_9632448": {
+   "uuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9632448",
+   "name": "ANL SERVICIOSBASICOS",
+   "type": "system.http",
+   "description": "webservices: SERVICIOSBASICOS/services/",
+   "apps": [
+    "Anulaciones"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/SERVICIOSBASICOS/services/",
+   "authType": "Basic"
+  },
+  "_a-0000eaca-9685-8000-9c24-011c48011c48_9634931": {
+   "uuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9634931",
+   "name": "ANL WEB METHODS",
+   "type": "system.http",
+   "description": "wmbig1is: WebMethods",
+   "apps": [
+    "Anulaciones"
+   ],
+   "baseUrl": "http://wmbig1is.desa.mapfre.net:25018/rest/api/",
+   "authType": "Basic"
+  },
+  "_a-0000eaca-9685-8000-9c24-011c48011c48_9634950": {
+   "uuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9634950",
+   "name": "ANL SGO",
+   "type": "system.http",
+   "description": "wportalinterno: WSSGO/services/",
+   "apps": [
+    "Anulaciones"
+   ],
+   "baseUrl": "https://wportalinterno.pre.mapfre.net:26001/WSSGO/services/",
+   "authType": "Basic"
+  },
+  "_a-0000eaca-9685-8000-9c24-011c48011c48_9634969": {
+   "uuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9634969",
+   "name": "ANL NEW",
+   "type": "system.http",
+   "description": "webservices: RecubrirNew_be-web/ws",
+   "apps": [
+    "Anulaciones"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/RecubrirNew_be-web/ws/",
+   "authType": "None"
+  },
+  "_a-0000eac4-8c31-8000-9c20-011c48011c48_9114785": {
+   "uuid": "_a-0000eac4-8c31-8000-9c20-011c48011c48_9114785",
+   "name": "BDT_SC_Esquema",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Sistema conectado a la base de datos y esquema de Bandeja de Tareas de tipo PostgreSQL alojada en AWS de Mapfre España",
+   "apps": [
+    "Bandeja de Tareas"
+   ]
+  },
+  "_a-0000eb01-1576-8000-9c2c-011c48011c48_10191807": {
+   "uuid": "_a-0000eb01-1576-8000-9c2c-011c48011c48_10191807",
+   "name": "BDT_ConnectedSystem",
+   "type": "system.http",
+   "description": "Sistema Conectado entorno Appian",
+   "apps": [
+    "Bandeja de Tareas"
+   ],
+   "baseUrl": "https://mapfrespain-dev.appiancloud.com/suite/webapi/",
+   "authType": "API Key"
+  },
+  "_a-0000ec95-047c-8000-9c80-011c48011c48_15513076": {
+   "uuid": "_a-0000ec95-047c-8000-9c80-011c48011c48_15513076",
+   "name": "BDE BBDD",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "PRE: @h4ixHnsgJ@PctQcJBT9T4\njdbc:postgresql://aws-rds-test.mapfre.es:5432/appianmapfredb?currentSchema=bde_bitacoradeempresas\n\nPRO: 7gDbnTm3y^h3NxnFnYxLpk\njdbc:postgresql://aws-rds-prod.mapfre.es:5432/appianmapfredb?currentSchema=bde_bitacoradeempresas",
+   "apps": [
+    "Bitácora de Empresas"
+   ]
+  },
+  "_a-0000ecf1-045c-8000-9c82-011c48011c48_15619017": {
+   "uuid": "_a-0000ecf1-045c-8000-9c82-011c48011c48_15619017",
+   "name": "BDE Clients EDGE",
+   "type": "system.http",
+   "description": "PRO: \nhttps://webservices.es.mapfre.net:27004",
+   "apps": [
+    "Bitácora de Empresas"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004",
+   "authType": "Basic"
+  },
+  "_a-0000ed39-4f94-8000-9c84-011c48011c48_16099141": {
+   "uuid": "_a-0000ed39-4f94-8000-9c84-011c48011c48_16099141",
+   "name": "BDE WebServices",
+   "type": "system.http",
+   "description": "PRE: https://webservices.pre.mapfre.net:26004\nPRO: https://webservices.es.mapfre.net:27004",
+   "apps": [
+    "Bitácora de Empresas"
+   ],
+   "baseUrl": "https://webservices.desa.mapfre.net:25004",
+   "authType": "Basic"
+  },
+  "_a-0000ed7d-cf02-8000-9c8d-011c48011c48_16723202": {
+   "uuid": "_a-0000ed7d-cf02-8000-9c8d-011c48011c48_16723202",
+   "name": "BDE Conexión Sharepoint",
+   "type": "plugin.[SharePoint].[SharePoint]",
+   "description": "Conexión con sharepoint: \nDisplay name: azr-app-pro-BITACORA-mapfrees\nApplication (client) ID: 9ad80980-807e-4560-93bc-ee5e054489d3\nDirectory (tenant) ID: 5cc6c66d-ffb2-469f-9385-cda840e57836\nClient secret: 1ny8Q~qcatf2~zc36jhyPRUW7FWQRlGvgV554cpH",
+   "apps": [
+    "Bitácora de Empresas"
+   ]
+  },
+  "_a-0000eaca-9685-8000-9c24-011c48011c48_9444345": {
+   "uuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9444345",
+   "name": "CW API Claim",
+   "type": "system.http",
+   "description": "Sistema conectado que incluye el host del API Claim de Gateway",
+   "apps": [
+    "CapturaWeb"
+   ],
+   "baseUrl": "https://apisbint.mapfre.net:26003/",
+   "authType": "None"
+  },
+  "_a-0000eb01-1576-8000-9c2c-011c48011c48_10100638": {
+   "uuid": "_a-0000eb01-1576-8000-9c2c-011c48011c48_10100638",
+   "name": "CW Aurora Postgre",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "",
+   "apps": [
+    "CapturaWeb"
+   ]
+  },
+  "_a-0000eba7-4ece-8000-9c59-011c48011c48_12274507": {
+   "uuid": "_a-0000eba7-4ece-8000-9c59-011c48011c48_12274507",
+   "name": "CW API Webservices",
+   "type": "system.http",
+   "description": "Sistema conectado utilizado para consumir los servicios del host webservices e incluye las credenciales del usuario APP-APPIANCW",
+   "apps": [
+    "CapturaWeb"
+   ],
+   "baseUrl": "https://webservices.desa.mapfre.net:25004/",
+   "authType": "Basic"
+  },
+  "_a-0000eb73-e3da-8000-9c41-011c48011c48_11557741": {
+   "uuid": "_a-0000eb73-e3da-8000-9c41-011c48011c48_11557741",
+   "name": "CVA cva_cartaverde AWS",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "Sistema conectado con la base de datos de AWS para el schema de cva_cartaverde",
+   "apps": [
+    "Carta Verde Autos CMP"
+   ]
+  },
+  "_a-0000e7dd-f179-8000-9bc1-011c48011c48_342292": {
+   "uuid": "_a-0000e7dd-f179-8000-9bc1-011c48011c48_342292",
+   "name": "CdC_SistemaConectadoBDEC",
+   "type": "system.http",
+   "description": "Sistema conectado que conecta con los servicios de BDEC",
+   "apps": [
+    "CdC_MAPFRE"
+   ],
+   "baseUrl": "https://wportalinterno.desa.mapfre.net:25001",
+   "authType": "Basic"
+  },
+  "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18849121": {
+   "uuid": "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18849121",
+   "name": "CD cd_deletedocument aws",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "Sistema conectado con la base de datos de AWS para el schema de cd_deletedocument",
+   "apps": [
+    "Cleanup Documents"
+   ]
+  },
+  "_a-0000ea68-355f-8000-9c18-011c48011c48_8169258": {
+   "uuid": "_a-0000ea68-355f-8000-9c18-011c48011c48_8169258",
+   "name": "CMD_GD_API",
+   "type": "system.http.openapi",
+   "description": "",
+   "apps": [
+    "CMD Demo Componentes"
+   ],
+   "baseUrl": "https://webservices.desa.mapfre.net",
+   "authType": "None"
+  },
+  "_a-0000ea92-10b3-8000-9c1b-011c48011c48_8605459": {
+   "uuid": "_a-0000ea92-10b3-8000-9c1b-011c48011c48_8605459",
+   "name": "CMD Prueba DB",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "",
+   "apps": [
+    "CMD Demo Componentes"
+   ]
+  },
+  "_a-0000ec2d-c808-8000-9c77-011c48011c48_13918516": {
+   "uuid": "_a-0000ec2d-c808-8000-9c77-011c48011c48_13918516",
+   "name": "CMD TEST Conexión AWS S3 2",
+   "type": "plugin.[com.appian.ps.aws.s3.cst].[AWSS3ConnectedSystemTemplate]@2",
+   "description": "",
+   "apps": [
+    "CMD Demo Componentes"
+   ]
+  },
+  "_a-0000ec55-424b-8000-9c7a-011c48011c48_14307681": {
+   "uuid": "_a-0000ec55-424b-8000-9c7a-011c48011c48_14307681",
+   "name": "CMD Prueba orafi053",
+   "type": "system.[DataSource].[OracleConnectedSystem]",
+   "description": "",
+   "apps": [
+    "CMD Demo Componentes"
+   ]
+  },
+  "_a-0000edf5-ee9a-8000-9c96-011c48011c48_17257826": {
+   "uuid": "_a-0000edf5-ee9a-8000-9c96-011c48011c48_17257826",
+   "name": "CMD Deployment DevOps",
+   "type": "system.http",
+   "description": "Sistema conectado para los deployments",
+   "apps": [
+    "CMD Demo Componentes"
+   ],
+   "baseUrl": "https://mapfrespain-dev.appiancloud.com",
+   "authType": "API Key"
+  },
+  "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18673010": {
+   "uuid": "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18673010",
+   "name": "CMD Prueba token personal",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "CMD Demo Componentes"
+   ],
+   "baseUrl": null,
+   "authType": "OAuth 2.0: SAML Bearer Assertion as Authorization Grant"
+  },
+  "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19183164": {
+   "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19183164",
+   "name": "CMD ",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "CMD Demo Componentes"
+   ],
+   "baseUrl": "",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19340680": {
+   "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19340680",
+   "name": "CMD OpenId",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "CMD Demo Componentes"
+   ],
+   "baseUrl": "https://esp-cvm2-gestion-bff.core.pfadmsop.dev.es.plataforma.aws.mapfre.net:25038",
+   "authType": "OpenID Connect"
+  },
+  "_a-0000eed3-5c82-8000-9cab-011c48011c48_18578078": {
+   "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18578078",
+   "name": "CMP DB Alta Cliente",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "Sistema conectado con la base de datos de AWS para el schema de cmp_altacliente",
+   "apps": [
+    "CMP Alta Cliente"
+   ]
+  },
+  "_a-0000eed3-5c82-8000-9cab-011c48011c48_18567475": {
+   "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18567475",
+   "name": "CMP DB Modificación Cliente",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "Sistema conectado con la base de datos de AWS para el schema de cmp_modificacioncliente",
+   "apps": [
+    "CMP Alta Cliente"
+   ]
+  },
+  "_a-0000e7dd-f179-8000-9bc1-011c48011c48_364620": {
+   "uuid": "_a-0000e7dd-f179-8000-9bc1-011c48011c48_364620",
+   "name": "CMP LoopBack",
+   "type": "system.http",
+   "description": "Sistema conectado para llamar a webAPIs del propio entorno Appìan. Útil , entre otros, para redireccionar, lanzar procesos, convertir a base64...",
+   "apps": [
+    "CMP Componentes"
+   ],
+   "baseUrl": "https://mapfrespain-dev.appiancloud.com/suite/webapi/",
+   "authType": "API Key"
+  },
+  "_a-0000e7dd-f179-8000-9bc1-011c48011c48_501993": {
+   "uuid": "_a-0000e7dd-f179-8000-9bc1-011c48011c48_501993",
+   "name": "CMP API Portal Interno Mapfre",
+   "type": "system.http",
+   "description": "Sistema conectado para llamar al portal interno de Mapfre",
+   "apps": [
+    "CMP Componentes"
+   ],
+   "baseUrl": "https://wportalinterno.desa.mapfre.net:25001/",
+   "authType": "None"
+  },
+  "_a-0000e82e-adf5-8000-9bcf-011c48011c48_1028408": {
+   "uuid": "_a-0000e82e-adf5-8000-9bcf-011c48011c48_1028408",
+   "name": "CMP API WLCatalog",
+   "type": "system.http",
+   "description": "Sistema conectado para el acceso al catálogo ARQ_CATALOG_SMEDWeb/sca/wICatalog",
+   "apps": [
+    "CMP Componentes"
+   ],
+   "baseUrl": "https://esb.desa.mapfre.net:25005/ARQ_CATALOG_SMEDWeb/sca/wICatalog",
+   "authType": "None"
+  },
+  "_a-0000e954-c778-8000-9c03-011c48011c48_5551893": {
+   "uuid": "_a-0000e954-c778-8000-9c03-011c48011c48_5551893",
+   "name": "CMP Obtener IP",
+   "type": "plugin.[com.mapfre.localendpoint].[LocalEndpointConnectedSystemTemplate]",
+   "description": "Sistema conectado que se utiliza para obtener la ip local de un ordenador mapfre",
+   "apps": [
+    "CMP Componentes"
+   ]
+  },
+  "_a-0000ea92-10b3-8000-9c1b-011c48011c48_8633590": {
+   "uuid": "_a-0000ea92-10b3-8000-9c1b-011c48011c48_8633590",
+   "name": "CMP API Webservices",
+   "type": "system.http",
+   "description": "Sistema conectado utilizado para consumir los servicos del host webservices",
+   "apps": [
+    "CMP Componentes"
+   ],
+   "baseUrl": "https://webservices.desa.mapfre.net:25004/",
+   "authType": "Basic"
+  },
+  "_a-0000ea92-10b3-8000-9c1b-011c48011c48_8634106": {
+   "uuid": "_a-0000ea92-10b3-8000-9c1b-011c48011c48_8634106",
+   "name": "CMP API ESB",
+   "type": "system.http",
+   "description": "Sistema conectado que incluye el host esb",
+   "apps": [
+    "CMP Componentes"
+   ],
+   "baseUrl": "https://esb.desa.mapfre.net:25005/",
+   "authType": "None"
+  },
+  "_a-0000ea92-10b3-8000-9c1b-011c48011c48_8636336": {
+   "uuid": "_a-0000ea92-10b3-8000-9c1b-011c48011c48_8636336",
+   "name": "CMP Login token",
+   "type": "system.http",
+   "description": "Sistema conectado que incluye el endpoint para obtener el token del login",
+   "apps": [
+    "CMP Componentes"
+   ],
+   "baseUrl": "https://apisbint.mapfre.net:26003/auth/oauth/v2/token",
+   "authType": "None"
+  },
+  "_a-0000ea92-10b3-8000-9c1b-011c48011c48_8656992": {
+   "uuid": "_a-0000ea92-10b3-8000-9c1b-011c48011c48_8656992",
+   "name": "CMP API Life Risk",
+   "type": "system.http",
+   "description": "Sistema conectado que incluye el endpoint de API life risk",
+   "apps": [
+    "CMP Componentes"
+   ],
+   "baseUrl": "https://webservices.desa.mapfre.net:25004/apisbctaller_int-web/api/life/1.0/catalog/general/oppositeCompany",
+   "authType": "Basic"
+  },
+  "_a-0000eaaa-eab0-8000-9c1c-011c48011c48_8821944": {
+   "uuid": "_a-0000eaaa-eab0-8000-9c1c-011c48011c48_8821944",
+   "name": "CMP API Document",
+   "type": "system.http",
+   "description": "Sistema conectado con la API Document de Mapfre",
+   "apps": [
+    "CMP Componentes"
+   ],
+   "baseUrl": "https://webservices.desa.mapfre.net:25004/documents-web/api/sgd/1.0/documents/",
+   "authType": "Basic"
+  },
+  "_a-0000eaca-9685-8000-9c24-011c48011c48_9579362": {
+   "uuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9579362",
+   "name": "CMP API Webservices PRE",
+   "type": "system.http",
+   "description": "Sistema conectado utilizado para consumir los servicos del host webservices",
+   "apps": [
+    "CMP Componentes"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/",
+   "authType": "Basic"
+  },
+  "_a-0000eb24-e653-8000-9c34-011c48011c48_11155545": {
+   "uuid": "_a-0000eb24-e653-8000-9c34-011c48011c48_11155545",
+   "name": "CMP API WPortalInterno",
+   "type": "system.http",
+   "description": "Sistema conectado con el host wportalinterno e incluye las credenciales del usuario APP-CMPAPPIAN",
+   "apps": [
+    "CMP Componentes"
+   ],
+   "baseUrl": "https://wportalinterno.desa.mapfre.net:25001/",
+   "authType": "Basic"
+  },
+  "_a-0000ec31-13b0-8000-9c78-011c48011c48_13979606": {
+   "uuid": "_a-0000ec31-13b0-8000-9c78-011c48011c48_13979606",
+   "name": "CMP Conexion AWS S3",
+   "type": "plugin.[com.appian.ps.aws.s3.cst].[AWSS3ConnectedSystemTemplate]@2",
+   "description": "Conexión con AWS S3",
+   "apps": [
+    "CMP Componentes"
+   ]
+  },
+  "_a-0000eb24-e653-8000-9c34-011c48011c48_10728130": {
+   "uuid": "_a-0000eb24-e653-8000-9c34-011c48011c48_10728130",
+   "name": "CMP API Webservices APPCMPA",
+   "type": "system.http",
+   "description": "Sistema conectado utilizado para consumir los servicos del host webservices con el usuario APPCMPA",
+   "apps": [
+    "CMP Componentes"
+   ],
+   "baseUrl": "https://webservices.desa.mapfre.net:25004/",
+   "authType": "Basic"
+  },
+  "_a-0000ea92-10b3-8000-9c1b-011c48011c48_8634288": {
+   "uuid": "_a-0000ea92-10b3-8000-9c1b-011c48011c48_8634288",
+   "name": "CMP API Clients",
+   "type": "system.http",
+   "description": "Sistema conectado que incluye el host del API clients",
+   "apps": [
+    "CMP Componentes"
+   ],
+   "baseUrl": "https://apisbint.mapfre.net:26003/esp/srv/api/clients/1.0/",
+   "authType": "None"
+  },
+  "_a-0000eaca-9685-8000-9c24-011c48011c48_9410906": {
+   "uuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9410906",
+   "name": "CMP cmp_componentes AWS",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "Sistema conectado con la base de datos de AWS para el schema de cmp_componentes",
+   "apps": [
+    "CMP Componentes"
+   ]
+  },
+  "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19270558": {
+   "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19270558",
+   "name": "CMP Prueba Client Credentials",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "CMP Componentes"
+   ],
+   "baseUrl": "https://api-pgm.digital.private.pre.mapfredigitalhealth.com:26033/api-pgm/28859991/alertCatalog",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000ed39-4f94-8000-9c84-011c48011c48_16099066": {
+   "uuid": "_a-0000ed39-4f94-8000-9c84-011c48011c48_16099066",
+   "name": "CMP OneTrust",
+   "type": "system.http",
+   "description": "Sistema conectado para usar los servicios de OneTrust",
+   "apps": [
+    "CMP Firma RGPD"
+   ],
+   "baseUrl": "https://apisb.mapfre.net:25003/srv/api/onetrust",
+   "authType": "Basic"
+  },
+  "_a-0000ea92-10b3-8000-9c1b-011c48011c48_8635782": {
+   "uuid": "_a-0000ea92-10b3-8000-9c1b-011c48011c48_8635782",
+   "name": "CMP API SGCD",
+   "type": "system.http",
+   "description": "Sistema conectado que incluye el host sgcd",
+   "apps": [
+    "CMP Firma RGPD"
+   ],
+   "baseUrl": "https://scgd.desa.mapfre.net:25012/",
+   "authType": "None"
+  },
+  "_a-0000eed3-5c82-8000-9cab-011c48011c48_18577200": {
+   "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18577200",
+   "name": "CMP DB Firma RGPD",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "Sistema conectado con la base de datos de AWS para el schema de cmp_firmargpd",
+   "apps": [
+    "CMP Firma RGPD"
+   ]
+  },
+  "_a-0000eed3-5c82-8000-9cab-011c48011c48_18578885": {
+   "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18578885",
+   "name": "CMP DB Plan Familia",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "Sistema conectado con la base de datos de AWS para el schema de cmp_planfamilia",
+   "apps": [
+    "CMP Plan Familia"
+   ]
+  },
+  "_a-0000eed3-5c82-8000-9cab-011c48011c48_18571321": {
+   "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18571321",
+   "name": "CMP DB Respuesta Componente",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "Sistema conectado con la base de datos de AWS para el schema de cmp_respcomponente",
+   "apps": [
+    "CMP Respuesta Componente"
+   ]
+  },
+  "_a-0000ef5f-2b36-8000-9cb2-011c48011c48_18948968": {
+   "uuid": "_a-0000ef5f-2b36-8000-9cb2-011c48011c48_18948968",
+   "name": "VENC MapfreDigitalHealth API PGO",
+   "type": "system.http",
+   "description": "VENC MapfreDigitalHealth API PGO\nhttps://clientes.private.pre.mapfredigitalhealth.com:26030/apipgo",
+   "apps": [
+    "CMP Vencimiento"
+   ],
+   "baseUrl": "https://clientes.private.pre.mapfredigitalhealth.com:26030",
+   "authType": "None"
+  },
+  "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17593762": {
+   "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17593762",
+   "name": "CMP API Webservices NSE",
+   "type": "system.http",
+   "description": "Sistema conectado para los servicios de NSE en VERTI",
+   "apps": [
+    "CMP Verti"
+   ],
+   "baseUrl": "https://webservices.desa.mapfre.net:25004",
+   "authType": "Basic"
+  },
+  "_a-0000ee2c-eaef-8000-9c9c-011c48011c48_17486776": {
+   "uuid": "_a-0000ee2c-eaef-8000-9c9c-011c48011c48_17486776",
+   "name": "CMP PlexusHost Token",
+   "type": "system.http",
+   "description": "Sistema conectado que obtiene el token de Plexus involucrados en la inducción a verti",
+   "apps": [
+    "CMP Verti"
+   ],
+   "baseUrl": "https://preprod.verti.es/plexus/rs/oauth2/1.0",
+   "authType": "Basic"
+  },
+  "_a-0000ea29-dd2e-8000-9c14-011c48011c48_7549457": {
+   "uuid": "_a-0000ea29-dd2e-8000-9c14-011c48011c48_7549457",
+   "name": "CMP_NeuronaVerti",
+   "type": "system.http",
+   "description": "Sistema conectado para el servicio Neurona . ",
+   "apps": [
+    "CMP Verti"
+   ],
+   "baseUrl": "https://neurona-pre.verti.es.mapfre.net:26017",
+   "authType": "None"
+  },
+  "_a-0000ee2c-eaef-8000-9c9c-011c48011c48_17517991": {
+   "uuid": "_a-0000ee2c-eaef-8000-9c9c-011c48011c48_17517991",
+   "name": "CMP PlexusHost Consultas",
+   "type": "system.http",
+   "description": "Sistema conectado de los servicios de Plexus involucrados en la inducción a Verti",
+   "apps": [
+    "CMP Verti"
+   ],
+   "baseUrl": "https://preprod.verti.es/plexus/rs/auth/1.0/terceros",
+   "authType": "None"
+  },
+  "_a-0000eed3-5c82-8000-9cab-011c48011c48_18381834": {
+   "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18381834",
+   "name": "CMP MapfreDigitalHealth",
+   "type": "system.http",
+   "description": "http://api-pgo-lb.clientes.pre.mapfredigitalhealth.com/swagger-ui/index.html",
+   "apps": [
+    "CMP Verti"
+   ],
+   "baseUrl": "https://clientes.private.pre.mapfredigitalhealth.com:26030",
+   "authType": "API Key"
+  },
+  "_a-0000eed3-5c82-8000-9cab-011c48011c48_18551036": {
+   "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18551036",
+   "name": "VERT ConexionWebApi",
+   "type": "system.http",
+   "description": "prueba loopback webapi",
+   "apps": [
+    "CMP Verti"
+   ],
+   "baseUrl": "https://mapfrespain-dev.appiancloud.com/suite/webapi/",
+   "authType": "API Key"
+  },
+  "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18670181": {
+   "uuid": "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18670181",
+   "name": "CMP PortalInterno Verti",
+   "type": "system.http",
+   "description": "Sistema conectado para el servicio de registrar vencimiento en Verti",
+   "apps": [
+    "CMP Verti"
+   ],
+   "baseUrl": "https://wportalinterno.desa.mapfre.net:25001",
+   "authType": "Basic"
+  },
+  "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19133746": {
+   "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19133746",
+   "name": "CMP_Postgres_Verti",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "CS de acceso a la BBDD de AWS",
+   "apps": [
+    "CMP Verti"
+   ]
+  },
+  "_a-0000efdc-ca1b-8000-9cba-011c48011c48_19520289": {
+   "uuid": "_a-0000efdc-ca1b-8000-9cba-011c48011c48_19520289",
+   "name": "CMP MapfreDigitalHealth SGC3",
+   "type": "system.http",
+   "description": "Sistema conectado para los nuevos servicios de registro de vencimientos en SGC 3",
+   "apps": [
+    "CMP Verti"
+   ],
+   "baseUrl": "https://clientes.private.pre.mapfredigitalhealth.com:26030",
+   "authType": "API Key"
+  },
+  "_a-0000f036-fd58-8000-9cc1-011c48011c48_19923160": {
+   "uuid": "_a-0000f036-fd58-8000-9cc1-011c48011c48_19923160",
+   "name": "CMP CNSLTAPOLIV2",
+   "type": "system.http",
+   "description": "Sistema conectado para los servicios de obtención de información de las pólizas alternativo al de NSE",
+   "apps": [
+    "CMP Verti"
+   ],
+   "baseUrl": "https://esb.desa.mapfre.net:25005",
+   "authType": "Basic"
+  },
+  "_a-0000ec55-424b-8000-9c7a-011c48011c48_14313543": {
+   "uuid": "_a-0000ec55-424b-8000-9c7a-011c48011c48_14313543",
+   "name": "VIDA API Life",
+   "type": "system.http",
+   "description": "https://webservices.pre.mapfre.net:26004/ -- APPRIMO",
+   "apps": [
+    "Comunes Vida"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/",
+   "authType": "Basic"
+  },
+  "_a-0000ec95-047c-8000-9c80-011c48011c48_15464255": {
+   "uuid": "_a-0000ec95-047c-8000-9c80-011c48011c48_15464255",
+   "name": "VIDA Aurora",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "",
+   "apps": [
+    "Comunes Vida"
+   ]
+  },
+  "_a-0000ebec-27b2-8000-9c65-011c48011c48_13038844": {
+   "uuid": "_a-0000ebec-27b2-8000-9c65-011c48011c48_13038844",
+   "name": "CDD cdd_consultadescargadocs AWS",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "Sistema conectado con la base de datos de AWS para el esquema de cdd_consultadescargadocs",
+   "apps": [
+    "Consulta Descarga Documentos CMP"
+   ]
+  },
+  "_a-0000ec95-047c-8000-9c80-011c48011c48_14896070": {
+   "uuid": "_a-0000ec95-047c-8000-9c80-011c48011c48_14896070",
+   "name": "CDD WEB SERVICE TEST",
+   "type": "system.http",
+   "description": "Temporal para probar contra test",
+   "apps": [
+    "Consulta Descarga Documentos CMP"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/",
+   "authType": "Basic"
+  },
+  "_a-0000e780-b3e2-8000-9bb1-011c48011c48_75025": {
+   "uuid": "_a-0000e780-b3e2-8000-9bb1-011c48011c48_75025",
+   "name": "Sist_Conectacto_BDEC",
+   "type": "system.http",
+   "description": "Sistema conectado BDEC",
+   "apps": [
+    "CST_MAPFRE"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004",
+   "authType": "Basic"
+  },
+  "_a-0000eb7f-c182-8000-9c48-011c48011c48_11675930": {
+   "uuid": "_a-0000eb7f-c182-8000-9c48-011c48011c48_11675930",
+   "name": "CDME Descarga Excel",
+   "type": "system.http",
+   "description": "Sistema conectado para la descarga de Excel en un click",
+   "apps": [
+    "Cuadro De Mandos EDA"
+   ],
+   "baseUrl": "https://mapfrespain-dev.appiancloud.com/suite/webapi/crear-excel",
+   "authType": "API Key"
+  },
+  "_a-0000ef5f-2b36-8000-9cb2-011c48011c48_18926632": {
+   "uuid": "_a-0000ef5f-2b36-8000-9cb2-011c48011c48_18926632",
+   "name": "PADS Mediadores",
+   "type": "system.http",
+   "description": "Sistema conectado para el microservicio de mediadores",
+   "apps": [
+    "CVM2"
+   ],
+   "baseUrl": "https://esp-cvm2-mediadores-backend.core.pfadmsop.dev.es.plataforma.aws.mapfre.net:25039",
+   "authType": "None"
+  },
+  "_a-0000ef5f-2b36-8000-9cb2-011c48011c48_18929125": {
+   "uuid": "_a-0000ef5f-2b36-8000-9cb2-011c48011c48_18929125",
+   "name": "PADS Gestión BFF",
+   "type": "system.http",
+   "description": "Sistema conectado que apunta a Gestión BFF",
+   "apps": [
+    "CVM2"
+   ],
+   "baseUrl": "https://esp-cvm2-gestion-bff.core.pfadmsop.dev.es.plataforma.aws.mapfre.net:25038",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000ef5f-2b36-8000-9cb2-011c48011c48_18944260": {
+   "uuid": "_a-0000ef5f-2b36-8000-9cb2-011c48011c48_18944260",
+   "name": "PADS DB CVM2 PRC",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "Sistema conectado con la base de datos de AWS para el schema de cvm2_prc",
+   "apps": [
+    "CVM2"
+   ]
+  },
+  "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19085371": {
+   "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19085371",
+   "name": "PADS Estructura Comercial",
+   "type": "system.http",
+   "description": "Sistema conectado que apunta a la estructura comercial",
+   "apps": [
+    "CVM2"
+   ],
+   "baseUrl": "https://esp-cvm2-estructuracomercial-backend.core.pfadmsop.dev.es.plataforma.aws.mapfre.net:25041",
+   "authType": "None"
+  },
+  "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19085624": {
+   "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19085624",
+   "name": "PADS Empleados Comerciales",
+   "type": "system.http",
+   "description": "Sistema conectado que apunta a empleados comerciales",
+   "apps": [
+    "CVM2"
+   ],
+   "baseUrl": "https://esp-cvm2-empleadoscomerciales-backend.core.pfadmsop.dev.es.plataforma.aws.mapfre.net:250544",
+   "authType": "None"
+  },
+  "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19085778": {
+   "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19085778",
+   "name": "PADS Ges API",
+   "type": "system.http",
+   "description": "Sistema conectado que apunta a la API de gestión",
+   "apps": [
+    "CVM2"
+   ],
+   "baseUrl": "https://esp-cvm2-ges-api.core.pfadmsop.dev.es.plataforma.aws.mapfre.net:25045",
+   "authType": "None"
+  },
+  "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19085904": {
+   "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19085904",
+   "name": "PADS Med API",
+   "type": "system.http",
+   "description": "Sistema conectado que apunta a la API de mediadiores",
+   "apps": [
+    "CVM2"
+   ],
+   "baseUrl": "https://esp-cvm2-med-api.core.pfadmsop.dev.es.plataforma.aws.mapfre.net:25046",
+   "authType": "None"
+  },
+  "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19086021": {
+   "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19086021",
+   "name": "PADS Emc API",
+   "type": "system.http",
+   "description": "Sistema conectado que apunta a la API de empleados comerciales",
+   "apps": [
+    "CVM2"
+   ],
+   "baseUrl": "https://esp-cvm2-emc-api.core.pfadmsop.dev.es.plataforma.aws.mapfre.net:25047",
+   "authType": "None"
+  },
+  "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19086139": {
+   "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19086139",
+   "name": "PADS Esc API",
+   "type": "system.http",
+   "description": "Sistema conectado que apunta a la API de estructura comercial",
+   "apps": [
+    "CVM2"
+   ],
+   "baseUrl": "https://esp-cvm2-esc-api.core.pfadmsop.dev.es.plataforma.aws.mapfre.net:25048",
+   "authType": "None"
+  },
+  "_a-0000ec84-a247-8000-9c7f-011c48011c48_14681204": {
+   "uuid": "_a-0000ec84-a247-8000-9c7f-011c48011c48_14681204",
+   "name": "DPVE_SCGD",
+   "type": "system.http",
+   "description": "scgd.pre.mapfre.net",
+   "apps": [
+    "DPVE_MAPFRE"
+   ],
+   "baseUrl": "https://scgd.pre.mapfre.net:26012",
+   "authType": "Basic"
+  },
+  "_a-0000ec84-a247-8000-9c7f-011c48011c48_14685567": {
+   "uuid": "_a-0000ec84-a247-8000-9c7f-011c48011c48_14685567",
+   "name": "DPVE Clients EDGE",
+   "type": "system.http",
+   "description": "Sistema que conecta con el API EDGE de Clientes",
+   "apps": [
+    "DPVE_MAPFRE"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004",
+   "authType": "Basic"
+  },
+  "_a-0000ec2d-c808-8000-9c77-011c48011c48_13930471": {
+   "uuid": "_a-0000ec2d-c808-8000-9c77-011c48011c48_13930471",
+   "name": "EC Sistema Conectado BD",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Sistema conectado a la base de datos de Mapfre",
+   "apps": [
+    "E-CLAIMS"
+   ]
+  },
+  "_a-0000ec31-13b0-8000-9c78-011c48011c48_14255544": {
+   "uuid": "_a-0000ec31-13b0-8000-9c78-011c48011c48_14255544",
+   "name": "EC API Webservices",
+   "type": "system.http",
+   "description": "Sistema conectado utilizado para consumir los servicos del host webservices por la aplicación EC",
+   "apps": [
+    "E-CLAIMS"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/",
+   "authType": "Basic"
+  },
+  "_a-0000eeb5-6054-8000-9ca3-011c48011c48_18092680": {
+   "uuid": "_a-0000eeb5-6054-8000-9ca3-011c48011c48_18092680",
+   "name": "EC API WPortalInterno",
+   "type": "system.http",
+   "description": "Sistema conectado con el host wportalinterno e incluye las credenciales del usuario APP-ECAPPIAN",
+   "apps": [
+    "E-CLAIMS"
+   ],
+   "baseUrl": "https://wportalinterno.pre.mapfre.net:26001/",
+   "authType": "Basic"
+  },
+  "_a-0000eb24-e653-8000-9c34-011c48011c48_11137751": {
+   "uuid": "_a-0000eb24-e653-8000-9c34-011c48011c48_11137751",
+   "name": "ECV Base de datos principal",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Conexión a la BD principal de ECV",
+   "apps": [
+    "ECV Emisión de Colectivos Vida"
+   ]
+  },
+  "_a-0000eba7-4ece-8000-9c59-011c48011c48_12347778": {
+   "uuid": "_a-0000eba7-4ece-8000-9c59-011c48011c48_12347778",
+   "name": "ECV Soa7",
+   "type": "system.http",
+   "description": "Sistema conectado para llamar a los servicios del endpoint soa7.{entorno}.mapfre.net",
+   "apps": [
+    "ECV Emisión de Colectivos Vida"
+   ],
+   "baseUrl": "https://soa7.desa.mapfre.net:25006/",
+   "authType": "None"
+  },
+  "_a-0000ebd5-83e5-8000-9c41-011c48011c48_1165166": {
+   "uuid": "_a-0000ebd5-83e5-8000-9c41-011c48011c48_1165166",
+   "name": "ECV Webservices",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "ECV Emisión de Colectivos Vida"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/",
+   "authType": "Basic"
+  },
+  "_a-0000eaca-9685-8000-9c24-011c48011c48_9316766": {
+   "uuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9316766",
+   "name": "EDA Schema EDA",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Sistema conectado para realizar la conexión con la BBDD de EDA",
+   "apps": [
+    "EDA Estafeta Digital de Anulación"
+   ]
+  },
+  "_a-0000eaf3-a06d-8000-9c28-011c48011c48_9841068": {
+   "uuid": "_a-0000eaf3-a06d-8000-9c28-011c48011c48_9841068",
+   "name": "EDA API WPortalInterno",
+   "type": "system.http",
+   "description": "Sistema conectado con la base de datos de WPortalInerno",
+   "apps": [
+    "EDA Estafeta Digital de Anulación"
+   ],
+   "baseUrl": "https://wportalinterno.desa.mapfre.net:25001",
+   "authType": "Basic"
+  },
+  "_a-0000eaf3-a06d-8000-9c28-011c48011c48_9879317": {
+   "uuid": "_a-0000eaf3-a06d-8000-9c28-011c48011c48_9879317",
+   "name": "EDA API Webservices",
+   "type": "system.http",
+   "description": "Sistema conectado utilizado para consumir los servicos del host webservices por la aplicación EDA",
+   "apps": [
+    "EDA Estafeta Digital de Anulación"
+   ],
+   "baseUrl": "https://webservices.desa.mapfre.net:25004/",
+   "authType": "Basic"
+  },
+  "_a-0000eaf3-a06d-8000-9c28-011c48011c48_9881233": {
+   "uuid": "_a-0000eaf3-a06d-8000-9c28-011c48011c48_9881233",
+   "name": "EDA API ESB",
+   "type": "system.http",
+   "description": "Sistema conectado utilizado para consumir los servicos del host esb por la aplicación EDA",
+   "apps": [
+    "EDA Estafeta Digital de Anulación"
+   ],
+   "baseUrl": "https://esb.desa.mapfre.net:25005/",
+   "authType": "None"
+  },
+  "_a-0000eaf3-a06d-8000-9c28-011c48011c48_9936847": {
+   "uuid": "_a-0000eaf3-a06d-8000-9c28-011c48011c48_9936847",
+   "name": "EDA API Webservices Vida",
+   "type": "system.http",
+   "description": "Sistema conectado utilizado para consumir los servicos del host webservices de Vida por la aplicación EDA",
+   "apps": [
+    "EDA Estafeta Digital de Anulación"
+   ],
+   "baseUrl": "https://webservices.desa.mapfre.net:25004/",
+   "authType": "Basic"
+  },
+  "_a-0000eb01-1576-8000-9c2c-011c48011c48_10017895": {
+   "uuid": "_a-0000eb01-1576-8000-9c2c-011c48011c48_10017895",
+   "name": "EDA API Host",
+   "type": "system.http",
+   "description": "Sistema conectado utilizado para consumir los servicos del host API por la aplicación EDA",
+   "apps": [
+    "EDA Estafeta Digital de Anulación"
+   ],
+   "baseUrl": "https://apisbint.mapfre.net:26003/",
+   "authType": "None"
+  },
+  "_a-0000eb01-1576-8000-9c2c-011c48011c48_10241429": {
+   "uuid": "_a-0000eb01-1576-8000-9c2c-011c48011c48_10241429",
+   "name": "EDA API CORE7",
+   "type": "system.http",
+   "description": "Sistema conectado para los servicios de API Core7",
+   "apps": [
+    "EDA Estafeta Digital de Anulación"
+   ],
+   "baseUrl": "https://core7.desa.mapfre.net:25007/",
+   "authType": "None"
+  },
+  "_a-0000eb24-e653-8000-9c34-011c48011c48_11190578": {
+   "uuid": "_a-0000eb24-e653-8000-9c34-011c48011c48_11190578",
+   "name": "EDA API Digital",
+   "type": "system.http",
+   "description": "Sistema conectado para la API digital vida (mapfredigitalhealth)",
+   "apps": [
+    "EDA Estafeta Digital de Anulación"
+   ],
+   "baseUrl": "https://api.digital.dev.mapfredigitalhealth.com",
+   "authType": "API Key"
+  },
+  "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19171468": {
+   "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19171468",
+   "name": "EDA API Valor Cliente",
+   "type": "system.http",
+   "description": "Sistema conectado para consumir los servicios de la API Valor Cliente",
+   "apps": [
+    "EDA Estafeta Digital de Anulación"
+   ],
+   "baseUrl": "https://cltv.atenea.es.dataprod.dev.emea.aws.mapfre.net:25052/api/1.0",
+   "authType": "API Key"
+  },
+  "_a-0000eb7f-c182-8000-9c48-011c48011c48_11628800": {
+   "uuid": "_a-0000eb7f-c182-8000-9c48-011c48011c48_11628800",
+   "name": "EDPA Schema EDPA",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Sistema conectado para realizar la conexión con la BBDD de EDPA",
+   "apps": [
+    "EDPA Estafeta Digital de Prestaciones Automaticas"
+   ]
+  },
+  "_a-0000eba7-4ece-8000-9c59-011c48011c48_12357889": {
+   "uuid": "_a-0000eba7-4ece-8000-9c59-011c48011c48_12357889",
+   "name": "EDPA API Webservices",
+   "type": "system.http",
+   "description": "Sistema conectado utilizado para consumir los servicos del host webservices por la aplicación EDPA",
+   "apps": [
+    "EDPA Estafeta Digital de Prestaciones Automaticas"
+   ],
+   "baseUrl": "https://webservices.desa.mapfre.net:25004/",
+   "authType": "Basic"
+  },
+  "_a-0000ebb9-d1d3-8000-9c5d-011c48011c48_12518578": {
+   "uuid": "_a-0000ebb9-d1d3-8000-9c5d-011c48011c48_12518578",
+   "name": "EDPA API ESB",
+   "type": "system.http",
+   "description": "Sistema conectado para ESB de EDPA",
+   "apps": [
+    "EDPA Estafeta Digital de Prestaciones Automaticas"
+   ],
+   "baseUrl": "https://esb.pre.mapfre.net:26005/",
+   "authType": "None"
+  },
+  "_a-0000ebb9-d1d3-8000-9c5d-011c48011c48_12520330": {
+   "uuid": "_a-0000ebb9-d1d3-8000-9c5d-011c48011c48_12520330",
+   "name": "EDPA API CORE7",
+   "type": "system.http",
+   "description": "EDPA Sistema conectado para Core7",
+   "apps": [
+    "EDPA Estafeta Digital de Prestaciones Automaticas"
+   ],
+   "baseUrl": "https://core7.desa.mapfre.net:25007/",
+   "authType": "Basic"
+  },
+  "_a-0000e90a-e4b4-8000-9bfa-011c48011c48_4169994": {
+   "uuid": "_a-0000e90a-e4b4-8000-9bfa-011c48011c48_4169994",
+   "name": "FAS API MtC",
+   "type": "system.http",
+   "description": "Sistema conectado que contiene la URL base de los diversos servicios que se van a utilizar",
+   "apps": [
+    "FAS Ficha Ampliada de Socio"
+   ],
+   "baseUrl": "https://api.tecuidamos.pre.mapfredigitalhealth.com/tecuidamos",
+   "authType": "None"
+  },
+  "_a-0000ebf6-689c-8000-9c69-011c48011c48_13357669": {
+   "uuid": "_a-0000ebf6-689c-8000-9c69-011c48011c48_13357669",
+   "name": "FAS API OneTrust Login",
+   "type": "system.http",
+   "description": "Sistema conectado para OneTrust",
+   "apps": [
+    "FAS Ficha Ampliada de Socio"
+   ],
+   "baseUrl": "https://apisb.mapfre.com/srv/api/onetrust",
+   "authType": "Basic"
+  },
+  "_a-0000ec55-424b-8000-9c7a-011c48011c48_14307322": {
+   "uuid": "_a-0000ec55-424b-8000-9c7a-011c48011c48_14307322",
+   "name": "FAS Schema FAS",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Sistema conectado para realizar la conexión con la BBDD de FAS",
+   "apps": [
+    "FAS Ficha Ampliada de Socio"
+   ]
+  },
+  "_a-0000ec95-047c-8000-9c80-011c48011c48_14723174": {
+   "uuid": "_a-0000ec95-047c-8000-9c80-011c48011c48_14723174",
+   "name": "FAS Schema Recomendaciones",
+   "type": "system.http",
+   "description": "Sistema conectado para apuntar a los servicios correspondientes de las recomendaciones",
+   "apps": [
+    "FAS Ficha Ampliada de Socio"
+   ],
+   "baseUrl": "https://apicontext.tecuidamos.pre.mapfredigitalhealth.com/tecuidamos/",
+   "authType": "None"
+  },
+  "_a-0000eaca-9685-8000-9c24-011c48011c48_9465039": {
+   "uuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9465039",
+   "name": "GMP Sistema Conectado BD",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Sistema conectado a la base de datos de Mapfre AWS",
+   "apps": [
+    "GMP GRIMPER"
+   ]
+  },
+  "_a-0000eaf3-a06d-8000-9c28-011c48011c48_9815937": {
+   "uuid": "_a-0000eaf3-a06d-8000-9c28-011c48011c48_9815937",
+   "name": "GMP CS Gestor Documental",
+   "type": "system.http",
+   "description": "Sistema conectado de Grimper para Gestor Documental",
+   "apps": [
+    "GMP GRIMPER"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/",
+   "authType": "Basic"
+  },
+  "_a-0000eaca-9685-8000-9c24-011c48011c48_9522959": {
+   "uuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9522959",
+   "name": "ISS Services SGO",
+   "type": "system.http",
+   "description": "Sistema conectado utilizado para consumir los servicos creados para SGO",
+   "apps": [
+    "Integraciones Sevicios SGO"
+   ],
+   "baseUrl": "https://wportalinterno.desa.mapfre.net:25001/serviciossgo_bbe-web/",
+   "authType": "Basic"
+  },
+  "_a-0000ec31-13b0-8000-9c78-011c48011c48_14054884": {
+   "uuid": "_a-0000ec31-13b0-8000-9c78-011c48011c48_14054884",
+   "name": "ISS Services Santander",
+   "type": "system.http",
+   "description": "Sistema conectado para las integraciones con Santander",
+   "apps": [
+    "Integraciones Sevicios SGO"
+   ],
+   "baseUrl": "https://apisbint.mapfre.net:26003/esp/srv/ext/api/sgo-notifier/1.0/send",
+   "authType": "Basic"
+  },
+  "_a-0000ec31-13b0-8000-9c78-011c48011c48_14173398": {
+   "uuid": "_a-0000ec31-13b0-8000-9c78-011c48011c48_14173398",
+   "name": "ISS Services Caixa",
+   "type": "system.http",
+   "description": "Sistema conectado para Caixa / Bankia",
+   "apps": [
+    "Integraciones Sevicios SGO"
+   ],
+   "baseUrl": "https://apisbint.mapfre.net:26003/srv/api/GestionarNotasSolicitudesSGOPSBankia",
+   "authType": "None"
+  },
+  "_a-0000eeb5-6054-8000-9ca3-011c48011c48_18083392": {
+   "uuid": "_a-0000eeb5-6054-8000-9ca3-011c48011c48_18083392",
+   "name": "ISS Services REEF",
+   "type": "system.http",
+   "description": "Sistema conectado para conectarnos a los servicios de REEF.",
+   "apps": [
+    "Integraciones Sevicios SGO"
+   ],
+   "baseUrl": "https://api-claims.dev.reef.health.es.mapfre.com",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000ec95-047c-8000-9c80-011c48011c48_15004979": {
+   "uuid": "_a-0000ec95-047c-8000-9c80-011c48011c48_15004979",
+   "name": "MBM Graph API",
+   "type": "system.http",
+   "description": "Sistema Conectado para establecer conexión con Graph API",
+   "apps": [
+    "Mail Box Manager"
+   ],
+   "baseUrl": "https://graph.microsoft.com/v1.0",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000ec95-047c-8000-9c80-011c48011c48_15018382": {
+   "uuid": "_a-0000ec95-047c-8000-9c80-011c48011c48_15018382",
+   "name": "MBM DB AWS",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "Sistema conectado con la base de datos de AWS para el schema mbm_mailboxmanager",
+   "apps": [
+    "Mail Box Manager"
+   ]
+  },
+  "_a-0000eed3-5c82-8000-9cab-011c48011c48_18464114": {
+   "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18464114",
+   "name": "MU API Webservices APPNCVI",
+   "type": "system.http",
+   "description": "Sistema conectado utilizado para consumir los servicos del host webservices con el usuario APPNCVI",
+   "apps": [
+    "Minsait Utilities"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/",
+   "authType": "Basic"
+  },
+  "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19101477": {
+   "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19101477",
+   "name": "MU MapfreDigitalHealth",
+   "type": "system.http",
+   "description": "MU MapfreDigitalHealth",
+   "apps": [
+    "Minsait Utilities"
+   ],
+   "baseUrl": "https://clientes.private.pre.mapfredigitalhealth.com:26030",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000ebb9-d1d3-8000-9c5d-011c48011c48_12488057": {
+   "uuid": "_a-0000ebb9-d1d3-8000-9c5d-011c48011c48_12488057",
+   "name": "PAI Base de datos principal",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Conexión a la BD principal de PAI",
+   "apps": [
+    "PAI Programa Automatización Incentivos"
+   ]
+  },
+  "_a-0000ebf6-689c-8000-9c69-011c48011c48_13354783": {
+   "uuid": "_a-0000ebf6-689c-8000-9c69-011c48011c48_13354783",
+   "name": "PAI Webservices",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "PAI Programa Automatización Incentivos"
+   ],
+   "baseUrl": "https://webservices.desa.mapfre.net:25004/",
+   "authType": "Basic"
+  },
+  "_a-0000ebf6-689c-8000-9c69-011c48011c48_13379215": {
+   "uuid": "_a-0000ebf6-689c-8000-9c69-011c48011c48_13379215",
+   "name": "PAI CVM",
+   "type": "system.http",
+   "description": "Sistema conectado de CVM",
+   "apps": [
+    "PAI Programa Automatización Incentivos"
+   ],
+   "baseUrl": "http://ses000a107158.es.mapfre.net:25031/",
+   "authType": "Basic"
+  },
+  "_a-0000eebe-52f3-8000-9ca6-011c48011c48_18307535": {
+   "uuid": "_a-0000eebe-52f3-8000-9ca6-011c48011c48_18307535",
+   "name": "PAI_SistTest",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "PAI Programa Automatización Incentivos"
+   ],
+   "baseUrl": "https://ackñaisfñkasdñfk",
+   "authType": "Basic"
+  },
+  "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19330882": {
+   "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19330882",
+   "name": "PAI Denodo BI Comercial",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "PAI Programa Automatización Incentivos"
+   ],
+   "baseUrl": "https://int.denodo.inf.es.mapfre.net:25051",
+   "authType": "Basic"
+  },
+  "_a-0000e700-629a-8000-9bc5-011c48011c48_2019184": {
+   "uuid": "_a-0000e700-629a-8000-9bc5-011c48011c48_2019184",
+   "name": "PGM Health API",
+   "type": "system.http",
+   "description": "Contiene información relativa a pólizas de salud (consulta, tarificación)\n\nScope: esp:health/commercialization:simulation esp:health/commercialization:policy",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://apisb.mapfre.com/esp/srv/api/health/1.0",
+   "authType": "None"
+  },
+  "_a-0000e700-629a-8000-9bc5-011c48011c48_2025060": {
+   "uuid": "_a-0000e700-629a-8000-9bc5-011c48011c48_2025060",
+   "name": "PGM Client API",
+   "type": "system.http",
+   "description": "Contiene información relativa a clientes (consulta, ficha cliente)\n\nScope: esp:clients/basicInfo:read esp:clients/extendedInfo esp:clients/address esp:clients/contactMethod",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://apisb.mapfre.net:25003/esp/srv/api/clients/1.0",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000e7bf-b70c-8000-9bba-011c48011c48_254442": {
+   "uuid": "_a-0000e7bf-b70c-8000-9bba-011c48011c48_254442",
+   "name": "PGM Citrix API",
+   "type": "system.http",
+   "description": "Conexión con la lanzadera de aplicaciones del Portal de Mediadores\n\nEndpoint PRE: https://virtualapps.pre.mapfre.net:26009/Citrix/APIWeb/\nEndpoint PRO: https://virtualappspro.mapfre.net:27010/Citrix/APIWeb/",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://virtualapps.pre.mapfre.net:26009/Citrix/APIWeb/",
+   "authType": "None"
+  },
+  "_a-0000e803-0f0c-8000-9bc6-011c48011c48_628232": {
+   "uuid": "_a-0000e803-0f0c-8000-9bc6-011c48011c48_628232",
+   "name": "PGM Life Risk API",
+   "type": "system.http",
+   "description": "Connected sistem del API de Life Risk\nscopes: esp:life/commercialization ,  esp:life/commercialization:delete , esp:life/commercialization:simulation , esp:life/post-commercialization",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004",
+   "authType": "Basic"
+  },
+  "_a-0000e8c2-edcd-8000-9be9-011c48011c48_2798911": {
+   "uuid": "_a-0000e8c2-edcd-8000-9be9-011c48011c48_2798911",
+   "name": "PGM Clients EDGE",
+   "type": "system.http",
+   "description": "Sistema que conecta con el API EDGE de Clientes",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004",
+   "authType": "Basic"
+  },
+  "_a-0000e8dd-b080-8000-9bec-011c48011c48_3014051": {
+   "uuid": "_a-0000e8dd-b080-8000-9bec-011c48011c48_3014051",
+   "name": "PGM iMediador EDGE",
+   "type": "system.http",
+   "description": "Sistema conectado con la API Edge que proporciona los servicios de iMediador",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://wportalinterno.pre.mapfre.net:26001/iMediador_be-web/sgc-imediador",
+   "authType": "Basic"
+  },
+  "_a-0000e8ef-0bc1-8000-9bef-011c48011c48_3325825": {
+   "uuid": "_a-0000e8ef-0bc1-8000-9bef-011c48011c48_3325825",
+   "name": "PGM BDEC API",
+   "type": "system.http",
+   "description": "Conexión con la API de BDEC que permite la consulta de claves y estructuras comerciales de un agente",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://wportalinterno.pre.mapfre.net:26001",
+   "authType": "Basic"
+  },
+  "_a-0000e8f9-9770-8000-9bf2-011c48011c48_3546395": {
+   "uuid": "_a-0000e8f9-9770-8000-9bf2-011c48011c48_3546395",
+   "name": "PGM_Comercialización_Seguros_NSE",
+   "type": "system.http",
+   "description": "Gestionar Comercialización Seguros NSE (REST) [1.0] ",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "http://webservices.desa.mapfre.net:25004/",
+   "authType": "None"
+  },
+  "_a-0000e901-9c41-8000-9bf7-011c48011c48_3590265": {
+   "uuid": "_a-0000e901-9c41-8000-9bf7-011c48011c48_3590265",
+   "name": "PGM Clients EDGE Recibos",
+   "type": "system.http",
+   "description": "Sistema que conecta la máquina del API EDGE de Clientes que contiene la información de los recibos",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "http://denodo-prep.es.mapfre.net:26014",
+   "authType": "Basic"
+  },
+  "_a-0000e90a-e4b4-8000-9bfa-011c48011c48_4144472": {
+   "uuid": "_a-0000e90a-e4b4-8000-9bfa-011c48011c48_4144472",
+   "name": "PGM_SCDG",
+   "type": "system.http",
+   "description": "scgd.pre.mapfre.net",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://scgd.pre.mapfre.net:26012",
+   "authType": "Basic"
+  },
+  "_a-0000e92b-23c4-8000-9c00-011c48011c48_4472587": {
+   "uuid": "_a-0000e92b-23c4-8000-9c00-011c48011c48_4472587",
+   "name": "PGM API WLCatalog",
+   "type": "system.http",
+   "description": "Sistema conectado para el acceso al catálogo ARQ_CATALOG_SMEDWeb/sca/wICatalog",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://esb.pre.mapfre.net:26005/ARQ_CATALOG_SMEDWeb/sca/wICatalog",
+   "authType": "None"
+  },
+  "_a-0000e954-c778-8000-9c03-011c48011c48_4834608": {
+   "uuid": "_a-0000e954-c778-8000-9c03-011c48011c48_4834608",
+   "name": "PGM WMAPFRE",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://wmapfre.pre.mapfre.net:26016",
+   "authType": "Basic"
+  },
+  "_a-0000e954-c778-8000-9c03-011c48011c48_5413311": {
+   "uuid": "_a-0000e954-c778-8000-9c03-011c48011c48_5413311",
+   "name": "PGM API Portal Interno",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://wportalinterno.pre.mapfre.net:26001/",
+   "authType": "Basic"
+  },
+  "_a-0000e99e-2b76-8000-9c06-011c48011c48_6243510": {
+   "uuid": "_a-0000e99e-2b76-8000-9c06-011c48011c48_6243510",
+   "name": "PGM_WebApi_SGC_Prueba",
+   "type": "system.http",
+   "description": "Prueba para SGC",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": null,
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000e9c5-be46-8000-9c07-011c48011c48_6415843": {
+   "uuid": "_a-0000e9c5-be46-8000-9c07-011c48011c48_6415843",
+   "name": "PGM Health API 2.0",
+   "type": "system.http",
+   "description": "\"esp:health/commercialization:insuranceApplication\",\"esp:health/commercialization:policy\",\n\"esp:health/commercialization:simulation\",\"esp:health/post-commercialization\",\n\"esp:health/post-commercialization:cancelEndorsement\",\n",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://apisb.mapfre.com/esp/srv/api/health/2.0",
+   "authType": "None"
+  },
+  "_a-0000e9c5-be46-8000-9c07-011c48011c48_6476028": {
+   "uuid": "_a-0000e9c5-be46-8000-9c07-011c48011c48_6476028",
+   "name": "PGM_WebAPi_Poliza_Prueba",
+   "type": "system.http",
+   "description": "Prueba para la web api de detalle poliza",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": null,
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000e9c5-be46-8000-9c07-011c48011c48_6513281": {
+   "uuid": "_a-0000e9c5-be46-8000-9c07-011c48011c48_6513281",
+   "name": "PGM_NeuronaVerti",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://neurona-pre.verti.es.mapfre.net:26017",
+   "authType": "None"
+  },
+  "_a-0000e9c5-be46-8000-9c07-011c48011c48_6518079": {
+   "uuid": "_a-0000e9c5-be46-8000-9c07-011c48011c48_6518079",
+   "name": "PGM_ConectaOrange",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://bwctc.conecta.orange.es",
+   "authType": "None"
+  },
+  "_a-0000e9e3-1b2e-8000-9c0e-011c48011c48_6794355": {
+   "uuid": "_a-0000e9e3-1b2e-8000-9c0e-011c48011c48_6794355",
+   "name": "PGM_SGC3.0",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://sgc.es.pre.azure.mapfre.com",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000ea07-f170-8000-9c11-011c48011c48_7184167": {
+   "uuid": "_a-0000ea07-f170-8000-9c11-011c48011c48_7184167",
+   "name": "PGM_KeyVault_SGC3.0",
+   "type": "system.http",
+   "description": "Sistema para conexión con el KeyVault de SGC3.0",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://sgc3-pre-keyvault.vault.azure.net/",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000eb13-c2c5-8000-9c30-011c48011c48_10506392": {
+   "uuid": "_a-0000eb13-c2c5-8000-9c30-011c48011c48_10506392",
+   "name": "PGM PostgreSQL AWS",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "CS de acceso a la BBDD de AWS",
+   "apps": [
+    "PGM_MAPFRE"
+   ]
+  },
+  "_a-0000ec66-e1cc-8000-9c7b-011c48011c48_14453190": {
+   "uuid": "_a-0000ec66-e1cc-8000-9c7b-011c48011c48_14453190",
+   "name": "PGM Pre-registro ACI",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://apisb.mapfre.net:25003/esp/srv/api/aci/1.0/seguridad/login",
+   "authType": "Basic"
+  },
+  "_a-0000ec95-047c-8000-9c80-011c48011c48_14803850": {
+   "uuid": "_a-0000ec95-047c-8000-9c80-011c48011c48_14803850",
+   "name": "PGM Integraciones",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://apisb.mapfre.net:25003/",
+   "authType": "None"
+  },
+  "_a-0000ec95-047c-8000-9c80-011c48011c48_14806256": {
+   "uuid": "_a-0000ec95-047c-8000-9c80-011c48011c48_14806256",
+   "name": "PGM MotorAPI Login",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://apisb.mapfre.net:25003/auth/authorize/login",
+   "authType": "Basic"
+  },
+  "_a-0000ec95-047c-8000-9c80-011c48011c48_15214137": {
+   "uuid": "_a-0000ec95-047c-8000-9c80-011c48011c48_15214137",
+   "name": "PGM_MapfreDigitalHealth",
+   "type": "system.http",
+   "description": "http://api-pgo-lb.clientes.pre.mapfredigitalhealth.com/swagger-ui/index.html",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://clientes.private.pre.mapfredigitalhealth.com:26030",
+   "authType": "None"
+  },
+  "_a-0000ecf1-045c-8000-9c82-011c48011c48_15841658": {
+   "uuid": "_a-0000ecf1-045c-8000-9c82-011c48011c48_15841658",
+   "name": "PGM PGM Life Risk API DUPLICADO",
+   "type": "system.http",
+   "description": "Sistema conectado encargado para el API Vida",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004",
+   "authType": "Basic"
+  },
+  "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17617974": {
+   "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17617974",
+   "name": "PGM_iMediadorEDGE_AltaNGA",
+   "type": "system.http",
+   "description": "Sistema conectado que se usa para dar el alta de un nga",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://wportalinterno.pre.mapfre.net:26001/sgc_bbe-web/sgc/",
+   "authType": "Basic"
+  },
+  "_a-0000eed3-5c82-8000-9cab-011c48011c48_18394700": {
+   "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18394700",
+   "name": "PGM loopback appian",
+   "type": "system.http",
+   "description": "Sistema conectado que apunta al loopback de pgm",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://mapfrespain-dev.appiancloud.com/suite/webapi/",
+   "authType": "API Key"
+  },
+  "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18852332": {
+   "uuid": "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18852332",
+   "name": "PGM BFF",
+   "type": "system.http",
+   "description": "Sistema conectado que apunta al BFF",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://api-pgm.digital.private.pre.mapfredigitalhealth.com:26033",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19073697": {
+   "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19073697",
+   "name": "PGM BFF TOKEN",
+   "type": "system.http",
+   "description": "Sistema conectado para la obtención del token necesario para los servicios del BFF",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://apioauth.platform.pre.mapfredigitalhealth.com",
+   "authType": "None"
+  },
+  "_a-0000efcc-889e-8000-9cb7-011c48011c48_19426923": {
+   "uuid": "_a-0000efcc-889e-8000-9cb7-011c48011c48_19426923",
+   "name": "PGM_prueba_BFF_DPVE",
+   "type": "system.http",
+   "description": "Pendiente revisar ",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://api-pgm.digital.private.pre.mapfredigitalhealth.com:26033",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000eb01-1576-8000-9c2c-011c48011c48_10049900": {
+   "uuid": "_a-0000eb01-1576-8000-9c2c-011c48011c48_10049900",
+   "name": "PGM Home API",
+   "type": "system.http",
+   "description": "Sistema conectado para acceder al API Home",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://www.apisb.mapfre.net:25003/esp/srv/api/home/2.0",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000eb01-1576-8000-9c2c-011c48011c48_10099424": {
+   "uuid": "_a-0000eb01-1576-8000-9c2c-011c48011c48_10099424",
+   "name": "PGM Motor API",
+   "type": "system.http",
+   "description": "Sistema conectado para las llamadas del api motor",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://apisb.mapfre.net:25003/srv/api/1.0/motor/",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000eb66-6283-8000-9c3d-011c48011c48_11358941": {
+   "uuid": "_a-0000eb66-6283-8000-9c3d-011c48011c48_11358941",
+   "name": "PGM MotorClaimsAPI",
+   "type": "system.http",
+   "description": "Sistema conectado para acceder a las prestaciones del api motor",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://apisb.mapfre.net:25003/esp/api/auto/1.0",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000ec95-047c-8000-9c80-011c48011c48_14973352": {
+   "uuid": "_a-0000ec95-047c-8000-9c80-011c48011c48_14973352",
+   "name": "PGM Core teCuidamos",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://apisb.mapfre.net:25003",
+   "authType": "None"
+  },
+  "_a-0000edf5-ee9a-8000-9c96-011c48011c48_17213380": {
+   "uuid": "_a-0000edf5-ee9a-8000-9c96-011c48011c48_17213380",
+   "name": "PGM Prueba duplicado recibos",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004",
+   "authType": "Basic"
+  },
+  "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17610205": {
+   "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17610205",
+   "name": "PGM INT WEBSERVICES PRUEBA",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": "https://webservices.desa.mapfre.net:25004",
+   "authType": "Basic"
+  },
+  "_a-0000eed3-5c82-8000-9cab-011c48011c48_18531641": {
+   "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18531641",
+   "name": "PGM WebApi_test",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "PGM_MAPFRE"
+   ],
+   "baseUrl": null,
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17814480": {
+   "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17814480",
+   "name": "PBT Base de Datos",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Base de datos Producto - Bandeja de Tareas",
+   "apps": [
+    "PGO Bandeja de Tareas"
+   ]
+  },
+  "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17820342": {
+   "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17820342",
+   "name": "PCP Base de Datos",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Base de datos Producto - Catalogo de Procesos",
+   "apps": [
+    "PGO Catalogo de Procesos"
+   ]
+  },
+  "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17670739": {
+   "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17670739",
+   "name": "PCC API Digital",
+   "type": "system.http",
+   "description": "Sistema conectado para la API digital vida (mapfredigitalhealth)",
+   "apps": [
+    "PGO Componentes Comunes"
+   ],
+   "baseUrl": "https://api.digital.dev.mapfredigitalhealth.com",
+   "authType": "None"
+  },
+  "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18857734": {
+   "uuid": "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18857734",
+   "name": "PCC Base de Datos",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Base de datos Producto - Componentes Comunes",
+   "apps": [
+    "PGO Componentes Comunes"
+   ]
+  },
+  "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17655621": {
+   "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17655621",
+   "name": "PCC Test servicios backend PGO",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "PGO Datos de Prueba"
+   ],
+   "baseUrl": "https://backend.pgo.mapfre.net/api",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000f036-fd58-8000-9cc1-011c48011c48_19908617": {
+   "uuid": "_a-0000f036-fd58-8000-9cc1-011c48011c48_19908617",
+   "name": "PDP Conexion Graph",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "PGO Datos de Prueba"
+   ],
+   "baseUrl": "https://graph.microsoft.com/v1.0",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17820348": {
+   "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17820348",
+   "name": "PEP Base de Datos",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Base de datos Producto - Estructura y Permisos",
+   "apps": [
+    "PGO Estructura y Permisos"
+   ]
+  },
+  "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17820360": {
+   "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17820360",
+   "name": "PGT Base de Datos",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Base de datos Producto - Gestor de Trabajos",
+   "apps": [
+    "PGO Gestor de Trabajos"
+   ]
+  },
+  "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17820336": {
+   "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17820336",
+   "name": "PIC Base de Datos",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Base  de datos Producto - Interprete de Casos",
+   "apps": [
+    "PGO Interprete de Casos"
+   ]
+  },
+  "_a-0000eed3-5c82-8000-9cab-011c48011c48_18383933": {
+   "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18383933",
+   "name": "SCT Base de Datos",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Base de datos Marco Negocio - SCT",
+   "apps": [
+    "PGO Marco Negocio SCT"
+   ]
+  },
+  "_a-0000eed3-5c82-8000-9cab-011c48011c48_18532084": {
+   "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18532084",
+   "name": "PPP Proxy Canales y Clientes",
+   "type": "system.http",
+   "description": "Sistema Conectado para el proxy de Canales y Clientes",
+   "apps": [
+    "PGO Proxy Plataformas"
+   ],
+   "baseUrl": "https://cyc-api.core.pfgop.dev.es.plataforma.aws.mapfre.net:25037/",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18774771": {
+   "uuid": "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18774771",
+   "name": "PPP Proxy Administracion y Soporte",
+   "type": "system.http",
+   "description": "Apunta al proxy para llamar a la Plataforma Administración y Soporte.",
+   "apps": [
+    "PGO Proxy Plataformas"
+   ],
+   "baseUrl": "https://ays-api.core.pfgop.dev.es.plataforma.aws.mapfre.net:25036/",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18804839": {
+   "uuid": "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18804839",
+   "name": "PPP Proxy Emision Vida",
+   "type": "system.http",
+   "description": "Apunta al proxy para llamar a la Plataforma Emision Vida.",
+   "apps": [
+    "PGO Proxy Plataformas"
+   ],
+   "baseUrl": "https://ev-api.core.pfgop.dev.es.plataforma.aws.mapfre.net:25057/",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18832147": {
+   "uuid": "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18832147",
+   "name": "PPP Proxy Gestor Documental",
+   "type": "system.http",
+   "description": "Apunta al proxy para llamar a la Plataforma Gestor Documental",
+   "apps": [
+    "PGO Proxy Plataformas"
+   ],
+   "baseUrl": "https://gd-api.core.pfgop.dev.es.plataforma.aws.mapfre.net:25043/",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000f016-d236-8000-9cbf-011c48011c48_19866847": {
+   "uuid": "_a-0000f016-d236-8000-9cbf-011c48011c48_19866847",
+   "name": "PPP Proxy Gestor Documental Backend",
+   "type": "system.http",
+   "description": "Apunta al backend directamente para poderse salta la restricción del apigw para llamar a la Plataforma Gestor Documental",
+   "apps": [
+    "PGO Proxy Plataformas"
+   ],
+   "baseUrl": "https://esp-pgoappp-gd-backend.core.pfgop.dev.es.plataforma.aws.mapfre.net:25058/",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000f036-fd58-8000-9cc1-011c48011c48_19990986": {
+   "uuid": "_a-0000f036-fd58-8000-9cc1-011c48011c48_19990986",
+   "name": "PPP Proxy API GW",
+   "type": "system.http",
+   "description": "Sistema Conectado para el proxy de api-ge",
+   "apps": [
+    "PGO Proxy Plataformas"
+   ],
+   "baseUrl": "https://api-gw.core.pfgop.dev.es.plataforma.aws.mapfre.net",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17928830": {
+   "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17928830",
+   "name": "PRD Base de Datos",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Base de datos Producto - Reglas de Decision",
+   "apps": [
+    "PGO Reglas de Decision"
+   ]
+  },
+  "_a-0000eaca-9685-8000-9c24-011c48011c48_9509640": {
+   "uuid": "_a-0000eaca-9685-8000-9c24-011c48011c48_9509640",
+   "name": "RH RecursosH",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "",
+   "apps": [
+    "Procesos RRHH"
+   ]
+  },
+  "_a-0000eb01-1576-8000-9c2c-011c48011c48_10027094": {
+   "uuid": "_a-0000eb01-1576-8000-9c2c-011c48011c48_10027094",
+   "name": "RH GD Corporativo",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "Procesos RRHH"
+   ],
+   "baseUrl": "https://ws-gdu.pre.azure.mapfre.net:25021/",
+   "authType": "None"
+  },
+  "_a-0000eb73-e3da-8000-9c41-011c48011c48_11492622": {
+   "uuid": "_a-0000eb73-e3da-8000-9c41-011c48011c48_11492622",
+   "name": "RH ExStream",
+   "type": "system.http",
+   "description": "Compositor de documentos",
+   "apps": [
+    "Procesos RRHH"
+   ],
+   "baseUrl": "https://scgd.desa.mapfre.net:25012",
+   "authType": "Basic"
+  },
+  "_a-0000eb8a-166b-8000-9c4c-011c48011c48_11812484": {
+   "uuid": "_a-0000eb8a-166b-8000-9c4c-011c48011c48_11812484",
+   "name": "RH Gestor Firma Solicitud",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "Procesos RRHH"
+   ],
+   "baseUrl": "https://webservices.desa.mapfre.net:25004/",
+   "authType": "Basic"
+  },
+  "_a-0000eb9b-717e-8000-9c54-011c48011c48_12068233": {
+   "uuid": "_a-0000eb9b-717e-8000-9c54-011c48011c48_12068233",
+   "name": "RH Gestor Firma Cancelar",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "Procesos RRHH"
+   ],
+   "baseUrl": "https://wportalinterno.desa.mapfre.net:25001/",
+   "authType": "Basic"
+  },
+  "_a-0000eb9f-62a6-8000-9c55-011c48011c48_12123453": {
+   "uuid": "_a-0000eb9f-62a6-8000-9c55-011c48011c48_12123453",
+   "name": "RH M4 Retorno",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "Procesos RRHH"
+   ],
+   "baseUrl": "http://ses000a103542.es.mapfre.net:25023/",
+   "authType": "Basic"
+  },
+  "_a-0000eed3-5c82-8000-9cab-011c48011c48_18497697": {
+   "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18497697",
+   "name": "RH M4 Retorno_PRE",
+   "type": "system.http",
+   "description": "BORRAR DESPUES - RH M4 Retorno_PRE para pruebas apuntando a TEST",
+   "apps": [
+    "Procesos RRHH"
+   ],
+   "baseUrl": "http://ses000a204616.es.mapfre.net:26023/",
+   "authType": "Basic"
+  },
+  "_a-0000e875-eb94-8000-9be2-011c48011c48_1824202": {
+   "uuid": "_a-0000e875-eb94-8000-9be2-011c48011c48_1824202",
+   "name": "RM API Life",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "RM Riesgo Modular"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/",
+   "authType": "Basic"
+  },
+  "_a-0000ec95-047c-8000-9c80-011c48011c48_14873976": {
+   "uuid": "_a-0000ec95-047c-8000-9c80-011c48011c48_14873976",
+   "name": "RM Aurora PostgreSQL",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "",
+   "apps": [
+    "RM Riesgo Modular"
+   ]
+  },
+  "_a-0000eb73-e3da-8000-9c41-011c48011c48_11566210": {
+   "uuid": "_a-0000eb73-e3da-8000-9c41-011c48011c48_11566210",
+   "name": "SCAC SCA Webservice",
+   "type": "system.http",
+   "description": "Sistema conectado para llamar a los servicios del endpoint webservices.{entorno}.mapfre.net ",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/",
+   "authType": "Basic"
+  },
+  "_a-0000eb73-e3da-8000-9c41-011c48011c48_11566217": {
+   "uuid": "_a-0000eb73-e3da-8000-9c41-011c48011c48_11566217",
+   "name": "SCAC SCA Soa7",
+   "type": "system.http",
+   "description": "Sistema conectado para llamar a los servicios del endpoint soa7.{entorno}.mapfre.net",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://soa7.pre.mapfre.net:26006/",
+   "authType": "Basic"
+  },
+  "_a-0000eb73-e3da-8000-9c41-011c48011c48_11566224": {
+   "uuid": "_a-0000eb73-e3da-8000-9c41-011c48011c48_11566224",
+   "name": "SCAC SCA Core7",
+   "type": "system.http",
+   "description": "Sistema conectado para llamar a los servicios del endpoint core7.{entorno}.mapfre.net",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://core7.pre.mapfre.net:26007/",
+   "authType": "Basic"
+  },
+  "_a-0000eb73-e3da-8000-9c41-011c48011c48_11588319": {
+   "uuid": "_a-0000eb73-e3da-8000-9c41-011c48011c48_11588319",
+   "name": "SCAC SCA Esb",
+   "type": "system.http",
+   "description": "Sistema conectado para llamar a los servicios del endpoint esb.{entorno}.mapfre.net",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://esb.pre.mapfre.net:26005/",
+   "authType": "Basic"
+  },
+  "_a-0000eb73-e3da-8000-9c41-011c48011c48_11591762": {
+   "uuid": "_a-0000eb73-e3da-8000-9c41-011c48011c48_11591762",
+   "name": "SCAC SCA Wmapfre",
+   "type": "system.http",
+   "description": "Sistema conectado para llamar a los servicios del endpoint wmapfre.{entorno}.mapfre.net",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://wmapfre.pre.mapfre.net:26016/",
+   "authType": "Basic"
+  },
+  "_a-0000eb7f-c182-8000-9c48-011c48011c48_11632270": {
+   "uuid": "_a-0000eb7f-c182-8000-9c48-011c48011c48_11632270",
+   "name": "SCAC SCA Wmbig1is",
+   "type": "system.http",
+   "description": "Sistema conectado para llamar a los servicios del endpoint wmbig1is.{entorno}.mapfre.net",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "http://wmbig3is.pre.mapfre.net:26019/",
+   "authType": "Basic"
+  },
+  "_a-0000eb7f-c182-8000-9c48-011c48011c48_11639621": {
+   "uuid": "_a-0000eb7f-c182-8000-9c48-011c48011c48_11639621",
+   "name": "SCAC SCA Scgd",
+   "type": "system.http",
+   "description": "Sistema conectado para llamar a los servicios del endpoint scgd.{entorno}.mapfre.net",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://scgd.desa.mapfre.net:25012/",
+   "authType": "Basic"
+  },
+  "_a-0000eb8a-166b-8000-9c4c-011c48011c48_11802596": {
+   "uuid": "_a-0000eb8a-166b-8000-9c4c-011c48011c48_11802596",
+   "name": "SCAC SCA Core8",
+   "type": "system.http",
+   "description": "Sistema conectado para llamar a los servicios del endpoint core8.{entorno}.mapfre.net",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://core8.pre.mapfre.net:26025/",
+   "authType": "Basic"
+  },
+  "_a-0000eb93-88e3-8000-9c50-011c48011c48_11902266": {
+   "uuid": "_a-0000eb93-88e3-8000-9c50-011c48011c48_11902266",
+   "name": "SCAC SCA Wportalinterno",
+   "type": "system.http",
+   "description": "Sistema conectado para llamar a los servicios del endpoint wportalinterno.{entorno}.mapfre.net",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://wportalinterno.pre.mapfre.net:26001/",
+   "authType": "Basic"
+  },
+  "_a-0000eb93-88e3-8000-9c50-011c48011c48_11985079": {
+   "uuid": "_a-0000eb93-88e3-8000-9c50-011c48011c48_11985079",
+   "name": "SCAC SCA Webservice APP-SCAN",
+   "type": "system.http",
+   "description": "Sistema conectado para llamar al servicio de Treboles y de ReservaPrima del endpoint webservices.{entorno}.mapfre.net",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/",
+   "authType": "Basic"
+  },
+  "_a-0000eb9b-717e-8000-9c54-011c48011c48_12081503": {
+   "uuid": "_a-0000eb9b-717e-8000-9c54-011c48011c48_12081503",
+   "name": "SCAC AWS DB",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "Sistema conectado con la base de datos de AWS para el schema de sca_scomanulaciones",
+   "apps": [
+    "SCA CORE"
+   ]
+  },
+  "_a-0000eb9f-62a6-8000-9c55-011c48011c48_12134680": {
+   "uuid": "_a-0000eb9f-62a6-8000-9c55-011c48011c48_12134680",
+   "name": "SCAC SCA Webservices Documentacion",
+   "type": "system.http",
+   "description": "Sistema conectado para llamar a los servicios REST de documentación",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/",
+   "authType": "Basic"
+  },
+  "_a-0000eba3-574b-8000-9c56-011c48011c48_12195623": {
+   "uuid": "_a-0000eba3-574b-8000-9c56-011c48011c48_12195623",
+   "name": "SCAC SCA Wmbig1s REST",
+   "type": "system.http",
+   "description": "Sistema contectado para llamar a los servicios REST de WM",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "http://wmbig3is.pre.mapfre.net:26019/rest/api/",
+   "authType": "Basic"
+  },
+  "_a-0000ec95-047c-8000-9c80-011c48011c48_15401109": {
+   "uuid": "_a-0000ec95-047c-8000-9c80-011c48011c48_15401109",
+   "name": "SCAC WebApi SGO",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://mapfrespain-test.appiancloud.com/suite/webapi/sgo-rest",
+   "authType": "Basic"
+  },
+  "_a-0000ecf1-045c-8000-9c82-011c48011c48_15525849": {
+   "uuid": "_a-0000ecf1-045c-8000-9c82-011c48011c48_15525849",
+   "name": "SCAC WebApi Documentos SGO",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://mapfrespain-dev.appiancloud.com/suite/webapi",
+   "authType": "Basic"
+  },
+  "_a-0000edb1-44a8-8000-9c90-011c48011c48_16855252": {
+   "uuid": "_a-0000edb1-44a8-8000-9c90-011c48011c48_16855252",
+   "name": "SCAC API Clients",
+   "type": "system.http",
+   "description": "Sistema conectado que incluye el host del API clients que apunta a PRE",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://apisb.mapfre.net:25003/esp/srv/api/clients/1.0/",
+   "authType": "None"
+  },
+  "_a-0000edb1-44a8-8000-9c90-011c48011c48_16855258": {
+   "uuid": "_a-0000edb1-44a8-8000-9c90-011c48011c48_16855258",
+   "name": "SCAC Login Token",
+   "type": "system.http",
+   "description": "\nSistema conectado que incluye el endpoint para obtener el token del login que apunta a PRE ",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://apisb.mapfre.net:25003/auth/oauth/v2/token",
+   "authType": "None"
+  },
+  "_a-0000edd8-a766-8000-9c93-011c48011c48_16958625": {
+   "uuid": "_a-0000edd8-a766-8000-9c93-011c48011c48_16958625",
+   "name": "SCAC SCA WEBSERVICE SEARCH",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/",
+   "authType": "Basic"
+  },
+  "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17943416": {
+   "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17943416",
+   "name": "SCAC WEBSERVICES VIDA",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/",
+   "authType": "Basic"
+  },
+  "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17990330": {
+   "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17990330",
+   "name": "SCAC WPORTALINTERNO VIDA",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://wportalinterno.pre.mapfre.net:26001/",
+   "authType": "Basic"
+  },
+  "_a-0000eed3-5c82-8000-9cab-011c48011c48_18493124": {
+   "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18493124",
+   "name": "SCAC Plataforma Retos Token",
+   "type": "system.http",
+   "description": "Sistema conectado que tiene la información para lanzar los servicios de retos para la obtención del token",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://pre.plataformaretos.com/api/login",
+   "authType": "Basic"
+  },
+  "_a-0000eed3-5c82-8000-9cab-011c48011c48_18525124": {
+   "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18525124",
+   "name": "SCAC API Key Obtener Credenciales",
+   "type": "system.http",
+   "description": "Sistema conectado que usa una API Key para conectarse a webAPIs internas",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://mapfrespain-test.appiancloud.com/suite/",
+   "authType": "API Key"
+  },
+  "_a-0000ef5f-2b36-8000-9cb2-011c48011c48_18917830": {
+   "uuid": "_a-0000ef5f-2b36-8000-9cb2-011c48011c48_18917830",
+   "name": "SCAC SCA WebServicesEmision",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://webservicesemision.pre.mapfre.net:26040/",
+   "authType": "Basic"
+  },
+  "_a-0000f036-fd58-8000-9cc1-011c48011c48_19914595": {
+   "uuid": "_a-0000f036-fd58-8000-9cc1-011c48011c48_19914595",
+   "name": "SCAC_SGC3",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://alb.appian.es.int.emea.aws.mapfre.net",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000f05d-70b6-8000-9cc3-011c48011c48_20006889": {
+   "uuid": "_a-0000f05d-70b6-8000-9cc3-011c48011c48_20006889",
+   "name": "SCAC SCA Webservice APP-PCA-SOLIC",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "SCA CORE"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004",
+   "authType": "Basic"
+  },
+  "_a-0000ec13-1536-8000-9c71-011c48011c48_13607415": {
+   "uuid": "_a-0000ec13-1536-8000-9c71-011c48011c48_13607415",
+   "name": "SGI AWS",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Sistema conectado para integrarnos con la nueva base de datos de PostgreSQL",
+   "apps": [
+    "Sistema de Gestión Integral"
+   ]
+  },
+  "_a-0000f036-fd58-8000-9cc1-011c48011c48_19992776": {
+   "uuid": "_a-0000f036-fd58-8000-9cc1-011c48011c48_19992776",
+   "name": "SGI UiPath",
+   "type": "system.http",
+   "description": "Sistema conectado para integrarnos con UiPath",
+   "apps": [
+    "Sistema de Gestión Integral"
+   ],
+   "baseUrl": "https://cloud.uipath.com/MAPFRE_AC/M_Spain/orchestrator_/t/65495ac6-f8bd-4ee4-b4c0-2ea8e7666e7a/Test_ArgumentosAppian",
+   "authType": "OAuth Client Credentials Grant"
+  },
+  "_a-0000eb01-1576-8000-9c2c-011c48011c48_10095803": {
+   "uuid": "_a-0000eb01-1576-8000-9c2c-011c48011c48_10095803",
+   "name": "SGO Schema BBDD",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Schema: sgo_gestionoperativa",
+   "apps": [
+    "Sistema Gestión Operativa"
+   ]
+  },
+  "_a-0000eb73-e3da-8000-9c41-011c48011c48_11526653": {
+   "uuid": "_a-0000eb73-e3da-8000-9c41-011c48011c48_11526653",
+   "name": "SGO API Webservice",
+   "type": "system.http",
+   "description": "Sistema conectado utilizado para consumir los servicos del host webservices por la aplicación SGO",
+   "apps": [
+    "Sistema Gestión Operativa"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/",
+   "authType": "Basic"
+  },
+  "_a-0000ebdd-82f8-8000-9c64-011c48011c48_12911283": {
+   "uuid": "_a-0000ebdd-82f8-8000-9c64-011c48011c48_12911283",
+   "name": "SGO API Webservice - SGO WM",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "Sistema Gestión Operativa"
+   ],
+   "baseUrl": "https://webservices.desa.mapfre.net:25004/",
+   "authType": "Basic"
+  },
+  "_a-0000ec84-a247-8000-9c7f-011c48011c48_14671375": {
+   "uuid": "_a-0000ec84-a247-8000-9c7f-011c48011c48_14671375",
+   "name": "SGO API WebService - MPush",
+   "type": "system.http",
+   "description": "Servicio conectado para los servicios de MPush",
+   "apps": [
+    "Sistema Gestión Operativa"
+   ],
+   "baseUrl": "https://wportalinterno.desa.mapfre.net:25001",
+   "authType": "Basic"
+  },
+  "_a-0000efd5-13e8-8000-9cb8-011c48011c48_19438720": {
+   "uuid": "_a-0000efd5-13e8-8000-9cb8-011c48011c48_19438720",
+   "name": "SGO API WebService - IA Websocket",
+   "type": "system.http",
+   "description": "Webservice para conectar con los servicios REST que nos permiten conectar contra la IA",
+   "apps": [
+    "Sistema Gestión Operativa"
+   ],
+   "baseUrl": "https://api.ateneaes.mapfrees.dev.apps.emea.aws.mapfre.net:25053/",
+   "authType": "API Key"
+  },
+  "_a-0000ec66-e1cc-8000-9c7b-011c48011c48_14515330": {
+   "uuid": "_a-0000ec66-e1cc-8000-9c7b-011c48011c48_14515330",
+   "name": "TVA BD Aurora PostgreSQL",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "Sistema conectado para la BBDD",
+   "apps": [
+    "Tarificador Vida Ahorro"
+   ]
+  },
+  "_a-0000ec95-047c-8000-9c80-011c48011c48_15446261": {
+   "uuid": "_a-0000ec95-047c-8000-9c80-011c48011c48_15446261",
+   "name": "TVA API Life",
+   "type": "system.http",
+   "description": "Sistema conectado para API Life con usuario APPSAVI",
+   "apps": [
+    "Tarificador Vida Ahorro"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/",
+   "authType": "Basic"
+  },
+  "_a-0000ecf1-045c-8000-9c82-011c48011c48_15583962": {
+   "uuid": "_a-0000ecf1-045c-8000-9c82-011c48011c48_15583962",
+   "name": "TVA MISV",
+   "type": "system.http",
+   "description": "Sistema conectado para MISV con usuario APPCMPA",
+   "apps": [
+    "Tarificador Vida Ahorro"
+   ],
+   "baseUrl": "https://misv.pre.mapfre.net:26024",
+   "authType": "Basic"
+  },
+  "_a-0000ecf1-045c-8000-9c82-011c48011c48_15910319": {
+   "uuid": "_a-0000ecf1-045c-8000-9c82-011c48011c48_15910319",
+   "name": "TVA API Life APPINVE",
+   "type": "system.http",
+   "description": "Sistema conectado para API Life con usuario APPINVE",
+   "apps": [
+    "Tarificador Vida Ahorro"
+   ],
+   "baseUrl": "https://webservices.pre.mapfre.net:26004/",
+   "authType": "Basic"
+  },
+  "_a-0000ecf1-045c-8000-9c82-011c48011c48_15854946": {
+   "uuid": "_a-0000ecf1-045c-8000-9c82-011c48011c48_15854946",
+   "name": "TI MISV",
+   "type": "system.http",
+   "description": "https://misv.pre.mapfre.net:26024",
+   "apps": [
+    "Test Idoneidad"
+   ],
+   "baseUrl": "https://misv.pre.mapfre.net:26024",
+   "authType": "Basic"
+  },
+  "_a-0000ed39-4f94-8000-9c84-011c48011c48_16210245": {
+   "uuid": "_a-0000ed39-4f94-8000-9c84-011c48011c48_16210245",
+   "name": "TI Aurora PostgreSQL",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "Sistema conectado a la BD de Aurora de Mapfre",
+   "apps": [
+    "Test Idoneidad"
+   ]
+  },
+  "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18700687": {
+   "uuid": "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18700687",
+   "name": "TM DB AWS",
+   "type": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "description": "Sistema conectado que apunta a la base de datos de postgresql",
+   "apps": [
+    "TM Transaction Manager"
+   ]
+  },
+  "_a-0000e906-146c-8000-e9f7-01ef9001ef90_166472": {
+   "uuid": "_a-0000e906-146c-8000-e9f7-01ef9001ef90_166472",
+   "name": "VAC_COM LOOPBACK",
+   "type": "system.http",
+   "description": "Connected system pointing to APPIAN",
+   "apps": [
+    "VAC Main Modules SGI"
+   ],
+   "baseUrl": "https://mapfrespain-dev.appiancloud.com/suite/webapi/",
+   "authType": "API Key"
+  },
+  "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18849570": {
+   "uuid": "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18849570",
+   "name": "VAC AWS",
+   "type": "system.[DataSource].[PostgreSqlConnectedSystem]",
+   "description": "Sistema conectado para integrarnos con la nueva base de datos de PostgreSQL",
+   "apps": [
+    "VAC Main Modules SGI"
+   ]
+  }
+ },
+ "recordTypesPorDataSource": {},
+ "catalogoCodigos": [
+  "DB_ADM_ADM_ADMINISTRACION_AWS",
+  "DB_APPIAN_BUSINESS",
+  "DB_BDE_BBDD",
+  "DB_BDT_SC_ESQUEMA",
+  "DB_CDD_CDD_CONSULTADESCARGADOCS_AWS",
+  "DB_CD_CD_DELETEDOCUMENT_AWS",
+  "DB_CMD_PRUEBA_DB",
+  "DB_CMP_CMP_COMPONENTES_AWS",
+  "DB_CMP_DB_ALTA_CLIENTE",
+  "DB_CMP_DB_FIRMA_RGPD",
+  "DB_CMP_DB_MODIFICACION_CLIENTE",
+  "DB_CMP_POSTGRES_VERTI",
+  "DB_CVA_CVA_CARTAVERDE_AWS",
+  "DB_CW_AURORA_POSTGRE",
+  "DB_ECV_BASE_DE_DATOS_PRINCIPAL",
+  "DB_EC_SISTEMA_CONECTADO_BD",
+  "DB_EDA_SCHEMA_EDA",
+  "DB_EDPA_SCHEMA_EDPA",
+  "DB_GCD_BBDD",
+  "DB_GMP_SISTEMA_CONECTADO_BD",
+  "DB_MBM_DB_AWS",
+  "DB_PADS_DB_CVM2_PRC",
+  "DB_PAI_BASE_DE_DATOS_PRINCIPAL",
+  "DB_PBT_BASE_DE_DATOS",
+  "DB_PCC_BASE_DE_DATOS",
+  "DB_PCP_BASE_DE_DATOS",
+  "DB_PEP_BASE_DE_DATOS",
+  "DB_PGM_POSTGRESQL_AWS",
+  "DB_PGT_BASE_DE_DATOS",
+  "DB_PIC_BASE_DE_DATOS",
+  "DB_PRD_BASE_DE_DATOS",
+  "DB_RH_RECURSOSH",
+  "DB_RM_AURORA_POSTGRESQL",
+  "DB_SCAC_AWS_DB",
+  "DB_SCT_BASE_DE_DATOS",
+  "DB_SGI_AWS",
+  "DB_SGO_SCHEMA_BBDD",
+  "DB_TM_DB_AWS",
+  "DB_VAC_AWS",
+  "DB_VIDA_AURORA",
+  "HTTP_APICONTEXT_TECUIDAMOS_PRE_MAPFREDIGITALHEALTH_COM",
+  "HTTP_APIOAUTH_PLATFORM_PRE_MAPFREDIGITALHEALTH_COM",
+  "HTTP_APISBINT_MAPFRE_NET_26003",
+  "HTTP_APISB_MAPFRE_COM",
+  "HTTP_APISB_MAPFRE_NET_25003",
+  "HTTP_API_ATENEAES_MAPFREES_DEV_APPS_EMEA_AWS_MAPFRE_NET_25053",
+  "HTTP_API_CLAIMS_DEV_REEF_HEALTH_ES_MAPFRE_COM",
+  "HTTP_API_DIGITAL_DEV_MAPFREDIGITALHEALTH_COM",
+  "HTTP_API_GITHUB_COM",
+  "HTTP_API_GW_CORE_PFGOP_DEV_ES_PLATAFORMA_AWS_MAPFRE_NET",
+  "HTTP_API_PGM_DIGITAL_PRIVATE_PRE_MAPFREDIGITALHEALTH_COM_26033",
+  "HTTP_API_PRODUCT_SGC_DIGITAL_PRIVATE_PRE_MAPFREDIGITALHEALTH_COM_443",
+  "HTTP_API_TECUIDAMOS_PRE_MAPFREDIGITALHEALTH_COM",
+  "HTTP_AYS_API_CORE_PFGOP_DEV_ES_PLATAFORMA_AWS_MAPFRE_NET_25036",
+  "HTTP_BACKEND_PGO_MAPFRE_NET",
+  "HTTP_BWCTC_CONECTA_ORANGE_ES",
+  "HTTP_CLIENTES_PRIVATE_PRE_MAPFREDIGITALHEALTH_COM_26030",
+  "HTTP_CLOUD_UIPATH_COM",
+  "HTTP_CLTV_ATENEA_ES_DATAPROD_DEV_EMEA_AWS_MAPFRE_NET_25052",
+  "HTTP_CORE7_DESA_MAPFRE_NET_25007",
+  "HTTP_CORE7_PRE_MAPFRE_NET_26007",
+  "HTTP_CORE8_PRE_MAPFRE_NET_26025",
+  "HTTP_CYC_API_CORE_PFGOP_DEV_ES_PLATAFORMA_AWS_MAPFRE_NET_25037",
+  "HTTP_DENODO_DESA_ES_MAPFRE_NET_25014",
+  "HTTP_DENODO_PREP_ES_MAPFRE_NET_26014",
+  "HTTP_ESB_DESA_MAPFRE_NET_25005",
+  "HTTP_ESB_PRE_MAPFRE_NET_26005",
+  "HTTP_ESP_CVM2_EMC_API_CORE_PFADMSOP_DEV_ES_PLATAFORMA_AWS_MAPFRE_NET_25047",
+  "HTTP_ESP_CVM2_EMPLEADOSCOMERCIALES_BACKEND_CORE_PFADMSOP_DEV_ES_PLATAFORMA_AWS_MAPFRE_NET_250544",
+  "HTTP_ESP_CVM2_ESC_API_CORE_PFADMSOP_DEV_ES_PLATAFORMA_AWS_MAPFRE_NET_25048",
+  "HTTP_ESP_CVM2_ESTRUCTURACOMERCIAL_BACKEND_CORE_PFADMSOP_DEV_ES_PLATAFORMA_AWS_MAPFRE_NET_25041",
+  "HTTP_ESP_CVM2_GESTION_BFF_CORE_PFADMSOP_DEV_ES_PLATAFORMA_AWS_MAPFRE_NET_25038",
+  "HTTP_ESP_CVM2_GES_API_CORE_PFADMSOP_DEV_ES_PLATAFORMA_AWS_MAPFRE_NET_25045",
+  "HTTP_ESP_CVM2_MEDIADORES_BACKEND_CORE_PFADMSOP_DEV_ES_PLATAFORMA_AWS_MAPFRE_NET_25039",
+  "HTTP_ESP_CVM2_MED_API_CORE_PFADMSOP_DEV_ES_PLATAFORMA_AWS_MAPFRE_NET_25046",
+  "HTTP_ESP_PGOAPPP_GD_BACKEND_CORE_PFGOP_DEV_ES_PLATAFORMA_AWS_MAPFRE_NET_25058",
+  "HTTP_EV_API_CORE_PFGOP_DEV_ES_PLATAFORMA_AWS_MAPFRE_NET_25057",
+  "HTTP_GD_API_CORE_PFGOP_DEV_ES_PLATAFORMA_AWS_MAPFRE_NET_25043",
+  "HTTP_GRAPH_MICROSOFT_COM",
+  "HTTP_INT_DENODO_INF_ES_MAPFRE_NET_25051",
+  "HTTP_MAPFRESPAIN_DEV_APPIANCLOUD_COM",
+  "HTTP_MAPFRESPAIN_NEWRELEASES_APPIANCLOUD_COM",
+  "HTTP_MAPFRESPAIN_TEST_APPIANCLOUD_COM",
+  "HTTP_MISV_PRE_MAPFRE_NET_26024",
+  "HTTP_NEURONA_PRE_VERTI_ES_MAPFRE_NET_26017",
+  "HTTP_PREPROD_VERTI_ES",
+  "HTTP_PRE_PLATAFORMARETOS_COM",
+  "HTTP_SCGD_DESA_MAPFRE_NET_25012",
+  "HTTP_SCGD_PRE_MAPFRE_NET_26012",
+  "HTTP_SES000A103542_ES_MAPFRE_NET_25023",
+  "HTTP_SES000A107158_ES_MAPFRE_NET_25031",
+  "HTTP_SES000A204616_ES_MAPFRE_NET_26023",
+  "HTTP_SGC3_PRE_KEYVAULT_VAULT_AZURE_NET",
+  "HTTP_SGC_ES_PRE_AZURE_MAPFRE_COM",
+  "HTTP_SOA7_DESA_MAPFRE_NET_25006",
+  "HTTP_SOA7_PRE_MAPFRE_NET_26006",
+  "HTTP_VBS70364_LIVE_DYNATRACE_COM",
+  "HTTP_VIRTUALAPPS_PRE_MAPFRE_NET_26009",
+  "HTTP_WEBSERVICESEMISION_PRE_MAPFRE_NET_26040",
+  "HTTP_WEBSERVICES_DESA_MAPFRE_NET",
+  "HTTP_WEBSERVICES_DESA_MAPFRE_NET_25004",
+  "HTTP_WEBSERVICES_DESA_MAPFRE_NET_25004_HTTP",
+  "HTTP_WEBSERVICES_PRE_MAPFRE_NET_26004",
+  "HTTP_WMAPFRE_PRE_MAPFRE_NET_26016",
+  "HTTP_WMBIG1IS_DESA_MAPFRE_NET_25018",
+  "HTTP_WMBIG3IS_PRE_MAPFRE_NET_26019",
+  "HTTP_WPORTALINTERNO_DESA_MAPFRE_NET_25001",
+  "HTTP_WPORTALINTERNO_PRE_MAPFRE_NET_26001",
+  "HTTP_WS_GDU_PRE_AZURE_MAPFRE_NET_25021",
+  "HTTP_WWW_APISB_MAPFRE_NET_25003",
+  "PLATAFORMA_PROCESO",
+  "S3_LIST_BUCKETS"
+ ]
+}

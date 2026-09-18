@@ -1,0 +1,119 @@
+{
+ "nuevos": [],
+ "desaparecidos": [],
+ "cambiados": [],
+ "sinCobertura": [
+  {
+   "tipo": "DB",
+   "cs": "LCK DB AWS",
+   "uuid": "_a-0001ef2c-f97c-8000-9cb0-011c48011c48_18812302",
+   "apps": [
+    "(LCK) Object Locking"
+   ],
+   "recordTypes": [],
+   "propuesta": "Sin record types dependientes: no hay consulta read-only posible sin crear objetos"
+  },
+  {
+   "tipo": "PLUGIN",
+   "cs": "BDE Conexión Sharepoint",
+   "uuid": "_a-0000ed7d-cf02-8000-9c8d-011c48011c48_16723202",
+   "apps": [
+    "Bitácora de Empresas"
+   ],
+   "plugin": "plugin.[SharePoint].[SharePoint]",
+   "propuesta": "Revisar manualmente: operación de lectura del plugin"
+  },
+  {
+   "tipo": "PLUGIN",
+   "cs": "CMD TEST Conexión AWS S3 2",
+   "uuid": "_a-0000ec2d-c808-8000-9c77-011c48011c48_13918516",
+   "apps": [
+    "CMD Demo Componentes"
+   ],
+   "plugin": "plugin.[com.appian.ps.aws.s3.cst].[AWSS3ConnectedSystemTemplate]@2",
+   "propuesta": "Revisar manualmente: operación de lectura del plugin"
+  },
+  {
+   "tipo": "DB",
+   "cs": "CMD Prueba orafi053",
+   "uuid": "_a-0000ec55-424b-8000-9c7a-011c48011c48_14307681",
+   "apps": [
+    "CMD Demo Componentes"
+   ],
+   "recordTypes": [],
+   "propuesta": "Sin record types dependientes: no hay consulta read-only posible sin crear objetos"
+  },
+  {
+   "tipo": "PLUGIN",
+   "cs": "CMP Obtener IP",
+   "uuid": "_a-0000e954-c778-8000-9c03-011c48011c48_5551893",
+   "apps": [
+    "CMP Componentes"
+   ],
+   "plugin": "plugin.[com.mapfre.localendpoint].[LocalEndpointConnectedSystemTemplate]",
+   "propuesta": "Revisar manualmente: operación de lectura del plugin"
+  },
+  {
+   "tipo": "DB",
+   "cs": "CMP DB Plan Familia",
+   "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18578885",
+   "apps": [
+    "CMP Plan Familia"
+   ],
+   "recordTypes": [],
+   "propuesta": "Sin record types dependientes: no hay consulta read-only posible sin crear objetos"
+  },
+  {
+   "tipo": "DB",
+   "cs": "CMP DB Respuesta Componente",
+   "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18571321",
+   "apps": [
+    "CMP Respuesta Componente"
+   ],
+   "recordTypes": [],
+   "propuesta": "Sin record types dependientes: no hay consulta read-only posible sin crear objetos"
+  },
+  {
+   "tipo": "DB",
+   "cs": "FAS Schema FAS",
+   "uuid": "_a-0000ec55-424b-8000-9c7a-011c48011c48_14307322",
+   "apps": [
+    "FAS Ficha Ampliada de Socio"
+   ],
+   "recordTypes": [],
+   "propuesta": "Sin record types dependientes: no hay consulta read-only posible sin crear objetos"
+  },
+  {
+   "tipo": "HTTP",
+   "cs": "PAI_SistTest",
+   "uuid": "_a-0000eebe-52f3-8000-9ca6-011c48011c48_18307535",
+   "host": "ackñaisfñkasdñfk",
+   "port": null,
+   "auth": "Basic",
+   "apps": [
+    "PAI Programa Automatización Incentivos"
+   ],
+   "propuesta": "Integración GET ligera vía CS 'PAI_SistTest' → código HTTP_ACK_AISF_KASD_FK"
+  },
+  {
+   "tipo": "DB",
+   "cs": "TVA BD Aurora PostgreSQL",
+   "uuid": "_a-0000ec66-e1cc-8000-9c7b-011c48011c48_14515330",
+   "apps": [
+    "Tarificador Vida Ahorro"
+   ],
+   "recordTypes": [],
+   "propuesta": "Sin record types dependientes: no hay consulta read-only posible sin crear objetos"
+  },
+  {
+   "tipo": "DB",
+   "cs": "TI Aurora PostgreSQL",
+   "uuid": "_a-0000ed39-4f94-8000-9c84-011c48011c48_16210245",
+   "apps": [
+    "Test Idoneidad"
+   ],
+   "recordTypes": [],
+   "propuesta": "Sin record types dependientes: no hay consulta read-only posible sin crear objetos"
+  }
+ ]
+}
