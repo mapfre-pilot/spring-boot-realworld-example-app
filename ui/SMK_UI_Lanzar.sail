@@ -21,18 +21,14 @@ a!localVariables(
     )
   ),
   a!headerContentLayout(
-    header: a!cardLayout(
-      contents: a!richTextDisplayField(
-      value: {
-        a!richTextItem(text: "Ejecutar pruebas de humo", style: "STRONG", size: "LARGE"),
-        char(10),
-        a!richTextItem(text: "Lanza una ejecución controlada del catálogo activo", color: "SECONDARY")
-      }
-      ),
-      style: "STANDARD",
-      marginBelow: "STANDARD"
+    header: rule!SMK_UI_Cabecera(
+      icono: "play-circle",
+      titulo: "Ejecutar pruebas de humo",
+      subtitulo: "Lanza una ejecución controlada del catálogo activo"
     ),
     contents: {
+      a!cardLayout(
+        contents: {
       a!radioButtonField(
         label: "Modo de selección",
         choiceLabels: {"Todas", "Por categoría", "Por sistema", "Pruebas concretas"},
@@ -96,10 +92,17 @@ a!localVariables(
         ),
         marginAbove: "STANDARD"
       ),
+      rule!SMK_UI_KPI(
+        etiqueta: "Alcance de la ejecución",
+        valor: tostring(count(local!seleccion)) & " pruebas",
+        icono: "tasks",
+        color: cons!SMK_COLOR_ROJO
+      ),
       a!buttonLayout(
         primaryButtons: a!buttonWidget(
           label: "Ejecutar pruebas de humo",
           style: "SOLID",
+          color: cons!SMK_COLOR_ROJO,
           submit: false,
           validate: true,
           saveInto: a!startProcess(
@@ -116,6 +119,14 @@ a!localVariables(
           )
         )
       ),
+        },
+        shape: "ROUNDED",
+        showBorder: true,
+        showShadow: true,
+        style: cons!SMK_COLOR_BLANCO,
+        padding: "STANDARD",
+        marginBelow: "STANDARD"
+      ),
       if(
         isnull(local!ejecucionId),
         {},
@@ -123,7 +134,7 @@ a!localVariables(
           a!richTextDisplayField(
             value: a!richTextItem(
               text: "Ejecución #" & tostring(local!ejecucionId) & " lanzada",
-              color: "POSITIVE",
+              color: cons!SMK_COLOR_EXITO,
               style: "STRONG"
             ),
             marginAbove: "STANDARD"
