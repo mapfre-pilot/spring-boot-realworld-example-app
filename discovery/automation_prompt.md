@@ -1,0 +1,23 @@
+Ejecución semanal del descubrimiento de novedades para la aplicación Appian "SMK Pruebas de Humo" (entorno DEV, mapfrespain-dev). Repositorio de referencia: @mapfre-pilot/spring-boot-realworld-example-app — TODO el material está en la rama `feature/pruebas-humo` (haz `git fetch origin feature/pruebas-humo && git checkout feature/pruebas-humo`; la rama es huérfana y solo contiene la documentación y scripts de las pruebas de humo).
+
+Antes de usar el MCP de Appian carga la skill `appian`. Usa exclusivamente el servidor MCP `appian-dev-mcp-desarrollo-05c9`.
+
+Sigue paso a paso `discovery/PLAYBOOK_descubrimiento.md`. Resumen de lo que debes hacer:
+
+1. Ejecuta el contenido de `discovery/discover_smk.py` INLINE con `scripted_tools` (pega el código en el parámetro `script`; no lo cargues con exec/open porque el runner rechaza las llamadas MCP). Antes de ejecutarlo, copia `discovery/snapshot_dev.json` del repo a `/home/ubuntu/smoke/discovery/snapshot_dev.json` (ajusta la constante BASE del script a la ruta del repo si lo prefieres) para que la comparación "nuevos / desaparecidos / URL cambiada" sea contra el último snapshot conocido. Genera `hallazgos_dev.md/json` y el nuevo `snapshot_dev.json`.
+
+2. Para cada Connected System de tipo HTTP o de base de datos que aparezca como NUEVO o SIN COBERTURA y tenga una prueba read-only viable según el playbook, crea la prueba en Appian DEV siguiendo exactamente el patrón de las pruebas existentes (mira `sail/SMK_ejecutarPrueba.sail`, `sail/SMK_evaluarHttp.sail` y una integración `SMK_INT_HTTP_*` existente en la app UUID `_a-0000f061-6420-8000-9cc5-011c48011c48_20033025`):
+   - HTTP: integración `SMK_INT_HTTP_<host>` (GET, relativePath "/smk-smoke-probe", timeout 10 s) usando el Connected System detectado; nueva rama `HTTP_<HOST>[_PUERTO]` en la regla `SMK_ejecutarPrueba`; nueva fila en la regla `SMK_catalogoBase` (UUID `_a-0000f069-4f37-8000-9cc8-011c48011c48_20037624`) con `activo: false`.
+   - BD: solo si el CS tiene record types dependientes; rama `DB_<CS>` con `a!queryRecordType(batchSize: 1, fetchTotalCount: true)` sobre ese record type; fila en `SMK_catalogoBase` con `activo: false`.
+   - Valida cada prueba nueva con `testRule` sobre `SMK_ejecutarPrueba(codigo)` antes de dar por hecha la alta. Si falla por causa de la prueba, corrígela; si falla porque el sistema no responde, déjala inactiva y anótalo.
+   - Después, en el site SMK (interfaz `SMK_UI_Catalogo`) la prueba aparecerá como pendiente de sincronizar; sincronízala llamando a `rule!SMK_catalogoPendiente()` + `a!writeRecords` mediante `testRule`, o deja constancia de que hay que pulsar "Sincronizar catálogo". Las pruebas nuevas quedan SIEMPRE inactivas: la activación la decide una persona.
+   - Plugins, S3, SharePoint y CS de BD sin record types: NO crear nada, solo listarlos en el informe.
+   - URL cambiada: actualiza `sistema`/`nombre` de la fila correspondiente en `SMK_catalogoBase` (el código no cambia). Desaparecidos: pon `activo: false` en `SMK_catalogoBase` y no borres nada.
+
+3. Lanza el runner completo (`testProcessModel` del modelo `SMK Ejecutar Pruebas`, UUID `0000f068-c618-8000-64a1-7f0000014e7a`, sin filtros, motivo "Descubrimiento semanal Devin", origen "AUTOMATICO") y compara sus resultados con la ejecución anterior (record type `SMK Ejecucion` / `SMK Resultado`): destaca las pruebas que pasan de OK a KO/WARN.
+
+4. Commit en la rama `feature/pruebas-humo` con los ficheros actualizados (`discovery/snapshot_dev.json`, `discovery/hallazgos_dev.md/json`, y las expresiones SAIL de las reglas/integraciones que hayas creado o modificado, exportadas a `sail/`), mensaje "chore(smk): descubrimiento semanal <fecha>". Haz push directo a esa rama; no abras PR.
+
+5. Termina con un mensaje final resumen (message_user) en español: nº de CS/record types inventariados, novedades (nuevos/desaparecidos/URL cambiada), pruebas creadas (inactivas) con su código, hallazgos que requieren decisión humana, regresiones del runner y enlace al commit. Si no hay ninguna novedad, dilo explícitamente en una línea.
+
+Reglas estrictas: solo operaciones de lectura contra los sistemas de negocio (nunca crear tablas ni escribir datos de negocio ni llamar a endpoints de token/escritura); no modificar Connected Systems, integraciones ni record types de otras aplicaciones; no copiar ni imprimir credenciales; si el MCP responde 405 (plugin read-only) o error de autenticación, informa y para. No pidas confirmaciones: es una ejecución desatendida.
