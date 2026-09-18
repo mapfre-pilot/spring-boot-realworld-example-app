@@ -75,12 +75,13 @@ a!localVariables(
           )),
           a!columnLayout(contents: rule!SMK_UI_KPI(
             etiqueta: "Duración",
-            valor: tostring(index(local!ultima, 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{e3bf3113-5265-4932-8306-4043885eec95}duracionMs', 0)) & " ms",
+            valor: text(index(local!ultima, 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{e3bf3113-5265-4932-8306-4043885eec95}duracionMs', 0) / 1000, "0.0") & " s",
             icono: "clock-o",
             color: cons!SMK_COLOR_AZUL_OSCURO
           ))
         },
-        showDividers: true
+        showDividers: true,
+        stackWhen: {"PHONE", "TABLET_PORTRAIT"}
       ),
       a!columnsLayout(
         columns: {

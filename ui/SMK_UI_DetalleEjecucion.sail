@@ -146,13 +146,14 @@ a!localVariables(
         )),
         a!columnLayout(contents: rule!SMK_UI_KPI(
           etiqueta: "Duración total",
-          valor: if(local!duracionMs >= 1000, tostring(round(local!duracionMs / 1000, 1)) & " s", tostring(local!duracionMs) & " ms"),
+          valor: text(local!duracionMs / 1000, "0.0") & " s",
           icono: "clock-o",
           color: cons!SMK_COLOR_AZUL_OSCURO
         ))
       },
       marginBelow: "STANDARD",
-      showDividers: true
+      showDividers: true,
+      stackWhen: {"PHONE", "TABLET_PORTRAIT"}
     ),
     a!progressBarField(
       label: "Pruebas correctas",
