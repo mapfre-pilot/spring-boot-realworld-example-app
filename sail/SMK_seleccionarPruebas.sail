@@ -1,39 +1,25 @@
-/* Devuelve las pruebas activas del catálogo SMK Test que cumplen los filtros
-   (listas vacías = sin filtro), ordenadas por orden/codigo. */
 a!localVariables(
   local!filtros: a!flatten({
     a!queryFilter(
       field: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{bfd955f5-5d0e-4d73-b79e-75a3c3dd903c}activo',
       operator: "=",
-      value: true
+      value: if(a!isNullOrEmpty(ri!codigos), true(), null())
     ),
-    if(
-      a!isNullOrEmpty(ri!codigos),
-      {},
-      a!queryFilter(
-        field: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{b4635ff6-1317-41d5-af9f-e7cd4d61fa22}codigo',
-        operator: "in",
-        value: ri!codigos
-      )
-    ),
-    if(
-      a!isNullOrEmpty(ri!categorias),
-      {},
-      a!queryFilter(
-        field: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{8493a0cc-cd79-4cc4-988c-a6f4dd7da18e}categoria',
-        operator: "in",
-        value: ri!categorias
-      )
-    ),
-    if(
-      a!isNullOrEmpty(ri!sistemas),
-      {},
-      a!queryFilter(
-        field: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{dba8c578-8951-4d8a-82f4-64ee769b8e90}sistema',
-        operator: "in",
-        value: ri!sistemas
-      )
-    )
+    if(a!isNullOrEmpty(ri!codigos), {}, a!queryFilter(
+      field: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{b4635ff6-1317-41d5-af9f-e7cd4d61fa22}codigo',
+      operator: "in",
+      value: a!flatten({ri!codigos})
+    )),
+    if(a!isNullOrEmpty(ri!categorias), {}, a!queryFilter(
+      field: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{8493a0cc-cd79-4cc4-988c-a6f4dd7da18e}categoria',
+      operator: "in",
+      value: a!flatten({ri!categorias})
+    )),
+    if(a!isNullOrEmpty(ri!sistemas), {}, a!queryFilter(
+      field: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{dba8c578-8951-4d8a-82f4-64ee769b8e90}sistema',
+      operator: "in",
+      value: a!flatten({ri!sistemas})
+    ))
   }),
   a!queryRecordType(
     recordType: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test',
@@ -49,15 +35,11 @@ a!localVariables(
       'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{90077757-4a1d-4ddf-a4b9-6e666c6a6606}orden',
       'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{a0e22f2d-181d-4e27-a4c1-4661e21f5e60}umbralMs'
     },
-    filters: a!queryLogicalExpression(operator: "AND", filters: local!filtros),
-    pagingInfo: a!pagingInfo(
-      startIndex: 1,
-      batchSize: 500,
-      sort: {
-        a!sortInfo(field: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{90077757-4a1d-4ddf-a4b9-6e666c6a6606}orden', ascending: true),
-        a!sortInfo(field: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{b4635ff6-1317-41d5-af9f-e7cd4d61fa22}codigo', ascending: true)
-      }
-    ),
+    filters: a!queryLogicalExpression(operator: "AND", filters: local!filtros, ignoreFiltersWithEmptyValues: true),
+    pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 500, sort: {
+      a!sortInfo(field: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{90077757-4a1d-4ddf-a4b9-6e666c6a6606}orden', ascending: true),
+      a!sortInfo(field: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{b4635ff6-1317-41d5-af9f-e7cd4d61fa22}codigo', ascending: true)
+    }),
     fetchTotalCount: false
   ).data
 )

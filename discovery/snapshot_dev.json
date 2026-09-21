@@ -238,7 +238,7 @@
    "uuid": "_a-0000ed7d-cf02-8000-9c8d-011c48011c48_16723202",
    "name": "BDE Conexión Sharepoint",
    "type": "plugin.[SharePoint].[SharePoint]",
-   "description": "Conexión con sharepoint: \nDisplay name: azr-app-pro-BITACORA-mapfrees\nApplication (client) ID: 9ad80980-807e-4560-93bc-ee5e054489d3\nDirectory (tenant) ID: 5cc6c66d-ffb2-469f-9385-cda840e57836\nClient secret: 1ny8Q~qcatf2~zc36jhyPRUW7FWQRlGvgV554cpH",
+   "description": "Conexión con sharepoint: \nDisplay name: azr-app-pro-BITACORA-mapfrees\nApplication (client) ID: 9ad80980-807e-4560-93bc-ee5e054489d3\nDirectory (tenant) ID: 5cc6c66d-ffb2-469f-9385-cda840e57836\nClient secret: [REDACTED]",
    "apps": [
     "Bitácora de Empresas"
    ]

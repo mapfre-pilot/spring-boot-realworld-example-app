@@ -10,6 +10,9 @@ ENV = "dev"
 BASE = "/home/ubuntu/smoke"
 CATALOGO_BASE_UUID = "_a-0000f069-4f37-8000-9cc8-011c48011c48_20037624"  # SMK_catalogoBase
 DB_TYPES = ("DataSource",)
+# New discovery catalog rows are created inactive and require manual review.
+DISCOVERY_ORIGIN = "DESCUBRIMIENTO"
+DISCOVERY_INACTIVE_REASON = "Detectada por descubrimiento automático el <fecha>; pendiente de revisión"
 
 def norm_host(url):
     try:

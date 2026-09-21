@@ -1,6 +1,10 @@
 a!localVariables(
   local!categoria: null,
   local!texto: "",
+  local!estado: null,
+  local!idADesactivar: null,
+  local!codigoADesactivar: null,
+  local!motivoADesactivar: "",
   local!refresh: 0,
   local!mensaje: "",
   local!pendientes: a!refreshVariable(
@@ -86,8 +90,80 @@ a!localVariables(
             placeholder: "Buscar por código",
             value: local!texto,
             saveInto: local!texto
+          )),
+          a!columnLayout(contents: a!dropdownField(
+            label: "Estado",
+            choiceLabels: {"Activas", "Desactivadas", "Pendientes de revisión"},
+            choiceValues: {"Activas", "Desactivadas", "Pendientes de revisión"},
+            value: local!estado,
+            saveInto: local!estado,
+            placeholder: "Todas"
           ))
         }
+      ),
+      if(
+        a!isNullOrEmpty(local!idADesactivar),
+        {},
+        a!cardLayout(
+          contents: {
+            a!richTextDisplayField(
+              labelPosition: "COLLAPSED",
+              value: a!richTextItem(
+                text: "Desactivar prueba " & local!codigoADesactivar,
+                style: "STRONG",
+                color: cons!SMK_COLOR_AZUL_OSCURO
+              )
+            ),
+            a!textField(
+              label: "Motivo",
+              value: local!motivoADesactivar,
+              saveInto: local!motivoADesactivar,
+              required: true,
+              placeholder: "Indica por qué se desactiva la prueba"
+            ),
+            a!buttonArrayLayout(
+              buttons: {
+                a!buttonWidget(
+                  label: "Confirmar",
+                  style: "SOLID",
+                  color: cons!SMK_COLOR_ROJO,
+                  disabled: a!isNullOrEmpty(trim(local!motivoADesactivar)),
+                  saveInto: a!writeRecords(
+                    records: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test'(
+                      'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{b7020821-b4b7-41fc-a9eb-4f11ced13c7c}id': local!idADesactivar,
+                      'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{bfd955f5-5d0e-4d73-b79e-75a3c3dd903c}activo': false,
+                      'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{ef3be308-44eb-4704-8c10-a3ff8cf11b73}motivoInactivo': trim(local!motivoADesactivar)
+                    ),
+                    onSuccess: {
+                      a!save(local!mensaje, "Prueba desactivada."),
+                      a!save(local!idADesactivar, null),
+                      a!save(local!codigoADesactivar, null),
+                      a!save(local!motivoADesactivar, ""),
+                      a!save(local!refresh, local!refresh + 1)
+                    },
+                    onError: a!save(local!mensaje, "Error al desactivar la prueba.")
+                  )
+                ),
+                a!buttonWidget(
+                  label: "Cancelar",
+                  style: "LINK",
+                  saveInto: {
+                    a!save(local!idADesactivar, null),
+                    a!save(local!codigoADesactivar, null),
+                    a!save(local!motivoADesactivar, "")
+                  }
+                )
+              },
+              align: "END",
+              marginBelow: "NONE"
+            )
+          },
+          style: cons!SMK_COLOR_AVISO,
+          shape: "ROUNDED",
+          showBorder: true,
+          showShadow: false,
+          marginBelow: "STANDARD"
+        )
       ),
       a!cardLayout(
         contents: a!gridField(
@@ -107,6 +183,16 @@ a!localVariables(
                 field: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{8493a0cc-cd79-4cc4-988c-a6f4dd7da18e}categoria',
                 operator: "=",
                 value: local!categoria
+              ),
+              a!queryFilter(
+                field: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{bfd955f5-5d0e-4d73-b79e-75a3c3dd903c}activo',
+                operator: "=",
+                value: if(local!estado = "Activas", true(), if(or(local!estado = "Desactivadas", local!estado = "Pendientes de revisión"), false(), null()))
+              ),
+              a!queryFilter(
+                field: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{e4ae6ce4-2eb3-4401-9124-19e8a5dd36ac}origenAlta',
+                operator: "=",
+                value: if(local!estado = "Pendientes de revisión", "DESCUBRIMIENTO", null())
               ),
               a!queryFilter(
                 field: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{b4635ff6-1317-41d5-af9f-e7cd4d61fa22}codigo',
@@ -143,6 +229,25 @@ a!localVariables(
             )
           ),
           a!gridColumn(
+            label: "Motivo",
+            value: a!richTextDisplayField(
+              labelPosition: "COLLAPSED",
+              value: {
+                if(
+                  and(
+                    not(fv!row['recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{bfd955f5-5d0e-4d73-b79e-75a3c3dd903c}activo']),
+                    fv!row['recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{e4ae6ce4-2eb3-4401-9124-19e8a5dd36ac}origenAlta'] = "DESCUBRIMIENTO"
+                  ),
+                  a!richTextItem(text: "Pendiente de revisión · ", color: cons!SMK_COLOR_AVISO, style: "STRONG"),
+                  {}
+                ),
+                a!richTextItem(
+                  text: a!defaultValue(fv!row['recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{ef3be308-44eb-4704-8c10-a3ff8cf11b73}motivoInactivo'], "")
+                )
+              }
+            )
+          ),
+          a!gridColumn(
             label: "",
             width: "NARROW",
             value: a!richTextDisplayField(
@@ -150,12 +255,24 @@ a!localVariables(
               value: a!richTextItem(
                 text: if(fv!row['recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{bfd955f5-5d0e-4d73-b79e-75a3c3dd903c}activo'], "Desactivar", "Activar"),
                 link: a!dynamicLink(
-                  saveInto: a!writeRecords(
-                    records: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test'(
-                      'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{b7020821-b4b7-41fc-a9eb-4f11ced13c7c}id': fv!identifier,
-                      'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{bfd955f5-5d0e-4d73-b79e-75a3c3dd903c}activo': not(fv!row['recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{bfd955f5-5d0e-4d73-b79e-75a3c3dd903c}activo'])
-                    ),
-                    onSuccess: a!save(local!refresh, local!refresh + 1)
+                  saveInto: if(
+                    fv!row['recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{bfd955f5-5d0e-4d73-b79e-75a3c3dd903c}activo'],
+                    {
+                      a!save(local!idADesactivar, fv!identifier),
+                      a!save(local!codigoADesactivar, fv!row['recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{b4635ff6-1317-41d5-af9f-e7cd4d61fa22}codigo'])
+                    },
+                    a!writeRecords(
+                      records: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test'(
+                        'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{b7020821-b4b7-41fc-a9eb-4f11ced13c7c}id': fv!identifier,
+                        'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{bfd955f5-5d0e-4d73-b79e-75a3c3dd903c}activo': true,
+                        'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{ef3be308-44eb-4704-8c10-a3ff8cf11b73}motivoInactivo': null()
+                      ),
+                      onSuccess: {
+                        a!save(local!mensaje, "Prueba activada."),
+                        a!save(local!refresh, local!refresh + 1)
+                      },
+                      onError: a!save(local!mensaje, "Error al activar la prueba.")
+                    )
                   )
                 ),
                 linkStyle: "STANDALONE"
