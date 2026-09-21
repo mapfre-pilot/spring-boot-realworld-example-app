@@ -21,7 +21,8 @@ exclusivamente con operaciones `get*`/`list*`. **No se ha modificado ningún obj
 6. [Riesgos y mejoras propuestas](06-riesgos-y-mejoras.md) — deuda técnica y plan de mejora priorizado.
 7. [Plan de rediseño: procesos atómicos orquestados desde la interfaz](07-plan-rediseno-procesos-atomicos.md) — diagnóstico de los PMs de alta, arquitectura objetivo, duplicación aislada de la app y fases.
 8. [Alineación con los planes previos (NTT DATA / Appian Accelerate)](08-alineacion-planes-previos.md) — comparación con las acciones estratégicas, plan de estabilización y code reviews; diferencias incorporadas al plan.
-9. [Anexo: inventario generado](anexos/inventario-generado.md) — volcado tabular (process models, integraciones, record types, referencias cruzadas).
+9. [Fase 0: construcción de SCA2](09-fase0-construccion-sca2.md) — app SCA2, data source dedicado, migración de record types y batch A de reglas/interfaces.
+10. [Anexo: inventario generado](anexos/inventario-generado.md) — volcado tabular (process models, integraciones, record types, referencias cruzadas).
 
 ## Alcance y limitaciones
 
