@@ -1,0 +1,882 @@
+[
+  {
+    "uuid": "2907ae7d-9535-4912-9131-111d6c5dcd46",
+    "name": "CW_Conectar_oAuth_token",
+    "app": "CapturaWeb",
+    "urlRaw": "rule!MU_Conectar_URL_APIBusiness(forzarPreEnDev: ri!forzarPreEnDev) & \"auth/oauth/v2/token\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "720932d1-726c-4cbb-ab3f-5db80a629a89",
+    "name": "CdC_ClientAPI_BusquedaClientes",
+    "app": "CdC_MAPFRE",
+    "urlRaw": "https://apisb.mapfre.com/esp/srv/api/clients/1.0/clients/search",
+    "host": "apisb.mapfre.com",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "52bf31f1-2b66-4e0d-8e3c-7873fda73397",
+    "name": "CdC_ClientAPI_DatosClientePorID",
+    "app": "CdC_MAPFRE",
+    "urlRaw": "\"https://apisb.mapfre.com/esp/srv/api/clients/1.0/client/\" & ri!clientId",
+    "host": "apisb.mapfre.com",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e85b-72bf-8000-9bdf-011c48011c48_1532734",
+    "name": "CdC_APIClientes_Login",
+    "app": "CdC_MAPFRE",
+    "urlRaw": "https://apisb.mapfre.com/auth/oauth/v2/token",
+    "host": "apisb.mapfre.com",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "6a434455-2b1b-4053-a342-819fc1b484c4",
+    "name": "CMD_Test_8443",
+    "app": "CMD Demo Componentes",
+    "urlRaw": null,
+    "host": null,
+    "auth": "unavailable; URL not returned by getIntegration"
+  },
+  {
+    "uuid": "d07855f1-d9a9-4dec-a25c-c2eabaa6c5c2",
+    "name": "CMD_timeout",
+    "app": "CMD Demo Componentes",
+    "urlRaw": "https://10.255.255.1",
+    "host": "10.255.255.1",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "2140d673-99cb-4ede-b5ac-b3c10a41da43",
+    "name": "CMD_HeadOidGithub",
+    "app": "CMD Demo Componentes",
+    "urlRaw": "https://api.github.com/graphql",
+    "host": "api.github.com",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17951852",
+    "name": "CMD_CommitPushGithub",
+    "app": "CMD Demo Componentes",
+    "urlRaw": "https://api.github.com/graphql",
+    "host": "api.github.com",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_18030586",
+    "name": "CMD_HeadOidGithubPackage",
+    "app": "CMD Demo Componentes",
+    "urlRaw": "https://api.github.com/graphql",
+    "host": "api.github.com",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_18030624",
+    "name": "CMD_CommitPushGithubPackage",
+    "app": "CMD Demo Componentes",
+    "urlRaw": "https://api.github.com/graphql",
+    "host": "api.github.com",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_18030656",
+    "name": "CMD_PRGithub",
+    "app": "CMD Demo Componentes",
+    "urlRaw": "https://api.github.com/graphql",
+    "host": "api.github.com",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_18030697",
+    "name": "CMD_IdGithubRepo",
+    "app": "CMD Demo Componentes",
+    "urlRaw": "https://api.github.com/graphql",
+    "host": "api.github.com",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000eebe-52f3-8000-9ca6-011c48011c48_18285301",
+    "name": "CMD_ObtenerPatches",
+    "app": "CMD Demo Componentes",
+    "urlRaw": "https://api.github.com/repos/mapfre-tech/esp-appiantest-devops-github/contents/package/patches.xml?ref=release/package",
+    "host": "api.github.com",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "e679f7cc-185f-4790-8fb6-1373764f41c8",
+    "name": "CMD_IntegrationTest",
+    "app": "CMD Demo Componentes",
+    "urlRaw": "ri!url",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "db0414fe-5231-4f10-ba2a-61de38f0fda0",
+    "name": "CMD_Timeout_3",
+    "app": "CMD Demo Componentes",
+    "urlRaw": "http://192.0.2.1",
+    "host": "192.0.2.1",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18524178",
+    "name": "CMD_Timeout_6",
+    "app": "CMD Demo Componentes",
+    "urlRaw": "http://192.0.2.1",
+    "host": "192.0.2.1",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "_a-0000eed3-5c82-8000-9cab-011c48011c48_18524201",
+    "name": "CMD_Timeout_9",
+    "app": "CMD Demo Componentes",
+    "urlRaw": "http://192.0.2.1",
+    "host": "192.0.2.1",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "b7befa5c-1cb7-462f-b557-10df00ec80b0",
+    "name": "CMD_DescargarLogs",
+    "app": "CMD Demo Componentes",
+    "urlRaw": null,
+    "host": null,
+    "auth": "unavailable; URL not returned by getIntegration"
+  },
+  {
+    "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19196355",
+    "name": "CMD_ErrorsHandlingDynatrace_TimeOut",
+    "app": "CMD Demo Componentes",
+    "urlRaw": "http://192.0.2.1",
+    "host": "192.0.2.1",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "56265513-476b-419e-bf63-99475a17631d",
+    "name": "CMD_PruebaBFF_remoteManagerInfo",
+    "app": "CMD Demo Componentes",
+    "urlRaw": "https://api-product-clients.clientes.private.pre.mapfredigitalhealth.com/",
+    "host": "api-product-clients.clientes.private.pre.mapfredigitalhealth.com",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17630675",
+    "name": "CMP_APIGW_newToken_TEST",
+    "app": "CMP Componentes",
+    "urlRaw": "https://apisb.mapfre.net:25003/auth/oauth/v2/token",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19097230",
+    "name": "CMP_GetHermesIps",
+    "app": "CMP Componentes",
+    "urlRaw": "cons!CMP_HERMES_URL",
+    "host": "hermes-view.mapfre.net:25049",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "e68d1f80-c941-408f-a930-14a1bf5841ef",
+    "name": "CMP_GetZscalerIps",
+    "app": "CMP Componentes",
+    "urlRaw": "https://config.zscaler.com/api/zscaler.net/cenr/json",
+    "host": "config.zscaler.com",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "f6b91db2-8d8e-4f93-8c13-2ed4aafc17f3",
+    "name": "MAPFRE_CST_I_ClientAPI_BusquedaClientes",
+    "app": "CST_MAPFRE",
+    "urlRaw": "cons!CST_C_TXT_ENDPOINT_APICLIENTES & \"esp/srv/api/clients/1.0/clients/search\"",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "266c2b99-a038-4219-bc01-bf67f66d3d91",
+    "name": "MAPFRE_CST_I_ClientAPI_DatosClientePorID",
+    "app": "CST_MAPFRE",
+    "urlRaw": "cons!CST_C_TXT_ENDPOINT_APICLIENTES & \"esp/srv/api/clients/1.0/client/\" & ri!clientId",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "553abce3-26f3-4cd9-97fa-b769b9d9223b",
+    "name": "MAPFRE_CST_I_ClientAPI_TelefonoEmail",
+    "app": "CST_MAPFRE",
+    "urlRaw": "cons!CST_C_TXT_ENDPOINT_APICLIENTES & \"esp/srv/api/clients/1.0/client/\" & ri!clientId & \"/contactMethods\"",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "aa7f8c45-d2b1-4671-8699-a29dd7ab0a99",
+    "name": "MAPFRE_CST_I_ClientAPI_numPoliza",
+    "app": "CST_MAPFRE",
+    "urlRaw": "cons!CST_C_TXT_ENDPOINT_APICLIENTES & \"esp/srv/api/clients/1.0/client/\" & ri!clientId & \"/detailedPolicies\"",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "dce05b86-6e0e-4621-85bf-13178a31424b",
+    "name": "MAPFRE_CST_APIClientes_Login",
+    "app": "CST_MAPFRE",
+    "urlRaw": "cons!CST_C_TXT_ENDPOINT_APICLIENTES & \"auth/oauth/v2/token\"",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "4bfeffb5-0ae0-4876-9324-cdc7ce9917c5",
+    "name": "MAPFRE_CST_I_ClientsApi_PerfilCliente",
+    "app": "CST_MAPFRE",
+    "urlRaw": "cons!CST_C_TXT_ENDPOINT_APICLIENTES & \"esp/srv/api/clients/1.0/client/\" & ri!clientId & \"/profile\"",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "c1e08f17-9e49-46ed-845c-fb3df2603f2f",
+    "name": "PADS_POST_DGSFP_GetMediadores",
+    "app": "CVM2",
+    "urlRaw": "https://rrpp.dgsfp.mineco.es/Mediador/GetMediadoresBusqueda",
+    "host": "rrpp.dgsfp.mineco.es",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19043364",
+    "name": "PADS_POST_DGSFP_GetAltosCargos",
+    "app": "CVM2",
+    "urlRaw": "https://rrpp.dgsfp.mineco.es/Mediador/GetAltosCargosBusqueda",
+    "host": "rrpp.dgsfp.mineco.es",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19101193",
+    "name": "MU_Conectar_oAuth_token",
+    "app": "Minsait Utilities",
+    "urlRaw": "rule!MU_Conectar_URL_APIBusiness(forzarPreEnDev: ri!forzarPreEnDev) & \"auth/oauth/v2/token\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e780-b3e2-8000-9bb1-011c48011c48_77634",
+    "name": "PGM_ClientsAPI_PerfilClientePorId",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_ENDPOINT_API_CLIENTS & \"/client/\" & ri!clientId & \"/profile\"",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e780-b3e2-8000-9bb1-011c48011c48_83878",
+    "name": "PGM_ClientsAPI_PolizasClientePorId",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_ENDPOINT_API_CLIENTS & \"/client/\" & ri!clientId & \"/detailedPolicies\"",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e7a2-eebe-8000-9bb4-011c48011c48_85794",
+    "name": "PGM_ClientsAPI_PrestacionesClientePorId",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_ENDPOINT_API_CLIENTS & \"/client/\" & ri!clientId & \"/claims\"",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e7a2-eebe-8000-9bb4-011c48011c48_86623",
+    "name": "PGM_ClientsAPI_PresupuestosClientePorId",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_ENDPOINT_API_CLIENTS & \"/client/\" & ri!clientId & \"/projects\"",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e80c-6db7-8000-9bc8-011c48011c48_782372",
+    "name": "PGM_CitrixAPI_Configuration_AWS",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "https://mwtlw5vss3okvqpbjka5xdjzhu0ceoay.lambda-url.eu-west-1.on.aws/",
+    "host": "mwtlw5vss3okvqpbjka5xdjzhu0ceoay.lambda-url.eu-west-1.on.aws",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "_a-0000e825-74fa-8000-9bcc-011c48011c48_906065",
+    "name": "PGM_CitrixAPI_ListResources_AWS",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "https://mwtlw5vss3okvqpbjka5xdjzhu0ceoay.lambda-url.eu-west-1.on.aws/",
+    "host": "mwtlw5vss3okvqpbjka5xdjzhu0ceoay.lambda-url.eu-west-1.on.aws",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "_a-0000e85b-72bf-8000-9bdf-011c48011c48_1611986",
+    "name": "PGM_ClientsAPI_Login",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_ENDPOINT_APIS & \"/auth/oauth/v2/token\"",
+    "host": "apisb.mapfre.com",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "3e5e2b15-b9a9-4ef5-9b9a-690f323f7441",
+    "name": "PGM_ServiciosHogar_ConsultarPoliza",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "https://apisb.mapfre.net:25003/srv/IGestionarConsultaPolCanal",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "_a-0000e875-eb94-8000-9be2-011c48011c48_1857767",
+    "name": "PGM_ClientsAPI_MetodosIdentificacionClientePorId",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_ENDPOINT_API_CLIENTS & \"/client/\" & ri!clientId & \"/identificationMethods\"",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e885-3ec5-8000-9be5-011c48011c48_1928790",
+    "name": "PGM_ServiciosVida_ConsultarProductor",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "https://soa7.desa.mapfre.net:25006/",
+    "host": "soa7.desa.mapfre.net:25006",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "_a-0000e8c2-edcd-8000-9be9-011c48011c48_2704670",
+    "name": "PGM_ClientsAPI_Validar_Mail",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_ENDPOINT_API_CLIENTS & \"/client/email\"",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e8ef-0bc1-8000-9bef-011c48011c48_3311683",
+    "name": "PGM_ServiciosSGC_ConsultarGestiones",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "https://core7.pre.mapfre.net:26007/ServiciosGestiones_CCFSAIConsultarGestiones_2_0_0_HTTPRouter/IConsultarGestiones",
+    "host": "core7.pre.mapfre.net:26007",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "d2a03b20-98f5-43b3-9cfa-67a51b3e831d",
+    "name": "PGM_BDEC_ObtenerDatosMediadorSalud",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "https://wportalinterno.desa.mapfre.net:25001/",
+    "host": "wportalinterno.desa.mapfre.net:25001",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "_a-0000e90a-e4b4-8000-9bfa-011c48011c48_3835678",
+    "name": "PGM_crearClienteACI",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_ENDPOINT_CORE7&\"/ClienteOIM_CCFSARegistro_HTTPRouter/IRegistrarClientesOIM\"",
+    "host": "core7.pre.mapfre.net:26007",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e90a-e4b4-8000-9bfa-011c48011c48_3945014",
+    "name": "PGM_ServiciosRecibos_EnvioAlBanco",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "https://esb.pre.mapfre.net:26005/",
+    "host": "esb.pre.mapfre.net:26005",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "_a-0000e90a-e4b4-8000-9bfa-011c48011c48_4095937",
+    "name": "PGM_ServiciosRecibos_IOperarAgrupaciones",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "https://esb.pre.mapfre.net:26005/",
+    "host": "esb.pre.mapfre.net:26005",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "98a8e2c3-826f-419b-8c0c-dcca2cb79505",
+    "name": "PGM_GestionarLeads_SAVIA",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "https://apiattributions.pre.mapfredigitalhealth.com/lead",
+    "host": "apiattributions.pre.mapfredigitalhealth.com",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "4c8bfa0e-74e1-4e93-923d-169318f9ae3f",
+    "name": "PGM_ServiciosSGO_ConsultarSolicitudes",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_ENDPOINT_WMBIG2IS&\"/ws/com.mapfre.sgo.ws.ConsultarSolicitudes/com_mapfre_sgo_ws_ConsultarSolicitudes_Port\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e92b-23c4-8000-9c00-011c48011c48_4400354",
+    "name": "PGM_ServiciosSGO_ConsultarDocumentos",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_ENDPOINT_WMBIG2IS&\"/ws/com.mapfre.sgo.ws.ConsultarDocumentos/com_mapfre_sgo_ws_ConsultarDocumentos_Port\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e92b-23c4-8000-9c00-011c48011c48_4515202",
+    "name": "PGM_ServiciosSGO_ConsultarSolicitudes_Interfaz",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_ENDPOINT_WMBIG2IS&\"/ws/com.mapfre.sgo.ws.ConsultarSolicitudes/com_mapfre_sgo_ws_ConsultarSolicitudes_Port\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e92b-23c4-8000-9c00-011c48011c48_4709197",
+    "name": "PGM_ServiciosRecibos_ImprimirDuplicado",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "https://esb.pre.mapfre.net:26005/",
+    "host": "esb.pre.mapfre.net:26005",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "f5a511a7-d0a6-4172-9e65-f327d963a5ab",
+    "name": "PGM_ConsultarDetalleSiniestro",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "https://esb.pre.mapfre.net:26005/",
+    "host": "esb.pre.mapfre.net:26005",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "b904d360-e331-4496-88d7-9fe1a9b97b0c",
+    "name": "PGM_ConsultarDatosAgente",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_HOST_CONSULTARAGENTE & \"/ESTRUAGE_Servicios_SMEDWeb/sca/WEstrServicios_4_0_0\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e954-c778-8000-9c03-011c48011c48_5305691",
+    "name": "PGM_GestionarSolicitudesAnulacion",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "https://core7.pre.mapfre.net:26007/",
+    "host": "core7.pre.mapfre.net:26007",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "4fa7c0d4-f91d-4644-be4a-2708db8d8ed1",
+    "name": "PGM_InduccionVerti_No_NSE",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_HOST_ESB&\"/FDC_SMEDWeb/sca/wIConsultarIntegraciones\"",
+    "host": "esb.pre.mapfre.net:26005",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e99e-2b76-8000-9c06-011c48011c48_5924310",
+    "name": "PGM_ClientsAPI_PresupuestosClientePorDocumentoYNPpto",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_ENDPOINT_API_CLIENTS & \"/client/\" & ri!clientId & \"/projects\"",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e9c5-be46-8000-9c07-011c48011c48_6475353",
+    "name": "PGM_GestionarLeads_SAVIA_V2",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "https://apiattributions.pre.mapfredigitalhealth.com/lead",
+    "host": "apiattributions.pre.mapfredigitalhealth.com",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "_a-0000ea3d-eeca-8000-9c15-011c48011c48_7784418",
+    "name": "PGM_ClientsAPI_ReclamacionesClientePorId",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_ENDPOINT_API_CLIENTS & \"/client/\" & ri!clientId & \"/complaints\"",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000eaaa-eab0-8000-9c1c-011c48011c48_8802647",
+    "name": "PGM_ObtenerEstructurasComercialesNuuma",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_HOST_ESB & \"/ESTRUAGE_ConsDatEstructura_SMEDWeb/sca/WSESTREstructura\"",
+    "host": "esb.pre.mapfre.net:26005",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "c013c519-a483-45f8-910f-aeeb7eb0f182",
+    "name": "PGM_PerfiladoCliente",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "\"https://\"&cons!PGM_HOSTYPUERTO_MISV&\"/NOVAServices/rest/RSPerfiladoCliente/obtenerPerfiladoCliente\"",
+    "host": "misv.pre.mapfre.net:26024",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000eb66-6283-8000-9c3d-011c48011c48_11381834",
+    "name": "PGM_ClientsAPI_PolizasClientePorIdCarrusel",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_ENDPOINT_API_CLIENTS&\"/client/\" & ri!clientId & \"/policies\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000eb73-e3da-8000-9c41-011c48011c48_11498166",
+    "name": "PGM_ClientsEDGE_productsDetail",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_ENDPOINT_DENODO & \"/server/vfdc/client/views/productsDetail\"",
+    "host": "denodo-prep.es.mapfre.net:26014",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000eb8a-166b-8000-9c4c-011c48011c48_11872860",
+    "name": "PGM_ClientsEDGE_products",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "\"http://denodo-prep.es.mapfre.net:26014\" & \"/server/vfdc/client/views/productsDetail\"",
+    "host": "denodo-prep.es.mapfre.net:26014",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "_a-0000eb93-88e3-8000-9c50-011c48011c48_11945683",
+    "name": "PGM_GestionarACI_crearCliente",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_ENDPOINT_API_ACI & \"/olvido/usuario/crear_cliente\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000eba7-4ece-8000-9c59-011c48011c48_12330523",
+    "name": "PGM_DPVE_Checks",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_ENDPOINT_API_CLIENTS&\"/client/\" & ri!clientId & \"/checks\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "4424bdde-15b7-4a94-8e7a-901bf93a8d76",
+    "name": "PGM_DPVE_CatalogoProductos",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "https://webservices.pre.mapfre.net:26004/ARQ_Catalogo_be-web/api/catalogos/catalog",
+    "host": "webservices.pre.mapfre.net:26004",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "_a-0000ebb9-d1d3-8000-9c5d-011c48011c48_12529872",
+    "name": "PGM_APICatalogo_DPVE",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "https://webservices.pre.mapfre.net:26004/ARQ_Catalogo_be-web/api/1.0/catalogos/catalog/flitered",
+    "host": "webservices.pre.mapfre.net:26004",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "b2326f7f-b6e3-4e63-bc7d-376d259d0181",
+    "name": "PGM_AccesoSGO",
+    "app": "PGM_MAPFRE",
+    "urlRaw": "cons!PGM_ENDPOINT_APPIAN & \"/suite/webapi/abrir-detalle-solicitud\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "32605589-64d1-463c-8150-bc21c1ed3a39",
+    "name": "PCC_GetTokenEntraId",
+    "app": "PGO Datos de Prueba",
+    "urlRaw": "https://login.microsoftonline.com/93ad25dd-8cdc-4066-9727-31a8a3024f80/oauth2/v2.0/token",
+    "host": "login.microsoftonline.com",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "48a3e305-4395-4218-8212-e62b8f18be9f",
+    "name": "PDP_Prueba_Adaptador",
+    "app": "PGO Datos de Prueba",
+    "urlRaw": null,
+    "host": null,
+    "auth": "unavailable; URL not returned by getIntegration"
+  },
+  {
+    "uuid": "f5d280c5-99d4-4a0e-97d7-c3d508f4011b",
+    "name": "RH_SSFF_GetAssertion",
+    "app": "Procesos RRHH",
+    "urlRaw": "https://performancemanager5.successfactors.eu/oauth/idp",
+    "host": "performancemanager5.successfactors.eu",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "87e2f61b-ccd4-4f2a-a7b4-233f0a498401",
+    "name": "RH_SSFF_GetToken",
+    "app": "Procesos RRHH",
+    "urlRaw": "https://performancemanager5.successfactors.eu/oauth/token",
+    "host": "performancemanager5.successfactors.eu",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "30987724-2449-4ebc-96b3-6cd0e4da3106",
+    "name": "RH_SSFF_JobRequisition",
+    "app": "Procesos RRHH",
+    "urlRaw": "https://api012.successfactors.eu/odata/v2/JobRequisition?$format=json",
+    "host": "api012.successfactors.eu",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "478062f4-68ed-4701-9d37-fb6f5e086864",
+    "name": "RH_M4_Sincro_GetToken",
+    "app": "Procesos RRHH",
+    "urlRaw": "cons!RH_M4_SINCRO_TOKEN_ENDPOINT",
+    "host": "cf-dev-back-3biubn3r.authentication.eu10.hana.ondemand.com",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "8c4eaf4a-2cb1-41da-9efb-06d241bb67ac",
+    "name": "RH_M4_Sincro_GetTabla",
+    "app": "Procesos RRHH",
+    "urlRaw": "rule!RH_M4_Sincro_URLConParametros(\n  nombreTabla: ri!nombreTabla,\n  select: ri!select,\n  filter: ri!filter,\n  top: ri!top,\n  skip: ri!skip\n)",
+    "host": "mapfretech--s-a-cf-dev-back-3biubn3r-mapfre-back-dev-bp32262abd.cfapps.eu10-004.hana.ondemand.com",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000eb7f-c182-8000-9c48-011c48011c48_11713128",
+    "name": "RH_M4_Sincro_GetTablaCount",
+    "app": "Procesos RRHH",
+    "urlRaw": "cons!RH_M4_SINCRO_ENDPOINT & upper(ri!nombreTabla) & \"/$count\"",
+    "host": "mapfretech--s-a-cf-dev-back-3biubn3r-mapfre-back-dev-bp32262abd.cfapps.eu10-004.hana.ondemand.com",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "c0d663be-ee00-4365-bb9f-8c4f8997c01c",
+    "name": "RM_API_Clients_search",
+    "app": "RM Riesgo Modular",
+    "urlRaw": "rule!RM_Conectar_URL_APIBusiness(forzarPreEnDev: true) & \"esp/srv/api/clients/1.0/clients/search\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "fa9bb36e-c63a-468e-b24d-faebd9867e43",
+    "name": "RM_Conectar_oAuth_token",
+    "app": "RM Riesgo Modular",
+    "urlRaw": "rule!RM_Conectar_URL_APIBusiness(forzarPreEnDev: ri!forzarPreEnDev) & \"auth/oauth/v2/token\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "9e91dfd9-aa6c-4003-bd4f-009c7f34142b",
+    "name": "RM_WSDL_Gesycore_ConsultarRecibosPoliza",
+    "app": "RM Riesgo Modular",
+    "urlRaw": "rule!RM_Conectar_URL_WebServices(forzarPreEnDev: true) & \"gesycore_servicios_bbe-web/services/consultarRecibosPoliza\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "1a5f0414-8a9a-412d-a796-160542933177",
+    "name": "RM_API_NT21_precontrato_aviso",
+    "app": "RM Riesgo Modular",
+    "urlRaw": "rule!RM_Conectar_URL_WebServices(forzarPreEnDev: true) & \"SR_TRC_be-web/api/nt21/precontrato/aviso\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "d0942141-35da-4ab7-9c52-399cee44ef28",
+    "name": "RM_WSDL_DescargarDocPrecon",
+    "app": "RM Riesgo Modular",
+    "urlRaw": "rule!RM_Conectar_URL_WebServices(forzarPreEnDev: true) & \"IDDPredoc_be-web/ws/consultarDocumentosPrecontractuales_v2\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e8dd-b080-8000-9bec-011c48011c48_2963085",
+    "name": "RM_WSDL_Gesycore_ObtenerIDPResolutiva",
+    "app": "RM Riesgo Modular",
+    "urlRaw": "rule!RM_Conectar_URL_WebServices(forzarPreEnDev: true) & \"gesycore_servicios_bbe-web/services/obtenerIDPResolutiva\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "20f7ae14-3732-4782-89ba-666ac708da9a",
+    "name": "RM_WSDL_Gesycore_ObtenerSiguienteIdentificador",
+    "app": "RM Riesgo Modular",
+    "urlRaw": "rule!RM_Conectar_URL_WebServices(forzarPreEnDev: true) & \"DT_be-web/ws/GestionarDomiciliacionTarjeta\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e8dd-b080-8000-9bec-011c48011c48_3089857",
+    "name": "RM_WSDL_Gesycore_RecuperarDatosAsociados",
+    "app": "RM Riesgo Modular",
+    "urlRaw": "rule!RM_Conectar_URL_WebServices(forzarPreEnDev: ri!forzarPreEnDev) & \"DT_be-web/ws/GestionarDomiciliacionTarjeta\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e90a-e4b4-8000-9bfa-011c48011c48_3711601",
+    "name": "RM_WSDL_ConsultarEstadoFirmaRefExterna",
+    "app": "RM Riesgo Modular",
+    "urlRaw": "rule!RM_Conectar_URL_WebServices(forzarPreEnDev: true) & \"FIRDOCE-web/ws/consultarEstadoSolicitudFirmasService\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e90a-e4b4-8000-9bfa-011c48011c48_4025346",
+    "name": "RM_WSDL_BSExecuteQuery",
+    "app": "RM Riesgo Modular",
+    "urlRaw": "rule!RM_Conectar_URL_WebServices(forzarPreEnDev: true) & \"SERVICIOSBASICOS/services/BSExecuteQuery\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000ed39-4f94-8000-9c84-011c48011c48_16173371",
+    "name": "RM_WSDL_IGestionarPerfilUsuario",
+    "app": "RM Riesgo Modular",
+    "urlRaw": "rule!MU_Conectar_URL_SOA7(forzarPreEnDev: true) & \"MAVISA_910Usuario_SOAMEDWeb/sca/MAVISA_910Usuario_WSDL\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000eb73-e3da-8000-9c41-011c48011c48_11551519",
+    "name": "SCAC_IGenerarContraAnul",
+    "app": "SCA CORE",
+    "urlRaw": "http://core7.desa.mapfre.net/PCA_CORECFSA_HTTPRouter/IGenerarContraAnul",
+    "host": "core7.desa.mapfre.net",
+    "auth": "authType=null; authExpression=false"
+  },
+  {
+    "uuid": "cf88a498-ba2e-4c28-98f2-eea3719e6bc7",
+    "name": "SCAC_obtenerTokenRetosRESTIntegracion",
+    "app": "SCA CORE",
+    "urlRaw": "https://apisb.mapfre.net:25003/esp/ext/api/retos/1.0/login",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000ebec-27b2-8000-9c65-011c48011c48_13082688",
+    "name": "SCAC_asignarRetosRESTIntegracion",
+    "app": "SCA CORE",
+    "urlRaw": "https://apisb.mapfre.net:25003/esp/ext/api/retos/1.0/corredores/assign",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "15774c28-d1a9-418c-a241-3521d3648351",
+    "name": "SCAC_prueba2",
+    "app": "SCA CORE",
+    "urlRaw": "https://sgc.es.pre.azure.mapfre.com/external/api/1.0/tasks",
+    "host": "sgc.es.pre.azure.mapfre.com",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "b364686c-9037-4f97-afae-90ae2ff0e283",
+    "name": "SCAC_tokenSGC3",
+    "app": "SCA CORE",
+    "urlRaw": null,
+    "host": null,
+    "auth": "unavailable; URL not returned by getIntegration"
+  },
+  {
+    "uuid": "205b082b-a590-4755-89d2-34f1bea20f3a",
+    "name": "SPA_Mapfre_Integracion_GestorConf",
+    "app": "SPA_MAPFRE",
+    "urlRaw": "rule!SPA_Mapfre_Tarificador_Generar(...)",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "6922bdb8-1de5-4fb9-a5ec-8d6584f9f09f",
+    "name": "SPA_Mapfre_Integracion_GestorConf_Eliminar",
+    "app": "SPA_MAPFRE",
+    "urlRaw": "rule!SPA_Mapfre_Tarificador_Generar(...)",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "bb6eed30-edce-4843-b91f-99231876a1f0",
+    "name": "SPA_Mapfre_Integracion_GestorConf_Modificar",
+    "app": "SPA_MAPFRE",
+    "urlRaw": "rule!SPA_Mapfre_Tarificador_Generar(...)",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e7dd-f179-8000-9bc1-011c48011c48_505368",
+    "name": "SPA_Mapfre_Integracion_GestorConf_Autos",
+    "app": "SPA_MAPFRE",
+    "urlRaw": "rule!SPA_Mapfre_Tarificador_Generar(...)",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e7dd-f179-8000-9bc1-011c48011c48_505383",
+    "name": "SPA_Mapfre_Integracion_GestorConf_Modificar_Autos",
+    "app": "SPA_MAPFRE",
+    "urlRaw": "rule!SPA_Mapfre_Tarificador_Generar(...)",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e7dd-f179-8000-9bc1-011c48011c48_505406",
+    "name": "SPA_Mapfre_Integracion_GestorConf_Eliminar_Autos",
+    "app": "SPA_MAPFRE",
+    "urlRaw": "rule!SPA_Mapfre_Tarificador_Generar(...)",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e7dd-f179-8000-9bc1-011c48011c48_538530",
+    "name": "SPA_Mapfre_Integracion_APIMotor_Marcas",
+    "app": "SPA_MAPFRE",
+    "urlRaw": "https://apisb.mapfre.com/sv/api/1.0/autos/catalogs/brands",
+    "host": "apisb.mapfre.com",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e800-42d4-8000-9bc4-011c48011c48_553148",
+    "name": "SPA_Mapfre_Integracion_APIMotor_MarcasVehiculos",
+    "app": "SPA_MAPFRE",
+    "urlRaw": "https://apisb.mapfre.net:25003/srv/api/1.0/motor/catalogs/brands",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e800-42d4-8000-9bc4-011c48011c48_558248",
+    "name": "SPA_MotorAPI_Login",
+    "app": "SPA_MAPFRE",
+    "urlRaw": "https://apisb.mapfre.net:25003/auth/oauth/v2/token",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e843-a960-8000-9bd4-011c48011c48_1286192",
+    "name": "SPA_MotorAPI_Login_V3",
+    "app": "SPA_MAPFRE",
+    "urlRaw": "https://apisb.mapfre.com/auth/oauth/v2/token",
+    "host": "apisb.mapfre.com",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e85b-72bf-8000-9bdf-011c48011c48_1565323",
+    "name": "SPA_Mapfre_MotorAPI_Login",
+    "app": "SPA_MAPFRE",
+    "urlRaw": "https://apisb.mapfre.net:25003/auth/authorize/login",
+    "host": "apisb.mapfre.net:25003",
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e901-9c41-8000-9bf7-011c48011c48_3666807",
+    "name": "SPA_Mapfre_Integracion_GestorConf_Salud",
+    "app": "SPA_MAPFRE",
+    "urlRaw": "rule!SPA_Mapfre_Tarificador_Generar(...)",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e901-9c41-8000-9bf7-011c48011c48_3672703",
+    "name": "SPA_Mapfre_Integracion_GestorConf_Modificar_Salud",
+    "app": "SPA_MAPFRE",
+    "urlRaw": "rule!SPA_Mapfre_Tarificador_Generar(...)",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000e901-9c41-8000-9bf7-011c48011c48_3674944",
+    "name": "SPA_Mapfre_Integracion_GestorConf_Eliminar_Salud",
+    "app": "SPA_MAPFRE",
+    "urlRaw": "rule!SPA_Mapfre_Tarificador_Generar(...)",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "_a-0000ed39-4f94-8000-9c84-011c48011c48_16172239",
+    "name": "TVA_WSDL_IGestionarPerfilUsuario",
+    "app": "Tarificador Vida Ahorro",
+    "urlRaw": "rule!MU_Conectar_URL_SOA7(forzarPreEnDev: true) & \"MAVISA_910Usuario_SOAMEDWeb/sca/MAVISA_910Usuario_WSDL\"",
+    "host": null,
+    "auth": "authType=null; authExpression=true"
+  },
+  {
+    "uuid": "a3f106ba-5e1e-47bd-8823-c7d7bd95de03",
+    "name": "TI_InicioTIdesdeWebAPI",
+    "app": "Test Idoneidad",
+    "urlRaw": "https://mapfrespain-dev.appiancloud.com/suite/webapi/testIdoneidad",
+    "host": "mapfrespain-dev.appiancloud.com",
+    "auth": "authType=null; authExpression=false"
+  }
+]
