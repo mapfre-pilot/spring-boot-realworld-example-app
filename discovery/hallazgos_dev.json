@@ -1,7 +1,13 @@
 {
  "nuevos": [],
  "desaparecidos": [],
- "cambiados": [],
+ "cambiados": [
+  {
+   "cs": "RH GD Corporativo",
+   "antes": "https://ws-gdu.pre.azure.mapfre.net:25021/",
+   "ahora": "https://alb.appian.es.int.emea.aws.mapfre.net:443/"
+  }
+ ],
  "sinCobertura": [
   {
    "tipo": "DB",
@@ -91,7 +97,7 @@
    "port": null,
    "auth": "Basic",
    "apps": [
-    "PAI Programa Automatización Incentivos"
+    "PAPELERA OT"
    ],
    "propuesta": "Integración GET ligera vía CS 'PAI_SistTest' → código HTTP_ACK_AISF_KASD_FK"
   },

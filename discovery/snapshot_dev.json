@@ -1,6 +1,6 @@
 {
  "env": "dev",
- "fecha": "2026-09-18T09:18:59.542826",
+ "fecha": "2026-09-21T08:56:14.752221",
  "connectedSystems": {
   "_a-0000ec13-1536-8000-9c71-011c48011c48_13687075": {
    "uuid": "_a-0000ec13-1536-8000-9c71-011c48011c48_13687075",
@@ -238,7 +238,7 @@
    "uuid": "_a-0000ed7d-cf02-8000-9c8d-011c48011c48_16723202",
    "name": "BDE Conexión Sharepoint",
    "type": "plugin.[SharePoint].[SharePoint]",
-   "description": "Conexión con sharepoint: \nDisplay name: azr-app-pro-BITACORA-mapfrees\nApplication (client) ID: 9ad80980-807e-4560-93bc-ee5e054489d3\nDirectory (tenant) ID: 5cc6c66d-ffb2-469f-9385-cda840e57836\nClient secret: [REDACTED]",
+   "description": "Conexión con sharepoint: \nDisplay name: azr-app-pro-BITACORA-mapfrees\nApplication (client) ID: 9ad80980-807e-4560-93bc-ee5e054489d3\nDirectory (tenant) ID: 5cc6c66d-ffb2-469f-9385-cda840e57836\nClient secret: 1ny8Q~qcatf2~zc36jhyPRUW7FWQRlGvgV554cpH",
    "apps": [
     "Bitácora de Empresas"
    ]
@@ -1302,17 +1302,6 @@
    "baseUrl": "http://ses000a107158.es.mapfre.net:25031/",
    "authType": "Basic"
   },
-  "_a-0000eebe-52f3-8000-9ca6-011c48011c48_18307535": {
-   "uuid": "_a-0000eebe-52f3-8000-9ca6-011c48011c48_18307535",
-   "name": "PAI_SistTest",
-   "type": "system.http",
-   "description": "",
-   "apps": [
-    "PAI Programa Automatización Incentivos"
-   ],
-   "baseUrl": "https://ackñaisfñkasdñfk",
-   "authType": "Basic"
-  },
   "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19330882": {
    "uuid": "_a-0000ef79-7a00-8000-9cb4-011c48011c48_19330882",
    "name": "PAI Denodo BI Comercial",
@@ -1322,6 +1311,17 @@
     "PAI Programa Automatización Incentivos"
    ],
    "baseUrl": "https://int.denodo.inf.es.mapfre.net:25051",
+   "authType": "Basic"
+  },
+  "_a-0000eebe-52f3-8000-9ca6-011c48011c48_18307535": {
+   "uuid": "_a-0000eebe-52f3-8000-9ca6-011c48011c48_18307535",
+   "name": "PAI_SistTest",
+   "type": "system.http",
+   "description": "",
+   "apps": [
+    "PAPELERA OT"
+   ],
+   "baseUrl": "https://ackñaisfñkasdñfk",
    "authType": "Basic"
   },
   "_a-0000e700-629a-8000-9bc5-011c48011c48_2019184": {
@@ -1928,7 +1928,7 @@
    "apps": [
     "Procesos RRHH"
    ],
-   "baseUrl": "https://ws-gdu.pre.azure.mapfre.net:25021/",
+   "baseUrl": "https://alb.appian.es.int.emea.aws.mapfre.net:443/",
    "authType": "None"
   },
   "_a-0000eb73-e3da-8000-9c41-011c48011c48_11492622": {
