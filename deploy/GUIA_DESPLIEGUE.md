@@ -40,14 +40,16 @@ Verificación previa recomendada: en Appian Designer del destino, *Compare and D
    - KO "sin respuesta" en un host = ese CS no es alcanzable desde ese entorno (red/whitelist/OAuth). Es un hallazgo real; si es esperado (host de otro entorno) desactivar la prueba en *Catálogo*.
    - Las 10 pruebas que vienen desactivadas de DEV (hosts DESA/PRE, OAuth) pueden **activarse** en TEST/PRO si allí los hosts sí responden.
    - Ajustar `umbralMs` si la latencia del entorno es distinta.
-9. **Web APIs desde pipelines/procesos de instalación**: crear una cuenta de servicio en el destino, añadirla al grupo `Administrators`, generar su API key (Admin Console → Web API Authentication) y guardarla en el gestor de secretos del pipeline (nunca en la app). Ejemplo de llamada:
+9. **Web APIs desde pipelines/procesos de instalación**: crear una cuenta de servicio en el destino, añadirla al grupo `SMK Users`, generar su API key (Admin Console → Web API Authentication) y guardarla en el gestor de secretos del pipeline (nunca en la app ni en el repo). Ejemplo de llamada (cabecera `Appian-API-Key: <key>`):
    ```
    POST https://<host>/suite/webapi/smoke_runs
    {"categorias": [], "motivo": "Post-instalación <app> <versión>", "origen": "INSTALACION_APP"}
-   → {"ejecucionId": N}
-   GET  https://<host>/suite/webapi/smoke_run?id=N
+   → 202 {"ejecucionId": N, "processId": P, "estado": "EN_CURSO", "estadoUrl": "/suite/webapi/smoke_run?id=N", ...}
+   GET  https://<host>/suite/webapi/smoke_run?id=N            (sondear hasta "terminada": true; ~30 s)
    GET  https://<host>/suite/webapi/smoke_run_results?id=N&resultado=KO,WARN
    ```
+   El POST es asíncrono: la ejecución se crea `EN_CURSO` antes de arrancar el runner, por lo que `ejecucionId` es definitivo desde la respuesta. Verificado en DEV (#19–#22) con la cuenta `apigw.devops`.
+10. **Data Management** de `SMK Ejecutar Pruebas` y `SMK Ejecutar Prueba`: comprobar tras importar que sigue en *Eliminar procesos 1 día después de finalizar* (el paquete lo incluye, pero el MCP no puede verificarlo).
 
 ## 4. Qué NO viaja con el paquete (y cómo se resuelve)
 

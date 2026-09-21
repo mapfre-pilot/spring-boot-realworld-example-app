@@ -1,15 +1,7 @@
 /* GET /smoke_run?id={ejecucionId}  -> estado y totales de la ejecución */
 a!localVariables(
   local!id: tointeger(index(index(http!request, "queryParameters", a!map()), "id", null)),
-  local!ej: if(
-    a!isNullOrEmpty(local!id),
-    {},
-    a!queryRecordType(
-      recordType: 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion',
-      filters: a!queryFilter(field: 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{4a743dda-a9e3-46c9-8bc3-2826f9586ce1}id', operator: "=", value: local!id),
-      pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1)
-    ).data
-  ),
+  local!ej: rule!SMK_getEjecucion(ejecucionId: local!id),
   if(
     a!isNullOrEmpty(local!ej),
     a!httpResponse(

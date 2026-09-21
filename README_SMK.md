@@ -28,13 +28,18 @@ Aplicación Appian `SMK Pruebas de Humo` (DEV, `mapfrespain-dev`) para lanzar pr
 ```
 POST /suite/webapi/smoke_runs
 {"categorias":["PLATAFORMA","DB","S3"], "motivo":"Despliegue APP X v1.2", "origen":"INSTALACION_APP"}
-→ 202 {"ejecucionId": 12, "totalPruebas": 9, "estadoUrl": "/suite/webapi/smoke_run?id=12", ...}
+→ 202 {"ejecucionId": 20, "processId": 537316617, "estado": "EN_CURSO",
+       "estadoUrl": "/suite/webapi/smoke_run?id=20", "resultadosUrl": "/suite/webapi/smoke_run_results?id=20"}
 
-GET /suite/webapi/smoke_run?id=12            → estado, terminada, totales
-GET /suite/webapi/smoke_run_results?id=12&resultado=KO,WARN
+GET /suite/webapi/smoke_run?id=20            → estado, terminada, totales (404 si no existe)
+GET /suite/webapi/smoke_run_results?id=20&resultado=KO,WARN
 GET /suite/webapi/smoke_tests?categoria=HTTP
 ```
-Body de `smoke_runs`: `codigos`, `categorias`, `sistemas` (listas, vacías = sin filtro), `motivo`, `origen`.
+Autenticación: cabecera `Appian-API-Key: <key>` de una cuenta de servicio miembro de `SMK Users` (la key vive en el gestor de secretos del pipeline, nunca en la app ni en el repo).
+
+Body de `smoke_runs`: `codigos`, `categorias`, `sistemas` (listas, vacías = sin filtro), `motivo`, `origen`. El POST es **asíncrono**: crea la `SMK Ejecucion` en estado `EN_CURSO` (por eso el `ejecucionId` de la respuesta es definitivo) y arranca el runner pasándole ese id como parámetro; el pipeline debe sondear `smoke_run` hasta `terminada=true` (una ejecución completa tarda ~30 s) y decidir con `estado` (`OK`/`WARN`/`KO`). Verificado por HTTP en DEV con la cuenta de servicio: filtros por códigos (#19), categorías (#20), sistemas (#21) y sin filtros (#22, 102/102 OK); 404 para id inexistente.
+
+Las Web APIs de estado/resultados consultan mediante las reglas `SMK_getEjecucion(ejecucionId)` y `SMK_getResultados(ejecucionId, resultados)` (así se respeta el límite de 4.000 caracteres por expresión de Web API).
 Desde un proceso Appian: subproceso `SMK Ejecutar Pruebas` o `a!startProcess(cons!SMK_PM_EJECUTAR_PRUEBAS, ...)`.
 
 ## Añadir una prueba
@@ -53,7 +58,7 @@ Desde un proceso Appian: subproceso `SMK Ejecutar Pruebas` o `a!startProcess(con
 
 - Los objetos de la aplicación heredan la seguridad de la app siempre que el objeto lo permite; se evitan role maps explícitos redundantes. `devin` conserva acceso por pertenencia a `SMK Administrators`.
 - Las 10 expression rules SMK cubiertas por Estado de prueba de regla tienen casos de prueba: **10/10 con resultado correcto** en la validación realizada.
-- La política objetivo de ambos process models (`SMK Ejecutar Pruebas` y `SMK Ejecutar Prueba`) es **eliminar las instancias 1 día después de finalizar, sin archivar**. El MCP no expone esta propiedad; debe comprobarse/aplicarse desde Designer. El subproceso queda pendiente de aplicar si no aparece confirmado en Designer.
+- La política objetivo de ambos process models (`SMK Ejecutar Pruebas` y `SMK Ejecutar Prueba`) es **eliminar las instancias 1 día después de finalizar, sin archivar**; aplicada y publicada en DEV en ambos (Process Modeler → Propiedades → Data Management). El MCP no expone esta propiedad, así que tras importar en otro entorno hay que comprobarla en Designer.
 
 ## Baseline v2 (ejecución #6, 102 pruebas activas, 15 s): 102 OK
 

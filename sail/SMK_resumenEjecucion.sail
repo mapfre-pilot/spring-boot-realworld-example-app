@@ -24,7 +24,7 @@ a!localVariables(
   a!map(
     totalPruebas: local!total,
     totalOk: local!ok,
-    totalKo: local!ko + max(local!faltan, 0),
+    totalKo: tointeger(local!ko + max(local!faltan, 0)),
     totalWarn: local!warn,
     totalSkip: local!skip,
     estado: if(

@@ -1,25 +1,13 @@
 /* GET /smoke_run_results?id={ejecucionId}[&resultado=KO,WARN]  -> resultados por prueba */
 a!localVariables(
   local!id: tointeger(index(index(http!request, "queryParameters", a!map()), "id", null)),
-  local!filtroRes: touniformstring(a!flatten(split(a!defaultValue(index(index(http!request, "queryParameters", a!map()), "resultado", ""), ""), ","))),
-  local!filtroRes2: reject(fn!isnull, local!filtroRes),
+  local!filtroRes: split(a!defaultValue(index(index(http!request, "queryParameters", a!map()), "resultado", ""), ""), ","),
   local!estado: if(a!isNullOrEmpty(local!id), null, rule!SMK_resumenEjecucion(ejecucionId: local!id)),
-  local!res: if(a!isNullOrEmpty(local!id), a!map(data: {}, totalCount: 0), a!queryRecordType(
-    recordType: 'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado',
-    filters: a!queryLogicalExpression(
-      operator: "AND",
-      filters: {
-        a!queryFilter(field: 'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{07788adb-63de-481c-9f2d-3723a9a63d4e}ejecucionId', operator: "=", value: local!id),
-        if(
-          a!isNullOrEmpty(local!filtroRes2),
-          {},
-          a!queryFilter(field: 'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{8bbe1e8e-1859-4ec0-b2ee-3f270d34c902}resultado', operator: "in", value: local!filtroRes2)
-        )
-      }
-    ),
-    pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1000, sort: a!sortInfo(field: 'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{8bbe1e8e-1859-4ec0-b2ee-3f270d34c902}resultado', ascending: false)),
-    fetchTotalCount: true
-  )),
+  local!res: if(
+    a!isNullOrEmpty(local!id),
+    a!map(data: {}, totalCount: 0),
+    rule!SMK_getResultados(ejecucionId: local!id, resultados: local!filtroRes)
+  ),
   a!httpResponse(
     statusCode: if(a!isNullOrEmpty(local!id), 400, 200),
     headers: { a!httpHeader(name: "Content-Type", value: "application/json") },
