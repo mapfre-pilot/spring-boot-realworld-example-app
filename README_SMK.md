@@ -8,12 +8,14 @@ Aplicación Appian `SMK Pruebas de Humo` (DEV, `mapfrespain-dev`) para lanzar pr
 |---|---|
 | Catálogo | Record `SMK Test` (tabla `SMK_TEST`): codigo, nombre, categoria (PLATAFORMA/DB/S3/HTTP/APIGW), sistema, criticidad, activo, motivoInactivo, origenAlta, orden, umbralMs |
 | Ejecuciones | Record `SMK Ejecucion` (`SMK_EJECUCION`): estado (EN_CURSO/OK/WARN/KO), origen, motivo, lanzadoPor, totales, duracionMs |
+| Programaciones | Record `SMK Programacion` (`SMK_PROGRAMACION`): estado (PENDIENTE/LANZADA/CANCELADA), fechaProgramada, alcance y enlace a la ejecución resultante |
 | Resultados | Record `SMK Resultado` (`SMK_RESULTADO`): un registro por prueba y ejecución, con resultado OK/KO/WARN/SKIP, mensaje, detalle técnico, duración |
 | Pruebas | 70 integraciones HTTP `SMK_INT_HTTP_<host>` con Connected System y 12 pruebas HTTP adicionales `HTTP_<host>` mediante la integración sin Connected System `SMK_INT_HTTP_url` (GET a `/smk-smoke-probe`, URL por las constantes `SMK_URL_*`), `SMK_INT_S3_ListBuckets` (CS `CMP Conexion AWS S3`), 40 pruebas DB (`jdbc/Appian` + 39 Connected Systems DataSource: consulta read-only de 1 fila a un record type que usa cada CS, validando credenciales, red y esquema), comprobación del motor de procesos |
 | Lógica | `SMK_seleccionarPruebas` (filtro por códigos/categorías/sistemas), `SMK_ejecutarPrueba` (dispatcher por código), `SMK_evaluarHttp`, `SMK_evaluarIntegracion`, `SMK_construirResultado`, `SMK_resumenEjecucion` |
 | Runner | PM `SMK Ejecutar Pruebas` (selecciona → crea ejecución → MNI paralelo de `SMK Ejecutar Prueba`, uno por prueba → espera (timer 10 s, máx. 24 intentos) → consolida → cierra). Constante `SMK_PM_EJECUTAR_PRUEBAS` |
+| Programación | Regla `SMK_getProgramaciones`, PM `SMK Programar Pruebas` (timer hasta `fechaProgramada`, relee la programación y sólo lanza si sigue PENDIENTE; crea `SMK Ejecucion` con origen PROGRAMADO y motivo con `[Programación #N]`, y lanza `SMK Ejecutar Pruebas`; borrado a 1 día). Constante `SMK_PM_PROGRAMAR_PRUEBAS` |
 | API | Web APIs `smoke_runs` (POST), `smoke_run` (GET), `smoke_run_results` (GET), `smoke_tests` (GET) |
-| UI | Site `Pruebas de Humo` (Panel, Ejecutar, Histórico, Comparar, Catálogo) |
+| UI | Site `Pruebas de Humo` (Panel, Ejecutar, Histórico, Comparar, Programar, Catálogo); interfaz `SMK_UI_Programar` |
 
 ## Criterio de resultado
 
@@ -54,11 +56,18 @@ Desde un proceso Appian: subproceso `SMK Ejecutar Pruebas` o `a!startProcess(con
 - La página **Comparar**, situada después de Histórico, permite seleccionar las ejecuciones anterior y posterior, ver regresiones/mejoras/nuevas/ausentes/sin cambio y filtrar las filas sin cambios. Las etiquetas muestran `#id · fecha · estado · motivo`.
 - Cuando una ejecución termina en `KO`, el runner envía el resumen por email a los usuarios obtenidos de la constante de grupo `SMK_GRUPO_ADMINISTRADORES`, incluyendo las pruebas KO/WARN y el enlace al Histórico. La constante se despliega con seguridad heredada en `SMK Rules and Constants` y debe apuntar al grupo administrador de cada entorno.
 
+## Programación de ejecuciones (página Programar)
+
+La página **Programar** permite indicar fecha y hora (mínimo 2 minutos en el futuro), alcance (**Todas**, **Por categoría**, **Por sistema** o **Pruebas concretas**), motivo y origen. La programación queda `PENDIENTE` y aparece inmediatamente en la tabla; puede cancelarse mientras permanece PENDIENTE. La cancelación marca `CANCELADA` y el proceso termina sin lanzar al despertar del timer. Al llegar la hora, pasa a `LANZADA` y muestra el enlace **Ver detalle** a la ejecución resultante. La página muestra KPIs de próxima ejecución y programaciones pendientes. El proceso convierte la fecha/hora local mostrada por el site usando la zona horaria del servidor.
+
+Verificado en DEV: las programaciones **#3**, **#5** y **#6** se lanzaron a la hora exacta y crearon las ejecuciones **#27**, **#28** y **#29**; la programación **#4** se canceló sin lanzar.
+
 ## Seguridad, pruebas y limpieza
 
 - Los objetos de la aplicación heredan la seguridad de la app siempre que el objeto lo permite; se evitan role maps explícitos redundantes. `devin` conserva acceso por pertenencia a `SMK Administrators`.
 - Las 10 expression rules SMK cubiertas por Estado de prueba de regla tienen casos de prueba: **10/10 con resultado correcto** en la validación realizada.
-- La política objetivo de ambos process models (`SMK Ejecutar Pruebas` y `SMK Ejecutar Prueba`) es **eliminar las instancias 1 día después de finalizar, sin archivar**; aplicada y publicada en DEV en ambos (Process Modeler → Propiedades → Data Management). El MCP no expone esta propiedad, así que tras importar en otro entorno hay que comprobarla en Designer.
+- Los cinco process models (`SMK Ejecutar Pruebas`, `SMK Ejecutar Prueba`, `SMK Ver Ejecucion`, `SMK Ver Resultado` y `SMK Programar Pruebas`) tienen política de **eliminar las instancias 1 día después de finalizar, sin archivar**; aplicada y publicada en DEV desde Designer (Process Modeler → Propiedades → Data Management). Tras importar en otro entorno hay que comprobarla en Designer.
+- `SMK Administrators` y `SMK Users` pueden crear y cancelar programaciones; no hay una restricción adicional por grupo dentro de la aplicación, y el acceso lo proporciona el site.
 
 ## Baseline v2 (ejecución #6, 102 pruebas activas, 15 s): 102 OK
 

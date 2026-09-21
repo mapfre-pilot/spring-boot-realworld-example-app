@@ -1,0 +1,32 @@
+{
+ "name": "SMK Programacion",
+ "pluralName": "SMK Programaciones",
+ "sourceType": "DATABASE",
+ "createTable": true,
+ "tableName": "SMK_PROGRAMACION",
+ "appUuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20033025",
+ "description": "Programación de una ejecución de pruebas de humo para una fecha y hora concretas. Un proceso SMK Programar Pruebas espera con un timer hasta fechaProgramada y lanza el runner.",
+ "fields": [
+  {"fieldName": "id", "fieldType": "INTEGER", "isPrimaryKey": true},
+  {"fieldName": "fechaProgramada", "fieldType": "DATETIME", "description": "Fecha y hora en la que debe lanzarse la ejecución"},
+  {"fieldName": "estado", "fieldType": "TEXT", "length": 20, "description": "PENDIENTE | LANZADA | CANCELADA"},
+  {"fieldName": "modo", "fieldType": "TEXT", "length": 30, "description": "Todas | Por categoría | Por sistema | Pruebas concretas"},
+  {"fieldName": "codigos", "fieldType": "TEXT", "length": 4000, "description": "Códigos de prueba separados por coma (modo Pruebas concretas)"},
+  {"fieldName": "categorias", "fieldType": "TEXT", "length": 500, "description": "Categorías separadas por coma (modo Por categoría)"},
+  {"fieldName": "sistemas", "fieldType": "TEXT", "length": 4000, "description": "Sistemas separados por coma (modo Por sistema)"},
+  {"fieldName": "numPruebas", "fieldType": "INTEGER", "description": "Nº de pruebas del alcance en el momento de programar"},
+  {"fieldName": "motivo", "fieldType": "TEXT", "length": 4000},
+  {"fieldName": "origen", "fieldType": "TEXT", "length": 100, "description": "Origen que tendrá la ejecución (INSTALACION_APP, CAMBIO_VERSION, INTERVENCION_SAAS, ...)"},
+  {"fieldName": "creadoPor", "fieldType": "TEXT", "length": 255},
+  {"fieldName": "fechaCreacion", "fieldType": "DATETIME"},
+  {"fieldName": "procesoId", "fieldType": "INTEGER", "description": "Id del proceso SMK Programar Pruebas que espera el timer"},
+  {"fieldName": "ejecucionId", "fieldType": "INTEGER", "description": "SMK Ejecucion creada al lanzarse"},
+  {"fieldName": "fechaLanzamiento", "fieldType": "DATETIME"},
+  {"fieldName": "canceladoPor", "fieldType": "TEXT", "length": 255},
+  {"fieldName": "fechaCancelacion", "fieldType": "DATETIME"}
+ ],
+ "relationships": [
+  {"relationshipName": "ejecucion", "sourceFieldName": "ejecucionId", "targetRecordTypeUuid": "e0fef5cc-80d6-491b-b74b-71d623d7a0ec", "targetFieldName": "id", "relationshipType": "MANY_TO_ONE"}
+ ],
+ "listColumns": ["id", "fechaProgramada", "estado", "modo", "numPruebas", "motivo", "creadoPor", "ejecucionId"]
+}

@@ -48,7 +48,8 @@ La versión 3 de `SMK_INT_HTTP_url` tiene timeout de 15 s y clasifica como alcan
 2. **Ejecutar** – elige *Todas*, *Por categoría*, *Por sistema* o *Pruebas concretas*, indica el motivo (p. ej. "Post-despliegue APP X v1.2") y el origen y pulsa **Ejecutar pruebas de humo**. Una ejecución completa tarda ~30 s.
 3. **Histórico** – todas las ejecuciones, con filtros, de la más reciente a la más antigua.
 4. **Comparar** – dos ejecuciones lado a lado: regresiones (OK → KO/WARN), mejoras y pruebas nuevas.
-5. **Catálogo** – todas las pruebas con estado (Activa / Desactivada / Pendiente de revisión), motivo de desactivación, umbral de latencia; permite activar/desactivar y sincronizar el catálogo base.
+5. **Programar** – programa una ejecución para una fecha y hora, permite cancelarla mientras está PENDIENTE y muestra la ejecución resultante cuando se lanza.
+6. **Catálogo** – todas las pruebas con estado (Activa / Desactivada / Pendiente de revisión), motivo de desactivación, umbral de latencia; permite activar/desactivar y sincronizar el catálogo base.
 
 ### Desde un pipeline (Web API, cuenta de servicio con API key)
 
@@ -75,7 +76,7 @@ El pipeline sondea `smoke_run` hasta `terminada=true` y decide con `estado`.
 
 ## Datos y limpieza
 
-Ejecuciones y resultados se guardan en las tablas `SMK_EJECUCION` / `SMK_RESULTADO` (histórico permanente). Las instancias de proceso se eliminan automáticamente 1 día después de finalizar.
+Ejecuciones y resultados se guardan en las tablas `SMK_EJECUCION` / `SMK_RESULTADO` (histórico permanente). Las programaciones se persisten en `SMK_PROGRAMACION`; las programaciones PENDIENTES no se migran entre entornos. Las instancias de los cinco procesos se eliminan automáticamente 1 día después de finalizar, sin archivar.
 
 ## Soporte
 
