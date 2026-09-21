@@ -86,7 +86,7 @@ La integración compartida `SMK_INT_HTTP_url` usa timeout de 15 s y considera é
 - Seguridad de las Web APIs: crear cuenta de servicio + API key y dar permiso al grupo de la app.
 
 ## Despliegue a TEST / PRO
-Ver `deploy/GUIA_DESPLIEGUE.md`. Resumen: la app no contiene Connected Systems; reutiliza los CS/record types de las apps de negocio ya desplegadas en cada entorno. Pasos: exportar paquete → (opcional) `deploy/01_ddl_smk.sql` → importar → configurar `SMK_GRUPO_ADMINISTRADORES` por entorno → grupos → site *Catálogo* → **Sincronizar catálogo** (carga las pruebas de `SMK_catalogoBase` que falten; alternativa `deploy/02_catalogo_smk.sql`) → *Ejecutar* → baseline → activar/desactivar por entorno.
+Ver `deploy/GUIA_DESPLIEGUE.md`. Resumen: la app no contiene Connected Systems; reutiliza los CS/record types de las apps de negocio ya desplegadas en cada entorno. Para las tablas y la carga inicial del catálogo, la ruta recomendada es Liquibase: `liquibase --changelog-file=deploy/liquibase/db.changelog-master.xml update` contra `jdbc/Appian` del entorno destino. Pasos: exportar paquete → ejecutar Liquibase → importar → configurar `SMK_GRUPO_ADMINISTRADORES` por entorno → grupos → site *Catálogo* → **Sincronizar catálogo** → *Ejecutar* → baseline → activar/desactivar por entorno. `deploy/01_ddl_smk.sql` y `deploy/02_catalogo_smk.sql` se mantienen como fallback.
 
 ## Evolución del catálogo (detectar conexiones / BD nuevas)
 - **Fuente de verdad**: regla `SMK_catalogoBase` (124 pruebas: 112 existentes y 12 `INT_SIN_CS`). `SMK_catalogoPendiente` devuelve las que faltan en `SMK_TEST`; el botón *Sincronizar catálogo* las inserta (nunca actualiza ni borra las existentes). Así una prueba nueva se añade una vez en DEV y llega a TEST/PRO con el paquete.

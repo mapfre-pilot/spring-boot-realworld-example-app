@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="1.0.0-1" author="SMK">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="SMK_PROGRAMACION"/></not></preConditions>
+        <createTable tableName="SMK_PROGRAMACION">
+            <column name="ID" type="int" autoIncrement="true"><constraints nullable="false" primaryKey="true" primaryKeyName="PK_SMK_PROGRAMACION"/></column>
+            <column name="FECHA_PROGRAMADA" type="datetime"><constraints nullable="false"/></column>
+            <column name="ESTADO" type="varchar(20)"><constraints nullable="false"/></column>
+            <column name="MODO" type="varchar(30)"/>
+            <column name="CODIGOS" type="clob"/>
+            <column name="CATEGORIAS" type="varchar(500)"/>
+            <column name="SISTEMAS" type="clob"/>
+            <column name="NUM_PRUEBAS" type="int"/>
+            <column name="MOTIVO" type="varchar(500)"/>
+            <column name="ORIGEN" type="varchar(50)"/>
+            <column name="CREADO_POR" type="varchar(255)"/>
+            <column name="FECHA_CREACION" type="datetime"/>
+            <column name="PROCESO_ID" type="bigint"/>
+            <column name="EJECUCION_ID" type="int"/>
+            <column name="FECHA_LANZAMIENTO" type="datetime"/>
+            <column name="CANCELADO_POR" type="varchar(255)"/>
+            <column name="FECHA_CANCELACION" type="datetime"/>
+        </createTable>
+        <rollback><dropTable tableName="SMK_PROGRAMACION"/></rollback>
+    </changeSet>
+    <changeSet id="1.0.0-2" author="SMK">
+        <preConditions onFail="MARK_RAN"><not><indexExists tableName="SMK_PROGRAMACION" indexName="IX_SMK_PROGRAMACION_ESTADO_FECHA"/></not></preConditions>
+        <createIndex tableName="SMK_PROGRAMACION" indexName="IX_SMK_PROGRAMACION_ESTADO_FECHA">
+            <column name="ESTADO"/>
+            <column name="FECHA_PROGRAMADA"/>
+        </createIndex>
+        <rollback><dropIndex tableName="SMK_PROGRAMACION" indexName="IX_SMK_PROGRAMACION_ESTADO_FECHA"/></rollback>
+    </changeSet>
+</databaseChangeLog>

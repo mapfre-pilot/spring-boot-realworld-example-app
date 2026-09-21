@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="1.0.0-data-1" author="SMK">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM SMK_TEST</sqlCheck>
+        </preConditions>
+        <loadData tableName="SMK_TEST" file="data/smk_test.csv" relativeToChangelogFile="true" separator=";" quotchar='"' encoding="UTF-8">
+            <column name="CODIGO" type="STRING"/>
+            <column name="NOMBRE" type="STRING"/>
+            <column name="CATEGORIA" type="STRING"/>
+            <column name="SISTEMA" type="STRING"/>
+            <column name="DESCRIPCION" type="STRING"/>
+            <column name="CRITICIDAD" type="STRING"/>
+            <column name="ACTIVO" type="BOOLEAN"/>
+            <column name="MOTIVO_INACTIVO" type="STRING"/>
+            <column name="ORIGEN_ALTA" type="STRING"/>
+            <column name="ORDEN" type="NUMERIC"/>
+            <column name="UMBRAL_MS" type="NUMERIC"/>
+        </loadData>
+        <rollback><delete tableName="SMK_TEST"/></rollback>
+    </changeSet>
+</databaseChangeLog>
