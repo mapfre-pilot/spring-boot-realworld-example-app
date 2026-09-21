@@ -19,7 +19,8 @@ exclusivamente con operaciones `get*`/`list*`. **No se ha modificado ningún obj
 4. [Modelo de datos](04-modelo-de-datos.md) — record types, fuente de datos, estados.
 5. [Seguridad y configuración](05-seguridad-y-configuracion.md) — grupos, visibilidad, constantes, gestión de entornos.
 6. [Riesgos y mejoras propuestas](06-riesgos-y-mejoras.md) — deuda técnica y plan de mejora priorizado.
-7. [Anexo: inventario generado](anexos/inventario-generado.md) — volcado tabular (process models, integraciones, record types, referencias cruzadas).
+7. [Plan de rediseño: procesos atómicos orquestados desde la interfaz](07-plan-rediseno-procesos-atomicos.md) — diagnóstico de los PMs de alta, arquitectura objetivo, duplicación aislada de la app y fases.
+8. [Anexo: inventario generado](anexos/inventario-generado.md) — volcado tabular (process models, integraciones, record types, referencias cruzadas).
 
 ## Alcance y limitaciones
 
