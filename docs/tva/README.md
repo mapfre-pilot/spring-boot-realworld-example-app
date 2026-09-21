@@ -23,6 +23,7 @@ Documentación resultante del análisis **de solo lectura** de la aplicación Ap
 6. [Seguridad, grupos y sites](06-seguridad.md)
 7. [Hallazgos y propuestas de mejora](07-mejoras.md)
 8. [Limitaciones del análisis](08-limitaciones.md)
+9. [Plan de migración a Angular Material + backend](09-plan-migracion-angular.md)
 
 ## Resumen ejecutivo
 
