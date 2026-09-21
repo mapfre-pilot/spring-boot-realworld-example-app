@@ -17,7 +17,7 @@ a!localVariables(
     },
     pagingInfo: a!pagingInfo(
       startIndex: 1,
-      batchSize: 10,
+      batchSize: 1,
       sort: a!sortInfo(
         field: 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{1e84e153-8cd3-492b-9b7f-3c97575a75e5}fechaInicio',
         ascending: false
@@ -33,6 +33,34 @@ a!localVariables(
     if(local!estado = "WARN", cons!SMK_COLOR_AVISO, if(local!estado = "KO", cons!SMK_COLOR_ERROR, cons!SMK_COLOR_AZUL_GRIS))
   ),
   local!categorias: {"PLATAFORMA", "DB", "S3", "HTTP", "APIGW"},
+  local!agg: a!queryRecordType(
+    recordType: 'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado',
+    fields: a!aggregationFields(
+      groupings: {
+        a!grouping(
+          field: 'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{59e09557-6cf0-4346-9da8-fea279aba42a}categoria',
+          alias: "categoria"
+        ),
+        a!grouping(
+          field: 'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{8bbe1e8e-1859-4ec0-b2ee-3f270d34c902}resultado',
+          alias: "resultado"
+        )
+      },
+      measures: {
+        a!measure(
+          field: 'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{fd4208ff-713a-4043-b70e-14d16dcd7bd2}id',
+          function: "COUNT",
+          alias: "n"
+        )
+      }
+    ),
+    filters: a!queryFilter(
+      field: 'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{07788adb-63de-481c-9f2d-3723a9a63d4e}ejecucionId',
+      operator: "=",
+      value: local!ultimaId
+    ),
+    pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 100)
+  ),
   a!headerContentLayout(
     header: rule!SMK_UI_Cabecera(
       icono: "heartbeat",
@@ -165,32 +193,10 @@ a!localVariables(
           items: local!categorias,
           expression: a!localVariables(
             local!cat: fv!item,
-            local!catData: a!queryRecordType(
-              recordType: 'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado',
-              fields: {
-                'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{8bbe1e8e-1859-4ec0-b2ee-3f270d34c902}resultado'
-              },
-              filters: a!queryLogicalExpression(
-                operator: "AND",
-                filters: {
-                  a!queryFilter(
-                    field: 'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{07788adb-63de-481c-9f2d-3723a9a63d4e}ejecucionId',
-                    operator: "=",
-                    value: local!ultimaId
-                  ),
-                  a!queryFilter(
-                    field: 'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{59e09557-6cf0-4346-9da8-fea279aba42a}categoria',
-                    operator: "=",
-                    value: local!cat
-                  )
-                }
-              ),
-              pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 100)
-            ),
-            local!resultados: index(local!catData.data, 'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{8bbe1e8e-1859-4ec0-b2ee-3f270d34c902}resultado', {}),
-            local!ko: count(wherecontains("KO", touniformstring(local!resultados))),
-            local!warn: count(wherecontains("WARN", touniformstring(local!resultados))),
-            local!ok: count(wherecontains("OK", touniformstring(local!resultados))),
+            local!filas: if(a!isNullOrEmpty(local!agg.data), {}, local!agg.data),
+            local!ok: sum(a!forEach(items: local!filas, expression: if(and(index(fv!item, "categoria", "") = local!cat, index(fv!item, "resultado", "") = "OK"), tointeger(index(fv!item, "n", 0)), 0))),
+            local!warn: sum(a!forEach(items: local!filas, expression: if(and(index(fv!item, "categoria", "") = local!cat, index(fv!item, "resultado", "") = "WARN"), tointeger(index(fv!item, "n", 0)), 0))),
+            local!ko: sum(a!forEach(items: local!filas, expression: if(and(index(fv!item, "categoria", "") = local!cat, index(fv!item, "resultado", "") = "KO"), tointeger(index(fv!item, "n", 0)), 0))),
             local!colorCat: if(local!ko > 0, cons!SMK_COLOR_ERROR, if(local!warn > 0, cons!SMK_COLOR_AVISO, cons!SMK_COLOR_EXITO)),
             local!textoCat: if(local!ko > 0, "Con fallos", if(local!warn > 0, "Con avisos", if(local!ok > 0, "Correcto", "Sin datos"))),
             local!iconoCat: if(local!ko > 0, "times-circle", if(local!warn > 0, "exclamation-triangle", if(local!ok > 0, "check-circle", "minus-circle"))),

@@ -12,7 +12,7 @@ Aplicación Appian `SMK Pruebas de Humo` (DEV, `mapfrespain-dev`) para lanzar pr
 | Resultados | Record `SMK Resultado` (`smk_resultado`; fuente: Connected System `SMK Database AWS`): un registro por prueba y ejecución, con resultado OK/KO/WARN/SKIP, mensaje, detalle técnico, duración |
 | Pruebas | 70 integraciones HTTP `SMK_INT_HTTP_<host>` con Connected System y 12 pruebas HTTP adicionales `HTTP_<host>` mediante la integración sin Connected System `SMK_INT_HTTP_url` (GET a `/smk-smoke-probe`, URL por las constantes `SMK_URL_*`), `SMK_INT_S3_ListBuckets` (CS `CMP Conexion AWS S3`), 40 pruebas DB (`DB_APPIAN_BUSINESS` sobre `jdbc/Appian` y 39 Connected Systems DataSource: consulta read-only de 1 fila a un record type que usa cada CS, validando credenciales, red y esquema), comprobación del motor de procesos |
 | Lógica | `SMK_seleccionarPruebas` (filtro por códigos/categorías/sistemas), `SMK_ejecutarPrueba` (dispatcher por código), `SMK_evaluarHttp`, `SMK_evaluarIntegracion`, `SMK_construirResultado`, `SMK_resumenEjecucion` |
-| Runner | PM `SMK Ejecutar Pruebas` (selecciona → crea ejecución → MNI paralelo de `SMK Ejecutar Prueba`, uno por prueba → espera (timer 10 s, máx. 24 intentos) → consolida → cierra). Constante `SMK_PM_EJECUTAR_PRUEBAS` |
+| Runner | PM `SMK Ejecutar Pruebas` (selecciona → crea ejecución → MNI paralelo síncrono de `SMK Ejecutar Prueba`, uno por prueba → consolida directamente → cierra). Constante `SMK_PM_EJECUTAR_PRUEBAS` |
 | Programación | Regla `SMK_getProgramaciones`, PM `SMK Programar Pruebas` (timer hasta `fechaProgramada`, relee la programación y sólo lanza si sigue PENDIENTE; crea `SMK Ejecucion` con origen PROGRAMADO y motivo con `[Programación #N]`, y lanza `SMK Ejecutar Pruebas`; borrado a 1 día). Constante `SMK_PM_PROGRAMAR_PRUEBAS` |
 | API | Web APIs `smoke_runs` (POST), `smoke_run` (GET), `smoke_run_results` (GET), `smoke_tests` (GET) |
 | UI | Site `Pruebas de Humo` (Panel, Ejecutar, Histórico, Comparar, Programar, Catálogo); interfaz `SMK_UI_Programar` |
@@ -68,6 +68,15 @@ Verificado en DEV: las programaciones **#3**, **#5** y **#6** se lanzaron a la h
 - Las 10 expression rules SMK cubiertas por Estado de prueba de regla tienen casos de prueba: **10/10 con resultado correcto** en la validación realizada.
 - Los cinco process models (`SMK Ejecutar Pruebas`, `SMK Ejecutar Prueba`, `SMK Ver Ejecucion`, `SMK Ver Resultado` y `SMK Programar Pruebas`) tienen política de **eliminar las instancias 1 día después de finalizar, sin archivar**; aplicada y publicada en DEV desde Designer (Process Modeler → Propiedades → Data Management). Tras importar en otro entorno hay que comprobarla en Designer.
 - `SMK Administrators` y `SMK Users` pueden crear y cancelar programaciones; no hay una restricción adicional por grupo dentro de la aplicación, y el acceso lo proporciona el site.
+
+## Optimización de rendimiento (v2)
+
+- El runner ya no tiene bucle de sondeo: el MNI síncrono conecta directamente con **Consolidar resultados**.
+- El subprocess se redujo a 3 nodos; `fechaFin` se calcula dentro del nodo de escritura.
+- `SMK_resumenEjecucion` y el Panel semáforo usan consultas de agregación: 1 query en lugar de 5 por carga / 1000 filas.
+- El timeout de las 72 integraciones HTTP es de 10 s.
+- Los record types SMK están sincronizados con PostgreSQL mediante `SMK Database AWS`; las instancias de los process models se eliminan 1 día después.
+- Verificación: las ejecuciones **#3/#4** procesaron 114 pruebas en aproximadamente **20,5–21,3 s**, frente a **38,8–43 s** antes.
 
 ## Baseline v2 (ejecución #6, 102 pruebas activas, 15 s): 102 OK
 

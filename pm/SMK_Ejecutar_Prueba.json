@@ -1,0 +1,274 @@
+{
+  "creator": "devin",
+  "uuid": "0002f068-c618-8000-64a1-7f0000014e7a",
+  "name": {
+    "en_US": "",
+    "es": "SMK Ejecutar Prueba"
+  },
+  "description": {
+    "en_US": "",
+    "es": "Subproceso: ejecuta una prueba de humo (SMK_ejecutarPrueba) y persiste su SMK Resultado."
+  },
+  "parentFolderUuid": "_g-0000f061-6411-8000-6415-7f0000014e7a_708",
+  "processVariables": [
+    {
+      "name": "categoria",
+      "type": "Text",
+      "isParameter": true,
+      "isRequired": false,
+      "multiple": false
+    },
+    {
+      "name": "ejecucionId",
+      "type": "Number (Integer)",
+      "isParameter": true,
+      "isRequired": false,
+      "multiple": false
+    },
+    {
+      "name": "escritos",
+      "type": "Any Type",
+      "isParameter": false,
+      "isRequired": false,
+      "multiple": false
+    },
+    {
+      "name": "fechaInicio",
+      "type": "Date and Time",
+      "isParameter": false,
+      "isRequired": false,
+      "multiple": false
+    },
+    {
+      "name": "res",
+      "type": "Any Type",
+      "isParameter": false,
+      "isRequired": false,
+      "multiple": false
+    },
+    {
+      "name": "sistema",
+      "type": "Text",
+      "isParameter": true,
+      "isRequired": false,
+      "multiple": false
+    },
+    {
+      "name": "testCodigo",
+      "type": "Text",
+      "isParameter": true,
+      "isRequired": false,
+      "multiple": false
+    },
+    {
+      "name": "testNombre",
+      "type": "Text",
+      "isParameter": true,
+      "isRequired": false,
+      "multiple": false
+    },
+    {
+      "name": "umbralMs",
+      "type": "Number (Integer)",
+      "isParameter": true,
+      "isRequired": false,
+      "multiple": false
+    }
+  ],
+  "nodes": [
+    {
+      "id": 1,
+      "type": "core.0",
+      "name": {
+        "en_US": "",
+        "es": "Start"
+      },
+      "coordinates": [
+        112,
+        196
+      ],
+      "uuid": "54fec42a-035c-41c5-9ff9-abf52adf75ab",
+      "typeName": "Start Node",
+      "connections": [
+        {
+          "targetNodeId": 3,
+          "activityChained": true,
+          "overridesAssignment": false,
+          "synchronizeData": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "core.1",
+      "name": {
+        "en_US": "",
+        "es": "End"
+      },
+      "coordinates": [
+        840,
+        196
+      ],
+      "uuid": "1da6e7e3-fc78-4cee-817c-c7b4c35c1849",
+      "typeName": "End Node",
+      "connections": []
+    },
+    {
+      "id": 3,
+      "type": "internal.16",
+      "name": {
+        "en_US": "",
+        "es": "Marcar inicio"
+      },
+      "coordinates": [
+        252,
+        196
+      ],
+      "uuid": "2caa0d8d-7e1b-4a20-ac21-9c2005f7762e",
+      "typeName": "Unattended Multiple Questions",
+      "connections": [
+        {
+          "targetNodeId": 4,
+          "activityChained": true,
+          "overridesAssignment": false,
+          "synchronizeData": false
+        }
+      ],
+      "data": {
+        "inputs": [],
+        "customInputs": [],
+        "outputs": [],
+        "customOutputs": [
+          {
+            "expression": "now()",
+            "saveInto": "fechaInicio"
+          }
+        ]
+      },
+      "assignment": {
+        "attended": false,
+        "runAs": "INITIATOR",
+        "overrideLane": false
+      }
+    },
+    {
+      "id": 4,
+      "type": "internal.16",
+      "name": {
+        "en_US": "",
+        "es": "Ejecutar prueba"
+      },
+      "coordinates": [
+        392,
+        196
+      ],
+      "uuid": "60145db0-dcc6-4091-873b-389c51db4b0c",
+      "typeName": "Unattended Multiple Questions",
+      "connections": [
+        {
+          "targetNodeId": 6,
+          "activityChained": true,
+          "overridesAssignment": false,
+          "synchronizeData": false
+        }
+      ],
+      "data": {
+        "inputs": [],
+        "customInputs": [],
+        "outputs": [],
+        "customOutputs": [
+          {
+            "expression": "rule!SMK_ejecutarPrueba(pv!testCodigo)",
+            "saveInto": "res"
+          }
+        ]
+      },
+      "assignment": {
+        "attended": false,
+        "runAs": "INITIATOR",
+        "overrideLane": false
+      }
+    },
+    {
+      "id": 6,
+      "type": "internal3.write_records_to_source_23r3",
+      "name": {
+        "en_US": "",
+        "es": "Guardar resultado"
+      },
+      "coordinates": [
+        700,
+        196
+      ],
+      "uuid": "9f4775b9-9784-4977-bb1b-606b9166c282",
+      "typeName": "Write Records and Related Records",
+      "connections": [
+        {
+          "targetNodeId": 2,
+          "activityChained": true,
+          "overridesAssignment": false,
+          "synchronizeData": false
+        }
+      ],
+      "data": {
+        "inputs": [
+          {
+            "name": "Records",
+            "type": "Any Type",
+            "required": true,
+            "expression": "={rule!SMK_construirResultado(ejecucionId: pv!ejecucionId, testCodigo: pv!testCodigo, testNombre: pv!testNombre, categoria: pv!categoria, sistema: pv!sistema, umbralMs: pv!umbralMs, res: pv!res, fechaInicio: pv!fechaInicio, fechaFin: now())}",
+            "saveInto": ""
+          },
+          {
+            "name": "PauseOnError",
+            "type": "Boolean",
+            "required": false,
+            "expression": "",
+            "value": 1,
+            "saveInto": ""
+          },
+          {
+            "name": "RecordType",
+            "type": "RecordType",
+            "required": false,
+            "expression": "",
+            "value": "",
+            "saveInto": ""
+          },
+          {
+            "name": "CaptureEvents",
+            "type": "Boolean",
+            "required": true,
+            "expression": "",
+            "value": 0,
+            "saveInto": ""
+          }
+        ],
+        "customInputs": [],
+        "outputs": [
+          {
+            "name": "RecordsUpdated",
+            "type": "Any Type",
+            "saveInto": "escritos"
+          },
+          {
+            "name": "ErrorOccurred",
+            "type": "Boolean"
+          },
+          {
+            "name": "Error",
+            "type": "Text"
+          }
+        ],
+        "customOutputs": []
+      },
+      "assignment": {
+        "attended": false,
+        "runAs": "INITIATOR",
+        "overrideLane": false
+      }
+    }
+  ],
+  "lanes": [],
+  "versionId": ""
+}

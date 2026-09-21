@@ -54,6 +54,7 @@ La validación DEV más reciente de las 12 pruebas `INT_SIN_CS` (ejecución **#2
    ```
    El POST es asíncrono: la ejecución se crea `EN_CURSO` antes de arrancar el runner, por lo que `ejecucionId` es definitivo desde la respuesta. Verificado en DEV (#19–#22) con la cuenta `apigw.devops`.
 11. **Data Management** de los cinco process models (`SMK Ejecutar Pruebas`, `SMK Ejecutar Prueba`, `SMK Ver Ejecucion`, `SMK Ver Resultado` y `SMK Programar Pruebas`): comprobar tras importar que sigue en *Eliminar procesos 1 día después de finalizar, sin archivar*. Está aplicado en DEV desde Designer; debe confirmarse también en cada entorno destino.
+12. **Optimización de rendimiento (v2)**: comprobar que el runner no tiene bucle de sondeo (MNI síncrono → consolidación directa), que el subprocess tiene 3 nodos con `fechaFin` calculada en el nodo de escritura, que `SMK_resumenEjecucion` y el Panel usan agregaciones, que las 72 integraciones HTTP tienen timeout de 10 s y que los record types SMK siguen sincronizados con PostgreSQL; la verificación DEV fue de 114 pruebas en ~20,5–21,3 s frente a ~38,8–43 s antes.
 
 ## 4. Qué NO viaja con el paquete (y cómo se resuelve)
 
