@@ -11,7 +11,7 @@
 | Web APIs | 4 | `smoke_runs` (POST), `smoke_run`, `smoke_run_results`, `smoke_tests` (GET) |
 | Interfaces | 6 | Panel, Ejecutar, Histórico, Detalle, Catálogo y Comparar |
 | Site | 1 | `/suite/sites/smoke-tests` |
-| Constantes | 2 | `SMK_PM_EJECUTAR_PRUEBAS`, `SMK_ARTIFACTS_FOLDER` (ninguna con valor dependiente de entorno) |
+| Constantes | 3 | `SMK_PM_EJECUTAR_PRUEBAS`, `SMK_ARTIFACTS_FOLDER`, `SMK_GRUPO_ADMINISTRADORES` |
 | Grupos | 2 | `SMK Administrators` / `SMK Users` |
 | Connected Systems propios | **0** | La app no lleva credenciales ni URLs: usa los CS del entorno destino |
 
@@ -29,11 +29,11 @@ Verificación previa recomendada: en Appian Designer del destino, *Compare and D
 
 ## 3. Pasos
 
-1. **Exportar** el paquete de la app `SMK Pruebas de Humo` desde DEV (Designer → aplicación → Export). No hace falta Import Customization File: no hay constantes de entorno.
+1. **Exportar** el paquete de la app `SMK Pruebas de Humo` desde DEV (Designer → aplicación → Export).
 2. **Tablas**: al importar, Appian crea/actualiza `SMK_TEST`, `SMK_EJECUCION` y `SMK_RESULTADO` en `jdbc/Appian` si el usuario del data source tiene permiso DDL (los record types tienen *Source configuration* con creación de tabla). Si no es así, ejecutar antes `01_ddl_smk.sql` en la BD de negocio del destino.
 3. **Importar** el paquete (inspeccionar primero). Comprobar que no hay errores en integraciones ni en `SMK_ejecutarPrueba`.
 4. **Seguridad**: añadir usuarios/grupos a `SMK Administrators` (operan el site) y `SMK Users` (solo consulta). Las Web APIs heredan la seguridad de la app. Los objetos deben heredar la seguridad de la aplicación, evitando role maps explícitos redundantes.
-5. **Visibilidad para el aviso KO**: configurar el grupo `SMK Administrators` con visibilidad **Pública** en cada entorno. El runner usa ese grupo como destinatario del nodo `Notificar KO`; con visibilidad restringida el proceso puede terminar KO aunque la prueba ya haya finalizado.
+5. **Destinatarios del aviso KO**: en `SMK Rules and Constants`, configurar `SMK_GRUPO_ADMINISTRADORES` con el grupo administrador real del entorno. El runner obtiene los usuarios miembros mediante `touser(getdistinctusers(cons!SMK_GRUPO_ADMINISTRADORES))`; comprobar que los miembros tienen email antes de ejecutar el baseline.
 6. **Catálogo**: abrir el site → página *Catálogo* → pulsar **Sincronizar catálogo**. Inserta en `SMK_TEST` las pruebas del catálogo base (`SMK_catalogoBase`) que falten; no modifica las existentes ni sus flags `activo`. La interfaz permite filtrar Activas, Desactivadas y Pendientes de revisión; al desactivar exige `motivoInactivo` y las altas automáticas usan `origenAlta="DESCUBRIMIENTO"`. Alternativa sin UI: `02_catalogo_smk.sql` (idempotente por `CODIGO`).
 7. **Comparativa**: comprobar que el site conserva la página *Comparar* inmediatamente después de *Histórico*. Permite seleccionar ejecuciones y revisar regresiones, nuevas, ausentes, mejoras e iguales.
 8. **Baseline del entorno**: *Ejecutar* → Todas → motivo "Baseline <entorno> <fecha>". Revisar KO/WARN:
@@ -58,12 +58,12 @@ Verificación previa recomendada: en Appian Designer del destino, *Compare and D
 | Historial de ejecuciones | Datos | No se migra; cada entorno tiene su propio histórico |
 | Credenciales / URLs de los sistemas | Connected Systems de otras apps | Ya son por entorno |
 | Cuenta de servicio + API key | Admin Console | Crear por entorno |
-| Miembros de los grupos SMK | Grupos | Alta por entorno; `SMK Administrators` debe mantener visibilidad Pública para el aviso KO |
+| Miembros de los grupos SMK | Grupos | Alta por entorno; configurar `SMK_GRUPO_ADMINISTRADORES` con el grupo administrador de cada entorno |
 
 ## 5. Notas
 
 - Los códigos de las pruebas HTTP incluyen el host que tenía el CS en DEV al crearse (`HTTP_<HOST>_<PUERTO>`). Son identificadores estables: la prueba llama a la integración, que usa el CS, que en cada entorno apunta a su host real. Si en PRO el nombre confunde, cambiar `nombre`/`sistema` en el catálogo base (solo etiqueta).
-- El runner usa `SMK Administrators` para notificar por email los resultados KO y `SMK Users` para consulta. El grupo administrador debe tener visibilidad Pública en cada entorno.
+- El runner usa los usuarios miembros de `SMK_GRUPO_ADMINISTRADORES` para notificar por email los resultados KO y `SMK Users` para consulta. La constante debe revisarse después de cada importación por entorno.
 - La política de Data Management prevista para ambos process models es **eliminar instancias 1 día después de finalizar, sin archivar**. El MCP no permite editar esta propiedad: debe configurarse y confirmarse desde Designer. Si no se ha aplicado aún, el subproceso `SMK Ejecutar Prueba` queda pendiente de esa configuración.
 - Los rule test cases de las 10 reglas SMK están creados y validados: **10/10 correctos**.
 - El campo `detalle` de `SMK_RESULTADO` es texto largo (`TEXT`); no se usa en filtros.

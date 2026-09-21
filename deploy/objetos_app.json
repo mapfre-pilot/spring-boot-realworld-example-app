@@ -42,7 +42,7 @@
   ]
  },
  "constants": {
-  "total": 2,
+  "total": 3,
   "items": [
    {
     "uuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20033052",
@@ -58,6 +58,14 @@
     "type": "PROCESS_MODEL",
     "value": "0000f068-c618-8000-64a1-7f0000014e7a",
     "description": "Runner de pruebas de humo (SMK Ejecutar Pruebas)",
+    "multiple": false
+   },
+   {
+    "uuid": "_a-0000f069-4f37-8000-9cc8-011c48011c48_20043591",
+    "name": "SMK_GRUPO_ADMINISTRADORES",
+    "type": "GROUP",
+    "value": "_e-0000f061-6399-8000-9c15-01075c01075c_8047",
+    "description": "Grupo destinatario de avisos KO de SMK",
     "multiple": false
    }
   ]

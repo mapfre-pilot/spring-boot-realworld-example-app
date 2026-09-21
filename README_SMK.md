@@ -47,7 +47,7 @@ Desde un proceso Appian: subproceso `SMK Ejecutar Pruebas` o `a!startProcess(con
 
 - La página **Catálogo** permite filtrar por `Activas`, `Desactivadas` y `Pendientes de revisión`. Las pruebas descubiertas se crean con `origenAlta="DESCUBRIMIENTO"` y quedan inactivas hasta revisión humana. Al desactivar una prueba se exige `motivoInactivo`; la activación limpia el motivo y conserva el origen.
 - La página **Comparar**, situada después de Histórico, permite seleccionar las ejecuciones anterior y posterior, ver regresiones/mejoras/nuevas/ausentes/sin cambio y filtrar las filas sin cambios. Las etiquetas muestran `#id · fecha · estado · motivo`.
-- Cuando una ejecución termina en `KO`, el runner intenta enviar el resumen por email al grupo `SMK Administrators`, incluyendo las pruebas KO/WARN y el enlace al Histórico. En cada entorno ese grupo debe tener visibilidad **Pública**; sin ella, el nodo `Notificar KO` no puede resolver el destinatario.
+- Cuando una ejecución termina en `KO`, el runner envía el resumen por email a los usuarios obtenidos de la constante de grupo `SMK_GRUPO_ADMINISTRADORES`, incluyendo las pruebas KO/WARN y el enlace al Histórico. La constante se despliega con seguridad heredada en `SMK Rules and Constants` y debe apuntar al grupo administrador de cada entorno.
 
 ## Seguridad, pruebas y limpieza
 
@@ -68,7 +68,7 @@ Desde un proceso Appian: subproceso `SMK Ejecutar Pruebas` o `a!startProcess(con
 - Seguridad de las Web APIs: crear cuenta de servicio + API key y dar permiso al grupo de la app.
 
 ## Despliegue a TEST / PRO
-Ver `deploy/GUIA_DESPLIEGUE.md`. Resumen: la app no contiene Connected Systems ni constantes de entorno; reutiliza los CS/record types de las apps de negocio ya desplegadas en cada entorno. Pasos: exportar paquete → (opcional) `deploy/01_ddl_smk.sql` → importar → grupos → site *Catálogo* → **Sincronizar catálogo** (carga las pruebas de `SMK_catalogoBase` que falten; alternativa `deploy/02_catalogo_smk.sql`) → *Ejecutar* → baseline → activar/desactivar por entorno.
+Ver `deploy/GUIA_DESPLIEGUE.md`. Resumen: la app no contiene Connected Systems; reutiliza los CS/record types de las apps de negocio ya desplegadas en cada entorno. Pasos: exportar paquete → (opcional) `deploy/01_ddl_smk.sql` → importar → configurar `SMK_GRUPO_ADMINISTRADORES` por entorno → grupos → site *Catálogo* → **Sincronizar catálogo** (carga las pruebas de `SMK_catalogoBase` que falten; alternativa `deploy/02_catalogo_smk.sql`) → *Ejecutar* → baseline → activar/desactivar por entorno.
 
 ## Evolución del catálogo (detectar conexiones / BD nuevas)
 - **Fuente de verdad**: regla `SMK_catalogoBase` (112 pruebas). `SMK_catalogoPendiente` devuelve las que faltan en `SMK_TEST`; el botón *Sincronizar catálogo* las inserta (nunca actualiza ni borra las existentes). Así una prueba nueva se añade una vez en DEV y llega a TEST/PRO con el paquete.

@@ -1,1 +1,1028 @@
-{"creator":"devin","uuid":"0000f068-c618-8000-64a1-7f0000014e7a","name":{"en_US":"","es":"SMK Ejecutar Pruebas"},"description":{"en_US":"","es":"Runner de pruebas de humo: selecciona pruebas del catálogo, crea la SMK Ejecucion, lanza un subproceso por prueba y consolida el resultado."},"parentFolderUuid":"_g-0000f061-6411-8000-6415-7f0000014e7a_708","processVariables":[{"name":"categorias","type":"Text","isParameter":true,"isRequired":false,"multiple":true},{"name":"codigos","type":"Text","isParameter":true,"isRequired":false,"multiple":true},{"name":"ejecucion","type":"{urn:com:appian:recordtype:datatype}e0fef5cc-80d6-491b-b74b-71d623d7a0ec","isParameter":false,"isRequired":false,"multiple":true},{"name":"ejecucionId","type":"Number (Integer)","isParameter":false,"isRequired":false,"multiple":false},{"name":"esperadas","type":"Number (Integer)","isParameter":false,"isRequired":false,"multiple":false},{"name":"fechaInicio","type":"Date and Time","isParameter":false,"isRequired":false,"multiple":false},{"name":"intentos","type":"Number (Integer)","isParameter":false,"isRequired":false,"multiple":false},{"name":"lanzadoPor","type":"Text","isParameter":true,"isRequired":false,"multiple":false},{"name":"motivo","type":"Text","isParameter":true,"isRequired":false,"multiple":false},{"name":"origen","type":"Text","isParameter":true,"isRequired":false,"multiple":false},{"name":"pruebas","type":"{urn:com:appian:recordtype:datatype}8cb90847-702c-4704-aae6-03acd830a9b7","isParameter":false,"isRequired":false,"multiple":true},{"name":"resumen","type":"Any Type","isParameter":false,"isRequired":false,"multiple":false},{"name":"selCategorias","type":"Text","isParameter":false,"isRequired":false,"multiple":true},{"name":"selCodigos","type":"Text","isParameter":false,"isRequired":false,"multiple":true},{"name":"selNombres","type":"Text","isParameter":false,"isRequired":false,"multiple":true},{"name":"selSistemas","type":"Text","isParameter":false,"isRequired":false,"multiple":true},{"name":"selUmbrales","type":"Number (Integer)","isParameter":false,"isRequired":false,"multiple":true},{"name":"sistemas","type":"Text","isParameter":true,"isRequired":false,"multiple":true}],"nodes":[{"id":1,"type":"core.0","name":{"en_US":"","es":"Start"},"coordinates":[56,196],"uuid":"5a81e9be-1046-41db-8013-8351da6ad8ef","typeName":"Start Node","connections":[{"targetNodeId":12,"activityChained":true,"overridesAssignment":false,"synchronizeData":false}]},{"id":2,"type":"core.1","name":{"en_US":"","es":"End"},"coordinates":[1512,196],"uuid":"10dfc7eb-cf2f-49f9-a7ac-1d970573e4e0","typeName":"End Node","connections":[]},{"id":11,"type":"internal3.write_records_to_source_23r3","name":{"en_US":"","es":"Cerrar ejecución"},"coordinates":[1344,196],"uuid":"2bb6df0d-4f71-454c-b113-a27aa847e172","typeName":"Write Records and Related Records","connections":[{"targetNodeId":14,"activityChained":false,"overridesAssignment":false,"synchronizeData":false}],"data":{"inputs":[{"name":"Records","type":"Any Type","required":true,"expression":"={'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion'('recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{4a743dda-a9e3-46c9-8bc3-2826f9586ce1}id': pv!ejecucionId, 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{1bcfff8e-df5c-4bcf-be02-110148d4d995}fechaFin': now(), 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{4215f124-b13e-4aab-a280-50ebcff87ab8}estado': pv!resumen.estado, 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{e01d8d88-4458-4cad-8812-d58fb66d43bb}totalPruebas': pv!resumen.totalPruebas, 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{7b2b1ba6-9f90-4046-9e3f-bba4ff192345}totalOk': pv!resumen.totalOk, 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{e184f153-2a40-46a3-9d6e-654fa1923e89}totalKo': pv!resumen.totalKo, 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{9f2e3659-99d3-4ffe-9112-429eca4743e0}totalWarn': pv!resumen.totalWarn, 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{e3bf3113-5265-4932-8306-4043885eec95}duracionMs': tointeger(todecimal(now() - pv!fechaInicio) * 86400000))}","saveInto":""},{"name":"PauseOnError","type":"Boolean","required":false,"expression":"","value":1,"saveInto":""},{"name":"RecordType","type":"RecordType","required":false,"expression":"","value":"","saveInto":""},{"name":"CaptureEvents","type":"Boolean","required":true,"expression":"","value":0,"saveInto":""}],"customInputs":[],"outputs":[{"name":"RecordsUpdated","type":"Any Type"},{"name":"ErrorOccurred","type":"Boolean"},{"name":"Error","type":"Text"}],"customOutputs":[]},"assignment":{"attended":false,"runAs":"INITIATOR","overrideLane":false}},{"id":10,"type":"internal.16","name":{"en_US":"","es":"Consolidar resultados"},"coordinates":[1204,196],"uuid":"d722b291-3f31-4b7b-8f29-55f3bf1f85fd","typeName":"Unattended Multiple Questions","connections":[{"targetNodeId":11,"activityChained":false,"overridesAssignment":false,"synchronizeData":false}],"data":{"inputs":[],"customInputs":[],"outputs":[],"customOutputs":[{"expression":"rule!SMK_resumenEjecucion(ejecucionId: pv!ejecucionId, esperadas: pv!esperadas)","saveInto":"resumen"}]},"assignment":{"attended":false,"runAs":"INITIATOR","overrideLane":false}},{"id":7,"type":"event.timer","name":{"en_US":"","es":"Esperar 10 s"},"coordinates":[784,196],"uuid":"6b4c94f5-2fa6-4db2-8e78-7337f633e1ae","typeName":"Intermediate Consuming Event","connections":[{"targetNodeId":8,"activityChained":false,"overridesAssignment":false,"synchronizeData":false}],"data":{"inputs":[{"name":"delayUntil","type":"Text","required":false,"expression":"now() + intervalds(0, 0, 10)"}],"customInputs":[],"outputs":[],"customOutputs":[]}},{"id":9,"type":"core.4","name":{"en_US":"","es":"¿Terminadas?"},"coordinates":[1064,196],"uuid":"ec433fba-e5d1-4f34-9933-1ae10765c838","typeName":"XOR","connections":[{"targetNodeId":10,"activityChained":false,"overridesAssignment":false,"synchronizeData":false,"label":"Sí / timeout"},{"targetNodeId":7,"activityChained":false,"overridesAssignment":false,"synchronizeData":false,"label":"No"}],"decision":{"conditions":[{"expression":"or(a!defaultValue(pv!resumen.totalPruebas, 0) >= pv!esperadas, pv!intentos >= 24)","targetNodeId":10,"label":"Sí / timeout"}],"defaultPath":7}},{"id":8,"type":"internal.16","name":{"en_US":"","es":"Comprobar progreso"},"coordinates":[896,196],"uuid":"58302711-bca9-47ef-a1ee-c5eeb7c3d7b9","typeName":"Unattended Multiple Questions","connections":[{"targetNodeId":9,"activityChained":false,"overridesAssignment":false,"synchronizeData":false}],"data":{"inputs":[],"customInputs":[],"outputs":[],"customOutputs":[{"expression":"a!defaultValue(pv!intentos, 0) + 1","saveInto":"intentos"},{"expression":"rule!SMK_resumenEjecucion(ejecucionId: pv!ejecucionId, esperadas: null)","saveInto":"resumen"}]},"assignment":{"attended":false,"runAs":"INITIATOR","overrideLane":false}},{"id":6,"type":"internal.38","name":{"en_US":"","es":"Ejecutar prueba"},"coordinates":[644,196],"uuid":"0e96d98a-923e-49ab-a16f-d3387d96b790","typeName":"SUB_PROC","connections":[{"targetNodeId":7,"activityChained":false,"overridesAssignment":false,"synchronizeData":false}],"data":{"inputs":[{"name":"Instructions","type":"Text","required":false,"expression":"","value":"","saveInto":""},{"name":"ejecucionId","type":"Text","required":false,"expression":"pv!ejecucionId"},{"name":"testCodigo","type":"Text","required":false,"expression":"pv!selCodigos[tp!instanceIndex]"},{"name":"testNombre","type":"Text","required":false,"expression":"pv!selNombres[tp!instanceIndex]"},{"name":"categoria","type":"Text","required":false,"expression":"pv!selCategorias[tp!instanceIndex]"},{"name":"sistema","type":"Text","required":false,"expression":"pv!selSistemas[tp!instanceIndex]"},{"name":"umbralMs","type":"Text","required":false,"expression":"pv!selUmbrales[tp!instanceIndex]"},{"name":"pmUUID","type":"Text","required":false,"expression":"","value":"0002f068-c618-8000-64a1-7f0000014e7a","saveInto":""},{"name":"isAsynchronous","type":"Boolean","required":true,"expression":"","value":0,"saveInto":""},{"name":"isTransparent","type":"Boolean","required":true,"expression":"","value":0,"saveInto":""},{"name":"inheritSecurity","type":"Boolean","required":true,"expression":"","value":1,"saveInto":""},{"name":"chainsInto","type":"Boolean","required":true,"expression":"","value":0,"saveInto":""}],"customInputs":[],"outputs":[{"name":"subProcessID","type":"Number (Integer)"},{"name":"procInheritsPriority","type":"Number (Integer)"}],"customOutputs":[]},"assignment":{"attended":false,"runAs":"INITIATOR","overrideLane":false},"multipleInstance":{"instances":"PROCESS_VARIABLE_ITEM_COUNT","value":"selCodigos","onlyNewItems":false,"parallel":true,"continueOn":"ALL_INSTANCES","allowBatching":false}},{"id":5,"type":"core.4","name":{"en_US":"","es":"¿Hay pruebas?"},"coordinates":[532,196],"uuid":"a7ae7883-ec04-4bb2-a9d6-f3e7c727dea7","typeName":"XOR","connections":[{"targetNodeId":6,"activityChained":false,"overridesAssignment":false,"synchronizeData":false,"label":"Sí"},{"targetNodeId":10,"activityChained":false,"overridesAssignment":false,"synchronizeData":false,"label":"No"}],"decision":{"conditions":[{"expression":"a!defaultValue(pv!esperadas, 0) = 0","targetNodeId":10,"label":"No"}],"defaultPath":6}},{"id":4,"type":"internal.16","name":{"en_US":"","es":"Guardar id ejecución"},"coordinates":[420,196],"uuid":"3541a277-f62a-4ab9-abd9-88f12f774d7f","typeName":"Unattended Multiple Questions","connections":[{"targetNodeId":5,"activityChained":true,"overridesAssignment":false,"synchronizeData":false}],"data":{"inputs":[],"customInputs":[],"outputs":[],"customOutputs":[{"expression":"index(pv!ejecucion[1], 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{4a743dda-a9e3-46c9-8bc3-2826f9586ce1}id', null)","saveInto":"ejecucionId"},{"expression":"now()","saveInto":"fechaInicio"},{"expression":"0","saveInto":"intentos"}]},"assignment":{"attended":false,"runAs":"INITIATOR","overrideLane":false}},{"id":3,"type":"internal3.write_records_to_source_23r3","name":{"en_US":"","es":"Crear ejecución"},"coordinates":[280,196],"uuid":"29777f06-4bb4-4379-a910-56ba6c3b25d4","typeName":"Write Records and Related Records","connections":[{"targetNodeId":4,"activityChained":true,"overridesAssignment":false,"synchronizeData":false}],"data":{"inputs":[{"name":"Records","type":"Any Type","required":true,"expression":"={'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion'('recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{1e84e153-8cd3-492b-9b7f-3c97575a75e5}fechaInicio': now(), 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{4215f124-b13e-4aab-a280-50ebcff87ab8}estado': \"EN_CURSO\", 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{1a5bd16b-1600-4449-9b6c-acf1abb1a5af}origen': a!defaultValue(pv!origen, \"MANUAL\"), 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{a16d9b3a-c4b3-40d7-a11c-60bf0fc2a8d6}motivo': pv!motivo, 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{541ebf63-f4c4-4892-a696-265d622c55fc}lanzadoPor': a!defaultValue(pv!lanzadoPor, user(pp!initiator, \"username\")), 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{e01d8d88-4458-4cad-8812-d58fb66d43bb}totalPruebas': pv!esperadas)}","saveInto":""},{"name":"PauseOnError","type":"Boolean","required":false,"expression":"","value":1,"saveInto":""},{"name":"RecordType","type":"RecordType","required":false,"expression":"","value":"","saveInto":""},{"name":"CaptureEvents","type":"Boolean","required":true,"expression":"","value":0,"saveInto":""}],"customInputs":[],"outputs":[{"name":"RecordsUpdated","type":"Any Type","saveInto":"ejecucion"},{"name":"ErrorOccurred","type":"Boolean"},{"name":"Error","type":"Text"}],"customOutputs":[]},"assignment":{"attended":false,"runAs":"INITIATOR","overrideLane":false}},{"id":12,"type":"internal.16","name":{"en_US":"","es":"Seleccionar pruebas"},"coordinates":[168,196],"uuid":"3418e1ab-6805-4095-be39-37d3b50b52f9","typeName":"Unattended Multiple Questions","connections":[{"targetNodeId":13,"activityChained":true,"overridesAssignment":false,"synchronizeData":false}],"data":{"inputs":[],"customInputs":[],"outputs":[],"customOutputs":[{"expression":"rule!SMK_seleccionarPruebas(codigos: pv!codigos, categorias: pv!categorias, sistemas: pv!sistemas)","saveInto":"pruebas"}]},"assignment":{"attended":false,"runAs":"INITIATOR","overrideLane":false}},{"id":13,"type":"internal.16","name":{"en_US":"","es":"Desglosar selección"},"coordinates":[224,308],"uuid":"c58f6ae9-e375-4686-a49f-903768d772f9","typeName":"Unattended Multiple Questions","connections":[{"targetNodeId":3,"activityChained":true,"overridesAssignment":false,"synchronizeData":false}],"data":{"inputs":[],"customInputs":[],"outputs":[],"customOutputs":[{"expression":"index(pv!pruebas, 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{b4635ff6-1317-41d5-af9f-e7cd4d61fa22}codigo', {})","saveInto":"selCodigos"},{"expression":"index(pv!pruebas, 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{a47b7e2b-7082-494e-b909-a551766e2f69}nombre', {})","saveInto":"selNombres"},{"expression":"index(pv!pruebas, 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{8493a0cc-cd79-4cc4-988c-a6f4dd7da18e}categoria', {})","saveInto":"selCategorias"},{"expression":"index(pv!pruebas, 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{dba8c578-8951-4d8a-82f4-64ee769b8e90}sistema', {})","saveInto":"selSistemas"},{"expression":"index(pv!pruebas, 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{a0e22f2d-181d-4e27-a4c1-4661e21f5e60}umbralMs', {})","saveInto":"selUmbrales"},{"expression":"count(pv!pruebas)","saveInto":"esperadas"}]},"assignment":{"attended":false,"runAs":"INITIATOR","overrideLane":false}},{"id":15,"type":"internal.sendemail2","name":{"es":"Notificar KO"},"coordinates":[1520,120],"uuid":"3c3de301-7086-450f-afe9-e82d7ef696d8","typeName":"Send E-Mail","connections":[{"targetNodeId":2,"activityChained":false,"overridesAssignment":false,"synchronizeData":false}],"data":{"inputs":[{"name":"From","type":"Text","required":true,"expression":"\"default\"","value":"","saveInto":""},{"name":"FromEmailValue","type":"Email Address","required":false,"expression":"\"\"","value":"","saveInto":""},{"name":"To","type":"Email Recipient","required":false,"expression":"togroup(\"SMK Administrators\")","saveInto":""},{"name":"Cc","type":"Email Recipient","required":false,"expression":"\"\"","saveInto":""},{"name":"Bcc","type":"Email Recipient","required":false,"expression":"\"\"","saveInto":""},{"name":"SendErrorsTo","type":"Text","required":false,"expression":"\"\"","value":"","saveInto":""},{"name":"SendErrorsToEmailValue","type":"Email Address","required":false,"expression":"\"\"","value":"","saveInto":""},{"name":"Subject","type":"Text","required":false,"expression":"\"[SMK][KO] Pruebas de humo con fallos - ejecución #\" & tostring(pv!ejecucionId)","value":"","saveInto":""},{"name":"Attachments","type":"Document","required":false,"expression":"\"\"","saveInto":""},{"name":"Priority","type":"Number (Integer)","required":true,"expression":"","value":1,"saveInto":""},{"name":"IsHTML","type":"Boolean","required":true,"expression":"","value":1,"saveInto":""},{"name":"BodyTemplate","type":"Document","required":false,"expression":"\"\"","saveInto":""},{"name":"BodyHTML","type":"Text","required":false,"expression":"\"<html><body><h2>Pruebas de humo con fallos</h2><p>Ejecución #\" & tostring(pv!ejecucionId) & \"</p><p>Estado: KO</p><p>Fecha: \" & tostring(now()) & \"</p><p>OK: \" & tostring(pv!resumen.totalOk) & \" · WARN: \" & tostring(pv!resumen.totalWarn) & \" · KO: \" & tostring(pv!resumen.totalKo) & \"</p><p><a href='https://mapfrespain-dev.appiancloud.com/suite/sites/smoke-tests/page/historico'>Ver histórico</a></p></body></html>\"","value":"","saveInto":""},{"name":"HeaderTemplate","type":"Document","required":false,"expression":"\"\"","saveInto":""},{"name":"FooterTemplate","type":"Document","required":false,"expression":"\"\"","saveInto":""},{"name":"Email Sender Display Name","type":"Text","required":false,"expression":"\"\"","value":"","saveInto":""}],"customInputs":[],"outputs":[{"name":"UsersWithMissingAddresses","type":"User"},{"name":"InvalidAddresses","type":"Text"},{"name":"ToValidAddresses","type":"Email Address"},{"name":"CcValidAddresses","type":"Email Address"},{"name":"BccValidAddresses","type":"Email Address"}],"customOutputs":[]},"assignment":{"attended":false,"runAs":"DESIGNER","overrideLane":false}},{"id":14,"type":"core.4","name":{"es":"¿Hay KO?"},"coordinates":[1432,196],"uuid":"7cc11876-f174-4186-bc5a-96fe27bf1488","typeName":"XOR","connections":[{"targetNodeId":15,"activityChained":false,"overridesAssignment":false,"synchronizeData":false,"label":"Sí"},{"targetNodeId":2,"activityChained":false,"overridesAssignment":false,"synchronizeData":false,"label":"No"}],"decision":{"conditions":[{"expression":"pv!resumen.estado = \"KO\"","targetNodeId":15,"label":"Sí"}],"defaultPath":2}}],"lanes":[],"versionId":"","_rest":{"url":"https://mapfrespain-dev.appiancloud.com/suite/process/startdesigner.none?idToOpen=16509"}}
+{
+  "creator": "devin",
+  "uuid": "0000f068-c618-8000-64a1-7f0000014e7a",
+  "name": {
+    "en_US": "",
+    "es": "SMK Ejecutar Pruebas"
+  },
+  "description": {
+    "en_US": "",
+    "es": "Runner de pruebas de humo: selecciona pruebas del catálogo, crea la SMK Ejecucion, lanza un subproceso por prueba y consolida el resultado."
+  },
+  "parentFolderUuid": "_g-0000f061-6411-8000-6415-7f0000014e7a_708",
+  "processVariables": [
+    {
+      "name": "categorias",
+      "type": "Text",
+      "isParameter": true,
+      "isRequired": false,
+      "multiple": true
+    },
+    {
+      "name": "codigos",
+      "type": "Text",
+      "isParameter": true,
+      "isRequired": false,
+      "multiple": true
+    },
+    {
+      "name": "ejecucion",
+      "type": "{urn:com:appian:recordtype:datatype}e0fef5cc-80d6-491b-b74b-71d623d7a0ec",
+      "isParameter": false,
+      "isRequired": false,
+      "multiple": true
+    },
+    {
+      "name": "ejecucionId",
+      "type": "Number (Integer)",
+      "isParameter": false,
+      "isRequired": false,
+      "multiple": false
+    },
+    {
+      "name": "esperadas",
+      "type": "Number (Integer)",
+      "isParameter": false,
+      "isRequired": false,
+      "multiple": false
+    },
+    {
+      "name": "fechaInicio",
+      "type": "Date and Time",
+      "isParameter": false,
+      "isRequired": false,
+      "multiple": false
+    },
+    {
+      "name": "intentos",
+      "type": "Number (Integer)",
+      "isParameter": false,
+      "isRequired": false,
+      "multiple": false
+    },
+    {
+      "name": "lanzadoPor",
+      "type": "Text",
+      "isParameter": true,
+      "isRequired": false,
+      "multiple": false
+    },
+    {
+      "name": "motivo",
+      "type": "Text",
+      "isParameter": true,
+      "isRequired": false,
+      "multiple": false
+    },
+    {
+      "name": "origen",
+      "type": "Text",
+      "isParameter": true,
+      "isRequired": false,
+      "multiple": false
+    },
+    {
+      "name": "pruebas",
+      "type": "{urn:com:appian:recordtype:datatype}8cb90847-702c-4704-aae6-03acd830a9b7",
+      "isParameter": false,
+      "isRequired": false,
+      "multiple": true
+    },
+    {
+      "name": "resumen",
+      "type": "Any Type",
+      "isParameter": false,
+      "isRequired": false,
+      "multiple": false
+    },
+    {
+      "name": "selCategorias",
+      "type": "Text",
+      "isParameter": false,
+      "isRequired": false,
+      "multiple": true
+    },
+    {
+      "name": "selCodigos",
+      "type": "Text",
+      "isParameter": false,
+      "isRequired": false,
+      "multiple": true
+    },
+    {
+      "name": "selNombres",
+      "type": "Text",
+      "isParameter": false,
+      "isRequired": false,
+      "multiple": true
+    },
+    {
+      "name": "selSistemas",
+      "type": "Text",
+      "isParameter": false,
+      "isRequired": false,
+      "multiple": true
+    },
+    {
+      "name": "selUmbrales",
+      "type": "Number (Integer)",
+      "isParameter": false,
+      "isRequired": false,
+      "multiple": true
+    },
+    {
+      "name": "sistemas",
+      "type": "Text",
+      "isParameter": true,
+      "isRequired": false,
+      "multiple": true
+    }
+  ],
+  "nodes": [
+    {
+      "id": 1,
+      "type": "core.0",
+      "name": {
+        "en_US": "",
+        "es": "Start"
+      },
+      "coordinates": [
+        56,
+        196
+      ],
+      "uuid": "5a81e9be-1046-41db-8013-8351da6ad8ef",
+      "typeName": "Start Node",
+      "connections": [
+        {
+          "targetNodeId": 12,
+          "activityChained": true,
+          "overridesAssignment": false,
+          "synchronizeData": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "core.1",
+      "name": {
+        "en_US": "",
+        "es": "End"
+      },
+      "coordinates": [
+        1512,
+        196
+      ],
+      "uuid": "10dfc7eb-cf2f-49f9-a7ac-1d970573e4e0",
+      "typeName": "End Node",
+      "connections": []
+    },
+    {
+      "id": 11,
+      "type": "internal3.write_records_to_source_23r3",
+      "name": {
+        "en_US": "",
+        "es": "Cerrar ejecución"
+      },
+      "coordinates": [
+        1344,
+        196
+      ],
+      "uuid": "2bb6df0d-4f71-454c-b113-a27aa847e172",
+      "typeName": "Write Records and Related Records",
+      "connections": [
+        {
+          "targetNodeId": 14,
+          "activityChained": false,
+          "overridesAssignment": false,
+          "synchronizeData": false
+        }
+      ],
+      "data": {
+        "inputs": [
+          {
+            "name": "Records",
+            "type": "Any Type",
+            "required": true,
+            "expression": "={'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion'('recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{4a743dda-a9e3-46c9-8bc3-2826f9586ce1}id': pv!ejecucionId, 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{1bcfff8e-df5c-4bcf-be02-110148d4d995}fechaFin': now(), 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{4215f124-b13e-4aab-a280-50ebcff87ab8}estado': pv!resumen.estado, 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{e01d8d88-4458-4cad-8812-d58fb66d43bb}totalPruebas': pv!resumen.totalPruebas, 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{7b2b1ba6-9f90-4046-9e3f-bba4ff192345}totalOk': pv!resumen.totalOk, 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{e184f153-2a40-46a3-9d6e-654fa1923e89}totalKo': pv!resumen.totalKo, 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{9f2e3659-99d3-4ffe-9112-429eca4743e0}totalWarn': pv!resumen.totalWarn, 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{e3bf3113-5265-4932-8306-4043885eec95}duracionMs': tointeger(todecimal(now() - pv!fechaInicio) * 86400000))}",
+            "saveInto": ""
+          },
+          {
+            "name": "PauseOnError",
+            "type": "Boolean",
+            "required": false,
+            "expression": "",
+            "value": 1,
+            "saveInto": ""
+          },
+          {
+            "name": "RecordType",
+            "type": "RecordType",
+            "required": false,
+            "expression": "",
+            "value": "",
+            "saveInto": ""
+          },
+          {
+            "name": "CaptureEvents",
+            "type": "Boolean",
+            "required": true,
+            "expression": "",
+            "value": 0,
+            "saveInto": ""
+          }
+        ],
+        "customInputs": [],
+        "outputs": [
+          {
+            "name": "RecordsUpdated",
+            "type": "Any Type"
+          },
+          {
+            "name": "ErrorOccurred",
+            "type": "Boolean"
+          },
+          {
+            "name": "Error",
+            "type": "Text"
+          }
+        ],
+        "customOutputs": []
+      },
+      "assignment": {
+        "attended": false,
+        "runAs": "INITIATOR",
+        "overrideLane": false
+      }
+    },
+    {
+      "id": 10,
+      "type": "internal.16",
+      "name": {
+        "en_US": "",
+        "es": "Consolidar resultados"
+      },
+      "coordinates": [
+        1204,
+        196
+      ],
+      "uuid": "d722b291-3f31-4b7b-8f29-55f3bf1f85fd",
+      "typeName": "Unattended Multiple Questions",
+      "connections": [
+        {
+          "targetNodeId": 11,
+          "activityChained": false,
+          "overridesAssignment": false,
+          "synchronizeData": false
+        }
+      ],
+      "data": {
+        "inputs": [],
+        "customInputs": [],
+        "outputs": [],
+        "customOutputs": [
+          {
+            "expression": "rule!SMK_resumenEjecucion(ejecucionId: pv!ejecucionId, esperadas: pv!esperadas)",
+            "saveInto": "resumen"
+          }
+        ]
+      },
+      "assignment": {
+        "attended": false,
+        "runAs": "INITIATOR",
+        "overrideLane": false
+      }
+    },
+    {
+      "id": 7,
+      "type": "event.timer",
+      "name": {
+        "en_US": "",
+        "es": "Esperar 10 s"
+      },
+      "coordinates": [
+        784,
+        196
+      ],
+      "uuid": "6b4c94f5-2fa6-4db2-8e78-7337f633e1ae",
+      "typeName": "Intermediate Consuming Event",
+      "connections": [
+        {
+          "targetNodeId": 8,
+          "activityChained": false,
+          "overridesAssignment": false,
+          "synchronizeData": false
+        }
+      ],
+      "data": {
+        "inputs": [
+          {
+            "name": "delayUntil",
+            "type": "Text",
+            "required": false,
+            "expression": "now() + intervalds(0, 0, 10)"
+          }
+        ],
+        "customInputs": [],
+        "outputs": [],
+        "customOutputs": []
+      }
+    },
+    {
+      "id": 9,
+      "type": "core.4",
+      "name": {
+        "en_US": "",
+        "es": "¿Terminadas?"
+      },
+      "coordinates": [
+        1064,
+        196
+      ],
+      "uuid": "ec433fba-e5d1-4f34-9933-1ae10765c838",
+      "typeName": "XOR",
+      "connections": [
+        {
+          "targetNodeId": 10,
+          "activityChained": false,
+          "overridesAssignment": false,
+          "synchronizeData": false,
+          "label": "Sí / timeout"
+        },
+        {
+          "targetNodeId": 7,
+          "activityChained": false,
+          "overridesAssignment": false,
+          "synchronizeData": false,
+          "label": "No"
+        }
+      ],
+      "decision": {
+        "conditions": [
+          {
+            "expression": "or(a!defaultValue(pv!resumen.totalPruebas, 0) >= pv!esperadas, pv!intentos >= 24)",
+            "targetNodeId": 10,
+            "label": "Sí / timeout"
+          }
+        ],
+        "defaultPath": 7
+      }
+    },
+    {
+      "id": 8,
+      "type": "internal.16",
+      "name": {
+        "en_US": "",
+        "es": "Comprobar progreso"
+      },
+      "coordinates": [
+        896,
+        196
+      ],
+      "uuid": "58302711-bca9-47ef-a1ee-c5eeb7c3d7b9",
+      "typeName": "Unattended Multiple Questions",
+      "connections": [
+        {
+          "targetNodeId": 9,
+          "activityChained": false,
+          "overridesAssignment": false,
+          "synchronizeData": false
+        }
+      ],
+      "data": {
+        "inputs": [],
+        "customInputs": [],
+        "outputs": [],
+        "customOutputs": [
+          {
+            "expression": "a!defaultValue(pv!intentos, 0) + 1",
+            "saveInto": "intentos"
+          },
+          {
+            "expression": "rule!SMK_resumenEjecucion(ejecucionId: pv!ejecucionId, esperadas: null)",
+            "saveInto": "resumen"
+          }
+        ]
+      },
+      "assignment": {
+        "attended": false,
+        "runAs": "INITIATOR",
+        "overrideLane": false
+      }
+    },
+    {
+      "id": 6,
+      "type": "internal.38",
+      "name": {
+        "en_US": "",
+        "es": "Ejecutar prueba"
+      },
+      "coordinates": [
+        644,
+        196
+      ],
+      "uuid": "0e96d98a-923e-49ab-a16f-d3387d96b790",
+      "typeName": "SUB_PROC",
+      "connections": [
+        {
+          "targetNodeId": 7,
+          "activityChained": false,
+          "overridesAssignment": false,
+          "synchronizeData": false
+        }
+      ],
+      "data": {
+        "inputs": [
+          {
+            "name": "Instructions",
+            "type": "Text",
+            "required": false,
+            "expression": "",
+            "value": "",
+            "saveInto": ""
+          },
+          {
+            "name": "ejecucionId",
+            "type": "Text",
+            "required": false,
+            "expression": "pv!ejecucionId"
+          },
+          {
+            "name": "testCodigo",
+            "type": "Text",
+            "required": false,
+            "expression": "pv!selCodigos[tp!instanceIndex]"
+          },
+          {
+            "name": "testNombre",
+            "type": "Text",
+            "required": false,
+            "expression": "pv!selNombres[tp!instanceIndex]"
+          },
+          {
+            "name": "categoria",
+            "type": "Text",
+            "required": false,
+            "expression": "pv!selCategorias[tp!instanceIndex]"
+          },
+          {
+            "name": "sistema",
+            "type": "Text",
+            "required": false,
+            "expression": "pv!selSistemas[tp!instanceIndex]"
+          },
+          {
+            "name": "umbralMs",
+            "type": "Text",
+            "required": false,
+            "expression": "pv!selUmbrales[tp!instanceIndex]"
+          },
+          {
+            "name": "pmUUID",
+            "type": "Text",
+            "required": false,
+            "expression": "",
+            "value": "0002f068-c618-8000-64a1-7f0000014e7a",
+            "saveInto": ""
+          },
+          {
+            "name": "isAsynchronous",
+            "type": "Boolean",
+            "required": true,
+            "expression": "",
+            "value": 0,
+            "saveInto": ""
+          },
+          {
+            "name": "isTransparent",
+            "type": "Boolean",
+            "required": true,
+            "expression": "",
+            "value": 0,
+            "saveInto": ""
+          },
+          {
+            "name": "inheritSecurity",
+            "type": "Boolean",
+            "required": true,
+            "expression": "",
+            "value": 1,
+            "saveInto": ""
+          },
+          {
+            "name": "chainsInto",
+            "type": "Boolean",
+            "required": true,
+            "expression": "",
+            "value": 0,
+            "saveInto": ""
+          }
+        ],
+        "customInputs": [],
+        "outputs": [
+          {
+            "name": "subProcessID",
+            "type": "Number (Integer)"
+          },
+          {
+            "name": "procInheritsPriority",
+            "type": "Number (Integer)"
+          }
+        ],
+        "customOutputs": []
+      },
+      "assignment": {
+        "attended": false,
+        "runAs": "INITIATOR",
+        "overrideLane": false
+      },
+      "multipleInstance": {
+        "instances": "PROCESS_VARIABLE_ITEM_COUNT",
+        "value": "selCodigos",
+        "onlyNewItems": false,
+        "parallel": true,
+        "continueOn": "ALL_INSTANCES",
+        "allowBatching": false
+      }
+    },
+    {
+      "id": 5,
+      "type": "core.4",
+      "name": {
+        "en_US": "",
+        "es": "¿Hay pruebas?"
+      },
+      "coordinates": [
+        532,
+        196
+      ],
+      "uuid": "a7ae7883-ec04-4bb2-a9d6-f3e7c727dea7",
+      "typeName": "XOR",
+      "connections": [
+        {
+          "targetNodeId": 6,
+          "activityChained": false,
+          "overridesAssignment": false,
+          "synchronizeData": false,
+          "label": "Sí"
+        },
+        {
+          "targetNodeId": 10,
+          "activityChained": false,
+          "overridesAssignment": false,
+          "synchronizeData": false,
+          "label": "No"
+        }
+      ],
+      "decision": {
+        "conditions": [
+          {
+            "expression": "a!defaultValue(pv!esperadas, 0) = 0",
+            "targetNodeId": 10,
+            "label": "No"
+          }
+        ],
+        "defaultPath": 6
+      }
+    },
+    {
+      "id": 4,
+      "type": "internal.16",
+      "name": {
+        "en_US": "",
+        "es": "Guardar id ejecución"
+      },
+      "coordinates": [
+        420,
+        196
+      ],
+      "uuid": "3541a277-f62a-4ab9-abd9-88f12f774d7f",
+      "typeName": "Unattended Multiple Questions",
+      "connections": [
+        {
+          "targetNodeId": 5,
+          "activityChained": true,
+          "overridesAssignment": false,
+          "synchronizeData": false
+        }
+      ],
+      "data": {
+        "inputs": [],
+        "customInputs": [],
+        "outputs": [],
+        "customOutputs": [
+          {
+            "expression": "index(pv!ejecucion[1], 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{4a743dda-a9e3-46c9-8bc3-2826f9586ce1}id', null)",
+            "saveInto": "ejecucionId"
+          },
+          {
+            "expression": "now()",
+            "saveInto": "fechaInicio"
+          },
+          {
+            "expression": "0",
+            "saveInto": "intentos"
+          }
+        ]
+      },
+      "assignment": {
+        "attended": false,
+        "runAs": "INITIATOR",
+        "overrideLane": false
+      }
+    },
+    {
+      "id": 3,
+      "type": "internal3.write_records_to_source_23r3",
+      "name": {
+        "en_US": "",
+        "es": "Crear ejecución"
+      },
+      "coordinates": [
+        280,
+        196
+      ],
+      "uuid": "29777f06-4bb4-4379-a910-56ba6c3b25d4",
+      "typeName": "Write Records and Related Records",
+      "connections": [
+        {
+          "targetNodeId": 4,
+          "activityChained": true,
+          "overridesAssignment": false,
+          "synchronizeData": false
+        }
+      ],
+      "data": {
+        "inputs": [
+          {
+            "name": "Records",
+            "type": "Any Type",
+            "required": true,
+            "expression": "={'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion'('recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{1e84e153-8cd3-492b-9b7f-3c97575a75e5}fechaInicio': now(), 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{4215f124-b13e-4aab-a280-50ebcff87ab8}estado': \"EN_CURSO\", 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{1a5bd16b-1600-4449-9b6c-acf1abb1a5af}origen': a!defaultValue(pv!origen, \"MANUAL\"), 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{a16d9b3a-c4b3-40d7-a11c-60bf0fc2a8d6}motivo': pv!motivo, 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{541ebf63-f4c4-4892-a696-265d622c55fc}lanzadoPor': a!defaultValue(pv!lanzadoPor, user(pp!initiator, \"username\")), 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{e01d8d88-4458-4cad-8812-d58fb66d43bb}totalPruebas': pv!esperadas)}",
+            "saveInto": ""
+          },
+          {
+            "name": "PauseOnError",
+            "type": "Boolean",
+            "required": false,
+            "expression": "",
+            "value": 1,
+            "saveInto": ""
+          },
+          {
+            "name": "RecordType",
+            "type": "RecordType",
+            "required": false,
+            "expression": "",
+            "value": "",
+            "saveInto": ""
+          },
+          {
+            "name": "CaptureEvents",
+            "type": "Boolean",
+            "required": true,
+            "expression": "",
+            "value": 0,
+            "saveInto": ""
+          }
+        ],
+        "customInputs": [],
+        "outputs": [
+          {
+            "name": "RecordsUpdated",
+            "type": "Any Type",
+            "saveInto": "ejecucion"
+          },
+          {
+            "name": "ErrorOccurred",
+            "type": "Boolean"
+          },
+          {
+            "name": "Error",
+            "type": "Text"
+          }
+        ],
+        "customOutputs": []
+      },
+      "assignment": {
+        "attended": false,
+        "runAs": "INITIATOR",
+        "overrideLane": false
+      }
+    },
+    {
+      "id": 12,
+      "type": "internal.16",
+      "name": {
+        "en_US": "",
+        "es": "Seleccionar pruebas"
+      },
+      "coordinates": [
+        168,
+        196
+      ],
+      "uuid": "3418e1ab-6805-4095-be39-37d3b50b52f9",
+      "typeName": "Unattended Multiple Questions",
+      "connections": [
+        {
+          "targetNodeId": 13,
+          "activityChained": true,
+          "overridesAssignment": false,
+          "synchronizeData": false
+        }
+      ],
+      "data": {
+        "inputs": [],
+        "customInputs": [],
+        "outputs": [],
+        "customOutputs": [
+          {
+            "expression": "rule!SMK_seleccionarPruebas(codigos: pv!codigos, categorias: pv!categorias, sistemas: pv!sistemas)",
+            "saveInto": "pruebas"
+          }
+        ]
+      },
+      "assignment": {
+        "attended": false,
+        "runAs": "INITIATOR",
+        "overrideLane": false
+      }
+    },
+    {
+      "id": 13,
+      "type": "internal.16",
+      "name": {
+        "en_US": "",
+        "es": "Desglosar selección"
+      },
+      "coordinates": [
+        224,
+        308
+      ],
+      "uuid": "c58f6ae9-e375-4686-a49f-903768d772f9",
+      "typeName": "Unattended Multiple Questions",
+      "connections": [
+        {
+          "targetNodeId": 3,
+          "activityChained": true,
+          "overridesAssignment": false,
+          "synchronizeData": false
+        }
+      ],
+      "data": {
+        "inputs": [],
+        "customInputs": [],
+        "outputs": [],
+        "customOutputs": [
+          {
+            "expression": "index(pv!pruebas, 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{b4635ff6-1317-41d5-af9f-e7cd4d61fa22}codigo', {})",
+            "saveInto": "selCodigos"
+          },
+          {
+            "expression": "index(pv!pruebas, 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{a47b7e2b-7082-494e-b909-a551766e2f69}nombre', {})",
+            "saveInto": "selNombres"
+          },
+          {
+            "expression": "index(pv!pruebas, 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{8493a0cc-cd79-4cc4-988c-a6f4dd7da18e}categoria', {})",
+            "saveInto": "selCategorias"
+          },
+          {
+            "expression": "index(pv!pruebas, 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{dba8c578-8951-4d8a-82f4-64ee769b8e90}sistema', {})",
+            "saveInto": "selSistemas"
+          },
+          {
+            "expression": "index(pv!pruebas, 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{a0e22f2d-181d-4e27-a4c1-4661e21f5e60}umbralMs', {})",
+            "saveInto": "selUmbrales"
+          },
+          {
+            "expression": "count(pv!pruebas)",
+            "saveInto": "esperadas"
+          }
+        ]
+      },
+      "assignment": {
+        "attended": false,
+        "runAs": "INITIATOR",
+        "overrideLane": false
+      }
+    },
+    {
+      "id": 15,
+      "type": "internal.sendemail2",
+      "name": {
+        "es": "Notificar KO"
+      },
+      "coordinates": [
+        1520,
+        120
+      ],
+      "uuid": "3c3de301-7086-450f-afe9-e82d7ef696d8",
+      "typeName": "Send E-Mail",
+      "connections": [
+        {
+          "targetNodeId": 2,
+          "activityChained": false,
+          "overridesAssignment": false,
+          "synchronizeData": false
+        }
+      ],
+      "data": {
+        "inputs": [
+          {
+            "name": "From",
+            "type": "Text",
+            "required": true,
+            "expression": "\"default\"",
+            "value": "",
+            "saveInto": ""
+          },
+          {
+            "name": "FromEmailValue",
+            "type": "Email Address",
+            "required": false,
+            "expression": "\"\"",
+            "value": "",
+            "saveInto": ""
+          },
+          {
+            "name": "To",
+            "type": "Email Recipient",
+            "required": false,
+            "expression": "touser(getdistinctusers(cons!SMK_GRUPO_ADMINISTRADORES))",
+            "saveInto": ""
+          },
+          {
+            "name": "Cc",
+            "type": "Email Recipient",
+            "required": false,
+            "expression": "\"\"",
+            "saveInto": ""
+          },
+          {
+            "name": "Bcc",
+            "type": "Email Recipient",
+            "required": false,
+            "expression": "\"\"",
+            "saveInto": ""
+          },
+          {
+            "name": "SendErrorsTo",
+            "type": "Text",
+            "required": false,
+            "expression": "\"\"",
+            "value": "",
+            "saveInto": ""
+          },
+          {
+            "name": "SendErrorsToEmailValue",
+            "type": "Email Address",
+            "required": false,
+            "expression": "\"\"",
+            "value": "",
+            "saveInto": ""
+          },
+          {
+            "name": "Subject",
+            "type": "Text",
+            "required": false,
+            "expression": "\"[SMK][KO] Pruebas de humo con fallos - ejecución #\" & tostring(pv!ejecucionId)",
+            "value": "",
+            "saveInto": ""
+          },
+          {
+            "name": "Attachments",
+            "type": "Document",
+            "required": false,
+            "expression": "\"\"",
+            "saveInto": ""
+          },
+          {
+            "name": "Priority",
+            "type": "Number (Integer)",
+            "required": true,
+            "expression": "",
+            "value": 1,
+            "saveInto": ""
+          },
+          {
+            "name": "IsHTML",
+            "type": "Boolean",
+            "required": true,
+            "expression": "",
+            "value": 1,
+            "saveInto": ""
+          },
+          {
+            "name": "BodyTemplate",
+            "type": "Document",
+            "required": false,
+            "expression": "\"\"",
+            "saveInto": ""
+          },
+          {
+            "name": "BodyHTML",
+            "type": "Text",
+            "required": false,
+            "expression": "\"<html><body><h2>Pruebas de humo con fallos</h2><p>Ejecución #\" & tostring(pv!ejecucionId) & \"</p><p>Estado: KO</p><p>Fecha: \" & tostring(now()) & \"</p><p>OK: \" & tostring(pv!resumen.totalOk) & \" · WARN: \" & tostring(pv!resumen.totalWarn) & \" · KO: \" & tostring(pv!resumen.totalKo) & \"</p><p><a href='https://mapfrespain-dev.appiancloud.com/suite/sites/smoke-tests/page/historico'>Ver histórico</a></p></body></html>\"",
+            "value": "",
+            "saveInto": ""
+          },
+          {
+            "name": "HeaderTemplate",
+            "type": "Document",
+            "required": false,
+            "expression": "\"\"",
+            "saveInto": ""
+          },
+          {
+            "name": "FooterTemplate",
+            "type": "Document",
+            "required": false,
+            "expression": "\"\"",
+            "saveInto": ""
+          },
+          {
+            "name": "Email Sender Display Name",
+            "type": "Text",
+            "required": false,
+            "expression": "\"\"",
+            "value": "",
+            "saveInto": ""
+          }
+        ],
+        "customInputs": [],
+        "outputs": [
+          {
+            "name": "UsersWithMissingAddresses",
+            "type": "User"
+          },
+          {
+            "name": "InvalidAddresses",
+            "type": "Text"
+          },
+          {
+            "name": "ToValidAddresses",
+            "type": "Email Address"
+          },
+          {
+            "name": "CcValidAddresses",
+            "type": "Email Address"
+          },
+          {
+            "name": "BccValidAddresses",
+            "type": "Email Address"
+          }
+        ],
+        "customOutputs": []
+      },
+      "assignment": {
+        "attended": false,
+        "runAs": "DESIGNER",
+        "overrideLane": false
+      }
+    },
+    {
+      "id": 14,
+      "type": "core.4",
+      "name": {
+        "es": "¿Hay KO?"
+      },
+      "coordinates": [
+        1432,
+        196
+      ],
+      "uuid": "7cc11876-f174-4186-bc5a-96fe27bf1488",
+      "typeName": "XOR",
+      "connections": [
+        {
+          "targetNodeId": 15,
+          "activityChained": false,
+          "overridesAssignment": false,
+          "synchronizeData": false,
+          "label": "Sí"
+        },
+        {
+          "targetNodeId": 2,
+          "activityChained": false,
+          "overridesAssignment": false,
+          "synchronizeData": false,
+          "label": "No"
+        }
+      ],
+      "decision": {
+        "conditions": [
+          {
+            "expression": "pv!resumen.estado = \"KO\"",
+            "targetNodeId": 15,
+            "label": "Sí"
+          }
+        ],
+        "defaultPath": 2
+      }
+    }
+  ],
+  "lanes": [],
+  "versionId": "",
+  "_rest": {
+    "url": "https://mapfrespain-dev.appiancloud.com/suite/process/startdesigner.none?idToOpen=16509"
+  }
+}
