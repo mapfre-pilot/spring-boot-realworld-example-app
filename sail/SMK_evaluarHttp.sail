@@ -1,5 +1,3 @@
-/* Convierte el resultado de una integración HTTP de conectividad (fv!result/success/error)
-   en el contrato común de smoke test: {resultado, mensaje, detalle}. */
 a!localVariables(
   local!ok: a!defaultValue(ri!res.success, false),
   local!status: if(local!ok, tointeger(a!defaultValue(ri!res.result.statusCode, 0)), 0),

@@ -1,6 +1,3 @@
-/* Convierte el resultado de una integración genérica (S3, plugin, REST funcional)
-   en el contrato común de smoke test: {resultado, mensaje, detalle}.
-   OK = la integración terminó sin error; KO = error técnico o funcional. */
 if(
   a!defaultValue(ri!res.success, false),
   a!map(
