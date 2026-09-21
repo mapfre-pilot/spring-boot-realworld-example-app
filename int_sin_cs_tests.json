@@ -6,10 +6,11 @@
     "constantUuid": "_a-0000f069-4f37-8000-9cc8-011c48011c48_20045017",
     "integrationName": "SMK_INT_HTTP_url",
     "integrationUuid": "3df019a3-b7c1-49a0-9d6c-53199e64eb3b",
-    "ejecucionId": 24,
-    "resultado": "KO",
-    "mensaje": "The requested URL cannot be found: The external system did not find the requested URL or is refusing to allow access",
-    "duracionMs": 1020
+    "ejecucionId": 26,
+    "resultado": "OK",
+    "mensaje": "Host alcanzable (HTTP 404)",
+    "duracionMs": 1050,
+    "integrationVersionId": 3
   },
   {
     "code": "HTTP_CONFIG_ZSCALER_COM",
@@ -18,10 +19,11 @@
     "constantUuid": "_a-0000f069-4f37-8000-9cc8-011c48011c48_20045023",
     "integrationName": "SMK_INT_HTTP_url",
     "integrationUuid": "3df019a3-b7c1-49a0-9d6c-53199e64eb3b",
-    "ejecucionId": 24,
+    "ejecucionId": 26,
     "resultado": "OK",
     "mensaje": "Host alcanzable (HTTP 200)",
-    "duracionMs": 1155
+    "duracionMs": 1050,
+    "integrationVersionId": 3
   },
   {
     "code": "HTTP_PERFORMANCEMANAGER5_SUCCESSFACTORS_EU",
@@ -30,10 +32,11 @@
     "constantUuid": "_a-0000f069-4f37-8000-9cc8-011c48011c48_20045029",
     "integrationName": "SMK_INT_HTTP_url",
     "integrationUuid": "3df019a3-b7c1-49a0-9d6c-53199e64eb3b",
-    "ejecucionId": 24,
-    "resultado": "KO",
-    "mensaje": "The requested URL cannot be found: The external system did not find the requested URL or is refusing to allow access",
-    "duracionMs": 1020
+    "ejecucionId": 26,
+    "resultado": "OK",
+    "mensaje": "Host alcanzable (HTTP 404)",
+    "duracionMs": 1050,
+    "integrationVersionId": 3
   },
   {
     "code": "HTTP_API012_SUCCESSFACTORS_EU",
@@ -42,10 +45,11 @@
     "constantUuid": "_a-0000f069-4f37-8000-9cc8-011c48011c48_20045035",
     "integrationName": "SMK_INT_HTTP_url",
     "integrationUuid": "3df019a3-b7c1-49a0-9d6c-53199e64eb3b",
-    "ejecucionId": 24,
-    "resultado": "KO",
-    "mensaje": "The requested URL cannot be found: The external system did not find the requested URL or is refusing to allow access",
-    "duracionMs": 1020
+    "ejecucionId": 26,
+    "resultado": "OK",
+    "mensaje": "Host alcanzable (HTTP 404)",
+    "duracionMs": 1050,
+    "integrationVersionId": 3
   },
   {
     "code": "HTTP_RRPP_DGSFP_MINECO_ES",
@@ -54,10 +58,11 @@
     "constantUuid": "_a-0000f069-4f37-8000-9cc8-011c48011c48_20045041",
     "integrationName": "SMK_INT_HTTP_url",
     "integrationUuid": "3df019a3-b7c1-49a0-9d6c-53199e64eb3b",
-    "ejecucionId": 24,
-    "resultado": "KO",
-    "mensaje": "The requested URL cannot be found: The external system did not find the requested URL or is refusing to allow access",
-    "duracionMs": 1020
+    "ejecucionId": 26,
+    "resultado": "OK",
+    "mensaje": "Host alcanzable (HTTP 404)",
+    "duracionMs": 1050,
+    "integrationVersionId": 3
   },
   {
     "code": "HTTP_HERMES_VIEW_MAPFRE_NET_25049",
@@ -66,10 +71,11 @@
     "constantUuid": "_a-0000f069-4f37-8000-9cc8-011c48011c48_20045047",
     "integrationName": "SMK_INT_HTTP_url",
     "integrationUuid": "3df019a3-b7c1-49a0-9d6c-53199e64eb3b",
-    "ejecucionId": 24,
-    "resultado": "KO",
-    "mensaje": "The requested URL cannot be found: The external system did not find the requested URL or is refusing to allow access",
-    "duracionMs": 1020
+    "ejecucionId": 26,
+    "resultado": "OK",
+    "mensaje": "Host alcanzable (HTTP 404)",
+    "duracionMs": 1050,
+    "integrationVersionId": 3
   },
   {
     "code": "HTTP_APIATTRIBUTIONS_PRE_MAPFREDIGITALHEALTH_COM",
@@ -78,10 +84,11 @@
     "constantUuid": "_a-0000f069-4f37-8000-9cc8-011c48011c48_20045053",
     "integrationName": "SMK_INT_HTTP_url",
     "integrationUuid": "3df019a3-b7c1-49a0-9d6c-53199e64eb3b",
-    "ejecucionId": 24,
-    "resultado": "KO",
-    "mensaje": "You are not permitted to perform the requested operation: The external system understood the request but refused to authorize it",
-    "duracionMs": 1020
+    "ejecucionId": 26,
+    "resultado": "OK",
+    "mensaje": "Host alcanzable (HTTP 403)",
+    "duracionMs": 1050,
+    "integrationVersionId": 3
   },
   {
     "code": "HTTP_API_PRODUCT_CLIENTS_CLIENTES_PRIVATE_PRE_MAPFREDIGITALHEALTH_COM",
@@ -90,10 +97,11 @@
     "constantUuid": "_a-0000f069-4f37-8000-9cc8-011c48011c48_20045059",
     "integrationName": "SMK_INT_HTTP_url",
     "integrationUuid": "3df019a3-b7c1-49a0-9d6c-53199e64eb3b",
-    "ejecucionId": 24,
+    "ejecucionId": 26,
     "resultado": "KO",
-    "mensaje": "The external system could not be found: Appian could not find a DNS address for https://api-product-clients.clientes.private.pre.mapfredigitalhealth.com",
-    "duracionMs": 1020
+    "mensaje": "Sin respuesta HTTP del host: La integración no obtuvo un código de estado HTTP (fallo de red, DNS, TLS o timeout)",
+    "duracionMs": 1050,
+    "integrationVersionId": 3
   },
   {
     "code": "HTTP_CORE7_DESA_MAPFRE_NET",
@@ -102,10 +110,11 @@
     "constantUuid": "_a-0000f069-4f37-8000-9cc8-011c48011c48_20045065",
     "integrationName": "SMK_INT_HTTP_url",
     "integrationUuid": "3df019a3-b7c1-49a0-9d6c-53199e64eb3b",
-    "ejecucionId": 24,
+    "ejecucionId": 26,
     "resultado": "KO",
-    "mensaje": "Connection timed out: The integration execution time exceeded the configured timeout",
-    "duracionMs": 10945
+    "mensaje": "Sin respuesta HTTP del host: La integración no obtuvo un código de estado HTTP (fallo de red, DNS, TLS o timeout)",
+    "duracionMs": 15788,
+    "integrationVersionId": 3
   },
   {
     "code": "HTTP_CF_DEV_BACK_3BIUBN3R_AUTHENTICATION_EU10_HANA_ONDEMAND_COM",
@@ -114,10 +123,11 @@
     "constantUuid": "_a-0000f069-4f37-8000-9cc8-011c48011c48_20045071",
     "integrationName": "SMK_INT_HTTP_url",
     "integrationUuid": "3df019a3-b7c1-49a0-9d6c-53199e64eb3b",
-    "ejecucionId": 24,
+    "ejecucionId": 26,
     "resultado": "OK",
     "mensaje": "Host alcanzable (HTTP 200)",
-    "duracionMs": 1020
+    "duracionMs": 1050,
+    "integrationVersionId": 3
   },
   {
     "code": "HTTP_MAPFRETECH_S_A_CF_DEV_BACK_3BIUBN3R_MAPFRE_BACK_DEV_BP32262ABD_CFAPPS_EU10_004_HANA_ONDEMAND_COM",
@@ -126,10 +136,11 @@
     "constantUuid": "_a-0000f069-4f37-8000-9cc8-011c48011c48_20045077",
     "integrationName": "SMK_INT_HTTP_url",
     "integrationUuid": "3df019a3-b7c1-49a0-9d6c-53199e64eb3b",
-    "ejecucionId": 24,
-    "resultado": "KO",
-    "mensaje": "The requested URL cannot be found: The external system did not find the requested URL or is refusing to allow access",
-    "duracionMs": 1020
+    "ejecucionId": 26,
+    "resultado": "OK",
+    "mensaje": "Host alcanzable (HTTP 404)",
+    "duracionMs": 1050,
+    "integrationVersionId": 3
   },
   {
     "code": "HTTP_MWTLW5VSS3OKVQPBJKA5XDJZHU0CEOAY_LAMBDA_URL_EU_WEST_1_ON_AWS",
@@ -138,9 +149,10 @@
     "constantUuid": "_a-0000f069-4f37-8000-9cc8-011c48011c48_20045083",
     "integrationName": "SMK_INT_HTTP_url",
     "integrationUuid": "3df019a3-b7c1-49a0-9d6c-53199e64eb3b",
-    "ejecucionId": 24,
-    "resultado": "KO",
-    "mensaje": "You are not permitted to perform the requested operation: The external system understood the request but refused to authorize it",
-    "duracionMs": 1020
+    "ejecucionId": 26,
+    "resultado": "OK",
+    "mensaje": "Host alcanzable (HTTP 403)",
+    "duracionMs": 1050,
+    "integrationVersionId": 3
   }
 ]

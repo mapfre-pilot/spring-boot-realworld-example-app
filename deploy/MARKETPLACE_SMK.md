@@ -27,6 +27,10 @@ No sustituye a las pruebas funcionales de cada aplicación: responde a la pregun
 
 La cobertura del catálogo es de **124 pruebas** (114 activas): 112 pruebas existentes y 12 pruebas HTTP `INT_SIN_CS` para hosts de integraciones sin Connected System. Estas 12 aparecen en Catálogo con la marca **Sin CS** y usan la integración compartida `SMK_INT_HTTP_url` con URL base por constante `SMK_URL_*`. Cada prueba es *read-only*: no crea, modifica ni borra datos de negocio.
 
+### Validación DEV
+
+La versión 3 de `SMK_INT_HTTP_url` tiene timeout de 15 s y clasifica como alcanzable toda respuesta con `statusCode`, incluidos 403/404. En la ejecución exacta de las 12 pruebas INT_SIN_CS (**#26**) se obtuvieron 10 OK y 2 KO: `api-product-clients.clientes.private.pre.mapfredigitalhealth.com` sin respuesta HTTP y `core7.desa.mapfre.net` con timeout.
+
 ### Criterio de resultado
 
 - **OK** – el sistema responde correctamente (para hosts, cualquier respuesta HTTP, incluido 4xx/5xx, demuestra que el host es alcanzable y la autenticación del Connected System funciona; en las pruebas Sin CS, cualquier respuesta HTTP demuestra alcance del host).

@@ -64,6 +64,10 @@ Desde un proceso Appian: subproceso `SMK Ejecutar Pruebas` o `a!startProcess(con
 
 10 pruebas de host quedaron **desactivadas** (activo=false, marcadas en su descripción) porque no obtienen respuesta desde DEV (ver `ko_diag.md`): api-gw.core.pfgop.dev (OAuth CS `PPP Proxy API GW`), www.apisb.mapfre.net:25003 (OAuth), backend.pgo.mapfre.net (OAuth), api-product-sgc...pre.mapfredigitalhealth.com (OAuth), core8.pre:26025, wmbig3is.pre:26019, ses000a204616.es:26023, wmbig1is.desa:25018 (timeout 15 s), webservices.desa.mapfre.net, esp-cvm2...pfadmsop.dev:250544 (puerto inválido en el CS). Se reactivan desde el catálogo cuando el CS quede corregido.
 
+## Validación DEV de INT_SIN_CS
+
+La integración compartida `SMK_INT_HTTP_url` usa timeout de 15 s y considera éxito cualquier respuesta con `statusCode` presente, incluidos 403/404. La revalidación exacta de las 12 pruebas (ejecución **#26**) obtuvo **10 OK y 2 KO**: KO por falta de respuesta en `api-product-clients.clientes.private.pre.mapfredigitalhealth.com` y timeout en `core7.desa.mapfre.net`.
+
 ## Limitaciones / siguientes pasos
 
 - Las pruebas HTTP miden alcance del host, no la corrección funcional del endpoint.
