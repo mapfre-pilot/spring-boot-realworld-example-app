@@ -25,7 +25,7 @@ No sustituye a las pruebas funcionales de cada aplicación: responde a la pregun
 | **APIGW** | API Gateway de OT y proxies | Obtención de token y llamada a través del gateway |
 | **S3** | Almacenamiento AWS S3 corporativo | ListBuckets con el Connected System de S3 |
 
-La cobertura del catálogo es de **124 pruebas** (114 activas): 112 pruebas existentes y 12 pruebas HTTP `INT_SIN_CS` para hosts de integraciones sin Connected System. Estas 12 aparecen en Catálogo con la marca **Sin CS** y usan la integración compartida `SMK_INT_HTTP_url` con URL base por constante `SMK_URL_*`. Cada prueba es *read-only*: no crea, modifica ni borra datos de negocio.
+La cobertura del catálogo es de **124 pruebas** (114 activas), incluidas 12 pruebas HTTP `INT_SIN_CS` para hosts de integraciones sin Connected System. Estas 12 aparecen en Catálogo con la marca **Sin CS** y usan la integración compartida `SMK_INT_HTTP_url` con URL base por constante `SMK_URL_*`. Cada prueba es *read-only*: no crea, modifica ni borra datos de negocio.
 
 ### Validación DEV
 

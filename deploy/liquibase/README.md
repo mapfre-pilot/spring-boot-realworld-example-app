@@ -7,7 +7,7 @@ Changelogs para las tablas de `SMK Pruebas de Humo` en `jdbc/Appian`.
 - `db.changelog-master.xml`: entrada principal, en orden `SMK_TEST`, `SMK_EJECUCION`, `SMK_RESULTADO`, `SMK_PROGRAMACION` y carga inicial del catálogo.
 - `changes/01_smk_test.xml` … `04_smk_programacion.xml`: tablas, restricciones e índices.
 - `changes/05_smk_catalogo_data.xml`: carga de `data/smk_test.csv` sólo cuando `SMK_TEST` está vacía.
-- `changes/data/smk_test.csv`: catálogo inicial generado desde `deploy/02_catalogo_smk.sql`.
+- `changes/data/smk_test.csv`: catálogo inicial de 124 entradas generado desde `sail/SMK_catalogoBase.sail`.
 
 ## Ejecución
 
