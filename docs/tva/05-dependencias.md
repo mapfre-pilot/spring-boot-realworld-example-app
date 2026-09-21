@@ -29,7 +29,7 @@ TVA referencia **151 objetos** (`rule!`/`cons!`) que no pertenecen a la aplicaci
 | Persona Vida (`personavida_be-web`) | REST PUT | gestionar personas |
 | MISV / NOVAServices | REST / `TVA MISV` | perfilado de cliente |
 | SOA7 MAVISA_910Usuario | SOAP | perfil de usuario |
-| Aurora PostgreSQL (`aws-rds-dev.mapfre.es`) | JDBC | trazas y sesión |
+| Aurora PostgreSQL (RDS DEV) | JDBC | trazas y sesión |
 | Portal Financiero (GV / PFM) | Web API entrante | arranque de la aplicación |
 | Correo | Smart service email | firma manuscrita, alertas |
 

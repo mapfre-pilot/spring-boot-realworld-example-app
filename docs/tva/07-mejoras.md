@@ -12,7 +12,7 @@ definiciones; no se ha ejecutado la aplicación.
 | A2 | **Datos personales en claro** en la tabla de trazas (`TVA_ENT_TRAZA.json`): sesión completa con NIF, direcciones, IBAN, teléfonos… | `TVA_ObtenerTraza`, `Grabar sesion` en `TVA Inicio Ahorro` | Definir política de retención (revisar `TVA Batch Borrar traza`), cifrar/anonimizar campos sensibles o separar la sesión de la traza técnica. |
 | A3 | **Sesión recuperable solo por `claveSesion`**: `TVA_ObtenerTraza` filtra por `upper(claveSesion)`; cualquier usuario con una clave válida en la URL puede abrir la sesión de otro. | `TVA_Principal`, `TVA_ObtenerTraza` | Vincular la sesión al `loggedInUser()`/nuuma y validar en `TVA_Principal`; caducar sesiones. |
 | A4 | Sistema conectado `TVA API Life APPINVE` sin ningún dependiente. | `dependents/cs_TVA_API_Life_APPINVE` | Eliminar (credenciales innecesarias). |
-| A5 | Entorno DEV apunta a backends **PRE** (`webservices.pre.mapfre.net`, `misv.pre.mapfre.net`) y `TVA_WSDL_IGestionarPerfilUsuario` fuerza PRE en DEV (`forzarPreEnDev: true`). | `connected_systems/*`, `integrations/TVA_WSDL_IGestionarPerfilUsuario` | Confirmar si es intencionado; documentar la matriz entorno Appian ↔ entorno backend. |
+| A5 | Entorno DEV apunta a backends **PRE**  y `TVA_WSDL_IGestionarPerfilUsuario` fuerza PRE en DEV (`forzarPreEnDev: true`). | `connected_systems/*`, `integrations/TVA_WSDL_IGestionarPerfilUsuario` | Confirmar si es intencionado; documentar la matriz entorno Appian ↔ entorno backend. |
 
 ## Media
 

@@ -4,13 +4,13 @@
 
 | Nombre | Tipo | Endpoint base | Autenticación | Uso |
 |---|---|---|---|---|
-| `TVA API Life` | HTTP | `https://webservices.pre.mapfre.net:26004/` | Basic (usuario `APPSAVI`, preemptive) | 18 de las 20 integraciones (API Life / SBC / personas) |
-| `TVA API Life APPINVE` | HTTP | `https://webservices.pre.mapfre.net:26004/` | Basic (usuario `APPINVE`) | Sin integraciones dependientes en el volcado |
-| `TVA MISV` | HTTP | `https://misv.pre.mapfre.net:26024` | Basic (usuario `APPCMPA`) | `TVA_PerfiladoClientes` (NOVAServices) |
-| `TVA BD Aurora PostgreSQL` | Data Source (Aurora PostgreSQL) | `jdbc:postgresql://aws-rds-dev.mapfre.es:5432/appianmapfredb?currentSchema=tva_tarificadorvidaahorro` | usuario `user_tva_tarificadorvidaahorro` | Data store de trazas/sesión |
+| `TVA API Life` | HTTP | host API Life (entorno PRE) | Basic, preemptive (usuario técnico A) | 18 de las 20 integraciones (API Life / SBC / personas) |
+| `TVA API Life APPINVE` | HTTP | host API Life (entorno PRE) | Basic (usuario técnico B) | Sin integraciones dependientes en el volcado |
+| `TVA MISV` | HTTP | host MISV (entorno PRE) | Basic (usuario técnico C) | `TVA_PerfiladoClientes` (NOVAServices) |
+| `TVA BD Aurora PostgreSQL` | Data Source (Aurora PostgreSQL) | Aurora PostgreSQL DEV, esquema propio de TVA | usuario técnico propio | Data store de trazas/sesión |
 
 > Observación: los tres sistemas HTTP del entorno **DEV** de Appian apuntan a hosts de
-> **PRE** de Mapfre (`*.pre.mapfre.net`). Las contraseñas están enmascaradas en Appian y
+> **PRE** de Mapfre (hosts PRE). Las contraseñas están enmascaradas en Appian y
 > no se documentan.
 
 ## Integraciones (20)
@@ -55,7 +55,7 @@ los CDT `VIDA_API_Life_*`, y las respuestas se tratan con `VIDA_MensajeErrorServ
 | `TVA InicioSimuladorRentas` | `simuladorRentas` | POST | No | No | Inicio del simulador de rentas (arranca `TVA Inicio SimuladorRentas`) |
 
 Ambas se invocan con las cuentas de servicio del grupo `TVA WebApi Inicio`
-(`tva.inicio.gv`, `tva.inicio.pfm` → portales GV y PFM). El MCP no devolvió el cuerpo
+(dos cuentas de servicio, una por portal: GV y PFM). El MCP no devolvió el cuerpo
 SAIL de las Web APIs; el comportamiento se infiere de `TVA_responseTVAWebAPI`,
 `TVA_ResponseInicio`, `TVA_WebApi_Inicio_ObtenerMensajeError` y
 `TVA_R2C_WebApi_Inicio_ObtenerMensajeError`.

@@ -6,7 +6,7 @@
 |---|---|---|---|
 | `TVA Administradores` | 6 | usuarios | Administrador de todos los objetos de diseño |
 | `TVA Usuarios` | 33 | 26 usuarios + 7 grupos (incl. `TVA Adm Portal SSO *`) | Viewer de todos los objetos; usuarios finales |
-| `TVA WebApi Inicio` | 2 | cuentas de servicio `tva.inicio.gv`, `tva.inicio.pfm` | Viewer de las 2 Web APIs (invocación desde portales GV y PFM) |
+| `TVA WebApi Inicio` | 2 | 2 cuentas de servicio (GV y PFM) | Viewer de las 2 Web APIs (invocación desde portales GV y PFM) |
 | `TVA Administradores portal` | 3 | 1 usuario + `TVA Adm Portal SSO NO PRO` + `TVA Adm Portal SSO PRO` | Acceso a `TVA_Pantalla_Administracion` |
 | `TVA Debug` | 7 | `TVA Administradores` + 6 usuarios | Utilidades de depuración |
 | `TVA Alertas` | 3 | usuarios | Destinatarios de `TVA IPs` |
@@ -68,7 +68,7 @@ miembros de `TVA WebApi Inicio`.
    [07-mejoras.md](07-mejoras.md)).
 2. Los tres sistemas conectados HTTP de DEV apuntan a hosts **PRE** de Mapfre y usan
    **Basic Auth**; no hay separación real DEV/PRE a nivel de backend.
-3. `TVA API Life APPINVE` (usuario `APPINVE`) no es utilizado por ninguna integración:
+3. `TVA API Life APPINVE` (segundo usuario técnico) no es utilizado por ninguna integración:
    credenciales innecesarias desplegadas.
 4. La sesión completa (datos personales de tomadores, cuentas bancarias, documentos) se
    persiste en claro como JSON en la tabla de trazas; el borrado depende del batch
@@ -76,5 +76,5 @@ miembros de `TVA WebApi Inicio`.
 5. En entornos no PRO, `TVA_Principal` puede abrirse sin `claveSesion`; los mocks
    (`TVA_MOCK_Sesion_*`) contienen datos con apariencia real (incluso un NIF en el nombre
    de una regla).
-6. Los grupos de usuarios incluyen cuentas externas (`*_appian@mapfrenopro.onmicrosoft.com`)
+6. Los grupos de usuarios incluyen cuentas externas (tenant no productivo)
    junto a cuentas corporativas; conviene revisar su vigencia.

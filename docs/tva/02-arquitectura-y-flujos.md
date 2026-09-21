@@ -20,7 +20,7 @@ Portal Financiero (GV / PFM)
  PM "acción"  ──► Integración API Life (SBC) ──► actualiza sesion ──► graba traza
                                  │
                        Connected Systems:
-                       TVA API Life (APPSAVI) · TVA API Life APPINVE · TVA MISV
+                       TVA API Life · TVA API Life APPINVE · TVA MISV
                        TVA BD Aurora PostgreSQL (schema tva_tarificadorvidaahorro)
 ```
 
@@ -109,7 +109,7 @@ Web API `simuladorRentas` → `TVA Inicio SimuladorRentas` → `R2C_CAPTURA`
 ## Persistencia
 
 - Data source: `TVA BD Aurora PostgreSQL`
-  (`jdbc:postgresql://aws-rds-dev.mapfre.es:5432/appianmapfredb?currentSchema=tva_tarificadorvidaahorro`).
+  (esquema propio de TVA en Aurora PostgreSQL DEV).
 - Entidad principal: `cons!TVA_ENT_TRAZA` (CDT `TVA_Traza`: `id`, `claveSesion`,
   `ubicacion`, `tipoContenido`, `json`, …). Se usa tanto para trazas de servicio como para
   la sesión (`TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_SESION`).

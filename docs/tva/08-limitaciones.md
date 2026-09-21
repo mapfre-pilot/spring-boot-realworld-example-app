@@ -30,3 +30,6 @@
 - **Volcado completo**: los ~560 artefactos JSON/SAIL recuperados no se han versionado en
   este repositorio (contienen datos de mocks y configuración interna); están disponibles
   bajo petición para ampliar la documentación.
+- **Datos de infraestructura**: por tratarse de un repositorio público se han omitido hostnames,
+  puertos, cadenas JDBC y nombres de usuarios técnicos de los sistemas conectados; están en la
+  configuración de los propios sistemas conectados en Appian.
