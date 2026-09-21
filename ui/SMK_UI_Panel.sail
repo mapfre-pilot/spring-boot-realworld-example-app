@@ -191,24 +191,63 @@ a!localVariables(
             local!ko: count(wherecontains("KO", touniformstring(local!resultados))),
             local!warn: count(wherecontains("WARN", touniformstring(local!resultados))),
             local!ok: count(wherecontains("OK", touniformstring(local!resultados))),
+            local!colorCat: if(local!ko > 0, cons!SMK_COLOR_ERROR, if(local!warn > 0, cons!SMK_COLOR_AVISO, cons!SMK_COLOR_EXITO)),
+            local!textoCat: if(local!ko > 0, "Con fallos", if(local!warn > 0, "Con avisos", if(local!ok > 0, "Correcto", "Sin datos"))),
+            local!iconoCat: if(local!ko > 0, "times-circle", if(local!warn > 0, "exclamation-triangle", if(local!ok > 0, "check-circle", "minus-circle"))),
             a!columnLayout(
               contents: a!cardLayout(
                 contents: {
                   a!richTextDisplayField(
+                    labelPosition: "COLLAPSED",
                     value: {
-                      a!richTextIcon(icon: "circle", color: if(local!ko > 0, cons!SMK_COLOR_ERROR, if(local!warn > 0, cons!SMK_COLOR_AVISO, cons!SMK_COLOR_EXITO))),
-                      a!richTextItem(text: " " & local!cat, style: "STRONG"),
+                      a!richTextIcon(icon: local!iconoCat, color: local!colorCat, size: "MEDIUM"),
+                      a!richTextItem(text: "  " & local!cat, style: "STRONG", size: "MEDIUM", color: cons!SMK_COLOR_AZUL_OSCURO),
                       char(10),
-                      a!richTextItem(text: "OK " & tostring(local!ok), color: cons!SMK_COLOR_EXITO),
-                      a!richTextItem(text: " · WARN " & tostring(local!warn), color: cons!SMK_COLOR_AVISO),
-                      a!richTextItem(text: " · KO " & tostring(local!ko), color: cons!SMK_COLOR_ERROR)
-                    }
+                      a!richTextItem(text: local!textoCat, color: local!colorCat, size: "SMALL", style: "STRONG")
+                    },
+                    marginBelow: "EVEN_LESS"
+                  ),
+                  a!sideBySideLayout(
+                    items: {
+                      a!sideBySideItem(item: a!richTextDisplayField(
+                        labelPosition: "COLLAPSED",
+                        align: "CENTER",
+                        value: {
+                          a!richTextItem(text: tostring(local!ok), size: "LARGE", style: "STRONG", color: if(local!ok > 0, cons!SMK_COLOR_EXITO, "SECONDARY")),
+                          char(10),
+                          a!richTextItem(text: "OK", size: "SMALL", color: "SECONDARY")
+                        }
+                      )),
+                      a!sideBySideItem(item: a!richTextDisplayField(
+                        labelPosition: "COLLAPSED",
+                        align: "CENTER",
+                        value: {
+                          a!richTextItem(text: tostring(local!warn), size: "LARGE", style: "STRONG", color: if(local!warn > 0, cons!SMK_COLOR_AVISO, "SECONDARY")),
+                          char(10),
+                          a!richTextItem(text: "WARN", size: "SMALL", color: "SECONDARY")
+                        }
+                      )),
+                      a!sideBySideItem(item: a!richTextDisplayField(
+                        labelPosition: "COLLAPSED",
+                        align: "CENTER",
+                        value: {
+                          a!richTextItem(text: tostring(local!ko), size: "LARGE", style: "STRONG", color: if(local!ko > 0, cons!SMK_COLOR_ERROR, "SECONDARY")),
+                          char(10),
+                          a!richTextItem(text: "KO", size: "SMALL", color: "SECONDARY")
+                        }
+                      ))
+                    },
+                    alignVertical: "MIDDLE",
+                    spacing: "NONE",
+                    marginBelow: "NONE"
                   )
                 },
-                style: if(local!ko > 0, cons!SMK_COLOR_ERROR, if(local!warn > 0, cons!SMK_COLOR_AVISO, cons!SMK_COLOR_EXITO)),
                 shape: "ROUNDED",
                 showBorder: true,
                 showShadow: false,
+                padding: "STANDARD",
+                decorativeBarPosition: "TOP",
+                decorativeBarColor: local!colorCat,
                 marginBelow: "STANDARD"
               )
             )
