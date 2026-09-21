@@ -2,7 +2,6 @@ a!localVariables(
   local!estado: null,
   local!desde: null,
   local!hasta: null,
-  local!ejecucionSel: null,
   a!headerContentLayout(
     header: rule!SMK_UI_Cabecera(
       icono: "history",
@@ -53,13 +52,8 @@ a!localVariables(
           ),
         ),
         columns: {
-          a!gridColumn(
-            label: "ID",
-            value: a!richTextDisplayField(labelPosition: "COLLAPSED", value: a!richTextItem(
-              text: tostring(fv!row['recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{4a743dda-a9e3-46c9-8bc3-2826f9586ce1}id']),
-              link: a!dynamicLink(saveInto: a!save(local!ejecucionSel, fv!row['recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{4a743dda-a9e3-46c9-8bc3-2826f9586ce1}id']))
-            ))
-          ),
+          a!gridColumn(label: "ID", value: a!richTextDisplayField(labelPosition: "COLLAPSED", value: a!richTextItem(text: tostring(fv!row['recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{4a743dda-a9e3-46c9-8bc3-2826f9586ce1}id']), style: "STRONG", color: cons!SMK_COLOR_AZUL_OSCURO)), width: "NARROW"),
+          a!gridColumn(label: "Detalle", value: a!recordActionField(actions: a!recordActionItem(action: 'recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.actions.{197ca981-65ff-492d-a45f-c85ed6b95292}verDetalle', identifier: fv!identifier), style: "LINKS", display: "LABEL_AND_ICON", openActionsIn: "DIALOG"), width: "NARROW"),
           a!gridColumn(label: "Fecha inicio", value: fv!row['recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{1e84e153-8cd3-492b-9b7f-3c97575a75e5}fechaInicio']),
           a!gridColumn(label: "Estado", value: a!richTextDisplayField(labelPosition: "COLLAPSED", value: a!richTextItem(text: fv!row['recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{4215f124-b13e-4aab-a280-50ebcff87ab8}estado'], style: "STRONG", color: a!match(value: fv!row['recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{4215f124-b13e-4aab-a280-50ebcff87ab8}estado'], equals: "OK", then: cons!SMK_COLOR_EXITO, equals: "KO", then: cons!SMK_COLOR_ERROR, equals: "WARN", then: cons!SMK_COLOR_AVISO, default: cons!SMK_COLOR_AZUL_GRIS)))),
           a!gridColumn(label: "Origen", value: fv!row['recordType!{e0fef5cc-80d6-491b-b74b-71d623d7a0ec}SMK Ejecucion.fields.{1a5bd16b-1600-4449-9b6c-acf1abb1a5af}origen']),
@@ -83,18 +77,6 @@ a!localVariables(
         style: cons!SMK_COLOR_BLANCO,
         padding: "STANDARD",
         marginBelow: "STANDARD"
-      ),
-      if(
-        isnull(local!ejecucionSel),
-        {},
-        {
-          a!buttonArrayLayout(
-            buttons: a!buttonWidget(label: "Cerrar detalle", icon: "times", style: "LINK", saveInto: a!save(local!ejecucionSel, null)),
-            align: "END",
-            marginAbove: "STANDARD"
-          ),
-          rule!SMK_UI_DetalleEjecucion(ejecucionId: local!ejecucionSel)
-        }
       )
     }
   )

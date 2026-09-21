@@ -66,26 +66,6 @@ a!localVariables(
   local!duraciones: tointeger(index(local!todos, 'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{27d05113-c572-4037-b5a4-adc767e053be}duracionMs', {})),
   local!catsUnicas: union(local!categorias, local!categorias),
   local!resultadoFiltro: null,
-  local!resultadoSel: null,
-  local!detalle: if(
-    isnull(local!resultadoSel),
-    "",
-    index(
-      a!queryRecordType(
-        recordType: 'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado',
-        fields: {'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{089c041c-624d-4ce5-96ab-df18c74e5671}detalle'},
-        filters: a!queryFilter(
-          field: 'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{fd4208ff-713a-4043-b70e-14d16dcd7bd2}id',
-          operator: "=",
-          value: local!resultadoSel
-        ),
-        pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1)
-      ).data,
-      1,
-      'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{089c041c-624d-4ce5-96ab-df18c74e5671}detalle',
-      ""
-    )
-  ),
   {
     /* Cabecera: estado global */
     a!cardLayout(
@@ -361,7 +341,8 @@ a!localVariables(
             a!gridColumn(label: "Resultado", width: "NARROW", value: a!richTextDisplayField(labelPosition: "COLLAPSED", value: a!richTextItem(text: fv!row['recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{8bbe1e8e-1859-4ec0-b2ee-3f270d34c902}resultado'], style: "STRONG", color: a!match(value: fv!row['recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{8bbe1e8e-1859-4ec0-b2ee-3f270d34c902}resultado'], equals: "OK", then: cons!SMK_COLOR_EXITO, equals: "KO", then: cons!SMK_COLOR_ERROR, equals: "WARN", then: cons!SMK_COLOR_AVISO, default: cons!SMK_COLOR_AZUL_GRIS)))),
             a!gridColumn(label: "Categoría", width: "NARROW", value: fv!row['recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{59e09557-6cf0-4346-9da8-fea279aba42a}categoria']),
             a!gridColumn(label: "Sistema", value: fv!row['recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{aa8ec9d3-cba2-488e-85a2-f8dc716427a5}sistema']),
-            a!gridColumn(label: "Código", value: a!richTextDisplayField(labelPosition: "COLLAPSED", value: a!richTextItem(text: fv!row['recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{4f718430-38ea-4337-972b-113c6c8d186b}testCodigo'], link: a!dynamicLink(saveInto: a!save(local!resultadoSel, fv!row['recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{fd4208ff-713a-4043-b70e-14d16dcd7bd2}id']))))),
+            a!gridColumn(label: "Código", value: a!richTextDisplayField(labelPosition: "COLLAPSED", value: a!richTextItem(text: fv!row['recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{4f718430-38ea-4337-972b-113c6c8d186b}testCodigo'], style: "STRONG", color: cons!SMK_COLOR_AZUL_OSCURO))),
+            a!gridColumn(label: "Detalle", width: "NARROW", value: a!recordActionField(actions: a!recordActionItem(action: 'recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.actions.{1eff2867-5c5b-4223-90e5-d10e6ecd83fd}verDetalle', identifier: fv!identifier), style: "LINKS", display: "LABEL_AND_ICON", openActionsIn: "DIALOG")),
             a!gridColumn(label: "Nombre", value: fv!row['recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{09690489-a838-47b8-b2a3-6d79bf0f12b1}testNombre']),
             a!gridColumn(label: "Mensaje", value: fv!row['recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{e14cacb4-f42c-448a-a784-a4d0d392bf2a}mensaje']),
             a!gridColumn(label: "ms", width: "NARROW", align: "END", value: fv!row['recordType!{bf6adbc0-a010-4ed4-8868-ec70acc74366}SMK Resultado.fields.{27d05113-c572-4037-b5a4-adc767e053be}duracionMs']),
@@ -371,13 +352,6 @@ a!localVariables(
           borderStyle: "LIGHT",
           shadeAlternateRows: true,
           rowHeader: 4
-        ),
-        a!paragraphField(
-          label: "Detalle técnico (pulsa un código para verlo)",
-          value: local!detalle,
-          readOnly: true,
-          height: "MEDIUM",
-          showWhen: not(isnull(local!resultadoSel))
         )
       },
       style: cons!SMK_COLOR_BLANCO,

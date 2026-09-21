@@ -14,6 +14,7 @@ Aplicación Appian `SMK Pruebas de Humo` (DEV, `mapfrespain-dev`) para lanzar pr
 | Runner | PM `SMK Ejecutar Pruebas` (selecciona → crea ejecución → MNI paralelo de `SMK Ejecutar Prueba`, uno por prueba → espera (timer 10 s, máx. 24 intentos) → consolida → cierra). Constante `SMK_PM_EJECUTAR_PRUEBAS` |
 | API | Web APIs `smoke_runs` (POST), `smoke_run` (GET), `smoke_run_results` (GET), `smoke_tests` (GET) |
 | UI | Site `Pruebas de Humo` (Panel, Ejecutar, Histórico, Comparar, Catálogo) |
+| Detalle en modal | Related actions `Ver detalle` en `SMK Ejecucion` (PM `SMK Ver Ejecucion`, formulario `SMK_UI_DetalleEjecucionForm` → `SMK_UI_DetalleEjecucion`, diálogo EXTRA_WIDE/TALL) y en `SMK Resultado` (PM `SMK Ver Resultado`, formulario `SMK_UI_DetalleResultado`, diálogo WIDE). Contexto `{ejecucionId|resultadoId: rv!identifier}`. Panel, Histórico y la tabla de resultados las abren con `a!recordActionField(openActionsIn: "DIALOG")` |
 
 ## Criterio de resultado
 
@@ -58,7 +59,7 @@ Desde un proceso Appian: subproceso `SMK Ejecutar Pruebas` o `a!startProcess(con
 
 - Los objetos de la aplicación heredan la seguridad de la app siempre que el objeto lo permite; se evitan role maps explícitos redundantes. `devin` conserva acceso por pertenencia a `SMK Administrators`.
 - Las 10 expression rules SMK cubiertas por Estado de prueba de regla tienen casos de prueba: **10/10 con resultado correcto** en la validación realizada.
-- La política objetivo de ambos process models (`SMK Ejecutar Pruebas` y `SMK Ejecutar Prueba`) es **eliminar las instancias 1 día después de finalizar, sin archivar**; aplicada y publicada en DEV en ambos (Process Modeler → Propiedades → Data Management). El MCP no expone esta propiedad, así que tras importar en otro entorno hay que comprobarla en Designer.
+- La política objetivo de los cuatro process models (`SMK Ejecutar Pruebas`, `SMK Ejecutar Prueba`, `SMK Ver Ejecucion` y `SMK Ver Resultado`) es **eliminar las instancias 1 día después de finalizar, sin archivar**; aplicada y publicada en DEV en ambos (Process Modeler → Propiedades → Data Management). El MCP no expone esta propiedad, así que tras importar en otro entorno hay que comprobarla en Designer.
 
 ## Baseline v2 (ejecución #6, 102 pruebas activas, 15 s): 102 OK
 
