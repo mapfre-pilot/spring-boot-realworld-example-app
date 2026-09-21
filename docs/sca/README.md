@@ -20,7 +20,8 @@ exclusivamente con operaciones `get*`/`list*`. **No se ha modificado ningún obj
 5. [Seguridad y configuración](05-seguridad-y-configuracion.md) — grupos, visibilidad, constantes, gestión de entornos.
 6. [Riesgos y mejoras propuestas](06-riesgos-y-mejoras.md) — deuda técnica y plan de mejora priorizado.
 7. [Plan de rediseño: procesos atómicos orquestados desde la interfaz](07-plan-rediseno-procesos-atomicos.md) — diagnóstico de los PMs de alta, arquitectura objetivo, duplicación aislada de la app y fases.
-8. [Anexo: inventario generado](anexos/inventario-generado.md) — volcado tabular (process models, integraciones, record types, referencias cruzadas).
+8. [Alineación con los planes previos (NTT DATA / Appian Accelerate)](08-alineacion-planes-previos.md) — comparación con las acciones estratégicas, plan de estabilización y code reviews; diferencias incorporadas al plan.
+9. [Anexo: inventario generado](anexos/inventario-generado.md) — volcado tabular (process models, integraciones, record types, referencias cruzadas).
 
 ## Alcance y limitaciones
 

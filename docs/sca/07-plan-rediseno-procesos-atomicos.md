@@ -11,6 +11,11 @@ Propuesta de trabajo, **sin ejecutar todavía**, para:
 Todo lo indicado como *hecho confirmado* procede de la lectura de los objetos vía MCP (solo lectura). Lo marcado
 como *propuesta* es diseño pendiente de validar con el equipo.
 
+> Revisión 2: incorporados los ajustes derivados de los planes previos de NTT DATA (Acciones estratégicas, mayo
+> 2025; Plan de acción, julio 2025; Plan de estabilización, agosto 2025) y de las revisiones de Appian Accelerate
+> (Code Review 2024, Best practices julio 2025). El detalle de la comparación está en
+> [08-alineacion-planes-previos.md](08-alineacion-planes-previos.md).
+
 ---
 
 ## 1. Diagnóstico: por qué las instancias duran días
@@ -92,6 +97,26 @@ que queremos generalizar:
 Conclusión: **no partimos de cero**. La estrategia es completar este patrón para todas las acciones y ambos
 orígenes (PCA/Autos-Hogar y Estratégicas/Vida), y retirar los dos PMs de alta.
 
+Según el Plan de estabilización de NTT (22/08/2025), las "acciones estratégicas" ya tenían la BBDD creada, el site
+de acceso y el subproceso de Alta en construcción. Los objetos `*Estrategicas` del volcado son esa construcción.
+**SCA2 parte de ellos**, no del flujo antiguo.
+
+### 1.4 Baseline medible (Best practices Appian, PRO 4/7/2025)
+
+| Métrica | Valor |
+|---|---|
+| Procesos activos SCA | 25.028 (de 129.080 totales; 1.596 en error) |
+| `SCA Alta Solicitud Anulacion` | 1.546.463 AMU, 83 AMU/instancia, 21.659 instancias |
+| `SCA Mecanizacion` | 529.633 AMU, 49 AMU/instancia, 11.923 instancias |
+| `SCA Finalización Solicitud` | 441.227 AMU, 71 AMU/instancia, 7.810 instancias |
+| `SCA Contra Anulación` | 403.009 AMU, 47 AMU/instancia, 11.276 instancias |
+| `SCA Guardar Tarea activa en BBDD` / `Borrar Tarea Finalizada` | 185.816 / 110.217 AMU, ~14.700 instancias cada uno |
+| Volumetría | ~10.000 solicitudes/día; +7.000/día previstas con Vida |
+| Integración más repetida | `ListarCiasPoliza`: ~125.000 ejecuciones/día (dato inmutable de la póliza) |
+
+Estos valores son el **criterio de éxito** de SCA2: misma medición en Monitoring View sobre la copia tras la
+fase 8 (procesos activos ≈ solo batch TM; AMU/instancia y duración máxima en minutos).
+
 ---
 
 ## 2. Arquitectura objetivo (propuesta)
@@ -114,9 +139,38 @@ orígenes (PCA/Autos-Hogar y Estratégicas/Vida), y retirar los dos PMs de alta.
    Documentum" se modelan como estado + `caducidadtarea` + batch/TM o callback (Web API), nunca como una
    instancia parada.
 6. **Reintentos y errores en BBDD.** `nodorelanzar` + `error` + contador; un PM `Relanzar` (o el batch) reintenta
-   desde el último paso persistido, en vez de contadores `numReintentos` en variables de proceso.
+   desde el último paso persistido, en vez de contadores `numReintentos` en variables de proceso. Ante un fallo el
+   PM **termina** (no se queda en error), guarda el punto de fallo y la solicitud aparece en una *bandeja de
+   errores* desde la que el Detalle permite relanzar. Elimina los relanzamientos manuales diarios del equipo SCA.
+7. **Quién persiste qué** (regla tomada del plan de NTT):
+   - *Completar* una tarea manual se persiste **desde la pantalla** (antes de lanzar el comando), para que si falla
+     el usuario vea el error y pueda repetir la acción.
+   - *Crear* la siguiente tarea es el **último nodo** del proceso anterior. Si falla, no se redirige al usuario a
+     la pantalla siguiente; la solicitud queda en `ERROR_*` con `nodorelanzar`.
+8. **Síncrono hasta el write, asíncrono después.** La pantalla espera (activity chaining corto, límite Accelerate:
+   < 5 s y < 50 nodos encadenados) a que el comando escriba en BBDD, y entonces redirige. El comando lanza el
+   siguiente proceso con `Start Process` **asíncrono** y termina. Durante todo el trabajo del usuario (incluido
+   posponer y retomar) no existe ninguna instancia activa.
+9. **Pasar claves, no datos.** Los PMs reciben `idSolicitud` y releen de BBDD; no se transportan CDTs
+   `SCAC_DS_*` anidados entre procesos (Appian desaconseja CDTs anidados; Best practices jul-2025). La
+   persistencia se hace en tablas planas por acción.
+10. **Modular por ramo.** Los `CMD_*` son comunes y reciben `ramo` (Autos/Hogar/Vida) como parámetro; la lógica
+    específica de ramo vive en reglas `SCA2_<accion>_<ramo>` seleccionadas con `a!match`, nunca en ramas
+    duplicadas del PM.
 
 ### 2.2 Componentes
+
+Estructura de pantallas alineada con el plan de NTT (site de acceso único → Detalle → pantallas de acción):
+
+```
+Site SCA2 (acceso único; sustituye a la Decisora)
+ └─ Página inicio: validaciones core/póliza + ¿existe solicitud en BBDD?
+      ├─ no  → Pantalla Alta        (persiste BORRADOR, lanza CMD_AltaSolicitud, espera write, redirige)
+      └─ sí  → Pantalla Detalle     (= SCA2_Orquestador; lee estado y redirige a la pantalla de acción)
+                 ├─ Autorización · Acciones administrativas · Contra anulación
+                 ├─ Mecanización · Verti/Vencimiento · Mensajes/Redirección
+                 └─ Bandeja de errores (relanzar desde nodorelanzar)
+```
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
@@ -197,8 +251,29 @@ constante/record de configuración en lugar de en condiciones SAIL dentro del PM
 
 ### 2.6 Qué NO hace la interfaz orquestadora
 
-- No espera a que termine un PM (`a!startProcess` sin `onSuccess` bloqueante; refresco con `refreshAfter`/intervalo).
+- No espera a que termine un PM más allá de su escritura en BBDD (chaining corto, §2.1.8); la continuación es
+  asíncrona y se observa con `refreshAfter`/intervalo.
 - No contiene lógica de integración: solo lee estado y lanza comandos.
+- No lanza todas las integraciones al cargar: datos no esenciales bajo demanda (botón/sección), y los datos
+  inmutables de póliza (cía, ramo, producto) desde **records sincronizados** en lugar de `ListarCiasPoliza` en
+  cada carga.
+
+### 2.7 Checklist Accelerate para todo objeto nuevo de SCA2
+
+Cada PM/interfaz/regla de SCA2 se da por terminado solo si cumple (fuente: Code Review 2024 + Best practices
+2025 de Appian, ver cap. 08):
+
+| Ámbito | Regla |
+|---|---|
+| PM | ≤ 30 nodos; al menos una swim lane con asignación explícita; display name dinámico con `idSolicitud`; `Modify Process Security` común |
+| PM | sin `User Input Task`, sin `Intermediate Consuming Event`, sin process messaging; exception flow en el único formulario chained admitido (confirmación) |
+| PM | variables no reportables marcadas *hidden*; entrada = `idSolicitud` + parámetros escalares; sin script tasks consecutivos (una regla o ACP); SAIL de nodos = una línea o `rule!` |
+| PM | cada integración externa encapsulada en un subproceso `SCA2 INT <servicio>` con manejo de error estándar (código, mensaje, reintentable sí/no) que escribe en `error`/`nodorelanzar` |
+| PM | `pp!initiator` o parámetro `usuario` en vez de `loggedInUser()` (devuelve *Administrator* fuera de contexto de usuario) |
+| Interfaz | subinterfaces < 500 líneas; sin ejecutar integraciones no esenciales en carga; grids paginados (`SCA_BuscadorTabla`); `a!refreshVariable` con `refreshOnReferencedVarChange: false` donde aplique; validación de longitud en inputs |
+| Regla | test cases con aserciones (no solo null checks) para toda regla de decisión/transición; objetivo 100 % en SCA2 (SCA hoy 66 %) |
+| Integración | métodos HTTP correctos; response logging desactivado; solo los campos necesarios en request/response |
+| Datos | tablas planas, sin CDTs anidados; registro de `historicoTransicion` en cada comando |
 - No decide la acción de negocio: la decide el servicio de reglas dentro de `CMD_DecidirAccion`.
 
 ---
@@ -258,17 +333,37 @@ Rollback: `deleteApplication` de `SCA2` (y sus grupos/carpetas); el original no 
 | 5. Acciones administrativas y cambio de nivel | `CMD_CambiarNivel` (DUE, SGC, grupo), `CMD_Posponer`. | idem |
 | 6. Mecanización | La más grande (64 nodos, 6 integraciones, Verti, ANL Alta, reserva de prima). Se aborda última y en dos sub-fases: alta/actualización y flujos NSE/Verti. | idem |
 | 7. Caducidad y reactivadores | Adaptar `Batch Caducidad` para que actúe solo por BBDD (ya casi lo hace) y eliminar `Desbloquear Proceso Principal` / `eliminarTareas` como mecanismo de limpieza de PMs. | idem |
-| 8. Paralelo y comparación | Misma póliza de prueba por los dos caminos (original en SCA, nuevo en SCA2) y comparación de escrituras en Core7/SGC/trazabilidad. | informe de comparación |
+| 8. Paralelo y comparación | Misma póliza de prueba por los dos caminos (original en SCA, nuevo en SCA2) y comparación de escrituras en Core7/SGC/trazabilidad. Medición Monitoring View contra el baseline de §1.4. | informe de comparación |
 | 9. Promoción | Decisión de negocio: sustituir constantes de arranque (`SCA_PM_ALTA_SOLICITUD_ANULACION_PARTICION`) por el orquestador, o mover objetos SCA2 a SCA. Fuera del alcance de esta propuesta. | — |
 
+Orden de construcción dentro de las fases 2-6, alineado con el plan de NTT para poder probar extremo a extremo
+cuanto antes y cubrir Vida primero:
+
+- **Bloque I**: Alta → Detalle/orquestador → Decisión → Contra anulación → Mecanización Vida (camino más simple).
+- **Bloque II**: Finalizar → Acciones administrativas → Verti → Mecanización Autos/Hogar (NSE, reserva de prima) → Autorización.
+
+La gestión de errores (bandeja + relanzar) **no se pospone**: se construye en la fase 2 junto al modelo de estado,
+porque en SCA2 no existe el problema de doble mantenimiento que llevó a NTT a aplazarla.
+
+**Doble mantenimiento durante el proyecto.** Mientras SCA2 se construye, SCA seguirá recibiendo correctivos
+(backlog Jira `ESMSA-*` del plan de estabilización). Se mantendrá en la rama un registro
+`docs/sca/anexos/correctivos-a-portar.md` con cada correctivo de SCA y su equivalente aplicado en SCA2, revisado al
+cierre de cada fase.
+
 Estimación: fases 0-2 en una sesión de trabajo; fases 3-5 una sesión cada una; fase 6 dos sesiones; fase 7-8 una.
-Las esperas externas (decisiones de §6, datos de prueba en PRE) son el principal riesgo de calendario.
+Total orientativo 8-10 sesiones. Las esperas externas (decisiones de §6, datos de prueba en PRE, enmascaramiento
+de PRE) son el principal riesgo de calendario.
 
 ---
 
 ## 5. Criterios de aceptación
 
 - Ninguna instancia de PM de SCA2 con duración > 5 min en el monitor de procesos durante las pruebas (salvo batch TM).
+- Cero instancias activas mientras el usuario trabaja en una pantalla, pospone o retoma una tarea.
+- Todo PM de SCA2 cumple el checklist de §2.7 (verificable con `listProcessModelNodes` / `validateDesignObject`).
+- Toda solicitud en `ERROR_*` es visible en la bandeja de errores y relanzable desde el Detalle sin intervención
+  del equipo técnico.
+- Comparación con el baseline de §1.4: AMU/instancia y número de instancias activas por PM medidos en la copia.
 - Ningún `User Input Task` ni `Intermediate Consuming Event` en PMs de SCA2 (verificable con `listProcessModelNodes`).
 - Toda transición queda registrada en `historicoTransicion` con usuario, comando, estado origen/destino,
   respuesta externa y error.
@@ -292,6 +387,14 @@ Las esperas externas (decisiones de §6, datos de prueba en PRE) son el principa
    mantiene en su rama actual.
 6. **Rama Mecanización NSE / Verti / reserva de prima**: confirmar que entra en el rediseño (fase 6) y no queda
    fuera de alcance.
+7. **Records sincronizados**: confirmar qué datos de póliza se consideran inmutables (cía, ramo, producto…) y si
+   se puede crear el record sincronizado en SCA2 alimentado por el servicio actual (candidato: `ListarCiasPoliza`).
+8. **Estado actual de las acciones estratégicas en SCA**: qué parte de lo planificado por NTT (site, subproceso
+   Alta, Decisión, tareas manuales, Finalizar) está terminada en DEV a día de hoy, para reutilizarla en SCA2.
+
+Decisiones ya tomadas por el solicitante: la copia mantiene **la misma lógica y los mismos servicios** que SCA;
+solo se tocan objetos de SCA2; las dependencias con otras aplicaciones (SCAC, ANL, CMP, TM…) se usan sin
+modificarlas; si un objeto de SCA está mal diseñado se crea su réplica optimizada en SCA2.
 
 ---
 
