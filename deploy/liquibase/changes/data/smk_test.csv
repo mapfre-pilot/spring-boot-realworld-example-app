@@ -1,4 +1,4 @@
-"CODIGO";"NOMBRE";"CATEGORIA";"SISTEMA";"DESCRIPCION";"CRITICIDAD";"ACTIVO";"MOTIVO_INACTIVO";"ORIGEN_ALTA";"ORDEN";"UMBRAL_MS"
+"codigo";"nombre";"categoria";"sistema";"descripcion";"criticidad";"activo";"motivo_inactivo";"origen_alta";"orden";"umbral_ms"
 "DB_APPIAN_BUSINESS";"Base de datos de negocio Appian (jdbc/Appian)";"DB";"jdbc/Appian";"Consulta read-only sobre SMK_TEST vía a!queryRecordType (valida conectividad y sincronización de la BD de negocio)";"ALTA";"TRUE";"";"BASE";"10";"3000"
 "S3_LIST_BUCKETS";"AWS S3 - listar buckets (CMP Conexion AWS S3)";"S3";"aws-s3";"Operación read-only List Buckets sobre el Connected System CMP Conexion AWS S3 (valida credenciales AWS, red y permisos)";"ALTA";"TRUE";"";"BASE";"20";"8000"
 "PLATAFORMA_PROCESO";"Plataforma Appian - motor de procesos";"PLATAFORMA";"appian";"Comprueba que el motor de procesos ejecuta (la propia prueba corre dentro de un subproceso) y que el usuario de ejecución está disponible";"ALTA";"TRUE";"";"BASE";"30";"2000"

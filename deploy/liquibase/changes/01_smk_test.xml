@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
     <changeSet id="1.0.0-1" author="SMK">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="SMK_TEST"/></not></preConditions>
-        <createTable tableName="SMK_TEST">
-            <column name="ID" type="int" autoIncrement="true"><constraints nullable="false" primaryKey="true" primaryKeyName="PK_SMK_TEST"/></column>
-            <column name="CODIGO" type="varchar(255)"/>
-            <column name="NOMBRE" type="varchar(255)"/>
-            <column name="CATEGORIA" type="varchar(255)"/>
-            <column name="SISTEMA" type="varchar(255)"/>
-            <column name="DESCRIPCION" type="varchar(4000)"/>
-            <column name="CRITICIDAD" type="varchar(255)"/>
-            <column name="ACTIVO" type="boolean"/>
-            <column name="MOTIVO_INACTIVO" type="varchar(255)"/>
-            <column name="ORIGEN_ALTA" type="varchar(255)"/>
-            <column name="ORDEN" type="int"/>
-            <column name="UMBRAL_MS" type="int"/>
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="smk_test"/></not></preConditions>
+        <createTable tableName="smk_test">
+            <column name="id" type="serial"><constraints nullable="false" primaryKey="true" primaryKeyName="pk_smk_test"/></column>
+            <column name="codigo" type="varchar(255)"/>
+            <column name="nombre" type="varchar(255)"/>
+            <column name="categoria" type="varchar(255)"/>
+            <column name="sistema" type="varchar(255)"/>
+            <column name="descripcion" type="varchar(4000)"/>
+            <column name="criticidad" type="varchar(255)"/>
+            <column name="activo" type="boolean"/>
+            <column name="motivo_inactivo" type="varchar(255)"/>
+            <column name="origen_alta" type="varchar(255)"/>
+            <column name="orden" type="integer"/>
+            <column name="umbral_ms" type="integer"/>
         </createTable>
-        <rollback><dropTable tableName="SMK_TEST"/></rollback>
+        <rollback><dropTable tableName="smk_test"/></rollback>
     </changeSet>
     <changeSet id="1.0.0-2" author="SMK">
-        <preConditions onFail="MARK_RAN"><not><indexExists tableName="SMK_TEST" indexName="UK_SMK_TEST_CODIGO"/></not></preConditions>
-        <addUniqueConstraint tableName="SMK_TEST" columnNames="CODIGO" constraintName="UK_SMK_TEST_CODIGO"/>
-        <rollback><dropUniqueConstraint tableName="SMK_TEST" constraintName="UK_SMK_TEST_CODIGO"/></rollback>
+        <preConditions onFail="MARK_RAN"><not><indexExists tableName="smk_test" indexName="uk_smk_test_codigo"/></not></preConditions>
+        <addUniqueConstraint tableName="smk_test" columnNames="codigo" constraintName="uk_smk_test_codigo"/>
+        <rollback><dropUniqueConstraint tableName="smk_test" constraintName="uk_smk_test_codigo"/></rollback>
     </changeSet>
 </databaseChangeLog>

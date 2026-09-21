@@ -76,7 +76,7 @@ El pipeline sondea `smoke_run` hasta `terminada=true` y decide con `estado`.
 
 ## Datos y limpieza
 
-Ejecuciones y resultados se guardan en las tablas `SMK_EJECUCION` / `SMK_RESULTADO` (histórico permanente). Las programaciones se persisten en `SMK_PROGRAMACION`; las programaciones PENDIENTES no se migran entre entornos. Las instancias de los cinco procesos se eliminan automáticamente 1 día después de finalizar, sin archivar. Para crear las tablas y cargar el catálogo inicial se recomienda Liquibase (`liquibase --changelog-file=deploy/liquibase/db.changelog-master.xml update` contra `jdbc/Appian`); `01_ddl_smk.sql` y `02_catalogo_smk.sql` quedan como fallback.
+Ejecuciones y resultados se guardan en las tablas `smk_ejecucion` / `smk_resultado` (histórico permanente). Las programaciones se persisten en `smk_programacion`; las programaciones PENDIENTES no se migran entre entornos. Las instancias de los cinco procesos se eliminan automáticamente 1 día después de finalizar, sin archivar. Para crear las tablas y cargar el catálogo inicial se recomienda Liquibase contra la base de datos PostgreSQL del Connected System `SMK Database AWS` (`jdbc:postgresql://<host>:5432/<base>?currentSchema=smk_pruebashumo`); `01_ddl_smk.sql` y `02_catalogo_smk.sql` quedan como fallback legado de MariaDB/`jdbc-Appian`.
 
 ## Soporte
 

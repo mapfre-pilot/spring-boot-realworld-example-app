@@ -2,21 +2,21 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
     <changeSet id="1.0.0-data-1" author="SMK">
         <preConditions onFail="MARK_RAN">
-            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM SMK_TEST</sqlCheck>
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM smk_test</sqlCheck>
         </preConditions>
-        <loadData tableName="SMK_TEST" file="data/smk_test.csv" relativeToChangelogFile="true" separator=";" quotchar='"' encoding="UTF-8">
-            <column name="CODIGO" type="STRING"/>
-            <column name="NOMBRE" type="STRING"/>
-            <column name="CATEGORIA" type="STRING"/>
-            <column name="SISTEMA" type="STRING"/>
-            <column name="DESCRIPCION" type="STRING"/>
-            <column name="CRITICIDAD" type="STRING"/>
-            <column name="ACTIVO" type="BOOLEAN"/>
-            <column name="MOTIVO_INACTIVO" type="STRING"/>
-            <column name="ORIGEN_ALTA" type="STRING"/>
-            <column name="ORDEN" type="NUMERIC"/>
-            <column name="UMBRAL_MS" type="NUMERIC"/>
+        <loadData tableName="smk_test" file="data/smk_test.csv" relativeToChangelogFile="true" separator=";" quotchar='"' encoding="UTF-8">
+            <column name="codigo" type="STRING"/>
+            <column name="nombre" type="STRING"/>
+            <column name="categoria" type="STRING"/>
+            <column name="sistema" type="STRING"/>
+            <column name="descripcion" type="STRING"/>
+            <column name="criticidad" type="STRING"/>
+            <column name="activo" type="BOOLEAN"/>
+            <column name="motivo_inactivo" type="STRING"/>
+            <column name="origen_alta" type="STRING"/>
+            <column name="orden" type="NUMERIC"/>
+            <column name="umbral_ms" type="NUMERIC"/>
         </loadData>
-        <rollback><delete tableName="SMK_TEST"/></rollback>
+        <rollback><delete tableName="smk_test"/></rollback>
     </changeSet>
 </databaseChangeLog>

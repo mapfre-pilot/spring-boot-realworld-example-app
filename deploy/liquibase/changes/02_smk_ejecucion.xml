@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
     <changeSet id="1.0.0-1" author="SMK">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="SMK_EJECUCION"/></not></preConditions>
-        <createTable tableName="SMK_EJECUCION">
-            <column name="ID" type="int" autoIncrement="true"><constraints nullable="false" primaryKey="true" primaryKeyName="PK_SMK_EJECUCION"/></column>
-            <column name="FECHA_INICIO" type="datetime"/>
-            <column name="FECHA_FIN" type="datetime"/>
-            <column name="ESTADO" type="varchar(255)"/>
-            <column name="ORIGEN" type="varchar(255)"/>
-            <column name="MOTIVO" type="varchar(4000)"/>
-            <column name="LANZADO_POR" type="varchar(255)"/>
-            <column name="TOTAL_PRUEBAS" type="int"/>
-            <column name="TOTAL_OK" type="int"/>
-            <column name="TOTAL_KO" type="int"/>
-            <column name="TOTAL_WARN" type="int"/>
-            <column name="DURACION_MS" type="int"/>
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="smk_ejecucion"/></not></preConditions>
+        <createTable tableName="smk_ejecucion">
+            <column name="id" type="serial"><constraints nullable="false" primaryKey="true" primaryKeyName="pk_smk_ejecucion"/></column>
+            <column name="fecha_inicio" type="timestamp"/>
+            <column name="fecha_fin" type="timestamp"/>
+            <column name="estado" type="varchar(255)"/>
+            <column name="origen" type="varchar(255)"/>
+            <column name="motivo" type="varchar(4000)"/>
+            <column name="lanzado_por" type="varchar(255)"/>
+            <column name="total_pruebas" type="integer"/>
+            <column name="total_ok" type="integer"/>
+            <column name="total_ko" type="integer"/>
+            <column name="total_warn" type="integer"/>
+            <column name="duracion_ms" type="integer"/>
         </createTable>
-        <rollback><dropTable tableName="SMK_EJECUCION"/></rollback>
+        <rollback><dropTable tableName="smk_ejecucion"/></rollback>
     </changeSet>
 </databaseChangeLog>

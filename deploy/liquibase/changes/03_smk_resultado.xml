@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
     <changeSet id="1.0.0-1" author="SMK">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="SMK_RESULTADO"/></not></preConditions>
-        <createTable tableName="SMK_RESULTADO">
-            <column name="ID" type="int" autoIncrement="true"><constraints nullable="false" primaryKey="true" primaryKeyName="PK_SMK_RESULTADO"/></column>
-            <column name="EJECUCION_ID" type="int"/>
-            <column name="TEST_CODIGO" type="varchar(255)"/>
-            <column name="TEST_NOMBRE" type="varchar(255)"/>
-            <column name="CATEGORIA" type="varchar(255)"/>
-            <column name="SISTEMA" type="varchar(255)"/>
-            <column name="RESULTADO" type="varchar(255)"/>
-            <column name="MENSAJE" type="varchar(4000)"/>
-            <column name="DETALLE" type="clob"/>
-            <column name="DURACION_MS" type="int"/>
-            <column name="FECHA_INICIO" type="datetime"/>
-            <column name="FECHA_FIN" type="datetime"/>
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="smk_resultado"/></not></preConditions>
+        <createTable tableName="smk_resultado">
+            <column name="id" type="serial"><constraints nullable="false" primaryKey="true" primaryKeyName="pk_smk_resultado"/></column>
+            <column name="ejecucion_id" type="integer"/>
+            <column name="test_codigo" type="varchar(255)"/>
+            <column name="test_nombre" type="varchar(255)"/>
+            <column name="categoria" type="varchar(255)"/>
+            <column name="sistema" type="varchar(255)"/>
+            <column name="resultado" type="varchar(255)"/>
+            <column name="mensaje" type="varchar(4000)"/>
+            <column name="detalle" type="text"/>
+            <column name="duracion_ms" type="integer"/>
+            <column name="fecha_inicio" type="timestamp"/>
+            <column name="fecha_fin" type="timestamp"/>
         </createTable>
-        <rollback><dropTable tableName="SMK_RESULTADO"/></rollback>
+        <rollback><dropTable tableName="smk_resultado"/></rollback>
     </changeSet>
     <changeSet id="1.0.0-2" author="SMK">
-        <preConditions onFail="MARK_RAN"><not><indexExists tableName="SMK_RESULTADO" indexName="IX_SMK_RESULTADO_EJEC"/></not></preConditions>
-        <createIndex tableName="SMK_RESULTADO" indexName="IX_SMK_RESULTADO_EJEC">
-            <column name="EJECUCION_ID"/>
+        <preConditions onFail="MARK_RAN"><not><indexExists tableName="smk_resultado" indexName="ix_smk_resultado_ejec"/></not></preConditions>
+        <createIndex tableName="smk_resultado" indexName="ix_smk_resultado_ejec">
+            <column name="ejecucion_id"/>
         </createIndex>
-        <rollback><dropIndex tableName="SMK_RESULTADO" indexName="IX_SMK_RESULTADO_EJEC"/></rollback>
+        <rollback><dropIndex tableName="smk_resultado" indexName="ix_smk_resultado_ejec"/></rollback>
     </changeSet>
 </databaseChangeLog>
