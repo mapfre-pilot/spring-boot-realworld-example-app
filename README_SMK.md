@@ -9,12 +9,11 @@ Aplicación Appian `SMK Pruebas de Humo` (DEV, `mapfrespain-dev`) para lanzar pr
 | Catálogo | Record `SMK Test` (tabla `SMK_TEST`): codigo, nombre, categoria (PLATAFORMA/DB/S3/HTTP/APIGW), sistema, criticidad, activo, motivoInactivo, origenAlta, orden, umbralMs |
 | Ejecuciones | Record `SMK Ejecucion` (`SMK_EJECUCION`): estado (EN_CURSO/OK/WARN/KO), origen, motivo, lanzadoPor, totales, duracionMs |
 | Resultados | Record `SMK Resultado` (`SMK_RESULTADO`): un registro por prueba y ejecución, con resultado OK/KO/WARN/SKIP, mensaje, detalle técnico, duración |
-| Pruebas | 70 integraciones HTTP `SMK_INT_HTTP_<host>` (GET ligero a `/smk-smoke-probe` reutilizando el Connected System real: valida DNS, red, TLS y autenticación), `SMK_INT_S3_ListBuckets` (CS `CMP Conexion AWS S3`), 40 pruebas DB (`jdbc/Appian` + 39 Connected Systems DataSource: consulta read-only de 1 fila a un record type que usa cada CS, validando credenciales, red y esquema), comprobación del motor de procesos |
+| Pruebas | 70 integraciones HTTP `SMK_INT_HTTP_<host>` con Connected System y 12 pruebas HTTP adicionales `HTTP_<host>` mediante la integración sin Connected System `SMK_INT_HTTP_url` (GET a `/smk-smoke-probe`, URL por las constantes `SMK_URL_*`), `SMK_INT_S3_ListBuckets` (CS `CMP Conexion AWS S3`), 40 pruebas DB (`jdbc/Appian` + 39 Connected Systems DataSource: consulta read-only de 1 fila a un record type que usa cada CS, validando credenciales, red y esquema), comprobación del motor de procesos |
 | Lógica | `SMK_seleccionarPruebas` (filtro por códigos/categorías/sistemas), `SMK_ejecutarPrueba` (dispatcher por código), `SMK_evaluarHttp`, `SMK_evaluarIntegracion`, `SMK_construirResultado`, `SMK_resumenEjecucion` |
 | Runner | PM `SMK Ejecutar Pruebas` (selecciona → crea ejecución → MNI paralelo de `SMK Ejecutar Prueba`, uno por prueba → espera (timer 10 s, máx. 24 intentos) → consolida → cierra). Constante `SMK_PM_EJECUTAR_PRUEBAS` |
 | API | Web APIs `smoke_runs` (POST), `smoke_run` (GET), `smoke_run_results` (GET), `smoke_tests` (GET) |
 | UI | Site `Pruebas de Humo` (Panel, Ejecutar, Histórico, Comparar, Catálogo) |
-| Detalle en modal | Related actions `Ver detalle` en `SMK Ejecucion` (PM `SMK Ver Ejecucion`, formulario `SMK_UI_DetalleEjecucionForm` → `SMK_UI_DetalleEjecucion`, diálogo EXTRA_WIDE/TALL) y en `SMK Resultado` (PM `SMK Ver Resultado`, formulario `SMK_UI_DetalleResultado`, diálogo WIDE). Contexto `{ejecucionId|resultadoId: rv!identifier}`. Panel, Histórico y la tabla de resultados las abren con `a!recordActionField(openActionsIn: "DIALOG")` |
 
 ## Criterio de resultado
 
@@ -51,7 +50,7 @@ Desde un proceso Appian: subproceso `SMK Ejecutar Pruebas` o `a!startProcess(con
 
 ## Catálogo, comparación y aviso KO
 
-- La página **Catálogo** permite filtrar por `Activas`, `Desactivadas` y `Pendientes de revisión`. Las pruebas descubiertas se crean con `origenAlta="DESCUBRIMIENTO"` y quedan inactivas hasta revisión humana. Al desactivar una prueba se exige `motivoInactivo`; la activación limpia el motivo y conserva el origen.
+- La página **Catálogo** permite filtrar por `Activas`, `Desactivadas`, `Pendientes de revisión` y `Sin Connected System`. Las pruebas descubiertas se crean con `origenAlta="DESCUBRIMIENTO"` y quedan inactivas hasta revisión humana. Al desactivar una prueba se exige `motivoInactivo`; la activación limpia el motivo y conserva el origen.
 - La página **Comparar**, situada después de Histórico, permite seleccionar las ejecuciones anterior y posterior, ver regresiones/mejoras/nuevas/ausentes/sin cambio y filtrar las filas sin cambios. Las etiquetas muestran `#id · fecha · estado · motivo`.
 - Cuando una ejecución termina en `KO`, el runner envía el resumen por email a los usuarios obtenidos de la constante de grupo `SMK_GRUPO_ADMINISTRADORES`, incluyendo las pruebas KO/WARN y el enlace al Histórico. La constante se despliega con seguridad heredada en `SMK Rules and Constants` y debe apuntar al grupo administrador de cada entorno.
 
@@ -59,7 +58,7 @@ Desde un proceso Appian: subproceso `SMK Ejecutar Pruebas` o `a!startProcess(con
 
 - Los objetos de la aplicación heredan la seguridad de la app siempre que el objeto lo permite; se evitan role maps explícitos redundantes. `devin` conserva acceso por pertenencia a `SMK Administrators`.
 - Las 10 expression rules SMK cubiertas por Estado de prueba de regla tienen casos de prueba: **10/10 con resultado correcto** en la validación realizada.
-- La política objetivo de los cuatro process models (`SMK Ejecutar Pruebas`, `SMK Ejecutar Prueba`, `SMK Ver Ejecucion` y `SMK Ver Resultado`) es **eliminar las instancias 1 día después de finalizar, sin archivar**; aplicada y publicada en DEV en ambos (Process Modeler → Propiedades → Data Management). El MCP no expone esta propiedad, así que tras importar en otro entorno hay que comprobarla en Designer.
+- La política objetivo de ambos process models (`SMK Ejecutar Pruebas` y `SMK Ejecutar Prueba`) es **eliminar las instancias 1 día después de finalizar, sin archivar**; aplicada y publicada en DEV en ambos (Process Modeler → Propiedades → Data Management). El MCP no expone esta propiedad, así que tras importar en otro entorno hay que comprobarla en Designer.
 
 ## Baseline v2 (ejecución #6, 102 pruebas activas, 15 s): 102 OK
 
@@ -77,6 +76,6 @@ Desde un proceso Appian: subproceso `SMK Ejecutar Pruebas` o `a!startProcess(con
 Ver `deploy/GUIA_DESPLIEGUE.md`. Resumen: la app no contiene Connected Systems; reutiliza los CS/record types de las apps de negocio ya desplegadas en cada entorno. Pasos: exportar paquete → (opcional) `deploy/01_ddl_smk.sql` → importar → configurar `SMK_GRUPO_ADMINISTRADORES` por entorno → grupos → site *Catálogo* → **Sincronizar catálogo** (carga las pruebas de `SMK_catalogoBase` que falten; alternativa `deploy/02_catalogo_smk.sql`) → *Ejecutar* → baseline → activar/desactivar por entorno.
 
 ## Evolución del catálogo (detectar conexiones / BD nuevas)
-- **Fuente de verdad**: regla `SMK_catalogoBase` (112 pruebas). `SMK_catalogoPendiente` devuelve las que faltan en `SMK_TEST`; el botón *Sincronizar catálogo* las inserta (nunca actualiza ni borra las existentes). Así una prueba nueva se añade una vez en DEV y llega a TEST/PRO con el paquete.
+- **Fuente de verdad**: regla `SMK_catalogoBase` (124 pruebas: 112 existentes y 12 `INT_SIN_CS`). `SMK_catalogoPendiente` devuelve las que faltan en `SMK_TEST`; el botón *Sincronizar catálogo* las inserta (nunca actualiza ni borra las existentes). Así una prueba nueva se añade una vez en DEV y llega a TEST/PRO con el paquete.
 - **Descubrimiento**: `discovery/discover_smk.py` (vía Dev MCP, solo lectura) inventaría apps → Connected Systems (tipo, baseUrl, auth) → record types por data source, y lo compara con el snapshot anterior y con el catálogo base. Genera `snapshot_dev.json` y `hallazgos_dev.md` con: nuevos, desaparecidos, URL cambiada y sin cobertura. Procedimiento completo para convertir hallazgos en pruebas: `discovery/PLAYBOOK_descubrimiento.md`.
 - Las pruebas propuestas nacen inactivas; se activan desde *Catálogo*.

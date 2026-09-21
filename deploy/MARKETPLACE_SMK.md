@@ -21,15 +21,15 @@ No sustituye a las pruebas funcionales de cada aplicación: responde a la pregun
 |---|---|---|
 | **PLATAFORMA** | Motor de procesos, base de datos de negocio de Appian (`jdbc/Appian`), usuario en ejecución | Arranque de proceso, consulta read-only |
 | **DB** | Cada Connected System de base de datos (40 bases de datos: PostgreSQL/Aurora, Oracle, SQL Server…) | Consulta de 1 fila a un record type real de ese sistema: valida red, credenciales y esquema |
-| **HTTP** | Cada host externo con Connected System HTTP (70 hosts: APIs de negocio, ESB, Core7, Denodo, Salud Digital, Azure…) | Petición GET ligera a través del Connected System real: valida DNS, red, TLS y autenticación (incl. obtención de token OAuth) |
+| **HTTP** | Cada host externo cubierto por HTTP (70 hosts mediante Connected System + 12 hosts sin Connected System: APIs de negocio, ESB, Core7, Denodo, Salud Digital, Azure…) | Petición GET ligera a través del Connected System real o, para los 12 casos Sin CS, mediante `SMK_INT_HTTP_url` y la URL por constante: valida DNS, red, TLS y alcance del host |
 | **APIGW** | API Gateway de OT y proxies | Obtención de token y llamada a través del gateway |
 | **S3** | Almacenamiento AWS S3 corporativo | ListBuckets con el Connected System de S3 |
 
-Actualmente el catálogo tiene **112 pruebas** (102 activas). Cada prueba es *read-only*: no crea, modifica ni borra datos de negocio.
+La cobertura del catálogo es de **124 pruebas** (114 activas): 112 pruebas existentes y 12 pruebas HTTP `INT_SIN_CS` para hosts de integraciones sin Connected System. Estas 12 aparecen en Catálogo con la marca **Sin CS** y usan la integración compartida `SMK_INT_HTTP_url` con URL base por constante `SMK_URL_*`. Cada prueba es *read-only*: no crea, modifica ni borra datos de negocio.
 
 ### Criterio de resultado
 
-- **OK** – el sistema responde correctamente (para hosts, cualquier respuesta HTTP, incluido 4xx/5xx, demuestra que el host es alcanzable y la autenticación del Connected System funciona).
+- **OK** – el sistema responde correctamente (para hosts, cualquier respuesta HTTP, incluido 4xx/5xx, demuestra que el host es alcanzable y la autenticación del Connected System funciona; en las pruebas Sin CS, cualquier respuesta HTTP demuestra alcance del host).
 - **WARN** – responde, pero por encima del umbral de latencia configurado para esa prueba.
 - **KO** – sin respuesta: DNS, red, TLS, timeout, error de credenciales o de obtención de token.
 - **SKIP** – prueba sin implementación.

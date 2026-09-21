@@ -93,8 +93,8 @@ a!localVariables(
           )),
           a!columnLayout(contents: a!dropdownField(
             label: "Estado",
-            choiceLabels: {"Activas", "Desactivadas", "Pendientes de revisión"},
-            choiceValues: {"Activas", "Desactivadas", "Pendientes de revisión"},
+            choiceLabels: {"Activas", "Desactivadas", "Pendientes de revisión", "Sin Connected System"},
+            choiceValues: {"Activas", "Desactivadas", "Pendientes de revisión", "Sin Connected System"},
             value: local!estado,
             saveInto: local!estado,
             placeholder: "Todas"
@@ -187,12 +187,12 @@ a!localVariables(
               a!queryFilter(
                 field: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{bfd955f5-5d0e-4d73-b79e-75a3c3dd903c}activo',
                 operator: "=",
-                value: if(local!estado = "Activas", true(), if(or(local!estado = "Desactivadas", local!estado = "Pendientes de revisión"), false(), null()))
+                value: if(or(local!estado = "Activas", local!estado = "Sin Connected System"), true(), if(or(local!estado = "Desactivadas", local!estado = "Pendientes de revisión"), false(), null()))
               ),
               a!queryFilter(
                 field: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{e4ae6ce4-2eb3-4401-9124-19e8a5dd36ac}origenAlta',
                 operator: "=",
-                value: if(local!estado = "Pendientes de revisión", "DESCUBRIMIENTO", null())
+                value: if(local!estado = "Pendientes de revisión", "DESCUBRIMIENTO", if(local!estado = "Sin Connected System", "INT_SIN_CS", null()))
               ),
               a!queryFilter(
                 field: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{b4635ff6-1317-41d5-af9f-e7cd4d61fa22}codigo',
@@ -234,11 +234,26 @@ a!localVariables(
               labelPosition: "COLLAPSED",
               value: {
                 if(
-                  and(
-                    not(fv!row['recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{bfd955f5-5d0e-4d73-b79e-75a3c3dd903c}activo']),
-                    fv!row['recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{e4ae6ce4-2eb3-4401-9124-19e8a5dd36ac}origenAlta'] = "DESCUBRIMIENTO"
+                  or(
+                    and(
+                      not(fv!row['recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{bfd955f5-5d0e-4d73-b79e-75a3c3dd903c}activo']),
+                      fv!row['recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{e4ae6ce4-2eb3-4401-9124-19e8a5dd36ac}origenAlta'] = "DESCUBRIMIENTO"
+                    ),
+                    fv!row['recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{e4ae6ce4-2eb3-4401-9124-19e8a5dd36ac}origenAlta'] = "INT_SIN_CS"
                   ),
-                  a!richTextItem(text: "Pendiente de revisión · ", color: cons!SMK_COLOR_AVISO, style: "STRONG"),
+                  a!richTextItem(
+                    text: if(
+                      fv!row['recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{e4ae6ce4-2eb3-4401-9124-19e8a5dd36ac}origenAlta'] = "INT_SIN_CS",
+                      "Sin CS · URL por constante · ",
+                      "Pendiente de revisión · "
+                    ),
+                    color: if(
+                      fv!row['recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{e4ae6ce4-2eb3-4401-9124-19e8a5dd36ac}origenAlta'] = "INT_SIN_CS",
+                      cons!SMK_COLOR_AZUL_OSCURO,
+                      cons!SMK_COLOR_AVISO
+                    ),
+                    style: "STRONG"
+                  ),
                   {}
                 ),
                 a!richTextItem(

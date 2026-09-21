@@ -25,6 +25,9 @@ def code_from_host(host, port):
     c = re.sub(r"[^A-Z0-9]", "_", host.upper())
     return f"HTTP_{c}" + (f"_{port}" if port else "")
 
+def code_slug(code):
+    return code.removeprefix("HTTP_").lower()
+
 async def mcp(tool, **args):
     r = await tools.mcp_call_tool(server=S, tool_name=tool, tool_args=json.dumps(args))
     if r.startswith("Error"):
@@ -80,8 +83,45 @@ async def main():
     sistemas = set(s.lower() for s in re.findall(r'sistema:\s*"([^"]+)"', expr))
     expr_lc = expr.lower()  # un CS está cubierto si su nombre aparece en el catálogo base (nombre/descripcion/sistema)
 
+    # Integraciones sin Connected System: solo se inventaría la URL, sin persistir
+    # cuerpos, headers ni otros valores potencialmente sensibles.
+    integrations_by_app = {}
+    async def integrations_for(a):
+        async with sem:
+            return a, await list_all("listIntegrations", appUuid=a["uuid"])
+    for a, lst in await asyncio.gather(*[integrations_for(a) for a in apps]):
+        integrations_by_app[a["uuid"]] = lst
+
+    int_sin_cs, url_no_resoluble = [], []
+    async def integration_detail(a, item):
+        if item.get("connectedSystemUuid"):
+            return
+        async with sem:
+            try:
+                d = await mcp("getIntegration", uuid=item["uuid"])
+                props = d.get("properties") or {}
+                raw = props.get("url") or props.get("baseUrl") or props.get("relativePath")
+                host, port = norm_host(raw or "") if raw and re.match(r"^\s*[\"']?https?://", str(raw), re.I) else ("", None)
+                out = dict(uuid=item["uuid"], name=item.get("name"), app=a["name"], urlRaw=raw)
+                if host:
+                    out.update(host=host, port=port, code=code_from_host(host, port),
+                               tipo="HTTP_SIN_CS", cubierto=(code_from_host(host, port) in codigos or
+                               any(k.startswith(code_from_host(host, port)) for k in codigos) or
+                               host in sistemas),
+                               propuesta=f"Constante SMK_URL_{code_slug(code_from_host(host, port)).upper()} + integración SMK_INT_HTTP_{code_slug(code_from_host(host, port))} sin CS → código {code_from_host(host, port)}")
+                    int_sin_cs.append(out)
+                else:
+                    url_no_resoluble.append(dict(uuid=item["uuid"], name=item.get("name"), app=a["name"], urlRaw=raw,
+                                                 motivo="URL nula, relativa o expresión cons!/rule!/ri!"))
+            except Exception as e:
+                url_no_resoluble.append(dict(uuid=item["uuid"], name=item.get("name"), app=a["name"],
+                                             urlRaw=None, motivo=str(e)[:160]))
+    await asyncio.gather(*[integration_detail(a, item) for a, lst in [(a, integrations_by_app[a["uuid"]]) for a in apps] for item in lst])
+
     snapshot = {"env": ENV, "fecha": datetime.datetime.utcnow().isoformat(), "connectedSystems": cs_by_uuid,
-                "recordTypesPorDataSource": rt_by_ds, "catalogoCodigos": sorted(codigos)}
+                "recordTypesPorDataSource": rt_by_ds, "catalogoCodigos": sorted(codigos),
+                "integrationsPorApp": integrations_by_app, "integracionesSinCS": int_sin_cs,
+                "urlNoResoluble": url_no_resoluble}
     prev_path = f"{BASE}/discovery/snapshot_{ENV}.json"
     prev = json.load(open(prev_path)) if os.path.exists(prev_path) else None
 
@@ -119,12 +159,16 @@ async def main():
 
     json.dump(snapshot, open(prev_path, "w"), indent=1, ensure_ascii=False)
     md = [f"# Hallazgos SMK — {ENV} — {snapshot['fecha'][:16]}Z", "",
-          f"Connected Systems: {len(cs_by_uuid)} · Record types: {len(rts)} · Pruebas en catálogo base: {len(codigos)}", "",
+          f"Connected Systems: {len(cs_by_uuid)} · Record types: {len(rts)} · Pruebas en catálogo base: {len(codigos)} · Integraciones sin CS: {len(int_sin_cs) + len(url_no_resoluble)}", "",
           f"## Nuevos desde el último snapshot ({len(nuevos)})"] + [f"- {n['cs']} ({n['tipo']}) — apps: {', '.join(n['apps'])}" for n in nuevos] + \
          ["", f"## Desaparecidos ({len(desaparecidos)})"] + [f"- {d['cs']} ({d['tipo']})" for d in desaparecidos] + \
          ["", f"## URL cambiada ({len(cambiados)})"] + [f"- {c['cs']}: {c['antes']} → {c['ahora']}" for c in cambiados] + \
          ["", f"## Sin prueba de humo en el catálogo ({len(sin_cobertura)})"] + \
-         [f"- [{s['tipo']}] {s['cs']} — apps: {', '.join(s['apps'])} — {s['propuesta']}" for s in sin_cobertura]
+         [f"- [{s['tipo']}] {s['cs']} — apps: {', '.join(s['apps'])} — {s['propuesta']}" for s in sin_cobertura] + \
+         ["", f"## Integraciones sin Connected System con URL literal ({len(int_sin_cs)})"] + \
+         [f"- {i['name']} ({i['app']}) — {i['host']} — {i['code']} — {'cubierto' if i['cubierto'] else 'sin cobertura'} — {i['propuesta']}" for i in int_sin_cs] + \
+         ["", f"## URL no resoluble en integraciones sin Connected System ({len(url_no_resoluble)})"] + \
+         [f"- {i['name']} ({i['app']}) — {i.get('urlRaw')} — {i['motivo']}" for i in url_no_resoluble]
     open(f"{BASE}/discovery/hallazgos_{ENV}.md", "w").write("\n".join(md))
     json.dump(dict(nuevos=nuevos, desaparecidos=desaparecidos, cambiados=cambiados, sinCobertura=sin_cobertura),
               open(f"{BASE}/discovery/hallazgos_{ENV}.json", "w"), indent=1, ensure_ascii=False)
