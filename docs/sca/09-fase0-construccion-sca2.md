@@ -1030,3 +1030,149 @@ vuelve a mostrar las solicitudes.
 ### 14.4 Pendiente (tanda 10)
 Mecanización completa (panel de póliza, simulación, detalle gestión, Verti
 como modal), Documentación completa y reglas auxiliares de Contra Anulación.
+
+## 15. Tanda 10 — Mecanización completa y VERTI (gap 4)
+
+### 15.1 `SCA2_MecanizacionPrincipal` ← `SCA_MecanizacionEstrategicas`
+Port literal del original (160→~640 líneas): card WARN idéntica, título
+dinámico, "¿Desea anular la póliza…", columnas Póliza/Causa/Fecha anulación/
+Importe/Reserva prima/Nivel cumplimiento, Controles técnicos con
+`controlRechazo`, modal `SCA2_ContraAnulacionModalInformativo` con
+mensajeRecibos literal, card `SCA2_GenerarContactoVerti` con `showWhen`
+idéntico. Reglas invocadas en el mismo orden: `consultaGestion` →
+`consultaDetalleGestion`, `obtenerTraduccionMotivosSca`,
+`consultarAnulacionPoliza` ×2 (solo WAUTEMIS), `simularAnulacionPoliza` ×2
+(literales 3→2/4→3, indicadores por ramo), `obtenerTipoPoliza`,
+`determinarContacto`, `searchAPI`/`checksPECA`,
+`obtenerUserPassSimularPoliza`. Botones CANCELAR/FINALIZAR ("ANULAR PÓLIZA")
+como el original — el POSPONER añadido en primera pasada se retiró por
+paridad (tanda 10-bis). Botón MECANIZAR dispara `SCA2 CMD Mecanizar`
+(sustituto atómico: en SCA la tarea dispara la mecanización).
+
+### 15.2 VERTI
+`SCA2_GenerarContactoVerti` integrado como card/modal dentro de
+Mecanización con `flagVerti` (`SCA2_flagVerti`), textos idénticos
+("Generación de contactos de cliente"/"Generar contacto Verti"/"Generar
+vencimiento", botón "CONTINUAR ANULACIÓN"). `SCA2_VertiVencimientoPrincipal`
+se conserva: la tarea tipo VERTI (nodo 7 del PM) la usa vía DetalleTareas.
+`SCA2 CMD Mecanizar` ganó la PV parámetro `verti` (Boolean) y el XOR
+"Inducción VERTI?" `and(or(pv!flagVerti, contacto), a!defaultValue(pv!verti,true))`
+para que el checkVerti del modal gatee la creación de la tarea VERTI.
+
+### 15.3 Observaciones Core7 (10-bis)
+Verificado que `ANL_getTipoIntegracionById_qr(ANL_INT_WS_INSERTAR_OBSERVACIONES)`
+→ endpoint `IGenerarContraAnul` en `core7.pre.mapfre.net`, el mismo servicio
+que usa `SCA2_insertarObservaciones` (`SCAC_insertarObservacionesIntegracion`
++ `SCAC_VAL_HOST_CORE7`) con el mismo DTO `ejb:insertarObservaciones/
+MSEInsertarObservaciones`. Diferencia: el original rellena `infoUsuario`
+con `codCiaUsuario/codPerfil/codSubPerfil` → nueva regla
+`SCA2_insertarObservacionesInfoUsuario` (`_a-…_20064040`) que envía el
+infoUsuario completo con los 4 campos de `datosPerfilesPca`.
+
+### 15.4 Desviaciones tanda 10
+- `mcaReservaPrima`/`importeRsvPrima` NO reintroducidas en el CMD Mecanizar:
+  ningún nodo las consume (en SCA solo las usan "Bloquear póliza"/"ANL Alta",
+  ausentes del PM reducido).
+- `SCA_guardarObservaciones`+`ANL_getXMLInsertarObervaciones` sin
+  equivalente → `SCA2_insertarObservaciones` tipoGestion "5".
+- `localIPResolver`/CMP_CS_OBTENER_IP inexistente → traza con fallback
+  "192.168.1.48" como el default del original.
+- CANCELAR escribe traza vía `SCA2_guardarTrazabilidad` + CompletarAccion
+  con `mcaEstadoFinal:"CANCELADO"` (equivale a FINALIZAR_MECANIZACION
+  cancel:true).
+- `vencimiento` no llega al PM (sin nodos de vencimiento) — paridad visual.
+- Capturas: `img/t10_mecanizacion.png` (pantalla completa, site sca2),
+  `img/t10_detalle.png`. Modal VERTI no visible porque `determinarContacto`
+  no devolvió VERTI para la solicitud TEST (gating correcto).
+  Alertas/data-mgmt de Mecanizar re-verificadas por el usuario tras publicar
+  (`img/t10_mecanizar_alertas.png`, `img/t10_mecanizar_datamgmt.png`).
+
+## 16. Tanda 11 — Documentación administrativa, auxiliares CA y revisión post-cambios
+
+### 16.1 Documentación administrativa (gap 5)
+`SCA_AccionesAdministrativasDocumentacion` (1206 líneas) portada a
+`SCA2_AccionesAdministrativasDocumentacion` `_a-…_20060475` (31 inputs,
+incl. `documentosACargar1-9` como Document): añadir/modificar/visualizar/
+eliminar documento, erroresDoc, plantilla de contrato de compraventa como
+dependencia de solo lectura (`cons!SCA_PLANTILLA_CONTRATO_COMPRA_VENTA`;
+sin carpeta nueva porque el flujo no escribe en carpeta propia).
+Callers cableados: AccAdm Principal acción "1", CA Opciones "2",
+FueraNorma "3" — con sus locals de documentación portados.
+
+| Objeto | UUID | Acción |
+|---|---|---|
+| SCA2_AccionesAdministrativasDocumentacion | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20060475` | creada (port 1206 lns) |
+| SCA2 CMD GenerarPdf | `0000f06f-c1d7-8000-67b4-7f0000014e7a` | creado — DOCX→PDF; v3.0 publicada: alertas "SCA2 Alertas", eliminar 1 día (`img/t11_generarpdf_*.png`) |
+| SCA2 CMD ObtenerDocumentoGD | `0000f06f-c12b-8000-67ae-7f0000014e7a` | creado — sobre `SCA2_consultaDocumentoIntegracion`; v3.0 publicada: mismas propiedades (`img/t11_obtenergd_*.png`) |
+| SCA2_insertarObservacionesInfoUsuario | `_a-…_20064040` | creada (10-bis) |
+| SCA2_insertarObservaciones, SCA2_cargarSolicitud, SCA2_guardarTrazabilidad | — | modificadas (campos extra, infoUsuario, sistema "SCA") |
+| SCA2_ContraAnulacionOpciones | `_a-…_20056435` | auxiliares + doc + ModalSiNo + desgateo API Clients |
+| SCA2_AccionesAdministrativasPrincipal | `_a-…_20056429` | doc locals + acción "1" + Visualizer |
+| SCA2_AnulacionFueraNormaPrincipal | `_a-…_20056423` | doc locals + acción "3" |
+| SCA2_MecanizacionPrincipal | `_a-…_20060481` | port completo, POSPONER retirado |
+| SCA2_DBG_tareas / SCA2_DBG_t11x | — | eliminadas (limpieza) |
+
+`testProcessModel` GenerarPdf → COMPLETED con `nuevoDocumentoWord`/
+`nuevoDocumentoPdf` (smoke end-to-end). `validateDesignObject` 0 errores en
+interfaz y ambos PMs.
+
+### 16.2 Auxiliares Contra Anulación (gap 6)
+Cableadas en `SCA2_ContraAnulacionOpciones` las reglas que el original
+invoca: `pObtenerPolizaFecha`/`consultarPolizas` (local!poliza por origen
+WAUTEMIS), `polizaRenovada` (mostrarRevision + tipoCatalogacion),
+`nuumaEsPropietario`, `consultaClasificacionTC`, `consultarEquipos`,
+`catalogFiltered`, `consultaImpr` y `SCA2_ContraAnulacionModalSiNo`
+(columnsLayout + data map ~30 claves + datosContextoSolicitud +
+datosContraAnulacion). Rechazos "unused locals" resueltos con
+`richTextDisplayField(showWhen:false)` (idioma SCA2 ya usado).
+
+### 16.3 Relaciones entre record types (tras el borrado del usuario)
+El usuario borró muchas relaciones ("estaban rotas") y algunos objetos.
+Inventario: `SCA2 Solicitud` conserva transiciones/tareas/errores/
+`datosSolicitud`/nivelesCoberturaAutos/otrasSolicitudesCabecera
+ONE_TO_MANY + 2 relaciones User; `SCA2 Datos Solicitud` tiene el espejo
+`solicitud` MANY_TO_ONE. La única relación referenciada por expresiones
+desplegadas es `relationships.{63161335-…}datosSolicitud` en
+`SCA2_BuscadorTabla` (×2), ya presente → nada que recrear. Regla aplicada:
+padre→hijo ONE_TO_MANY, hijo→padre MANY_TO_ONE, nunca ONE_TO_ONE
+(APNX-1-4205-051). El espejo `solicitud` (re-borrado por el usuario en la
+misma limpieza) se recreó con `addRecordTypeRelationship`
+(`dcd9a794-…`, MANY_TO_ONE, `idSolicitud→idSolicitud`). Buscador verificado
+con 4 filas tras los cambios (`img/t9b_buscador.png`).
+
+### 16.4 API Clients y Retos
+- Constantes `SCA2_TXT_APICLIENTS_*` rellenadas por el usuario → se retiró
+  el gateo `a!isNullOrEmpty(cons!SCA2_TXT_APICLIENTS_CLIENT_ID)` en
+  FueraNorma, AccAdm Principal, CA Opciones y Mecanización: llaman siempre
+  como el original. Prueba real (`testRule`): `SCA2_checksAPIClients`
+  llega al backend (`MRCConsultaBack_int-web` devuelve error tipado de
+  validación → autenticación correcta); `SCA2_searchAPIClients` devuelve
+  null sin error. Sin credenciales en logs ni documentación.
+- Retos REST: decisión del usuario = usar las integraciones SCAC tal cual
+  (`SCAC_obtenerTokenRetosRESTIntegracion`,
+  `SCAC_asignarRetosRESTIntegracion`) vía `SCA2_asignarRetos`, ya invocada
+  desde `SCA2_ContraAnulacionSGO` (mcaVentanaRetos) y
+  `SCA2_ContraAnulacionRehabilitacion`. STOP resuelto sin objetos nuevos.
+
+### 16.5 Verificación en navegador y limpieza
+Página temporal `debug-t11` en el site sca2 (añadida y retirada; el site
+vuelve a las 4 páginas originales) con wrapper `SCA2_DBG_t11x` que invoca
+las reglas con `ri!` fijos → `img/t11_contraanulacion.png` (CA Opciones con
+oficina y secciones colapsables) e `img/t11_documentacion.png` (sección
+Documentación expandida: grid Carta firmada/Dni con acciones +
+Observaciones). `SCA2_DBG_t11x` y `SCA2_DBG_tareas` eliminadas.
+
+### 16.6 Pendiente
+- `SCA2 CMD ObtenerDocumentoGD`: el camino de éxito requiere un
+  documentumId real (el test con id falso devolvió `consultaDocumento:
+  rank` como error controlado del path de fallo).
+- Rama positiva de las integraciones Core7 (anulación real) sigue sin una
+  póliza de prueba válida.
+- `a!writeRecords` en locals de interfaz se evalúa como "reaction tree"
+  diferida: no persiste en `testInterface` ni en el render de una página
+  de site, solo en submit real — su comportamiento en submit de usuario no
+  se ha ejercitado en SCA2 (el flujo productivo usa `a!save`+rules en
+  saveInto de botones, patrón ya verificado con `SCA2_guardarTrazabilidad`).
+- Documentos de prueba 629513/629514 (smoke GenerarPdf) no borrables por
+  MCP (`deleteDocument` los rechaza como ids de knowledge base, no uuid de
+  documento de diseño) — eliminar manualmente si se considera necesario.
