@@ -810,3 +810,40 @@ de sondeo no aplicada tras el fix del punto A). Artefactos:
 - `"Number"` no es tipo PV válido → `"Number (Integer)"`.
 - Insertar Tarea de test: csv con header+data real (falso positivo "no data
   rows" si la línea queda vacía).
+
+### 12.7 Prueba de alta real tras la corrección del namespace (tanda 7, cierre)
+- **Causa raíz definitiva del HTTP 500**: además del namespace, el nodo
+  `generarStudAnul` enviaba `pv!pre` **entero** (el mapa `{studAnul,
+  origenPoliza, regularizacionIniciarProceso, socioTeCuidamos, anulaExpertos,
+  anulaTecnicos}` que devuelve `SCA2_PreGenerarStudAnul`) como
+  `MSEGenerarStudAnul`; el original envía `pv!studAnul` (el
+  `solicitudAnulacionDTO` interior). Corregido a
+  `index(pv!pre,"studAnul",null)` dentro del CDT tipado → `validateDesignObject`
+  limpio.
+- **Discriminador que lo probó**: `testRule` sobre la regla **original**
+  `SCA_generarStudAnul` con un DTO parcial devolvió un fallo **de negocio**
+  (`soapenv:Server` código **4004** "Datos insuficientes para la operacion"),
+  es decir, conectividad y sobre SOAP correctos desde este entorno → el 500 era
+  de forma del XML, no de PRE.
+- **Verificación del XML emitido**: se añadió un `customOutput` temporal
+  `toxml(...)` en el nodo (eliminado después); el body sale como
+  `<n1:generarStudAnul xmlns:n1="http://ejb.cfsa.pca.mapfami.dgtp.mapfre.com/">`
+  con `MSEGenerarStudAnul` completo (idéntica forma al original).
+  Evidencia `sca2_objects/pm/alta_test_dbg.json`.
+- **Resultado**: la llamada ya **llega a Core7** y éste responde fallos de
+  negocio reales, no 500 de transporte:
+  - póliza `0000406200001` → **4111** "Solicitud de anulacion ya existente para
+    el numero de poliza" (prueba de que Core7 procesó la petición);
+  - pólizas `0000407100066`/`0000407100067` → **4004** "Datos insuficientes para
+    la operacion".
+- **Comportamiento observado**: Core7 devuelve el fault SOAP con **HTTP 500**,
+  así que `ac!Error` queda poblado ("Failed to connect…") y la rama de error
+  del PM escribe la fila `SCA2 Error` con el mensaje de transporte en vez del
+  faultString real — queda como mejora pendiente guardar
+  `pv!generar.error.faultString` en `payload`.
+- **Bloqueante para una creación real**: el `datosContexto` que construye
+  `SCA2_construirContextoAlta` queda corto para Core7 (4004) y las pólizas con
+  solicitud previa devuelven 4111; hacer que el alta termine igual que en SCA
+  exigiría enriquecer el contexto con los campos que el flujo SCA real pasa
+  (datosCod/datosProductor/datosPolizaAutos completos) — queda abierto.
+- Capturas del alta por site: `sca2_objects/ui/screens/polizas_0000406200010_{datos,ready,guardado}.png`.
