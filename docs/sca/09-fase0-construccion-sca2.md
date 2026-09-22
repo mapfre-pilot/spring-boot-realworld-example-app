@@ -90,3 +90,92 @@ PM *Generar Solicitud* + objetos `*Estrategicas` (closure2). Universo: 303 objet
 Índice de objetos creados: `sca2_rules_ifaces.json`; respuestas individuales en `sca2_objects/`.
 
 > Sin credenciales en este documento. Valores sensibles (hosts, usuarios, tokens) se redactaron en origen.
+
+## 5. Batch B — sustitución de CDTs e integraciones propias
+
+**Decisiones del usuario**
+
+- SCA2 **no usa CDTs**: los datos se modelan con record types SCA2 o con `Map`.
+- SCA2 tendrá **integraciones propias** (no llamadas `rule!SCAC_*Integracion`): reutilizan los connected
+  systems de SCAC como dependencia (mismo `connectedSystemUuid`; no se copian credenciales) y aceptan `Map`.
+- En las integraciones SOAP el body se conserva tal cual: `toxml(type!{ns}CDT(...))` permanece dentro del
+  body como dependencia de tipos existentes (no se crean CDTs).
+- Las reglas referenciadas desde integraciones se replican en SCA2 las de SCA/SCAC
+  (`SCA2_APIClients_Login`, `SCA2_ObtenerCredencialesConceptos`, `SCA2_obtenerUserPassSimularPoliza`);
+  `rule!CMP_*` / `rule!PGM_*` quedan como dependencia cross-app.
+
+### Tabla CDT → record type / Map
+
+| CDT origen | Destino SCA2 |
+|---|---|
+| `SCAC_DS_solicitudAnulacion` | record type `SCA2 Solicitud` (o `Map` si accede a campos ausentes) |
+| `SCAC_DS_datosCabecera` | `SCA2 Datos Cabecera` / `Map` |
+| `SCAC_DS_datosSolicitud` | `SCA2 Datos Solicitud` / `Map` |
+| `SCAC_DS_datosBasicosSolicitud` | `SCA2 Datos Basicos Solicitud` |
+| `SCAC_DS_datosPerfilesPca` | `SCA2 Datos Perfiles Pca` |
+| `SCAC_DS_datosPolizaVida` | `SCA2 Datos Poliza Vida` |
+| `SCAC_DS_datosPolizaAutos` | `SCA2 Datos Poliza Autos` |
+| `SCAC_DS_datosPolizaHogar` | `SCA2 Datos Poliza Hogar` |
+| `SCAC_DS_producersData` | `SCA2 Datos Productor` |
+| Cualquier otro CDT (DTOs WSDL PCA/SGC, `CargaGestion*`, `*Response`, resto `SCAC_DS_*`, `SCA_DS_*`) | `Map` |
+
+Regla de decisión: el input usa el `typeReference` del RT **solo si todos los campos accedidos en el SAIL
+(`ri!x.campo`) existen en el RT**; si no, `Map` con `missing_fields` anotado. Casos con campos ausentes
+(input → campos que faltan en el RT):
+
+- `SCA2_setDatosGestionDatosPoliza`: `solicitudAnulacion` → `datosCompletosSolicitud`, `datosPerfilesPca`
+- `SCA2_setDatosGestionSGC`: `solicitudAnulacion` → `datosPoliza`; `datosCabecera` → `datosCliente`
+- `SCA2_posponerAccAdm`: `datosCabecera` → `datosCliente`, `datosPoliza`; `solicitudAnulacion` →
+  `datosCompletosSolicitud`, `datosPolizaAutos`, `datosPolizaHogar`, `datosPolizaVida`
+- `SCA2_posponerCA`: `datosCabecera` → `datosCliente`; `solicitudAnulacion` → `datosCompletosSolicitud`
+- `SCA2_posponerAutorizacion`: `datosCabecera` → `datosCliente`, `datosPoliza`; `solicitudAnulacion` →
+  `datosCompletosSolicitud`, `datosPolizaAutos`, `datosPolizaHogar`, `datosPolizaVida`
+- `SCA2_CargaGcOnline`: `solicitudAnulacion` → `datosPolizaAutos`
+
+### Reescrituras aplicadas
+
+- `'type!{ns}X'(...)` → `a!map(...)`; `cast(typeof('type!X'), v)` → `v` (266 ocurrencias, 57 objetos; 0 no cubiertas).
+- `rule!SCAC_X` → `rule!SCA2_X` solo cuando el equivalente SCA2 ya está creado; si no, se conserva la
+  referencia SCAC (pendiente = vacío al final).
+- En integraciones: header values literales deben enviarse con comillas (`"*/*"`, `"text/xml"`).
+- `validateExpression` ejecutado antes de cada create (solo diagnóstico: no puede stubbear `ri!`).
+- `testInputs` funciona también en `createExpressionRule`/`createInterface` (no documentado en el schema):
+  permitió crear las reglas EVAL que fallaban evaluando con inputs nulos.
+
+### Contadores
+
+- **Integraciones: 104 creadas** de 111 del cierre (+2 replicadas incluidas en ese total: `SCA2_APIClients_Login`,
+  `SCA2_ObtenerCredencialesConceptos`) — 42 `direct_json`, 62 SOAP con body verbatim, 1 plugin AWS S3.
+  **3 STOP:**
+  - `SCA2_obtenerTokenRetosRESTIntegracion`, `SCA2_asignarRetosRESTIntegracion` — sin `connectedSystemUuid`
+    en origen ��� decidir connected system o URL directa.
+  - `SCA2_altaDocumentoIntegracion` — multipart requiere un Document de prueba que aún no existe en SCA2 →
+    crear un documento/constante y reintentar.
+- **Reglas/interfaces batch B: 92 de 103 creadas** (total SCA2: **240 objetos**, 148 batch A + 92 batch B).
+  **11 STOP** (con causa y siguiente paso):
+  - `SCA2_altaDocumento`, `SCA2_AltaGestionArgumento` — input `Document` sin valor de prueba posible →
+    subir un documento a SCA2 y reintentar.
+  - `SCA2_monitorizarSolicitud` — HTTP 500 "Name is insufficiently unique" (colisión fuera de SCA2) →
+    localizar el objeto conflictivo o renombrar.
+  - `SCA2_DatosPolizaDinamico` (+ cascada `SCA2_ObtenerMapaPoliza`) — acceso `ri!x['recordType!{u}.fields.f']`
+    requiere un record real → decidir: consultar el record type o pasar estructura compatible.
+  - `SCA2_guardarGestionSGC` (+ cascadas `SCA2_posponerAccAdm`/`posponerCA`/`posponerAutorizacion`) —
+    comparación Null vs Integer interna no resoluble con testInputs → revisar la rama nula en origen.
+  - `SCA2_GetUrlArgumento` — `sca2_consultarconceptoreutilizable` espera estructura CDT (index) → ajustar
+    el callee a Map o tipar el input.
+  - `SCA2_CargaGcOnline` — estructura WSDL `MSECargaGestionPCA` anidada no reproducible con `a!map` →
+    reescribir a mano el acceso al payload.
+
+### Dependencias que quedan hacia SCAC / CMP / PGM
+
+- Constantes referenciadas (no copiadas): `SCAC_VAL_HOST_CORE7`, `SCAC_VAL_HOST_WEBSERVICES`,
+  `SCAC_VAL_HOST_WMAPFRE`, `SCAC_VAL_USUARIO_ACCESO_SERVICIOS`, `SCAC_VAL_PWD_ACCESO_SERVICIOS`,
+  `CMP_VAL_HOST_WEBSERVICES`, `SCA_WEBSERVICES_URL` (host y credenciales quedan como dependencia cross-app).
+- Reglas cross-app: `rule!CMP_APIGW_newToken_TEST`, `rule!CMP_fechaHoraISO8601`, `rule!CMP_docABase64`,
+  `rule!PGM_GenerateNonce`.
+
+### Nota de riesgo
+
+`SCA2_APIClients_Login` y `SCA2_ObtenerCredencialesConceptos` copian el body **verbatim** e incluyen
+**credenciales literales en el cuerpo** (igual que las originales SCAC). Recomendado mover esas
+credenciales al connected system o a constantes cifradas antes de promocionar fuera de DEV.
