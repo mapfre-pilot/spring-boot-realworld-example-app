@@ -524,7 +524,94 @@ Claves de idempotencia: `"SCA2 CMD Mecanizar|" & idSolicitud & "|" & nivelInterv
   responde 500 a todas las integraciones, como el 0999 del Alta) — pendiente repetir
   con una póliza anulable.
 - Rama VERTI no ejercitada (flagVerti=false con la póliza de prueba).
-- Pendientes globales: Redirección Vida, `SCA2 CMD Notificar`, completar las pantallas
-  condensadas (`SCA2_ContraAnulacionOpciones`, `SCA2_DocumentosAccion`), y credenciales
-  literales en `SCA2_APIClients_Login`/`SCA2_ObtenerCredencialesConceptos` pendientes
-  de connected system.
+- Pendientes globales: Redirección Vida, `SCA2 CMD Notificar`, placeholders
+  Variables/Batch del menú de gestiones, y credenciales literales en
+  `SCA2_APIClients_Login`/`SCA2_ObtenerCredencialesConceptos` pendientes
+  de connected system. Las pantallas condensadas se completaron en la sección 10.
+
+## 10. Pantallas completas de acción y Gestiones mantenimiento (tanda 5)
+
+Se completa la lógica que se condensó en tanda 4b, con paridad UX/UI SCA (textos,
+orden de secciones, cards, colores `#DF0027`/`#9F9F9F`/`#00E663`, iconos, botones
+SOLID rojo/gris, `SCA2_PieDePagina`), y la pantalla de acción pasa a ocupar la
+página completa como en SCA.
+
+### Objetos nuevos
+
+| Interfaz SCA2 | uuid | Líneas | Origen SCA |
+|---|---|---|---|
+| `SCA2_ContraAnulacionArgumentarioEstrategicas` | `...20060043` | 144 | `SCA_ArgumentosContraAnulacionEstrategicas` (grid Orden/Argumento/Obligatorio/Argumentario SCAC/Aplicación URL/Estado tag/Usuario/Fecha, selección de fila) |
+| `SCA2_ContraAnulacionSGO` | `...20060093` | 133 | `SCA_ModalTréboles` port verbatim a cardLayout (`a!dialogLayout_17r2` no existe) + ModalRetos/ModalSVA/ModalSVAEmail |
+| `SCA2_ContraAnulacionRehabilitacion` | `...20060049` | 50 | `SCA_ModalRecuperacionPoliza` + link NSE + ModalInformativo |
+| `SCA2_ContraAnulacionDescuentos` | `...20060055` | 20 | `SCA_ModalDescuentosVida` + ModalInformativo |
+| `SCA2_ContraAnulacionCompaniaCatalogacion` | `...20060061` | 200 | `SCA_CompañaContrariaCatalogacion` (compañía + popup búsqueda + RECARGAR ARGUMENTO + tipo catalogación + fecha) |
+| `SCA2_AccionesAdministrativasDocumentacion` | `...20060475` | 189 | `SCA_AccionesAdministrativasDocumentacion` (1205→189): grid docs + borrar + AÑADIR (tipo/nombre/upload a `SCA2_FLD_ACCION_ADMINISTRATIVA`) + GUARDAR + observaciones + "No se entrega documentación" |
+| `SCA2_MecanizacionPrincipal` | `...20060481` | 164 | `SCA_DetalleAnulacionMecanizacionEstrategicas` (900→164): datos gestión + Reserva prima + observaciones + MECANIZAR (`a!startProcess` `cons!SCA2_PM_CMD_MECANIZAR` con accion/mcaReservaPrima/importeRsvPrima) / CANCELAR / POSPONER |
+| `SCA2_GestionMantenimientoMenu` | `...20060073` | 127 | `SCA_GestionMantenimientoMenu`: nav lateral 5 opciones → GestionArgumentos/GestionConceptos/GestionAplicacion (reales) + placeholders Variables/Batch |
+
+Actualizadas: `SCA2_ContraAnulacionOpciones` (451 l., flujo POSITIVO completo),
+`SCA2_DetalleTareas`, `SCA2_AccionesAdministrativasPrincipal`,
+`SCA2_DetalleSolicitud` (layout pantalla completa), site `sca2` (página nueva).
+
+### Flujo POSITIVO/NEGATIVO de Contra Anulación
+
+En `SCA2_ContraAnulacionOpciones`, al pulsar POSITIVO con 1 argumento seleccionado:
+`insertarObservaciones` → `estadoArgumentos` → `modificarCatalogacion` →
+`estadoContraAnul` "3" → dispatch de regateo según campaña/tipo (252/254/365 →
+SVA, 286/287 → Retos, resto → Tréboles) → recuperación (`obtenerEstadoPoliza`
+= "A" → `altaSGORehabilitar`) → descuentos (358/356 → `altaSGOVida`/`altaSGO`).
+NEGATIVO → `guardarEjecuArg`. El cierre llama `SCA2 CMD CompletarAccion` con el
+mismo Map de resultado (`mcaEstadoFinal`, `estadoFinalizar`, `finalizadoCA`…).
+
+### Layout pantalla completa
+
+`SCA2_DetalleSolicitud` gana `local!accionAbierta/tipoAccion/idTareaAccion`
+(pasados como rule inputs a `SCA2_DetalleTareas`, cuyos `saveInto` escriben
+ri! → parent local). Con `accionAbierta` se muestra SOLO la Principal + enlace
+"VOLVER AL DETALLE" (GHOST rojo, icono arrow-left); cabecera/datos/tareas/
+transiciones/errores ocultas y `PieDePagina` una sola vez. El link "Completar"
+de la grid guarda los tres inputs; VOLVER los resetea y el detalle se
+refresca. Tipos `MECANIZACION` y `VERTI` abren `SCA2_MecanizacionPrincipal`.
+
+### Site
+
+Página "Gestiones mantenimiento" añadida al site `sca2` (tipo INTERFACE →
+`SCA2_GestionMantenimientoMenu`, `webAddressIdentifier gestiones-mantenimiento`,
+icono `f016`, `visibilityExpr =rule!SCA2_isUsuarioProceso()` — misma regla que
+SCA). Renderiza menú lateral con Gestión de argumentos/conceptos/aplicación
+(interfaces reales ya portadas) y placeholders para Variables/Batch.
+
+### Verificación
+
+- `testInterface` 12/12 OK (`sca2_objects/ui/testInterface_t5.json`).
+- Playwright (CDP 29229) con filas TEST (tareas CONTRA ANULAR / ACC ADM /
+  MECANIZACION): cada tipo abre su Principal; Documentación expandida con
+  grid + AÑADIR; argumentario con columnas y POSITIVO/NEGATIVO deshabilitados
+  ("Debe seleccionarse 1 argumento"); Gestiones mantenimiento renderiza.
+- Layout fix verificado: Completar → solo la Principal + VOLVER AL DETALLE;
+  VOLVER → detalle completo refrescado. Screenshots en
+  `sca2_objects/ui/screens/tanda5_*.png`; referencias:
+
+  | Captura | Contenido |
+  |---|---|
+  | `img/tanda5_layout_fix.png` | ContraAnulación a pantalla completa con "VOLVER AL DETALLE" |
+  | `img/tanda5_mecanizacion.png` | `SCA2_MecanizacionPrincipal` (MECANIZAR/CANCELAR/POSPONER) |
+  | `img/tanda5_gestiones.png` | Página "Gestiones mantenimiento" del site |
+
+- Filas TEST borradas tras la verificación. Bug encontrado y corregido en vivo:
+  las llamadas a modales se evaluaban sin flag y renderizaban "fantasmas" →
+  todas envueltas en `if(flag, rule!..., "")`.
+
+### STOPs / gaps de esta tanda
+
+1. `SCA2_GetUrlArgumento` y `SCA2_AltaGestionArgumento` siguen STOP; la URL del
+   argumentario usa `SCA2_IF_ArgumentoAplicacionUrl`.
+2. Subprocesos "ANL Alta" no invocados (otra app).
+3. Escrituras SGO (`altaSGO`, `altaSGORehabilitar`, `altaSGOVida`,
+   `guardarEjecuArg`, `modificarCatalogacion`) son las reglas SCA2 ya portadas;
+   no ejercitadas end-to-end porque los servicios Core7/SGO devuelven 500 en PRE.
+4. Variables/Batch en Gestiones mantenimiento son placeholders (sin equivalente).
+5. `SCA2_ContraAnulacionArgumentario` renombrado a `...Estrategicas` por
+   colisión de nombre con un objeto previo (patrón del original).
+6. Condensación residual: validaciones por campo y algunos popups dedicados del
+   original (2228 l.) quedan cubiertos por los modales genéricos.
