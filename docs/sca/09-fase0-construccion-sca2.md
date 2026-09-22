@@ -449,5 +449,82 @@ en lugar de las integraciones STOP).
   (disponibles como `SCA2_ContraAnulacionModal*` para enganchar).
 - `a!startProcess`/`a!writeRecords` validados estructuralmente; el flujo Completar/Posponer
   end-to-end queda pendiente de una tarea real de cada tipo.
-- Pendientes: `SCA2 CMD Mecanizar`, Redirección Vida, Caducidad, `SCA2 CMD Notificar`,
-  y completar las pantallas condensadas.
+- Pendientes (actualizado en §9): Redirección Vida, `SCA2 CMD Notificar`
+  y completar las pantallas condensadas; `SCA2 CMD Mecanizar`, Caducar y
+  BarridoCaducidad ya implementados en §9.
+
+## 9. CMD Mecanizar, Caducar y BarridoCaducidad
+
+Análisis previo en `/home/ubuntu/sca-analysis/sca2_mecanizar_analysis.md` (subprocesos
+`SCA Mecanizacion`, `SCA Alta Mecanización`, `SCA Finalizar Mecanización` y
+`SCA Batch Caducidad`/`Previo`).
+
+### PMs creados
+
+| PM | UUID | Nodos | Parámetros |
+|---|---|---|---|
+| `SCA2 CMD Mecanizar` | `0000f06f-4cfc-8000-66d3-7f0000014e7a` | 15 | idSolicitud, idTarea (opt), accion, mcaReservaPrima, importeRsvPrima, usuario |
+| `SCA2 CMD Caducar` | `0000f06f-4f07-8000-670d-7f0000014e7a` | ~10 | idSolicitud |
+| `SCA2 CMD BarridoCaducidad` | `0000f06f-4f69-8000-671e-7f0000014e7a` | 6 | (ninguno) |
+
+Claves de idempotencia: `"SCA2 CMD Mecanizar|" & idSolicitud & "|" & nivelIntervencion`
+(análoga para Caducar). Constantes `SCA2_PM_CMD_MECANIZAR`, `SCA2_PM_CMD_CADUCAR`,
+`SCA2_PM_CMD_BARRIDO_CADUCIDAD`; `SCA2_pmPorComando` conoce ambos comandos; botón
+"Mecanizar" (SOLID rojo) añadido a `SCA2_DetalleSolicitud`.
+
+### Mapeo nodo-original → nodo-SCA2 (resumen)
+
+| Original (SCA Mecanizacion) | SCA2 CMD Mecanizar |
+|---|---|
+| Flags polizaVigente/flagVerti/determinarContacto | nodo 16 Cargar (outputs flagVerti+contacto) |
+| XOR caducada / VERTI / PRRA | XORs 4 (caducada→Write 5) y 6 (VERTI→Write 7: Tarea PENDIENTE + Transición PENDIENTE_HUMANO) |
+| bloquearPoliza + consultarUltimaGestionREST | locales dentro de la consulta del nodo 8 |
+| guardarMecanizacion (WS Core7) | calli 8 `SCA2_guardarMecanizacionIntegracion` → XOR 9 |
+| crearAutorizacion | calli 10 → XOR 11 |
+| insertarObservaciones ×4-6 | 1 sola llamada con texto compuesto (condensado) |
+| Escrituras Tarea/Solicitud | Write Éxito 13 (MECANIZADA, mecanizacionRealizada, Tarea cerrada, Transición OK) |
+| Reintentos ×3 internos | **no replicados** → Error PENDIENTE + relanzamiento por bandeja |
+| receiveMessage ANL_Desbloquear (pausa) | **no implementado** |
+| ANL Alta ×2 (subproceso otra app) | **STOP** — no llamar |
+| SCA Finalizar Solicitud asíncrono | Start Process 14 → `cons!SCA2_PM_CMD_FINALIZAR` |
+| SCA Batch Caducidad Previo (obtener+start por fila) | `SCA2 CMD BarridoCaducidad`: query estado∉{FINALIZADA,CADUCADA,ERROR} ∧ caducidadTarea<now() → Start Process Caducar por fila |
+| SCA Batch Caducidad (finalizar una) | `SCA2 CMD Caducar`: XOR caducada→Write CADUCADA→calli finalizarSolicitud; no→SKIP |
+
+### Verificación (filas TEST, póliza 0007051068625)
+
+- Mecanizar: Core7 devuelve HTTP 500 (IMecanizarPCA) → rama de error correcta: Error row
+  PENDIENTE (nodo "Guardar Mecanización"), Transición ERROR, Solicitud estado=ERROR +
+  nodoRelanzar. Re-ejecución COMPLETED sin duplicar Transición.
+- Caducar con caducidadTarea pasada → CADUCADA + Transición OK; con futura → SKIP;
+  re-run → "Ya ejecutado" (COMPLETED).
+- Barrido → COMPLETED, detectó la fila caducada (`lista: ["TEST-CAD-1"]`).
+- Filas TEST borradas; Error/Transición conservados. Evidencia en
+  `sca2_objects/pm/mecanizar_*.json`, `caducar_*.json`, `barrido_test*.json`.
+
+### Bugs / lecciones MCP de esta tanda
+
+1. `a!toJson(pv!err)` sobre IntegrationError lanza → usar `joinarray(tostring(pv!err)," | ")`.
+2. Una regla con side-effect dentro de la lista `Records` produce un Number →
+   "each item must be a record"; inyectarla como valor de campo con `a!localVariables`.
+3. `ac!Result` es HttpResponse: `mapSalidaRespuesta*` necesita `ac!Result.body` y debe
+   guardarse con `if(ac!Success,…)` para no parsear el cuerpo de error.
+4. `ProcessParameters` del Start Process exige dict; para multi-instancia pasar
+   `{idSolicitud: pv!lista}` (lista como valor del parámetro).
+5. Reejecución con Transición ERROR/SKIP ya existente violaba la unicidad de
+   `claveIdempotencia` → la Transición se escribe solo si no existe (guard), y el XOR
+   "Ya ejecutado" de Caducar acepta `resultado in {"OK","SKIP"}`.
+6. `updateProcessModelNode` con `data` parcial borra el resto del nodo: reenviar
+   siempre inputs+outputs+customOutputs completos.
+
+### STOPs y pendientes
+
+- Reintentos ×3 y `receiveMessage` ANL_Desbloquear no portados (bandeja de relanzamiento).
+- ANL Alta ×2 no llamadas (otra app).
+- Rama de éxito de Guardar Mecanización/CrearAutorización sin ejercitar (Core7 PRE
+  responde 500 a todas las integraciones, como el 0999 del Alta) — pendiente repetir
+  con una póliza anulable.
+- Rama VERTI no ejercitada (flagVerti=false con la póliza de prueba).
+- Pendientes globales: Redirección Vida, `SCA2 CMD Notificar`, completar las pantallas
+  condensadas (`SCA2_ContraAnulacionOpciones`, `SCA2_DocumentosAccion`), y credenciales
+  literales en `SCA2_APIClients_Login`/`SCA2_ObtenerCredencialesConceptos` pendientes
+  de connected system.
