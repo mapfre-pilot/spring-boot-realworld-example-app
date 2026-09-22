@@ -971,3 +971,62 @@ referencias de campos de record y `validateExpression`/`validateDesignObject`.
   SCAC consultarPolizas/generarStudAnul) sin versiones de `devin`. No exhaustivo.
 - Secretos: `SCA2_TXT_APICLIENTS_*` vacías; sin credenciales literales en docs
   ni en el repo de análisis.
+
+## 14. Tanda 9 — paridad de lógica en pantallas de acción (gap analysis y cierre)
+
+### 14.1 Gap analysis SCA2 vs SCA (solo lectura)
+Comparación estructural de cada pantalla de acción SCA2 con su original
+(`sca2_objects/gap_pantallas_t9.md`). Gaps de negocio detectados, por
+prioridad: (1) botón REVISIÓN en Contra Anulación; (2) Acc. Administrativas
+sin `consultarAccAdm`/`consultarListadoObs`; (3) bloque API Clients
+(`searchAPIClients`/`checksAPIClients`) no invocado en FueraNorma/AccAdm/CA;
+(4) Mecanización con panel de póliza mínimo frente a `SCA_MecanizacionEstrategicas`;
+(5) Documentación reducida; (6) reglas auxiliares de CA no llamadas; (7)
+estética Mecanización/Verti. Autorización (FueraNorma) ya era casi idéntica.
+
+### 14.2 Implementado (gaps 1-3)
+- **REVISIÓN** en `SCA2_ContraAnulacionOpciones`: botón GHOST rojo con
+  `showWhen` alimentado por `SCA2_obtenerDatosProductor` (anulaTécnicos/
+  Expertos), propietario y fecha efecto anualidad; deshabilitado sin
+  argumentos ejecutados (salvo documentosOk/noEntregaDoc); texto de
+  confirmación literal del original; persiste `mcaEstadoFinal:"6"` y cierra
+  la acción vía `SCA2 CMD CompletarAccion` (que enruta a AUTORIZACION igual
+  que el original). Verificado en los 3 PMs originales que ningún nodo hace
+  alta SGO automática tras el estado 6 (el SGO al CCR lo genera el usuario).
+- **Acc. Administrativas**: `SCA2_consultarAccAdm` (nº gestión) y
+  `SCA2_consultarListadoObs(tipoGestion:"3")` (histórico de observaciones) al
+  cargar, como el original. `comprobarParametroValido` no se porta: en SCA la
+  llamada está comentada.
+- **API Clients** en las 3 pantallas: mismo request (`policyRoleIds {12}`,
+  `potencialInd`, `notVisible`) y `checksAPIClients` (preguntas 1..12).
+  Desviación consciente: las llamadas se gatean con
+  `isNotNullOrEmpty(cons!SCA2_TXT_APICLIENTS_CLIENT_ID)` para que la pantalla
+  no rompa mientras las credenciales estén vacías.
+- **Trazabilidad**: `SCA_GUARDAR_TRAZABILIDAD` (PM de 1 nodo) se sustituye por
+  un nodo `Guardar Trazabilidad` en `SCA2 CMD CompletarAccion` (gateado por
+  `resultado.operacion`) y la regla `SCA2_guardarTrazabilidad` para POSPONER;
+  mismos campos (sistema "SCA", plataforma, ip, perfil, operación
+  Autorizacion/ACCIONES ADMINISTRATIVAS/CONTRAANULACION, resultado
+  OK/CANCELAR/POSPONER, cliente, póliza, tipoPersona) sobre
+  `SCA2 Trazabilidad Cliente`. IP: fallback literal del original (SCA2 no
+  tiene `CMP_CS_OBTENER_IP`).
+- Verificación: `testInterface` OK en las 3 pantallas; renderizado en el
+  site real con datos TEST (limpiados); `validateDesignObject` 0 errores en
+  CompletarAccion (14 nodos); smoke test con fila de trazabilidad escrita y
+  borrada.
+
+![Contra anulación](img/tanda9_sca2_contraanulacion.png)
+
+### 14.3 Buscador vacío — causa raíz
+La query del grid fallaba con `APNX-1-4205-051` en todos los fetch padre→hijo
+declarados ONE_TO_ONE (datosSolicitud, datosCabecera, datosPerfilesPca) en
+este entorno; ONE_TO_MANY y la dirección hijo→padre funcionan. Fix: relación
+`datosSolicitud` a ONE_TO_MANY (1:1 de facto) y `SCA2_BuscadorTabla` toma el
+elemento [1]; relación espejo `solicitud` recreada (MANY_TO_ONE). El Buscador
+vuelve a mostrar las solicitudes.
+
+![Buscador](img/tanda9_sca2_buscador.png)
+
+### 14.4 Pendiente (tanda 10)
+Mecanización completa (panel de póliza, simulación, detalle gestión, Verti
+como modal), Documentación completa y reglas auxiliares de Contra Anulación.
