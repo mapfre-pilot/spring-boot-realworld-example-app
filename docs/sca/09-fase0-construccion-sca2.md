@@ -959,3 +959,15 @@ referencias de campos de record y `validateExpression`/`validateDesignObject`.
   el CALLI devuelve 500 al ejercitarse).
 - Detalle: `sca2_objects/health_tanda8.md` y `health_*.json` del repo de
   análisis.
+
+### 13.5 Auditoría de seguridad y aislamiento (solo lectura, MCP)
+- Role maps (app, site, PMs, interfaces, record types): solo `SCA2 Administrators`
+  (admin) y `SCA2 Users` (viewer); sin "All Users". OK.
+- Grupos: Admins y Alertas = devin + GGALV10. `SCA2 Users` contiene al grupo
+  Admins y, redundantemente, a los dos usuarios directos (sin impacto en la
+  visibilidad).
+- SCA/SCAC: `listApplicationObjects` no expone lastModified; muestra por
+  `listObjectVersions` (Alta Particionado, DecidirAccion, generarStudAnul,
+  SCAC consultarPolizas/generarStudAnul) sin versiones de `devin`. No exhaustivo.
+- Secretos: `SCA2_TXT_APICLIENTS_*` vacías; sin credenciales literales en docs
+  ni en el repo de análisis.
