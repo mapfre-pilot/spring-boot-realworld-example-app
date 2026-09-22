@@ -148,7 +148,7 @@ Regla de decisión: el input usa el `typeReference` del RT **solo si todos los c
   `SCA2_ObtenerCredencialesConceptos`) — 42 `direct_json`, 62 SOAP con body verbatim, 1 plugin AWS S3.
   **3 STOP:**
   - `SCA2_obtenerTokenRetosRESTIntegracion`, `SCA2_asignarRetosRESTIntegracion` — sin `connectedSystemUuid`
-    en origen ��� decidir connected system o URL directa.
+    en origen → decidir connected system o URL directa.
   - `SCA2_altaDocumentoIntegracion` — multipart requiere un Document de prueba que aún no existe en SCA2 →
     crear un documento/constante y reintentar.
 - **Reglas/interfaces batch B: 92 de 103 creadas** (total SCA2: **240 objetos**, 148 batch A + 92 batch B).
