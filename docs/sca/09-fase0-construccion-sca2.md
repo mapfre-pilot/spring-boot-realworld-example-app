@@ -352,3 +352,102 @@ Decidir salen por la rama "Ya ejecutado" sin duplicar.
 - Rama OK de CMD Alta sin verificar end-to-end (falta póliza anulable).
 - `SCA2_altaDocumento`/`SCA2_AltaGestionArgumento` en STOP de batch B; credenciales literales en
   `SCA2_APIClients_Login`/`SCA2_ObtenerCredencialesConceptos` pendientes de connected system.
+
+## 8. Pantallas de acción y paridad visual
+
+### Estilo SCA extraído
+
+- Sites SCA (`SCA_Site`, `SCA Decidir Accion`): `layout: HEADER_BAR` + `style: MERCURY`
+  (preset, sin colores/logo custom — branding por defecto, `documents/` vacío). Páginas con
+  icono `f016`; página "Gestiones mantenimiento" condicionada a `SCA_isUsuarioProceso()`.
+- Colores: `SCA2_VAL_COLOR_ROJO` #DF0027 (botones primarios), `GRIS_MEDIO` #9F9F9F
+  (cancelar/secundario), `VERDE` #00E663. Cards `shape: ROUNDED` + `showShadow`, richText
+  STRONG en cabeceras, `rule!SCA2_PieDePagina()` al final de todas las pantallas.
+- Site `sca2` quedó con displayName "Sistema Comercial de Anulaciones", HEADER_BAR/MERCURY e
+  iconos f016. "Gestiones mantenimiento" omitida (sin objeto destino en SCA2).
+
+### Interfaces nuevas/actualizadas
+
+| Interfaz | Uuid (sufijo) | Líneas | Origen SCA |
+|---|---|---|---|
+| SCA2_DocumentosAccion | …_xxxx | 37 | SCA_AccionesAdministrativasDocumentacion (1205 l., condensada) |
+| SCA2_AnulacionFueraNormaPrincipal | … | 195 | SCA_AnulacionFueraNormaPrincipal (774 l.) |
+| SCA2_AccionesAdministrativasPrincipal | … | 206 | SCA_AccionesAdministrativasPrincipalEstrategicas (734 l.) |
+| SCA2_ContraAnulacionOpciones | … | 209 | SCA_ContraAnulacionOpciones (2228 l., condensada) |
+| SCA2_ContraAnulacionPrincipal | … | 29 | SCA_ContraAnulacionPrincipal (164 l.) |
+| SCA2_BuscarSolicitudClientePoliza | … | 27 | SCA_BuscarSolicitudClientePoliza |
+| SCA2_BuscadorTabla | … | 34 | SCA_BuscadorTabla |
+| SCA2_DetalleTareas (actualizada) | … | 78 | abre Principal por tipo de tarea |
+| SCA2_Buscador (actualizada) | … | — | estructura SCA_BuscadorSolicitudPrincipal |
+| SCA2_AltaSolicitudPage (actualizada) | …_20055716 | 240 | SCA_AltaSolicitudAnulacionEstrategicas |
+| SCA2_BandejaErrores / Detalle* (actualizadas) | … | — | fix `fields:` en queries (ver hallazgos) |
+
+Reglas nuevas: `SCA2_D_TiposGestiones`, `SCA2_D_ColorEstadoGestion`, `SCA2_posponerTarea`
+(update Tarea.fechaCaducidad vía `SCA2_obtenerCaducidadNivel(nivel:"2")` +
+Solicitud.contadorPosponer+1/fechaDietario — mismo cálculo que el original, como writeRecords
+en lugar de las integraciones STOP).
+
+### Contrato de las Principales (SCA2)
+
+- Inputs: `idSolicitud`, `idTarea` (y opcional `sol` Map). Carga con
+  `rule!SCA2_obtenerDatosCabecera(numPoliza, idSolicitud)` en a!localVariables.
+- Las escrituras de la UI original se mantienen en la UI (NTT: la pantalla persiste):
+  `insertarObservaciones` + `aceptarAutorizacion` / `guardar*` / `finalizarContraAnulPca`.
+- Al terminar: `a!startProcess(cons!SCA2_PM_CMD_COMPLETAR_ACCION, {idSolicitud, idTarea,
+  resultado: a!map(mcaEstadoFinal, codEstado, estadoFinalizar, finalizadoCA, …)})` —
+  Autorización devuelve "S"/"N" con codEstado "2"/"5"; AccAdm "FINALIZADA"/"CANCELADO";
+  CA "9" + finalizadoCA (cancelar → "3").
+- **Posponer** (STOP en la original): `SCA2_posponerTarea` por writeRecords.
+- `SCA2_DetalleTareas` abre la Principal por `tipo` (AUTORIZACION→FueraNorma,
+  ACC ADM→AccAdm, CONTRA ANULAR→CA) en la misma sección; mini-form eliminado.
+
+### Hallazgos técnicos (UI)
+
+- **`a!queryRecordType` sin `fields:` devuelve proxies**: `index(fv!row, ref)`,
+  `fv!row[ref]`, `property()` → null; `tostring` → `[SCA2 Solicitud id=18]`. Fix: pasar
+  `fields: {…}` con refs `'recordType!{uuid}RT.fields.{fuuid}name'` — aplicado a todos los
+  queries que alimentan grids o filas indexadas. Esto era la causa real de las celdas vacías
+  (no `gridField_25r2` vs `_25r3`).
+- **`typename()` no existe en el eval de interfaces**: cualquier local que lo use lanza y el
+  refresh entero revierte al render inicial (borra campos). Sustituto seguro:
+  `search("<codigo>", tostring(fv!item)) > 0` para distinguir strings XML de Maps.
+- `a!gridField_25r3` + `a!gridColumn(label, value: index(fv!row, ref, null), sortField)` es
+  el patrón correcto (como en SCA); acciones por fila con `a!linkField(links:
+  {a!dynamicLink})` / `a!tagField` — el volcado `[@attributes…` desaparece con `fields:`.
+- Cascada de dropdowns: `a!forEach` sobre la respuesta del servicio + `saveInto` con resets
+  (`a!save(local!detalle, null)`), `disabled` por dependencia.
+- Playwright: navegar al site y click en ALTA (no URL directa); `fill()`+Tab para UNFOCUS;
+  opciones de dropdown solo registran selección con `mouse.down()/up()` real en su bounding
+  box (los clicks JS no disparan el save).
+
+### Verificación en navegador (Playwright, CDP 29229)
+
+- `/alta` con póliza real **0007051068625**: datos de póliza/cliente OK (POLIZA LIDER,
+  wAutemis, ramo 200, prima 439,82€, ZAFIEF ZEXUPA CEJJADVEG / 34429061Q); dropdowns
+  Motivo→Detalle→Causa en cascada (2 DESAPARICIÓN DEL RIESGO → 7 BAJA DE VEHÍCULO →
+  {17 BAJA TEMPORAL, 16 BAJA VEHÍCULO, 18 SINIESTRO TOTAL}); GUARDAR habilita → click →
+  mensaje "Solicitud enviada. Proceso: <ppid>"; Core7 devuelve 0999 → nueva fila
+  `PDTE-268887523` ALTA_ERROR en la Bandeja de errores.
+- `/buscador` → Ver → detalle inline con cabecera poblada; pestaña Tareas → Completar
+  (tarea PENDIENTE AUTORIZACION) → pantalla de Autorización renderizada ("Revisión
+  autorización de fecha de anulación", Oficina, Fecha anulación, Documentación,
+  FINALIZAR/CANCELAR/POSPONER).
+- Grids Buscador/Errores/detalle con valores reales y sin `[@attributes`.
+
+| Captura | Muestra |
+|---|---|
+| ![alta_motivo_open](img/alta_motivo_open.png) | Desplegable Motivo con opciones |
+| ![alta_ready](img/alta_ready.png) | Cascada motivo/detalle/causa seleccionada |
+| ![errores_after](img/errores_after.png) | Bandeja con la nueva fila ALTA_ERROR del GUARDAR |
+| ![autorizacion](img/autorizacion.png) | Pantalla de Autorización desde Completar |
+
+### Condensaciones / STOPs
+
+- `SCA2_ContraAnulacionOpciones` y `SCA2_DocumentosAccion` condensadas (originales de ~2-3k
+  líneas): se conservan estructura de secciones, textos, colores y botones; omitidos los
+  sub-flujos SGO (rehabilitar/descuentos), argumentario por URL y parte de los modales
+  (disponibles como `SCA2_ContraAnulacionModal*` para enganchar).
+- `a!startProcess`/`a!writeRecords` validados estructuralmente; el flujo Completar/Posponer
+  end-to-end queda pendiente de una tarea real de cada tipo.
+- Pendientes: `SCA2 CMD Mecanizar`, Redirección Vida, Caducidad, `SCA2 CMD Notificar`,
+  y completar las pantallas condensadas.
