@@ -179,3 +179,84 @@ Regla de decisión: el input usa el `typeReference` del RT **solo si todos los c
 `SCA2_APIClients_Login` y `SCA2_ObtenerCredencialesConceptos` copian el body **verbatim** e incluyen
 **credenciales literales en el cuerpo** (igual que las originales SCAC). Recomendado mover esas
 credenciales al connected system o a constantes cifradas antes de promocionar fuera de DEV.
+
+## 6. PMs atómicos CMD_* (fase 1: bucle Decisión/Acción)
+
+Reimplementación del PM particionado "SCA Alta Solicitud Anulacion Particionado" como comandos
+atómicos encadenados por `Start Process` **asíncrono**. Especificación: `sca-analysis/sca2_cmd_spec.md`.
+Carpeta: `SCA2 Process Models` (`_g-0000f069-4ee2-8000-64c6-7f0000014e7a_711`).
+
+### Process models
+
+| PM | UUID | Nodos | Params | Escribe | Lanza (async) |
+|---|---|---|---|---|---|
+| `SCA2 CMD Decidir` | `0000f06f-0eab-8000-6595-7f0000014e7a` | 15 | `idSolicitud`, `regla` | Solicitud (DECIDIDA/destino), Transición, Error | `SCA2 CMD CrearAccion`; reintento a sí mismo (máx. 3) |
+| `SCA2 CMD CrearAccion` | `0000f06f-0eaa-8000-6594-7f0000014e7a` | 15 | `idSolicitud` | Tarea (PENDIENTE+token+caducidad), Solicitud (EN_ACCION), Transición, Error | — |
+| `SCA2 CMD CompletarAccion` | `0000f06f-1307-8000-65b1-7f0000014e7a` | 12 | `idSolicitud`, `idTarea`, `resultado` (Map) | Tarea (cierre), Solicitud (PDTE_FINALIZAR), Transición, Error | `SCA2 CMD Finalizar` |
+| `SCA2 CMD Finalizar` | `0000f06f-1309-8000-65b3-7f0000014e7a` | 11 | `idSolicitud` | Solicitud (FINALIZADA/ERROR+nodoRelanzar), Error | — (Call Integration nodes) |
+
+Las tres ramas humanas (AUTORIZACION*, ACCIONES ADMINISTRATIVAS*, CONTRA ANULAR*) comparten un único
+camino Caducidad → Write Tarea+Solicitud+Transición, parametrizado por pv (tipo, interfazActiva, grupo).
+
+### Convenciones comunes
+
+- `idSolicitud` + params mínimos por comando; la carga del contexto la hace `rule!SCA2_cargarSolicitud`
+  (Map con la forma del antiguo `SCAC_DS_solicitudAnulacion`, proyectado campo a campo con `fields:` explícito).
+- Clave de idempotencia: `pp!name|idSolicitud|version` (`|idTarea` en CompletarAccion) vía
+  `rule!SCA2_claveIdempotencia`.
+- Toda mutación relevante persiste fila en `SCA2 Transicion` y, en fallo, en `SCA2 Error`
+  (estado PENDIENTE/BLOQUEADO tras 3 intentos, `proximoIntento` +30 min).
+- Encadenamiento solo por `Start Process` asíncrono (`IsSynchronous=false`): **0 User Input Task** y
+  **0 subprocesos síncronos** en los 4 PMs (verify por `typeName` de nodos).
+
+### Reglas de soporte creadas
+
+| Regla | UUID | Rol |
+|---|---|---|
+| `SCA2_cargarSolicitud` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20054954` | QueryRecordType ×9 → Map anidado name-keyed |
+| `SCA2_claveIdempotencia` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20054960` | `comando|idSolicitud|version` |
+| `SCA2_contarErroresPendientes` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20054966` | cuenta errores PENDIENTE para el comando |
+
+### Mapeo PM particionado → CMD (según spec)
+
+| Nodo particionado | CMD destino |
+|---|---|
+| Decisión reglas PRE (nodos 10/27, l.126) | `SCA2 CMD Decidir` (XOR Resultado: DETALLE / POPUP_SGO / ERROR×3) |
+| "Mecanizar?" (nodo 7, l.73) | Decidir rama mecanizar → `PDTE_MECANIZAR` (Write DestinoMecanizar, fase 2) |
+| "Acción?" (nodo 9, l.78) | `SCA2 CMD CrearAccion` (XOR con 6 condiciones + default ERROR) |
+| Resultado tarea / Cancel? (l.126/l.139-145) | `SCA2 CMD CompletarAccion` |
+| FINPCA (`0002ec12-be50`, 44 nodos) / FINSGC (`0002ec01-93cd`, 15) | `SCA2 CMD Finalizar` como Call Integration directas (`SCA2_finalizarSolicitudIntegracion`, `SCA2_cargaGestionSGC3`) — no portables a reglas (timers+subprocesos) |
+
+### Resultados de verificación (TEST-SCA2-000)
+
+- `validateDesignObject`: `hasErrors=false` en los 4 PMs.
+- **CrearAccion AUTORIZACION** → COMPLETED: fila Tarea PENDIENTE (token `TK-<pid>-<ts>`,
+  caducidad +1d vía `SCA2_obtenerCaducidadNivel`), Solicitud DECIDIDA→EN_ACCION, Transición OK.
+- **CompletarAccion** (resultado `mcaEstadoFinal="9"`) → COMPLETED: Solicitud → PDTE_FINALIZAR.
+- **Finalizar** → COMPLETED: la integración PCA falla contra el host (id ficticio, esperado) →
+  `pv!err` persistido, `SCA2 Error` FINALIZAR_ERROR, Solicitud → ERROR con `nodoRelanzar`.
+- Cleanup: filas Solicitud/Tarea de test borradas; filas Error/Transición conservadas como evidencia.
+
+### Quirks del MCP (relevantes para siguientes tandas)
+
+- `createProcessModel` crea ya Start(id 1)/End(id 2); `assignment` es obligatorio en
+  `createProcessModelNode` para Script/Write/StartProcess/XOR.
+- Un XOR con >1 flujo sin reglas invalida el PM y bloquea creates posteriores → crear con 1 flujo,
+  luego `updateProcessModelNode` con `connections`+`decision` juntos.
+- Start Process referencia el PM destino por **id numérico interno** (`idToOpen`), params por
+  `customInputs` con el nombre del pv destino.
+- Records dentro de Maps: el query necesita `fields:` explícito y proyección a `a!map` name-keyed;
+  las condiciones XOR no evalúan fiable `index(index(pv!sol,…))` anidado → pvs escalares
+  (`accionCalc`…) computados en `customOutputs` (solo ligan `ac!x` si el input es type **Map**, no Any Type).
+- `uuid()` no existe → token `"TK-"&pp!id&"-"&text(now(),…)`; `a!toJson` no serializa IntegrationError
+  → `joinarray(tostring(pv!err)," | ")`.
+
+### STOPs y gaps
+
+- Subprocesos Notificar/DUE (`0002ecbb-30a0`) y NotificarError (`0002ec04`): contienen Send E-Mail /
+  subprocessos → **no portables a reglas**; pendiente un futuro `SCA2 CMD Notificar`.
+- `SCA2_monitorizarSolicitud` sigue en STOP de batch B (colisión de nombre).
+- Mecanizar / Redirección Vida: sin comando aún → Decidir escribe `PDTE_MECANIZAR` sin lanzar nada (fase 2).
+- Gaps menores: `pdteAutorizar` no existe en SCA2 Solicitud (condición null-safe); motivo/detalle
+  "reales" del cambio de nivel no persisten (sin pv fuente); cambio de asignación usa `grupo=perfil`
+  como fallback; "Borrar registros BBDD" del particionado no se porta (histórico conservado).
