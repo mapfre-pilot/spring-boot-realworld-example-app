@@ -260,3 +260,95 @@ camino Caducidad → Write Tarea+Solicitud+Transición, parametrizado por pv (ti
 - Gaps menores: `pdteAutorizar` no existe en SCA2 Solicitud (condición null-safe); motivo/detalle
   "reales" del cambio de nivel no persisten (sin pv fuente); cambio de asignación usa `grupo=perfil`
   como fallback; "Borrar registros BBDD" del particionado no se porta (histórico conservado).
+
+## 7. CMD Alta, UI y site SCA2
+
+### `SCA2 CMD Alta`
+
+- UUID **`0000f06f-28fc-8000-6693-7f0000014e7a`** (PM recreado tras el wedge del `startForm`; el uuid
+  anterior quedó inválido y la constante `SCA2_PM_CMD_ALTA` apunta al nuevo).
+- **13 nodos**: Start → **Construir Contexto** (`SCA2_construirContextoAlta`, solo si
+  `pv!datosContexto` viene vacío) → PreGenerar (`SCA2_PreGenerarStudAnul`) → Call Integration
+  `SCA2_generarStudAnul` (host `cons!SCAC_VAL_HOST_CORE7`, endpoint
+  `PCA_CORECFSA_HTTPRouter/IGenerarContraAnul`) → XOR Resultado:
+  - error → Write `SCA2 Error` (`idSolicitud="PDTE-"&pp!id`, código `ALTA_ERROR`) → End;
+  - OK → Contexto (`SCA2_actualizacionVariablesPostGenerarStudAnul` + `obtenerDatosCabecera` +
+    `determinarCatalogacionRenovada`) → Write Datos (8 filas: DatosBasicos, DatosSolicitud,
+    PerfilesPca, Poliza Autos/Hogar/Vida por línea, Productor, Niveles Cobertura Autos,
+    OtrasSolicitudesCabecera, TrazabilidadCliente) → Write Solicitud (estado `ALTA`, version=1) +
+    Transición → XOR PRRA → Write Motivos reales → Start async `SCA2 CMD Decidir(idSolicitud)` → End.
+- **15 params escalares** (numPoliza, lineaNegocio, origen, origenPoliza, canal, idioma, rol,
+  usuario, gestionSGC, motivoReal/detalleReal/causaReal, telefonoExpertos, isPolizaPRRA,
+  datosContexto). Sin CDTs; `datosContexto` como `Any Type`.
+
+### Corrección de idempotencia (comando literal)
+
+`pp!name` incluye timestamp (`"SCA2 CMD Alta - 22/09/2026 12:07 CEST"`), así que la clave de
+idempotencia y `Error.comando`/`Transicion.comando` nunca casaban entre reejecuciones ni con
+`pmPorComando`. En los 5 PMs se sustituyó `pp!name` por el **literal del comando**
+(`"SCA2 CMD Alta"`, …); `pmPorComando` y el check de Alta volvieron a igualdad exacta.
+Verificado: con una Transición OK `SCA2 CMD Decidir|TEST-3D-1|1` sembrada, dos ejecuciones de CMD
+Decidir salen por la rama "Ya ejecutado" sin duplicar.
+
+### Constantes de proceso y reglas de soporte
+
+- `SCA2_PM_CMD_ALTA/DECIDIR/CREAR_ACCION/COMPLETAR_ACCION/FINALIZAR` (type PROCESS_MODEL):
+  `_a-…_20055436/…442/…448/…454/…460`.
+- `SCA2_pmPorComando(comando)` `_a-…_20055466` — a!match literal → constante, default null.
+- `SCA2_relanzarError(error)` `_a-…_20055472` — a!writeRecords estado→RELANZADO + resueltoPor +
+  fechaResolucion.
+- `SCA2_construirContextoAlta` `_a-…_20056014` — reconstruye `iniciarProcesoPCA` como Map desde
+  `SCA2_consultarPolizas` + `SCA2_obtenerInformacionUsuario` (fallback CE_RM/CE_RM_OFICINA) +
+  `SCA2_calculoCanalEntrada`/`SCA2_calculoMedioComunicacion` (portadas verbatim con constantes
+  SCA2_*) + lógica original de `codTpOrigen` (impago→"1", motivo 3/1/2→"3"/"2"/"4") y
+  `fecAnulacion` por catalogación.
+
+### Interfaces y site
+
+| Objeto | UUID | Función |
+|---|---|---|
+| `SCA2_AltaSolicitud` | `_a-…_20055666` | sección con los 14 campos + validación de póliza duplicada (estado<>FINALIZADA) |
+| `SCA2_AltaSolicitudPage` | `_a-…_20055716` | página sin inputs; locals + botón SOLID → `a!startProcess(cons!SCA2_PM_CMD_ALTA, {15 params})` |
+| `SCA2_DetalleSolicitud` | `_a-…_20055572` | compuesta: Cabecera `_a-…_20055493`, Datos `_a-…_20055499` (lazy), Tareas `_a-…_20055554` (form inline → CMD CompletarAccion), Transiciones `_a-…_20055560`, Errores `_a-…_20055566` (Relanzar por fila) |
+| `SCA2_BandejaErrores` | `_a-…_20055578` | grid PENDIENTE + Relanzar (`pmPorComando` + `a!startProcess` + `SCA2_relanzarError`) |
+| `SCA2_Buscador` | `_a-…_20055660` | grid Solicitud (filtros póliza/estado, orden modifiedAt desc) → detalle inline |
+| Site `SCA2 Anulaciones` | `bb62c468-0f71-4985-980a-6db65a9dc1f5` | páginas `/buscador`, `/alta` (INTERFACE→Page), `/errores` — `…/suite/sites/sca2` |
+
+- Vista "Resumen" de `SCA2 Solicitud` → `SCA2_DetalleSolicitud(rv!record…idSolicitud)`.
+- Decisión: **bandeja de errores en pantalla** (sin correos; los PMs originales usaban Send E-Mail).
+
+### Quirks del MCP/UI nuevos
+
+- **`updateProcessModel startForm` bug**: cualquier write parcial deja el PM permanentemente roto
+  (`'interfaceUuid'` en get/update/node-update) — la única vía es página INTERFACE +
+  `a!startProcess`; si ocurre, delete+recreate el PM y actualizar la constante.
+- Grids: `a!gridField`/`a!gridTextColumn` no validan `fv!row` en createInterface → usar
+  `a!gridField_25r2`/`a!gridColumn` con `pagingSaveInto:`; acciones por fila con
+  `a!richTextIcon`+`a!dynamicLink`.
+- `a!buttonLayout` (no buttonArrayLayout); estilos SOLID/OUTLINE/GHOST/LINK;
+  `a!queryFilter` rechaza value ""/null (fallback `id>0` o `if(isNullOrEmpty(x),"\u0001",x)`);
+  `placeholder:` (no placeholderLabel); `a!richTextDisplayItem` no existe; `a!localVariables`
+  admite una sola expresión final; `createExpressionRule`/`createInterface` aceptan `testInputs`
+  indocumentados; `testProcessModel` máx. 60 s; `addRecordTypeView` funciona.
+
+### Prueba con póliza PRE 0007051068625 → 0999 (STOP)
+
+- La póliza es **wAutemis/Automóviles** (NISSAN QASHQAI, ramo 200, "POLIZA LIDER", prima 439,82)
+  según `SCA2_consultarPolizas`; `pObtenerPolizaFecha`/`pBuscarPoliza` dan axis2 Internal Error.
+- Tras reconstruir el contexto completo (mismo shape y valores que la cadena original —
+  nuuma JJGONZ2, CE_RM/CE_RM_OFICINA, codInt 502332532025, claveProduccion 5282852,
+  estructComercial 016/15/1507, motivo 2/detalle 7/causa 16 válidos, codTpOrigen "4",
+  canalEntrada 1 PRESENCIAL, fecAnulacion 2025-07-01), `generarStudAnul` sigue devolviendo
+  `soapenv:Server` **0999** → STOP definitivo: la póliza probablemente no es anulable en PRE
+  (o el servicio aplica otra validación no visible). Body final en `alta_body_final.xml`.
+- El PM se comporta correctamente: rama error → fila `SCA2 Error` ALTA_ERROR PENDIENTE, 0 filas
+  Solicitud/Transición, PM COMPLETED. La rama OK (8 records + Decidir) queda **sin ejercitar**.
+
+### Gaps pendientes
+
+- Pantallas de acción reales (Autorización / Acc Adm / Contra Anulación) — no portadas; el form
+  inline de DetalleTareas es un sustituto mínimo.
+- `SCA2 CMD Mecanizar`, `SCA2 CMD Notificar`, Redirección Vida → fase 2.
+- Rama OK de CMD Alta sin verificar end-to-end (falta póliza anulable).
+- `SCA2_altaDocumento`/`SCA2_AltaGestionArgumento` en STOP de batch B; credenciales literales en
+  `SCA2_APIClients_Login`/`SCA2_ObtenerCredencialesConceptos` pendientes de connected system.
