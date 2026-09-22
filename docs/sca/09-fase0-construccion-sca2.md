@@ -878,3 +878,84 @@ de sondeo no aplicada tras el fix del punto A). Artefactos:
   usuario aporte una póliza libre o valide contra otra.
 - Nota: `testProcessModel` ejecuta side-effects reales (las filas
   `PDTE-<proceso>` de la bandeja corresponden a estas corridas).
+
+## 13. Tanda 8 — branding, grupo `SCA2 Alertas`, propiedades de PM y health sweep
+
+### 13.1 Branding del site SCA2 (Designer » Site » Branding)
+- Configurado desde la sesión de Chrome (no expuesto por MCP): barra superior
+  blanca, logo Mapfre y acento rojo replicando `sca-site`.
+- Evidencia: `img/tanda8_sca2_branding.png`.
+
+### 13.2 Grupo `SCA2 Alertas`
+- Grupo nuevo `SCA2 Alertas` (`_e-0000f069-4e92-8000-9c18-01075c01075c_8076`),
+  miembros: `devin` y `GGALV10@mapfre.net`. Es el destinatario único de las
+  alertas de error de todos los PM SCA2.
+- `SCA2 Users` sigue conteniendo solo a `SCA2 Administrators`; la visibilidad
+  de la aplicación no cambia.
+
+### 13.3 Propiedades de los 10 PM atómicos (Alertas + Gestión de datos)
+Configuración aplicada en Appian Process Modeler a cada PM, guardada con
+*Guardar y publicar* y verificada reabriendo Propiedades tras la publicación
+(y de nuevo tras los cambios posteriores vía MCP, que no tocan estas
+propiedades):
+
+- Alertas: *Usar configuración de alerta de error personalizada* → *Enviar
+  alertas a los siguientes usuarios y grupos: "SCA2 Alertas"*.
+- Gestión de datos: *Eliminar procesos* **1** día después de la finalización
+  o cancelación (se aplica a todas las versiones del modelo).
+- Panel de mensajes: `This process model contains no errors.` en los 10.
+
+| PM | Versión publicada | Alertas | Gestión de datos |
+|---|---|---|---|
+| SCA2 CMD Alta | v42.0 | SCA2 Alertas | Eliminar 1 día |
+| SCA2 CMD Decidir | v59.0 | SCA2 Alertas | Eliminar 1 día |
+| SCA2 CMD CrearAccion | v58.0 | SCA2 Alertas | Eliminar 1 día |
+| SCA2 CMD CompletarAccion | v37.0 | SCA2 Alertas | Eliminar 1 día |
+| SCA2 CMD Finalizar | v43.0 | SCA2 Alertas | Eliminar 1 día |
+| SCA2 CMD Mecanizar | v39.0 | SCA2 Alertas | Eliminar 1 día |
+| SCA2 CMD Caducar | v22.0 | SCA2 Alertas | Eliminar 1 día |
+| SCA2 CMD BarridoCaducidad | v9.0 | SCA2 Alertas | Eliminar 1 día |
+| SCA2 CMD Posponer | v10.0 | SCA2 Alertas | Eliminar 1 día |
+| SCA2 CMD CambiarNivel | v15.0 | SCA2 Alertas | Eliminar 1 día |
+
+Evidencia (ejemplo CambiarNivel; el resto de capturas en el log de análisis
+`sca2_objects/pm_props_log.md`):
+
+![Alertas](img/tanda8_pm_alertas_cambiarnivel.png)
+![Gestión de datos](img/tanda8_pm_datamgmt_cambiarnivel.png)
+
+Limitación: `getProcessModel`/`updateProcessModel` del MCP no exponen alertas
+ni limpieza de procesos, por lo que estas propiedades solo son configurables y
+verificables desde Designer.
+
+### 13.4 Health sweep (recomendaciones de Designer)
+No existe API de recomendaciones; se hizo barrido por MCP de inputs no usados,
+referencias de campos de record y `validateExpression`/`validateDesignObject`.
+
+- **Integraciones (12)**: eliminados inputs no usados (`rand`/`random`/
+  `randomNum`, `aplicacion`, `claveProduccion`, `host`, `consulta`,
+  `documentoArgumento`) y actualizados los wrappers y callers
+  (`consultarListadoArgumentos`, `consultarTipoArg`, `consultarVariable`,
+  `ContraAnulacionCompaniaCatalogacion/Opciones`, `GestionArgumentos`,
+  `AltaGestionArgumento`, `GestionAplicacionRecords`,
+  `MensajeDesactivarAplicacion`, `comprobacionesPreviasWM`).
+- **Interfaces/reglas**: `AltaSolicitud` (-usuario),
+  `AccionesAdministrativasDocumentacion` (-dniOK/-cartaFirmadaOK/-documentosOk),
+  `DocumentosAccion` (-tipoGestion), `posponerTarea` (-idSolicitud); callers
+  redeplegados. `aceptarAutorizacion` era falso positivo.
+- **Record types**: 0 referencias `fields.{uuid}` rotas detectables por MCP.
+- **PMs**: PVs no usadas eliminadas (Mecanizar: accion, importeRsvPrima,
+  mcaReservaPrima, usuario; Finalizar: intentos; CompletarAccion: destino,
+  err, intentos; CrearAccion: intentos) con callers ajustados; PVs `cab`/`pre`
+  de Alta tipadas a Map (desbloqueó la publicación v42.0); nodos de
+  integración de Finalizar/Mecanizar/Caducar con `type!` con namespace y PV
+  `resultBody` para persistir el fault real. `validateDesignObject` → 0
+  errores en los 10 PM. Smoke tests: todos COMPLETED con fault Core7
+  persistido en la bandeja.
+- **Pendiente / no reproducible por MCP**: `env!features` y el warning de
+  `a!richTextItem` en `SCA2_GestionMantenimientoMenu` (no aparecen en las
+  expresiones desplegadas, probable referencia transitiva heredada del
+  original); Map genérico `consulta` en *Finalizar Gestión SGC* (tipar solo si
+  el CALLI devuelve 500 al ejercitarse).
+- Detalle: `sca2_objects/health_tanda8.md` y `health_*.json` del repo de
+  análisis.
