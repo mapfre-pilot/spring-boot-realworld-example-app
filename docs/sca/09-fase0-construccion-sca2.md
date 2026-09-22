@@ -731,3 +731,82 @@ Siguen STOP (causa concreta):
 - STOPs abiertos listados arriba (documentos, REST sin connected system).
 - Comparación visual directa /sca vs /sca2 pendiente de permiso de acceso al
   site SCA (hoy da 403).
+
+## 12. Tanda 7 — paridad site SCA, CMD Posponer/CambiarNivel, pólizas A2 y causa raíz Core7
+
+### 12.1 Acceso al site SCA
+El site real es `/suite/sites/sca-site` (páginas `b-squeda`,
+`gestiones-mantenimiento`); el 403 previo era solo el stub equivocado. El
+usuario de la sesión Chrome ("AA") navega el site SCA; la página de detalle
+redirige al buscador (sin permiso directo a esa vista). Capturas lado a lado:
+`img/tanda7_sca_buscador.png` vs `img/tanda7_sca2_buscador.png`.
+
+### 12.2 Paridad UI aplicada (sin descartar presentación)
+- Reglas nuevas: `SCA2_textoEstadoSolicitud` y `SCA2_colorEstadoSolicitud`
+  (`a!match` pipeline→textos/colores SCA: #E46B15/#BE0F0F/#0D82BD/#734B30/
+  #008C47/#9F9F9F).
+- `SCA2_BuscadorTabla` reescrito: 8 columnas SCA (Número solicitud link, Estado
+  tag coloreado, Fecha solicitud, Número póliza, Línea negocio, Causa anulación
+  vía relationship `datosSolicitud.desccausa`, Fecha resolución, Observaciones).
+- `SCA2_Buscador` reescrito: pestañas "Buscar solicitud por" Cliente|Póliza
+  (STRONG/rojo al seleccionar), botón ALTA SOLICITUD ANULACIÓN (SOLID rojo →
+  `/page/alta`), texto "Completa al menos…" negro/STRONG, LIMPIAR/BUSCAR
+  SOLICITUD, sección "Últimas solicitudes gestionadas" + filtros Estado
+  (multi-dropdown, 9 etiquetas) y Línea negocio.
+- Site: página renombrada "Solicitudes anulación"; Alta oculta como pestaña
+  (`visibilityExpr = false`, accesible por URL). La barra blanca/logo/accent
+  rojo no son configurables vía `updateSite` (solo name/pages/layout/style) —
+  STOP: branding de environment, a ajustar en Designer/Admin console.
+- Filtro por cliente **funcional** (no solo visual): Nº documento →
+  `SCA2_extraerCodClienteNIF` → `SCA2_consultarSolicitudes(codInt, tpBusqueda
+  "1")` → filtro `numPoliza in` en la query del grid (igual que el original).
+
+### 12.3 Hallazgo A — causa raíz del 500 de Core7
+`SCA2_generarStudAnul` era una copia exacta de la integración (mismo connected
+system `SCAC_SCA_Core7`, host/endpoint). La diferencia estaba en **la expresión
+`consulta` de los nodos**: SCA envuelve la petición en CDTs tipados con
+namespace (`'type!{http://ejb.cfsa.pca.mapfami.dgtp.mapfre.com/}generarStudAnul'
+(MSEGenerarStudAnul: <solicitudAnulacionDTO>)`), de modo que `toxml` emite el
+XML con namespace que Core7 espera; SCA2 pasaba un `a!map` plano → XML sin
+namespace → 500. Corregido en: CMD Alta nodo `generarStudAnul`
+(`MSEGenerarStudAnul`), CMD Mecanizar `Guardar Mecanización`
+(`mSEGuardarMecanizacionDTO`) y `Crear Autorización` (`mSECrearAutorizacionDTO`),
+CMD Caducar `Finalizar Solicitud` (`SCAC_DS_finalizarSolicitud` con campos
+best-effort; el original usa contexto datosCabecera/datosPoliza completo).
+Pendiente de verificación end-to-end (los servicios responden ahora contra la
+forma correcta; si persiste 500 ya será funcional del DTO). Resto de CALLI
+(anulaciones/contraanul/acciones) comparten el patrón y se corrigen igual.
+
+### 12.4 Fase A2 (346 pólizas candidatas, solo lectura)
+**48 OK-con-datos / 298 SIN-DATOS (COD_SAL=1) / 0 ERROR**. Todas línea 1
+(Automóviles); sin Hogar ni Vida disponibles → no se lanzaron altas (condición
+de sondeo no aplicada tras el fix del punto A). Artefactos:
+`polizas/fase_a2.json`, `polizas/fase_a2_resumen.md`.
+
+### 12.5 PMs atómicos nuevos
+| PM | UUID | Nodos | Params |
+|---|---|---|---|
+| `SCA2 CMD Posponer` | `0000f06f-8a47-8000-6751-7f0000014e7a` | 5 (Start→Cargar→XOR idem→Write Posponer→End) | idSolicitud, idTarea, fechaDietario, motivo |
+| `SCA2 CMD CambiarNivel` | `0000f06f-8a54-8000-6759-7f0000014e7a` | 7 (+XOR "¿Tareas pendientes?") | idSolicitud, nivelDestino, motivo |
+
+- Idempotencia `"<CMD>|idSolicitud|version"`; `validateDesignObject` limpio;
+  constantes `SCA2_PM_CMD_POSPONER`/`SCA2_PM_CMD_CAMBIAR_NIVEL`; `pmPorComando`
+  v6 actualizado.
+- Posponer: escribe fechaDietario, contadorPosponer+1, Solicitud.estadoTarea y
+  Tarea en POSPUESTA, Transición OK. CambiarNivel: nivelIntervencion,
+  fecInicioNivel, grupoAsignacion ("SCA2 Nivel "&n) + reasigna Tareas
+  PENDIENTES al grupo destino + Transición CAMBIO_NIVEL.
+- Tests reales: Posponer COMPLETED e idempotente; CambiarNivel COMPLETED
+  (nivel 1→2→3) y COMPLETED también sin tareas pendientes (XOR añadido).
+  Evidencias `sca2_objects/pm/{posponer,nivel}_test*.json`. Filas TEST borradas.
+
+### 12.6 Lecciones MCP
+- `updateProcessModelNode` con `data` parcial borra el resto → reenviar
+  inputs/outputs/customOutputs completos.
+- Side-effect en lista Records produce "each item must be a record" → mover la
+  regla a un campo (`modifiedBy: a!localVariables(...)`).
+- `a!forEach` de records como item de Records → nodo WR propio con `=` sin
+  llaves.
+- `"Number"` no es tipo PV válido → `"Number (Integer)"`.
+- Insertar Tarea de test: csv con header+data real (falso positivo "no data
+  rows" si la línea queda vacía).
