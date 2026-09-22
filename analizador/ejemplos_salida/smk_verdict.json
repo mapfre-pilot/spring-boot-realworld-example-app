@@ -1,0 +1,103 @@
+{
+  "verdict": "APTO_CON_CONDICIONES",
+  "verdictLabel": "APTO CON CONDICIONES",
+  "exitCode": 3,
+  "gates": [
+    {
+      "id": "G01",
+      "status": "REVIEW",
+      "title": "Recomendaciones de monitorización revisadas",
+      "findings": 0,
+      "justification": ""
+    },
+    {
+      "id": "G02",
+      "status": "REVIEW",
+      "title": "Sin riesgos ALTOS de Health Check en los objetos del paquete",
+      "findings": 0,
+      "justification": ""
+    },
+    {
+      "id": "G03",
+      "status": "PASS",
+      "title": "Procesos con grupo de alertas propio (no administradores)",
+      "findings": 0,
+      "justification": ""
+    },
+    {
+      "id": "G04",
+      "status": "PASS",
+      "title": "Borrado de instancias de proceso <= 3 días",
+      "findings": 0,
+      "justification": ""
+    },
+    {
+      "id": "G05",
+      "status": "PASS",
+      "title": "Sin objetos sin dependencias",
+      "findings": 0,
+      "justification": ""
+    },
+    {
+      "id": "G06",
+      "status": "REVIEW",
+      "title": "Pruebas de rendimiento satisfactorias",
+      "findings": 0,
+      "justification": ""
+    },
+    {
+      "id": "G07",
+      "status": "NA",
+      "title": "Tareas de usuario con excepción de tiempo <= 1 día",
+      "findings": 0,
+      "justification": ""
+    },
+    {
+      "id": "G08",
+      "status": "PASS",
+      "title": "Records sincronizados sin full sync diario",
+      "findings": 0,
+      "justification": ""
+    },
+    {
+      "id": "G09",
+      "status": "PASS",
+      "title": "Sin constantes ni expresiones con contraseñas",
+      "findings": 0,
+      "justification": ""
+    },
+    {
+      "id": "G10",
+      "status": "NA",
+      "title": "Procesos batch fuera de la ventana 06:30-22:00",
+      "findings": 0,
+      "justification": ""
+    }
+  ],
+  "pendingJustifications": [
+    "G01",
+    "G02",
+    "G06"
+  ],
+  "healthCheck": {
+    "status": "MISSING",
+    "date": null,
+    "ageDays": null,
+    "stale": false
+  },
+  "coverage": {
+    "manifestObjects": 143,
+    "analyzedObjects": 143,
+    "analyzedFiles": 143,
+    "parsedOk": 143,
+    "parseFailed": 0,
+    "ratio": 1.0
+  },
+  "package": {
+    "name": "SMK Pruebas de Humo",
+    "kind": "application",
+    "applicationUuid": "_a-0000f061-6420-8000-9cc5-011c48011c48_20033025"
+  },
+  "analyzerVersion": "3.0.0",
+  "generatedAt": "2026-09-22T12:28:08+00:00"
+}
