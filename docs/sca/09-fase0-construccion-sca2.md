@@ -847,3 +847,34 @@ de sondeo no aplicada tras el fix del punto A). Artefactos:
   exigiría enriquecer el contexto con los campos que el flujo SCA real pasa
   (datosCod/datosProductor/datosPolizaAutos completos) — queda abierto.
 - Capturas del alta por site: `sca2_objects/ui/screens/polizas_0000406200010_{datos,ready,guardado}.png`.
+
+### 12.8 Cierre del 4004: fault persistido y contexto completo (tanda 7 bis)
+- **Fault real persistido**: nodo `Write Error` del CMD Alta ahora escribe
+  `mensaje = pv!generar.error.faultString` (fallback al mensaje de transporte)
+  y `payload = pv!generar.error` completo (`[faultCode, code, faultString]`).
+  En CMD Mecanizar (nodos 8 y 10) y CMD Caducar (nodo 7) se añadió un
+  `customOutput` que guarda `ac!Result.body` en `pv!sol.__resultBody`, y el
+  `Write Error` extrae `<faultstring>` del body con fallback. Validados; los
+  registros nuevos de la bandeja muestran ya el texto de negocio (p.ej.
+  `Solicitud de anulacion ya existente para el numero de poliza`).
+- **Diff campo a campo**: `SCA2_construirContextoAlta` ya emite todos los
+  campos del `solicitudAnulacionDTO` del original (verificado con `toxml` en
+  `alta_test_dbg.json`); para pólizas con `DATOS_PCA` completo el XML es
+  equivalente al de SCA. El 4004 de `0000407100066` era dato: su
+  `consultarPolizas` devuelve `DATOS_PCA` vacío → "Datos insuficientes" es la
+  respuesta correcta de Core7, no un defecto de forma.
+- **Resultados `generarStudAnul` por póliza** (todas ya llegan a Core7):
+  - `0000406200001`, `0000253500322`, `0001000078343`, `0001148026942`,
+    `0001199103266`, `0001393603348`, `0001281101793`, `0001561201680`,
+    `0001951500130`, `0007051071459`, `0008045001552`, `0008921978872`,
+    `0009401900054`, `0009724789736` → **4111** "ya existente" (la petición
+    supera la validación completa; la póliza ya tiene solicitud en DEV).
+  - `0000407100066`, `0000407100067`, `0001710001685` → **4004** (póliza sin
+    `DATOS_PCA`).
+  - `0001047017085`, `0007051071222` → **4007** error de acceso a datos Core7.
+- **Estado**: el mecanismo end-to-end queda probado hasta la respuesta de
+  negocio; no se encontró ninguna póliza candidata sin solicitud previa en
+  Core7 DEV para completar una creación real — queda pendiente hasta que el
+  usuario aporte una póliza libre o valide contra otra.
+- Nota: `testProcessModel` ejecuta side-effects reales (las filas
+  `PDTE-<proceso>` de la bandeja corresponden a estas corridas).
