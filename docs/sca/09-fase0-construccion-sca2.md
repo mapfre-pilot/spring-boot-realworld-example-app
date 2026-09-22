@@ -615,3 +615,119 @@ SCA). Renderiza menú lateral con Gestión de argumentos/conceptos/aplicación
    colisión de nombre con un objeto previo (patrón del original).
 6. Condensación residual: validaciones por campo y algunos popups dedicados del
    original (2228 l.) quedan cubiertos por los modales genéricos.
+
+## 11. Tanda 6 — credenciales, Redirección Vida, VERTI, STOPs, UX y pruebas con pólizas
+
+### Credenciales literales
+
+- `SCA2_APIClients_Login` y `SCA2_ObtenerCredencialesConceptos` llevaban
+  credenciales en el body (el original SCAC también las tiene literales).
+  Decisión: constantes nuevas **vacías** `SCA2_TXT_APICLIENTS_USER`,
+  `SCA2_TXT_APICLIENTS_PASS`, `SCA2_TXT_APICLIENTS_CLIENT_ID`,
+  `SCA2_TXT_APICLIENTS_CLIENT_SECRET` (uuids `_a-…-20063352/58/64/70`),
+  referenciadas con `cons!` en ambas integraciones; el usuario las rellena en
+  Designer. Ningún valor de credencial se escribió en ficheros ni reportes;
+  los dumps locales quedaron saneados. `updateIntegration` aplicado y verificado
+  (literales fuera, refs `cons!` dentro).
+
+### Redirección Vida (GESVIDA)
+
+- Destino original documentado: `SCA_RedirigirGesvida` →
+  `a!safeLink(uri: substitute(cons!SCA_TXT_LINK_GESVIDA, "*poliza*", ri!poliza))`,
+  etiqueta "GESVIDA".
+- `SCA2_DetalleSolicitud`: `local!esVida`
+  (`rule!SCA2_obtenerTipoPoliza = cons!SCA2_TXT_VIDA_RIESGO` o
+  `lineaNegocio = "3"`) muestra botón **GESVIDA** SOLID rojo que abre en
+  nueva pestaña `substitute(cons!SCA2_TXT_LINK_GESVIDA,"*poliza*",local!numPoliza)`
+  (constantes `SCA2_TXT_LINK_GESVIDA`/`SCA2_TXT_VIDA_RIESGO` ya existían).
+
+### Rama VERTI
+
+- Nueva `SCA2_VertiVencimientoPrincipal` (`_a-…-20063389`, ~190 l.): datos de la
+  gestión + `determinarContacto` → `GenerarContactoVerti` (showWhen Verti/
+  Vencimiento) + observaciones + CONTINUAR (`a!startProcess`
+  `cons!SCA2_PM_CMD_MECANIZAR` accion:"VERTI") / CANCELAR (`CMD CompletarAccion`
+  mcaEstadoFinal:"CANCELADO") / POSPONER (`SCA2_posponerTarea`). Enlazada en
+  `SCA2_DetalleTareas` para tipo VERTI.
+- **STOP**: la rama VERTI del `CMD Mecanizar` no es ejercitable en PRE —
+  `flagVerti` requiere `obtenerEstComNuuma` (REST devuelve null en PRE) +
+  concepto FLAG="S" + DGT/DT coincidentes. Evidencia: pv! del proceso 451190
+  (`flagVerti=false`, `contacto=null`).
+
+### STOPs revisados
+
+Cerrados:
+
+| Objeto | uuid | Causa anterior → fix |
+|---|---|---|
+| `SCA2_consultarConceptoReutilizable` | `_a-…-20052825` (v2) | index sobre Text → guard `typeof()` + paréntesis balanceado |
+| `SCA2_GetUrlArgumento` | `_a-…-20063433` | desbloqueado por el fix anterior |
+| `SCA2_AltaGestionArgumento` | `_a-…-20063439` | inputs `documento`/`buscarArgumento` como Map/Any + `a!defaultValue` en `numDiasSgo` |
+| `SCA2_monitorizarSolicitud` (regla) | `_a-…-20063445` | el nombre lo ocupaba la **integración** `SCA2_monitorizarSolicitud` (3f1a0486…) → creada como `SCA2_monitorizarSolicitudRegla` |
+| `SCA2_guardarGestionSGC` | `_a-…-20063399` | comparación Null vs Integer → `a!defaultValue(index(...,null),-1) = 0` |
+| `SCA2_DatosPolizaDinamico` | `_a-…-20063405` | `whenTrue:` → `equals:` y `a!map(null())` → `a!map()` |
+| `SCA2_ObtenerMapaPoliza` | `_a-…-20063411` | inputs Any Type (en cascada tras el anterior) |
+
+Siguen STOP (causa concreta):
+
+- `SCA2_altaDocumento`: input `Document` se evalúa eagerly → `a!httpFormPart`
+  exige valor no nulo; no hay documento real en SCA2.
+- `SCA2_GetUrlArgumento` lo resolvió, pero `SCA2_AltaGestionArgumento` sigue con
+  partes condensadas; las REST `obtenerTokenRetosREST`/`asignarRetosREST` no
+  tienen connectedSystemUuid → decisión del usuario.
+- Rama éxito de Guardar Mecanización/CrearAutorización sin ejercitar (Core7 PRE
+  devuelve 500 a todas las integraciones).
+
+### UX fino
+
+- El usuario de la sesión tiene **403** sobre `/suite/sites/sca` (sin permiso);
+  comparación hecha contra los dumps `.sail` de SCA + capturas reales de SCA2.
+- Corregido y verificado en vivo (Playwright):
+  - `SCA2_BuscadorTabla`: "Solicitud"→"Número solicitud" (ahora link dinámico,
+    eliminada la columna "Ver"), "Póliza"→"Número póliza",
+    `emptyGridMessage: "No hay resultados para dicha búsqueda"`.
+  - `SCA2_AltaSolicitudPage`: título "Alta Solicitud Anulación" (texto exacto).
+  - Fila residual de TEST (Solicitud id=5, `ERROR_DECISION`) borrada.
+- No corregidas (dependen del modelo de datos, no directas): orden completo de
+  columnas SCA, textos largos de estado (`calcularEstadoSolicitud`), filtros
+  por pestañas del original.
+- Screenshots: `sca2_objects/ui/screens/tanda6_*.png`.
+
+| Captura | Contenido |
+|---|---|
+| `img/tanda6_sca2_buscador.png` | Buscador con "Número solicitud" como link |
+| `img/tanda6_sca2_alta.png` | Alta con título "Alta Solicitud Anulación" |
+
+### Pruebas con pólizas reales
+
+- **Fase A** (`testRule SCA2_consultarPolizas`, máx 3 concurrentes, 195
+  candidatas): **30 OK-con-datos** (todas línea 1 Automóviles), **165
+  SIN-DATOS** (`COD_SAL=1` "Error al obtener los datos de la poliza"), **0
+  errores de transporte**. Resultados en `polizas/fase_a.json` +
+  `fase_a_resumen.md` (tabla ramo/producto/prima).
+- **Fase B** (altas reales vía site, Playwright): 0000551000097 y 0000002203715
+  completaron Motivo/Detalle/Causa + GUARDAR → PM Alta lanzado → Core7 500 →
+  errores **id 24 (PDTE-451335)** e **id 25 (PDTE-537326364)** en Bandeja,
+  ambos `ALTA_ERROR` en nodo `generarStudAnul` con mensaje
+  "Failed to connect to https://core7.pre.mapfre.net:26007/…/IGenerarContraAnul,
+  HTTP/1.1 500" (no es `soapenv 0999`; es fallo de conexión HTTP a la
+  integración, igual que en tandas anteriores).
+- **Bug real encontrado y corregido**: las pólizas con `FEC_ULT_SINI` no nulo
+  rompían toda la página Alta — en `SCA2_DatosPoliza` el link de `formaPago`
+  usaba `fechaUltimoSiniestro` (Date) como `uri:` de `a!safeLink`
+  ("Could not cast from Date to Safe URI", eval id 99PGC, línea 207) y el
+  `text:`/`label:` de otro `a!richTextItem` recibía Date sin `tostring`.
+  Fix: `tostring()` en ambos puntos (sail + sailB, versionId 3). Verificado:
+  `testInterface` con mapa real de ambas pólizas → OK, y en el site
+  0000000704154 ya renderiza el formulario completo (CANCELAR/GUARDAR).
+  Capturas `polizas_*` en `sca2_objects/ui/screens/`;
+  `img/polizas_alta_ready.png` (alta lista para guardar) y
+  `img/polizas_0000000704154_retry.png` (render post-fix).
+
+### Pendientes tras tanda 6
+
+- Constantes `SCA2_TXT_APICLIENTS_*` y `SCA2_FECHAULTIMOSINIESTRO_URL` (ya
+  existente, valor pendiente de confirmar) a rellenar por el usuario.
+- STOPs abiertos listados arriba (documentos, REST sin connected system).
+- Comparación visual directa /sca vs /sca2 pendiente de permiso de acceso al
+  site SCA (hoy da 403).
