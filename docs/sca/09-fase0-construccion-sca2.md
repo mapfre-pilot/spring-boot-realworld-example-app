@@ -1309,3 +1309,24 @@ excepción; todo fallo termina la instancia y deja una fila relanzable en
   idempotencia, estados y llamadas externas coinciden). Residual: los
   smart services de documento de `GenerarPdf` no exponen `isSuccess`
   (mismo comportamiento que SCA DocxPDF).
+
+## 21. Tanda 16 — calidad, rendimiento e independencia de SCAC
+
+- Revisión estática de los 552 objetos SCA2 (Designer no ofrece vista
+  "Recomendaciones" a nivel de app en esta versión): 0 `loggedInUser()` en
+  PMs, queries clave con `pagingInfo` + `fields` mínimo, dropdowns desde
+  reglas (no integraciones). Tiempos `testInterface`: Buscador 304 ms,
+  BuscadorTabla 16 ms, Detalle 541 ms, Alta 384 ms, cargarSolicitud 40 ms.
+- Independencia de SCAC: 105 wrappers `SCA2_*` que aún llamaban
+  `rule!SCAC_*Integracion` migrados a `rule!SCA2_*Integracion` (tabla en
+  `analisis/t16_recomendaciones.md`). Única referencia restante a SCAC:
+  `SCA2_asignarRetos` (excepción acordada). 3 wrappers nunca creados
+  (`CargaGcOnline`, `altaDocumento`, `monitorizarSolicitud`, STOP Batch B).
+  Efecto visible: el Detalle ya obtiene DATOS_PCA/cliente por la
+  integración SCA2 (`img/t16c_detalle.png`).
+- Popup Alta con 0007051068625: rechazo legítimo — la condición
+  (`detallesPoliza` vacío o `COD_RAMO ∉ {210,200,73,101}`) es idéntica a
+  `SCA_AltaSolicitudAnulacionPopUpEstrategicas`; SCA rechazaría igual.
+- Pendiente de decisión: `SCA2_TM_ObtenerTransaccion` usa `a!queryEntity`
+  (DSE de SCA); interfaces legacy `SCA2_Detalle*` sin uso; test cases
+  triviales para ~100 reglas.

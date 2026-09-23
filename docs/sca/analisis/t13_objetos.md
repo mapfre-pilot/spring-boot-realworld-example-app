@@ -101,3 +101,29 @@ Backups: `.bak_t14`.
 - ObtenerDocumentoGD: PV nuevo `gdErrorObj` (Any Type) guarda output `Error` (IntegrationError) del nodo 12; nodo 200 Write Error escribe `mensaje = joinarray(pv!gdErrorObj," | ")` (ej. "HTTP/1.1 404 Not Found"). Test FAKE-GD-999: COMPLETED, contador=3, error real capturado.
 - Filas de prueba limpiadas (Error ids 82-83).
 - Docs copiadas a repo: docs/sca/analisis/{t15_auditoria.md,t13_objetos.md}, docs/sca/img/t15_props_*.png (5).
+
+## Tanda 16 — Calidad/rendimiento
+- PM `SCA2 CMD ObtenerDocumentoGD` v7: PV `documentId` (sin uso) eliminado.
+- Auditoría estática completa: 0 `loggedInUser()` en PMs (usan pp!initiator); todas las a!queryRecordType de pantallas clave con pagingInfo+fields; integraciones en carga solo consultarPolizas (paridad SCA).
+- Mediciones testInterface: Buscador 304ms, Tabla 16ms, Detalle 541ms, Alta 384ms, cargarSolicitud 40ms.
+- No hay vista "Recomendaciones" en esta versión de Designer → se aplicó checklist equivalente (t16_recomendaciones.md).
+- Seguridad: sin tool MCP de rolemap; objetos dentro de la app heredan seguridad; regla huérfana fuera de app eliminada en 15-cierre.
+- Capturas: t16_buscador.png, t16_detalle.png.
+
+## Tanda 16-bis — migración SCAC→SCA2 integraciones
+- 45 wrappers migrados (40 reglas + 5 interfaces), 47 refs `rule!SCAC_*` → `rule!SCA2_*`: updateExpressionRule/updateInterface OK, 0 errores de validación. Backups `.bak_t16b`.
+- 4 wrappers con ajuste de kwargs (integración SCA2 no expone rand/randomNum/aplicacion): SCA2_consultarConceptoFuncionalREST, SCA2_consultarDocumentos(+REST), SCA2_contactMethodAPIClients, SCA2_searchAPIClients.
+- 63 refs NO migradas (sin equivalente SCA2_*Integracion) + Retos (excepción) — listadas en t16_recomendaciones.md.
+- Test igual: no aplicable — testRule devuelve stub "Smart Service" (no ejecuta integraciones); validación = deploy sin errores + retest navegador.
+- Capturas: t16b_buscador.png, t16b_popup_alta.png, t16b_detalle.png.
+
+## Tanda 16-ter — cobertura completa wrappers→SCA2
+- Auditoría de las 63 refs "sin equivalente": 57 existían como `SCA2_<nombre>` (inventario app-level incompleto); las 6 restantes (`borrarDocumentoSCA`, `consultaBBDDSCA`, `modificarMarcaEconomica`, `obtenerOficinas`, `posibilidadReservaPrima`, `searchDocumentos`) ya existían en el servidor con firma de conveniencia → wrappers adaptados, sin duplicar integraciones.
+- 60 wrappers migrados (`updateExpressionRule`, backups `.bak_t16c`): kwargs ajustados a la firma real de la integración SCA2 (request→campos, codArg, nuuma, drop host/endpoint y cache-busters rand/random/randomNum) y `xpathsnippet` protegido con `a!isNullOrEmpty`.
+- Resultado: **0 refs `rule!SCAC_*Integracion` salvo Retos** (`SCA2_asignarRetos`, excepción explícita). No migrables: `SCA2_CargaGcOnline`, `SCA2_altaDocumento`, `SCA2_monitorizarSolicitud` (wrappers STOP en batch B — no existen en Appian; `.sail` local ya apunta a SCA2).
+- Retest: `t16c_buscador.png`, `t16c_popup_alta.png` (0007051068625 rechazada — pre-existente), `t16c_detalle.png` (datos de cliente reales ya visibles: consultarPolizas→SCA2 funciona). Detalle en `t16_recomendaciones.md`.
+
+## Tanda 16-delta — popup Alta vs póliza 0007051068625 (análisis, sin cambios)
+- Traza: `SCA2_AltaSolicitudAnulacionPopUp` (interfaz, `…_20064994`) decide "no es una póliza válida" con la condición `or(a!isNullOrEmpty(rama detallesPoliza), and(codRamo<>"210","200","73","101"))` — idéntica literal a `SCA_AltaSolicitudAnulacionPopUpEstrategicas`. `codRamo` = `COD_RAMO` de `DATOS_POLIZA` (wAutemis) igual que SCA.
+- El Detalle sí devuelve `MSSConsultarPolizas`/`DATOS_PCA` para esa póliza → la rama `detallesPoliza` no está vacía → el rechazo lo produce `COD_RAMO ∉ {210,200,73,101}` (dato del servicio, no código). Criterio y texto byte-a-byte iguales a SCA → rechazo legítimo/paritario; **no se ha tocado nada**.
+- Ejecución de la regla: no hay tool de ejecución real para reglas (`testRule` es stub; `evaluateExpression`/`testIntegration` no existen en el MCP). Evidencia = comparación literal SCA vs SCA2 + captura `t16d_popup.png`.
