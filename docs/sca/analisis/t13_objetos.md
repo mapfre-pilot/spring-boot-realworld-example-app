@@ -67,3 +67,17 @@ Capturas: `/home/ubuntu/screenshots/t13b_buscador_cliente.png`, `t13b_buscador_p
 | SCA2_AltaSolicitudPage | `_a-…_20055716` | v15 | Toggle siempre "Más Datos" con chevron |
 
 Capturas: `t13c_buscador_cliente.png`, `t13c_buscador_poliza.png`, `t13c_detalle_sol.png`. Backups `.bak_t13c`.
+
+## Tanda 14 (rsvPrima + idCompania)
+
+| Objeto | UUID | Versión | Cambio |
+|---|---|---|---|
+| SCA2 Datos Solicitud | `9a9209c7-…` | v9 (fields: rsvprima v8 `62f04821-67a9-4a3d-ae26-984ea0dcb5a1` DECIMAL→col RSVPRIMA; idcompania v9 `ad845ba3-1e5c-497c-807f-440b295df66d` INTEGER→col IDCOMPANIA) | ALTER TABLE aplicado vía `addRecordTypeField` (updateTable=true) |
+| SCA2 CMD Alta | `0000f06f-28fc-8000-6693-7f0000014e7a` | — | +2 PVs parámetro `idCompania` (Number Integer), `rsvPrima` (Number Decimal); nodo 11 "Write Motivos reales" escribe `idcompania: pv!idCompania`, `rsvprima: pv!rsvPrima` |
+| SCA2_cargarSolicitud | `_a-…_20054954` | v11 | +`rsvPrima`/`idcompania` en query+map datosSolicitud |
+| SCA2_AltaSolicitudPage | `_a-…_20055716` | v16 | processParameters += `idCompania` (tointeger(compania.codigo)), `rsvPrima` (datosCliente.rsvPrima) |
+| SCA2_SolicitudAnulacion | `_a-…_20064988` | v3 | "Reserva prima" lee `local!ds.rsvPrima` (=1→"SOLICITADA /", sino "NO SOLICITADA / -"); "Compañía contraria" resuelve `idcompania`→descripcion vía `SCA2_companiasContrariasCompletas` (catálogo, como SCA cons!SCA_TXT_COMPANIAS) |
+
+Desviaciones: en SCA `rsvPrima` vive en `datosCabecera.cliente_rsvPrima` (TEXT, ya existe en SCA2 Datos Cabecera) e `idCompania` NO se persiste en SCA (se resuelve en vivo del `MSSConsultarCabecera`); por el brief se persisten en `SCA2 Datos Solicitud` con los nombres pedidos. `SCA2_AltaSolicitudPage` pasa `rsvPrima` desde `local!datosCliente.rsvPrima` (hoy null → "NO SOLICITADA / -", mismo resultado que SCA para altas nuevas).
+Verificación: validateDesignObject 0 errores en PM Alta y record type; testInterface Detalle+Alta OK. Captura `t14_detalle_sol.png` obtenida en navegador real (login nativo restablecido): tab Solicitud Anulación renderiza Reserva prima / Compañía contraria sin error. Propiedades del PM (alertas SCA2 Alertas, borrado 1 día) sin tocar — updateProcessModel/updateProcessModelNode no incluyen esos campos (igual que en tandas 8-11).
+Backups: `.bak_t14`.

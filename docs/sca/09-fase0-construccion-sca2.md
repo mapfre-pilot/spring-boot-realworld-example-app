@@ -1252,8 +1252,30 @@ Otras capturas: `img/t13c_buscador_poliza.png`, `img/t13b_acordeon.png`,
   DATOS_PCA para el usuario AA) y Core7 devuelve 4004/4111 → la rama
   positiva Alta → Decidir → Crear → Completar → Finalizar sigue sin
   ejecutarse de punta a punta con datos reales.
-- `rsvPrima` e `idCompania` no existen en SCA2 Datos Solicitud: "Reserva
-  prima" y "Compañía contraria" muestran valores por defecto hasta
-  decidir si se añaden columnas en `SCA2 DataBase AWS`.
 - Acordeón con tareas reales solo verificable cuando exista una solicitud
   con filas en `SCA2 Tarea` (las filas TEST no las tienen).
+
+## 19. Tanda 14 — `rsvPrima` / `idCompania` en SCA2 Datos Solicitud
+
+Columnas `RSVPRIMA` (DECIMAL) e `IDCOMPANIA` (INTEGER) añadidas a la tabla
+de `SCA2 Datos Solicitud` en `SCA2 DataBase AWS` vía
+`addRecordTypeField(updateTable=true)` (ALTER aplicado por Appian; UUID del
+record type conservado). Cableado: `SCA2 CMD Alta` (+2 PVs parámetro, nodo
+"Write Motivos reales" persiste ambos), `SCA2_AltaSolicitudPage` v16
+(`idCompania` del picker de compañía contraria, `rsvPrima` de datos
+cliente), `SCA2_cargarSolicitud` v11 y `SCA2_SolicitudAnulacion` v3
+("SOLICITADA /" ↔ "NO SOLICITADA / -"; compañía resuelta por catálogo
+`SCA2_companiasContrariasCompletas`, equivalente a `cons!SCA_TXT_COMPANIAS`).
+
+Desviación documentada respecto a SCA: en SCA `rsvPrima` vive en
+`datosCabecera.cliente_rsvPrima` (TEXT) e `idCompania` no se persiste (se
+resuelve en vivo de `MSSConsultarCabecera`); SCA2 los persiste en Datos
+Solicitud para que el Detalle no dependa de una llamada externa.
+
+Verificación: validateDesignObject 0 errores (PM Alta, record type),
+testInterface Detalle/Alta OK, navegador real:
+
+![](img/t14_detalle_sol.png)
+
+Detalle en `analisis/t13_objetos.md` (sección Tanda 14). Sin escrituras
+fuera de SCA2.
