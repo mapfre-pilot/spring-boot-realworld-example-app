@@ -1279,3 +1279,33 @@ testInterface Detalle/Alta OK, navegador real:
 
 Detalle en `analisis/t13_objetos.md` (sección Tanda 14). Sin escrituras
 fuera de SCA2.
+
+## 20. Tanda 15 — resiliencia: ninguna instancia queda en error
+
+Requisito: las instancias de los CMD no deben quedarse pausadas por
+excepción; todo fallo termina la instancia y deja una fila relanzable en
+`SCA2 Error`. Auditoría nodo a nodo de los 12 PMs en
+`analisis/t15_auditoria.md`.
+
+- Integraciones: ya seguían el patrón `Success` → XOR → "Write Error" →
+  End (sin reintentar Core7/SGO/SGC/PCA Finalizar, no idempotentes;
+  reintento ×3 ya existente en Decidir y ObtenerDocumentoGD).
+- Write Records (31 nodos, 9 PMs): `PauseOnError=false` y, en los 25 de
+  negocio, `ErrorOccurred/Error` → XOR "¿Write fail?" → "Capturar error
+  escritura" (`WRITE_FAIL`, nodo relanzable) → Write Error → End, sin
+  continuar al siguiente write (evita doble escritura).
+- ObtenerDocumentoGD: causa raíz del "rank (Data Outputs)" era guardar
+  `Result` (HttpResponse) en un PV Number; eliminado, XOR null-safe,
+  Write Error `GD_ERROR` con el mensaje real (`gdErrorObj` Any Type) tras
+  3 reintentos.
+- Null-guards en Script Tasks/XOR (Decidir, CompletarAccion, Posponer,
+  CambiarNivel).
+- Verificación: `validateDesignObject` 0 errores en los 12 PMs; test con
+  fallo forzado **12/12 COMPLETED** con fila en `SCA2 Error`; alertas
+  `SCA2 Alertas` y borrado a 1 día confirmados en Designer
+  (`img/t15_props_*.png`). Filas de prueba borradas; sin escrituras fuera
+  de SCA2.
+- Paridad de flujo: sin gaps de lógica detectados frente a SCA (XOR de
+  idempotencia, estados y llamadas externas coinciden). Residual: los
+  smart services de documento de `GenerarPdf` no exponen `isSuccess`
+  (mismo comportamiento que SCA DocxPDF).

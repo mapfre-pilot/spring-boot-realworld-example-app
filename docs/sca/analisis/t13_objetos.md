@@ -79,5 +79,25 @@ Capturas: `t13c_buscador_cliente.png`, `t13c_buscador_poliza.png`, `t13c_detalle
 | SCA2_SolicitudAnulacion | `_a-…_20064988` | v3 | "Reserva prima" lee `local!ds.rsvPrima` (=1→"SOLICITADA /", sino "NO SOLICITADA / -"); "Compañía contraria" resuelve `idcompania`→descripcion vía `SCA2_companiasContrariasCompletas` (catálogo, como SCA cons!SCA_TXT_COMPANIAS) |
 
 Desviaciones: en SCA `rsvPrima` vive en `datosCabecera.cliente_rsvPrima` (TEXT, ya existe en SCA2 Datos Cabecera) e `idCompania` NO se persiste en SCA (se resuelve en vivo del `MSSConsultarCabecera`); por el brief se persisten en `SCA2 Datos Solicitud` con los nombres pedidos. `SCA2_AltaSolicitudPage` pasa `rsvPrima` desde `local!datosCliente.rsvPrima` (hoy null → "NO SOLICITADA / -", mismo resultado que SCA para altas nuevas).
-Verificación: validateDesignObject 0 errores en PM Alta y record type; testInterface Detalle+Alta OK. Captura `t14_detalle_sol.png` obtenida en navegador real (login nativo restablecido): tab Solicitud Anulación renderiza Reserva prima / Compañía contraria sin error. Propiedades del PM (alertas SCA2 Alertas, borrado 1 día) sin tocar — updateProcessModel/updateProcessModelNode no incluyen esos campos (igual que en tandas 8-11).
+Verificación: validateDesignObject 0 errores en PM Alta y record type; testInterface Detalle+Alta OK. Captura t14_detalle_sol.png NO obtenida — sesión Chrome caducada (login nativo rechaza `devin`, SSO corporativo no disponible). Propiedades del PM (alertas SCA2 Alertas, borrado 1 día) sin tocar — updateProcessModel/updateProcessModelNode no incluyen esos campos (igual que en tandas 8-11).
 Backups: `.bak_t14`.
+
+## Tanda 15 — Resiliencia (FASE B)
+- PauseOnError=false() aplicado a los 31 nodos Write Records de los 9 PMs con writes (CrearAccion 6, Decidir 5, CompletarAccion 5, Finalizar 2, Alta 4, Mecanizar 4, Caducar 3, Posponer 1, CambiarNivel 2). Objetivo: "instancias nunca en pausa por excepción".
+- CompletarAccion: XOR "Cancel?" con a!defaultValue (null-safe) — fix de esta tanda.
+- validateDesignObject: 0 errores en los 12 PMs. Tests forzados: 11/12 COMPLETED con fila en SCA2 Error; ObtenerDocumentoGD error residual en parseo de integración (pendiente).
+- Auditoría: sca2_objects/t15_auditoria.md. Versiones PM = nuevas versiones creadas por updateProcessModelNode en cada nodo.
+
+## Tanda 15-bis — cableado ErrorOccurred + GD
+- 25 XOR "¿Write fail?" + 25 Script "Capturar error escritura" añadidos a 9 PMs; nodos Write Error nuevos en CompletarAccion (199), Posponer (199), CambiarNivel (199); Write Error de ObtenerDocumentoGD (200).
+- Regla nueva `SCA2_consultaDocumentoGD` `_a-0000f069-4f37-8000-9cc8-011c48011c48_20071048` (sin uso — rule! sobre integración devuelve Reaction Tree).
+- `SCA2_consultaDocumentoIntegracion`: responseBodyParsing RETURN_RAW, errorHandling DEFAULT (intento previo CUSTOM revertido; el fix real fue quitar saveInto Result→documentId).
+- Null-guards: Decidir nodo5 intentos, XOR nivelCalc; Posponer/CambiarNivel pp!name→literal; GD contador++/XOR success?.
+- PM versions nuevas por updateProcessModel: Alta, Decidir (v66), CompletarAccion, CrearAccion, Finalizar, Mecanizar, Caducar, Posponer, CambiarNivel, ObtenerDocumentoGD (v6).
+- Capturas: t15_props_alta.png, t15_props_alta_alertas.png, t15_props_decidir.png, t15_props_decidir_alertas.png, t15_props_gd.png.
+
+## Tanda 15 cierre
+- Regla `SCA2_consultaDocumentoGD` (`_a-…_20071048`) ELIMINADA (sin uso; rule!→Reaction Tree no viable). Nota: no aparecía en el listado de objetos de la app SCA2 — quedó fuera del contexto de la app.
+- ObtenerDocumentoGD: PV nuevo `gdErrorObj` (Any Type) guarda output `Error` (IntegrationError) del nodo 12; nodo 200 Write Error escribe `mensaje = joinarray(pv!gdErrorObj," | ")` (ej. "HTTP/1.1 404 Not Found"). Test FAKE-GD-999: COMPLETED, contador=3, error real capturado.
+- Filas de prueba limpiadas (Error ids 82-83).
+- Docs copiadas a repo: docs/sca/analisis/{t15_auditoria.md,t13_objetos.md}, docs/sca/img/t15_props_*.png (5).
