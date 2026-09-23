@@ -272,3 +272,54 @@ SCA2 es aditiva: SCA sigue operativo en TEST en todo momento.
 - [ ] Credenciales API Clients de TEST (rellenarlas tú en Designer TEST, como en DEV).
 - [ ] Confirmación de a qué backend apuntan `SCAC_VAL_HOST_*`/`CMP_VAL_HOST_*` en TEST.
 - [ ] 3–5 pólizas vigentes de TEST sin solicitud previa (Autos, Hogar, Vida).
+
+---
+
+### Alineación de connected systems API Clients / SGC3 en TEST (verificado live)
+
+Verificado en Designer TEST + MCP read-only (2026-09-23; matriz completa en
+`analisis/test_integraciones_cs.md`):
+
+- `SCA2_APIClients_Login` → **CMP Login token** (`_a-0000ea92-…_8636336`);
+  body con `cons!SCA2_TXT_APICLIENTS_*`, test HTTP 200 (~320 ms).
+- `SCA2_APIClients_{search,contactMethod,Benefits}` → **CMP API Clients**
+  (`_a-0000ea92-…_8634288`), Authorization
+  `"Bearer " & index(rule!SCA2_APIClients_Login(),"result","body","access_token","")`
+  (antes `rule!CMP_APIGW_newToken_TEST()`). Son los CS que SCA usa para
+  API Clients → alineación cumplida.
+- `SCA2_cargaGestionSGC3` queda en **SCAC_SGC3** por diseño (la ruta de SCA es
+  `SCAC_cargaGestionSGC3→SCAC_SGC3`; `CMP MapfreDigitalHealth SGC3` pertenece a
+  otro producto). Cambios aplicados en Designer UI (MCP TEST read-only, 405).
+- Smoke: `search` con policyNumber `2001900000007` → HTTP 200 con cliente
+  TOMADOR / EN VIGOR → API Clients en TEST conoce las pólizas NSE.
+
+### MCP de TEST con escritura + primera comparación Alta SCA vs SCA2 (2026-09-23)
+
+- **MCP TEST escribe**: tras dejar solo el plugin de escritura, `PUT /lcp-api/interfaces/{uuid}`
+  responde 200 (`updateInterface` sobre `SCA2_AltaSolicitudPage` y `SCA2_Buscador`,
+  releídas y verificadas). Ya no hace falta pasar por Designer UI para SCA2.
+- **Correcciones aplicadas en TEST (solo SCA2)**: `SCA2_construirContextoAlta`,
+  `SCA2_PreGenerarStudAnul` (codTpOrigen numérico 1–4 como SCA), interfaz Alta
+  (`origen` derivado), nodo 5 del PM `SCA2 CMD Alta` (rama error si Core7 no devuelve
+  `idSolicitud`), `SCA2_consultarConceptoIntegracion` / `SCA2_ObtenerCredencialesConceptos`
+  y `SCA2_Buscador` (headers `Content-Type` entrecomillados; validación OK, v2).
+- **Catalogación REST** (`/sca_servicios/api/1.0/compania/41/poliza/{n}/catalogacion`):
+  con 2001900000007 y 2001900000044 SCA2 deja `Tipo catalogación`/`Fecha anulación`
+  deshabilitados y GUARDAR bloqueado. **SCA en TEST hace exactamente lo mismo** con la
+  misma póliza y misma cascada (DECISION DE CLIENTE → PRECIO → ME HA SUBIDO MUCHO LA
+  PRIMA): no es divergencia SCA2, el servicio de catalogación de PRE no devuelve lista
+  para estas pólizas. Integraciones comparadas campo a campo
+  (`SCAC_consultarCatalogacionRestIntegracion` vs `SCA2_…`): mismo CS, path, body,
+  timeout, parsing; única diferencia el valor del header entrecomillado (exigido por
+  validación) e `ignoreEmptyHeaders=true`.
+- **Divergencia UX corregida**: al reabrir "ALTA SOLICITUD ANULACIÓN", SCA2 conservaba la
+  póliza anterior y las selecciones Motivo/Detalle/Causa; SCA abre vacío. Fix: reset de
+  `polizaPopup/polizaAlta/mensajeAlta` en el botón (Buscador) y
+  `a!refreshVariable(refreshOnVarChange: ri!numPoliza)` en las selecciones del Alta.
+- **Divergencia funcional pendiente de decisión**: cuando Core7 falla, SCA2 persiste una
+  `SCA2 Solicitud` `PDTE-<pid>` en estado ALTA (para relanzar desde la bandeja) y el
+  Buscador la lista como una solicitud más; en SCA no existe solicitud hasta que Core7
+  devuelve `idSolicitud`. Opciones: (a) ocultar `PDTE-*` en Buscador y dejarlas solo en
+  Errores, (b) estado propio `ERROR ALTA`, (c) no persistir (perder relanzamiento).
+- Rendimiento observado (1 ejecución, navegador): SCA2 llega al formulario de Alta en
+  ~10 s frente a ~40 s de SCA con 2001900000007.

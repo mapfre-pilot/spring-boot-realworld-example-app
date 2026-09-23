@@ -324,3 +324,74 @@ Sospechoso #1 = codTpOrigen: "SCA2" no es código válido de tpOrigen ({1,2,3,4}
 5. tlfPasoExperto ← contactMethodAPI TELEFONO MOVIL.
 
 Relanzamiento del Alta: usuario en runtime (no reejecutado por agente).
+
+## TEST NSE — primeras 60 pólizas de polizas_nse_vigor.txt
+
+Reglas ejecutadas en TEST: `SCA2_validacionesPreviasPopupAlta` (gate real del popup Alta, incluye solicitud previa) y `SCA2_obtenerDatosCabecera` (cadena NSE + APIClients). **Resultado uniforme para las 60**: `bloquear:false`, `msg:null`; cabecera responde sin error pero con estructura vacía (idéntico a `SCA_obtenerDatosCabecera` de SCA en TEST → el backend PRE no devuelve datos para estas pólizas; la cadena de integraciones SCA2 ya funciona tras la reparación).
+
+| Póliza | devuelve datos | ramo/producto | solicitud previa | apta |
+|---|---|---|---|---|
+| 2001900000004 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000007 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000011 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000015 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000044 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000091 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000111 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000168 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000193 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000211 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000216 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000220 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000224 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000233 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000239 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000247 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000249 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000263 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000265 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000266 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000269 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000274 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000287 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000288 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000293 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000301 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000304 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000308 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000311 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000314 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000319 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000327 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000331 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000336 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000337 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000352 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000366 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000373 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000381 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000384 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000391 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000469 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000476 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000514 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000530 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000544 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000562 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000604 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000612 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000646 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000654 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000657 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000662 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000666 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000691 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000697 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000702 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000708 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000709 | estructura vacía | Vida/ -  | No | sí* |
+| 2001900000715 | estructura vacía | Vida/ -  | No | sí* |
+
+\* "apta" = pasa el gate del popup (`bloquear:false`). Las 60 lo pasan; la cabecera sale vacía porque el backend PRE no devuelve datos (paridad con la regla SCA en TEST).
+
+**Candidatas propuestas (5)**: 2001900000007, 2001900000168, 2001900000004, 2001900000091, 2001900000111 — sin datos de ramo del backend PRE, se priorizan las ya ejercitadas en DEV (0007 con Alta funcionando).

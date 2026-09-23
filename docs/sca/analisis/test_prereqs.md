@@ -139,3 +139,13 @@ El endpoint `/version` no está implementado por el plugin lcp-api en ningún en
 - `CMP_VAL_HOST_*` en TEST apuntan a `.pre` (DEV: `.desa`) — alinear expectativas de backend.
 - `SCA2_TXT_URL_HOST` tendrá que pasar a `mapfrespain-test` (valor SCA_TEST ya disponible).
 - Endpoint `/users` y `/version` no expuestos → verificación manual en Admin Console para membresías de grupo y versión.
+
+---
+
+## Estado TEST tras despliegue CS (actualización T19)
+
+- **Los 3 CS siguen SIN existir en TEST** (re-check): `SCAC API Clients` (_16855252), `SCAC Login Token` (_16855258), `SCAC_SGC3` (_19914595) → "not found". Integraciones afectadas a redirigir al CS equivalente de SCA en TEST.
+- **SCA2 ya estaba desplegada en TEST ANTES de esta tanda** (export previo): 111/119 constantes (faltaban las 8 `SCA2_PM_CMD_*`), 3 grupos, 8 carpetas, 10/15 record types (uuid+dataSource+tabla idénticos a DEV; dataSourceUuid `_20050863` en ambos), 190 reglas, 56 interfaces, 97 integraciones y 2 PMs (`CMD GenerarPdf`, `CMD ObtenerDocumentoGD`). El usuario completó después el resto: **verificado** — DEV=TEST por nombre: 103 integraciones, 210 reglas, 79 interfaces, 12 PMs, site `sca2` presente (uuid bb62c468-…).
+- Constantes DEV vs TEST: **0 diferencias de valor** en las 111 comunes (secretos APICLIENTS rellenos en ambos).
+- Carpeta/documentos: las 8 carpetas `SCA2_*` existen en TEST con mismo uuid; los documentos de SCA referenciados (plantilla contrato, mecanizaciones, 2 carpetas SCA) también. Documentos propios de SCA2 (subidos por los flujos): ninguno por nombre SCA2* — los docs de prueba de la KB en DEV (629513/629514) no deben copiarse.
+- Config a alinear en DEV para que el paquete salga para TEST (sin secretos): `SCA2_TXT_URL_HOST`→`https://mapfrespain-test.appiancloud.com` en TEST (esperable); `CMP_VAL_HOST_*` en TEST=*.pre (no editable por SCA2, valor correcto); emails `SCA2_TXT_EMAIL_DUE_PARA_*` a decidir (SCA_TEST usa JOSPENA@ / APP-ALTITUDEMAILPRU4@).
