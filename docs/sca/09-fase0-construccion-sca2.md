@@ -1176,3 +1176,84 @@ Observaciones). `SCA2_DBG_t11x` y `SCA2_DBG_tareas` eliminadas.
 - Documentos de prueba 629513/629514 (smoke GenerarPdf) no borrables por
   MCP (`deleteDocument` los rechaza como ids de knowledge base, no uuid de
   documento de diseño) — eliminar manualmente si se considera necesario.
+
+## 17. Tanda 12 — comparación en paralelo SCA vs SCA2
+
+Informe completo: [`analisis/paralelo_t12.md`](analisis/paralelo_t12.md)
+(tiempos y resultados de los 9 CMD SCA2, estructura SCA vs SCA2,
+diff de las 104 integraciones, diferencias de UI y correcciones
+priorizadas).
+
+### 17.1 Resumen de medición (SCA2, DEV, datos reales)
+
+| PM | Duración medida | Nodos | Resultado |
+|---|---:|---:|---|
+| `SCA2 CMD Alta` | 4,9–7,7 s | 12 | fault Core7 4004 → fila `SCA2 Error`, sin Solicitud/Tarea |
+| `SCA2 CMD Decidir` | 6,7 s | 15 | OK |
+| `SCA2 CMD CrearAccion` | 4,2 s | 15 | OK |
+| `SCA2 CMD CompletarAccion` | 5,7 s | 14 | OK |
+| `SCA2 CMD Finalizar` | 5,4 s | 11 | OK |
+| `SCA2 CMD Mecanizar` | 8,0 s | 15 | fault Core7 controlado |
+| `SCA2 CMD Caducar` / `Posponer` | 3,4 s | — | OK |
+| `SCA2 CMD CambiarNivel` | <1 s | — | OK |
+
+Frente al baseline histórico de SCA (`SCA Alta Solicitud Anulacion`:
+46 nodos, 51 PVs, 12 subprocesos, 2 User Input Tasks, 25.028 procesos
+activos, 1,55 M AMU): SCA2 no retiene ninguna instancia (0 UIT, 0 timers,
+0 Receive Message, borrado a 1 día). **No** hay medición nueva de AMU de
+SCA (Monitoring View no expuesto por MCP); la comparación de AMU queda
+como hipótesis hasta medir en PRE con carga real.
+
+### 17.2 Integraciones
+`bodyContent` idéntico en las 104 integraciones comparadas salvo
+renombrados SCA→SCA2, la regla usuario/password y la conversión CDT→Map
+de `consulta`. `SCA2_SCA_CMP_APIClients_Perfil` eliminada por duplicar la
+integración SCAC ya cableada.
+
+## 18. Tanda 13 — paridad UI/UX exacta con SCA (a/b/c)
+
+Registro de objetos: [`analisis/t13_objetos.md`](analisis/t13_objetos.md);
+mapeo de estados técnicos → literales SCA:
+[`analisis/t13_estado_mapping.md`](analisis/t13_estado_mapping.md).
+
+Diferencias corregidas (solo objetos SCA2):
+- Buscador: pestaña Cliente por defecto; Póliza = Número póliza /
+  Matrícula / Número bastidor; LIMPIAR secondary + BUSCAR SOLICITUD
+  disabled hasta obligatorios, alineados a la derecha; ALTA SOLICITUD
+  ANULACIÓN rojo → popup in-page (`SCA2_AltaSolicitudAnulacionPopUp`,
+  validaciones portadas de SCA); página "Alta" retirada del site.
+- Grid: etiquetas de estado de negocio + tag de color SCA, 8 columnas
+  ordenables, fechas `yyyy-MM-dd HH:mm:ss`.
+- Alta: cabecera gris estilo SCA (flecha roja, título, "Más Datos", tabs
+  Datos cliente/póliza/Otras sol./Contacto), formulario completo
+  (compañía contraria + lupa, PRESENCIAL, medio, fax, catalogación, fecha,
+  info box, observaciones 0/240, confirmación al cancelar); eliminados
+  debug "Tipo de póliza" y "Teléfono Expertos".
+- Detalle: 6 tabs (incl. Solicitud Anulación con el orden de campos SCA y
+  Notificaciones desde Trazabilidad Cliente), acordeón de acciones estilo
+  SCA (fila fija "Alta Solicitud" + filas por Tarea, RETOMAR dentro de la
+  fila), "Trazabilidad técnica" plegada y solo para `SCA2 Administrators`.
+- Mensajes de validación de CA Opciones (×5), Acciones Administrativas
+  (×4) y Fuera de Norma portados literalmente ("Adjuntar Documentacion"
+  está comentado en el original → no se añade).
+
+| SCA (referencia) | SCA2 (resultado) |
+|---|---|
+| ![](img/sca_buscador_ref.png) | ![](img/t13c_buscador_cliente.png) |
+| ![](img/sca_alta_ref.png) | ![](img/t13b_alta.png) |
+| ![](img/sca_detalle_ref.png) | ![](img/t13c_detalle_sol.png) |
+
+Otras capturas: `img/t13c_buscador_poliza.png`, `img/t13b_acordeon.png`,
+`img/t13b_detalle_notif.png`.
+
+### 18.1 Pendiente
+- Póliza vigente sin solicitud previa y con datos PCA: el popup rechaza
+  0007051068625 ("no es una póliza válida", `consultarPolizas` sin
+  DATOS_PCA para el usuario AA) y Core7 devuelve 4004/4111 → la rama
+  positiva Alta → Decidir → Crear → Completar → Finalizar sigue sin
+  ejecutarse de punta a punta con datos reales.
+- `rsvPrima` e `idCompania` no existen en SCA2 Datos Solicitud: "Reserva
+  prima" y "Compañía contraria" muestran valores por defecto hasta
+  decidir si se añaden columnas en `SCA2 DataBase AWS`.
+- Acordeón con tareas reales solo verificable cuando exista una solicitud
+  con filas en `SCA2 Tarea` (las filas TEST no las tienen).
