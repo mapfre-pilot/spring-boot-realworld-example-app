@@ -323,3 +323,27 @@ Verificado en Designer TEST + MCP read-only (2026-09-23; matriz completa en
   Errores, (b) estado propio `ERROR ALTA`, (c) no persistir (perder relanzamiento).
 - Rendimiento observado (1 ejecución, navegador): SCA2 llega al formulario de Alta en
   ~10 s frente a ~40 s de SCA con 2001900000007.
+
+### Decisión PDTE-*, paridad de cabecera y SCA DEV ≠ SCA TEST (2026-09-23)
+
+- **PDTE-\* ocultas en Buscador** (decisión del usuario): `SCA2_Buscador` añade
+  `a!queryFilter(idSolicitud, "not starts with", "PDTE-")`; siguen en la bandeja de
+  Errores con "Repetir alta" (verificado en navegador: `PDTE-268927149`, `PDTE-9962887`).
+- **Cabecera (RSV prima / Dto. integralidad / Perfil Club)**: no hay divergencia SCA2.
+  `SCA_obtenerDatosCabecera` y `SCA2_obtenerDatosCabecera` ejecutadas 3× cada una vía
+  MCP con 2001900000007 devuelven `datosCliente` idéntico
+  (`analisis/test_cmp_cabecera_2001900000007.txt`). Los valores "4 % / Plata" vs "-"
+  son intermitencia de API Clients en PRE: el propio site SCA muestra ambas variantes
+  para la misma póliza en dos aperturas (`img/t20_sca_0007_*.png`). `rsvPrima` sale
+  "0,00 €" en ambos porque el CDT `SCAC_DS_datosCliente` convierte null→0.
+  `SCAC_consultaReservaPrima` y `SCA2_consultaReservaPrima` devuelven el mismo
+  HTTP 500/4001 para las pólizas probadas.
+- **SCA en TEST no es la misma SCA que en DEV** (`analisis/test_sca_dev_vs_test.md`,
+  353 objetos: 337 iguales, 13 distintos, 3 sólo en DEV). DEV es más nuevo: filtro de
+  causas por `essi24`, simulación FORD, `SCA_insertarObservaciones` en Acc. Adm.,
+  `consultarSiniestroPoliza` devolviendo `{success,result}`, estados del Buscador vía
+  `SCA_calcularEstadoSolicitud`, `SCA_cargaGestionSGC`/`flagAcuerdosNse`. TEST además
+  ya usa `CMP_APIClients_*` (como SCA2). **SCA2 se construyó sobre SCA DEV**, así que
+  al comparar en TEST algunas diferencias frente a SCA serán versión de SCA, no error
+  de SCA2. Pendiente confirmar con el usuario qué versión de SCA está en PRO
+  (baseline funcional a igualar).
