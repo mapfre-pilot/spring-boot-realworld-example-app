@@ -30,6 +30,26 @@ falla o deja referencias rotas. Como SCA/SCAC de TEST proceden del mismo
 origen que DEV, los UUIDs deberían coincidir, pero hay que comprobarlo con la
 inspección del paquete (Designer → Import → "Inspect") antes de importar.
 
+### 1.0 Estado real de TEST (auditoría read-only, ver `analisis/test_prereqs.md`)
+
+- **SCA2 ya existe parcialmente en TEST** con el mismo UUID de aplicación:
+  99 constantes `SCA2_*` (API Clients ya rellenas), 3 grupos SCA2 y 10/15
+  record types. No hay reglas, interfaces, integraciones, PMs ni site
+  (`sca2` libre). El import será una **actualización**, no una creación.
+- **Bloqueantes (missing precedents)**: 3 connected systems de SCAC no existen
+  en TEST → `SCAC API Clients` (`SCA2_APIClients_Benefits/contactMethod/search`,
+  `SCA2_SCA_CMP_APIClients_Perfil`), `SCAC Login Token` (`SCA2_APIClients_Login`)
+  y `SCAC_SGC3` (`SCA2_cargaGestionSGC3`). Los otros 15 CS coinciden en UUID.
+- Todo lo demás coincide en UUID: apps SCA/SCAC, grupos SCA (incl. 42
+  `SCA_CE_*`), constantes de catálogo, carpetas/documentos, record types.
+- Hosts en TEST: `SCAC_VAL_HOST_*` → PRE (igual que DEV);
+  `CMP_VAL_HOST_*` → **PRE** (en DEV apuntan a `*.desa.mapfre.net`).
+  `SCA_TXT_URL_HOST` = `mapfrespain-test`; `SCA_TXT_EMAIL_DUE_PARA_*` =
+  buzón personal en TEST (existe `…_TEST` = APP-ALTITUDEMAILPRU4).
+- `cons!SCA2_GRP_ALERTAS` la usan `SCA2_isUsuarioProceso`,
+  `SCA2_obtenerInformacionUsuario` y
+  `SCA2_ContraAnulacionArgumentarioEstrategicas`.
+
 ### 1.1 Objetos de SCAC referenciados
 
 | Tipo | Objetos | Uso en SCA2 |
