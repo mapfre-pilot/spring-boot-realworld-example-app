@@ -1330,3 +1330,21 @@ excepción; todo fallo termina la instancia y deja una fila relanzable en
 - Pendiente de decisión: `SCA2_TM_ObtenerTransaccion` usa `a!queryEntity`
   (DSE de SCA); interfaces legacy `SCA2_Detalle*` sin uso; test cases
   triviales para ~100 reglas.
+
+## 22. Tanda 17 — recomendaciones Designer y test cases
+
+- Recomendaciones ("Unused rule input" en `consultarConcepto`,
+  `consultarConceptoFuncionalREST`, `searchAPIClients`,
+  `contactMethodAPIClients`, `extraerCodClienteNIF`; "Incorrectly Scoped
+  Variable" en `aceptarAutorizacion`) corregidas: inputs eliminados y
+  kwargs `rand:`/`aplicacion:` retirados de todos los llamadores
+  (17 objetos, validate 0 errores). `cargaGestionSGC` ("Invalid parameter")
+  es byte-idéntica a SCA y sin llamadores; se documenta como aviso
+  obsoleto. La cuenta `devin` no ve la columna "Warnings and
+  Recommendations" en Designer, por lo que el cierre se verificó con un
+  chequeo programático equivalente (`analisis/t17_recomendaciones.md`).
+- Test cases: 217 casos en 186/210 reglas de expresión (88,6 % ≥ 66 % de
+  SCA); `runAll` 209 pasan / 0 fallan. Salidas esperadas derivadas de la
+  lógica SCA (`textoEstadoSolicitud`, `claveIdempotencia`, validaciones,
+  fechas…). Los wrappers de integración no llevan casos que ejecuten el
+  servicio real.
