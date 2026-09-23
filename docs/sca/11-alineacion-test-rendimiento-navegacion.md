@@ -1,0 +1,136 @@
+# Alineación con SCA TEST, navegación persistente (F5) y rendimiento del Alta
+
+Fecha: septiembre 2026. Trabajo realizado **solo en TEST**, solo sobre objetos SCA2.
+La baseline funcional acordada es **SCA en TEST** (no DEV): se compararon los 353
+objetos SCA (interfaces + expression rules) del dump DEV contra TEST y luego cada
+equivalente SCA2 contra la versión SCA TEST. Resultado de ese cruce:
+**337 idénticos / 13 diferentes / 3 ausentes en TEST**.
+
+## 1. Alineación SCA2 ↔ SCA TEST
+
+| Objeto SCA (estado en TEST) | Equivalente SCA2 | Veredicto |
+|---|---|---|
+| `SCA_simularAnulacion` (DIFFERENT: TEST elimina `tipoPoliza`/`indicadorReservaPrimas`/`tipoAnulacion` y la rama FORD) | `SCA2_simularAnulacion` | **Cambiado hoy**: rama FORD y locales eliminados; queda siempre `SCA2_simularAnulacionAltaNse`, envuelto en guard de input nulo |
+| `SCA_consultarSiniestroPoliza` (DIFFERENT: TEST devuelve `local!body` directo) | `SCA2_consultarSiniestroPoliza` | **Cambiado hoy**: devuelve `local!body` (con guard `numPoliza` nulo). Arregla además el nº de siniestros del año en la cabecera del Alta (verificado con `SCA2_obtenerDatosCabecera`, 2001900000007 → error None) |
+| `SCA_DetalleAnulacionContraAnulacionEstrategicas` (TEST añade `polizaNSEHogar`) | `SCA2_DetalleDatos` | **Ya alineado**: tiene ramas explícitas Hogar (`SCA2 Datos Poliza Hogar`), Vida y Autos — sin cambio |
+| `SCA_BuscadorTabla` (TEST reescribe columna estado) | `SCA2_BuscadorTabla` | **Legacy sin uso**: en SCA solo la usa `SCA_BuscarSolicitudClientePoliza`; SCA2 usa `SCA2_BuscadorTablaEstrategicas` (idéntica DEV/TEST). Sin cambios |
+| `SCA_searchAPIClients` / `SCA_contactMethodAPIClients` (TEST llama CMP_*) | `SCA2_searchAPIClients` / `SCA2_contactMethodAPIClients` | **Ya alineados** vía las integraciones `SCA2_APIClients_*`, que ya apuntan a los connected systems CMP (verificado live) |
+| `SCA_erroresGuardarSolicitud` (TEST añade `polizaRenovada`, `fechaUltimoSiniestro`) | `SCA2_erroresGuardarSolicitud` | **Ya alineado** (contiene ambas) |
+| `SCA_AltaSolicitudAnulacionEstrategicas` (TEST elimina `causaDDFiltrada`/essi24 y el aviso "póliza anulada") | `SCA2_AltaSolicitudPage` | **Ya alineado** (sin esos bloques) |
+| `SCA_GenerarSolicitudPopupEstrategicas` (TEST pierde `a!save(ri!idSolicitud,null)` en onSuccess) | `SCA2_GenerarSolicitudPopup` | **Ya alineado** |
+| `SCA_AccionesAdministrativasPrincipalEstrategicas` (TEST pierde un `insertarObservaciones`) | `SCA2_AccionesAdministrativasPrincipal` | Sigue la variante DEV (conserva `insertarObservaciones`); resto es reescritura propia — hunk menor anotado |
+| `SCA_DecidirAccion`, `SCA_ArgumentosContraAnulacion` | — | **Sin equivalente** en SCA2 (si se porta el hunk de tréboles, usar la variante TEST sin `tointeger`) |
+| `SCA_flagAcuerdosNse`, `SCA_ConsultaConceptosFuncionalesAcuerdosNseRecord`, `SCA_cargaGestionSGC` (MISSING en TEST) | `SCA2_cargaGestionSGC` existe (→ `SCA2_cargaGestionSGC3` → `SCAC_SGC3`, por diseño); los otros dos no tienen equivalente | Sin acción: ausentes en TEST |
+
+### Nota técnica del LCP API (despliegues por API en TEST)
+
+El `PUT` del LCP API **valida evaluando la expresión con los rule inputs a null**.
+Si la expresión lanza una integración externa y ese servicio responde 401, el 401 se
+propaga y el PUT falla (se comprobó con `SCA2_simularAnulacionAltaNse`).
+
+Patrón aplicado: envolver el cuerpo con un guard de inputs nulos de igual semántica,
+p.ej. `if(a!isNullOrEmpty(ri!infoSolicitud), null, a!localVariables(...))` en
+`SCA2_simularAnulacion`, y `if(a!isNullOrEmpty(ri!numPoliza), null, …)` en
+`SCA2_consultarSiniestroPoliza`. **Nunca** hacer PUTs de diagnóstico (p.ej.
+`expression: "1"`) sobre objetos reales.
+
+## 2. Navegación persistente (F5) — diseño final
+
+Igual que la página `decidiraccion` de SCA: **rule inputs de la interfaz de la página
+del site + parámetros de URL configurados en Designer**.
+
+- La página `buscador` del site SCA2 tiene configurados en Designer los parámetros de
+  URL `vista`, `numPoliza`, `idSolicitud`, `tipoAccion`, `idTarea`, con
+  **"Cifrar parámetros"** y **"Actualizar URL cuando cambien los valores de entrada de
+  regla"** activados.
+- Cualquier `a!save(ri!…)` sobre esos inputs se serializa en la URL como `?$sp=…`
+  (cifrado) y F5 reconstruye el estado completo.
+- Los parámetros de URL de página de site **no se pueden crear/configurar por lcp-api**
+  (probado: el PUT los ignora y el validador de `a!urlForSite` exige el alta en la
+  página). Es configuración de Designer únicamente.
+
+Objetos: `SCA2_Buscador` (inputs `vista/numPoliza/idSolicitud/tipoAccion/idTarea`,
+vista por defecto "BUSQUEDA"); `SCA2_BuscadorTabla` (dynamicLink → `ri!idSolicitud`);
+`SCA2_DetalleSolicitud` (inputs `tipoAccion/idTarea`; `accionAbierta` deriva de
+`ri!tipoAccion`; RETOMAR los guarda); `SCA2_DetalleTareas` (Completar/VOLVER con saves);
+`SCA2_AltaSolicitudAnulacionPopUp` (botón ALTA con saves); `SCA2_AltaSolicitudPage`
+(CANCELAR = botón OUTLINE con diálogo de confirmación → BUSQUEDA + póliza null).
+
+### Por qué se descartó el PM `SCA2 CMD Redirigir`
+
+Se construyó como solución intermedia con `a!startProcessLink` (mecanismo que usa SCA
+para el link de solicitud). Descartado y **borrado** (PM + constante
+`SCA2_PM_REDIRIGIR_DETALLE`) porque: (1) cada clic creaba una instancia de proceso;
+(2) con los URL parameters los `a!save(ri!…)` ya persisten el estado; (3) forzaba
+enlaces de texto en lugar de botones con confirmación.
+
+### Verificación (capturas)
+
+| Escenario | Resultado | Captura |
+|---|---|---|
+| Popup Alta abierto → F5 | El popup se mantiene | `img/t21_f5_popup.png` |
+| Póliza 2001900000007 → ALTA → F5 | Alta completo con datos de la póliza | `img/t21_f5_alta.png` |
+| CANCELAR → confirmación → Sí → F5 | Vuelve al Buscador y se mantiene | `img/t21_f5_confirm.png`, `img/t21_f5_buscador.png` |
+
+**Pendiente**: F5 dentro de Detalle/Acción — el record `SCA2 Solicitud` no tiene filas
+en TEST y no se crean solicitudes de prueba. El mecanismo es el mismo ya verificado.
+
+## 3. Rendimiento del Alta
+
+Medición con `testRule` en TEST, 3 ejecuciones por llamada, póliza `2001900000007`,
+timeout 60 s (medias de `diagnostics.durationMs`):
+
+| Llamada | Media | Mín | Máx | Tipo |
+|---|---:|---:|---:|---|
+| `SCA2_obtenerDatosCabecera` | 3948,0 | 1842 | 5001 | compuesta; integra API Clients y servicios externos |
+| `SCA2_pObtenerPolizaFecha` | 171,0 | 154 | 204 | integración Core7 externa |
+| `SCA2_consultarReservaPrima` | 586,7 | 167 | 1416 | integración externa |
+| `SCA2_consultarSiniestroPoliza` | 542,0 | 494 | 567 | integración externa |
+| `SCA2_searchAPIClients` | 569,3 | 558 | 583 | integración CMP API Clients externa |
+| `SCA2_contactMethodAPIClients` | 463,0 | 443 | 484 | integración CMP API Clients externa |
+| `SCA2_consultarSolicitudes` | 139,3 | 138 | 141 | integración externa |
+| `SCA2_obtenerInformacionUsuario` | 1,0 | 1 | 1 | datos de sesión / expresión local |
+| `SCA2_consultarCatalogacionRest` | 5,3 | 1 | 12 | catálogo (consulta mínima) |
+| `SCA2_consultarMotivo` | 138,0 | 137 | 139 | catálogo / servicio externo |
+| `SCA2_consultarDetalle` | 142,7 | 137 | 152 | catálogo / servicio externo |
+| `SCA2_consultarCausa` | 137,7 | 136 | 139 | catálogo / servicio externo |
+| `SCA2_consultarFechaUltimoSiniestro` | 800,0 | 468 | 1362 | integración externa |
+| `SCA2_obtenerTipoPoliza` | 159,3 | 154 | 165 | composición de consulta |
+| `SCA2_cargarSolicitud` | 2,7 | 2 | 3 | BBDD / record query |
+
+La consulta de tareas del Detalle no es una regla independiente con input simple;
+no se midió por separado sin un contexto de interfaz válido.
+
+### Por qué va lento (priorizado)
+
+1. **La cabecera (~3,9 s) es la suma secuencial de llamadas externas**: reserva (~0,6 s)
+   + siniestros (~0,5 s) + `searchAPIClients` (~0,6 s) + `contactMethodAPIClients`
+   (~0,5 s) + póliza (~0,2 s) + catálogos. El coste es del **backend PRE** (los mismos
+   servicios que consume SCA), no de Appian ni de SCA2 en sí.
+2. **Reevaluación en cada interacción**: en `SCA2_AltaSolicitudPage` se evalúan sin
+   `a!refreshVariable` propio (se recalculan en cada interacción del formulario):
+   `SCA2_obtenerInformacionUsuario`, `SCA2_obtenerTipoPoliza`, `SCA2_consultarPolizas`/
+   `SCA2_pObtenerPolizaFecha`, `SCA2_obtenerDatosCabecera`, catálogos Motivo/Detalle/
+   Causa, `SCA2_consultarFechaUltimoSiniestro`, `SCA2_calculoCanalEntrada`,
+   `SCA2_calculoMedioComunicacion`, `SCA2_consultarCatalogacionRest` y los auxiliares
+   de presentación (`SCA2_DatosCliente`, `SCA2_DatosPoliza`, `SCA2_DatosContacto`,
+   `SCA2_TablaOtrasSolAnulacion`). Ya protegidos con `a!refreshVariable`:
+   `motivoAnulacion`, `detalle`, `causa`, `tipoCatalogacion`, `fechaAnulacion`,
+   `telefonoExpertos`, `observaciones`, `compania`, `numFax`.
+3. Varianza: algunas integraciones tienen máximos altos (reserva 1416 ms, fecha último
+   siniestro 1362 ms) — picos del servicio, no del diseño.
+
+### Mejoras propuestas
+
+- **Paralelizar lo independiente**: las variables locales sin dependencias entre sí se
+  evalúan en paralelo por `a!localVariables` — revisar la cabecera para que las 5
+  llamadas externas no queden encadenadas. *(No aplicada.)*
+- **Cachear con `refreshOnVarChange: ri!numPoliza`** (o `refreshOnReferencedVarChange:false`)
+  las consultas que solo dependen de la póliza, para que no se reevalúen en cada
+  interacción del formulario. *(Aplicada parcialmente: los 9 campos del formulario ya
+  tienen `a!refreshVariable`; pendiente en las consultas listadas en el punto 2.)*
+- **Evitar re-consultas**: `obtenerInformacionUsuario` es local (1 ms) pero se
+  reevalúa cada vez; catálogos Motivo/Detalle/Causa podrían cargarse una vez.
+  *(No aplicada.)*
+- El grueso (~3,9 s de cabecera) es latencia del backend PRE; optimizar el servidor es
+  decisión fuera del alcance de SCA2. *(Documentado; sin acción en SCA2.)*
