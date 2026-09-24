@@ -1,0 +1,21 @@
+{
+ "response": {
+  "products": [
+   {
+    "productCode": "00595",
+    "productDesc": "Vida Ahorro 595",
+    "modalidades": [
+     "VA",
+     "VIA"
+    ]
+   },
+   {
+    "productCode": "00457",
+    "productDesc": "Rentas R2C",
+    "modalidades": [
+     "R2C"
+    ]
+   }
+  ]
+ }
+}

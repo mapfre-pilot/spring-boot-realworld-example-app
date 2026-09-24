@@ -1,0 +1,9 @@
+{
+ "response": {
+  "insuranceApplicationId": "APP-0001",
+  "policyNumber": "900000001",
+  "statusCode": "ACCEPTED",
+  "statusDesc": null,
+  "hasErrors": false
+ }
+}

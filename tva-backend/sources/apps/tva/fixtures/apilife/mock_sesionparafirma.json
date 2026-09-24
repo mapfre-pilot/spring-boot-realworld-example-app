@@ -1,0 +1,687 @@
+{
+ "beneficiarios": {
+  "tipoBeneficiarioVida": "",
+  "tipoBeneficiarioFallecimiento": "",
+  "vida": [
+   {
+    "participantFigureTypeCode": "BE",
+    "participantFigureTypeDesc": "",
+    "relationshipTypeCode": "",
+    "relationshipTypeDesc": "",
+    "eventTypeCode": "V",
+    "eventTypeDesc": "",
+    "beneficiaryTypeCode": "000000092",
+    "beneficiaryTypeDesc": "",
+    "beneficiaryText": ""
+   }
+  ],
+  "fallecimiento": [
+   {
+    "participantFigureTypeCode": "BE",
+    "participantFigureTypeDesc": "",
+    "relationshipTypeCode": "",
+    "relationshipTypeDesc": "",
+    "eventTypeCode": "F",
+    "eventTypeDesc": "",
+    "beneficiaryTypeCode": "000000035",
+    "beneficiaryTypeDesc": "",
+    "beneficiaryText": ""
+   }
+  ]
+ },
+ "cajas": [
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": false,
+     "visible": true
+    },
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": false,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": false,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": true
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": false
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": false
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": true
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": false
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": false
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": false
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": false
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": false
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": false
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": true
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": false,
+     "visible": true
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": false,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": true
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": false,
+     "visible": true
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": false,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": true,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": true,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": true,
+     "datosValidos": true,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": true,
+     "datosValidos": false,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": true,
+     "datosValidos": false,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": true,
+     "datosValidos": true,
+     "visible": true
+    }
+   ]
+  }
+ ],
+ "claveSesion": "F8A2",
+ "codigoProducto": "00595",
+ "comisiones": {
+  "comisionesOficina": {
+   "salesOfficeCode": "1171",
+   "salesOfficeDesc": "MAJADAHONDA",
+   "producerCommissions": [
+    {
+     "producerCode": "64620",
+     "producerDesc": "",
+     "interventionCode": "AG",
+     "baseTypeCode": "3",
+     "baseTypeDesc": "",
+     "personName": {
+      "name": "",
+      "firstSurname": "TEYVAD, M.Z.",
+      "secondSurname": ""
+     },
+     "commissionData": [
+      {
+       "contributionTypeCode": "AE",
+       "contributionTypeDesc": "",
+       "yearCommissionPerc": 0.5,
+       "commissionTranches": [
+        {
+         "commissionTranchePerc": 0.0,
+         "commissionTrancheDurationYearsNum": 0
+        },
+        {
+         "commissionTranchePerc": 0.0,
+         "commissionTrancheDurationYearsNum": 0
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "companyId": "0511",
+ "distributionChannel": "200",
+ "domicilioTomador2EsElDelTomador1": false,
+ "emisionRentas": {
+  "operationResult": {
+   "operationStatusCode": "02",
+   "operationStatusDesc": "Held",
+   "operationStatusReasonCode": "",
+   "operationStatusReasonDesc": ""
+  },
+  "insuranceApplicationData": {
+   "insuranceApplicationId": "122597",
+   "endorsementId": "0",
+   "retentionReasons": [
+    {
+     "retentionReasonCode": "R0077",
+     "retentionReasonDesc": "Documentación pendiente de firma"
+    }
+   ]
+  },
+  "contractResultData": {
+   "policyId": "0005800509",
+   "endorsementId": "0",
+   "modificationNumber": "0",
+   "premiumAmn": 86720.75
+  }
+ },
+ "firma": {
+  "tipoFirma": "",
+  "modosDeFirmaDisponibles": [
+   {
+    "destinationTypeCode": "O",
+    "destinationTypeDesc": "OFICINA"
+   },
+   {
+    "destinationTypeCode": "T",
+    "destinationTypeDesc": "FIRMA ELECTRÓNICA"
+   }
+  ]
+ },
+ "idPantallaAnterior": "",
+ "idPantallaActual": "Resumen contratación",
+ "modoFuncionamiento": "VIR",
+ "perfilUsuario": {
+  "username": "anon@example.org",
+  "nuuma": "OTORRE",
+  "codOficina": "9275",
+  "dirReg": "99",
+  "funcionalidades": [
+   4016,
+   4017,
+   4018,
+   4041,
+   4042,
+   4043,
+   4045,
+   4047,
+   47902
+  ],
+  "claveProductor": "0",
+  "dgt": "99"
+ },
+ "rentas": {
+  "diaPago": "2025-09-30Z",
+  "duracionPorTabla": "",
+  "fechaEfecto": "2025-03-19Z",
+  "idxSimulacionSeleccionada": 2,
+  "importeTotalPrima": 50000.0,
+  "pctAnualCrecimiento": 2.0,
+  "periodicidadRenta": 2,
+  "rentaObjetivo": 1058.17,
+  "simulaciones": [
+   {
+    "operationResult": {
+     "operationStatusCode": "01",
+     "operationStatusDesc": "Accepted",
+     "operationStatusReasonCode": "",
+     "operationStatusReasonDesc": ""
+    },
+    "projectData": {
+     "premiumAmn": 50000.0,
+     "incomeAmn": 1415.89,
+     "expectedReturnPerc": 2.3
+    }
+   },
+   {
+    "operationResult": {
+     "operationStatusCode": "01",
+     "operationStatusDesc": "Accepted",
+     "operationStatusReasonCode": "",
+     "operationStatusReasonDesc": ""
+    },
+    "projectData": {
+     "premiumAmn": 50000.0,
+     "incomeAmn": 1058.17,
+     "expectedReturnPerc": 2.41
+    }
+   }
+  ],
+  "tipoDuracionManual": "",
+  "tipoRevalorizacion": "GE"
+ },
+ "tomadores": [
+  {
+   "datosPersonales": {
+    "participantFigureTypeCode": "TO",
+    "participantFigureTypeDesc": "",
+    "figurePersonalData": {
+     "clientId": "1187501",
+     "personTypeCode": "F",
+     "personTypeDesc": "Fõsica",
+     "naturalPerson": {
+      "maritalStatusCode": "",
+      "maritalStatusDesc": "",
+      "personName": {
+       "name": "SAROX",
+       "firstSurname": "ABSEPEGIRVO",
+       "secondSurname": "CACAJIOXDDD"
+      },
+      "proffesionData": {
+       "professionCode": "185",
+       "professionDesc": "JOYERO",
+       "occupationCode": "1113",
+       "occupationDesc": "Directores de organizaciones de interés social"
+      },
+      "birthdate": "1943-04-29Z",
+      "genderCode": "V",
+      "genderDesc": "Hombre",
+      "dependencyDegreeCode": "",
+      "despendencyDegreeDesc": "",
+      "publicResponsibilityPersonInd": false,
+      "activityPRPCode": "00",
+      "activityPRPDesc": "No es o no ha sido persona de responsabilidad pública.",
+      "nationalityCountryCode": "011",
+      "nationalityCountryDesc": "ESPAÑA",
+      "birthCountryCode": "011",
+      "birthCountryDesc": "ESPAÑA"
+     },
+     "addresses": [
+      {
+       "addressId": "1",
+       "addressTypeCode": "F",
+       "addressTypeDesc": "Fiscal",
+       "addressRoadTypeCode": "ACC",
+       "addressRoadTypeDesc": "Acceso",
+       "addressName": "PEEP",
+       "addressNum": "2",
+       "addressAdditionalInfo": "",
+       "townCode": "",
+       "townDesc": "CR",
+       "provinceCode": "13",
+       "provinceDesc": "Ciudad Real",
+       "zipCode": "13004",
+       "countryCode": "011",
+       "countryDesc": "ESPAÑA"
+      }
+     ],
+     "contactMethods": [
+      {
+       "contactMethodId": "1",
+       "contactMethodTypeCode": "3",
+       "contactMethodTypeDesc": "Email",
+       "contactContextTypeCode": "4",
+       "contactContextTypeDesc": "Otros",
+       "contactMethodValue": "anon@example.org",
+       "contactMethodCountryCode": "",
+       "contactMethodCountryDesc": ""
+      },
+      {
+       "contactMethodId": "6",
+       "contactMethodTypeCode": "1",
+       "contactMethodTypeDesc": "Telefono Movil",
+       "contactContextTypeCode": "4",
+       "contactContextTypeDesc": "Otros",
+       "contactMethodValue": "600000000",
+       "contactMethodCountryCode": "011",
+       "contactMethodCountryDesc": "ESPAÑA"
+      },
+      {
+       "contactMethodId": "3",
+       "contactMethodTypeCode": "2",
+       "contactMethodTypeDesc": "Telefono Fijo",
+       "contactContextTypeCode": "4",
+       "contactContextTypeDesc": "Otros",
+       "contactMethodValue": "600000000",
+       "contactMethodCountryCode": "011",
+       "contactMethodCountryDesc": "ESPAÑA"
+      }
+     ],
+     "identificationMethods": [
+      {
+       "identityDocumentTypeCode": "02",
+       "identityDocumentTypeDesc": "NIE",
+       "identityDocumentNumber": "00000000X"
+      }
+     ],
+     "robinsonInd": false,
+     "localCountryHabitualResidenceInd": true
+    },
+    "receiptsCharge": {
+     "receiptsChargeId": "",
+     "paymentMethodTypeCode": "",
+     "paymentMethodTypeDesc": "",
+     "bankAccountInfo": {
+      "IBAN": "ES0000000000000000000000"
+     }
+    },
+    "benefitsPayment": {
+     "receiptsChargeId": "",
+     "paymentMethodTypeCode": "",
+     "paymentMethodTypeDesc": "",
+     "bankAccountInfo": {
+      "IBAN": "ES0000000000000000000000"
+     }
+    },
+    "policyHolderInsuredInd": true,
+    "policyHolderContributorInd": true,
+    "relationshipTypeCode": "",
+    "relationshipTypeDesc": "",
+    "participationPerc": 12.0,
+    "eventTypeCode": "",
+    "eventTypeDesc": "",
+    "beneficiaryTypeCode": "",
+    "beneficiaryTypeDesc": "",
+    "beneficiaryText": ""
+   },
+   "datosGestionParticipante": {
+    "datosRIC": {
+     "classificationCode": "",
+     "clientId": "0",
+     "integralitySegment": ""
+    },
+    "documentoIdDigitalizado": false,
+    "consentimientoProteccionDatos": true
+   },
+   "operationCode": "F8A2C8FCDA2D7CEE"
+  },
+  {
+   "datosPersonales": {
+    "participantFigureTypeCode": "TO",
+    "participantFigureTypeDesc": "",
+    "figurePersonalData": {
+     "clientId": "2810036",
+     "personTypeCode": "F",
+     "personTypeDesc": "Fõsica",
+     "naturalPerson": {
+      "maritalStatusCode": "",
+      "maritalStatusDesc": "",
+      "personName": {
+       "name": "PEP",
+       "firstSurname": "PEP",
+       "secondSurname": "PEP"
+      },
+      "proffesionData": {
+       "professionCode": "000",
+       "professionDesc": "PROFESION DESCONOCIDA",
+       "occupationCode": "0011",
+       "occupationDesc": "Oficiales de las fuerzas armadas"
+      },
+      "birthdate": "1951-03-22Z",
+      "genderCode": "V",
+      "genderDesc": "Hombre",
+      "dependencyDegreeCode": "",
+      "despendencyDegreeDesc": "",
+      "publicResponsibilityPersonInd": false,
+      "activityPRPCode": "00",
+      "activityPRPDesc": "No es o no ha sido persona de responsabilidad pública.",
+      "nationalityCountryCode": "011",
+      "nationalityCountryDesc": "ESPAÑA",
+      "birthCountryCode": "011",
+      "birthCountryDesc": "ESPAÑA"
+     },
+     "addresses": [
+      {
+       "addressId": "1",
+       "addressTypeCode": "F",
+       "addressTypeDesc": "Fiscal",
+       "addressRoadTypeCode": "ACC",
+       "addressRoadTypeDesc": "Acceso",
+       "addressName": "PEEP",
+       "addressNum": "2",
+       "addressAdditionalInfo": "",
+       "townCode": "",
+       "townDesc": "CR",
+       "provinceCode": "13",
+       "provinceDesc": "Ciudad Real",
+       "zipCode": "13004",
+       "countryCode": "011",
+       "countryDesc": "ESPAÑA"
+      }
+     ],
+     "contactMethods": [
+      {
+       "contactMethodId": "1",
+       "contactMethodTypeCode": "3",
+       "contactMethodTypeDesc": "Email",
+       "contactContextTypeCode": "4",
+       "contactContextTypeDesc": "Otros",
+       "contactMethodValue": "anon@example.org",
+       "contactMethodCountryCode": "",
+       "contactMethodCountryDesc": ""
+      },
+      {
+       "contactMethodId": "1",
+       "contactMethodTypeCode": "1",
+       "contactMethodTypeDesc": "Telefono Movil",
+       "contactContextTypeCode": "4",
+       "contactContextTypeDesc": "Otros",
+       "contactMethodValue": "600000000",
+       "contactMethodCountryCode": "011",
+       "contactMethodCountryDesc": "ESPAÑA"
+      }
+     ],
+     "identificationMethods": [
+      {
+       "identityDocumentTypeCode": "02",
+       "identityDocumentTypeDesc": "NIE",
+       "identityDocumentNumber": "00000000X"
+      }
+     ],
+     "robinsonInd": false,
+     "localCountryHabitualResidenceInd": true
+    },
+    "receiptsCharge": {
+     "receiptsChargeId": "",
+     "paymentMethodTypeCode": "",
+     "paymentMethodTypeDesc": "",
+     "bankAccountInfo": {
+      "IBAN": "ES0000000000000000000000"
+     }
+    },
+    "benefitsPayment": {
+     "receiptsChargeId": "",
+     "paymentMethodTypeCode": "",
+     "paymentMethodTypeDesc": "",
+     "bankAccountInfo": {
+      "IBAN": "ES0000000000000000000000"
+     }
+    },
+    "policyHolderInsuredInd": false,
+    "policyHolderContributorInd": false,
+    "relationshipTypeCode": "",
+    "relationshipTypeDesc": "",
+    "participationPerc": 88.0,
+    "eventTypeCode": "",
+    "eventTypeDesc": "",
+    "beneficiaryTypeCode": "",
+    "beneficiaryTypeDesc": "",
+    "beneficiaryText": ""
+   },
+   "datosGestionParticipante": {
+    "documentoIdDigitalizado": false,
+    "consentimientoProteccionDatos": true,
+    "datosRIC": {
+     "classificationCode": "",
+     "clientId": "0",
+     "integralitySegment": ""
+    }
+   },
+   "operationCode": "F8A21175FACF3280"
+  }
+ ]
+}

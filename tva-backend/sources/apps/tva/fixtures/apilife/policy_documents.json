@@ -1,0 +1,14 @@
+{
+ "response": {
+  "documents": [
+   {
+    "documentType": "POLIZA",
+    "name": "poliza.pdf",
+    "format": "PDF",
+    "contentBase64": "JVBERi0xLjQK"
+   }
+  ],
+  "signatureRequestId": "SIG-0001",
+  "signatureStatus": "SENT"
+ }
+}

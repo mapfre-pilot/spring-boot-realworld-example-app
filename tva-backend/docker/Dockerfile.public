@@ -1,0 +1,21 @@
+# Dockerfile público — igual que docker/Dockerfile pero sin base ACR ni
+# secreto de Azure Artifacts: usa python:3.11-slim y solo PyPI público.
+FROM python:3.11-slim AS base
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    POETRY_VERSION=2.5.1 \
+    POETRY_VIRTUALENVS_CREATE=false
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir "poetry==${POETRY_VERSION}"
+
+COPY sources/pyproject.toml sources/poetry.lock* ./
+RUN poetry install --only main --no-interaction --no-ansi
+
+COPY sources/ .
+
+EXPOSE 8888
+
+CMD ["sh", "-c", "python manage.py migrate && gunicorn config.wsgi:application --bind 0.0.0.0:8888"]

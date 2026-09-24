@@ -1,0 +1,12 @@
+{
+ "response": {
+  "contractingProposal": {
+   "insurancesApplication": [
+    {
+     "applicationId": "APP-0001",
+     "statusDesc": null
+    }
+   ]
+  }
+ }
+}

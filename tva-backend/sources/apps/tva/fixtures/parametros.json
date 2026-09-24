@@ -1,0 +1,1423 @@
+[
+ {
+  "clave": "TVA_ID_PANTALLA_SEGUROS_AHORRO",
+  "valor": "Seguros ahorro",
+  "tipo": "str",
+  "descripcion": "Seguros ahorro",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_NOMBRE_APLICACION",
+  "valor": "Tarificador Vida Ahorro",
+  "tipo": "str",
+  "descripcion": "Tarificador Vida Ahorro",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_GRP_WEBAPI_INICIO",
+  "valor": "TVA WebApi Inicio",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al grupo TVA WebApi Inicio",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CODIGOS_EMPRESA_ADMITIDOS",
+  "valor": "[\"0511\"]",
+  "tipo": "json",
+  "descripcion": "Lista de los Ids de empresa a los que se permite acceder a la aplicación",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CODIGOS_DISTRIBUTION_CHANNEL_ADMITIDOS",
+  "valor": "[\"200\", \"500\"]",
+  "tipo": "json",
+  "descripcion": "Lista de valores de canal de distribución a los que se permite acceder a la aplicación",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CODIGOS_TIPO_DOCUMENTO_DE_IDENTIDAD_ADMITIDOS",
+  "valor": "[\"02\", \"04\"]",
+  "tipo": "json",
+  "descripcion": "Lista de códigos de tipos de documentos de identidad válidos para la estructura de datos IdentificationMethod",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_APLICACION_CERRADA",
+  "valor": "0",
+  "tipo": "int",
+  "descripcion": "Indica si la aplicación está cerrada",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_MENSAJE_MOTIVO_CIERRE",
+  "valor": "",
+  "tipo": "str",
+  "descripcion": "Mensaje de motivo de cierre",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_MENSAJE_MOTIVO_CIERRE_PROGRAMADO",
+  "valor": "Aplicación cerrada por mantenimiento",
+  "tipo": "str",
+  "descripcion": "Aplicación cerrada por mantenimiento",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_FECHA_CIERRE",
+  "valor": "2024-07-06",
+  "tipo": "str",
+  "descripcion": "Fecha programada para el cierre de la aplicación",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_GRP_ADMINISTRADORES_PORTAL",
+  "valor": "TVA Administradores portal",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al grupo TVA Administradores portal",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_LITERALES_NO_HAY_DATOS",
+  "valor": "No hay datos para mostrar",
+  "tipo": "str",
+  "descripcion": "No hay datos para mostrar",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_FECHA_APERTURA",
+  "valor": "2024-07-08",
+  "tipo": "str",
+  "descripcion": "Fecha de apertura programada para la aplicación",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TIMEOUT_SESION",
+  "valor": "60",
+  "tipo": "int",
+  "descripcion": "60",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_ID_PANTALLA_ADMINISTRACION",
+  "valor": "Administración",
+  "tipo": "str",
+  "descripcion": "Administración",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_LITERALES_SELECCIONE_UNA_OPCION",
+  "valor": "Seleccione una opción",
+  "tipo": "str",
+  "descripcion": "Seleccione una opción",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_FORMATO_FECHA",
+  "valor": "dd/MM/yyyy",
+  "tipo": "str",
+  "descripcion": "Formato de fecha",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_SESION",
+  "valor": "1",
+  "tipo": "int",
+  "descripcion": "01",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CLAVES_SESION_NO_BORRAR",
+  "valor": "[]",
+  "tipo": "json",
+  "descripcion": "Matriz de claves de sesión que no hay que borrar en las trazas",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_NUUMA_NO_BORRAR",
+  "valor": "[\"\"]",
+  "tipo": "json",
+  "descripcion": "Matriz de nuumas que no hay que borrar en las trazas",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_DIAS_PERMANENCIA",
+  "valor": "40",
+  "tipo": "int",
+  "descripcion": "Número de dias que se dejan las trazas en la tabla antes de borrarlas",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_CLIENTE_VIDA",
+  "valor": "2",
+  "tipo": "int",
+  "descripcion": "02",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_CLIENTE_RIC",
+  "valor": "3",
+  "tipo": "int",
+  "descripcion": "03",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_SAVING_INSURANCE_APPLICATION_RESPONSE",
+  "valor": "19",
+  "tipo": "int",
+  "descripcion": "19",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_GET_PROPOSAL_RESPONSE",
+  "valor": "20",
+  "tipo": "int",
+  "descripcion": "20",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_AVISOS_CLASE_INSURANCE_APPLICATION",
+  "valor": "6",
+  "tipo": "int",
+  "descripcion": "06",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_AVISOS_CLASE_GET_PROPOSAL",
+  "valor": "7",
+  "tipo": "int",
+  "descripcion": "07",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_PM_GUARDAR_Y_VOLVER",
+  "valor": "0005ecd7-456b-8000-b8e2-7f0000014e7a",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al modelo de proceso TVA Guardar y volver",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_AVISOS_CLASE_GENERAL",
+  "valor": "8",
+  "tipo": "int",
+  "descripcion": "08",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_ACRONIMO_APLICACION",
+  "valor": "TVA",
+  "tipo": "str",
+  "descripcion": "TVA",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_ID_PANTALLA_R2C_CAPTURA",
+  "valor": "R2C Captura",
+  "tipo": "str",
+  "descripcion": "R2C Captura",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_ID_PANTALLA_R2C_PRECIOS",
+  "valor": "R2C Precios",
+  "tipo": "str",
+  "descripcion": "R2C Precios",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_R2C_MODALIDADES_CONTEMPLADAS",
+  "valor": "[\"00595\", \"00461\"]",
+  "tipo": "json",
+  "descripcion": "Modalidades que se permiten para el simulador renta dos cabezas",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_R2C_CAPT_SIGUIENTE",
+  "valor": "9",
+  "tipo": "int",
+  "descripcion": "09",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_ANNUITY_SIMULATION_REQUEST",
+  "valor": "21",
+  "tipo": "int",
+  "descripcion": "21",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_AVISOS_CLASE_ANNUITY_SIMULATION",
+  "valor": "9",
+  "tipo": "int",
+  "descripcion": "09",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_R2C_PM_CAPT_SIGUIENTE",
+  "valor": "0002ece6-df29-8000-bc79-7f0000014e7a",
+  "tipo": "str",
+  "descripcion": "Ejecución del botón Siguiente de la pantalla de captura de R2C",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_ANNUITY_SIMULATION_RESPONSE",
+  "valor": "22",
+  "tipo": "int",
+  "descripcion": "22",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_R2C_PRECIOS_RECALCULAR",
+  "valor": "10",
+  "tipo": "int",
+  "descripcion": "10",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_R2C_PM_PRECIOS_RECALCULAR",
+  "valor": "000aecee-ecf0-8000-be62-7f0000014e7a",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al modelo de proceso TVA R2C Precios-Recalcular",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_PERFIL_CLIENTE",
+  "valor": "11",
+  "tipo": "int",
+  "descripcion": "11",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_PERFIL_CLIENTE_RESPONSE",
+  "valor": "23",
+  "tipo": "int",
+  "descripcion": "23",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_INICIO_RENTAS",
+  "valor": "12",
+  "tipo": "int",
+  "descripcion": "12",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_PROPUESTA_PRODUCTOS_AHORRO",
+  "valor": "13",
+  "tipo": "int",
+  "descripcion": "13",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_PM_CAPTURA_TOMADOR1_CONTINUAR",
+  "valor": "0002ed03-cac3-8000-c515-7f0000014e7a",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al modelo de proceso TVA CapturaTomador1-Continuar",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_ENTRADA",
+  "valor": "24",
+  "tipo": "int",
+  "descripcion": "24",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_PM_CAPTURA_TOMADOR2_CONTINUAR",
+  "valor": "0009ed04-1a27-8000-c58a-7f0000014e7a",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al modelo de proceso TVA CapturaTomador2-Continuar",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CAJA_INDEX_R2C_CAJA_TOMADORES",
+  "valor": "1",
+  "tipo": "int",
+  "descripcion": "01",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CAJA_INDEX_R2C_CAJA_PRECIOS",
+  "valor": "2",
+  "tipo": "int",
+  "descripcion": "02",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_SECCION_INDEX_CAJA04_APORTANTE",
+  "valor": "7",
+  "tipo": "int",
+  "descripcion": "Sección 07 de la caja Datos del seguro",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_SECCION_INDEX_CAJA04_BENEFICIARIOS",
+  "valor": "8",
+  "tipo": "int",
+  "descripcion": "Sección 08 de la caja Datos del seguro",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_SECCION_INDEX_CAJA04_CESION_DERECHOS",
+  "valor": "9",
+  "tipo": "int",
+  "descripcion": "Sección 09 de la caja Datos del seguro",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_SECCION_INDEX_CAJA04_NOTAS",
+  "valor": "10",
+  "tipo": "int",
+  "descripcion": "Sección 10 de la caja Datos del seguro",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_PM_INICIO_AHORRO",
+  "valor": "0002ed0e-61e1-8000-ca50-7f0000014e7a",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al modelo de proceso TVA Inicio Ahorro",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_ID_PANTALLA_SISTEMA_CERRADO",
+  "valor": "Sistema cerrado",
+  "tipo": "str",
+  "descripcion": "Sistema cerrado",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_ID_PANTALLA_FIN",
+  "valor": "Fin",
+  "tipo": "str",
+  "descripcion": "Fin",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_PM_INICIO_SIMULADOR_RENTAS",
+  "valor": "0013ed0e-b90d-8000-caa4-7f0000014e7a",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al modelo de proceso TVA Inicio SimuladorRentas",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_R2C_PRECIOS_CONTRATAR",
+  "valor": "14",
+  "tipo": "int",
+  "descripcion": "14",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_PM_R2C_PRECIOS_CONTRATAR",
+  "valor": "0013ed0e-ce79-8000-caad-7f0000014e7a",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al modelo de proceso TVA R2C Precios-Contratar",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_ANNUITY_INSURANCE_APPLICATION_REQUEST",
+  "valor": "25",
+  "tipo": "int",
+  "descripcion": "25",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_ANNUITY_INSURANCE_APPLICATION_RESPONSE",
+  "valor": "26",
+  "tipo": "int",
+  "descripcion": "26",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_CAPTURA_DATOS_RENTAS_CONTRATAR",
+  "valor": "15",
+  "tipo": "int",
+  "descripcion": "15",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_PM_CAPTURA_DATOS_RENTAS_CONTRATAR",
+  "valor": "000ced16-71ac-8000-cc69-7f0000014e7a",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al modelo de proceso TVA CapturaDatosRentas-Contratar",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_ID_PANTALLA_RESUMEN_CONTRATACION",
+  "valor": "Resumen contratación",
+  "tipo": "str",
+  "descripcion": "Resumen contratación",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CAJA_INDEX_RESUMEN_CONTRATACION_RENTAS",
+  "valor": "11",
+  "tipo": "int",
+  "descripcion": "11",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CAJA_INDEX_SELECCION_TIPO_FIRMA",
+  "valor": "12",
+  "tipo": "int",
+  "descripcion": "12",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_SECCION_INDEX_CAJA11_RESUMEN_CONTRATACION",
+  "valor": "1",
+  "tipo": "int",
+  "descripcion": "1",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_FLAG_FIRMA_BIOMETRICA",
+  "valor": "1",
+  "tipo": "int",
+  "descripcion": "Flag de firma biométrica",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_FLAG_FIRMA_ELECTRONICA",
+  "valor": "1",
+  "tipo": "int",
+  "descripcion": "Flag de firma electrónica",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_ID_PANTALLA_SELECCION_PRODUCTO_AHORRO",
+  "valor": "Selección producto ahorro",
+  "tipo": "str",
+  "descripcion": "Selección producto ahorro",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_INDIVIDUAL_DOCUMENTS_REQUEST",
+  "valor": "27",
+  "tipo": "int",
+  "descripcion": "27",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_INDIVIDUAL_DOCUMENTS_RESPONSE",
+  "valor": "28",
+  "tipo": "int",
+  "descripcion": "28",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CAJA_INDEX_DOCUMENTACION_PRECONTRACTUAL",
+  "valor": "13",
+  "tipo": "int",
+  "descripcion": "13",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_PM_DOCUMENTACION_PRECONTRACTUAL",
+  "valor": "0011ed60-2e30-8000-db3d-7f0000014e7a",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al modelo de proceso TVA DocumentacionPrecontractual",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_PM_RESUMEN_CONTRATACION_FIRMAR",
+  "valor": "0002ed61-3a50-8000-dbbc-7f0000014e7a",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al modelo de proceso TVA PopUp Firmar",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_POLICY_DOCUMENTS_REQUEST",
+  "valor": "29",
+  "tipo": "int",
+  "descripcion": "29",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_POLICY_DOCUMENTS_RESPONSE",
+  "valor": "30",
+  "tipo": "int",
+  "descripcion": "30",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_RESUMEN_CONTRATACION_FIRMAR",
+  "valor": "16",
+  "tipo": "int",
+  "descripcion": "16",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_ID_PANTALLA_RESULTADO_FIRMA",
+  "valor": "Resultado firma",
+  "tipo": "str",
+  "descripcion": "Resultado firma",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_FOL_DOCUMENTOS_TEMPORALES",
+  "valor": "_a-0000ed4e-7436-8000-9c86-011c48011c48_16321139",
+  "tipo": "str",
+  "descripcion": "Carpeta de documentos temporales",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_FIRMA_MANUSCRITA",
+  "valor": "17",
+  "tipo": "int",
+  "descripcion": "17",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_DOC_DESCARGAR_DOCUMENTO",
+  "valor": "_a-0000ed4e-7436-8000-9c86-011c48011c48_16374770",
+  "tipo": "str",
+  "descripcion": "Documento que se descarga",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_AVISOS_CLASE_FIRMA",
+  "valor": "10",
+  "tipo": "int",
+  "descripcion": "10",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_PM_ENVIO_FIRMA_MANUSCRITA",
+  "valor": "000ced61-7370-8000-dbfc-7f0000014e7a",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al modelo de proceso TVA Firma-EnvioFirmaManuscrita",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CAJA_INDEX_RESULTADO_FIRMA",
+  "valor": "14",
+  "tipo": "int",
+  "descripcion": "14",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_FLAG_TEST_CONVENIENCIA_OBLIGATORIO",
+  "valor": "0",
+  "tipo": "int",
+  "descripcion": "Flag de test de conveniencia obligatorio",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_FLAG_DOCUMENTOS_PRECONTRACTUALES_OBLIGATORIOS",
+  "valor": "0",
+  "tipo": "int",
+  "descripcion": "Flag de documentos precontractuales obligatorios",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_CAPTURA_TOMADOR1_CONTINUAR",
+  "valor": "18",
+  "tipo": "int",
+  "descripcion": "18",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_SBC_MAXIMO_REQUEST",
+  "valor": "31",
+  "tipo": "int",
+  "descripcion": "31",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_SBC_MAXIMO_RESPONSE",
+  "valor": "32",
+  "tipo": "int",
+  "descripcion": "32",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_VAL_MENSAJE_ERROR_CLIENTE_SIN_CONVENIENCIA",
+  "valor": "Es necesario que el cliente tenga realizado su test de conveniencia y se encuentre vigente. Por favor, revise su situación.",
+  "tipo": "str",
+  "descripcion": "Mensaje de error que se muestra cuando el cliente no tiene test de conveniencia realizado o no está vigente",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_SBC_MAXIMO",
+  "valor": "19",
+  "tipo": "int",
+  "descripcion": "19",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_VAL_OPCIONES_INVERSION_PREFERENCIAS",
+  "valor": "preferencias",
+  "tipo": "str",
+  "descripcion": "preferencias",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_VAL_OPCIONES_INVERSION_CESTA_LIBRE",
+  "valor": "cestaLibre",
+  "tipo": "str",
+  "descripcion": "cestaLibre",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_VAL_OPCIONES_INVERSION_CESTA_NO_LIBRE",
+  "valor": "cestaNoLibre",
+  "tipo": "str",
+  "descripcion": "cestaNoLibre",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_CAPTURA_TESTC_RESULTADO",
+  "valor": "33",
+  "tipo": "int",
+  "descripcion": "33",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_CAPTURA_TESTC",
+  "valor": "20",
+  "tipo": "int",
+  "descripcion": "20",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CAJA_INDEX_REQUISITOS_CONTRATACION",
+  "valor": "15",
+  "tipo": "int",
+  "descripcion": "15",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CAJA_INDEX_DATOS_FIRMA",
+  "valor": "16",
+  "tipo": "int",
+  "descripcion": "16",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_VAL_TIEMPO_MAXIMO_ESPERA_TAREA",
+  "valor": "1",
+  "tipo": "int",
+  "descripcion": "Tiempo máximo que esperamos a que una tarea de usuario sea completada dentro de un proceso. Expresado en horas.",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_DOC_ICO_DESCARGA_DOCUMENTO",
+  "valor": "_a-0000edf5-ee9a-8000-9c96-011c48011c48_17107000",
+  "tipo": "str",
+  "descripcion": "Referencia de constante al documento ‎TVA_ico_descarga_documento",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_SECCION_INDEX_CAJA16_SELECCION_TIPO_FIRMA",
+  "valor": "1",
+  "tipo": "int",
+  "descripcion": "Sección 01 de la caja Firma",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_SECCION_INDEX_CAJA16_FIRMA_POLIZA",
+  "valor": "2",
+  "tipo": "int",
+  "descripcion": "Sección 02 de la caja Firma",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_SECCION_INDEX_CAJA16_CARGA_POLIZA",
+  "valor": "3",
+  "tipo": "int",
+  "descripcion": "Sección 03 de la caja Firma",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_VAL_FUNCIONALIDAD_EXCEPCIONES_PARA_CORREDORES",
+  "valor": "4114",
+  "tipo": "int",
+  "descripcion": "Funcionalidad del perfil de usuario que aplica al funcionamiento de la aplicacion las excepciones previstas para corredores (4114)",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_PM_IPS",
+  "valor": "0003edfe-2503-8000-f51c-7f0000014e7a",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al proceso que manda aviso a los Administradores",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_PM_FIRMAR",
+  "valor": "0009ee0e-5801-8000-fb96-7f0000014e7a",
+  "tipo": "str",
+  "descripcion": "Constante que apunta a firmar",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_CAPTURA_DATOS_VIA_CONTRATAR",
+  "valor": "21",
+  "tipo": "int",
+  "descripcion": "21",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_CLIENTE_VIDA_REQUEST",
+  "valor": "34",
+  "tipo": "int",
+  "descripcion": "34",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_CLIENTE_RIC_REQUEST",
+  "valor": "35",
+  "tipo": "int",
+  "descripcion": "35",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_PERFIL_CLIENTE_REQUEST",
+  "valor": "36",
+  "tipo": "int",
+  "descripcion": "36",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_VAL_MENSAJE_ERROR_PROCESO_FIRMA",
+  "valor": "Error en el proceso de envío a firma.",
+  "tipo": "str",
+  "descripcion": "Mensaje de error que se muestra cuando se produce un error en la firma",
+  "entorno": null
+ },
+ {
+  "clave": "CMP_VAL_SIGLAS_APLICACION_TVA",
+  "valor": "TVA",
+  "tipo": "str",
+  "descripcion": "",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_VAL_USUARIO_MAPFRE",
+  "valor": "OTORRE",
+  "tipo": "str",
+  "descripcion": "OTORRE",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CODIGOS_EMPRESA_POR_DEFECTO",
+  "valor": "0511",
+  "tipo": "str",
+  "descripcion": "0511",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CODIGOS_DISTRIBUTION_CHANNEL_POR_DEFECTO",
+  "valor": "500",
+  "tipo": "str",
+  "descripcion": "500",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_VAL_ORIGIN_CODE_PFM",
+  "valor": "PFM",
+  "tipo": "str",
+  "descripcion": "PFM",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_VAL_VENTA_ASESORADA",
+  "valor": "VA",
+  "tipo": "str",
+  "descripcion": "VA",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_VAL_VENTA_INFORMADA",
+  "valor": "VIA",
+  "tipo": "str",
+  "descripcion": "VIA",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_VAL_PROCESS_CODE_TVA",
+  "valor": "21",
+  "tipo": "str",
+  "descripcion": "21",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_VAL_VENTA_RENTAS",
+  "valor": "VIR",
+  "tipo": "str",
+  "descripcion": "VIR",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_VAL_CODIGO_PRODUCTO_00595",
+  "valor": "00595",
+  "tipo": "str",
+  "descripcion": "00595",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CODIGOS_DISTRIBUTION_CHANNEL_500",
+  "valor": "500",
+  "tipo": "str",
+  "descripcion": "500",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_NOMBRE_APLICACION_CAMPANIA",
+  "valor": "Tarificador Vida Ahorro Campaña",
+  "tipo": "str",
+  "descripcion": "Tarificador Vida Ahorro Campaña",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_ID_PANTALLA_MODALIDAD_CAMPANIA",
+  "valor": "Modalidad Campaña",
+  "tipo": "str",
+  "descripcion": "Pantalla que muestra el mensaje de que el producto está en campaña",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_VAL_MENSAJE_CAMPANIA",
+  "valor": "Esta modalidad está en campaña. Debe acceder por \"GESVIDA Campañas\"",
+  "tipo": "str",
+  "descripcion": "Mensaje que aparece cuando se entra por un producto en campaña",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_ID_PANTALLA_SIN_PERFIL",
+  "valor": "Sin Perfil ",
+  "tipo": "str",
+  "descripcion": "Pantalla que muestra el mensaje de que no se recupera el perfil del usuario",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_GRP_ALERTAS",
+  "valor": "TVA Alertas",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al grupo TVA Alertas",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_GRP_USUARIOS",
+  "valor": "TVA Usuarios",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al grupo TVA Usuarios",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_LITERALES_UTILIZAR_OTRA_CUENTA",
+  "valor": "Utilizar otra cuenta para domiciliar prestaciones",
+  "tipo": "str",
+  "descripcion": "Utilizar otra cuenta para domiciliar prestaciones",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_FUNCIONALIDAD_47902",
+  "valor": "47902",
+  "tipo": "int",
+  "descripcion": "47902 - Permite beneficiario tipo texto en modalidades Aneto",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_FUNCIONALIDAD_4043",
+  "valor": "4043",
+  "tipo": "int",
+  "descripcion": "4043 - Permite beneficiarios tipo estándar para modalidades no Aneto en suceso de vida",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_FUNCIONALIDAD_4017",
+  "valor": "4017",
+  "tipo": "int",
+  "descripcion": "4017 - Permite beneficiario tipo texto para modalidades no Aneto",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_FUNCIONALIDAD_4018",
+  "valor": "4018",
+  "tipo": "int",
+  "descripcion": "4018 - Permite beneficiario nominal para modalidades no Aneto",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_LITERALES_FECHA_NO_POSTERIOR_A_LA_ACTUAL",
+  "valor": "La fecha no puede ser posterior a la actual",
+  "tipo": "str",
+  "descripcion": "La fecha no puede ser posterior a la actual",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_LITERALES_LONGITUD_NUMERO_VIA",
+  "valor": "La longitud del número de vía no puede ser mayor de 4 caractéres",
+  "tipo": "str",
+  "descripcion": "La longitud del número de vía no puede ser mayor de 4 caractéres",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_LITERALES_VALOR_CON_FORMATO_INVALIDO",
+  "valor": "El valor informado no tiene un formato válido",
+  "tipo": "str",
+  "descripcion": "El valor informado no tiene un formato válido",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_AVISOS_CLASE_TALLER",
+  "valor": "2",
+  "tipo": "int",
+  "descripcion": "02",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_AVISOS_MOSTRAR_EN_DATOS_PARTICIPANTE",
+  "valor": "3",
+  "tipo": "int",
+  "descripcion": "03",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_FLAG_SIMULAR_BUSQUEDA_CLIENTE_RIC",
+  "valor": "0",
+  "tipo": "int",
+  "descripcion": "Indica si se llama a la regla de simulación de la búsqueda en RIC o al servicio search de RIC. Sólo tiene efecto en los entornos NO productivos",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_AVISOS_CLASE_BUSQUEDA_RIC",
+  "valor": "3",
+  "tipo": "int",
+  "descripcion": "03",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_RGPD",
+  "valor": "3",
+  "tipo": "int",
+  "descripcion": "03",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_RGPD_LOG_ERROR",
+  "valor": "8",
+  "tipo": "int",
+  "descripcion": "08",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_RGPD_ERROR_SERVICIO",
+  "valor": "7",
+  "tipo": "int",
+  "descripcion": "07",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_RGPD_CONTEXTO",
+  "valor": "6",
+  "tipo": "int",
+  "descripcion": "06",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_RGPD_RESULTADO",
+  "valor": "9",
+  "tipo": "int",
+  "descripcion": "09",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_CAPTURA_DNI",
+  "valor": "4",
+  "tipo": "int",
+  "descripcion": "04",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_CAPTURA_DNI_RESULTADO",
+  "valor": "10",
+  "tipo": "int",
+  "descripcion": "10",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_PROPOSAL_REQUEST",
+  "valor": "11",
+  "tipo": "int",
+  "descripcion": "11",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_PROPOSAL_RESPONSE",
+  "valor": "12",
+  "tipo": "int",
+  "descripcion": "12",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_ID_PANTALLA_SOLO_AVISOS",
+  "valor": "Sólo avisos",
+  "tipo": "str",
+  "descripcion": "Sólo avisos",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_AVISOS_CLASE_SAVE_PROPOSAL",
+  "valor": "4",
+  "tipo": "int",
+  "descripcion": "04",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_FUNCIONALIDAD_4045",
+  "valor": "4045",
+  "tipo": "int",
+  "descripcion": "4045 - Permite saltarse las normas de contratación (efecto en el frontal: editar el campo Grado de minusvalía)",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_AVISOS_MOSTRAR_EN_CESION_DERECHOS",
+  "valor": "4",
+  "tipo": "int",
+  "descripcion": "04",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_LITERALES_DOCUMENTO_NO_ES_NIF_CIF_VALIDO",
+  "valor": "El documento no es un NIF o CIF válido",
+  "tipo": "str",
+  "descripcion": "El documento no es un NIF o CIF válido",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_LITERALES_DOCUMENTO_NO_ES_NIF_NIE_VALIDO",
+  "valor": "El documento no es un NIF o NIE válido",
+  "tipo": "str",
+  "descripcion": "El documento no es un NIF o NIE válido",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_CESION_DERECHOS",
+  "valor": "5",
+  "tipo": "int",
+  "descripcion": "05",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_CESION_DERECHOS",
+  "valor": "13",
+  "tipo": "int",
+  "descripcion": "13",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_FUNCIONALIDAD_4042",
+  "valor": "4042",
+  "tipo": "int",
+  "descripcion": "4042 - Permite acceder a la sección Asegurado",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_FUNCIONALIDAD_4047",
+  "valor": "4047",
+  "tipo": "int",
+  "descripcion": "4047 - Permite el acceso a los datos de Reinversión (Sección Datos de la operación)",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_VALIDAR_REINVERSION",
+  "valor": "6",
+  "tipo": "int",
+  "descripcion": "06",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_VALIDAR_REINVERSION_REQUEST",
+  "valor": "14",
+  "tipo": "int",
+  "descripcion": "14",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_VALIDAR_REINVERSION_RESPONSE",
+  "valor": "15",
+  "tipo": "int",
+  "descripcion": "15",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_PM_VALIDAR_REINVERSION",
+  "valor": "0006ecaa-b1d8-8000-aa56-7f0000014e7a",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al modelo de proceso TVA ValidarReinversion",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_INDIVIDUAL_NOTAS",
+  "valor": "7",
+  "tipo": "int",
+  "descripcion": "07",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_INDIVIDUAL_NOTAS_REQUEST",
+  "valor": "16",
+  "tipo": "int",
+  "descripcion": "16",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_INDIVIDUAL_NOTAS_RESPONSE",
+  "valor": "17",
+  "tipo": "int",
+  "descripcion": "17",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_FUNCIONALIDAD_4016",
+  "valor": "4016",
+  "tipo": "int",
+  "descripcion": "4016 - Notas de central",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_FUNCIONALIDAD_4041",
+  "valor": "4041",
+  "tipo": "int",
+  "descripcion": "4041 - Notas para administrativo",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CAJA_INDEX_CAPTURA_DATOS_TOMADOR1",
+  "valor": "5",
+  "tipo": "int",
+  "descripcion": "05",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CAJA_INDEX_CAPTURA_DATOS_REP_LEGAL_TOMADOR1",
+  "valor": "6",
+  "tipo": "int",
+  "descripcion": "06",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CAJA_INDEX_CAPTURA_DATOS_TOMADOR2",
+  "valor": "7",
+  "tipo": "int",
+  "descripcion": "07",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CAJA_INDEX_CAPTURA_DATOS_REP_LEGAL_TOMADOR2",
+  "valor": "8",
+  "tipo": "int",
+  "descripcion": "08",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_ID_PANTALLA_CAPTURA_TOMADOR1",
+  "valor": "Captura tomador 1",
+  "tipo": "str",
+  "descripcion": "Captura tomador 1",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_ID_PANTALLA_CAPTURA_TOMADOR2",
+  "valor": "Captura tomador 2",
+  "tipo": "str",
+  "descripcion": "Captura tomador 2",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CODIGOS_MODOS_DE_FUNCIONAMIENTO_ADMITIDOS",
+  "valor": "[\"VA\", \"VIA\", \"VIR\"]",
+  "tipo": "json",
+  "descripcion": "Lista de valores válidos para el atributo indFunctionMode de la webApi de inicio",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_AVISOS_CLASE_DISCREPANCIAS",
+  "valor": "5",
+  "tipo": "int",
+  "descripcion": "05",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_GUARDAR_Y_VOLVER",
+  "valor": "8",
+  "tipo": "int",
+  "descripcion": "08",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_SAVING_INSURANCE_APPLICATION_REQUEST",
+  "valor": "18",
+  "tipo": "int",
+  "descripcion": "18",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_INICIO_AHORRO",
+  "valor": "1",
+  "tipo": "int",
+  "descripcion": "01",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_ID_PANTALLA_CAPTURA_DATOS_SOLICITUD",
+  "valor": "Captura datos",
+  "tipo": "str",
+  "descripcion": "Captura datos",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_UBICACION_PM_VERIFY_PRODUCERS",
+  "valor": "2",
+  "tipo": "int",
+  "descripcion": "02",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_VERIFY_PRODUCERS_REQUEST",
+  "valor": "4",
+  "tipo": "int",
+  "descripcion": "04",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_TRAZA_CODIGOS_TIPO_CONTENIDO_VERIFY_PRODUCERS_RESPONSE",
+  "valor": "5",
+  "tipo": "int",
+  "descripcion": "05",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_SECCION_INDEX_CAJA04_DATOS_CONTACTO",
+  "valor": "5",
+  "tipo": "int",
+  "descripcion": "Sección 05 de la caja Datos del seguro",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_SECCION_INDEX_CAJA04_ASEGURADO",
+  "valor": "6",
+  "tipo": "int",
+  "descripcion": "Sección 06 de la caja Datos del seguro",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_SECCION_INDEX_CAJA04_DOMICILIACIONES",
+  "valor": "4",
+  "tipo": "int",
+  "descripcion": "Sección 04 de la caja Datos del seguro",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_SECCION_INDEX_CAJA02_BENEFICIARIOS",
+  "valor": "8",
+  "tipo": "int",
+  "descripcion": "Sección 08 de la caja Datos del seguro",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_SECCION_INDEX_CAJA04_DATOS_DE_LA_OPERACION",
+  "valor": "1",
+  "tipo": "int",
+  "descripcion": "Sección 01 de la caja Datos del seguro",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CAJA_TAMANNO_ICONOS",
+  "valor": "MEDIUM",
+  "tipo": "str",
+  "descripcion": "MEDIUM",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_GRP_DEBUG",
+  "valor": "TVA Debug",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al grupo TVA Debug",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CAJA_INDEX_DATOS_PRODUCTORES",
+  "valor": "3",
+  "tipo": "int",
+  "descripcion": "03",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_SECCION_INDEX_CAJA01_DATOS_PRODUCTORES",
+  "valor": "1",
+  "tipo": "int",
+  "descripcion": "Sección 01 de la caja Datos Productores",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CAJA_INDEX_DATOS_DEL_SEGURO",
+  "valor": "4",
+  "tipo": "int",
+  "descripcion": "04",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_SECCION_INDEX_CAJA04_OPCIONES_DE_INVERSION",
+  "valor": "2",
+  "tipo": "int",
+  "descripcion": "Sección 02 de la caja Datos del seguro",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_SECCION_INDEX_CAJA04_GARANTIAS",
+  "valor": "3",
+  "tipo": "int",
+  "descripcion": "Sección 03 de la caja Datos del seguro",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CAJA_INDEX_DOMICILIACIONES_TOMADOR1",
+  "valor": "9",
+  "tipo": "int",
+  "descripcion": "09",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_CAJA_INDEX_DOMICILIACIONES_TOMADOR2",
+  "valor": "10",
+  "tipo": "int",
+  "descripcion": "10",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_LITERALES_TECLEE_CODIGO_IBAN",
+  "valor": "Teclee código IBAN y número de cuenta sin espacios (en total 24 caracteres)",
+  "tipo": "str",
+  "descripcion": "Teclee código IBAN y número de cuenta sin espacios (en total 24 caracteres)",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_PM_VERIFICAR_PRODUCTORES",
+  "valor": "0008ec64-5f5e-8000-9b36-7f0000014e7a",
+  "tipo": "str",
+  "descripcion": "Constante que apunta al modelo de proceso TVA VerificarProductores",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_AVISOS_CLASE_VERIFICAR_PRODUCTORES",
+  "valor": "1",
+  "tipo": "int",
+  "descripcion": "01",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_AVISOS_MOSTRAR_EN_CABECERA",
+  "valor": "1",
+  "tipo": "int",
+  "descripcion": "01",
+  "entorno": null
+ },
+ {
+  "clave": "TVA_AVISOS_MOSTRAR_EN_DATOS_PRODUCTORES",
+  "valor": "2",
+  "tipo": "int",
+  "descripcion": "02",
+  "entorno": null
+ }
+]
