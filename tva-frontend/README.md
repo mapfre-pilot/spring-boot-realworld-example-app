@@ -61,7 +61,9 @@ Claves: `dev` (api localhost:8888, `auth.mode: local`), `pre`/`pro` (`auth.mode:
 `provideEnvironment`, `EnvironmentConfig`, `ENVIRONMENT_CONFIG`, `EnvironmentService`).
 
 **Swap a la librería corporativa**: restaura `.npmrc.corporate` → `.npmrc`, quita
-`libs/**` de `pnpm-workspace.yaml`, fija la versión real en `package.json` y borra el stub.
+`libs/**` de `pnpm-workspace.yaml`, fija la versión real en `package.json`, borra el stub
+y **elimina el bloque `paths` de `@mapfre-tech/ngx-multienvironment` en `tsconfig.json`**
+(necesario para que el stub TS se compile AOT/JIT dentro del workspace).
 
 ## Ejecutores Nx corporativos
 

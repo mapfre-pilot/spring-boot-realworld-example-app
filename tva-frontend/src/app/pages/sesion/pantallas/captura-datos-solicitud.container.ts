@@ -78,11 +78,11 @@ export class CapturaDatosSolicitudContainer {
   });
 
   guardar(): void {
-    this.store.ejecutar('guardar-solicitud', { solicitud: this.form.getRawValue() }).subscribe();
+    this.store.ejecutar('siguiente', { solicitud: this.form.getRawValue() }).subscribe();
   }
 
   guardarYVolver(): void {
-    this.store.guardarEstado({ solicitud: this.form.getRawValue() }).subscribe();
+    this.store.ejecutar('guardar-solicitud', { solicitud: this.form.getRawValue() }).subscribe();
   }
 
   anterior(): void {

@@ -40,7 +40,7 @@ export class SesionStore {
           this.sesion.set({
             ...s,
             pantalla_actual: res.pantallaActual,
-            estado: res.estado,
+            estado: { ...res.estado, avisos: res.avisos },
           });
         }
       })

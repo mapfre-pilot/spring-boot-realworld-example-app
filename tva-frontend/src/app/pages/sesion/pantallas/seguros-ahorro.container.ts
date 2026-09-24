@@ -62,7 +62,12 @@ export class SegurosAhorroContainer implements OnInit {
     const seleccion = Object.entries(this.form.value)
       .filter(([, v]) => v)
       .map(([k]) => k);
-    this.store.ejecutar('seleccionar-modalidad', { productosSeleccionados: seleccion }).subscribe();
+    this.store
+      .ejecutar('seleccionar-modalidad', {
+        productCode: seleccion[0] ?? '',
+        productosSeleccionados: seleccion,
+      })
+      .subscribe();
   }
 
   anterior(): void {

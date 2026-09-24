@@ -75,7 +75,7 @@ export abstract class TomadorBase {
   });
 
   continuar(): void {
-    this.store.ejecutar('continuar-tomador', { tomador: this.form.getRawValue() }).subscribe();
+    this.store.ejecutar('continuar-tomador', { ...this.form.getRawValue() }).subscribe();
   }
 
   anterior(): void {

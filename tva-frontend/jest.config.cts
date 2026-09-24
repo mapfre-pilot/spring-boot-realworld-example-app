@@ -18,6 +18,10 @@ module.exports = {
     'jest-preset-angular/build/serializers/ng-snapshot',
     'jest-preset-angular/build/serializers/html-comment',
   ],
+  moduleNameMapper: {
+    '^@mapfre-tech/ngx-multienvironment(/core)?$':
+      '<rootDir>/libs/stubs/ngx-multienvironment/src/index.ts',
+  },
   testMatch: [
     '<rootDir>/src/**/__tests__/**/*.[jt]s?(x)',
     '<rootDir>/src/**/*(*.)@(spec|test).[jt]s?(x)',

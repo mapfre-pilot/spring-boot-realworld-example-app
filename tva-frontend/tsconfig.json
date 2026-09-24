@@ -13,7 +13,9 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "paths": {
-      "@package": ["./package.json"]
+      "@package": ["./package.json"],
+      "@mapfre-tech/ngx-multienvironment": ["./libs/stubs/ngx-multienvironment/src/index.ts"],
+      "@mapfre-tech/ngx-multienvironment/core": ["./libs/stubs/ngx-multienvironment/src/index.ts"]
     },
     "strict": true,
     "noImplicitOverride": true,

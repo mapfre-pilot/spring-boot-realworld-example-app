@@ -40,12 +40,18 @@ importers:
       '@angular/router':
         specifier: ~21.2.0
         version: 21.2.23(@angular/common@21.2.23(@angular/core@21.2.23(@angular/compiler@21.2.23)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.23(@angular/compiler@21.2.23)(rxjs@7.8.2))(@angular/platform-browser@21.2.23(@angular/animations@21.2.23(@angular/core@21.2.23(@angular/compiler@21.2.23)(rxjs@7.8.2)))(@angular/common@21.2.23(@angular/core@21.2.23(@angular/compiler@21.2.23)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.23(@angular/compiler@21.2.23)(rxjs@7.8.2)))(rxjs@7.8.2)
+      '@fontsource/roboto':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@mapfre-tech/ngx-multienvironment':
         specifier: workspace:*
         version: link:libs/stubs/ngx-multienvironment
       angular-auth-oidc-client:
         specifier: ^22.0.1
         version: 22.0.1(@angular/common@21.2.23(@angular/core@21.2.23(@angular/compiler@21.2.23)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.23(@angular/compiler@21.2.23)(rxjs@7.8.2))(@angular/router@21.2.23(@angular/common@21.2.23(@angular/core@21.2.23(@angular/compiler@21.2.23)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.23(@angular/compiler@21.2.23)(rxjs@7.8.2))(@angular/platform-browser@21.2.23(@angular/animations@21.2.23(@angular/core@21.2.23(@angular/compiler@21.2.23)(rxjs@7.8.2)))(@angular/common@21.2.23(@angular/core@21.2.23(@angular/compiler@21.2.23)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.23(@angular/compiler@21.2.23)(rxjs@7.8.2)))(rxjs@7.8.2))(rxjs@7.8.2)
+      material-icons:
+        specifier: ^1.13.14
+        version: 1.13.14
       rxjs:
         specifier: ~7.8.0
         version: 7.8.2
@@ -2350,6 +2356,12 @@ packages:
       }
     engines: { node: ^14.17.0 || ^16.13.0 || >=18.0.0, npm: '>=6.14.13' }
     deprecated: Please update to a newer version
+
+  '@fontsource/roboto@5.3.0':
+    resolution:
+      {
+        integrity: sha512-BapRJOWYP+LZ21zp+wBQjfpPYKRoxc4LspJ/RLuI+HSMBD5u/X4O+ESDrSvEqDSy0rAl7GwBJ+09mdc16cVQ1Q==,
+      }
 
   '@gar/promise-retry@1.0.3':
     resolution:
@@ -8773,6 +8785,12 @@ packages:
       }
     engines: { node: '>=8' }
 
+  material-icons@1.13.14:
+    resolution:
+      {
+        integrity: sha512-kZOfc7xCC0rAT8Q3DQixYAeT+tBqZnxkseQtp2bxBxz7q5pMAC+wmit7vJn1g/l7wRU+HEPq23gER4iPjGs5Cg==,
+      }
+
   math-intrinsics@1.1.0:
     resolution:
       {
@@ -13599,6 +13617,8 @@ snapshots:
 
   '@faker-js/faker@8.0.2': {}
 
+  '@fontsource/roboto@5.3.0': {}
+
   '@gar/promise-retry@1.0.3': {}
 
   '@harperfast/extended-iterable@1.0.3':
@@ -18353,6 +18373,8 @@ snapshots:
   map-obj@1.0.1: {}
 
   map-obj@4.3.0: {}
+
+  material-icons@1.13.14: {}
 
   math-intrinsics@1.1.0: {}
 
