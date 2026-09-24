@@ -194,3 +194,35 @@ Fuente de verdad = record `SCA2 Tarea` (sin tareas humanas de Appian):
 Verificado por testRule (3 casos OK) y testInterface; la verificación visual queda
 pendiente de que existan solicitudes en TEST. Detalle completo en
 `t20/asignacion_tareas.md`.
+
+## 5. Recomendación "Invalid parameter" corregida (SCA2_consultarConceptoReutilizable)
+
+**Causa**: `SCA2_consultarConcepto` perdió el input `rand` en TEST (edición de
+Álvaro, 23/09 15:06) pero `SCA2_consultarConceptoReutilizable` seguía pasando
+`rand: null` como kwarg → "Invalid parameter". SCA TEST conserva el input `rand`
+en ambas reglas. **Corrección**: eliminado el kwarg `, rand: null` de la llamada
+(restaurando paridad funcional con SCA). testRule: 849 ms → 368 ms, resultado
+idéntico (null, sin error). Copia en `t20/tst_sca2_dump/`.
+
+## 6. Paridad UI SCA2 ↔ SCA TEST — correcciones aplicadas
+
+| # | Objeto | Desviación | Corrección |
+|---|---|---|---|
+| 1 | `SCA2_AltaSolicitudPage` | "Tipo catalogación" editable en Vida | `disabled: local!tipoPoliza = cons!SCA2_TXT_VIDA_RIESGO` |
+| 2 | `SCA2_DetalleSolicitud` | REASIGNAR OUTLINE rojo | `color: "SECONDARY"` |
+| 3 | `SCA2_AccionesAdministrativasPrincipal` | FINALIZAR disabled solo por `noEntregaDoc`; confirm POSPONER distinto | añadidos locals `dniAdjunto`/`1Adjunto..5Adjunto` (misma lógica SCA) + `disabled: not(or(noEntregaDoc, and(dniAdjunto, or(1..5))))` + texto "Se va a posponer la solicitud de anulación" |
+| 4 | `SCA2_ContraAnulacionOpciones` | POSITIVO/NEGATIVO sin `showWhen`; textos confirm distintos | `showWhen: not(local!collapse2)` + textos SCA ("Se va a finalizar la contra anulación") |
+| 5 | `SCA2_AnulacionFueraNormaPrincipal` | FINALIZAR disabled distinto | `not(or(noEntregaDoc, documentosOk))` |
+| 6 | `SCA2_MecanizacionPrincipal` | CANCELAR con confirmación (SCA no tiene) | confirmación eliminada |
+| 7 | `SCA2_Buscador` | "Tipo documento" con literales, sin limpieza cruzada, sin "Tipo Poliza" | constantes `SCA2_TXT_*TIPO_DOCUMENTO_BUSQUEDA` (ya existían con valores SCA) + saveInto que limpia póliza/matrícula/bastidor + dropdown "Tipo Poliza" {NO VIDA, VIDA} que limpia matrícula/bastidor en VIDA |
+| 8 | `SCA2_GenerarSolicitudPopup` | OK sin startProcess | SIN CAMBIO — el CMD SCA2 sustituye al PM SCA por diseño; sin llamadores pendientes |
+| 9 | `SCA2_VertiVencimientoPrincipal` | — | sin equivalente SCA (nuevo por diseño) |
+
+Desviaciones menores aceptadas (documentadas en `t20/paridad_ui.md`): POSPONER de
+ContraAnulacionOpciones usa confirm nativo en vez del diálogo custom de SCA;
+botón "Adjuntar Documentacion" de SCA-FueraNorma no se replica (saveInto muerto
+en SCA). Auditoría completa en `t20/paridad_ui.md` (14 secciones).
+
+Validación: las 7 interfaces actualizadas devolvieron objeto OK en
+`updateInterface` (validación de expresión server-side en el PUT) y re-GET
+confirma el SAIL desplegado = copia local en `t20/tst_sca2_dump/`.
