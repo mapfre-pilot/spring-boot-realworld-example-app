@@ -356,3 +356,11 @@ El nodo 7 no escribe `asignadoA` (asignación por grupo, igual que SCA);
 Error 7 (ACCION_DESCONOCIDA del primer run) marcado `DESCARTADO`.
 Evidencia: `t20/crearaccion_15787499.log`, `pm_chain_v1/CrearAccion.json`
 (pre-fix del XOR; el fix se re-GETeó).
+
+**Asignación de tareas**: los nodos que crean/reasignan `SCA2 Tarea` (CrearAccion
+n7 y n16, Mecanizar n7 VERTI) ahora escriben `propietario` y `asignadoA` con
+`index(pv!sol.estado,"usuario")` (el usuario del alta) en lugar de `pp!initiator`,
+con la guarda `if(tointeger(nivel)<>1 and codsubperfil="CE_MF_SI24_EXPERTO",
+null, usuario)` para `asignadoA` — en SCA2 cada CMD es un proceso separado y
+`pp!initiator` sería el lanzador del CMD, no el del alta. Tarea id=1 actualizada
+a mano: asignadoA/propietario = JJGONZ2@mapfrenopro.onmicrosoft.com.
