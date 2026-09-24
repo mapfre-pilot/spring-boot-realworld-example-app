@@ -300,7 +300,7 @@ LOGGING = {
         },
         "django.db.backends": {
             "handlers": ["console" if DEBUG else "null"],
-            "level": os.getenv("LOGGER_LEVEL", "DEBUG" if DEBUG else "INFO"),
+            "level": "DEBUG" if os.getenv("SQL_DEBUG") == "True" else "WARNING",
             "propagate": False,
         },
         "django.utils.autoreload": {

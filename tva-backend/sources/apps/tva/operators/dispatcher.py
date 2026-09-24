@@ -31,6 +31,8 @@ def ejecutar_accion(sesion: Sesion, accion: str, datos: dict) -> dict:
         raise AccionInvalida(accion)
 
     if accion in (Accion.SIGUIENTE, Accion.ANTERIOR):
+        if datos:
+            sesion.estado = {**(sesion.estado or {}), **datos}
         sesion.pantalla_actual = siguiente(sesion, accion).value
         guardar_y_trazar(sesion, accion.upper(), datos=datos)
         return resultado(sesion)

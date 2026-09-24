@@ -86,3 +86,11 @@ def test_dispatcher_siguiente_campania():
     s.estado = {"modalidadCampania": True, "avisos": []}
     res = dispatcher.ejecutar_accion(s, "siguiente", {})
     assert res["pantallaActual"] == "MODALIDAD_CAMPANIA"
+
+
+def test_dispatcher_siguiente_mergea_datos_en_estado():
+    s = _s(modalidad="VA", pantalla="SEGUROS_AHORRO")
+    dispatcher.ejecutar_accion(s, "siguiente", {"solicitud": {"importe": 1000}})
+    s.refresh_from_db()
+    assert s.estado["solicitud"]["importe"] == 1000
+    assert s.pantalla_actual == "CAPTURA_DATOS_SOLICITUD"
