@@ -226,3 +226,26 @@ en SCA). Auditoría completa en `t20/paridad_ui.md` (14 secciones).
 Validación: las 7 interfaces actualizadas devolvieron objeto OK en
 `updateInterface` (validación de expresión server-side en el PUT) y re-GET
 confirma el SAIL desplegado = copia local en `t20/tst_sca2_dump/`.
+
+## 7. Incidente Alta 15787499 y reanudación
+
+**Incidente.** Alta real de la póliza 2002000024445 (usuario JJGONZ2) ejecutó `SCA2 CMD Alta`: la integración Core7 `generarStudAnul` **respondió correctamente** (creó la solicitud Core7 idSolicitud **15787499**; `pv!err` vacío, `pv!generar.error` nulo, salida custom computó `pv!idSolicitud="15787499"`), pero el XOR nodo 5 "Resultado?" (`or(pv!success<>true, isNullOrEmpty(...idSolicitud...))`) se fue por la rama de Error igualmente. Resultado: nodo 206 escribió `SCA2 Solicitud` (id=3, idSolicitud 15787499, estado ALTA, sin grupoAsignacion) y nodo 6 escribió `SCA2 Error` id=3 con idSolicitud `PDTE-13118844` (pp!id), nodo `generarStudAnul`, mensaje/payload vacíos. No se escribieron Datos Básicos / Datos Solicitud / Transición / Tarea y no se arrancó `SCA2 CMD Decidir`.
+
+**Causa probable.** `pv!success` no se pobló desde la salida `Success` del nodo Call Integration (la evaluación del XOR corría sobre un `success` indefinido), y/o el `Dictionary` devuelto por `SCA2_mapSalidaGenerarStudAnul` se degradaba al guardarlo en `pv!generar` (declarado `Any Type`).
+
+### Correcciones aplicadas (TEST, solo SCA2, backup + re-GET)
+
+| Objeto | Cambio |
+|---|---|
+| `SCA2_mapSalidaGenerarStudAnul` | Devuelve `a!map` en todos los niveles (`success`, `error` como a!map, `result` a!map). Mismas claves/valores. |
+| `SCA2 CMD Alta` (PM) | `pv!generar`: Any Type → **Map**. Nuevo parámetro **`idSolicitudExistente`** (Text, no requerido). Nodo 4: salida custom `a!defaultValue(ac!Success,false)` → `success`. Nodo 5 XOR → `or(a!isNullOrEmpty(pv!idSolicitud), left(pv!idSolicitud,5)="PDTE-")`. Nodo 6: `idSolicitud = pv!idSolicitud`; `payload = a!toJson(a!map(...))` con los 16 PVs parámetro + `errorTecnico`. Nodos 9 y 206: **upsert** por lookup `id` en `idSolicitud = pv!idSolicitud` (patrón del nodo 11); `createdAt`/`createdBy` solo cuando el lookup es null. |
+| Nodos nuevos 14/15 | XOR "¿Reanudar?" (`not(isNullOrEmpty(pv!idSolicitudExistente))`) → Script Task "Reanudar" (outputs: `idSolicitud`, `success=true`, `generar` map sintético) → nodo 7 Contexto; default → nodo 4. |
+| `SCA2_BandejaErrores` + `SCA2_DetalleErrores` | Texto "Repetir alta desde la pantalla Alta" reemplazado por `-` si `payload` vacío; si no, link **Relanzar** que hace `a!startProcess(cons!SCA2_PM_CMD_ALTA, rule!SCA2_parametrosRelanzarAlta(error: fv!row))` + `rule!SCA2_relanzarError` (estado RELANZADO). `payload` añadido a los campos de la query. |
+| `SCA2_parametrosRelanzarAlta` (nueva) | Devuelve el map de los 16 parámetros del PM construido explícitamente desde las claves del `a!fromJson(payload)` (un campo ajeno nunca rompe `startProcess`) + `idSolicitudExistente`: null si `idSolicitud` empieza por `PDTE-`, si no el propio id. 2 test cases (`alta_idSolicitud_real`, `alta_pdte_2`, NO_ERRORS) **pasados**. |
+
+Dump del PM: `t20/pm_alta_test_v2.json` (`validateDesignObject` → `hasErrors:false`).
+`sca2_error.payload` = `LONGVARCHAR(65535)` (tipo CLOB) — el JSON de relanzamiento cabe sin truncar.
+
+### Relanzamiento del alta 15787499
+
+**Pendiente**: TEST devuelve HTTP 401 en lcp-api para el usuario `devin` desde ~07:56 UTC (segunda caída del día; DEV responde 200 con la misma contraseña → fallo del lado del servidor). En cuanto vuelva el acceso se relanzará `SCA2 CMD Alta` con `idSolicitudExistente="15787499"` y `datosContexto` de `SCA2_construirContextoAlta` (motivo "DECISION DE CLIENTE" / detalle "PRECIO" / causa "ME HA SUBIDO MUCHO LA PRIMA" / catalogación "A VENCIMIENTO" / canal "PRESENCIAL"), se comprobará una única fila en `SCA2 Solicitud` + creación de Datos/Transición/Decidir, y se marcará `SCA2 Error` id=3 como RELANZADO. Resultados en `t20/relanzar_15787499.log`.
