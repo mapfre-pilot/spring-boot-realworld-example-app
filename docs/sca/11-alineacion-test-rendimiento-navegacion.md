@@ -246,6 +246,33 @@ confirma el SAIL desplegado = copia local en `t20/tst_sca2_dump/`.
 Dump del PM: `t20/pm_alta_test_v2.json` (`validateDesignObject` → `hasErrors:false`).
 `sca2_error.payload` = `LONGVARCHAR(65535)` (tipo CLOB) — el JSON de relanzamiento cabe sin truncar.
 
-### Relanzamiento del alta 15787499
+### Relanzamiento del alta 15787499 — ejecutado OK
 
-**Pendiente**: TEST devuelve HTTP 401 en lcp-api para el usuario `devin` desde ~07:56 UTC (segunda caída del día; DEV responde 200 con la misma contraseña → fallo del lado del servidor). En cuanto vuelva el acceso se relanzará `SCA2 CMD Alta` con `idSolicitudExistente="15787499"` y `datosContexto` de `SCA2_construirContextoAlta` (motivo "DECISION DE CLIENTE" / detalle "PRECIO" / causa "ME HA SUBIDO MUCHO LA PRIMA" / catalogación "A VENCIMIENTO" / canal "PRESENCIAL"), se comprobará una única fila en `SCA2 Solicitud` + creación de Datos/Transición/Decidir, y se marcará `SCA2 Error` id=3 como RELANZADO. Resultados en `t20/relanzar_15787499.log`.
+TEST volvió tras ~40 min de 401. Se lanzó `SCA2 CMD Alta` vía `testProcessModel`
+con `idSolicitudExistente="15787499"` y `datosContexto` de
+`SCA2_construirContextoAlta` (motivo "1" DECISION DE CLIENTE, detalle "1" PRECIO,
+causa "1" ME HA SUBIDO MUCHO LA PRIMA, catalogación "2" A VENCIMIENTO, canal "1"
+PRESENCIAL, `origenPoliza` "NSE-Autos", `usuario` JJGONZ2@mapfrenopro.onmicrosoft.com,
+`fecAnulacion` 2027-03-04, `idCompania` 41).
+
+**Resultado: `COMPLETED`.** La rama de reanudación (XOR 14 → Script 15 → nodo 7)
+funcionó: `pv!success=true`, `pv!idSolicitud="15787499"`, `pv!generar` es el Map
+sintético. Verificación de filas:
+
+- `SCA2 Solicitud`: **sigue habiendo una sola fila** (id=3, idSolicitud 15787499) —
+  el upsert la actualizó en lugar de duplicarla (`modifiedBy`=devin).
+- `SCA2 Datos Solicitud`: 1 fila nueva (id=1, codmotivo 1 / coddetalle 1 / codcausa 1,
+  canalentrada 1, usuario JJGONZ2). `SCA2 Datos Basicos Solicitud`: 1 fila nueva.
+- `SCA2 Transicion`: 1 fila `SCA2 CMD Alta` → ALTA, `resultado OK`,
+  clave idempotencia `SCA2 CMD Alta|15787499|1`, processId 268931940.
+- `SCA2 Tarea`: 0 (esperado; la decisión la inicia `SCA2 CMD Decidir` desde el nodo 12).
+- No se creó ninguna fila nueva en `SCA2 Error`.
+
+**Hallazgo del propio relanzamiento**: el upsert escribía `null` en `createdAt`/
+`createdBy` cuando la fila ya existía (borraba la auditoría). Corregido en caliente
+en los nodos 9 y 206: ahora `a!defaultValue(<lookup del campo existente>, now() /
+pp!initiator)`. Re-GET verificado y `validateDesignObject` → `hasErrors:false`.
+Los valores originales de la fila id=3 se restauraron manualmente
+(`updateRecordData`). `SCA2 Error` id=3 quedó `estado=RELANZADO`,
+`resueltoPor=devin`, `fechaResolucion=2026-09-24 15:40`. Evidencia completa en
+`t20/relanzar_15787499.log` (antes/después por record type).
