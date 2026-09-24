@@ -377,3 +377,14 @@ paridad con los literales `SCA_TXT_ESTADO_SOLICITUD_PCA` de SCA. Callers
 actualizados: `SCA2_BuscadorTabla`, `SCA2_TablaOtrasSolAnulacion`,
 `SCA2_SolicitudAnulacion`. El Buscador de SCA no tiene columna "Asignado a"
 (queda solo en la grid de tareas del Detalle).
+
+**Fixes UI 2 (15787499)**: el Buscador seguía mostrando "Solicitud Pendiente"
+porque la query de `SCA2_Buscador` no seleccionaba `procesoActivo` — añadido a
+`fields`; la etiqueta "Contra anulación en curso" ya se deriva bien.
+`SCA2_DetalleTareas`: el router de RETOMAR hacía match sobre `tipo` con las
+claves de pantalla ("CONTRA ANULAR") pero CrearAccion escribe `tipo =
+procesoActivo` ("CONTRAANULAR", "ACCIONES ADMINISTRATIVAS", "MECANIZAR", VERTI) —
+añadida normalización `local!pantalla` (a!match de los 15 valores de
+`SCA_TXT_ACCIONES` a las 5 claves de pantalla) antes del match de la pantalla.
+Columna "Asignado a" ya existe en la grid de `SCA2_DetalleTareas`; el acordeón de
+SCA muestra solo Grupo/Nuuma (igual que SCA2) — sin cambios ahí.
