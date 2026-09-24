@@ -282,9 +282,11 @@ Los valores originales de la fila id=3 se restauraron manualmente
 Los 10 nodos Start Process de los CMDs de SCA2 apuntaban a un icono
 (`SYSTEM_CONTENT_ICON_*`) en lugar del PM destino — el encadenamiento estaba roto
 desde la creación (por eso el Alta 15787499 completó sin arrancar Decidir).
-El PUT de nodo rechaza `value` con uuid plano; el formato aceptado es
-`expression: '="<uuid-del-pm>"'` + `value: null` (y hay que quitar `value` de
-`ProcessParameters`, cuyo `typeRef` no round-tripea).
+El PUT de nodo rechaza `value` con uuid plano; el formato correcto (igual que
+ya usaba Barrido n4) es `expression: '=cons!SCA2_PM_CMD_*'` + `value: null`
+(hay que quitar `value` de `ProcessParameters`, cuyo `typeRef` no round-tripea).
+Nota: `expression: '="<uuid>"'` se aceptaba en el PUT pero en runtime evalúa como
+texto y el Start Process falla con `ID del modelo de proceso: -2147483647`.
 
 | PM | Nodo | Destino corregido |
 |---|---|---|
@@ -301,13 +303,29 @@ El PUT de nodo rechaza `value` con uuid plano; el formato aceptado es
 Re-GET confirma `="uuid"` en los 10; `validateDesignObject` → `hasErrors:false`
 en los 8 CMDs. Dumps: `t20/pm_chain_v1/`.
 
-**Prueba de cadena (15787499)**: `testProcessModel` de `SCA2 CMD Decidir` llegó
-hasta el nodo 5 "Consultar reglas" y terminó `ERROR` con *"Work item cancelled
-(Data Inputs)"*: la evaluación de `rule!SCA2_consultarServiciosReglas(rule!SCA2_mapearDatosDecidirAccion(pv!sol))`
-lanzó una excepción (el mapper puede devolver null / DTO nulo → `a!toJson`
-falla), que el XOR nodo 6 no captura porque `pv!decision` nunca se pobló. No se
-escribió ninguna fila en Error/Transicion/Tarea; la solicitud quedó consistente
-(estado ALTA). `consultarServiciosReglas` con DTO válido devuelve `accion:"ERROR"`
-con gracia (PRE responde 500) — el fallo está en que el DTO de entrada puede
-llegar nulo. Pendiente: blindar el nodo 5 (guarda `if(isNullOrEmpty(dto), map accion ERROR, …)`)
-o corregir `mapearDatosDecidirAccion` para este caso.
+**Causa raíz del null de `SCA2_mapearDatosDecidirAccion`**: la regla
+`SCA2_consultaBBDDSCA` se llamaba a sí misma en `local!integracion` (recursión
+infinita → null). Corregida para llamar a `rule!SCAC_consultaBBDDSCA(request:{...})`
+como SCA; testRule con 15787499 devuelve el CDT poblado. Además, el mapear leía
+`datosPerfilesPca.codPerfil/codSubPerfil` pero `SCA2_cargarSolicitud` emite las
+claves en minúsculas (`codperfil/codsubperfil/codcompania`, igual que el record
+type SCA2 Datos Perfiles Pca) — corregido en SCA2_mapearDatosDecidirAccion
+(4 ocurrencias; la variante `...Estrategicas` ya usaba referencias tipadas).
+
+**Resiliencia nodo 5 "Consultar reglas" (Decidir)**: el input `decision` ahora
+computa el DTO en `local!dto`; si es null devuelve `a!map(accion:"ERROR",
+grupo:"ERROR", subgrupo:"ERROR", error:"DTO decision nulo (mapearDatosDecidirAccion)")`
+en vez de llamar a `SCA2_consultarServiciosReglas`. Si no es null, se desenvuelve
+con `index(local!dto,1,local!dto)` porque el mapear devuelve `{CDT}` (lista de 1,
+como en SCA) y `consultarServiciosReglas` espera un solo CDT
+(`Could not cast SCAC_scaServiciosReglas?list to Map` en el primer rerun).
+
+**Prueba de cadena (15787499), run final**: `testProcessModel` de
+`SCA2 CMD Decidir` → **COMPLETED** (proc 497255). `pv!decision =
+{accion:"ERROR",grupo:"ERROR",subgrupo:"ERROR"}` (PRE responde error — esperado),
+`destinoMecanizar=FINALIZAR`, `intentos=2`, `codPerfil=CE_RM`,
+`codSubPerfil=CE_RM_OFICINA`. Filas: Solicitud 1 (ALTA, consistente),
+Transicion 1 (solo la del Alta — Decidir no escribe Transicion en su flujo),
+Error 2 (DECISION_ERROR id=4 del run con PM roto + id=5 del run final,
+ambas PENDIENTE/intentos=1), Tarea 0. Los 8 CMDs revalidados
+`hasErrors:false`; dumps finales en `t20/pm_chain_v1/`.
