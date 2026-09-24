@@ -45,3 +45,12 @@ def test_alertas_command_sin_destino(db, settings):
     settings.ALERTAS_EMAIL_TO = ""
     Traza.objects.create(clase="ERROR", mensaje="boom")
     call_command("alertas", "--horas", "1")
+
+
+def test_cargar_parametros_fechas_vacias_app_abierta(db):
+    """Semilla sin fechas → el batch no cierra la aplicación (sin restricción)."""
+    call_command("cargar_parametros")
+    assert Parametro.objects.get(clave="TVA_FECHA_APERTURA").valor == ""
+    assert Parametro.objects.get(clave="TVA_FECHA_CIERRE").valor == ""
+    call_command("apertura_cierre")
+    assert Parametro.objects.get(clave="TVA_APLICACION_CERRADA").valor == "0"

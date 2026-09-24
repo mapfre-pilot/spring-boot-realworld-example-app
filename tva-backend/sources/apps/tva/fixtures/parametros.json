@@ -64,9 +64,9 @@
  },
  {
   "clave": "TVA_FECHA_CIERRE",
-  "valor": "2024-07-06",
+  "valor": "",
   "tipo": "str",
-  "descripcion": "Fecha programada para el cierre de la aplicación",
+  "descripcion": "Fecha programada para el cierre de la aplicación (valor Appian original: 2024-07-06)",
   "entorno": null
  },
  {
@@ -85,9 +85,9 @@
  },
  {
   "clave": "TVA_FECHA_APERTURA",
-  "valor": "2024-07-08",
+  "valor": "",
   "tipo": "str",
-  "descripcion": "Fecha de apertura programada para la aplicación",
+  "descripcion": "Fecha de apertura programada para la aplicación (valor Appian original: 2024-07-08)",
   "entorno": null
  },
  {

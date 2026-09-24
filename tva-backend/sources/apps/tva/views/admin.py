@@ -43,9 +43,8 @@ class ParametrosView(APIView):
             return Response(
                 {"error": {"codigo": "TVA_ERROR_VALIDACION", "mensaje": "clave obligatoria"}}, status=status.HTTP_400_BAD_REQUEST
             )
-        param, _ = Parametro.objects.update_or_create(
-            clave=clave, defaults={k: request.data.get(k, "") for k in ("valor", "tipo", "descripcion", "entorno")}
-        )
+        defaults = {k: request.data[k] for k in ("valor", "tipo", "descripcion", "entorno") if k in request.data}
+        param, _ = Parametro.objects.update_or_create(clave=clave, defaults=defaults)
         return Response(ParametroSerializer(param).data)
 
 
