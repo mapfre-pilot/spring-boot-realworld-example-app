@@ -276,3 +276,38 @@ Los valores originales de la fila id=3 se restauraron manualmente
 (`updateRecordData`). `SCA2 Error` id=3 quedó `estado=RELANZADO`,
 `resueltoPor=devin`, `fechaResolucion=2026-09-24 15:40`. Evidencia completa en
 `t20/relanzar_15787499.log` (antes/después por record type).
+
+## 8. Encadenamiento CMD→CMD: referencias de PM corregidas
+
+Los 10 nodos Start Process de los CMDs de SCA2 apuntaban a un icono
+(`SYSTEM_CONTENT_ICON_*`) en lugar del PM destino — el encadenamiento estaba roto
+desde la creación (por eso el Alta 15787499 completó sin arrancar Decidir).
+El PUT de nodo rechaza `value` con uuid plano; el formato aceptado es
+`expression: '="<uuid-del-pm>"'` + `value: null` (y hay que quitar `value` de
+`ProcessParameters`, cuyo `typeRef` no round-tripea).
+
+| PM | Nodo | Destino corregido |
+|---|---|---|
+| Alta | 12 Start Decidir | `0000f06f-0eab-…` (Decidir) |
+| Decidir | 11 Start Decidir (reintento) | `0000f06f-0eab-…` (sí mismo) |
+| Decidir | 12 Start CrearAccion | `0000f06f-0eaa-…` |
+| Decidir | 15 Start Finalizar | `0000f06f-1309-…` |
+| CrearAccion | 14 Start Finalizar | `0000f06f-1309-…` |
+| CrearAccion | 15 Start Decidir | `0000f06f-0eab-…` |
+| CompletarAccion | 8 finalizar / 10 crearaccion / 12 decidir | Finalizar / CrearAccion / Decidir |
+| Mecanizar | 14 Start Finalizar | `0000f06f-1309-…` |
+| Barrido | 4 Start Caducar | `0000f06f-4f07-…` |
+
+Re-GET confirma `="uuid"` en los 10; `validateDesignObject` → `hasErrors:false`
+en los 8 CMDs. Dumps: `t20/pm_chain_v1/`.
+
+**Prueba de cadena (15787499)**: `testProcessModel` de `SCA2 CMD Decidir` llegó
+hasta el nodo 5 "Consultar reglas" y terminó `ERROR` con *"Work item cancelled
+(Data Inputs)"*: la evaluación de `rule!SCA2_consultarServiciosReglas(rule!SCA2_mapearDatosDecidirAccion(pv!sol))`
+lanzó una excepción (el mapper puede devolver null / DTO nulo → `a!toJson`
+falla), que el XOR nodo 6 no captura porque `pv!decision` nunca se pobló. No se
+escribió ninguna fila en Error/Transicion/Tarea; la solicitud quedó consistente
+(estado ALTA). `consultarServiciosReglas` con DTO válido devuelve `accion:"ERROR"`
+con gracia (PRE responde 500) — el fallo está en que el DTO de entrada puede
+llegar nulo. Pendiente: blindar el nodo 5 (guarda `if(isNullOrEmpty(dto), map accion ERROR, …)`)
+o corregir `mapearDatosDecidirAccion` para este caso.
