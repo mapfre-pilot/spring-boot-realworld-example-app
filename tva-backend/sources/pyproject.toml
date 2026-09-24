@@ -20,6 +20,7 @@ dependencies = [
     "redis (>=5.0,<7.0)",
     "celery[redis] (>=5.4,<6.0)",
     "django-redis (>=5.4,<7.0)",
+    "django-cors-headers (>=4.9,<5.0)",
     "python-dotenv (>=1.0,<2.0)",
     # --- Dependencias corporativas (Azure Artifacts) — ver README §Swap ---
     # Requieren PAT con acceso al feed `snapshots`. Cuando estén disponibles,

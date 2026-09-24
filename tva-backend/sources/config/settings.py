@@ -84,6 +84,7 @@ THIRD_PARTY_APPS = [
     # Code First
     "drf_spectacular",
     "drf_spectacular_sidecar",
+    "corsheaders",
 ]
 
 LOCAL_APPS = [
@@ -99,6 +100,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -308,3 +310,6 @@ LOGGING = {
         },
     },
 }
+
+# CORS — orígenes permitidos para el frontend Angular (coma-separados).
+CORS_ALLOWED_ORIGINS = [o.strip() for o in os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:4200").split(",") if o.strip()]
