@@ -124,13 +124,73 @@ no se midió por separado sin un contexto de interfaz válido.
 
 - **Paralelizar lo independiente**: las variables locales sin dependencias entre sí se
   evalúan en paralelo por `a!localVariables` — revisar la cabecera para que las 5
-  llamadas externas no queden encadenadas. *(No aplicada.)*
+  llamadas externas no queden encadenadas. *(Aplicada — ver «Mejoras aplicadas».)*
 - **Cachear con `refreshOnVarChange: ri!numPoliza`** (o `refreshOnReferencedVarChange:false`)
   las consultas que solo dependen de la póliza, para que no se reevalúen en cada
   interacción del formulario. *(Aplicada parcialmente: los 9 campos del formulario ya
-  tienen `a!refreshVariable`; pendiente en las consultas listadas en el punto 2.)*
+  tienen `a!refreshVariable`; aplicada en usuario/tipoPolizaCalc/poliza/estructuraCabecera/motivosDD/consultaFecUltimoSiniestro/canalDD; cascada intencionadamente sin tocar — ver «Mejoras aplicadas».)*
 - **Evitar re-consultas**: `obtenerInformacionUsuario` es local (1 ms) pero se
   reevalúa cada vez; catálogos Motivo/Detalle/Causa podrían cargarse una vez.
   *(No aplicada.)*
 - El grueso (~3,9 s de cabecera) es latencia del backend PRE; optimizar el servidor es
   decisión fuera del alcance de SCA2. *(Documentado; sin acción en SCA2.)*
+
+### Mejoras aplicadas (TEST, 24-sep)
+
+**1. Paralelización de `SCA2_obtenerDatosCabecera`** — se elevaron a locales top-level
+las llamadas externas que estaban anidadas dentro de otras llamadas o del bloque de
+resultado (se evaluaban en serie tras el resto):
+
+- `local!infoUsuario` (`SCA2_obtenerInformacionUsuario`) y `local!nuuma`
+  (`CMP_obtenerNuuma`) — antes `nuuma` iba *dentro* del body de
+  `SCA2_consultarCabecera` (serial) e `infoUsuario` se invocaba dos veces inline en
+  las consultas de siniestros.
+- `local!consultaReservaPrima` y `local!addresAPI` — antes dentro del
+  `a!localVariables` de construcción del resultado (se evaluaban después de
+  `cabecera`/`otrasSolicitudes`); ahora corren en paralelo con ellas.
+- La cadena real se mantiene: `searchAPIClients → benefits/profile/integrality/
+  contactMethod` y `poliza → datosPersonales/datosVehiculo → siniestros/reserva/
+  cabecera`.
+- Se añadió el guard `if(a!isNullOrEmpty(ri!numPoliza), null, …)` exigido por el
+  LCP API. Salida verificada **byte a byte idéntica** (JSON ordenado) para las dos
+  pólizas de prueba.
+
+**2. `a!refreshVariable` en `SCA2_AltaSolicitudPage`** — protegidas con
+`refreshOnVarChange: ri!numPoliza`: `tipoPolizaCalc`, `poliza`,
+`estructuraCabecera` (la llamada de 3-4 s ya no se reevalúa en cada interacción del
+formulario), `motivosDD`, `consultaFecUltimoSiniestro`, `canalDD`; y con
+`refreshOnReferencedVarChange: false`: `usuario`. **Sin tocar** la cascada
+`detalleDD`/`causaDD`/`medioDD`/`consultaCatalogacion` (dependen de selecciones del
+usuario).
+
+#### Medición antes/después (testRule ×3, TEST)
+
+| Póliza | Antes (media) | Después (media) | Antes (min) | Después (min) |
+|---|---:|---:|---:|---:|
+| 2001900000007 | 5.017 ms | 3.373 ms | 4.302 | 2.965 |
+| 2002000048398 | 5.142 ms | 3.178 ms | 3.139 | 3.053 |
+
+En régimen caliente (descartando el primer disparo): ~4,4 s → ~3,1 s (~30 %).
+Verificado en Chrome que el Alta muestra la misma cabecera y que la cascada
+Motivo→Detalle sigue funcionando (`img/t21_perf_alta.png`).
+
+## 4. Asignación de tareas en SCA2 (resumen)
+
+Fuente de verdad = record `SCA2 Tarea` (sin tareas humanas de Appian):
+
+- `SCA2 CMD CrearAccion` (nodo "Write Asignacion"): `asignadoA` =
+  `if(and(nivelIntervencion<>1, codsubperfil="CE_MF_SI24_EXPERTO"), null, pp!initiator)`
+  (null = pool del grupo); `propietario` = `pp!initiator` siempre; `grupo` = codperfil.
+- Regla nueva `SCA2_puedeGestionarTarea(tarea, nivelIntervencion)`:
+  admin (`SCA2_GRP_ADMINISTRADORES`) OR `asignadoA = loggedInUser()` OR
+  (asignadoA null AND perfil = tarea.grupo).
+- `SCA2_reasignarTarea`: `a!writeRecords` directo (asignadoA = usuario actual,
+  fechaCaptura = now()) — sin PM.
+- `SCA2_DetalleSolicitud`: RETOMAR y REASIGNAR (OUTLINE) gobernados por la regla;
+  REASIGNAR abre `SCA2_PopUpReasignarTarea`.
+- `SCA2_DetalleTareas`: Completar con la misma regla + columna "Asignado a"
+  (displayName o "Grupo <grupo>").
+
+Verificado por testRule (3 casos OK) y testInterface; la verificación visual queda
+pendiente de que existan solicitudes en TEST. Detalle completo en
+`t20/asignacion_tareas.md`.
