@@ -43,9 +43,11 @@ import { CabeceraComponent } from '../../shared/ui/cabecera.component';
       </table>
 
       <h2>Operaciones</h2>
-      <button mat-stroked-button (click)="apertura()">Alternar apertura/cierre</button>
+      <button mat-stroked-button (click)="apertura()">Ejecutar batch apertura/cierre</button>
+      <button mat-stroked-button (click)="fijarCierre('0')">Abrir aplicación</button>
+      <button mat-stroked-button (click)="fijarCierre('1')">Cerrar aplicación</button>
       <button mat-stroked-button (click)="limpiar()">Limpiar cachés</button>
-      <p>Estado apertura: {{ estadoApertura() }}</p>
+      <p>Estado aplicación: {{ estadoApertura() }}</p>
 
       <h2>Trazas</h2>
       <form [formGroup]="trazaForm" (ngSubmit)="buscarTrazas()">
@@ -96,7 +98,11 @@ export class AdminPage implements OnInit {
   readonly trazaForm = inject(FormBuilder).nonNullable.group({ clave: [''] });
 
   ngOnInit(): void {
-    this.api.adminParametros().subscribe(p => this.parametros.set(p));
+    this.api.adminParametros().subscribe(p => {
+      this.parametros.set(p);
+      const cerrada = p.find(x => x.clave === 'TVA_APLICACION_CERRADA');
+      this.estadoApertura.set(cerrada?.valor === '1' ? 'cerrada' : 'abierta');
+    });
   }
 
   guardar(p: Parametro, valor: string): void {
@@ -109,6 +115,15 @@ export class AdminPage implements OnInit {
     this.api
       .adminAperturaCierre()
       .subscribe(r => this.estadoApertura.set(r.cerrada ? 'cerrada' : 'abierta'));
+  }
+
+  fijarCierre(valor: '0' | '1'): void {
+    this.api.adminPutParametro({ clave: 'TVA_APLICACION_CERRADA', valor }).subscribe(() => {
+      this.estadoApertura.set(valor === '1' ? 'cerrada' : 'abierta');
+      this.parametros.update(ps =>
+        ps.map(x => (x.clave === 'TVA_APLICACION_CERRADA' ? { ...x, valor } : x))
+      );
+    });
   }
 
   limpiar(): void {

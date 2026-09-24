@@ -1,0 +1,56 @@
+# Pila completa TVA desde un clon limpio: postgres + redis + backend + frontend.
+# Frontend en http://localhost:8080 (nginx, proxy /api/ → backend :8888).
+services:
+  tva-backend:
+    build:
+      context: ./tva-backend
+      dockerfile: docker/Dockerfile.public
+    command: sh docker/entrypoint.sh
+    ports:
+      - "8888:8888"
+    environment:
+      ENVIRONMENT: local
+      DEBUG: "False"
+      SECRET_KEY: changeme-docker-local
+      DB_HOST: postgres
+      DB_NAME: tva
+      DB_USER: tva
+      DB_PASSWORD: tva
+      REDIS_HOST: redis
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      CORS_ALLOWED_ORIGINS: http://localhost:8080
+    depends_on:
+      - postgres
+      - redis
+
+  tva-frontend:
+    build:
+      context: ./tva-frontend
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8080:80"
+    # Para cambiar de entorno en runtime monta un environments.json propio:
+    #   volumes:
+    #     - ./mi-environments.json:/usr/share/nginx/html/assets/environments.json:ro
+    depends_on:
+      - tva-backend
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: tva
+      POSTGRES_USER: tva
+      POSTGRES_PASSWORD: tva
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres-data:
