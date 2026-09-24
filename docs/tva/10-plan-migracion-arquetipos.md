@@ -1,138 +1,116 @@
 # 10. Plan de migración TVA basado en los arquetipos de Arquitectura España
 
-Revisión del plan del documento 09 adaptada a los dos arquetipos corporativos indicados
-por el equipo: **Arquetipo Angular (Arquitectura de Referencia Angular, v1)** para el SPA y
-**Arquetipo Contenedores Python Django (v1)** para el backend. Sustituye la propuesta
-Spring Boot del documento 09; el mapeo funcional de TVA (pantallas, procesos,
-integraciones, datos) del documento 09 se mantiene y aquí se indica cómo se aterriza en
-cada arquetipo.
+Revisión del plan del documento 09 adaptada a los dos arquetipos corporativos facilitados
+por el equipo y ya analizados: **arquetipo Angular** (documento Appian TEST "SCA2 spa") para
+el SPA y **arquetipo Contenedores Python Django** ("SCA2 tvaBackend") para el backend.
+Sustituye la propuesta Spring Boot del documento 09; el mapeo funcional de TVA (pantallas,
+procesos, integraciones, datos) del documento 09 se mantiene y aquí se indica cómo se
+aterriza en cada arquetipo.
 
-> **Estado: borrador pendiente de validación.** Las secciones marcadas con `[ZIP]`
-> dependen del contenido real de los arquetipos (documentos Appian TEST
-> `…_5463656` y `…_5463643`), que en el momento de redactar no se han podido descargar
-> (HTTP 401). Lo que no lleva la marca procede de la documentación de Marketplace
-> aportada por el equipo o del análisis de TVA (docs 01–08). No se ha iniciado ninguna
-> construcción.
+> **Estado: propuesta pendiente de validación.** Todo lo que sigue procede de los ZIP
+> reales (copiados en [`arquetipos/`](../../arquetipos/README.md)), de la documentación de
+> Marketplace aportada y del análisis de TVA (docs 01–08). No se ha iniciado ninguna
+> construcción. Los puntos que requieren decisión del equipo están en 10.8.
 
-## 10.1 Resumen de los arquetipos (según la documentación aportada)
+## 10.1 Lo que contienen realmente los arquetipos
 
-### Frontend — Arquitectura de Referencia Angular
+### Frontend — "SCA2 spa" (`arquetipos/frontend-angular/`)
 
-| Aspecto | Valor documentado |
+| Aspecto | Confirmado en el ZIP |
 |---|---|
-| Requisitos de desarrollo | Git, **Node 22+** (vía `nvm`), **pnpm 11+** (gestor del arquetipo v1), VS Code, GitHub CLI (`gh`) |
-| Acceso | Organización GitHub `mapfre-tech`; PAT para Git por HTTPS (`gh auth login`) |
-| Registro de paquetes | Paquetes de la Arquitectura de Referencia publicados en un **registro npm privado de Azure Artifacts**; pnpm se autentica con `~/.npmrc` |
-| Secciones de la guía | Flujo de desarrollo, Fundamentos, Escenarios de desarrollo, Aplicación Angular, **Microfrontend**, Librería Angular, Herramientas de desarrollo, Testing y Calidad, Release, CI/CD, Guías de desarrollo |
-| Sistema operativo indicado | macOS Tahoe (26) como referencia del equipo; no es requisito técnico del arquetipo |
+| Organización | Workspace **Nx 23.0.1** con una sola aplicación `app` (`project.json` en raíz, `nx.json`, `defaultProject: app`), `flavour: esp` (`.mtech-workspace-config.json`). No hay `angular.json`. |
+| Angular | **21.2** (`@angular/*` `~21.2.0`), TypeScript 5.9, `strict` + `strictTemplates`. Standalone components, `bootstrapApplication`, rutas `loadComponent`. **Zoneless** (sin `zone.js` en polyfills; tests con `setupZonelessTestEnv`). |
+| Gestor de paquetes | **pnpm 11.10.0** (`packageManager`), registro **Azure Artifacts** (`.npmrc`), `pnpm-workspace.yaml` con `minimumReleaseAgeExclude: @mapfre-tech/*`. |
+| Paquetes corporativos | `@mapfre-tech/ngx-multienvironment` 4.0.0 (config por entorno en runtime leyendo `public/assets/environments.json` con claves `dev/pre/pro`), `@mapfre-tech/nx-angular` 1.3.0 (executors `application`, `dev-server`, `build-with-env`, `assemble-web`), `@mapfre-tech/nx-angular-esp`, `@mapfre-tech/nx-tools` (`zip`, `release-spa`, `release-debug-files-web`), `@mapfre-tech/nx-version-esp` (release con changelog *conventional commits*). |
+| UI | **No incluye Angular Material ni ningún design system**: solo `@angular/forms`, `@angular/router`, SCSS. `styles.scss` vacío. |
+| Estado / HTTP / i18n / auth | **No trae nada**: ni store, ni interceptores, ni librería OIDC, ni i18n (`enableI18nLegacyMessageIdFormat: false` únicamente). |
+| Testing | **Jest 30** + `jest-preset-angular` 16 + **`@ngneat/spectator`** 22 (`createRoutingFactory`), `@faker-js/faker`, `factory.ts`. Sin e2e (`e2eTestRunner: none`). Cobertura `lcov` en CI. |
+| Calidad | ESLint 9 flat (`@nx/eslint-plugin`, `angular-eslint`), Prettier 3.6, `.editorconfig`; **commitlint** conventional + **husky** (`commit-msg`). Regla: sufijos de clase permitidos `Component | Container | Page`; prefijo de selectores `app`. |
+| Build | Presupuestos: initial 600 kB/900 kB, vendor 500/800, estilos de componente 15/20 kB. `build-with-env` por `dev/pre/pro`; `assemble-web` genera `dist/artifacts/app/app.zip`; `bundle-analyzer`; `optimize-assets`. |
+| CI/CD | Workflows que reutilizan `mapfre-tech/esp-aeme-reusable-workflows-front@4`: `pull-request.yml` (lint/test/Sonar), `push-on-branch.yml`, `create-release.yml` (al mergear en `main`/`develop`/`support/*`), `tag.yml` (release web/Android/iOS/Storybook). `deploy.yml` despliega por **ArgoCD** vía `esp-pfdevops-reusable-workflows/argocd-deploy@v1` (inputs `environment`, `version`, `COMPONENT`, `TENANT`, `MANIFEST_REPOSITORY`). |
+| Secretos que exige el CI | `AZURE_ARTIFACTS_PW`, `GH_TOKEN_ENCRYPTION_PASSPHRASE`, `SONAR_TOKEN`/`SONAR_ROOT_CERT`, `SLACK_TOKEN` (+ móviles/Chromatic si aplican). |
 
-`[ZIP]` Pendiente de confirmar en el arquetipo: versión de Angular, si el scaffolding es
-Nx/workspace o `angular.json` simple, si incluye Angular Material o un design system
-propio de la Arquitectura de Referencia (paquetes `@mapfre-*` en Azure Artifacts),
-librerías de estado/i18n/HTTP que trae, linters, runner de tests, e2e y workflows
-`.github/workflows`.
+Punto de entrada real (`src/main.ts` → `app.config.ts`):
 
-### Backend — Arquetipo Contenedores Python Django
-
-| Aspecto | Valor documentado |
-|---|---|
-| Propósito | Microservicios **Python + Django** dentro de la arquitectura de contenedores |
-| Versión | Arquetipo **v1**; anexo de migración a **Django 5.2** |
-| Herramientas | Docker ≥ 28.2.1, Docker Compose ≥ 2.37, Git ≥ 2.49, VS Code ≥ 1.100, Postman ≥ 10, **Python 3.11**, **Poetry** |
-| Arranque local | `.env` a partir de `.env.sample` (valores `CHANGEME` = secretos); `docker compose -f docker/docker-compose.yml up`; `python manage.py runserver 0:8888`; depuración con `ipdb` |
-| Estilo | PEP 8, PEP 257 (docstrings), typing |
-| Imagen base | Imagen corporativa que fija versión de Python, certificados, variables de entorno y librerías de sistema; actúa como *builder* de la imagen del componente |
-| Observabilidad (**requerida** en el preset España) | `arch-ram-lib-django-observability` (logging JSON, trazas OpenTelemetry, métricas Prometheus). OpenSearch/ArgoCD para logs, Grafana para trazas y métricas |
-| Seguridad | OAuth obligatorio con **EntraID** (u Okta). Extensión con validación JWT vía JWK Set URI, claims, scopes por endpoint y CORS. Requiere crear la aplicación de EntraID del producto |
-| Cliente HTTP | Extensión con Basic, JWT, OAuth2, OBO; clase base de integración por *location*; credenciales en YAML; utilidades JSONPath/XML |
-| Redis cache | Extensión integrada en el cache de Django, TTL global/por método, decoradores |
-| Kafka | Extensión para Confluent Kafka (producers/consumers, Schema Registry/Avro, DLQ) |
-| BBDD relacional | ORM Django contra Postgres/MySQL. **Las migraciones las gestiona el componente de BBDD relacional con Liquibase**, no Django |
-| BBDD no relacional | Extensión MongoAtlas (mongoengine) |
-| Storage | Extensión S3 / FTP / SFTP (boto3) |
-| Tareas asíncronas | Extensión Celery + Celery Beat |
-| Django Admin | Extensión con login EntraID y estáticos en S3; requiere habilitar migraciones Django vía issue a DevOps |
-| Testing y calidad | `poetry run pytest` desde `sources/`; contratos OpenAPI v3 validados (API First); **SonarQube** en CI |
-| Documentación | README con estructura estándar; `drf-spectacular` expone `/docs/swagger` |
-| CI/CD | GitHub Actions con workflows reusables (GitFlow sobre `develop`/`main`): `pull-request.yml` (tests, imagen, Sonar) y `merge-commit.yml` (imagen → ACR, siguiente versión) |
-| Limitación declarada | API First: no hay generación automática de código desde OpenAPI en Django |
-
-Scaffolding documentado del backend:
-
-```
-.
-├── .github/workflows/{pull-request.yml, merge-commit.yml}
-├── docker/{docker-compose.yml, Dockerfile, .dockerignore}
-├── sources/
-│   ├── apps/<app>/
-│   │   ├── management/commands/   procesos que necesitan contexto Django (consumidores, batch)
-│   │   ├── operators/             lógica de negocio y transformación
-│   │   ├── schemas/               respuestas y códigos de error OpenAPI
-│   │   ├── serializers/           validación de entrada/salida
-│   │   ├── services/connectors/   integración con servicios externos que consume la app
-│   │   ├── services/providers/    servicios externos expuestos/consumidos
-│   │   ├── tasks/                 tareas asíncronas (Celery)
-│   │   ├── tests/
-│   │   ├── views/                 vistas asociadas a urls
-│   │   ├── utils/
-│   │   ├── apps.py · urls.py
-│   ├── config/{settings.py, urls.py, wsgi.py}
-│   ├── .pre-commit-config.yaml · manage.py · poetry.lock · pyproject.toml
-├── .gitignore · README.md · security-metadata.toml
+```ts
+const { env, envConfig } = await initMultiEnvironmentApp();          // lee assets/environments.json
+bootstrapApplication(AppComponent, getAppConfig({ env, envConfig }));  // provideRouter + provideEnvironment
 ```
 
-`[ZIP]` Pendiente de confirmar: versiones exactas en `pyproject.toml` (Django, DRF,
-drf-spectacular, extensiones `arch-ram-lib-*`), contenido de `settings.py`, `.env.sample`,
-Dockerfile/imagen base, `security-metadata.toml`, y los inputs de los workflows reusables.
+### Backend — "SCA2 tvaBackend" (`arquetipos/backend-django/`)
+
+| Aspecto | Confirmado en el ZIP |
+|---|---|
+| Identidad | `pyproject.toml`: `name = "esp-appianesad-tva"`, `description = "tarificador vida ahorro"`, `archetypeVersion = "1.12.1"`. Imagen/`docker-compose` ya nombrados `esp-appianesad-tva`. `security-metadata.toml`: `project_name = "Appian ADM"`, entidad MAPFRE ESPAÑA. **El arquetipo ya está generado para TVA.** |
+| Runtime | **Python 3.11** (`>=3.11,<3.12`), **Django 5.2**, **DRF 3.17.1**, `djangorestframework-simplejwt` 5.5.1, `drf-spectacular` 0.29 + sidecar, `django-extensions` (solo `DEBUG`), `gunicorn` 22 (`--workers 3 --threads 100`, puerto **8888**), `requests`. |
+| Extensiones corporativas (todas declaradas) | `arch-ram-lib-django-observability`, `-auth`, `-httpclient`, `-rediscache`, `-kafkaevent`, `-mongoatlas`, `-storages`, `-celery` y `esp-archbacksp-lib-django-admin`. Fuente Poetry suplementaria: Azure Artifacts PyPI. |
+| Estructura | `sources/apps/product/{management/commands, operators, schemas, serializers, services/{connectors,providers}, tasks, tests/{commands,serializers,tasks,views}, views, urls.py, apps.py}` — todos los paquetes vacíos; `urls.py` con `urlpatterns = []`. `config/{settings.py, urls.py, wsgi.py}`; `manage.py`. Sin `poetry.lock`. |
+| `settings.py` | `REST_FRAMEWORK`: `IsAuthenticated` por defecto, `JWTAuthentication` (simplejwt), JSON only, `AutoSchema` spectacular. `DATABASES`: **SQLite en memoria** (placeholder). `CACHES`: file-based (placeholder). `ALLOWED_HOSTS = ["*"]`. Logging a consola con `%(data)s`. `LOCAL_APPS = ["apps.product"]`. Rutas: `api/` → app, `docs/schema/`, `docs/swagger/`. Ninguna extensión `arch-ram-*` está aún añadida a `INSTALLED_APPS`/`MIDDLEWARE`: hay que activarlas. |
+| `.env.sample` | `ENVIRONMENT, APPLICATION_NAME, SERVICE_NAME, DJANGO_PROJECT, SECRET_KEY, DEBUG, LOGGER_LEVEL, CACHE_DEFAULT_TIMEOUT, CACHE_OAUTH_TTL`. |
+| Docker | `Dockerfile` multi-stage desde la imagen base corporativa `mapfre-django-base:3.11-slim` (ACR), `poetry install` con secreto `AZURE_ARTIFACTS_PW`, usuario no root; `docker-compose.yml` monta `sources/` y usa la red externa `arch-ram-network`; `common.docker-compose.yml` levanta OTel Collector, Jaeger, Prometheus, Kafka + Schema Registry, Redis TLS, GUIs y `nginx-proxy` (`*.localhost`). |
+| Calidad | `pre-commit`: hooks básicos, **ruff** (check+format, `line-length 140`), **pyupgrade** `--py311-plus`, **pyright**, **pytest** obligatorio. `pytest` con `--cov=apps --cov-branch`, **`fail_under = 80`**. Estilo de test AAA (`# Arrange // Given` …). |
+| CI/CD | `pull-request.yml` → `esp-pfdevops-reusable-workflows/container.django.pull-request.yml@v1` (build, test, Sonar; Poetry 2.1.1); `merge-commit.yml` → `container.django.merge-commit.yml@v1` (imagen a ACR, `deploy-on-develop: true`, borrado de ramas de versión); `deploy.yml` → ArgoCD igual que el front. GitFlow `develop`/`main`. |
+| Asistentes IA | `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `README.agents.md`: exigen instalar `@mapfre-tech/clai` (npm Azure) y la skill **`django-engineer`** antes de generar código. |
+
+Observaciones del arquetipo backend a tener en cuenta:
+
+- `settings.py` contiene un error de sintaxis en `LOGGING.handlers.console.formatter`
+  (`"verbose"",`): el proyecto no arranca tal cual; corregir en la fase 1.
+- Falta `poetry.lock`; la primera instalación lo generará contra Azure Artifacts.
+- `security-metadata.toml` viene con `project_name = "Appian ADM"`; revisar si TVA debe
+  tener ficha propia.
 
 ## 10.2 Qué cambia respecto al plan del documento 09
 
-| Tema | Doc 09 | Plan con arquetipos |
+| Tema | Doc 09 | Plan con arquetipos (confirmado) |
 |---|---|---|
-| Backend | Spring Boot 3 / Java 21 | **Django 5.x / Python 3.11** con el arquetipo de contenedores y sus extensiones |
-| Estructura backend | `api / application / core / infrastructure` | `views / serializers / schemas / operators / services(connectors, providers) / tasks / management.commands` del arquetipo |
-| Persistencia | JPA/MyBatis + Flyway | ORM Django; **DDL con Liquibase** en el componente de BBDD (sin migraciones Django salvo Django Admin) |
-| Cliente HTTP a API Life / MISV / RIC | WebClient + Resilience4j | Extensión de cliente HTTP del arquetipo (Basic/JWT/OAuth2/OBO, credenciales en YAML) |
-| Seguridad | Spring Security OAuth2 Resource Server | Extensión OAuth del arquetipo contra **EntraID** (JWT, scopes por endpoint, CORS) |
-| Caché de configuración de producto | Caffeine/Spring Cache | Extensión **Redis** del arquetipo |
-| Batch (apertura/cierre, borrado trazas, alertas) | `@Scheduled` | **Celery Beat** (extensión) o `management/commands` lanzados por cron del cluster |
-| Observabilidad | Micrometer/Actuator | `arch-ram-lib-django-observability` (obligatoria): OpenSearch, Grafana |
-| OpenAPI | springdoc | Contrato OpenAPI v3 escrito a mano (API First) + `drf-spectacular` para publicar `/docs/swagger`; generación del cliente TypeScript desde el contrato |
-| Frontend | Angular 19 + Material, npm | Arquetipo Angular v1 con **pnpm 11+**, paquetes de Azure Artifacts, `[ZIP]` UI kit y versión Angular según arquetipo |
-| CI/CD | Propuesta genérica | Workflows reusables corporativos (`pull-request.yml`, `merge-commit.yml`), GitFlow `develop`/`main`, SonarQube, imagen a ACR |
-| Repositorios | Monorepo en este repo | **Dos repositorios generados desde Marketplace** (wizard) en `mapfre-tech`: `tva-frontend` y `tva-backend` `[a validar]` |
+| Backend | Spring Boot 3 / Java 21 | **Django 5.2 / Python 3.11 / DRF**, proyecto `esp-appianesad-tva` ya generado |
+| Estructura backend | `api / application / core / infrastructure` | `views / serializers / schemas / operators / services(connectors, providers) / tasks / management.commands` |
+| Persistencia | JPA + Flyway | ORM Django con `managed = False`; **DDL con Liquibase** en el componente de BBDD (política del arquetipo) |
+| Cliente HTTP a API Life / SBC / MISV / RIC | WebClient + Resilience4j | `arch-ram-lib-django-httpclient` (Basic/JWT/OAuth2/OBO, credenciales YAML) |
+| Seguridad API | Spring Security Resource Server | `arch-ram-lib-django-auth` (JWT EntraID vía JWKS, scopes por endpoint, CORS). El `simplejwt` del scaffolding queda solo para local |
+| Caché de taller/productos | Caffeine | `arch-ram-lib-django-rediscache` |
+| Batch | `@Scheduled` | `arch-ram-lib-django-celery` (worker + beat) o `management/commands` + CronJob |
+| Observabilidad | Micrometer | `arch-ram-lib-django-observability` (obligatoria) |
+| OpenAPI | springdoc | API First: `openapi.yaml` en repo + `drf-spectacular` para publicar `/docs/swagger`; cliente TS generado para el front |
+| Frontend | Angular 19 + Material, npm, `ng new` | **Nx 23 + Angular 21.2 zoneless, pnpm 11.10**, executors `@mapfre-tech/nx-angular`, config runtime `ngx-multienvironment` |
+| UI kit | Angular Material | El arquetipo **no impone ninguno** → propuesta: **Angular Material 21 + CDK** (petición original), tema SCSS corporativo; ver 10.8-2 |
+| Estado | Signals / Signal Store | Signals nativos + `SesionStore` propio (servicio `@Injectable` con `signal`/`computed`); sin dependencia extra salvo que el equipo prefiera `@ngrx/signals` |
+| Tests front | Jasmine/Karma o Jest | **Jest + Spectator** (viene en el arquetipo); e2e no incluido → Playwright opcional |
+| CI/CD | Genérico | Workflows reusables front (`esp-aeme-reusable-workflows-front@4`) y back (`esp-pfdevops-reusable-workflows@v1`), Sonar, ACR, ArgoCD |
+| Repositorios | Monorepo aquí | Desarrollo en `feature/tva` de este repo (decisión del equipo); estructura de cada componente idéntica a la de su arquetipo para poder moverlos a repos `mapfre-tech` sin cambios |
 
-Se mantiene íntegro del documento 09: la tabla "qué se migra y qué no" (9.1), el mapeo
-de interfaces Appian → features Angular (9.3), la lista de casos de uso derivados de los
-28 procesos (9.4), el modelo de datos `tva_sesion / tva_traza / tva_parametro` (9.4) y
-los riesgos (9.6).
+Se mantiene íntegro del documento 09: la tabla "qué se migra y qué no" (9.1), el mapeo de
+interfaces Appian → features Angular (9.3), la lista de casos de uso derivados de los 28
+procesos (9.4), el modelo de datos `tva_sesion / tva_traza / tva_parametro` (9.4) y los
+riesgos (9.6).
 
 ## 10.3 Arquitectura objetivo
 
 ```
-Portal GV / PFM ──POST /api/tva/v1/inicio/*──▶ ┌──────────────────────────────────┐
-                                                │ tva-backend (Django, contenedor) │
-Navegador ──▶ tva-frontend (Angular) ──REST/JWT▶│ views · serializers · operators  │──▶ API Life / SBC / MISV / RIC
-              arquetipo Angular v1              │ services.connectors (cliente HTTP│──▶ PostgreSQL (RDS)  ← DDL Liquibase
-              pnpm · Azure Artifacts            │ arquetipo) · tasks (Celery)      │──▶ Redis (caché taller/productos)
-                                                │ observabilidad · OAuth EntraID   │──▶ SMTP / notificaciones (alertas)
-                                                └──────────────────────────────────┘
-                      ▲                                        ▲
-                      └──────────────── EntraID (OIDC) ────────┘
+Portal GV / PFM ──POST /api/tva/v1/inicio/*──▶ ┌────────────────────────────────────────┐
+                                                │ esp-appianesad-tva (Django, contenedor)│
+Navegador ──▶ tva-frontend (Nx/Angular 21) ─JWT▶│ views · serializers · operators        │──▶ API Life / SBC / MISV / RIC
+              Material · Signals · pnpm         │ services.connectors (httpclient)       │──▶ PostgreSQL  ← DDL Liquibase
+              ngx-multienvironment (dev/pre/pro)│ tasks (celery) · rediscache            │──▶ Redis (caché taller/productos)
+                                                │ observability · auth (EntraID JWKS)    │──▶ SMTP (alertas)
+                                                └────────────────────────────────────────┘
+                      ▲                                             ▲
+                      └──────────────── EntraID (OIDC / JWT) ───────┘
 ```
 
 Principios (iguales a 9.2): el backend es la fuente de verdad de la sesión, orquesta los
 casos de uso (uno por proceso Appian) y es el único que habla con API Life/MISV/RIC; el
-front solo consume `tva-backend` con el JWT de EntraID.
+front solo consume el backend con el JWT de EntraID.
 
 ## 10.4 Backend Django — aterrizaje de TVA en el arquetipo
 
-Una única app Django `tva` (o varias si el equipo prefiere separar `rentas`) dentro de
-`sources/apps/`:
+Se renombra la app `product` a **`tva`** (`LOCAL_APPS = ["apps.tva"]`) y se rellenan las
+carpetas ya previstas por el arquetipo:
 
 ```
 sources/apps/tva/
-├── views/         inicio.py (POST /inicio/ahorro, /inicio/rentas — portales)
+├── views/         inicio.py (POST /inicio/ahorro, /inicio/rentas — portales, scope propio)
 │                  sesiones.py (GET /sesiones/{clave}, POST /sesiones/{clave}/acciones/{accion})
 │                  clientes.py (GET /clientes?documento=)
 │                  documentos.py (GET /sesiones/{clave}/documentos/{tipo})
@@ -143,80 +121,107 @@ sources/apps/tva/
 │                  guardar_solicitud, continuar_tomador, recalcular_rentas, contratar_rentas,
 │                  firmar, validar_reinversion, verificar_productores, importe_maximo, perfil_cliente
 │                  + maquina_pantallas (reglas TVA_*_siguientePantalla) + validaciones (TVA_*_Validacion)
-├── services/connectors/  apilife.py (16 endpoints TVA_API_Life_*), sbc.py, misv.py, ric.py, perfil_usuario.py (SOAP)
-├── models/        Sesion (JSONField + version_esquema + pantalla_actual + usuario), Traza, Parametro
-├── tasks/         apertura_cierre.py, borrar_trazas.py, alertas.py  (Celery Beat)
+├── services/connectors/  apilife.py (16 endpoints TVA_API_Life_*), sbc.py, misv.py, ric.py,
+│                         perfil_usuario.py (SOAP)  — sobre arch-ram-lib-django-httpclient
+├── models.py      Sesion (JSONField + version_esquema + pantalla_actual + usuario), Traza, Parametro  (managed=False)
+├── tasks/         apertura_cierre.py, borrar_trazas.py, alertas.py  (celery beat)
 ├── management/commands/  cargar_parametros.py (extracción de las ~200 constantes Appian)
-└── tests/         unit (operators, validaciones), integración con stubs de API Life
+└── tests/         views/ serializers/ tasks/ commands/ + operators/ (AAA, cobertura ≥ 80 %)
 ```
 
 Decisiones de diseño derivadas del arquetipo:
 
-- **Sesión** en `JSONField` de PostgreSQL con `version_esquema` (resuelve A2/A3/M10 de
-  07-mejoras) y vinculada al `sub`/`oid` del JWT de EntraID: solo el propietario o un
-  admin la recupera (resuelve el riesgo de acceso por `claveSesion`).
-- **DDL** (`tva_sesion`, `tva_traza`, `tva_parametro`) como changelogs **Liquibase** en el
-  componente de BBDD relacional, según exige el arquetipo; los modelos Django se declaran
-  `managed = False` salvo que se habilite Django Admin.
-- **Credenciales** de API Life/MISV/BD: YAML de la extensión de cliente HTTP + variables
-  `.env`/secretos del cluster. Desaparece `TVA_Conectar_ContrasennaUsuarioVida` (A1).
+- **`settings.py`**: `DATABASES` → PostgreSQL por variables de entorno; `CACHES` → Redis
+  (extensión); `INSTALLED_APPS`/`MIDDLEWARE` con observability, auth y httpclient; retirar
+  `ALLOWED_HOSTS=["*"]` y `simplejwt` fuera de local. Nuevas variables en `.env.sample`
+  (`DB_*`, `REDIS_*`, `OAUTH_JWKS_URI`, `OAUTH_AUDIENCE`, `APILIFE_*`, `MISV_*`, `SMTP_*`),
+  todas con valores `CHANGEME`.
+- **Sesión** en `JSONField` con `version_esquema` (resuelve A2/A3/M10 de 07-mejoras) y
+  vinculada al `oid` del JWT: solo el propietario o un admin la recupera.
+- **DDL** (`tva_sesion`, `tva_traza`, `tva_parametro`) como changelogs **Liquibase**; sin
+  migraciones Django (no se usa `esp-archbacksp-lib-django-admin`; se elimina de
+  `pyproject` junto con `mongoatlas`, `kafkaevent` y `storages`, que TVA no necesita).
+- **Credenciales** de API Life/MISV/BD: YAML del httpclient + secretos del cluster.
+  Desaparece `TVA_Conectar_ContrasennaUsuarioVida` (A1).
 - **Caché** del taller (`VIDA_ObtenerConfiguracionProductoComercial`, listas de productos)
-  con la extensión Redis y TTL; sustituye la pantalla de cachés Appian por un endpoint admin.
-- **Batch**: apertura/cierre programado y borrado de trazas como tareas Celery Beat
-  (crontab); alertas por email como tarea. Alternativa: `management/commands` + CronJob
-  de Kubernetes si el producto no despliega worker Celery `[a validar]`.
-- **Portales GV/PFM**: endpoints `/inicio/*` protegidos con scope propio
-  (`client_credentials` en EntraID por portal), sustituyendo al grupo `TVA WebApi Inicio`.
+  con `rediscache` y TTL; endpoint admin para invalidar.
+- **Batch**: apertura/cierre programado y borrado de trazas como tareas Celery Beat;
+  alertas por email como tarea. El `docker-compose` ya contempla contenedores separados
+  para worker/beat con el mismo `command` pattern.
+- **Portales GV/PFM**: endpoints `/inicio/*` con scope `tva.inicio` (`client_credentials`
+  por portal en EntraID), sustituyendo al grupo `TVA WebApi Inicio`.
 - **Observabilidad**: la extensión obligatoria reemplaza `MU_Traza*`/`TVA_LogAplicacion`;
-  `claveSesion` viaja como atributo de traza/log para correlación.
-- **API First**: `openapi.yaml` versionado en el repo, validado en CI; `drf-spectacular`
-  solo para publicar. Del contrato se genera el cliente TypeScript del front
-  (`openapi-generator`/`orval`, `[ZIP]` según lo que traiga el arquetipo Angular).
+  `claveSesion` viaja como atributo de traza/log.
+- **API First**: `openapi.yaml` versionado y validado en CI (`drf-spectacular` solo
+  publica). Del contrato se genera el cliente TypeScript del front con `openapi-generator`
+  (`typescript-angular`), ya que el arquetipo Angular no trae generador propio.
+- **Convenciones del arquetipo** que se respetan: ruff/pyright/pyupgrade en pre-commit,
+  tests AAA con `api_client`, docstrings PEP 257, `fail_under = 80`.
 
 ## 10.5 Frontend Angular — aterrizaje en el arquetipo
 
 Se conserva el mapeo de features del documento 09 (shell, productos, solicitud, tomador,
-rentas, resumen, diálogos, admin, shared/ui). Ajustes al arquetipo:
+rentas, resumen, diálogos, admin, shared/ui). Ajustes al arquetipo real:
 
-- Proyecto generado con el wizard del arquetipo Angular v1 (`pnpm`), no con `ng new`.
-- `[ZIP]` **UI kit**: si el arquetipo provee un design system corporativo (paquetes en
-  Azure Artifacts), los equivalentes de `MU_TextField`, `MU_Dropdown`, `MU_Aviso` se
-  construyen sobre él; Angular Material solo si el arquetipo lo incluye o lo permite.
-- `[ZIP]` **Estado / HTTP / i18n / auth**: usar las librerías que el arquetipo trae
-  (interceptor de token EntraID, manejo de errores, configuración por entorno) antes que
-  las propuestas genéricas de 9.3 (Signal Store, Transloco).
-- **Microfrontend**: la guía tiene sección propia. Propuesta: TVA como **aplicación
-  Angular standalone** en fase inicial; evaluar exponerlo como microfrontend si los
-  portales GV/PFM son ya *shells* de la Arquitectura de Referencia `[a validar]`.
-- Autenticación: OIDC contra EntraID (misma app registration que el backend o app
-  cliente separada `[a validar]`), roles `TVA_USUARIO`, `TVA_ADMIN_PORTAL`, `TVA_DEBUG`
-  como grupos/app roles de EntraID.
-- Testing y calidad según la guía "Testing y Calidad" del arquetipo (`[ZIP]` runner y e2e
-  concretos); SonarQube en CI.
+- **Base**: copia del workspace `arquetipos/frontend-angular/` (Nx 23, Angular 21.2
+  zoneless, pnpm 11.10). App única `app` → renombrada `tva`; features como carpetas
+  `src/app/pages/<feature>/` (sufijo `Page`), componentes reutilizables en
+  `src/app/shared/` (sufijo `Component`), contenedores con lógica (sufijo `Container`),
+  según la regla ESLint del arquetipo.
+- **Zoneless**: toda la reactividad con **Signals** (`signal`, `computed`, `effect`,
+  `input()`/`output()`), `ChangeDetectionStrategy.OnPush` y `toSignal` para HTTP.
+  `SesionStore` = servicio `providedIn: 'root'` con `signal<Sesion>` + `computed` de
+  pantalla actual; nada de `zone.run`.
+- **UI kit**: se añade **Angular Material 21 + CDK** (el arquetipo no trae ninguno y no lo
+  prohíbe) con tema SCSS propio; los equivalentes de `MU_TextField`, `MU_Dropdown`,
+  `MU_Aviso` son wrappers en `shared/ui`. Se vigilan los presupuestos del arquetipo
+  (initial 600/900 kB): Material se importa por componente y con `loadComponent`.
+- **Configuración por entorno**: URLs del backend y de EntraID en
+  `public/assets/environments.json` (`dev/pre/pro`) leídas con `provideEnvironment`; el
+  build `build-with-env` selecciona la clave. Sin `environment.ts`.
+- **Autenticación**: el arquetipo no trae OIDC → añadir `angular-auth-oidc-client`
+  (EntraID, PKCE) + `HttpInterceptorFn` que adjunta el `Bearer`; guards funcionales por
+  rol (`TVA_USUARIO`, `TVA_ADMIN_PORTAL`, `TVA_DEBUG` como app roles de EntraID).
+- **HTTP**: `provideHttpClient(withInterceptors([...]))` + cliente generado desde
+  `openapi.yaml` en `src/app/api/` (no editable a mano).
+- **i18n**: textos en castellano hardcodeados en Appian → `@angular/localize` solo si el
+  equipo lo pide; por defecto constantes en `shared/i18n/es.ts`.
+- **Testing**: Jest + Spectator (`createComponentFactory`/`createRoutingFactory`),
+  `faker`/`factory.ts` para fixtures de sesión; cobertura `lcov` en el target `ci-test`.
+  e2e opcional con Playwright fuera del arquetipo.
+- **Calidad**: commitlint conventional (husky), Prettier, ESLint flat del arquetipo,
+  Sonar en el PR workflow.
+- **Microfrontend**: el arquetipo tiene targets `assemble-mf`/`release-mf` (workspace) pero
+  la app generada es SPA clásica → TVA arranca como SPA; convertir a MF solo si GV/PFM son
+  *shells* de la Arquitectura de Referencia.
 
 ## 10.6 Requisitos de entorno
 
 | Herramienta | Front | Back | Estado en mi máquina |
 |---|---|---|---|
-| Git ≥ 2.49 | ✓ | ✓ | disponible |
-| Node 22+ (nvm) | ✓ | — | Node 24 (compatible; instalar 22 LTS vía nvm si el arquetipo lo fija) |
-| pnpm 11+ | ✓ | — | por instalar |
-| GitHub CLI + PAT `mapfre-tech` | ✓ | ✓ | **necesito acceso a la organización `mapfre-tech`** |
-| `~/.npmrc` Azure Artifacts | ✓ | — | **necesito credencial del feed** |
-| Python 3.11 + Poetry | — | ✓ | por instalar (3.11 concreto) |
-| Docker ≥ 28.2 / Compose ≥ 2.37 | — | ✓ | Docker 29.7 disponible |
-| Acceso a imagen base corporativa (registry) | — | ✓ | **necesito acceso al registry** |
-| Paquetes `arch-ram-lib-*` (Azure Artifacts PyPI) | — | ✓ | **necesito credencial del feed** |
-| App registration EntraID (TVA) | ✓ | ✓ | a solicitar al equipo |
-| SonarQube (alta de la app) | ✓ | ✓ | a solicitar |
-| Postman ≥ 10, VS Code | opcional | opcional | — |
+| Git | ✓ | ✓ | disponible |
+| Node 22+ | ✓ | — | Node 24 disponible |
+| pnpm 11.10 | ✓ | — | por instalar (`corepack enable`) |
+| `~/.npmrc` Azure Artifacts (PAT *Packaging Read*) | ✓ | ✓ (`clai`) | **necesito `AZURE_ARTIFACTS_PW`**: sin él no se instalan `@mapfre-tech/*` ni `arch-ram-lib-*` |
+| Python 3.11 + Poetry 2.1 | — | ✓ | por instalar (pyenv) |
+| Docker / Compose | — | ✓ | Docker 29.7 disponible |
+| Login ACR (`az acr login`) para `mapfre-django-base` | — | ✓ | **necesito acceso**; alternativa local: `python:3.11-slim` solo para desarrollo |
+| App registration EntraID (API + SPA + portales) | ✓ | ✓ | a solicitar al equipo |
+| Sonar, secretos de los workflows reusables (`GH_TOKEN_ENCRYPTION_PASSPHRASE`, `ACR_TOKEN_*`, `SONAR_*`) | ✓ | ✓ | solo aplican en repos `mapfre-tech` |
+| `clai` + skill `django-engineer` | — | ✓ | requiere el mismo PAT de Azure |
+
+**Sin credencial de Azure Artifacts** puedo construir front y back con las dependencias
+públicas (Angular 21, Nx, Django, DRF) respetando estructura y convenciones, dejando
+*stubs* con la misma interfaz para `ngx-multienvironment`, `nx-angular` executors y las
+extensiones `arch-ram-lib-*`; al conseguir el PAT se sustituyen sin cambiar código de
+negocio. Lo recomendable es disponer del PAT desde la fase 1.
 
 ## 10.7 Fases
 
 | Fase | Contenido | Depende de |
 |---|---|---|
-| 0. Contrato y datos | `openapi.yaml` de `tva-backend` desde los CDT `VIDA_API_Life_*`/`TVA_Sesion`; tabla de transiciones de pantallas; extracción de constantes → `tva_parametro`; changelogs Liquibase; fixtures de API Life desde `TVA_MOCK_*` | Volcado Appian (ya disponible) |
-| 1. Esqueletos desde los arquetipos | Generar `tva-frontend` y `tva-backend` con los wizards; CI reusable en verde; observabilidad, OAuth EntraID y cliente HTTP configurados; shell Angular + `SesionStore`; `POST /inicio/*` y `GET /sesiones/{clave}` | ZIP/wizard, acceso `mapfre-tech`, Azure Artifacts, EntraID |
+| 0. Contrato y datos | `openapi.yaml` desde los CDT `VIDA_API_Life_*`/`TVA_Sesion`; tabla de transiciones de pantallas; extracción de constantes → `tva_parametro`; changelogs Liquibase; fixtures de API Life desde `TVA_MOCK_*` | Volcado Appian (disponible) |
+| 1. Esqueletos | Copiar arquetipos a `tva-frontend/` y `tva-backend/` en `feature/tva`; renombrar `app`→`tva`, `product`→`tva`; corregir `settings.py`; Material + OIDC + interceptor; `POST /inicio/*` y `GET /sesiones/{clave}`; lint/test en verde | Validación de este plan; PAT Azure (deseable) |
 | 2. Flujo VIA | Selección producto → solicitud → tomador → resumen → firma contra stubs, luego API Life PRE | Fase 1 |
 | 3. Flujo VA | Propuesta multiproducto, perfil, test idoneidad/conveniencia, notas | — |
 | 4. Rentas R2C | Captura, precios, recálculo, contratación | — |
@@ -224,22 +229,24 @@ rentas, resumen, diálogos, admin, shared/ui). Ajustes al arquetipo:
 | 6. Admin y batch | Parámetros, apertura/cierre y borrado de trazas (Celery Beat), alertas, Redis | — |
 | 7. Convivencia y corte | Feature flag en GV/PFM; retirada Appian | Portales |
 
-Esfuerzo propio estimado: fase 0 ≈ 1 sesión; fase 1 ≈ 1 sesión una vez tenga accesos;
-fases 2–6 ≈ 5–7 sesiones; la fase 7 depende de terceros. Sin acceso a Azure Artifacts,
-imagen base y EntraID puedo prototipar con stubs locales, pero el resultado **no** sería
-el arquetipo real.
+Esfuerzo propio estimado: fase 0 ≈ 1 sesión; fase 1 ≈ 1 sesión; fases 2–6 ≈ 5–7 sesiones;
+la fase 7 depende de terceros.
 
 ## 10.8 Decisiones a validar por el equipo
 
-1. Un repo por componente (`tva-frontend`, `tva-backend`) en `mapfre-tech` generados por
-   Marketplace, frente a construir aquí en `feature/tva`.
-2. UI kit: design system del arquetipo vs Angular Material (según `[ZIP]`).
-3. Batch con Celery Beat (worker adicional) vs `management/commands` + CronJob.
-4. Una app Django `tva` vs separar `rentas`.
-5. Django Admin: no usarlo (evita migraciones Django y estáticos S3) y resolver la
-   administración en el SPA `/admin` — propuesta por defecto.
-6. Registro EntraID: una app para back + una SPA cliente, y `client_credentials` por portal.
-7. Alcance de la migración de dependencias `MU_*`/`VIDA_*`/`CMP_*`: reimplementar en TVA
-   o servicio común Vida.
-8. Confirmar que los documentos Appian `…_5463656` / `…_5463643` son front y back
-   respectivamente (o al revés) una vez descargados.
+1. **Ubicación**: desarrollo en `feature/tva` de este repo como `tva-frontend/` y
+   `tva-backend/` (cada uno con la estructura exacta de su arquetipo para poder moverlos a
+   repos `mapfre-tech` después). *Propuesta: sí.*
+2. **UI kit**: Angular Material 21 (el arquetipo no trae ninguno). *Propuesta: sí.*
+3. **Batch**: Celery worker + beat (extensión del arquetipo) vs `management/commands` +
+   CronJob. *Propuesta: Celery.*
+4. **Extensiones del `pyproject`**: mantener solo observability, auth, httpclient,
+   rediscache, celery; eliminar kafkaevent, mongoatlas, storages y django-admin.
+   *Propuesta: eliminar.*
+5. **Apps Django**: una app `tva` vs separar `rentas`. *Propuesta: una.*
+6. **EntraID**: una app registration API (`esp-appianesad-tva`) + una SPA + un cliente
+   `client_credentials` por portal. *Requiere alta por el equipo.*
+7. **Dependencias `MU_*`/`VIDA_*`/`CMP_*`**: reimplementar dentro de TVA (propuesta) o
+   servicio común Vida.
+8. **Credencial Azure Artifacts** para instalar paquetes corporativos desde mi máquina,
+   o construir con stubs y sustituir después.

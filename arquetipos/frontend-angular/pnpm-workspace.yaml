@@ -1,0 +1,15 @@
+autoInstallPeers: true
+allowBuilds:
+  nx: true
+  '@parcel/watcher': false
+  esbuild: false
+  lmdb: false
+  msgpackr-extract: false
+  unrs-resolver: false
+minimumReleaseAgeExclude:
+  - '@mapfre-tech/*'
+overrides:
+  # verdaccio@6.9+ pulls @verdaccio/hooks@8.1.2 which requires got@15.1.0,
+  # a version absent from the private npm registry. Pin to 6.8.x which uses
+  # got-cjs@12.5.4 instead.
+  verdaccio: '~6.8.0'

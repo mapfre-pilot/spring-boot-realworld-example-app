@@ -1,0 +1,81 @@
+# Copyright (c) MAPFRE DevOps Platform
+#
+# Deploy Workflow. Triggers on call from Zeus
+#
+#
+#
+
+name: Deploy
+run-name: 'Deploy version ${{ inputs.is_workflow_call && inputs.version || github.ref_name }} to ${{ inputs.environment }} #${{ github.run_number }}'
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to (e.g., dev, staging, prod)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Perform a dry run of the deployment without applying changes'
+        required: false
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+      is_workflow_call:
+        description: 'Internal Flag to distinguish workflow_call from workflow_dispatch'
+        required: false
+        type: boolean
+        default: true
+      dry_run:
+        description: 'Perform a dry run of the deployment without applying changes'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  check:
+    name: Check environment
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Summary of input parameters
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const summary = `
+            ## Summary of Input Parameters
+            - Environment: ${{ inputs.environment == 'int' && 'dev' || inputs.environment }}
+            - Version: ${{ inputs.is_workflow_call && inputs.version || github.ref_name }}
+            - Component: ${{ vars.COMPONENT != '' && vars.COMPONENT || github.event.repository.name }}
+            - Tenant: ${{ vars.TENANT != '' && vars.TENANT || 'tenant1' }}
+            - Manifest Repository: ${{ vars.MANIFEST_REPOSITORY }}
+            - Dry Run: ${{ inputs.dry_run }}
+            - Is workflow call: ${{ inputs.is_workflow_call }}
+            `;
+            core.summary.addRaw(summary).write();
+
+      # workflow_dispatch (Manual Trigger) restricted to TAGS
+      - name: Fail if workflow_dispatch not triggered from tag
+        if: ${{ !inputs.is_workflow_call && github.ref_type != 'tag' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.setFailed("Error: This workflow can only be executed from a TAG.")
+
+  deploy:
+    needs: check
+    uses: mapfre-tech/esp-pfdevops-reusable-workflows/.github/workflows/argocd-deploy.yml@v1
+    with:
+      component: "${{ vars.COMPONENT != '' && vars.COMPONENT || github.event.repository.name }}"
+      tenant: "${{ vars.TENANT != '' && vars.TENANT || 'tenant1' }}"
+      environment: "${{ inputs.environment == 'int' && 'dev' || inputs.environment }}"
+      version: ${{ inputs.is_workflow_call && inputs.version || github.ref_name }}
+      manifest-repository: '${{ vars.MANIFEST_REPOSITORY }}'
+      dry-run: ${{ inputs.dry_run }}
+    secrets:
+      GH_TOKEN_ENCRYPTION_PASSPHRASE: ${{ secrets.GH_TOKEN_ENCRYPTION_PASSPHRASE }}
