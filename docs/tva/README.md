@@ -24,6 +24,7 @@ Documentación resultante del análisis **de solo lectura** de la aplicación Ap
 7. [Hallazgos y propuestas de mejora](07-mejoras.md)
 8. [Limitaciones del análisis](08-limitaciones.md)
 9. [Plan de migración a Angular Material + backend](09-plan-migracion-angular.md)
+10. [Plan de migración basado en los arquetipos corporativos (Angular + Django)](10-plan-migracion-arquetipos.md) — borrador pendiente de validación
 
 ## Resumen ejecutivo
 
