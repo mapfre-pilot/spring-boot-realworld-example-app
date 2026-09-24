@@ -1,0 +1,28 @@
+{
+  "dev": {
+    "apiBaseUrl": "http://localhost:8888/api/tva/v1",
+    "auth": { "mode": "local", "tokenStorageKey": "tva_token" }
+  },
+  "pre": {
+    "apiBaseUrl": "https://CHANGEME/api/tva/v1",
+    "auth": {
+      "mode": "oidc",
+      "authority": "https://CHANGEME",
+      "clientId": "CHANGEME",
+      "scope": "openid profile CHANGEME",
+      "redirectUrl": "https://CHANGEME",
+      "tokenStorageKey": "tva_token"
+    }
+  },
+  "pro": {
+    "apiBaseUrl": "https://CHANGEME/api/tva/v1",
+    "auth": {
+      "mode": "oidc",
+      "authority": "https://CHANGEME",
+      "clientId": "CHANGEME",
+      "scope": "openid profile CHANGEME",
+      "redirectUrl": "https://CHANGEME",
+      "tokenStorageKey": "tva_token"
+    }
+  }
+}
