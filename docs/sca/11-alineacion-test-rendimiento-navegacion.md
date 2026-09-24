@@ -329,3 +329,30 @@ Transicion 1 (solo la del Alta — Decidir no escribe Transicion en su flujo),
 Error 2 (DECISION_ERROR id=4 del run con PM roto + id=5 del run final,
 ambas PENDIENTE/intentos=1), Tarea 0. Los 8 CMDs revalidados
 `hasErrors:false`; dumps finales en `t20/pm_chain_v1/`.
+
+### Inyección de decisión y prueba de `SCA2 CMD CrearAccion` (15787499)
+
+PRE devuelve 500 para toda póliza, así que se inyectó la decisión replicando los
+writes del nodo 9 "Write Decidida POPUP_SGO" de Decidir (ruta default para una
+acción no-ERROR nivel 1): Solicitud `estadoSolicitud=DECIDIDA`,
+`procesoActivo=<accion>`, `interfazActiva=POPUP_SGO`, version+1; Transicion OK
+`SCA2 CMD Decidir` → DECIDIDA; Datos Perfiles Pca ya tenía CE_RM/CE_RM_OFICINA.
+Errores 4–6 marcados `DESCARTADO`/`devin`.
+
+Hallazgo: la acción correcta en SCA es `CONTRAANULAR` (sin espacio, constante
+`SCA_TXT_ACCIONES`); el primer run con `CONTRA ANULACION` fue rechazado y, además,
+el XOR nodo 5 "Accion?" de CrearAccion **no incluía `CONTRAANULAR`** en la rama
+Humana (bug SCA2 vs SCA, cuyo dispatch sí la rutea a tarea humana) — corregido
+añadiendo `pv!accionCalc="CONTRAANULAR"` a la condición Humana (PUT 200, re-GET
+confirma).
+
+Re-inyección con `CONTRAANULAR` + run `testProcessModel` CrearAccion →
+**COMPLETED** (proc 12063074). Filas: Solicitud `EN_ACCION`, interfazActiva
+`CONTRA_ANULAR`, estadoTarea `PENDIENTE`, caducidad +1d; Transicion id=3 OK
+(`SCA2 CMD CrearAccion|15787499|5`); **SCA2 Tarea id=1** creada (nombre/tipo
+CONTRAANULAR, estado PENDIENTE, grupo CE_RM, propietario devin, token
+TK-12063074-…, prioridad NORMAL, fechaCaducidad `SCA2_obtenerCaducidadNivel`).
+El nodo 7 no escribe `asignadoA` (asignación por grupo, igual que SCA);
+Error 7 (ACCION_DESCONOCIDA del primer run) marcado `DESCARTADO`.
+Evidencia: `t20/crearaccion_15787499.log`, `pm_chain_v1/CrearAccion.json`
+(pre-fix del XOR; el fix se re-GETeó).
