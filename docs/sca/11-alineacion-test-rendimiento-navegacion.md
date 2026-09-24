@@ -364,3 +364,16 @@ con la guarda `if(tointeger(nivel)<>1 and codsubperfil="CE_MF_SI24_EXPERTO",
 null, usuario)` para `asignadoA` — en SCA2 cada CMD es un proceso separado y
 `pp!initiator` sería el lanzador del CMD, no el del alta. Tarea id=1 actualizada
 a mano: asignadoA/propietario = JJGONZ2@mapfrenopro.onmicrosoft.com.
+
+**Fixes UI (15787499)**: `SCA2_DetalleSolicitud` acordeón Contraanular — el `if`
+de la columna GESVIDA usaba `and` infijo dentro de los argumentos de `if()`, que
+Appian cuenta como parámetros separados ("passed 4"); corregido a
+`if(and(local!esVida, index(fv!item,"tipo","")="VERTI"), ...)`.
+`SCA2_textoEstadoSolicitud`/`SCA2_colorEstadoSolicitud`: nuevo input `accion`
+(procesoActivo); EN_ACCION ahora etiqueta por acción ("Contra anulación en curso",
+"Autorización en curso", "Acción administrativa en curso", "Mecanización en
+curso"; default "Solicitud Pendiente") en vez de "Solicitud Pendiente" siempre —
+paridad con los literales `SCA_TXT_ESTADO_SOLICITUD_PCA` de SCA. Callers
+actualizados: `SCA2_BuscadorTabla`, `SCA2_TablaOtrasSolAnulacion`,
+`SCA2_SolicitudAnulacion`. El Buscador de SCA no tiene columna "Asignado a"
+(queda solo en la grid de tareas del Detalle).
