@@ -6,7 +6,7 @@ import pytest
 import requests
 
 from apps.tva.models import Sesion
-from apps.tva.operators.popups import completar_popup, construir_body
+from apps.tva.operators.popups import completar_popup, construir_body, evaluar_respuesta
 from apps.tva.services.connectors.appian_embed import AppianEmbedError, RealAppianEmbedClient
 from apps.tva.tests.conftest import make_token
 
@@ -143,7 +143,7 @@ def test_body_errores(db):
 )
 def test_completar_submit_flags(db, popup, flag):
     s = _sesion()
-    res = completar_popup(s, popup, 0, "t-1", "SUBMIT")
+    res = completar_popup(s, popup, 0, f"t-{popup}-1", "SUBMIT")
     s.refresh_from_db()
     assert s.estado["tomadores"][0]["datosGestionParticipante"][flag] is True
     assert res["estado"]["tomadores"][0]["datosGestionParticipante"][flag] is True
@@ -154,6 +154,107 @@ def test_completar_submit_test_firma(db):
     completar_popup(s, "test-conveniencia", 0, "t-1", "SUBMIT")
     s.refresh_from_db()
     assert s.estado["tomadores"][0]["perfilCliente"]["testConveniencia"]["estado"] == "FIRMADO"
+
+
+# --- completar: resultado real vía CMP Devolver Respuesta Componente ---
+
+
+def test_respuestas_componentes_persistidas(db):
+    s = _sesion()
+    completar_popup(s, "rgpd", 0, "t-rgpd-9", "SUBMIT")
+    s.refresh_from_db()
+    guardado = s.estado["tomadores"][0]["datosGestionParticipante"]["respuestasComponentes"]["rgpd"]
+    assert guardado["taskId"] == "t-rgpd-9"
+    assert guardado["resultado"] == "SUBMIT"
+    assert guardado["respuesta"]["accion"] == "enviado"
+    assert guardado["respuesta"]["idsConsentimiento"] == ["MOCK-1"]
+    assert guardado["respuesta"]["canalFirma"] == "email"
+
+
+def test_rgpd_submit_respuesta_error_sin_flag(db):
+    s = _sesion()
+    completar_popup(s, "rgpd", 0, "t-rgpd-1-KO", "SUBMIT")
+    s.refresh_from_db()
+    g = s.estado["tomadores"][0]["datosGestionParticipante"]
+    assert "consentimientoProteccionDatos" not in g
+    assert any("No se ha podido completar" in a["mensaje"] for a in s.estado["avisos"])
+
+
+def test_rgpd_submit_sin_respuesta_error(db):
+    s = _sesion()
+    with patch("apps.tva.operators.popups.get_appian_embed_client") as m:
+        m.return_value.respuesta.return_value = None
+        completar_popup(s, "rgpd", 0, "t-1", "SUBMIT")
+    s.refresh_from_db()
+    assert any("No se ha podido completar" in a["mensaje"] for a in s.estado["avisos"])
+    assert "consentimientoProteccionDatos" not in s.estado["tomadores"][0]["datosGestionParticipante"]
+
+
+def test_dni_cancelado_dismiss(db):
+    s = _sesion()
+    with patch("apps.tva.operators.popups.get_appian_embed_client") as m:
+        m.return_value.respuesta.return_value = {"accion": "cancelado", "error": False}
+        completar_popup(s, "dni", 0, "t-1", "SUBMIT")
+    s.refresh_from_db()
+    assert "documentoIdDigitalizado" not in s.estado["tomadores"][0]["datosGestionParticipante"]
+    assert not any(a["tipo"] == "ERROR" for a in s.estado["avisos"])
+
+
+def test_test_conveniencia_sin_respuesta_mantiene_submit(db):
+    s = _sesion()
+    with patch("apps.tva.operators.popups.get_appian_embed_client") as m:
+        m.return_value.respuesta.return_value = None
+        completar_popup(s, "test-conveniencia", 0, "t-1", "SUBMIT")
+    s.refresh_from_db()
+    assert s.estado["tomadores"][0]["datosGestionParticipante"]["testConvenienciaVigente"] is True
+
+
+def test_respuesta_error_conexion_aviso_comprobar(db):
+    s = _sesion()
+    with patch("apps.tva.operators.popups.get_appian_embed_client") as m:
+        m.return_value.respuesta.side_effect = AppianEmbedError(500, "APPIAN_ERROR", "Error")
+        completar_popup(s, "rgpd", 0, "t-1", "SUBMIT")
+    s.refresh_from_db()
+    assert any("comprobar" in a["mensaje"] for a in s.estado["avisos"])
+
+
+def test_evaluar_respuesta_casos():
+    assert evaluar_respuesta("rgpd", None)[0] == "ERROR"
+    assert evaluar_respuesta("rgpd", {"error": True})[0] == "ERROR"
+    assert evaluar_respuesta("rgpd", {"accion": "cancelado"})[0] == "DISMISS"
+    assert evaluar_respuesta("rgpd", {"accion": "enviado"})[0] == "SUBMIT"
+    assert evaluar_respuesta("dni", {"accion": "movilidad"})[0] == "SUBMIT"
+    assert evaluar_respuesta("dni", {"accion": "otro"})[0] == "ERROR"
+    assert evaluar_respuesta("test-conveniencia", None)[0] == "SUBMIT"
+    assert evaluar_respuesta("test-conveniencia", {"error": True})[0] == "ERROR"
+
+
+# --- connector real: respuesta componente ---
+
+
+def test_real_respuesta_200():
+    c = _cliente_real()
+    c.session.post.return_value = MagicMock(ok=True, json=lambda: {"accion": "enviado"})
+    assert c.respuesta("u@mapfre.net", "t-1") == {"accion": "enviado"}
+    body = c.session.post.call_args.kwargs["json"]
+    assert body == {"usuarioAppian": "u@mapfre.net", "idTarea": "t-1"}
+
+
+def test_real_respuesta_no_encontrada_none():
+    c = _cliente_real()
+    c.session.post.return_value = MagicMock(
+        ok=False, status_code=500, json=lambda: {"code": "4", "message": "idTarea no encontrado en la BD", "errors": []}
+    )
+    assert c.respuesta("u@mapfre.net", "t-x") is None
+
+
+def test_real_respuesta_500_otro_error():
+    c = _cliente_real()
+    c.session.post.return_value = MagicMock(
+        ok=False, status_code=500, json=lambda: {"code": "3", "message": "Parámetros no válidos", "errors": []}
+    )
+    with pytest.raises(AppianEmbedError):
+        c.respuesta("u@mapfre.net", "t-x")
 
 
 def test_completar_error_aviso(db):
@@ -191,7 +292,7 @@ def test_completar_view_submit(db, api_client, auth_header):
     s = _sesion()
     r = api_client.post(
         f"{BASE}/sesiones/{s.clave}/popups/dni/completar/",
-        {"idxTomador": 0, "taskId": "t", "resultado": "SUBMIT"},
+        {"idxTomador": 0, "taskId": "t-dni-1", "resultado": "SUBMIT"},
         format="json",
         **auth_header,
     )

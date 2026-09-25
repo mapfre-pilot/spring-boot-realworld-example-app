@@ -7,7 +7,7 @@ from django.conf import settings
 
 from apps.tva.models import Sesion
 from apps.tva.schemas.errors import AvisosClase
-from apps.tva.services.connectors.appian_embed import POPUPS, get_appian_embed_client
+from apps.tva.services.connectors.appian_embed import POPUPS, AppianEmbedError, get_appian_embed_client
 
 from ._comun import add_aviso, guardar_y_trazar, resultado
 
@@ -133,8 +133,47 @@ def lanzar_popup(sesion: Sesion, popup: str, idx_tomador: int, user) -> dict:
     }
 
 
-def completar_popup(sesion: Sesion, popup: str, idx_tomador: int, task_id: str, resultado_pop: str, roles: list[str] | None = None) -> dict:
-    """Aplica el resultado del pop-up (SUBMIT/DISMISS/ERROR) a la sesión."""
+def evaluar_respuesta(popup: str, respuesta: dict | None) -> tuple[str, dict | None]:
+    """Deriva el resultado real del pop-up a partir de la respuesta CMP.
+
+    Devuelve ``(resultado_final, respuesta)`` con resultado_final en
+    ``{"SUBMIT", "DISMISS", "ERROR"}``. La respuesta de Appian es one-shot, así
+    que el caller debe persistirla (``respuestasComponentes``).
+    """
+    if popup in ("rgpd", "dni"):
+        if respuesta is None or respuesta.get("error") is True:
+            return "ERROR", respuesta
+        accion = respuesta.get("accion")
+        if accion == "cancelado":
+            return "DISMISS", respuesta
+        if (popup == "rgpd" and accion == "enviado") or (popup == "dni" and accion in ("digitalizacion", "movilidad")):
+            return "SUBMIT", respuesta
+        return "ERROR", respuesta
+    # test-conveniencia: puede no existir respuesta CMP almacenada
+    if respuesta is None:
+        return "SUBMIT", respuesta
+    if respuesta.get("error") is True:
+        return "ERROR", respuesta
+    if respuesta.get("accion") == "cancelado":
+        return "DISMISS", respuesta
+    return "SUBMIT", respuesta
+
+
+def completar_popup(
+    sesion: Sesion,
+    popup: str,
+    idx_tomador: int,
+    task_id: str,
+    resultado_pop: str,
+    roles: list[str] | None = None,
+    user=None,
+) -> dict:
+    """Aplica el resultado del pop-up a la sesión.
+
+    Si el frontend reporta SUBMIT no se confía en el evento: se consulta la Web
+    API "CMP Devolver Respuesta Componente" (one-shot) y se deriva el resultado
+    real con :func:`evaluar_respuesta`.
+    """
     if popup not in POPUPS:
         raise ValueError(f"Pop-up desconocido: {popup}")
     estado = sesion.estado or {}
@@ -142,6 +181,20 @@ def completar_popup(sesion: Sesion, popup: str, idx_tomador: int, task_id: str, 
     if idx_tomador >= len(tomadores):
         raise ValueError(f"Tomador {idx_tomador + 1} no existe en la sesión")
     res = resultado_pop.upper()
+    respuesta: dict | None = None
+    error_comprobacion = False
+    if res == "SUBMIT":
+        perfil = estado.get("perfilUsuario") or {}
+        usuario_appian = _username_appian(perfil, getattr(user, "sub", "") or "")
+        try:
+            respuesta = get_appian_embed_client().respuesta(usuario_appian, task_id)
+        except AppianEmbedError:
+            logger.warning("No se pudo comprobar la respuesta del pop-up %s (%s)", popup, task_id)
+            respuesta = None
+            error_comprobacion = True
+        res, respuesta = evaluar_respuesta(popup, respuesta)
+        if error_comprobacion:
+            res = "ERROR"
     if res == "SUBMIT":
         t = dict(tomadores[idx_tomador])
         gestion = {**(t.get("datosGestionParticipante") or {})}
@@ -159,12 +212,34 @@ def completar_popup(sesion: Sesion, popup: str, idx_tomador: int, task_id: str, 
         tomadores[idx_tomador] = t
         sesion.estado = {**estado, "tomadores": tomadores}
     elif res == "ERROR":
+        mensaje = (
+            f"No se ha podido comprobar el resultado de {_ETIQUETA[popup]}"
+            if error_comprobacion
+            else f"No se ha podido completar {_ETIQUETA[popup]}"
+        )
         add_aviso(
             sesion,
             AvisosClase.GENERAL,
             f"TVA_ERROR_POPUP_{popup.upper().replace('-', '_')}",
-            f"No se ha podido completar {_ETIQUETA[popup]}",
+            mensaje,
             tipo="ERROR",
         )
-    guardar_y_trazar(sesion, f"POPUP_{popup.upper().replace('-', '_')}_{res}", datos={"taskId": task_id, "idxTomador": idx_tomador})
+    # Persistir la respuesta one-shot recuperada de Appian (aunque sea None).
+    if resultado_pop.upper() == "SUBMIT":
+        estado = sesion.estado or {}
+        tomadores = estado.get("tomadores") or []
+        t = dict(tomadores[idx_tomador])
+        gestion = {**(t.get("datosGestionParticipante") or {})}
+        respuestas = {**(gestion.get("respuestasComponentes") or {})}
+        respuestas[popup] = {"taskId": task_id, "resultado": res, "respuesta": respuesta}
+        gestion["respuestasComponentes"] = respuestas
+        t["datosGestionParticipante"] = gestion
+        tomadores = [dict(x) for x in tomadores]
+        tomadores[idx_tomador] = t
+        sesion.estado = {**estado, "tomadores": tomadores}
+    guardar_y_trazar(
+        sesion,
+        f"POPUP_{popup.upper().replace('-', '_')}_{res}",
+        datos={"taskId": task_id, "idxTomador": idx_tomador, "resultado": res, "respuesta": respuesta},
+    )
     return resultado(sesion, roles=roles)

@@ -68,7 +68,13 @@ class PopupCompletarView(APIView):
         d = serializer.validated_data
         try:
             res = completar_popup(
-                sesion, popup, d["idxTomador"], d.get("taskId") or "", d["resultado"], getattr(request.user, "roles", []) or []
+                sesion,
+                popup,
+                d["idxTomador"],
+                d.get("taskId") or "",
+                d["resultado"],
+                getattr(request.user, "roles", []) or [],
+                request.user,
             )
         except ValueError as e:
             return Response(error_response(ErrorCodes.PARAMETROS_ENTRADA, str(e)), status=status.HTTP_400_BAD_REQUEST)
