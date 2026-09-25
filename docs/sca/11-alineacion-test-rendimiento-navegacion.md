@@ -490,3 +490,17 @@ intento (6 duplicados PDTE para 1807). Fix para que el PM reutilice la fila:
 Limpieza 1807: filas Solicitud 7-12 eliminadas; queda única fila id=13
 (15787527, EN_ACCION). Tarea 3 CONTRAANULAR asignada JJGONZ2 (cadena
 Alta→Decidir→CrearAccion completa).
+
+### 8.z3 Tabs admin + upsert nulo + alta 10978
+
+- **Tabs Errores/Gestiones**: la `visibilityExpr` (a!isUserMemberOfGroup →
+  `cons!SCA2_GRP_ADMINISTRADORES`) estaba activa; el problema era que JJGONZ2
+  seguía en `SCA2 Administrators` (el removeGroupMember previo usó un uuid de
+  grupo incorrecto `_e-…8000-9cc8…_8069` en vez de `_e-…8000-9c18-01075c01075c_8069`).
+  Eliminado correctamente: admins quedan devin + GGALV10.
+- **Alta 2002000010978**: el relanzar con `idSolicitudExistente` nulo hacía que el
+  filtro OR `idSolicitud = null` rompiera el upsert (proceso ERROR tras generar,
+  sin filas). Corregido n9/n206: filtro único `idSolicitud =
+  if(isNotNullOrEmpty(pv!idSolicitudExistente), idSolicitudExistente, pv!idSolicitud)`.
+- Reanudación `idSolicitudExistente="15787528"`: COMPLETED — Solicitud EN_ACCION,
+  Transiciones Alta+Decidir OK, Tarea 4 CONTRAANULAR asignada JJGONZ2.
