@@ -8,20 +8,9 @@ import { SesionStore } from '@tva/core';
 @Component({
   selector: 'app-r2c-precios',
   imports: [MatCardModule, MatButtonModule],
+  templateUrl: './r2c-precios.container.html',
+  styleUrl: './r2c-precios.container.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <mat-card>
-      <mat-card-title>Precios de rentas</mat-card-title>
-      <mat-card-content>
-        <pre>{{ rentasJson() }}</pre>
-      </mat-card-content>
-    </mat-card>
-  `,
-  styles: `
-    button {
-      margin-right: 8px;
-    }
-  `,
 })
 export class R2cPreciosContainer {
   private readonly store = inject(SesionStore);

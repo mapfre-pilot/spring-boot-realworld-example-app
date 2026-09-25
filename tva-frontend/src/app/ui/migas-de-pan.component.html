@@ -1,0 +1,17 @@
+<nav class="migas" aria-label="Pasos del proceso">
+  @for (paso of pasos(); track paso; let last = $last, i = $index) {
+    <span
+      class="paso"
+      [class.actual]="paso === actual()"
+      [class.completado]="completado(i)"
+      [class.futuro]="futuro(i)">
+      @if (completado(i)) {
+        <mat-icon class="check" aria-hidden="true">check</mat-icon>
+      }
+      {{ etiqueta(paso) }}
+    </span>
+    @if (!last) {
+      <span class="separador" aria-hidden="true">›</span>
+    }
+  }
+</nav>

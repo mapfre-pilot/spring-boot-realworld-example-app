@@ -17,6 +17,8 @@ import { Router } from '@angular/router';
 
 import {
   AuthService,
+  crearFormularioInicio,
+  crearGrupoInversion,
   IniciarSesionUsecase,
   InicioRequest,
   InvestmentOption,
@@ -57,52 +59,9 @@ const FRECUENCIAS: Opcion[] = [
     CampoTextoComponent,
     CampoSelectComponent,
   ],
+  styleUrl: './inicio.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './inicio.page.html',
-  styles: `
-    .pagina {
-      max-width: 1100px;
-      margin: 24px auto;
-      padding: 0 16px;
-    }
-    .tabla {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 12px 0;
-    }
-    .tabla td {
-      padding: 2px;
-    }
-    .checks {
-      display: flex;
-      gap: 24px;
-      align-items: center;
-      margin: 12px 0;
-      padding: 8px 0;
-    }
-    .errores {
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      margin: 12px 0;
-      padding: 10px 14px;
-      border-radius: 4px;
-      border-left: 4px solid var(--tva-primary, #d81e05);
-      background: #fdecea;
-      color: #7f1d12;
-    }
-    .errores mat-icon {
-      flex-shrink: 0;
-    }
-    .errores ul {
-      margin: 6px 0 0;
-      padding-left: 18px;
-    }
-    .ok {
-      color: #2e7d32;
-      font-weight: 500;
-    }
-  `,
 })
 export class InicioPage implements OnInit {
   private readonly iniciarSesion = inject(IniciarSesionUsecase);
@@ -127,18 +86,7 @@ export class InicioPage implements OnInit {
 
   readonly nuumaControl = this.fb.nonNullable.control({ value: '', disabled: true });
 
-  readonly form = this.fb.nonNullable.group({
-    indFunctionMode: ['VIA' as InicioRequest['indFunctionMode'], Validators.required],
-    proposalId: [{ value: '', disabled: true }],
-    companyId: ['0511'],
-    numTomadores: [1],
-    distributionChannel: ['500'],
-    username: ['', Validators.required],
-    tomador: [true],
-    perfilado: [false],
-    inversion: [true],
-    investment: this.fb.array<FormGroup>([]),
-  });
+  readonly form = crearFormularioInicio(this.fb.nonNullable);
 
   get investment(): FormArray<FormGroup> {
     return this.form.controls.investment;
@@ -175,18 +123,7 @@ export class InicioPage implements OnInit {
   }
 
   nuevaOpcion(): void {
-    this.investment.push(
-      this.fb.group({
-        commercialProductCode: [''],
-        investmentPreferenceCode: [''],
-        operationTypeCode: ['S'],
-        policyId: [null],
-        uniqueContributionAmn: [null],
-        periodicContributionAmn: [null],
-        contributionFrequencyCode: [null],
-        insuranceOfferInd: [false],
-      })
-    );
+    this.investment.push(crearGrupoInversion(this.fb.nonNullable));
   }
 
   borrarOpcion(i: number): void {

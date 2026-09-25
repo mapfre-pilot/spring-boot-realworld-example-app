@@ -67,7 +67,7 @@ describe('CapturaDatosSolicitudContainer', () => {
     const s = create();
     cargar(TestBed.inject(SesionStore));
     s.component.ngOnInit();
-    s.component.operacion.controls.primaUnica.setValue(1000);
+    s.component.formularios.operacion.controls.primaUnica.setValue(1000);
     s.component.seleccionarOpcion(0, true);
     expect(s.component.importes()[0]?.['unica']).toBe(1000);
     s.detectChanges();
@@ -82,7 +82,7 @@ describe('CapturaDatosSolicitudContainer', () => {
     const s = create();
     cargar(TestBed.inject(SesionStore));
     s.component.ngOnInit();
-    s.component.continuarSeccion('operacion', s.component.operacion);
+    s.component.continuarSeccion('operacion');
     expect(api.validarSeccion).toHaveBeenCalledWith(
       'k',
       'DATOS_DEL_SEGURO',

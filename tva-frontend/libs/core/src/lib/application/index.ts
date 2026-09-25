@@ -16,3 +16,6 @@ export * from './alternar-apertura-cierre.usecase';
 export * from './limpiar-caches.usecase';
 export * from './obtener-trazas.usecase';
 export * from './state/sesion.store';
+export * from './forms/tomador-forms';
+export * from './forms/solicitud-forms';
+export * from './forms/inicio-forms';

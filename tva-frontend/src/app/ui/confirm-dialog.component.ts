@@ -6,20 +6,9 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 @Component({
   selector: 'app-confirm-dialog',
   imports: [MatDialogModule, MatButtonModule],
+  templateUrl: './confirm-dialog.component.html',
+  styleUrl: './confirm-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <h2 mat-dialog-title>{{ data.header }}</h2>
-    <mat-dialog-content class="mensaje">{{ data.message }}</mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button [mat-dialog-close]="false">{{ data.cancel }}</button>
-      <button mat-flat-button color="primary" [mat-dialog-close]="true">{{ data.ok }}</button>
-    </mat-dialog-actions>
-  `,
-  styles: `
-    .mensaje {
-      white-space: pre-line;
-    }
-  `,
 })
 export class ConfirmDialogComponent {
   readonly data = inject<{ header: string; message: string; ok: string; cancel: string }>(

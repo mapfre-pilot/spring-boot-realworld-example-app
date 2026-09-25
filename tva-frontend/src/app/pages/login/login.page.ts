@@ -18,77 +18,9 @@ import { AuthService } from '@tva/core';
     MatButtonModule,
     ReactiveFormsModule,
   ],
+  templateUrl: './login.page.html',
+  styleUrl: './login.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="contenedor">
-      <mat-card class="login-card">
-        <mat-card-content>
-          <div class="marca">MAPFRE</div>
-          <p class="subtitulo">Tarificador Vida Ahorro</p>
-          @if (auth.authMode === 'local') {
-            <p class="ayuda">
-              Pega el token local generado con <code>manage.py crear_token_local</code>.
-            </p>
-            <form [formGroup]="form" (ngSubmit)="entrar()">
-              <mat-form-field appearance="outline" class="campo">
-                <mat-label>Token JWT local</mat-label>
-                <textarea matInput formControlName="token" rows="3"></textarea>
-              </mat-form-field>
-              <button
-                mat-flat-button
-                color="primary"
-                type="submit"
-                class="entrar"
-                [disabled]="form.invalid">
-                Entrar
-              </button>
-            </form>
-          } @else {
-            <p class="ayuda">Acceso corporativo (OIDC).</p>
-            <button mat-flat-button color="primary" class="entrar" (click)="auth.loginOidc()">
-              Entrar con SSO
-            </button>
-          }
-        </mat-card-content>
-      </mat-card>
-    </div>
-  `,
-  styles: `
-    .contenedor {
-      display: flex;
-      justify-content: center;
-      padding-top: 12vh;
-    }
-    .login-card {
-      max-width: 480px;
-      width: 100%;
-    }
-    .login-card mat-card-content {
-      padding: 32px 28px 28px;
-    }
-    .marca {
-      color: var(--tva-primary, #d81e05);
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: 3px;
-    }
-    .subtitulo {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--tva-text-muted, #666);
-      margin: 2px 0 20px;
-    }
-    .ayuda {
-      font-size: 13px;
-      color: var(--tva-text-muted, #666);
-    }
-    .campo {
-      width: 100%;
-    }
-    .entrar {
-      width: 100%;
-    }
-  `,
 })
 export class LoginPage {
   readonly auth = inject(AuthService);

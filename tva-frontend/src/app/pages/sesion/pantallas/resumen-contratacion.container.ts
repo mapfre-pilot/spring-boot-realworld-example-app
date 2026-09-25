@@ -10,39 +10,9 @@ import { CajaComponent } from '../../../ui/caja.component';
 @Component({
   selector: 'app-resumen-contratacion',
   imports: [MatRadioModule, MatButtonModule, ReactiveFormsModule, CajaComponent],
+  templateUrl: './resumen-contratacion.container.html',
+  styleUrl: './resumen-contratacion.container.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <app-caja titulo="Solicitud">
-      <pre>{{ estadoJson('solicitud') }}</pre>
-    </app-caja>
-    <app-caja titulo="Tomador(es)">
-      <pre>{{ estadoJson('tomador') }}</pre>
-    </app-caja>
-    <app-caja titulo="Producto / rentas">
-      <pre>{{ estadoJson('producto') }}</pre>
-    </app-caja>
-    <app-caja titulo="Tipo de firma">
-      <form [formGroup]="form">
-        <mat-radio-group formControlName="tipoFirma">
-          <mat-radio-button value="DIGITAL">Firma digital</mat-radio-button>
-          <mat-radio-button value="MANUSCRITA">Firma manuscrita</mat-radio-button>
-        </mat-radio-group>
-      </form>
-    </app-caja>
-    <button mat-flat-button color="primary" (click)="firmar()" [disabled]="form.invalid">
-      Firmar y contratar
-    </button>
-  `,
-  styles: `
-    pre {
-      white-space: pre-wrap;
-      font-size: 0.85em;
-    }
-    mat-radio-button {
-      display: block;
-      margin: 4px 0;
-    }
-  `,
 })
 export class ResumenContratacionContainer implements OnInit {
   private readonly store = inject(SesionStore);

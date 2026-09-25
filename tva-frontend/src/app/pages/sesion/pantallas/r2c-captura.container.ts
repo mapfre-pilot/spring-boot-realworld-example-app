@@ -24,55 +24,9 @@ const PERIODICIDADES_RENTA: Opcion[] = [
     CampoTextoComponent,
     CampoSelectComponent,
   ],
+  templateUrl: './r2c-captura.container.html',
+  styleUrl: './r2c-captura.container.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <app-caja titulo="Datos de la renta">
-      <app-seccion
-        titulo="Captura"
-        [valida]="valida()"
-        [expandida]="true"
-        [avisos]="avisos()"
-        seccion="R2C_CAPTURA/captura"
-        (continuar)="continuar()">
-        <form [formGroup]="rentas" class="formulario">
-          <app-campo-texto
-            [control]="rentas.controls.importeTotalPrima"
-            etiqueta="Importe total de la prima (€)"
-            tipo="number" />
-          <app-campo-select
-            [control]="rentas.controls.periodicidadRenta"
-            etiqueta="Periodicidad de la renta"
-            [opciones]="periodicidades" />
-        </form>
-        @for (t of tomadores; track $index; let i = $index) {
-          <form [formGroup]="t" class="formulario">
-            <h4>Tomador {{ i + 1 }}</h4>
-            <app-campo-texto [control]="t.controls.documentId" etiqueta="Nº de DNI" />
-            <app-campo-texto
-              [control]="t.controls.fechaNacimiento"
-              etiqueta="Fecha de nacimiento"
-              tipo="date" />
-            <app-campo-texto
-              [control]="t.controls.participationPerc"
-              etiqueta="% de participación"
-              tipo="number" />
-          </form>
-        }
-      </app-seccion>
-    </app-caja>
-  `,
-  styles: `
-    .formulario {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    h4 {
-      grid-column: 1 / -1;
-      margin: 4px 0;
-    }
-  `,
 })
 export class R2cCapturaContainer implements OnInit {
   private readonly store = inject(SesionStore);

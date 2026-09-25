@@ -1,0 +1,7 @@
+<mat-form-field appearance="outline" class="campo">
+  <mat-label>{{ etiqueta() }}</mat-label>
+  <input matInput [formControl]="control()" [type]="tipo()" [placeholder]="placeholder()" />
+  @if (control().invalid && control().touched) {
+    <mat-error>Valor obligatorio o inválido</mat-error>
+  }
+</mat-form-field>

@@ -1,0 +1,68 @@
+<div class="chips-ruta">
+  <span class="chip">Tomador 1</span>
+  <span class="chip activo">Solicitud</span>
+  <span class="chip">Resumen</span>
+</div>
+@if (producto(); as p) {
+  <h3>{{ p['commercialProductCode'] }} - {{ p['commercialProductDesc'] }}</h3>
+}
+
+<app-caja titulo="Datos de productores">
+  <app-datos-productores
+    [form]="formularios.productores"
+    [valida]="validez()['DATOS_PRODUCTORES/productores'] ?? false"
+    [expandida]="expandida() === 'productores'"
+    [avisos]="avisos()"
+    (continuar)="continuarProductores()" />
+</app-caja>
+
+<app-caja titulo="Datos del seguro">
+  <app-datos-operacion
+    [form]="formularios.operacion"
+    [tiposDuracion]="tiposDuracion"
+    [periodicidades]="periodicidadesProducto()"
+    [valida]="validez()['DATOS_DEL_SEGURO/operacion'] ?? false"
+    [expandida]="expandida() === 'operacion'"
+    [avisos]="avisos()"
+    (continuar)="continuarSeccion('operacion')" />
+
+  <app-opciones-inversion
+    [opciones]="opcionesProducto()"
+    [seleccionadas]="opcionSel()"
+    [importes]="importes()"
+    [sumaUnica]="suma('unica')"
+    [sumaPeriodica]="suma('periodica')"
+    [valida]="validez()['DATOS_DEL_SEGURO/opcionesInversion'] ?? false"
+    [expandida]="expandida() === 'opcionesInversion'"
+    [avisos]="avisos()"
+    (opcionCambiada)="seleccionarOpcion($event.i, $event.sel)"
+    (importeCambiado)="setImporte($event.i, $event.campo, $event.ev)"
+    (continuar)="continuarOpciones()" />
+
+  <app-garantias
+    [garantias]="garantias()"
+    [valida]="validez()['DATOS_DEL_SEGURO/garantias'] ?? false"
+    [expandida]="expandida() === 'garantias'"
+    [avisos]="avisos()"
+    (garantiaCambiada)="toggleGarantia($event.i, $event.sel)"
+    (continuar)="continuarGarantias()" />
+
+  <app-domiciliaciones
+    [form]="formularios.domiciliaciones"
+    [valida]="validez()['DATOS_DEL_SEGURO/domiciliaciones'] ?? false"
+    [expandida]="expandida() === 'domiciliaciones'"
+    [avisos]="avisos()"
+    (continuar)="continuarSeccion('domiciliaciones')" />
+</app-caja>
+
+<app-captura-ampliada
+  [datosContacto]="formularios.datosContacto"
+  [asegurado]="formularios.asegurado"
+  [beneficiarios]="formularios.beneficiarios"
+  [nota]="formularios.nota"
+  [tiposBeneficiario]="tiposBeneficiario"
+  [validez]="validez()"
+  [expandidaId]="expandida()"
+  [avisos]="avisos()"
+  [(ampliada)]="ampliada"
+  (continuar)="continuarAmpliada($event)" />

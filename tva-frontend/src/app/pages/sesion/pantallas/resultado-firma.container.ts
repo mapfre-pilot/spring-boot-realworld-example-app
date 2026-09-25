@@ -8,16 +8,8 @@ import { EjecutarAccionUsecase, SesionStore } from '@tva/core';
 @Component({
   selector: 'app-resultado-firma',
   imports: [MatCardModule, MatButtonModule],
+  templateUrl: './resultado-firma.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <mat-card>
-      <mat-card-title>Resultado de la firma</mat-card-title>
-      <mat-card-content>
-        <pre>{{ resultado() }}</pre>
-      </mat-card-content>
-      <button mat-flat-button color="primary" (click)="finalizar()">Finalizar</button>
-    </mat-card>
-  `,
 })
 export class ResultadoFirmaContainer {
   private readonly store = inject(SesionStore);

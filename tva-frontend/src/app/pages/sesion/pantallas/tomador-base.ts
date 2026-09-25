@@ -1,6 +1,6 @@
 /** Base compartida para captura de tomadores (cajas TVA_Caja_Tomador_N). */
 import { Directive, OnInit, computed, inject, signal } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 
 import {
   Caja,
@@ -8,10 +8,11 @@ import {
   PopupAppian,
   SesionStore,
   ValidarSeccionUsecase,
-  esDocumentoIdentidadValido,
+  crearFormulariosTomador,
 } from '@tva/core';
 import { AppianPopupService } from '../../../ui/appian/appian-popup.service';
 import { Opcion } from '../../../ui/campo-select.component';
+import { RequisitoTomador } from './tomador-form.component';
 
 @Directive()
 export abstract class TomadorBase implements OnInit {
@@ -25,64 +26,15 @@ export abstract class TomadorBase implements OnInit {
   abstract readonly cajaId: string;
   abstract readonly indiceTomador: number;
 
-  readonly datosPersonales = this.fb.nonNullable.group({
-    documentId: [
-      '',
-      [
-        Validators.required,
-        (c: import('@angular/forms').AbstractControl) =>
-          esDocumentoIdentidadValido(c.value) ? null : { documento: true },
-      ],
-    ],
-    nombre: ['', Validators.required],
-    primerApellido: ['', Validators.required],
-    segundoApellido: [''],
-    fechaNacimiento: ['', Validators.required],
-    sexo: ['', Validators.required],
-    nacionalidad: ['ES', Validators.required],
-    paisNacimiento: ['ES', Validators.required],
-    actividad: ['', Validators.required],
-    sector: ['', Validators.required],
-    profesion: ['', Validators.required],
-    responsabilidadPublica: [false],
-    residenciaHabitualEspanya: [true],
-  });
-
-  readonly domicilioHabitual = this.fb.nonNullable.group({
-    tipoVia: ['', Validators.required],
-    nombreVia: ['', Validators.required],
-    numero: ['', Validators.required],
-    complementoDireccion: [''],
-    codigoPostal: ['', [Validators.required, Validators.pattern(/^\d{5}$/)]],
-    localidad: ['', Validators.required],
-    provincia: ['', Validators.required],
-    pais: ['ES', Validators.required],
-  });
-
-  readonly mediosContacto = this.fb.nonNullable.group({
-    tipo: ['MOVIL', Validators.required],
-    prefijo: ['+34', Validators.required],
-    numero: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
-    contactMethodValue: [''],
-  });
-
-  readonly correo = this.fb.nonNullable.group({
-    contactMethodValue: ['', [Validators.required, Validators.email]],
-  });
-
-  readonly fatcaCrs = this.fb.nonNullable.group({
-    residenteFiscalOtroPais: [false],
-  });
+  readonly formularios = crearFormulariosTomador(this.fb.nonNullable);
+  readonly datosPersonales = this.formularios.datosPersonales;
+  readonly domicilioHabitual = this.formularios.domicilioHabitual;
+  readonly mediosContacto = this.formularios.mediosContacto;
+  readonly correo = this.formularios.correo;
+  readonly fatcaCrs = this.formularios.fatcaCrs;
+  readonly legalRepresentative = this.formularios.legalRepresentative;
 
   readonly hayRepresentante = signal(false);
-  readonly legalRepresentative = this.fb.nonNullable.group({
-    documentId: [''],
-    nombre: [''],
-    primerApellido: [''],
-    sexo: [''],
-    fechaNacimiento: [''],
-    parentesco: [''],
-  });
 
   /** Catálogos desde /catalogos/<nombre>/ (signals por catálogo). */
   readonly catalogos = signal<Record<string, Opcion[]>>({});
@@ -103,6 +55,15 @@ export abstract class TomadorBase implements OnInit {
     const sec = this.caja()?.secciones.find(s => s.id === id);
     return this.validas()[id] ?? sec?.datosValidos ?? false;
   }
+
+  /** Validez por sección para la plantilla (local + datosValidos del backend). */
+  readonly validez = computed(() => ({
+    datosPersonales: this.seccionValida('datosPersonales'),
+    domicilioHabitual: this.seccionValida('domicilioHabitual'),
+    mediosContacto: this.seccionValida('mediosContacto'),
+    fatcaCrs: this.seccionValida('fatcaCrs'),
+    legalRepresentative: this.seccionValida('legalRepresentative'),
+  }));
 
   ngOnInit(): void {
     for (const nombre of [
@@ -189,36 +150,59 @@ export abstract class TomadorBase implements OnInit {
       });
   }
 
-  /** Panel derecho — requisitos del tomador (pop-ups Appian Embedded). */
-  readonly requisitos = computed(
-    (): { etiqueta: string; popup: PopupAppian; hecho: boolean; habilitado: boolean }[] => {
-      const t = this.tomador();
-      const g = t?.datosGestionParticipante ?? {};
-      const tc = t?.perfilCliente?.testConveniencia?.estado;
-      const datosOk = this.seccionValida('datosPersonales');
-      const mediosOk = this.seccionValida('mediosContacto');
-      return [
-        {
-          etiqueta: 'Consentimiento RGPD',
-          popup: 'rgpd',
-          hecho: !!g.consentimientoProteccionDatos,
-          habilitado: datosOk,
-        },
-        {
-          etiqueta: 'Digitalizar NIF / NIE',
-          popup: 'dni',
-          hecho: !!g.documentoIdDigitalizado,
-          habilitado: datosOk,
-        },
-        {
-          etiqueta: 'Realizar test de conveniencia',
-          popup: 'test-conveniencia',
-          hecho: tc === 'FIRMADO' || !!g.testConvenienciaVigente,
-          habilitado: datosOk && mediosOk,
-        },
-      ];
+  /** Despacha el Continuar de cada sección emitido por app-tomador-form. */
+  onContinuar(seccionId: string): void {
+    switch (seccionId) {
+      case 'datosPersonales':
+        this.continuar('datosPersonales', this.datosPersonales);
+        break;
+      case 'domicilioHabitual':
+        this.continuar('domicilioHabitual', this.domicilioHabitual);
+        break;
+      case 'mediosContacto':
+        this.continuarMedios();
+        break;
+      case 'fatcaCrs':
+        this.continuarFatca();
+        break;
+      case 'legalRepresentative':
+        this.continuarRepresentante();
+        break;
     }
-  );
+  }
+
+  onRequisito(r: RequisitoTomador): void {
+    this.abrirRequisito(r.popup, r.etiqueta);
+  }
+
+  /** Panel derecho — requisitos del tomador (pop-ups Appian Embedded). */
+  readonly requisitos = computed((): RequisitoTomador[] => {
+    const t = this.tomador();
+    const g = t?.datosGestionParticipante ?? {};
+    const tc = t?.perfilCliente?.testConveniencia?.estado;
+    const datosOk = this.seccionValida('datosPersonales');
+    const mediosOk = this.seccionValida('mediosContacto');
+    return [
+      {
+        etiqueta: 'Consentimiento RGPD',
+        popup: 'rgpd',
+        hecho: !!g.consentimientoProteccionDatos,
+        habilitado: datosOk,
+      },
+      {
+        etiqueta: 'Digitalizar NIF / NIE',
+        popup: 'dni',
+        hecho: !!g.documentoIdDigitalizado,
+        habilitado: datosOk,
+      },
+      {
+        etiqueta: 'Realizar test de conveniencia',
+        popup: 'test-conveniencia',
+        hecho: tc === 'FIRMADO' || !!g.testConvenienciaVigente,
+        habilitado: datosOk && mediosOk,
+      },
+    ];
+  });
 
   abrirRequisito(popup: PopupAppian, etiqueta: string): void {
     if (!this.store.claveSesion()) return;

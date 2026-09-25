@@ -7,21 +7,9 @@ import { MatInputModule } from '@angular/material/input';
 @Component({
   selector: 'app-campo-texto',
   imports: [MatFormFieldModule, MatInputModule, ReactiveFormsModule],
+  templateUrl: './campo-texto.component.html',
+  styleUrl: './campo-texto.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <mat-form-field appearance="outline" class="campo">
-      <mat-label>{{ etiqueta() }}</mat-label>
-      <input matInput [formControl]="control()" [type]="tipo()" [placeholder]="placeholder()" />
-      @if (control().invalid && control().touched) {
-        <mat-error>Valor obligatorio o inválido</mat-error>
-      }
-    </mat-form-field>
-  `,
-  styles: `
-    .campo {
-      width: 100%;
-    }
-  `,
 })
 export class CampoTextoComponent {
   readonly control = input.required<FormControl>();

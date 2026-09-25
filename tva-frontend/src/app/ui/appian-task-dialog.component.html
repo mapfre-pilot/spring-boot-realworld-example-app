@@ -1,0 +1,33 @@
+<h2 mat-dialog-title class="dialogo-titulo">
+  {{ data.titulo }}
+  <button mat-icon-button class="cerrar" aria-label="Cerrar" (click)="ref.close('DISMISS')">
+    <mat-icon>close</mat-icon>
+  </button>
+</h2>
+<mat-dialog-content>
+  @if (estado() === 'cargando' || estado() === 'login') {
+    <div class="cargando">
+      <mat-spinner diameter="40" />
+      <p>
+        @if (estado() === 'login') {
+          Complete el inicio de sesión en la pestaña abierta; la tarea aparecerá aquí.
+        } @else {
+          Cargando tarea de Appian…
+        }
+      </p>
+    </div>
+  }
+  @if (estado() === 'mock') {
+    <p>Appian en modo simulado (stub local).</p>
+    <button mat-flat-button color="primary" (click)="ref.close('SUBMIT')">
+      Simular completado
+    </button>
+    <button mat-button (click)="ref.close('DISMISS')">Cancelar</button>
+  }
+  @if (estado() === 'error') {
+    <p>{{ mensajeError() }}</p>
+    <button mat-stroked-button (click)="reintentar()">Reintentar</button>
+    <button mat-button (click)="ref.close('ERROR')">Cerrar</button>
+  }
+  <div #contenedor></div>
+</mat-dialog-content>

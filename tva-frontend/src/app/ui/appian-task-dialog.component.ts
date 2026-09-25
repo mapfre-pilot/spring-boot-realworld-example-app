@@ -31,75 +31,9 @@ interface AppianTaskElement extends HTMLElement {
 @Component({
   selector: 'app-appian-task-dialog',
   imports: [MatDialogModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
+  templateUrl: './appian-task-dialog.component.html',
+  styleUrl: './appian-task-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <h2 mat-dialog-title class="dialogo-titulo">
-      {{ data.titulo }}
-      <button mat-icon-button class="cerrar" aria-label="Cerrar" (click)="ref.close('DISMISS')">
-        <mat-icon>close</mat-icon>
-      </button>
-    </h2>
-    <mat-dialog-content>
-      @if (estado() === 'cargando' || estado() === 'login') {
-        <div class="cargando">
-          <mat-spinner diameter="40" />
-          <p>
-            @if (estado() === 'login') {
-              Complete el inicio de sesión en la pestaña abierta; la tarea aparecerá aquí.
-            } @else {
-              Cargando tarea de Appian…
-            }
-          </p>
-        </div>
-      }
-      @if (estado() === 'mock') {
-        <p>Appian en modo simulado (stub local).</p>
-        <button mat-flat-button color="primary" (click)="ref.close('SUBMIT')">
-          Simular completado
-        </button>
-        <button mat-button (click)="ref.close('DISMISS')">Cancelar</button>
-      }
-      @if (estado() === 'error') {
-        <p>{{ mensajeError() }}</p>
-        <button mat-stroked-button (click)="reintentar()">Reintentar</button>
-        <button mat-button (click)="ref.close('ERROR')">Cerrar</button>
-      }
-      <div #contenedor></div>
-    </mat-dialog-content>
-  `,
-  styles: `
-    .dialogo-titulo {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-top: 4px solid var(--tva-primary, #d81e05);
-      padding-top: 16px;
-      font-size: 16px;
-      font-weight: 600;
-    }
-    mat-dialog-content {
-      min-height: 480px;
-      overflow: auto;
-    }
-    mat-dialog-content appian-task,
-    mat-dialog-content iframe {
-      width: 100%;
-    }
-    .cargando {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 320px;
-      text-align: center;
-    }
-    .cerrar {
-      margin-left: auto;
-    }
-    mat-spinner {
-      margin-bottom: 16px;
-    }
-  `,
 })
 export class AppianTaskDialogComponent implements OnDestroy {
   readonly data = inject<AppianTaskDialogData>(MAT_DIALOG_DATA);

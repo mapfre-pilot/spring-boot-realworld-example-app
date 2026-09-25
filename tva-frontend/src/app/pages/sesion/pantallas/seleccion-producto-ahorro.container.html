@@ -1,0 +1,13 @@
+@if (productos().length === 0) {
+  <p>{{ MSG }}</p>
+}
+<div class="grid">
+  @for (p of productos(); track p.commercialProductCode) {
+    <mat-card class="tarjeta">
+      <mat-card-title>{{ p.commercialProductCode }} - {{ p.commercialProductDesc }}</mat-card-title>
+      <mat-card-content>
+        <a href="#" (click)="contratar(p); $event.preventDefault()">Contratación</a>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

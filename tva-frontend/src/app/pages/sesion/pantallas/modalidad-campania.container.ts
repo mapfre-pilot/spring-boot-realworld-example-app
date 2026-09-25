@@ -14,24 +14,9 @@ const OPCIONES = [
 @Component({
   selector: 'app-modalidad-campania',
   imports: [MatRadioModule, ReactiveFormsModule, CajaComponent],
+  templateUrl: './modalidad-campania.container.html',
+  styleUrl: './modalidad-campania.container.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <app-caja titulo="Modalidad de campaña">
-      <form [formGroup]="form">
-        <mat-radio-group formControlName="modalidadCampania">
-          @for (op of opciones; track op.valor) {
-            <mat-radio-button [value]="op.valor">{{ op.etiqueta }}</mat-radio-button>
-          }
-        </mat-radio-group>
-      </form>
-    </app-caja>
-  `,
-  styles: `
-    mat-radio-button {
-      display: block;
-      margin: 4px 0;
-    }
-  `,
 })
 export class ModalidadCampaniaContainer implements OnInit {
   private readonly store = inject(SesionStore);

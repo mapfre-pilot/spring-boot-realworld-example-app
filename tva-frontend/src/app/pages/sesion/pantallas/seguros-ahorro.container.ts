@@ -16,21 +16,8 @@ import { CajaComponent } from '../../../ui/caja.component';
 @Component({
   selector: 'app-seguros-ahorro',
   imports: [MatCardModule, CajaComponent, JsonPipe],
+  templateUrl: './seguros-ahorro.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <app-caja titulo="Seguros de ahorro">
-      @for (ap of applications(); track $index) {
-        <mat-card class="tarjeta">
-          <mat-card-content>{{
-            ap['productDesc'] ?? ap['commercialProductCode'] ?? ap | json
-          }}</mat-card-content>
-        </mat-card>
-      }
-      @if (!applications().length) {
-        <p>No hay seguros de ahorro en la propuesta.</p>
-      }
-    </app-caja>
-  `,
 })
 export class SegurosAhorroContainer implements OnInit {
   private readonly obtenerProductos = inject(ObtenerProductosUsecase);

@@ -1,0 +1,51 @@
+.layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+.formulario {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  padding: 0 16px 8px;
+}
+.requisito {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  border-bottom: 1px solid #eee;
+}
+.requisito:last-child {
+  border-bottom: none;
+}
+.requisito mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+.requisito .ok {
+  color: var(--tva-ok, #2e7d32);
+}
+.requisito mat-icon.pendiente {
+  color: var(--tva-primary, #d81e05);
+}
+.requisito.hecho .requisito-label {
+  color: var(--tva-text, #212121);
+}
+.requisito.pendiente .requisito-label {
+  color: #424242;
+}
+.requisito-label {
+  flex: 1;
+  font-size: 13px;
+}
+.requisito .realizar {
+  font-size: 12px;
+  color: var(--tva-primary, #d81e05);
+}

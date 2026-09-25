@@ -9,14 +9,8 @@ import { SesionStore } from '@tva/core';
 @Component({
   selector: 'app-fin',
   imports: [MatCardModule, MatButtonModule],
+  templateUrl: './fin.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <mat-card>
-      <mat-card-title>Sesión finalizada</mat-card-title>
-      <mat-card-content>La sesión de tarificación ha finalizado correctamente.</mat-card-content>
-      <button mat-flat-button color="primary" (click)="volver()">Nueva sesión</button>
-    </mat-card>
-  `,
 })
 export class FinContainer {
   private readonly store = inject(SesionStore);

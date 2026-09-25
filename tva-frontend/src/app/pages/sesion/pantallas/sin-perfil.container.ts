@@ -5,12 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 @Component({
   selector: 'app-sin-perfil',
   imports: [MatCardModule],
+  templateUrl: './sin-perfil.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <mat-card>
-      <mat-card-title>Sin perfil</mat-card-title>
-      <mat-card-content>Su usuario no dispone de perfil para usar el tarificador.</mat-card-content>
-    </mat-card>
-  `,
 })
 export class SinPerfilContainer {}

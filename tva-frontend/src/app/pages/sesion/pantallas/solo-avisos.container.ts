@@ -5,12 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 @Component({
   selector: 'app-solo-avisos',
   imports: [MatCardModule],
+  templateUrl: './solo-avisos.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <mat-card>
-      <mat-card-title>Avisos</mat-card-title>
-      <mat-card-content>Consulte los avisos mostrados para continuar.</mat-card-content>
-    </mat-card>
-  `,
 })
 export class SoloAvisosContainer {}

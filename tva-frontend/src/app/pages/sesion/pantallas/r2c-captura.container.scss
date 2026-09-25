@@ -1,0 +1,10 @@
+.formulario {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+h4 {
+  grid-column: 1 / -1;
+  margin: 4px 0;
+}

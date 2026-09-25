@@ -1,0 +1,41 @@
+:host {
+  display: block;
+}
+.botonera {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 64px;
+  background: #fff;
+  border-top: 1px solid var(--tva-border, #e0e0e0);
+  box-shadow: 0 -2px 6px rgb(0 0 0 / 8%);
+  z-index: 100;
+}
+.contenido {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 24px;
+  gap: 16px;
+}
+.grupo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.grupo.derecha {
+  justify-content: flex-end;
+}
+.link {
+  color: var(--tva-primary, #d81e05);
+}
+@media (max-width: 900px) {
+  .contenido {
+    padding: 0 12px;
+  }
+}

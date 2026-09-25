@@ -1,0 +1,6 @@
+@for (aviso of visibles(); track $index) {
+  <div class="aviso" [class]="'aviso aviso-' + estilo(aviso)" role="alert">
+    <mat-icon aria-hidden="true">{{ icono(aviso) }}</mat-icon>
+    <span class="aviso-texto">{{ texto(aviso) }}</span>
+  </div>
+}

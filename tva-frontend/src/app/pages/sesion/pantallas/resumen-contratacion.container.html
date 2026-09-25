@@ -1,0 +1,20 @@
+<app-caja titulo="Solicitud">
+  <pre>{{ estadoJson('solicitud') }}</pre>
+</app-caja>
+<app-caja titulo="Tomador(es)">
+  <pre>{{ estadoJson('tomador') }}</pre>
+</app-caja>
+<app-caja titulo="Producto / rentas">
+  <pre>{{ estadoJson('producto') }}</pre>
+</app-caja>
+<app-caja titulo="Tipo de firma">
+  <form [formGroup]="form">
+    <mat-radio-group formControlName="tipoFirma">
+      <mat-radio-button value="DIGITAL">Firma digital</mat-radio-button>
+      <mat-radio-button value="MANUSCRITA">Firma manuscrita</mat-radio-button>
+    </mat-radio-group>
+  </form>
+</app-caja>
+<button mat-flat-button color="primary" (click)="firmar()" [disabled]="form.invalid">
+  Firmar y contratar
+</button>

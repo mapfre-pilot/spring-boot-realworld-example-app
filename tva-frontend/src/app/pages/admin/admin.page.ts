@@ -25,41 +25,9 @@ import { CabeceraComponent } from '../../ui/cabecera.component';
     MatInputModule,
     CabeceraComponent,
   ],
+  styleUrl: './admin.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin.page.html',
-  styles: `
-    .pagina {
-      padding-bottom: 96px;
-    }
-    .panel-admin {
-      margin-bottom: 16px;
-    }
-    .tabla {
-      width: 100%;
-      margin-bottom: 8px;
-      background: #fff;
-    }
-    .tabla input[matInput] {
-      height: 36px;
-      border: 1px solid #bdbdbd;
-      border-radius: 4px;
-      padding: 0 8px;
-    }
-    .acciones-admin {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin: 8px 0 16px;
-    }
-    .estado-apertura {
-      font-weight: 600;
-      text-transform: capitalize;
-    }
-    button {
-      margin-right: 0;
-    }
-  `,
 })
 export class AdminPage implements OnInit {
   private readonly obtenerParametros = inject(ObtenerParametrosUsecase);

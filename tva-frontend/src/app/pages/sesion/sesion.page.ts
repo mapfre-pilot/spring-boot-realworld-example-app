@@ -77,19 +77,9 @@ const PASOS: Record<string, Pantalla[]> = {
     AdminPanelComponent,
     BotoneraComponent,
   ],
+  styleUrl: './sesion.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sesion.page.html',
-  styles: `
-    .pagina {
-      max-width: 960px;
-      margin: 16px auto;
-      padding: 0 16px;
-    }
-    mat-spinner {
-      display: block;
-      margin: 48px auto;
-    }
-  `,
 })
 export class SesionPage implements OnInit {
   readonly store = inject(SesionStore);
