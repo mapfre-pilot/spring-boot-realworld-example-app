@@ -1,0 +1,13 @@
+{
+ "response": {
+  "documents": [
+   {
+    "documentType": "PRECONTRACTUAL",
+    "name": "doc_precontractual.pdf",
+    "format": "PDF",
+    "contentBase64": "JVBERi0xLjQK"
+   }
+  ],
+  "hasErrors": false
+ }
+}

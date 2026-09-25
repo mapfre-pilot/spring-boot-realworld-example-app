@@ -1,0 +1,56 @@
+{
+  "valores": [
+    {
+      "codigo": "ES",
+      "descripcion": "Española"
+    },
+    {
+      "codigo": "PT",
+      "descripcion": "Portuguesa"
+    },
+    {
+      "codigo": "FR",
+      "descripcion": "Francesa"
+    },
+    {
+      "codigo": "DE",
+      "descripcion": "Alemana"
+    },
+    {
+      "codigo": "IT",
+      "descripcion": "Italiana"
+    },
+    {
+      "codigo": "GB",
+      "descripcion": "Británica"
+    },
+    {
+      "codigo": "US",
+      "descripcion": "Estadounidense"
+    },
+    {
+      "codigo": "AR",
+      "descripcion": "Argentina"
+    },
+    {
+      "codigo": "MX",
+      "descripcion": "Mexicana"
+    },
+    {
+      "codigo": "CO",
+      "descripcion": "Colombiana"
+    },
+    {
+      "codigo": "MA",
+      "descripcion": "Marroquí"
+    },
+    {
+      "codigo": "RO",
+      "descripcion": "Rumana"
+    },
+    {
+      "codigo": "CN",
+      "descripcion": "China"
+    }
+  ]
+}

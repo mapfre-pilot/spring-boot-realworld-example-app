@@ -1,0 +1,56 @@
+{
+  "valores": [
+    {
+      "codigo": "ES",
+      "descripcion": "España"
+    },
+    {
+      "codigo": "PT",
+      "descripcion": "Portugal"
+    },
+    {
+      "codigo": "FR",
+      "descripcion": "Francia"
+    },
+    {
+      "codigo": "DE",
+      "descripcion": "Alemania"
+    },
+    {
+      "codigo": "IT",
+      "descripcion": "Italia"
+    },
+    {
+      "codigo": "GB",
+      "descripcion": "Reino Unido"
+    },
+    {
+      "codigo": "US",
+      "descripcion": "Estados Unidos"
+    },
+    {
+      "codigo": "AR",
+      "descripcion": "Argentina"
+    },
+    {
+      "codigo": "MX",
+      "descripcion": "México"
+    },
+    {
+      "codigo": "CO",
+      "descripcion": "Colombia"
+    },
+    {
+      "codigo": "MA",
+      "descripcion": "Marruecos"
+    },
+    {
+      "codigo": "RO",
+      "descripcion": "Rumanía"
+    },
+    {
+      "codigo": "CN",
+      "descripcion": "China"
+    }
+  ]
+}

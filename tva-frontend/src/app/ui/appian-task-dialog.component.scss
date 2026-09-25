@@ -1,0 +1,31 @@
+.dialogo-titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 4px solid var(--tva-primary, #d81e05);
+  padding-top: 16px;
+  font-size: 16px;
+  font-weight: 600;
+}
+mat-dialog-content {
+  min-height: 480px;
+  overflow: auto;
+}
+mat-dialog-content appian-task,
+mat-dialog-content iframe {
+  width: 100%;
+}
+.cargando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  text-align: center;
+}
+.cerrar {
+  margin-left: auto;
+}
+mat-spinner {
+  margin-bottom: 16px;
+}

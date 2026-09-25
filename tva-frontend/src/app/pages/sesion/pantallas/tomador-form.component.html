@@ -1,0 +1,196 @@
+<div class="layout">
+  <div class="col-izq">
+    <app-caja titulo="Datos del tomador">
+      <app-seccion
+        titulo="Datos personales"
+        [valida]="validez()['datosPersonales'] ?? false"
+        [expandida]="expandidaId() === 'datosPersonales'"
+        [avisos]="avisos()"
+        [seccion]="cajaId() + '/datosPersonales'"
+        (continuar)="continuar.emit('datosPersonales')">
+        <form [formGroup]="grupos().datosPersonales" class="formulario">
+          <app-campo-texto
+            [control]="grupos().datosPersonales.controls.documentId"
+            etiqueta="Nº documento" />
+          <app-campo-texto [control]="grupos().datosPersonales.controls.nombre" etiqueta="Nombre" />
+          <app-campo-texto
+            [control]="grupos().datosPersonales.controls.primerApellido"
+            etiqueta="Primer apellido" />
+          <app-campo-texto
+            [control]="grupos().datosPersonales.controls.segundoApellido"
+            etiqueta="Segundo apellido" />
+          <app-campo-texto
+            [control]="grupos().datosPersonales.controls.fechaNacimiento"
+            etiqueta="Fecha de nacimiento"
+            tipo="date" />
+          <app-campo-select
+            [control]="grupos().datosPersonales.controls.sexo"
+            etiqueta="Sexo"
+            [opciones]="catalogos()['sexos'] ?? []" />
+          <app-campo-select
+            [control]="grupos().datosPersonales.controls.nacionalidad"
+            etiqueta="Nacionalidad"
+            [opciones]="catalogos()['nacionalidades'] ?? []" />
+          <app-campo-select
+            [control]="grupos().datosPersonales.controls.paisNacimiento"
+            etiqueta="País de nacimiento"
+            [opciones]="catalogos()['paises'] ?? []" />
+          <app-campo-select
+            [control]="grupos().datosPersonales.controls.actividad"
+            etiqueta="Actividad"
+            [opciones]="catalogos()['actividades'] ?? []" />
+          <app-campo-select
+            [control]="grupos().datosPersonales.controls.sector"
+            etiqueta="Sector"
+            [opciones]="catalogos()['sectores'] ?? []" />
+          <app-campo-select
+            [control]="grupos().datosPersonales.controls.profesion"
+            etiqueta="Profesión"
+            [opciones]="catalogos()['profesiones'] ?? []" />
+          <mat-checkbox formControlName="responsabilidadPublica"
+            >Prevención de blanqueo de capitales (declara que es o ha sido)</mat-checkbox
+          >
+          <mat-slide-toggle formControlName="residenciaHabitualEspanya"
+            >Residencia habitual en España</mat-slide-toggle
+          >
+        </form>
+      </app-seccion>
+
+      <app-seccion
+        titulo="Domicilio habitual"
+        [valida]="validez()['domicilioHabitual'] ?? false"
+        [expandida]="expandidaId() === 'domicilioHabitual'"
+        [avisos]="avisos()"
+        [seccion]="cajaId() + '/domicilioHabitual'"
+        (continuar)="continuar.emit('domicilioHabitual')">
+        <form [formGroup]="grupos().domicilioHabitual" class="formulario">
+          <app-campo-select
+            [control]="grupos().domicilioHabitual.controls.tipoVia"
+            etiqueta="Tipo de vía"
+            [opciones]="catalogos()['tiposVia'] ?? []" />
+          <app-campo-texto
+            [control]="grupos().domicilioHabitual.controls.nombreVia"
+            etiqueta="Nombre de la vía" />
+          <app-campo-texto
+            [control]="grupos().domicilioHabitual.controls.numero"
+            etiqueta="Número" />
+          <app-campo-texto
+            [control]="grupos().domicilioHabitual.controls.complementoDireccion"
+            etiqueta="Complemento de dirección" />
+          <app-campo-texto
+            [control]="grupos().domicilioHabitual.controls.codigoPostal"
+            etiqueta="Código postal" />
+          <app-campo-texto
+            [control]="grupos().domicilioHabitual.controls.localidad"
+            etiqueta="Localidad" />
+          <app-campo-select
+            [control]="grupos().domicilioHabitual.controls.provincia"
+            etiqueta="Provincia"
+            [opciones]="catalogos()['provincias'] ?? []" />
+          <app-campo-select
+            [control]="grupos().domicilioHabitual.controls.pais"
+            etiqueta="País"
+            [opciones]="catalogos()['paises'] ?? []" />
+        </form>
+      </app-seccion>
+
+      <app-seccion
+        titulo="Medios de contacto"
+        [valida]="validez()['mediosContacto'] ?? false"
+        [expandida]="expandidaId() === 'mediosContacto'"
+        [avisos]="avisos()"
+        [seccion]="cajaId() + '/mediosContacto'"
+        (continuar)="continuar.emit('mediosContacto')">
+        <form [formGroup]="grupos().mediosContacto" class="formulario">
+          <app-campo-select
+            [control]="grupos().mediosContacto.controls.tipo"
+            etiqueta="Tipo de teléfono"
+            [opciones]="catalogos()['tiposMedioContacto'] ?? []" />
+          <app-campo-texto
+            [control]="grupos().mediosContacto.controls.prefijo"
+            etiqueta="Prefijo" />
+          <app-campo-texto [control]="grupos().mediosContacto.controls.numero" etiqueta="Número" />
+        </form>
+        <form [formGroup]="grupos().correo" class="formulario">
+          <app-campo-texto
+            [control]="grupos().correo.controls.contactMethodValue"
+            etiqueta="Correo electrónico"
+            tipo="email" />
+        </form>
+      </app-seccion>
+
+      <app-seccion
+        titulo="Residencia fiscal (FATCA/CRS)"
+        [valida]="validez()['fatcaCrs'] ?? false"
+        [expandida]="expandidaId() === 'fatcaCrs'"
+        [avisos]="avisos()"
+        [seccion]="cajaId() + '/fatcaCrs'"
+        (continuar)="continuar.emit('fatcaCrs')">
+        <form [formGroup]="grupos().fatcaCrs">
+          <mat-slide-toggle formControlName="residenteFiscalOtroPais"
+            >Es residente fiscal en un país diferente a España</mat-slide-toggle
+          >
+        </form>
+      </app-seccion>
+
+      <app-seccion
+        titulo="Representante legal"
+        [valida]="validez()['legalRepresentative'] ?? false"
+        [expandida]="expandidaId() === 'legalRepresentative'"
+        [avisos]="avisos()"
+        [seccion]="cajaId() + '/legalRepresentative'"
+        (continuar)="continuar.emit('legalRepresentative')">
+        <mat-slide-toggle
+          [checked]="hayRepresentante()"
+          (change)="hayRepresentante.set($event.checked)"
+          >Tiene representante legal</mat-slide-toggle
+        >
+        @if (hayRepresentante()) {
+          <form [formGroup]="grupos().legalRepresentative" class="formulario">
+            <app-campo-texto
+              [control]="grupos().legalRepresentative.controls.documentId"
+              etiqueta="Nº documento" />
+            <app-campo-texto
+              [control]="grupos().legalRepresentative.controls.nombre"
+              etiqueta="Nombre" />
+            <app-campo-texto
+              [control]="grupos().legalRepresentative.controls.primerApellido"
+              etiqueta="Primer apellido" />
+            <app-campo-texto
+              [control]="grupos().legalRepresentative.controls.fechaNacimiento"
+              etiqueta="Fecha de nacimiento"
+              tipo="date" />
+            <app-campo-select
+              [control]="grupos().legalRepresentative.controls.sexo"
+              etiqueta="Sexo"
+              [opciones]="catalogos()['sexos'] ?? []" />
+            <app-campo-texto
+              [control]="grupos().legalRepresentative.controls.parentesco"
+              etiqueta="Parentesco" />
+          </form>
+        }
+      </app-seccion>
+    </app-caja>
+  </div>
+  <div class="col-der">
+    <app-caja titulo="Requisitos del tomador">
+      @for (r of requisitos(); track r.etiqueta) {
+        <div class="requisito" [class.hecho]="r.hecho" [class.pendiente]="!r.hecho">
+          <mat-icon [class.ok]="r.hecho" [class.pendiente]="!r.hecho">{{
+            r.hecho ? 'check_circle' : 'radio_button_unchecked'
+          }}</mat-icon>
+          <span class="requisito-label">{{ r.etiqueta }}</span>
+          <button
+            mat-button
+            type="button"
+            class="realizar"
+            [disabled]="r.hecho || !r.habilitado"
+            [matTooltip]="r.hecho ? '' : 'Realizar ' + r.etiqueta"
+            (click)="requisito.emit(r)">
+            Realizar
+          </button>
+        </div>
+      }
+    </app-caja>
+  </div>
+</div>

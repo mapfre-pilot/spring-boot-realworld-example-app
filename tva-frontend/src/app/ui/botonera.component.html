@@ -1,0 +1,51 @@
+<footer class="botonera">
+  <div class="contenido">
+    <div class="grupo">
+      @for (b of grupoIzquierdo(); track b.id) {
+        @if (b.id === 'cancelar') {
+          <button
+            mat-button
+            type="button"
+            class="link"
+            [matTooltip]="tooltip(b)"
+            (click)="emitir(b)">
+            {{ b.label }}
+          </button>
+        } @else {
+          <button
+            mat-stroked-button
+            type="button"
+            [disabled]="b.disabled"
+            [matTooltip]="tooltip(b)"
+            (click)="emitir(b)">
+            {{ b.label }}
+          </button>
+        }
+      }
+    </div>
+    <div class="grupo derecha">
+      @for (b of grupoDerecho(); track b.id) {
+        @if (stroked(b)) {
+          <button
+            mat-stroked-button
+            type="button"
+            [disabled]="b.disabled"
+            [matTooltip]="tooltip(b)"
+            (click)="emitir(b)">
+            {{ b.label }}
+          </button>
+        } @else {
+          <button
+            mat-flat-button
+            color="primary"
+            type="button"
+            [disabled]="b.disabled"
+            [matTooltip]="tooltip(b)"
+            (click)="emitir(b)">
+            {{ b.label }}
+          </button>
+        }
+      }
+    </div>
+  </div>
+</footer>

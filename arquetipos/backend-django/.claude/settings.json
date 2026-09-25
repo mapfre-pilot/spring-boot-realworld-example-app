@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'if ! clai --version >/dev/null 2>&1; then echo \"[clai] WARNING: clai is not installed. The django-engineer skill cannot be loaded. See README.agents.md (Step 1a) to install clai.\"; elif ! find .claude/skills -maxdepth 1 -name \"django-engineer*\" 2>/dev/null | grep -q .; then echo \"[clai] WARNING: django-engineer skill is not installed. Run: clai skill install django-engineer --target claude-code\"; else echo \"[clai] OK: django-engineer skill is available.\"; fi'"
+          }
+        ]
+      }
+    ]
+  }
+}

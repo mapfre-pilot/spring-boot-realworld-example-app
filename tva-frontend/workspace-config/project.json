@@ -1,0 +1,154 @@
+{
+  "name": "workspace",
+  "$schema": "node_modules/nx/schemas/project-schema.json",
+  "targets": {
+    "ci-lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec nx affected --base={args.base} --head={args.head} --target=lint --configuration ci"
+      }
+    },
+    "ci-test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec nx affected --base={args.base} --head={args.head} --target=test --configuration ci --coverageReporters lcov"
+      }
+    },
+    "ci-assemble-web": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec nx run-many --target assemble-web --configuration production"
+      }
+    },
+    "ci-assemble-android": {
+      "executor": "nx:run-commands",
+      "defaultConfiguration": "development",
+      "configurations": {
+        "development": {
+          "command": "pnpm exec nx run-many --target assemble-android --configuration development"
+        },
+        "production": {
+          "command": "pnpm exec nx run-many --target assemble-android --configuration production"
+        }
+      }
+    },
+    "ci-assemble-ios": {
+      "executor": "nx:run-commands",
+      "defaultConfiguration": "development",
+      "configurations": {
+        "development": {
+          "command": "pnpm exec nx run-many --target assemble-ios --configuration development"
+        },
+        "production": {
+          "command": "pnpm exec nx run-many --target assemble-ios --configuration production"
+        }
+      }
+    },
+    "ci-assemble-storybook": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec nx run-many --target assemble-storybook --configuration production"
+      }
+    },
+    "ci-package-debug-files-web": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec nx run-many --target package-debug-files-web --configuration production"
+      }
+    },
+    "ci-release-web": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec nx run-many --target release-web --parallel 1"
+      }
+    },
+    "ci-release-android": {
+      "executor": "nx:run-commands",
+      "defaultConfiguration": "development",
+      "configurations": {
+        "development": {
+          "command": "pnpm exec nx run-many --target release-android --parallel 1"
+        },
+        "production": {
+          "command": "pnpm exec nx run-many --target release-android-dist --parallel 1"
+        }
+      }
+    },
+    "ci-release-ios": {
+      "executor": "nx:run-commands",
+      "defaultConfiguration": "development",
+      "configurations": {
+        "development": {
+          "command": "pnpm exec nx run-many --target release-ios --parallel 1"
+        },
+        "production": {
+          "command": "pnpm exec nx run-many --target release-ios-dist --parallel 1"
+        }
+      }
+    },
+    "ci-release-storybook": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec nx run-many --target release-storybook --parallel 1"
+      }
+    },
+    "ci-release-debug-files-web": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec nx run-many --target release-debug-files-web --parallel 1"
+      }
+    },
+    "ci-release-lib": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx run-many --target release-lib --parallel 1"
+      }
+    },
+    "ci-lighthouse-check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx affected --base={args.base} --head={args.head} --target=lighthouse-ci-check"
+      }
+    },
+    "ci-sonar": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx affected --base={args.base} --head={args.head} --target=sonar --parallel 1"
+      }
+    },
+    "ci-chromatic": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx affected --base={args.base} --head={args.head} --target=chromatic"
+      }
+    },
+    "ci-assemble-lib": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx run-many --target assemble-lib --configuration production"
+      }
+    },
+    "ci-assemble-mf": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx run-many --target assemble-mf --configuration production"
+      }
+    },
+    "ci-release-mf": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx run-many --target release-mf --parallel 1"
+      }
+    },
+    "release": {
+      "executor": "@mapfre-tech/nx-version-esp:release",
+      "options": {
+        "changelog": {
+          "conventionalCommits": {
+            "preset": "angular"
+          }
+        }
+      }
+    }
+  }
+}

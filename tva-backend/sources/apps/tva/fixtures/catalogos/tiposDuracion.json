@@ -1,0 +1,24 @@
+{
+  "valores": [
+    {
+      "codigo": "ANIOS",
+      "descripcion": "Años"
+    },
+    {
+      "codigo": "TABLA",
+      "descripcion": "Tabla"
+    },
+    {
+      "codigo": "EDAD_VENCIMIENTO",
+      "descripcion": "Edad de vencimiento"
+    },
+    {
+      "codigo": "FECHA_VENCIMIENTO",
+      "descripcion": "Fecha de vencimiento"
+    },
+    {
+      "codigo": "JUBILACION",
+      "descripcion": "Jubilación"
+    }
+  ]
+}

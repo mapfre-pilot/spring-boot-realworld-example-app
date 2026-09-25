@@ -1,0 +1,176 @@
+networks:
+    arch-ram-network:
+        name: arch-ram-network
+        driver: bridge
+        ipam:
+            config:
+                - subnet: 10.0.3.0/24
+
+volumes:
+    # cache
+    redis-data:
+    # eda
+    kafka-data:
+
+services:
+    ##########################
+    # TELEMETRY
+    ##########################
+    arch-ram-collector:
+        image: otel/opentelemetry-collector-contrib:latest # 0.135.0
+        container_name: arch-ram-collector
+        volumes:
+            - ./common/collector.yml:/etc/otel/config.yml
+        expose:
+            - 4317 # OTLP gRPC receiver
+            - 4318 # OTLP HTTP receiver
+        depends_on:
+            - arch-ram-prometheus
+        command: ["--config=/etc/otel/config.yml"]
+        networks:
+            - arch-ram-network
+
+    arch-ram-jaeger:
+        image: jaegertracing/all-in-one:latest
+        container_name: arch-ram-jaeger
+        expose:
+            - 4317 # OTLP HTTP receiver
+            - 4318 # OTLP HTTP receiver
+        depends_on:
+            - arch-ram-nginx-proxy
+        environment:
+            - COLLECTOR_OTLP_ENABLED=true
+            - VIRTUAL_HOST=jaeger.localhost
+            - VIRTUAL_PORT=16686 # UI interface
+        networks:
+            - arch-ram-network
+
+    arch-ram-prometheus:
+        image: prom/prometheus:latest
+        container_name: arch-ram-prometheus
+        volumes:
+            - ./common/prometheus.yml:/etc/prometheus/prometheus.yml
+        depends_on:
+            - arch-ram-nginx-proxy
+        environment:
+            - VIRTUAL_HOST=prometheus.localhost
+            - VIRTUAL_PORT=9090 # UI interface
+        networks:
+            - arch-ram-network
+
+    ##########################
+    # EDA
+    ##########################
+    arch-ram-schema-registry:
+        image: confluentinc/cp-schema-registry:latest
+        container_name: arch-ram-schema-registry
+        expose:
+            - 8081
+        environment:
+            SCHEMA_REGISTRY_HOST_NAME: arch-ram-schema-registry
+            SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+            SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://arch-ram-kafka:9093
+            SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: PLAINTEXT
+        depends_on:
+            - arch-ram-kafka
+        networks:
+            - arch-ram-network
+
+    arch-ram-kafka:
+        image: confluentinc/cp-kafka:latest
+        container_name: arch-ram-kafka
+        expose:
+            - 9092
+        environment:
+            KAFKA_LISTENERS: CONTROLLER://arch-ram-kafka:9091,HOST://0.0.0.0:9092,DOCKER://0.0.0.0:9093
+            KAFKA_ADVERTISED_LISTENERS: HOST://arch-ram-kafka:9092,DOCKER://arch-ram-kafka:9093
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,DOCKER:PLAINTEXT,HOST:PLAINTEXT
+            KAFKA_NODE_ID: 1
+            KAFKA_PROCESS_ROLES: broker, controller
+            KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+            KAFKA_CONTROLLER_QUORUM_VOTERS: 1@arch-ram-kafka:9091
+            CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+            KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+        volumes:
+            - kafka-data:/var/lib/kafka/data
+        networks:
+            - arch-ram-network
+
+    ##########################
+    # CACHES - With TLS
+    ##########################
+    arch-ram-redis:
+        image: redis:7.0.7
+        container_name: arch-ram-redis
+        expose:
+            - 6379
+        volumes:
+            - redis-data:/data
+            - ./common/certs:/certs
+        command:
+            [
+                "--port 0",
+                "--tls-port 6379",
+                "--tls-cert-file /certs/redis.pem",
+                "--tls-key-file /certs/redis.pem",
+                "--tls-ca-cert-file /certs/ca.crt",
+                "--tls-auth-clients no",
+            ]
+        networks:
+            - arch-ram-network
+
+    ##########################
+    # GUI
+    ##########################
+    arch-ram-redis-gui:
+        image: redis/redisinsight:latest
+        container_name: arch-ram-redis-gui
+        volumes:
+            - ./common/certs:/certs
+        environment:
+            VIRTUAL_HOST: redis.localhost
+            VIRTUAL_PORT: 5540
+            RI_REDIS_ALIAS: arch-ram-redis
+            RI_REDIS_HOST: arch-ram-redis
+            RI_REDIS_PORT: 6379
+        depends_on:
+            - arch-ram-nginx-proxy
+            - arch-ram-redis
+        networks:
+            - arch-ram-network
+
+    arch-ram-kafka-gui:
+        image: kafbat/kafka-ui:latest
+        container_name: arch-ram-kafka-gui
+        environment:
+            VIRTUAL_HOST: kafka.localhost
+            VIRTUAL_PORT: 8080
+            DYNAMIC_CONFIG_ENABLED: true
+            KAFKA_CLUSTERS_0_NAME: local
+            KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS: http://arch-ram-kafka:9092
+            KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://arch-ram-schema-registry:8081
+        depends_on:
+            - arch-ram-nginx-proxy
+            - arch-ram-kafka
+            - arch-ram-schema-registry
+        networks:
+            - arch-ram-network
+
+    ##########################
+    # REVERSE PROXY
+    ##########################
+    arch-ram-nginx-proxy:
+        image: jwilder/nginx-proxy
+        container_name: arch-ram-nginx-proxy
+        volumes:
+            - /var/run/docker.sock:/tmp/docker.sock:ro
+        environment:
+            - proxy_connect_timeout=75s
+            - proxy_read_timeout=300s
+            - client_max_body_size=1g
+            - location=/favicon.ico { log_not_found off; }
+        ports:
+            - "80:80"
+        networks:
+            - arch-ram-network

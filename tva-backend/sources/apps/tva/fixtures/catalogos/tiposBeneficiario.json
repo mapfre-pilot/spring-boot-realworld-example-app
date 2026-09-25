@@ -1,0 +1,32 @@
+{
+  "valores": [
+    {
+      "codigo": "HEREDEROS",
+      "descripcion": "Herederos legales"
+    },
+    {
+      "codigo": "HIJOS",
+      "descripcion": "Hijos"
+    },
+    {
+      "codigo": "PADRES",
+      "descripcion": "Padres"
+    },
+    {
+      "codigo": "CONYUGE",
+      "descripcion": "Cónyuge"
+    },
+    {
+      "codigo": "TOMADOR",
+      "descripcion": "Tomador"
+    },
+    {
+      "codigo": "HERMANOS",
+      "descripcion": "Hermanos"
+    },
+    {
+      "codigo": "TEXTO_LIBRE",
+      "descripcion": "Texto libre"
+    }
+  ]
+}

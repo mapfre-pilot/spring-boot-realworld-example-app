@@ -1,0 +1,802 @@
+openapi: 3.0.3
+info:
+  title: TVA — Tarificador Vida Ahorro
+  version: 1.0.0
+  description: API del tarificador de productos Vida Ahorro (migración de la aplicación
+    Appian TVA).
+paths:
+  /api/tva/v1/admin/apertura-cierre/:
+    post:
+      operationId: api_tva_v1_admin_apertura_cierre_create
+      description: POST /admin/apertura-cierre/ — batch manual de apertura/cierre
+        programado.
+      tags:
+      - api
+      responses:
+        '200':
+          description: No response body
+  /api/tva/v1/admin/caches/limpiar/:
+    post:
+      operationId: api_tva_v1_admin_caches_limpiar_create
+      description: POST /admin/caches/limpiar/ — invalida las cachés de la app.
+      tags:
+      - api
+      responses:
+        '200':
+          description: No response body
+  /api/tva/v1/admin/parametros/:
+    get:
+      operationId: api_tva_v1_admin_parametros_list
+      description: GET/PUT /admin/parametros/ — edición de parámetros (constantes
+        Appian).
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Parametro'
+          description: ''
+    put:
+      operationId: api_tva_v1_admin_parametros_update
+      description: GET/PUT /admin/parametros/ — edición de parámetros (constantes
+        Appian).
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Parametro'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Parametro'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Parametro'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parametro'
+          description: ''
+  /api/tva/v1/admin/trazas/:
+    get:
+      operationId: api_tva_v1_admin_trazas_list
+      description: GET /admin/trazas/?clave= — log de aplicación (equiv. TVA_Utilidades_Log).
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Traza'
+          description: ''
+  /api/tva/v1/catalogos/{nombre}/:
+    get:
+      operationId: api_tva_v1_catalogos_retrieve
+      description: GET /catalogos/<nombre>/ — catálogo estático desde fixtures/catalogos/.
+      parameters:
+      - in: path
+        name: nombre
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          description: No response body
+  /api/tva/v1/clientes/:
+    get:
+      operationId: api_tva_v1_clientes_retrieve
+      description: GET /clientes/?documento= ��� búsqueda RIC + API Life.
+      parameters:
+      - in: query
+        name: documento
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          description: No response body
+        '400':
+          description: No response body
+  /api/tva/v1/inicio/ahorro/:
+    post:
+      operationId: api_tva_v1_inicio_ahorro_create
+      description: POST /inicio/ahorro — venta asesorada/informada (productos ahorro).
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InicioRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InicioRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InicioRequest'
+      responses:
+        '201':
+          description: No response body
+        '400':
+          description: No response body
+        '403':
+          description: No response body
+  /api/tva/v1/inicio/rentas/:
+    post:
+      operationId: api_tva_v1_inicio_rentas_create
+      description: POST /inicio/rentas — simulador de rentas (R2C).
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InicioRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InicioRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InicioRequest'
+      responses:
+        '201':
+          description: No response body
+        '400':
+          description: No response body
+        '403':
+          description: No response body
+  /api/tva/v1/productos/:
+    get:
+      operationId: api_tva_v1_productos_retrieve
+      description: GET /productos/ — catálogo del taller cacheado (params opcionales).
+      tags:
+      - api
+      responses:
+        '200':
+          description: No response body
+  /api/tva/v1/salud/:
+    get:
+      operationId: api_tva_v1_salud_retrieve
+      description: GET /api/tva/v1/salud/ — healthcheck público.
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  version:
+                    type: string
+          description: ''
+  /api/tva/v1/sesiones/{clave}/:
+    get:
+      operationId: api_tva_v1_sesiones_retrieve
+      description: GET /sesiones/{clave}/ — estado completo de la sesión.
+      parameters:
+      - in: path
+        name: clave
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sesion'
+          description: ''
+        '404':
+          description: No response body
+  /api/tva/v1/sesiones/{clave}/acciones/{accion}/:
+    post:
+      operationId: api_tva_v1_sesiones_acciones_create
+      description: POST /sesiones/{clave}/acciones/{accion}/ — ejecuta un caso de
+        uso.
+      parameters:
+      - in: path
+        name: accion
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: accion
+        schema:
+          type: string
+          enum:
+          - administracion
+          - anterior
+          - cancelar
+          - continuar-tomador
+          - contratar
+          - contratar-rentas
+          - doc-precontractual
+          - firmar
+          - guardar-solicitud
+          - importe-maximo
+          - recalcular-rentas
+          - seleccionar-modalidad
+          - siguiente
+          - validar-reinversion
+          - validar-seccion
+          - verificar-productores
+          - volver-administracion
+      - in: path
+        name: clave
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AccionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AccionRequest'
+      responses:
+        '200':
+          description: No response body
+        '400':
+          description: No response body
+        '404':
+          description: No response body
+  /api/tva/v1/sesiones/{clave}/documentos/{tipo}/:
+    get:
+      operationId: api_tva_v1_sesiones_documentos_retrieve
+      description: GET /sesiones/{clave}/documentos/{tipo}/ — metadatos/base64 del
+        documento.
+      parameters:
+      - in: path
+        name: clave
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: tipo
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          description: No response body
+        '404':
+          description: No response body
+  /api/tva/v1/sesiones/{clave}/estado/:
+    put:
+      operationId: api_tva_v1_sesiones_estado_update
+      description: PUT /sesiones/{clave}/estado/ — sustituye el estado JSON.
+      parameters:
+      - in: path
+        name: clave
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SesionEstado'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SesionEstado'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SesionEstado'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sesion'
+          description: ''
+        '400':
+          description: No response body
+        '404':
+          description: No response body
+  /api/tva/v1/sesiones/{clave}/popups/{popup}/completar/:
+    post:
+      operationId: api_tva_v1_sesiones_popups_completar_create
+      description: POST /sesiones/{clave}/popups/{popup}/completar/ — SUBMIT/DISMISS/ERROR.
+      parameters:
+      - in: path
+        name: clave
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: popup
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PopupCompletar'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PopupCompletar'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PopupCompletar'
+        required: true
+      responses:
+        '200':
+          description: No response body
+        '400':
+          description: No response body
+        '404':
+          description: No response body
+  /api/tva/v1/sesiones/{clave}/popups/{popup}/lanzar/:
+    post:
+      operationId: api_tva_v1_sesiones_popups_lanzar_create
+      description: POST /sesiones/{clave}/popups/{popup}/lanzar/ — obtiene taskId
+        de Appian.
+      parameters:
+      - in: path
+        name: clave
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: popup
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PopupLanzar'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PopupLanzar'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PopupLanzar'
+      responses:
+        '200':
+          description: No response body
+        '400':
+          description: No response body
+        '404':
+          description: No response body
+        '502':
+          description: No response body
+  /docs/schema/:
+    get:
+      operationId: docs_schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - docs
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+components:
+  schemas:
+    AccionRequest:
+      type: object
+      description: Body opcional de POST /sesiones/{clave}/acciones/{accion}.
+      properties:
+        datos: {}
+    CanalEnum:
+      enum:
+      - GV
+      - PFM
+      - OTRO
+      type: string
+      description: |-
+        * `GV` - GESVIDA
+        * `PFM` - PFM
+        * `OTRO` - Otro
+    ClaseEnum:
+      enum:
+      - INFO
+      - ERROR
+      - AVISO
+      type: string
+      description: |-
+        * `INFO` - Info
+        * `ERROR` - Error
+        * `AVISO` - Aviso
+    InicioRequest:
+      type: object
+      description: Body de POST /inicio/ahorro y /inicio/rentas.
+      properties:
+        indFunctionMode:
+          type: string
+          maxLength: 5
+        proposalId:
+          type: string
+        companyId:
+          type: string
+          maxLength: 10
+        distributionChannel:
+          type: string
+          maxLength: 10
+        username:
+          type: string
+        policyHolders:
+          type: array
+          items: {}
+        investment:
+          type: array
+          items: {}
+        documentoCliente:
+          type: string
+          maxLength: 20
+        canal:
+          allOf:
+          - $ref: '#/components/schemas/CanalEnum'
+          default: OTRO
+        codigoProductor:
+          type: string
+          default: ''
+          maxLength: 20
+        propuesta: {}
+    ModalidadEnum:
+      enum:
+      - VA
+      - VIA
+      - R2C
+      type: string
+      description: |-
+        * `VA` - Venta asesorada
+        * `VIA` - Venta informada
+        * `R2C` - Rentas (R2C)
+    PantallaActualEnum:
+      enum:
+      - SISTEMA_CERRADO
+      - SIN_PERFIL
+      - SOLO_AVISOS
+      - SELECCION_PRODUCTO_AHORRO
+      - SEGUROS_AHORRO
+      - MODALIDAD_CAMPANIA
+      - CAPTURA_DATOS_SOLICITUD
+      - CAPTURA_TOMADOR1
+      - CAPTURA_TOMADOR2
+      - RESUMEN_CONTRATACION
+      - RESULTADO_FIRMA
+      - R2C_CAPTURA
+      - R2C_PRECIOS
+      - ADMINISTRACION
+      - FIN
+      type: string
+      description: |-
+        * `SISTEMA_CERRADO` - Sistema cerrado
+        * `SIN_PERFIL` - Sin perfil
+        * `SOLO_AVISOS` - Sólo avisos
+        * `SELECCION_PRODUCTO_AHORRO` - Selección producto ahorro
+        * `SEGUROS_AHORRO` - Seguros ahorro
+        * `MODALIDAD_CAMPANIA` - Modalidad campaña
+        * `CAPTURA_DATOS_SOLICITUD` - Captura datos solicitud
+        * `CAPTURA_TOMADOR1` - Captura tomador 1
+        * `CAPTURA_TOMADOR2` - Captura tomador 2
+        * `RESUMEN_CONTRATACION` - Resumen contratación
+        * `RESULTADO_FIRMA` - Resultado firma
+        * `R2C_CAPTURA` - R2C captura
+        * `R2C_PRECIOS` - R2C precios
+        * `ADMINISTRACION` - Administración
+        * `FIN` - Fin
+    Parametro:
+      type: object
+      properties:
+        clave:
+          type: string
+          maxLength: 128
+        valor:
+          type: string
+        tipo:
+          $ref: '#/components/schemas/TipoEnum'
+        descripcion:
+          type: string
+        entorno:
+          type: string
+          nullable: true
+          maxLength: 16
+        actualizado:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actualizado
+      - clave
+    PopupCompletar:
+      type: object
+      properties:
+        idxTomador:
+          type: integer
+          minimum: 0
+          default: 0
+        taskId:
+          type: string
+          default: ''
+        resultado:
+          $ref: '#/components/schemas/ResultadoEnum'
+      required:
+      - resultado
+    PopupLanzar:
+      type: object
+      properties:
+        idxTomador:
+          type: integer
+          minimum: 0
+          default: 0
+    ResultadoEnum:
+      enum:
+      - SUBMIT
+      - DISMISS
+      - ERROR
+      type: string
+      description: |-
+        * `SUBMIT` - SUBMIT
+        * `DISMISS` - DISMISS
+        * `ERROR` - ERROR
+    Sesion:
+      type: object
+      description: Vista completa de la sesión (GET /sesiones/{clave}).
+      properties:
+        clave:
+          type: string
+          format: uuid
+          readOnly: true
+        usuario:
+          type: string
+          readOnly: true
+        modalidad:
+          allOf:
+          - $ref: '#/components/schemas/ModalidadEnum'
+          readOnly: true
+        canal:
+          allOf:
+          - $ref: '#/components/schemas/CanalEnum'
+          readOnly: true
+        pantalla_actual:
+          allOf:
+          - $ref: '#/components/schemas/PantallaActualEnum'
+          readOnly: true
+        version_esquema:
+          type: integer
+          readOnly: true
+        estado:
+          readOnly: true
+        abierta:
+          type: boolean
+          readOnly: true
+        creado:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - abierta
+      - actualizado
+      - canal
+      - clave
+      - creado
+      - estado
+      - modalidad
+      - pantalla_actual
+      - usuario
+      - version_esquema
+    SesionEstado:
+      type: object
+      description: PUT /sesiones/{clave}/estado — sustituye el estado JSON completo.
+      properties:
+        estado: {}
+        version_esquema:
+          type: integer
+          minimum: 1
+      required:
+      - estado
+    TipoEnum:
+      enum:
+      - str
+      - int
+      - bool
+      - json
+      type: string
+      description: |-
+        * `str` - Texto
+        * `int` - Entero
+        * `bool` - Booleano
+        * `json` - JSON
+    Traza:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        clave_sesion:
+          type: string
+          maxLength: 64
+        tipo_contenido:
+          type: string
+          maxLength: 64
+        clase:
+          $ref: '#/components/schemas/ClaseEnum'
+        mensaje:
+          type: string
+        datos: {}
+        creado:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - creado
+      - id

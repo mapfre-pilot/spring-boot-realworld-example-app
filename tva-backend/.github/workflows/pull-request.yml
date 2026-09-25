@@ -1,0 +1,33 @@
+name: Pull Request
+run-name: "Build and Test #${{ github.run_number }}: ${{ github.event.pull_request.title }}"
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    branches:
+      - develop
+      - main
+      - master
+
+jobs:
+  pull-request:
+    name: Build and Test
+    uses: mapfre-tech/esp-pfdevops-reusable-workflows/.github/workflows/container.django.pull-request.yml@v1
+    with:
+      sonar-project-key: ${{ vars.SONAR_PROJECT_KEY }}
+      sonar-project-name: ${{ vars.SONAR_PROJECT_NAME }}
+      runs-on-sonar: '["runner-devopsgh-ci-s"]'
+      source-folder: 'sources'
+      poetry-version: "${{ vars.POETRY_VERSION != '' && vars.POETRY_VERSION || '2.1.1' }}"
+      python-version: "${{ vars.PYTHON_VERSION != '' && vars.PYTHON_VERSION || '3.11' }}"
+    secrets:
+      ACR_TOKEN_USER: ${{ secrets.ACR_TOKEN_USER }}
+      ACR_TOKEN_PW: ${{ secrets.ACR_TOKEN_PW }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_ROOT_CERT: ${{ secrets.SONAR_ROOT_CERT }}
+      # GH_GIT_TOKEN: ${{ secrets.GH_GIT_TOKEN }}
+      GH_TOKEN_ENCRYPTION_PASSPHRASE: ${{ secrets.GH_TOKEN_ENCRYPTION_PASSPHRASE }}
+      AZURE_ARTIFACTS_USER: ${{secrets.AZURE_ARTIFACTS_USER}}
+      AZURE_ARTIFACTS_PW: ${{secrets.AZURE_ARTIFACTS_PW}}

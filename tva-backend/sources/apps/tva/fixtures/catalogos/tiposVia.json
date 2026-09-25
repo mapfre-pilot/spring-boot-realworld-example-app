@@ -1,0 +1,40 @@
+{
+  "valores": [
+    {
+      "codigo": "CL",
+      "descripcion": "Calle"
+    },
+    {
+      "codigo": "AV",
+      "descripcion": "Avenida"
+    },
+    {
+      "codigo": "PZ",
+      "descripcion": "Plaza"
+    },
+    {
+      "codigo": "PS",
+      "descripcion": "Paseo"
+    },
+    {
+      "codigo": "CR",
+      "descripcion": "Carretera"
+    },
+    {
+      "codigo": "CM",
+      "descripcion": "Camino"
+    },
+    {
+      "codigo": "RD",
+      "descripcion": "Ronda"
+    },
+    {
+      "codigo": "TR",
+      "descripcion": "Travesía"
+    },
+    {
+      "codigo": "UR",
+      "descripcion": "Urbanización"
+    }
+  ]
+}

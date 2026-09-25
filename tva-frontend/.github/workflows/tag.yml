@@ -1,0 +1,34 @@
+name: Tag Push pipeline
+
+on:
+  push:
+    tags:
+      - '**'
+
+jobs:
+  release:
+    uses: mapfre-tech/esp-aeme-reusable-workflows-front/.github/workflows/release.yml@4
+    secrets:
+      GH_TOKEN_ENCRYPTION_PASSPHRASE: ${{ secrets.GH_TOKEN_ENCRYPTION_PASSPHRASE }}
+      AZURE_ARTIFACTS_PW: ${{ secrets.AZURE_ARTIFACTS_PW }}
+      DOCKER_REGISTRY_USER: ${{ secrets.ACR_TOKEN_USER }}
+      DOCKER_REGISTRY_PW: ${{ secrets.ACR_TOKEN_PW }}
+      GOOGLE_CREDENTIALS_JSON_BASE64: ${{ secrets.GOOGLE_CREDENTIALS_JSON_BASE64 }}
+      ANDROID_RELEASE_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}
+      ANDROID_RELEASE_KEYSTORE_KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEYSTORE_KEY_ALIAS }}
+      ANDROID_RELEASE_KEYSTORE_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEYSTORE_KEY_PASSWORD }}
+      GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64 }}
+      APP_STORE_KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
+      APP_STORE_ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
+      APP_STORE_ADMIN_API_KEY_P8: ${{ secrets.APP_STORE_ADMIN_API_KEY_P8 }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_ROOT_CERT: ${{ secrets.SONAR_ROOT_CERT }}
+    with:
+      sonar-server-url: ${{ vars.SONAR_SERVER_URL }}
+      sonar-runner: ${{ vars.SONAR_RUNNER }}
+      sonar-properties-json: ${{ vars.SONAR_PROPERTIES_JSON }}
+      verbose: ${{ vars.VERBOSE }}
+      pf-ops-cli-version: ${{ vars.PF_OPS_CLI_VERSION }}

@@ -1,0 +1,14 @@
+{
+ "response": {
+  "annuitySimulationId": "SIM-0001",
+  "results": [
+   {
+    "productCode": "00595",
+    "annualAmount": 12000.0,
+    "paymentFrequency": "M",
+    "estimatedReturn": 2.35
+   }
+  ],
+  "hasErrors": false
+ }
+}

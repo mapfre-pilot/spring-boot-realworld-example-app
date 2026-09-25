@@ -1,0 +1,9 @@
+<app-caja titulo="Modalidad de campaña">
+  <form [formGroup]="form">
+    <mat-radio-group formControlName="modalidadCampania">
+      @for (op of opciones; track op.valor) {
+        <mat-radio-button [value]="op.valor">{{ op.etiqueta }}</mat-radio-button>
+      }
+    </mat-radio-group>
+  </form>
+</app-caja>

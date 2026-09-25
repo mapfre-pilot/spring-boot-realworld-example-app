@@ -1,0 +1,91 @@
+# Pila completa TVA desde un clon limpio: postgres + redis + backend + frontend.
+# Frontend en http://localhost:8080 (nginx, proxy /api/ → backend :8888).
+services:
+  tva-backend:
+    build:
+      context: ./tva-backend
+      dockerfile: docker/Dockerfile.public
+    command: sh docker/entrypoint.sh
+    ports:
+      - "8888:8888"
+    environment:
+      ENVIRONMENT: local
+      DEBUG: "False"
+      SECRET_KEY: changeme-docker-local
+      DB_HOST: postgres
+      DB_NAME: tva
+      DB_USER: tva
+      DB_PASSWORD: tva
+      REDIS_HOST: redis
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      CORS_ALLOWED_ORIGINS: http://localhost:8080
+      # Integraciones: mock por defecto; exporta *_MODE/URL/credenciales para real
+      APILIFE_MODE: ${APILIFE_MODE:-mock}
+      APILIFE_BASE_URL: ${APILIFE_BASE_URL:-}
+      APILIFE_USERNAME: ${APILIFE_USERNAME:-}
+      APILIFE_PASSWORD: ${APILIFE_PASSWORD:-}
+      APILIFE_APPINVE_USERNAME: ${APILIFE_APPINVE_USERNAME:-}
+      APILIFE_APPINVE_PASSWORD: ${APILIFE_APPINVE_PASSWORD:-}
+      APILIFE_ACCEPT_LANGUAGE: ${APILIFE_ACCEPT_LANGUAGE:-es}
+      APILIFE_APPLICATION_ID: ${APILIFE_APPLICATION_ID:-TVA}
+      MISV_MODE: ${MISV_MODE:-mock}
+      MISV_BASE_URL: ${MISV_BASE_URL:-}
+      MISV_USERNAME: ${MISV_USERNAME:-}
+      MISV_PASSWORD: ${MISV_PASSWORD:-}
+      MISV_APLICACION: ${MISV_APLICACION:-VIDA}
+      MISV_TIPO_PERSONA: ${MISV_TIPO_PERSONA:-F}
+      RIC_MODE: ${RIC_MODE:-mock}
+      RIC_BASE_URL: ${RIC_BASE_URL:-}
+      RIC_PATH: ${RIC_PATH:-personas}
+      RIC_USERNAME: ${RIC_USERNAME:-}
+      RIC_PASSWORD: ${RIC_PASSWORD:-}
+      PERFIL_USUARIO_MODE: ${PERFIL_USUARIO_MODE:-mock}
+      SOA_BASE_URL: ${SOA_BASE_URL:-}
+      SOA_USERNAME: ${SOA_USERNAME:-}
+      SOA_PASSWORD: ${SOA_PASSWORD:-}
+      APPIAN_EMBED_MODE: ${APPIAN_EMBED_MODE:-mock}
+      APPIAN_EMBED_BASE_URL: ${APPIAN_EMBED_BASE_URL:-}
+      APPIAN_EMBED_API_KEY: ${APPIAN_EMBED_API_KEY:-}
+    depends_on:
+      - postgres
+      - redis
+
+  tva-frontend:
+    build:
+      context: ./tva-frontend
+      dockerfile: docker/Dockerfile
+      secrets:
+        - npm_pat_b64
+    environment:
+      TVA_ENV: pro
+    ports:
+      - "8080:80"
+    # Para cambiar de entorno en runtime monta un environments.json propio:
+    #   volumes:
+    #     - ./mi-environments.json:/usr/share/nginx/html/assets/environments.json:ro
+    depends_on:
+      - tva-backend
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: tva
+      POSTGRES_USER: tva
+      POSTGRES_PASSWORD: tva
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres-data:
+
+secrets:
+  npm_pat_b64:
+    environment: AZURE_ARTIFACTS_NPM_PAT_B64

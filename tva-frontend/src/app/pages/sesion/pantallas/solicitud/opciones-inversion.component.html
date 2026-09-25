@@ -1,0 +1,70 @@
+<app-seccion
+  titulo="Opciones de inversión"
+  [valida]="valida()"
+  [expandida]="expandida()"
+  [avisos]="avisos()"
+  seccion="DATOS_DEL_SEGURO/opcionesInversion"
+  (continuar)="continuar.emit()">
+  @if (opciones().length) {
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Código</th>
+          <th>Descripción</th>
+          <th>Prima única</th>
+          <th>Prima periódica</th>
+          <th>Plazo objetivo</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (o of opciones(); track o.investmentPreferenceCode; let i = $index) {
+          <tr>
+            <td>
+              <mat-checkbox
+                [checked]="seleccionadas()[i]"
+                (change)="opcionCambiada.emit({ i: i, sel: $event.checked })" />
+            </td>
+            <td>{{ o.investmentPreferenceCode }}</td>
+            <td>{{ o.descripcion }}</td>
+            <td>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="celda">
+                <input
+                  matInput
+                  type="number"
+                  class="num"
+                  [value]="importe(i, 'unica')"
+                  (change)="importeCambiado.emit({ i: i, campo: 'unica', ev: $event })" />
+              </mat-form-field>
+            </td>
+            <td>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="celda">
+                <input
+                  matInput
+                  type="number"
+                  class="num"
+                  [value]="importe(i, 'periodica')"
+                  (change)="importeCambiado.emit({ i: i, campo: 'periodica', ev: $event })" />
+              </mat-form-field>
+            </td>
+            <td>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="celda">
+                <input
+                  matInput
+                  type="number"
+                  class="num"
+                  [value]="importe(i, 'plazo')"
+                  (change)="importeCambiado.emit({ i: i, campo: 'plazo', ev: $event })" />
+              </mat-form-field>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <div class="suma totales">
+      Suma prima única: {{ sumaUnica() }} € / periódica: {{ sumaPeriodica() }} €
+    </div>
+  } @else {
+    <p>Este producto no tiene opciones de inversión configurables.</p>
+  }
+</app-seccion>

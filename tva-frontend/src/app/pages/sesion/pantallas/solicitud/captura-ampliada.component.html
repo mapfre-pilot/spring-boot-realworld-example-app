@@ -1,0 +1,91 @@
+<mat-slide-toggle [checked]="ampliada()" (change)="ampliada.set($event.checked)">
+  Ampliar captura de datos (beneficiarios, datos de contacto, etc.)
+</mat-slide-toggle>
+@if (ampliada()) {
+  <app-caja titulo="Datos de contacto">
+    <app-seccion
+      titulo="Dirección de correspondencia"
+      [valida]="validez()['DATOS_DEL_SEGURO/datosContacto'] ?? false"
+      [expandida]="expandidaId() === 'datosContacto'"
+      [avisos]="avisos()"
+      seccion="DATOS_DEL_SEGURO/datosContacto"
+      (continuar)="continuar.emit('datosContacto')">
+      <form [formGroup]="datosContacto()" class="formulario">
+        <app-campo-select
+          [control]="datosContacto().controls.tipoDireccion"
+          etiqueta="Tipo de dirección"
+          [opciones]="tiposDireccion" />
+        <app-campo-texto [control]="datosContacto().controls.tipoVia" etiqueta="Tipo de vía" />
+        <app-campo-texto
+          [control]="datosContacto().controls.nombreVia"
+          etiqueta="Nombre de la vía" />
+        <app-campo-texto [control]="datosContacto().controls.numero" etiqueta="Número" />
+        <app-campo-texto
+          [control]="datosContacto().controls.codigoPostal"
+          etiqueta="Código postal" />
+        <app-campo-texto [control]="datosContacto().controls.localidad" etiqueta="Localidad" />
+        <app-campo-texto [control]="datosContacto().controls.provincia" etiqueta="Provincia" />
+        <app-campo-texto [control]="datosContacto().controls.pais" etiqueta="País" />
+      </form>
+    </app-seccion>
+  </app-caja>
+  <app-caja titulo="Asegurado">
+    <app-seccion
+      titulo="Asegurado"
+      [valida]="validez()['DATOS_DEL_SEGURO/asegurado'] ?? false"
+      [expandida]="expandidaId() === 'asegurado'"
+      [avisos]="avisos()"
+      seccion="DATOS_DEL_SEGURO/asegurado"
+      (continuar)="continuar.emit('asegurado')">
+      <form [formGroup]="asegurado()">
+        <mat-slide-toggle formControlName="esTomador">El asegurado es el tomador</mat-slide-toggle>
+      </form>
+      @if (!esTomador()) {
+        <form [formGroup]="asegurado()" class="formulario">
+          <app-campo-texto [control]="asegurado().controls.nombre" etiqueta="Nombre" />
+          <app-campo-texto
+            [control]="asegurado().controls.primerApellido"
+            etiqueta="Primer apellido" />
+          <app-campo-texto
+            [control]="asegurado().controls.fechaNacimiento"
+            etiqueta="Fecha de nacimiento"
+            tipo="date" />
+          <app-campo-texto [control]="asegurado().controls.sexo" etiqueta="Sexo" />
+          <app-campo-texto [control]="asegurado().controls.parentesco" etiqueta="Parentesco" />
+        </form>
+      }
+    </app-seccion>
+  </app-caja>
+  <app-caja titulo="Beneficiarios">
+    <app-seccion
+      titulo="Beneficiarios"
+      [valida]="validez()['DATOS_DEL_SEGURO/beneficiarios'] ?? false"
+      [expandida]="expandidaId() === 'beneficiarios'"
+      [avisos]="avisos()"
+      seccion="DATOS_DEL_SEGURO/beneficiarios"
+      (continuar)="continuar.emit('beneficiarios')">
+      <form [formGroup]="beneficiarios()" class="formulario">
+        <app-campo-select
+          [control]="beneficiarios().controls.tipo"
+          etiqueta="Tipo de beneficiario"
+          [opciones]="tiposBeneficiario()" />
+        @if (beneficiarioTipo() === 'TEXTO_LIBRE') {
+          <app-campo-texto [control]="beneficiarios().controls.textoLibre" etiqueta="Texto libre" />
+        }
+      </form>
+    </app-seccion>
+  </app-caja>
+  <app-caja titulo="Notas">
+    <app-seccion
+      titulo="Notas"
+      [valida]="validez()['DATOS_DEL_SEGURO/notas'] ?? false"
+      [expandida]="expandidaId() === 'notas'"
+      [avisos]="avisos()"
+      seccion="DATOS_DEL_SEGURO/notas"
+      (continuar)="continuar.emit('notas')">
+      <form [formGroup]="nota()">
+        <app-campo-texto [control]="nota().controls.texto" etiqueta="Texto de la nota" />
+      </form>
+    </app-seccion>
+  </app-caja>
+}

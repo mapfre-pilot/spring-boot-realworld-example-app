@@ -1,0 +1,45 @@
+services:
+  esp-appianesad-tva:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.public
+    ports:
+      - "8888:8888"
+    env_file:
+      - ../.env
+    environment:
+      ENVIRONMENT: local
+      DB_HOST: postgres
+      DB_NAME: tva
+      DB_USER: tva
+      DB_PASSWORD: tva
+      REDIS_HOST: redis
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      # Pop-ups Appian Embedded: real + API key en .env (valor no versionado)
+      APPIAN_EMBED_MODE: ${APPIAN_EMBED_MODE:-mock}
+      APPIAN_EMBED_BASE_URL: ${APPIAN_EMBED_BASE_URL:-https://mapfrespain-test.appiancloud.com/suite}
+      APPIAN_EMBED_API_KEY: ${APPIAN_EMBED_API_KEY:-}
+      APPIAN_EMBED_EMAIL_AVISOS: ${APPIAN_EMBED_EMAIL_AVISOS:-}
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: tva
+      POSTGRES_USER: tva
+      POSTGRES_PASSWORD: tva
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres-data:

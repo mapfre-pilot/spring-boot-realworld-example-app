@@ -1,0 +1,20 @@
+name: Check PR Branch
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  pr:
+    uses: mapfre-tech/esp-aeme-reusable-workflows-front/.github/workflows/pull-request.yml@4
+    secrets:
+      GH_TOKEN_ENCRYPTION_PASSPHRASE: ${{ secrets.GH_TOKEN_ENCRYPTION_PASSPHRASE }}
+      AZURE_ARTIFACTS_PW: ${{ secrets.AZURE_ARTIFACTS_PW }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_ROOT_CERT: ${{ secrets.SONAR_ROOT_CERT }}
+      SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+    with:
+      sonar-server-url: ${{ vars.SONAR_SERVER_URL }}
+      sonar-runner: ${{ vars.SONAR_RUNNER }}
+      sonar-properties-json: ${{ vars.SONAR_PROPERTIES_JSON }}
+      verbose: ${{ vars.VERBOSE }}

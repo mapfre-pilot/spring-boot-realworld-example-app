@@ -1,0 +1,17 @@
+name: Push on Branch
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  push:
+    uses: mapfre-tech/esp-aeme-reusable-workflows-front/.github/workflows/push.yml@4
+    secrets:
+      GH_TOKEN_ENCRYPTION_PASSPHRASE: ${{ secrets.GH_TOKEN_ENCRYPTION_PASSPHRASE }}
+      AZURE_ARTIFACTS_PW: ${{ secrets.AZURE_ARTIFACTS_PW }}
+      CHROMATIC_PROJECT_TOKENS: ${{ secrets.CHROMATIC_PROJECT_TOKENS }}
+      SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+    with:
+      verbose: ${{ vars.VERBOSE }}

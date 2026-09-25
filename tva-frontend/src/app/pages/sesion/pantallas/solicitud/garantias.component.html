@@ -1,0 +1,16 @@
+<app-seccion
+  titulo="Garantías"
+  [valida]="valida()"
+  [expandida]="expandida()"
+  [avisos]="avisos()"
+  seccion="DATOS_DEL_SEGURO/garantias"
+  (continuar)="continuar.emit()">
+  @for (g of garantias(); track g.codigo; let i = $index) {
+    <mat-checkbox
+      [checked]="!!g.seleccionada"
+      [disabled]="g.obligatoria"
+      (change)="garantiaCambiada.emit({ i: i, sel: $event.checked })">
+      {{ g.codigo }} - {{ g.descripcion }} {{ g.obligatoria ? '(obligatoria)' : '' }}
+    </mat-checkbox>
+  }
+</app-seccion>

@@ -1,0 +1,34 @@
+.contenedor {
+  display: flex;
+  justify-content: center;
+  padding-top: 12vh;
+}
+.login-card {
+  max-width: 480px;
+  width: 100%;
+}
+.login-card mat-card-content {
+  padding: 32px 28px 28px;
+}
+.marca {
+  color: var(--tva-primary, #d81e05);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 3px;
+}
+.subtitulo {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--tva-text-muted, #666);
+  margin: 2px 0 20px;
+}
+.ayuda {
+  font-size: 13px;
+  color: var(--tva-text-muted, #666);
+}
+.campo {
+  width: 100%;
+}
+.entrar {
+  width: 100%;
+}

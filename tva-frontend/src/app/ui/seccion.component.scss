@@ -1,0 +1,42 @@
+:host {
+  display: block;
+  border-bottom: 1px solid #eee;
+}
+:host:last-child {
+  border-bottom: none;
+}
+.seccion {
+  box-shadow: none;
+  border-radius: 0;
+  background: #fff;
+}
+.seccion.mat-expanded {
+  border-left: 3px solid var(--tva-primary, #d81e05);
+  background: #fafafa;
+}
+.seccion .mat-expansion-panel-body {
+  padding: 0 16px 16px;
+}
+.icono-ok {
+  color: var(--tva-ok, #2e7d32);
+  font-size: 18px;
+  margin-left: 8px;
+}
+.icono-error {
+  color: #c62828;
+  font-size: 18px;
+  margin-left: 8px;
+}
+.punto {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid #bdbdbd;
+  margin-left: 8px;
+}
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}

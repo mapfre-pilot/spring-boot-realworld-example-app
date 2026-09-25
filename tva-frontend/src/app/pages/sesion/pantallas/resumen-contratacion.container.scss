@@ -1,0 +1,80 @@
+.layout-resumen {
+  display: grid;
+  grid-template-columns: 4fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 900px) {
+  .layout-resumen {
+    grid-template-columns: 1fr;
+  }
+}
+.resumen-cuerpo {
+  padding: 12px 16px 16px;
+}
+.producto {
+  margin: 0 0 8px;
+}
+.grid-lectura {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px 16px;
+  margin-bottom: 8px;
+}
+@media (max-width: 900px) {
+  .grid-lectura {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.tomador {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+.tomador:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+.nombre {
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+.requisitos {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.requisito {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--tva-text-muted, #666);
+}
+.requisito mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+.requisito.hecho mat-icon {
+  color: var(--tva-ok, #2e7d32);
+}
+.doc {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 13px;
+}
+.doc mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #9e9e9e;
+}
+.doc mat-icon.enviado {
+  color: var(--tva-ok, #2e7d32);
+}
+mat-radio-button {
+  display: block;
+  margin: 4px 0;
+}

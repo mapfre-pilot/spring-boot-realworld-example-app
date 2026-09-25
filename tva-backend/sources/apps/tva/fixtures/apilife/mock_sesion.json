@@ -1,0 +1,444 @@
+{
+ "avisos": [
+  {
+   "clase": 5,
+   "tipo": 4,
+   "texto": "Hay discrepancias en los datos de los intervinientes. Para ver el detalle, consulte los datos en la cabecera de la aplicación",
+   "mostrarEn": 1
+  }
+ ],
+ "cajas": [
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": false,
+     "visible": true
+    },
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": false,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": false,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": true,
+   "estaPlegada": true,
+   "secciones": [
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": false,
+     "visible": true
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": true,
+     "datosValidos": false,
+     "visible": false
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": true,
+     "datosValidos": true,
+     "visible": true
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": true,
+     "datosValidos": true,
+     "visible": true
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": true,
+     "datosValidos": true,
+     "visible": false
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": true,
+     "datosValidos": true,
+     "visible": false
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": true,
+     "datosValidos": true,
+     "visible": false
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": true,
+     "datosValidos": true,
+     "visible": false
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": true,
+     "datosValidos": true,
+     "visible": false
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": true,
+     "datosValidos": true,
+     "visible": false
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": true
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": false,
+     "visible": true
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": false,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": false,
+     "visible": true
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": false,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": false,
+     "visible": true
+    },
+    {
+     "estaPlegada": true,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": false,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": true,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": true,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": false,
+     "datosValidos": true,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": true,
+     "datosValidos": true,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": true,
+     "datosValidos": false,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": true,
+     "datosValidos": false,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "controlPlegadoDeshabilitado": false,
+   "estaPlegada": false,
+   "secciones": [
+    {
+     "estaPlegada": false,
+     "controlPlegadoDeshabilitado": true,
+     "datosValidos": true,
+     "visible": true
+    }
+   ]
+  }
+ ],
+ "claveSesion": "A38F",
+ "codigoProducto": "00457",
+ "comisiones": {
+  "comisionesOficina": {
+   "salesOfficeCode": "9275",
+   "salesOfficeDesc": "",
+   "producerCommissions": [
+    {
+     "producerCode": "0",
+     "producerDesc": "",
+     "interventionCode": "",
+     "baseTypeCode": "",
+     "baseTypeDesc": ""
+    }
+   ]
+  }
+ },
+ "companyId": "0511",
+ "datosOperacion": {
+  "diaCobro": 18,
+  "duracionPorTabla": "",
+  "fechaEfecto": "2025-02-18Z",
+  "gradoMinusvalia": "",
+  "tipoDuracionManual": "",
+  "tipoJubilacion": "F",
+  "tipoReinversion": "",
+  "tipoRevalorizacion": "",
+  "valorReinversion": ""
+ },
+ "distributionChannel": "200",
+ "domicilioTomador2EsElDelTomador1": true,
+ "idPantallaAnterior": "",
+ "idPantallaActual": "Captura datos",
+ "modoFuncionamiento": "VIA",
+ "perfilUsuario": {
+  "username": "anon@example.org",
+  "nuuma": "ANON",
+  "codOficina": "9275",
+  "dirReg": "99",
+  "funcionalidades": [
+   4016,
+   4017,
+   4018,
+   4041,
+   4042,
+   4043,
+   4045,
+   4047,
+   47902
+  ],
+  "claveProductor": "0",
+  "dgt": "99"
+ },
+ "tomadores": [
+  {
+   "datosPersonales": {
+    "participantFigureTypeCode": "TO",
+    "participantFigureTypeDesc": "",
+    "figurePersonalData": {
+     "clientId": "2808677",
+     "personTypeCode": "F",
+     "personTypeDesc": "Fõsica",
+     "naturalPerson": {
+      "maritalStatusCode": "",
+      "maritalStatusDesc": "",
+      "personName": {
+       "name": "ALFONSO",
+       "firstSurname": "OCTAVO",
+       "secondSurname": "DE CASTILLA"
+      },
+      "proffesionData": {
+       "professionCode": "000",
+       "professionDesc": "PROFESION DESCONOCIDA",
+       "occupationCode": "0011",
+       "occupationDesc": "Oficiales de las fuerzas armadas"
+      },
+      "birthdate": "1952-11-15Z",
+      "genderCode": "V",
+      "genderDesc": "Hombre",
+      "dependencyDegreeCode": "",
+      "despendencyDegreeDesc": "",
+      "publicResponsibilityPersonInd": false,
+      "activityPRPCode": "00",
+      "activityPRPDesc": "No es o no ha sido persona de responsabilidad pública.",
+      "nationalityCountryCode": "011",
+      "nationalityCountryDesc": "ESPAÑA",
+      "birthCountryCode": "011",
+      "birthCountryDesc": "ESPAÑA"
+     },
+     "addresses": [
+      {
+       "addressId": "1",
+       "addressTypeCode": "F",
+       "addressTypeDesc": "Fiscal",
+       "addressRoadTypeCode": "ACC",
+       "addressRoadTypeDesc": "Acceso",
+       "addressName": "ASDF",
+       "addressNum": "2",
+       "addressAdditionalInfo": "",
+       "townCode": "",
+       "townDesc": "CIUDAD REAL",
+       "provinceCode": "13",
+       "provinceDesc": "Ciudad Real",
+       "zipCode": "13004",
+       "countryCode": "011",
+       "countryDesc": "ESPAÑA"
+      }
+     ],
+     "contactMethods": [
+      {
+       "contactMethodId": "1",
+       "contactMethodTypeCode": "3",
+       "contactMethodTypeDesc": "Email",
+       "contactContextTypeCode": "4",
+       "contactContextTypeDesc": "Otros",
+       "contactMethodValue": "anon@example.org",
+       "contactMethodCountryCode": "",
+       "contactMethodCountryDesc": ""
+      },
+      {
+       "contactMethodId": "1",
+       "contactMethodTypeCode": "1",
+       "contactMethodTypeDesc": "Telefono Movil",
+       "contactContextTypeCode": "4",
+       "contactContextTypeDesc": "Otros",
+       "contactMethodValue": "600000000",
+       "contactMethodCountryCode": "011",
+       "contactMethodCountryDesc": "ESPAÑA"
+      }
+     ],
+     "identificationMethods": [
+      {
+       "identityDocumentTypeCode": "02",
+       "identityDocumentTypeDesc": "NIE",
+       "identityDocumentNumber": "00000000X"
+      }
+     ],
+     "robinsonInd": false,
+     "localCountryHabitualResidenceInd": true
+    },
+    "receiptsCharge": {
+     "receiptsChargeId": "",
+     "paymentMethodTypeCode": "",
+     "paymentMethodTypeDesc": "",
+     "bankAccountInfo": {
+      "IBAN": "ES0000000000000000000000"
+     }
+    },
+    "policyHolderInsuredInd": true,
+    "policyHolderContributorInd": true,
+    "relationshipTypeCode": "",
+    "relationshipTypeDesc": "",
+    "eventTypeCode": "",
+    "eventTypeDesc": "",
+    "beneficiaryTypeCode": "",
+    "beneficiaryTypeDesc": "",
+    "beneficiaryText": ""
+   },
+   "datosGestionParticipante": {
+    "datosRIC": {
+     "classificationCode": "",
+     "clientId": "0",
+     "integralitySegment": ""
+    },
+    "discrepancias": [
+     {
+      "campo": "TO:todos",
+      "mensaje": "El tomador no se encuentra en los sistemas de Vida"
+     },
+     {
+      "campo": "RL:todos",
+      "mensaje": "El representante legal no se encuentra en los sistemas de Vida"
+     }
+    ],
+    "documentoIdDigitalizado": false,
+    "consentimientoProteccionDatos": true
+   },
+   "operationCode": ""
+  }
+ ]
+}

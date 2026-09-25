@@ -1,0 +1,24 @@
+<app-seccion
+  titulo="Productores"
+  [valida]="valida()"
+  [expandida]="expandida()"
+  [avisos]="avisos()"
+  seccion="DATOS_PRODUCTORES/productores"
+  (continuar)="continuar.emit()">
+  <form [formGroup]="form()" class="formulario">
+    <app-campo-texto [control]="form().controls.oficina" etiqueta="Oficina" />
+    <app-campo-texto [control]="form().controls.productor" etiqueta="Productor" />
+    <app-campo-texto
+      [control]="form().controls.comisionMaxima"
+      etiqueta="% comisión máxima 1er año"
+      tipo="number" />
+    <app-campo-texto
+      [control]="form().controls.comisionDeseada"
+      etiqueta="% comisión deseada 1er año"
+      tipo="number" />
+    <mat-checkbox formControlName="aportacionPlanificada">Aportación Planificada</mat-checkbox>
+    <mat-checkbox formControlName="aportacionExtraordinaria"
+      >Aportación Extraordinaria</mat-checkbox
+    >
+  </form>
+</app-seccion>
