@@ -7,6 +7,8 @@
   "include": ["src/**/*.ts", "libs/**/*.ts"],
   "exclude": [
     "src/**/*.spec.ts",
+    "libs/**/*.spec.ts",
+    "libs/**/*.test.ts",
     "src/**/*.test.ts",
     "jest.config.ts",
     "jest.config.cts",

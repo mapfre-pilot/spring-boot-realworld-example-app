@@ -4,9 +4,8 @@ import { TestBed } from '@angular/core/testing';
 import { createComponentFactory } from '@ngneat/spectator/jest';
 import { of } from 'rxjs';
 
-import { AppianPopupService } from '../../../core/appian/appian-popup.service';
-import { TvaApiService } from '../../../core/api/tva-api.service';
-import { SesionStore } from '../../../core/state/sesion.store';
+import { CATALOGO_REPOSITORY, SESION_REPOSITORY, SesionStore } from '@tva/core';
+import { AppianPopupService } from '../../../ui/appian/appian-popup.service';
 import { CapturaTomador1Container } from './captura-tomador1.container';
 
 describe('CapturaTomador1Container', () => {
@@ -16,7 +15,8 @@ describe('CapturaTomador1Container', () => {
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
-      { provide: TvaApiService, useValue: api },
+      { provide: SESION_REPOSITORY, useValue: api },
+      { provide: CATALOGO_REPOSITORY, useValue: api },
       { provide: AppianPopupService, useValue: { abrir: jest.fn() } },
     ],
   });

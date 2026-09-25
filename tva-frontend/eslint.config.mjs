@@ -1,9 +1,8 @@
+import baseConfig from './eslint.base.config.mjs';
 import nx from '@nx/eslint-plugin';
 
 export default [
-  ...nx.configs['flat/base'],
-  ...nx.configs['flat/typescript'],
-  ...nx.configs['flat/javascript'],
+  ...baseConfig,
   {
     ignores: ['**/dist', '**/out-tsc'],
   },
@@ -46,8 +45,9 @@ export default [
   },
   {
     files: ['**/*.html'],
-    // Override or add rules here
-    rules: {},
+    rules: {
+      '@angular-eslint/template/prefer-control-flow': 'error',
+    },
   },
   {
     files: ['**/*.ts', '**/*.tsx'],
@@ -63,6 +63,10 @@ export default [
   {
     files: ['**/*.ts'],
     rules: {
+      '@angular-eslint/prefer-on-push-component-change-detection': 'error',
+      '@angular-eslint/prefer-signals': 'error',
+      '@angular-eslint/prefer-inject': 'error',
+      '@angular-eslint/prefer-standalone': 'error',
       '@angular-eslint/component-class-suffix': [
         'error',
         {

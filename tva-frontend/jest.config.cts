@@ -18,6 +18,9 @@ module.exports = {
     'jest-preset-angular/build/serializers/ng-snapshot',
     'jest-preset-angular/build/serializers/html-comment',
   ],
+  moduleNameMapper: {
+    '^@tva/core$': '<rootDir>/libs/core/src/index.ts',
+  },
   testMatch: [
     '<rootDir>/src/**/__tests__/**/*.[jt]s?(x)',
     '<rootDir>/src/**/*(*.)@(spec|test).[jt]s?(x)',

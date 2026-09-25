@@ -7,7 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { Router } from '@angular/router';
 
-import { AuthService } from '../../core/auth/auth.service';
+import { AuthService } from '@tva/core';
 
 @Component({
   selector: 'app-login-page',

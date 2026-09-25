@@ -1,4 +1,3 @@
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
@@ -6,8 +5,8 @@ import { provideAuth } from 'angular-auth-oidc-client';
 
 import { EnvironmentConfig, provideEnvironment } from '@mapfre-tech/ngx-multienvironment/core';
 
-import { errorInterceptor } from './core/api/api-error.interceptor';
-import { authInterceptor } from './core/auth/auth.interceptor';
+import { provideTvaCore } from '@tva/core';
+
 import { routes } from './app.routes';
 
 export function appConfig(env: string, envConfig: EnvironmentConfig): ApplicationConfig {
@@ -32,7 +31,7 @@ export function appConfig(env: string, envConfig: EnvironmentConfig): Applicatio
       provideZonelessChangeDetection(),
       provideAnimations(),
       provideRouter(routes),
-      provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
+      provideTvaCore(),
       provideEnvironment(env, envConfig),
       ...oidcProviders,
     ],

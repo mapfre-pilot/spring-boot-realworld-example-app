@@ -2,17 +2,24 @@
 import { Directive, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
-import { Caja, PopupAppian } from '../../../core/models/models';
-import { AppianPopupService } from '../../../core/appian/appian-popup.service';
-import { SesionStore } from '../../../core/state/sesion.store';
-import { esDocumentoIdentidadValido } from '../../../core/validaciones/documentos';
-import { Opcion } from '../../../shared/ui/campo-select.component';
+import {
+  Caja,
+  ObtenerCatalogoUsecase,
+  PopupAppian,
+  SesionStore,
+  ValidarSeccionUsecase,
+  esDocumentoIdentidadValido,
+} from '@tva/core';
+import { AppianPopupService } from '../../../ui/appian/appian-popup.service';
+import { Opcion } from '../../../ui/campo-select.component';
 
 @Directive()
 export abstract class TomadorBase implements OnInit {
   protected readonly store = inject(SesionStore);
   protected readonly fb = inject(FormBuilder);
   protected readonly popups = inject(AppianPopupService);
+  private readonly obtenerCatalogo = inject(ObtenerCatalogoUsecase);
+  private readonly validarSeccion = inject(ValidarSeccionUsecase);
 
   /** Id de la caja del tomador (CAPTURA_DATOS_TOMADOR1/2). */
   abstract readonly cajaId: string;
@@ -98,15 +105,6 @@ export abstract class TomadorBase implements OnInit {
   }
 
   ngOnInit(): void {
-    const api = (
-      this.store as unknown as {
-        api: {
-          catalogo: (
-            n: string
-          ) => import('rxjs').Observable<{ valores: { codigo: string; descripcion: string }[] }>;
-        };
-      }
-    ).api;
     for (const nombre of [
       'sexos',
       'nacionalidades',
@@ -118,7 +116,7 @@ export abstract class TomadorBase implements OnInit {
       'provincias',
       'tiposMedioContacto',
     ]) {
-      api.catalogo(nombre).subscribe(r => {
+      this.obtenerCatalogo.execute(nombre).subscribe(r => {
         this.catalogos.update(c => ({
           ...c,
           [nombre]: r.valores.map(v => ({ valor: v.codigo, etiqueta: v.descripcion })),
@@ -138,7 +136,7 @@ export abstract class TomadorBase implements OnInit {
   /** Envía una sección al backend (validar-seccion) y plegado Appian. */
   continuar(seccionId: string, form: FormGroup, datosExtra: Record<string, unknown> = {}): void {
     const datos = { ...form.getRawValue(), ...datosExtra };
-    this.store.validarSeccion(this.cajaId, seccionId, datos).subscribe(res => {
+    this.validarSeccion.execute(this.cajaId, seccionId, datos).subscribe(res => {
       const ref = `${this.cajaId}/${seccionId}`;
       const hayErrores = res.avisos.some(a => a.seccion === ref && a.tipo === 'ERROR');
       this.validas.update(v => ({ ...v, [seccionId]: !hayErrores }));
@@ -168,7 +166,7 @@ export abstract class TomadorBase implements OnInit {
       },
       { tipo: 'EMAIL', contactMethodValue: this.correo.value.contactMethodValue },
     ];
-    this.store.validarSeccion(this.cajaId, 'mediosContacto', medios as never).subscribe(res => {
+    this.validarSeccion.execute(this.cajaId, 'mediosContacto', medios as never).subscribe(res => {
       const ref = `${this.cajaId}/mediosContacto`;
       const hayErrores = res.avisos.some(a => a.seccion === ref && a.tipo === 'ERROR');
       this.validas.update(v => ({ ...v, mediosContacto: !hayErrores }));
@@ -182,8 +180,8 @@ export abstract class TomadorBase implements OnInit {
 
   continuarRepresentante(): void {
     const datos = this.hayRepresentante() ? this.legalRepresentative.getRawValue() : null;
-    this.store
-      .validarSeccion(this.cajaId, 'legalRepresentative', { legalRepresentative: datos } as never)
+    this.validarSeccion
+      .execute(this.cajaId, 'legalRepresentative', { legalRepresentative: datos } as never)
       .subscribe(res => {
         const ref = `${this.cajaId}/legalRepresentative`;
         const hayErrores = res.avisos.some(a => a.seccion === ref && a.tipo === 'ERROR');
@@ -223,19 +221,8 @@ export abstract class TomadorBase implements OnInit {
   );
 
   abrirRequisito(popup: PopupAppian, etiqueta: string): void {
-    const clave = this.store.claveSesion();
-    if (!clave) return;
-    this.popups.abrir(clave, popup, this.indiceTomador, etiqueta).subscribe({
-      next: res => {
-        const s = this.store.sesion();
-        if (s) {
-          this.store.sesion.set({
-            ...s,
-            pantalla_actual: res.pantallaActual,
-            estado: { ...res.estado, avisos: res.avisos },
-          });
-        }
-      },
+    if (!this.store.claveSesion()) return;
+    this.popups.abrir(popup, this.indiceTomador, etiqueta).subscribe({
       error: () => undefined,
     });
   }

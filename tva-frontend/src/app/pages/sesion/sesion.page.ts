@@ -3,12 +3,11 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@a
 import { ActivatedRoute } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-import { Pantalla } from '../../core/models/models';
-import { SesionStore } from '../../core/state/sesion.store';
-import { AvisosComponent } from '../../shared/ui/avisos.component';
-import { CabeceraComponent } from '../../shared/ui/cabecera.component';
-import { MigasDePanComponent } from '../../shared/ui/migas-de-pan.component';
-import { BotoneraComponent } from '../../shared/ui/botonera.component';
+import { CargarSesionUsecase, EjecutarAccionUsecase, Pantalla, SesionStore } from '@tva/core';
+import { AvisosComponent } from '../../ui/avisos.component';
+import { CabeceraComponent } from '../../ui/cabecera.component';
+import { MigasDePanComponent } from '../../ui/migas-de-pan.component';
+import { BotoneraComponent } from '../../ui/botonera.component';
 
 import { CapturaDatosSolicitudContainer } from './pantallas/captura-datos-solicitud.container';
 import { CapturaTomador1Container } from './pantallas/captura-tomador1.container';
@@ -79,65 +78,7 @@ const PASOS: Record<string, Pantalla[]> = {
     BotoneraComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <app-cabecera [modalidad]="store.modalidad()" />
-    <div class="pagina">
-      @if (store.cargando()) {
-        <mat-spinner />
-      } @else if (store.sesion(); as sesion) {
-        <app-migas-de-pan [pasos]="pasos()" [actual]="store.pantallaActual()" />
-        <app-avisos [avisos]="store.avisos()" />
-        @switch (store.pantallaActual()) {
-          @case (P.SEGUROS_AHORRO) {
-            <app-seguros-ahorro />
-          }
-          @case (P.SELECCION_PRODUCTO_AHORRO) {
-            <app-seleccion-producto-ahorro />
-          }
-          @case (P.MODALIDAD_CAMPANIA) {
-            <app-modalidad-campania />
-          }
-          @case (P.CAPTURA_DATOS_SOLICITUD) {
-            <app-captura-datos-solicitud />
-          }
-          @case (P.CAPTURA_TOMADOR1) {
-            <app-tomador1 />
-          }
-          @case (P.CAPTURA_TOMADOR2) {
-            <app-tomador2 />
-          }
-          @case (P.R2C_CAPTURA) {
-            <app-r2c-captura />
-          }
-          @case (P.R2C_PRECIOS) {
-            <app-r2c-precios />
-          }
-          @case (P.RESUMEN_CONTRATACION) {
-            <app-resumen-contratacion />
-          }
-          @case (P.RESULTADO_FIRMA) {
-            <app-resultado-firma />
-          }
-          @case (P.FIN) {
-            <app-fin />
-          }
-          @case (P.SISTEMA_CERRADO) {
-            <app-sistema-cerrado />
-          }
-          @case (P.SIN_PERFIL) {
-            <app-sin-perfil />
-          }
-          @case (P.SOLO_AVISOS) {
-            <app-solo-avisos />
-          }
-          @case (P.ADMINISTRACION) {
-            <app-admin-panel />
-          }
-        }
-        <app-botonera [botones]="store.botones()" (accion)="onAccion($event)" />
-      }
-    </div>
-  `,
+  templateUrl: './sesion.page.html',
   styles: `
     .pagina {
       max-width: 960px;
@@ -153,16 +94,18 @@ const PASOS: Record<string, Pantalla[]> = {
 export class SesionPage implements OnInit {
   readonly store = inject(SesionStore);
   private readonly route = inject(ActivatedRoute);
+  private readonly cargarSesion = inject(CargarSesionUsecase);
+  private readonly ejecutarAccion = inject(EjecutarAccionUsecase);
   readonly P = Pantalla;
 
   readonly pasos = computed(() => PASOS[this.store.modalidad() ?? 'VA'] ?? []);
 
   ngOnInit(): void {
     const clave = this.route.snapshot.paramMap.get('clave');
-    if (clave) this.store.cargar(clave).subscribe();
+    if (clave) this.cargarSesion.execute(clave).subscribe();
   }
 
   onAccion(id: string): void {
-    this.store.ejecutar(id).subscribe();
+    this.ejecutarAccion.execute(id).subscribe();
   }
 }

@@ -2,9 +2,13 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 
-import { EstadoSesion, Producto } from '../../../core/models/models';
-import { TvaApiService } from '../../../core/api/tva-api.service';
-import { SesionStore } from '../../../core/state/sesion.store';
+import {
+  EstadoSesion,
+  Producto,
+  EjecutarAccionUsecase,
+  ObtenerProductosUsecase,
+  SesionStore,
+} from '@tva/core';
 
 export const MSG_SIN_PRODUCTOS = 'El servicio no ha devuelvo ningún producto de ahorro';
 
@@ -41,7 +45,8 @@ export const MSG_SIN_PRODUCTOS = 'El servicio no ha devuelvo ningún producto de
   `,
 })
 export class SeleccionProductoAhorroContainer implements OnInit {
-  private readonly api = inject(TvaApiService);
+  private readonly obtenerProductos = inject(ObtenerProductosUsecase);
+  private readonly ejecutarAccion = inject(EjecutarAccionUsecase);
   private readonly store = inject(SesionStore);
   readonly MSG = MSG_SIN_PRODUCTOS;
   readonly productos = signal<Producto[]>([]);
@@ -54,8 +59,8 @@ export class SeleccionProductoAhorroContainer implements OnInit {
       return;
     }
     const perfil = estado.perfilUsuario ?? {};
-    this.api
-      .productos({
+    this.obtenerProductos
+      .execute({
         companyId: estado.companyId ?? undefined,
         nuuma: perfil.nuuma,
         distributionChannel: estado.distributionChannel ?? undefined,
@@ -64,8 +69,8 @@ export class SeleccionProductoAhorroContainer implements OnInit {
   }
 
   contratar(p: Producto): void {
-    this.store
-      .ejecutar('seleccionar-modalidad', { productCode: p.commercialProductCode })
+    this.ejecutarAccion
+      .execute('seleccionar-modalidad', { productCode: p.commercialProductCode })
       .subscribe();
   }
 }

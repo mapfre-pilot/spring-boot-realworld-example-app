@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { Router } from '@angular/router';
 
-import { SesionStore } from '../../../core/state/sesion.store';
+import { SesionStore } from '@tva/core';
 
 @Component({
   selector: 'app-fin',

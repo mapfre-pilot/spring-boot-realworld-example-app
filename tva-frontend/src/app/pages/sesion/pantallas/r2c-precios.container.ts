@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 
-import { SesionStore } from '../../../core/state/sesion.store';
+import { SesionStore } from '@tva/core';
 
 @Component({
   selector: 'app-r2c-precios',

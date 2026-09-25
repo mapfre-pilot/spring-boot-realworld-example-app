@@ -6,10 +6,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
-import { CajaComponent } from '../../../shared/ui/caja.component';
-import { CampoSelectComponent } from '../../../shared/ui/campo-select.component';
-import { CampoTextoComponent } from '../../../shared/ui/campo-texto.component';
-import { SeccionComponent } from '../../../shared/ui/seccion.component';
+import { CajaComponent } from '../../../ui/caja.component';
+import { CampoSelectComponent } from '../../../ui/campo-select.component';
+import { CampoTextoComponent } from '../../../ui/campo-texto.component';
+import { SeccionComponent } from '../../../ui/seccion.component';
 import { TOMADOR_STYLES, TOMADOR_TEMPLATE } from './captura-tomador1.container';
 import { TomadorBase } from './tomador-base';
 

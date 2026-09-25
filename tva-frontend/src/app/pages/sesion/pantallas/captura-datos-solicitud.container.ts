@@ -11,12 +11,11 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
-import { SesionStore } from '../../../core/state/sesion.store';
-import { CajaComponent } from '../../../shared/ui/caja.component';
-import { CampoSelectComponent, Opcion } from '../../../shared/ui/campo-select.component';
-import { CampoTextoComponent } from '../../../shared/ui/campo-texto.component';
-import { SeccionComponent } from '../../../shared/ui/seccion.component';
-import { esIbanValido } from '../../../core/validaciones/documentos';
+import { CajaComponent } from '../../../ui/caja.component';
+import { CampoSelectComponent, Opcion } from '../../../ui/campo-select.component';
+import { CampoTextoComponent } from '../../../ui/campo-texto.component';
+import { SeccionComponent } from '../../../ui/seccion.component';
+import { SesionStore, ValidarSeccionUsecase, esIbanValido } from '@tva/core';
 
 const TIPOS_DURACION: Opcion[] = [
   { valor: 'ANIOS', etiqueta: 'Años' },
@@ -413,6 +412,7 @@ const PERIODICIDADES: Opcion[] = [
 export class CapturaDatosSolicitudContainer implements OnInit {
   private readonly store = inject(SesionStore);
   private readonly fb = inject(FormBuilder);
+  private readonly validarSeccion = inject(ValidarSeccionUsecase);
 
   readonly tiposDuracion = TIPOS_DURACION;
   readonly tiposBeneficiario = TIPOS_BENEFICIARIO;
@@ -563,8 +563,8 @@ export class CapturaDatosSolicitudContainer implements OnInit {
   }
 
   private _post(cajaId: string, seccionId: string, datos: unknown, siguiente?: string): void {
-    this.store
-      .validarSeccion(cajaId, seccionId, datos as Record<string, unknown>)
+    this.validarSeccion
+      .execute(cajaId, seccionId, datos as Record<string, unknown>)
       .subscribe(res => {
         const ref = `${cajaId}/${seccionId}`;
         const hayErrores = res.avisos.some(a => a.seccion === ref && a.tipo === 'ERROR');

@@ -3,8 +3,8 @@ import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/cor
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatRadioModule } from '@angular/material/radio';
 
-import { SesionStore } from '../../../core/state/sesion.store';
-import { CajaComponent } from '../../../shared/ui/caja.component';
+import { SesionStore } from '@tva/core';
+import { CajaComponent } from '../../../ui/caja.component';
 
 const OPCIONES = [
   { valor: 'CAMPAÑA', etiqueta: 'Campaña' },

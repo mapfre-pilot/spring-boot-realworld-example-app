@@ -15,13 +15,19 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 
-import { TvaApiService } from '../../core/api/tva-api.service';
-import { AuthService } from '../../core/auth/auth.service';
-import { InicioRequest, InvestmentOption, Producto, WebApiError } from '../../core/models/models';
-import { nuumaDe } from '../../core/utils/nuuma';
-import { CabeceraComponent } from '../../shared/ui/cabecera.component';
-import { CampoSelectComponent, Opcion } from '../../shared/ui/campo-select.component';
-import { CampoTextoComponent } from '../../shared/ui/campo-texto.component';
+import {
+  AuthService,
+  IniciarSesionUsecase,
+  InicioRequest,
+  InvestmentOption,
+  ObtenerProductosUsecase,
+  Producto,
+  WebApiError,
+  nuumaDe,
+} from '@tva/core';
+import { CabeceraComponent } from '../../ui/cabecera.component';
+import { CampoSelectComponent, Opcion } from '../../ui/campo-select.component';
+import { CampoTextoComponent } from '../../ui/campo-texto.component';
 
 const MODOS: Opcion[] = [
   { valor: 'VA', etiqueta: 'Venta Asesorada' },
@@ -52,136 +58,7 @@ const FRECUENCIAS: Opcion[] = [
     CampoSelectComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <app-cabecera />
-    <div class="pagina">
-      <mat-card>
-        <mat-card-title>Utilidades — Inicio TVA</mat-card-title>
-        <mat-card-content>
-          <form [formGroup]="form" (ngSubmit)="iniciar()">
-            <app-campo-select
-              [control]="form.controls.indFunctionMode"
-              etiqueta="Modo de funcionamiento"
-              [opciones]="modos" />
-            <app-campo-texto [control]="form.controls.proposalId" etiqueta="ProposalId" />
-            <app-campo-texto [control]="form.controls.companyId" etiqueta="CompanyId" />
-            <app-campo-texto
-              [control]="form.controls.numTomadores"
-              etiqueta="Número de tomadores"
-              tipo="number" />
-            <app-campo-texto
-              [control]="form.controls.distributionChannel"
-              etiqueta="Distribution channel" />
-            <app-campo-texto [control]="form.controls.username" etiqueta="Username" />
-            <app-campo-texto [control]="nuumaControl" etiqueta="NUUMA" />
-
-            @if (form.controls.indFunctionMode.value === 'VIA') {
-              <div class="checks">
-                <mat-checkbox formControlName="tomador">Tomador</mat-checkbox>
-                <mat-checkbox formControlName="perfilado">Perfilado</mat-checkbox>
-                <mat-checkbox formControlName="inversion">Inversión</mat-checkbox>
-              </div>
-            }
-
-            @if (form.controls.indFunctionMode.value === 'VA') {
-              <h3>Opciones de inversión</h3>
-              <table class="tabla">
-                <thead>
-                  <tr>
-                    <th>Cód. Modalidad</th>
-                    <th>Ayuda</th>
-                    <th>Cód. Preferencia</th>
-                    <th>Tipo operación</th>
-                    <th>Id póliza</th>
-                    <th>Aportación única</th>
-                    <th>Aportación periódica</th>
-                    <th>Frecuencia</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody formArrayName="investment">
-                  @for (row of investment.controls; track $index; let i = $index) {
-                    <tr [formGroupName]="i">
-                      <td>
-                        <app-campo-select
-                          [control]="controlEn(i, 'commercialProductCode')"
-                          etiqueta=""
-                          [opciones]="opcionesProductos()" />
-                      </td>
-                      <td class="ayuda">{{ ayuda(i) }}</td>
-                      <td>
-                        <app-campo-texto
-                          [control]="controlEn(i, 'investmentPreferenceCode')"
-                          etiqueta="" />
-                      </td>
-                      <td>
-                        <app-campo-select
-                          [control]="controlEn(i, 'operationTypeCode')"
-                          etiqueta=""
-                          [opciones]="operaciones" />
-                      </td>
-                      <td><app-campo-texto [control]="controlEn(i, 'policyId')" etiqueta="" /></td>
-                      <td>
-                        <app-campo-texto
-                          [control]="controlEn(i, 'uniqueContributionAmn')"
-                          etiqueta=""
-                          tipo="number" />
-                      </td>
-                      <td>
-                        <app-campo-texto
-                          [control]="controlEn(i, 'periodicContributionAmn')"
-                          etiqueta=""
-                          tipo="number" />
-                      </td>
-                      <td>
-                        <app-campo-select
-                          [control]="controlEn(i, 'contributionFrequencyCode')"
-                          etiqueta=""
-                          [opciones]="frecuencias" />
-                      </td>
-                      <td>
-                        <button
-                          mat-icon-button
-                          type="button"
-                          (click)="borrarOpcion(i)"
-                          aria-label="Borrar">
-                          <mat-icon>delete</mat-icon>
-                        </button>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-              <button mat-stroked-button type="button" (click)="nuevaOpcion()">
-                Añadir opción de inversión
-              </button>
-            }
-
-            @if (errores().length) {
-              <div class="errores">
-                <strong>Se han encontrado ERRORES</strong>
-                <ul>
-                  @for (e of errores(); track e) {
-                    <li>{{ e }}</li>
-                  }
-                </ul>
-              </div>
-            }
-            @if (sesionIniciada(); as clave) {
-              <p class="ok">
-                Sesión TVA iniciada —
-                <a [href]="'/sesion/' + clave">ir a la sesión</a>
-              </p>
-            }
-
-            <button mat-flat-button color="primary" type="submit" [disabled]="cargando()">
-              INICIAR TVA
-            </button>
-          </form>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  `,
+  templateUrl: './inicio.page.html',
   styles: `
     .pagina {
       max-width: 1100px;
@@ -211,7 +88,8 @@ const FRECUENCIAS: Opcion[] = [
   `,
 })
 export class InicioPage implements OnInit {
-  private readonly api = inject(TvaApiService);
+  private readonly iniciarSesion = inject(IniciarSesionUsecase);
+  private readonly obtenerProductos = inject(ObtenerProductosUsecase);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
@@ -250,7 +128,7 @@ export class InicioPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.api.productos().subscribe(r => this.productos.set(r.products ?? []));
+    this.obtenerProductos.execute().subscribe(r => this.productos.set(r.products ?? []));
     const user = this.auth.usuario();
     this.form.controls.username.setValue(user ? `${user}@mapfre.net` : '');
     this.form.controls.username.valueChanges.subscribe(v => this.nuumaControl.setValue(nuumaDe(v)));
@@ -325,9 +203,7 @@ export class InicioPage implements OnInit {
       investment: v.indFunctionMode === 'VA' ? (v.investment as InvestmentOption[]) : undefined,
     };
     this.cargando.set(true);
-    const obs =
-      v.indFunctionMode === 'R2C' ? this.api.inicioRentas(body) : this.api.inicioAhorro(body);
-    obs.subscribe({
+    this.iniciarSesion.execute(body).subscribe({
       next: r => {
         this.cargando.set(false);
         this.sesionIniciada.set(r.claveSesion);

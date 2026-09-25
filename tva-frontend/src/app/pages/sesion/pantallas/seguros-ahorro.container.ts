@@ -10,10 +10,8 @@ import {
 import { JsonPipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 
-import { EstadoSesion, Producto } from '../../../core/models/models';
-import { TvaApiService } from '../../../core/api/tva-api.service';
-import { SesionStore } from '../../../core/state/sesion.store';
-import { CajaComponent } from '../../../shared/ui/caja.component';
+import { EstadoSesion, Producto, ObtenerProductosUsecase, SesionStore } from '@tva/core';
+import { CajaComponent } from '../../../ui/caja.component';
 
 @Component({
   selector: 'app-seguros-ahorro',
@@ -35,7 +33,7 @@ import { CajaComponent } from '../../../shared/ui/caja.component';
   `,
 })
 export class SegurosAhorroContainer implements OnInit {
-  private readonly api = inject(TvaApiService);
+  private readonly obtenerProductos = inject(ObtenerProductosUsecase);
   private readonly store = inject(SesionStore);
   readonly productos = signal<Producto[]>([]);
   readonly applications = computed<Record<string, unknown>[]>(() => {
@@ -46,6 +44,6 @@ export class SegurosAhorroContainer implements OnInit {
   });
 
   ngOnInit(): void {
-    this.api.productos().subscribe(r => this.productos.set(r.products ?? []));
+    this.obtenerProductos.execute().subscribe(r => this.productos.set(r.products ?? []));
   }
 }

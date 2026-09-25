@@ -1,0 +1,57 @@
+<app-cabecera [modalidad]="store.modalidad()" />
+<div class="pagina">
+  @if (store.cargando()) {
+    <mat-spinner />
+  } @else if (store.sesion(); as sesion) {
+    <app-migas-de-pan [pasos]="pasos()" [actual]="store.pantallaActual()" />
+    <app-avisos [avisos]="store.avisos()" />
+    @switch (store.pantallaActual()) {
+      @case (P.SEGUROS_AHORRO) {
+        <app-seguros-ahorro />
+      }
+      @case (P.SELECCION_PRODUCTO_AHORRO) {
+        <app-seleccion-producto-ahorro />
+      }
+      @case (P.MODALIDAD_CAMPANIA) {
+        <app-modalidad-campania />
+      }
+      @case (P.CAPTURA_DATOS_SOLICITUD) {
+        <app-captura-datos-solicitud />
+      }
+      @case (P.CAPTURA_TOMADOR1) {
+        <app-tomador1 />
+      }
+      @case (P.CAPTURA_TOMADOR2) {
+        <app-tomador2 />
+      }
+      @case (P.R2C_CAPTURA) {
+        <app-r2c-captura />
+      }
+      @case (P.R2C_PRECIOS) {
+        <app-r2c-precios />
+      }
+      @case (P.RESUMEN_CONTRATACION) {
+        <app-resumen-contratacion />
+      }
+      @case (P.RESULTADO_FIRMA) {
+        <app-resultado-firma />
+      }
+      @case (P.FIN) {
+        <app-fin />
+      }
+      @case (P.SISTEMA_CERRADO) {
+        <app-sistema-cerrado />
+      }
+      @case (P.SIN_PERFIL) {
+        <app-sin-perfil />
+      }
+      @case (P.SOLO_AVISOS) {
+        <app-solo-avisos />
+      }
+      @case (P.ADMINISTRACION) {
+        <app-admin-panel />
+      }
+    }
+    <app-botonera [botones]="store.botones()" (accion)="onAccion($event)" />
+  }
+</div>

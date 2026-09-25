@@ -87,6 +87,21 @@ pnpm exec nx build tva --configuration=dev|pre
 pnpm exec prettier --check .
 ```
 
+## Arquitectura (Clean Architecture)
+
+El frontend sigue la "Arquitectura de aplicación" de la Arquitectura de
+Referencia MAPFRE (layout `clean` de `@mapfre-tech/nx-angular-esp`):
+
+- `libs/core` (alias `@tva/core`): `domain/` (modelos + validaciones puros),
+  `ports/` (interfaces + `InjectionToken`), `application/` (17 usecases +
+  `state/sesion.store.ts`, solo estado), `data/repositories/`
+  (`*-http.repository.ts`) e `infra/` (config/auth/http/appian).
+- `src/app/pages/` y `src/app/ui/` importan **solo** desde `@tva/core`;
+  `provideTvaCore()` en `app.config.ts` cablea puertos → repositorios HTTP.
+- Generadores: `:usecase`, `:port`, `:repository <x>-http` (proyecto `core`) y
+  `@mapfre-tech/nx-angular:page` (proyecto `tva`).
+- Detalle completo: `docs/tva/13-diseno-tecnico/00-arquitectura-referencia-frontend.md`.
+
 ## Estructura
 
 ```

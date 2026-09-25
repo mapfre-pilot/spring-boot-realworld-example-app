@@ -6,7 +6,20 @@ import { createComponentFactory, Spectator } from '@ngneat/spectator/jest';
 
 import { ENVIRONMENT, ENVIRONMENT_CONFIG } from '@mapfre-tech/ngx-multienvironment/core';
 
-import { Pantalla } from '../../core/models/models';
+import {
+  ADMIN_REPOSITORY,
+  AdminHttpRepository,
+  CATALOGO_REPOSITORY,
+  CatalogoHttpRepository,
+  INICIO_REPOSITORY,
+  InicioHttpRepository,
+  POPUP_APPIAN_REPOSITORY,
+  PopupAppianHttpRepository,
+  SESION_REPOSITORY,
+  SesionHttpRepository,
+} from '@tva/core';
+
+import { Pantalla } from '@tva/core';
 import { SesionPage } from './sesion.page';
 
 const sesion = (pantalla: Pantalla) => ({
@@ -30,6 +43,11 @@ describe('SesionPage', () => {
       provideHttpClientTesting(),
       provideRouter([]),
       { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => 'k' } } } },
+      { provide: SESION_REPOSITORY, useClass: SesionHttpRepository },
+      { provide: INICIO_REPOSITORY, useClass: InicioHttpRepository },
+      { provide: CATALOGO_REPOSITORY, useClass: CatalogoHttpRepository },
+      { provide: POPUP_APPIAN_REPOSITORY, useClass: PopupAppianHttpRepository },
+      { provide: ADMIN_REPOSITORY, useClass: AdminHttpRepository },
       { provide: ENVIRONMENT, useValue: 'test' },
       {
         provide: ENVIRONMENT_CONFIG,

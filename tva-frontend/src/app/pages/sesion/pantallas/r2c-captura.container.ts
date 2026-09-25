@@ -1,19 +1,12 @@
 /** R2C_CAPTURA: datos de la renta + 2 tomadores — validar-seccion (TVA_SimuladorRentas_Captura_Validacion). */
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { SesionStore } from '../../../core/state/sesion.store';
-import { CajaComponent } from '../../../shared/ui/caja.component';
-import { CampoSelectComponent, Opcion } from '../../../shared/ui/campo-select.component';
-import { CampoTextoComponent } from '../../../shared/ui/campo-texto.component';
-import { SeccionComponent } from '../../../shared/ui/seccion.component';
+import { SesionStore, ValidarSeccionUsecase } from '@tva/core';
+import { CajaComponent } from '../../../ui/caja.component';
+import { CampoSelectComponent, Opcion } from '../../../ui/campo-select.component';
+import { CampoTextoComponent } from '../../../ui/campo-texto.component';
+import { SeccionComponent } from '../../../ui/seccion.component';
 
 const PERIODICIDADES_RENTA: Opcion[] = [
   { valor: 'MENSUAL', etiqueta: 'Mensual' },
@@ -84,6 +77,7 @@ const PERIODICIDADES_RENTA: Opcion[] = [
 export class R2cCapturaContainer implements OnInit {
   private readonly store = inject(SesionStore);
   private readonly fb = inject(FormBuilder);
+  private readonly validarSeccion = inject(ValidarSeccionUsecase);
   readonly periodicidades = PERIODICIDADES_RENTA;
   readonly avisos = this.store.avisos;
   readonly valida = signal(false);
@@ -118,8 +112,8 @@ export class R2cCapturaContainer implements OnInit {
   }
 
   continuar(): void {
-    this.store
-      .validarSeccion('R2C_CAPTURA', 'captura', {
+    this.validarSeccion
+      .execute('R2C_CAPTURA', 'captura', {
         rentas: this.rentas.getRawValue(),
         tomadores: this.tomadores.map(t => t.getRawValue()),
       })

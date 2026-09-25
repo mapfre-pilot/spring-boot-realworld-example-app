@@ -4,8 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { createComponentFactory } from '@ngneat/spectator/jest';
 import { of } from 'rxjs';
 
-import { TvaApiService } from '../../../core/api/tva-api.service';
-import { SesionStore } from '../../../core/state/sesion.store';
+import { SESION_REPOSITORY, SesionStore } from '@tva/core';
 import { CapturaDatosSolicitudContainer } from './captura-datos-solicitud.container';
 
 const PRODUCTO = {
@@ -40,7 +39,7 @@ describe('CapturaDatosSolicitudContainer', () => {
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
-      { provide: TvaApiService, useValue: api },
+      { provide: SESION_REPOSITORY, useValue: api },
     ],
   });
 
