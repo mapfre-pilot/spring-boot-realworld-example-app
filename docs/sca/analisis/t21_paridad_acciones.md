@@ -114,3 +114,14 @@ El alta UI de 2002000014944 **sí se completó**: 15787543 EN_ACCION, Tarea ACCI
 | POSPONER no hacía nada | popup CORRECTO + tarea al grupo | sin efecto | Constante `SCA2_PM_CMD_POSPONER` era TEXT→PROCESS_MODEL; `insertarObservaciones`/`guardarTrazabilidad` en saveInto/onSuccess violaban el límite de 1 smart service por evaluación (incluye onSuccess) → eliminadas (PM ya escribe obs; CompletarAccion tiene nodo traza); onSuccess = `a!save(ri!onCompletar,true)`. Card de error/debug en AccAdm. |
 | Traza técnica en posponer | se escribe | se escribía desde UI | pérdida documentada: no hay traza en Posponer/Mecanizar UI (añadir nodo PM si se requiere) |
 | POSITIVO/NEGATIVO CA Opciones | encadena integraciones OK (legacy `_26r3`) | "second smart service" | pendiente: refactor mayor (PM o pasos divididos) |
+
+## §t21.c — Cierre del patrón doble smart service (25/09)
+
+| Divergencia | SCA | SCA2 antes | Fix / justificado |
+|---|---|---|---|
+| FINALIZAR CA Opciones no llamaba al cierre Core7 | PM cierra con IContraAnularPCA | saveInto sin integración | nodo 300 XOR + 301 Call Integration en CompletarAccion; UI pasa `finalizarCAPca` |
+| FINALIZAR Autorización no llamaba aceptarAutorizacion | PM llama IGestionarAutorizacionesPCA | idem | nodo 302; UI pasa `operacion:"Autorizacion"` + `mSEAceptarAutorizacion` |
+| Mecanización onSuccess con guardarTrazabilidad | traza técnica | "second smart service" latente | eliminado del onSuccess (traza la escribe el PM) — pérdida documentada |
+| BandejaErrores Relanzar onSuccess writeRecords | marca RELANZADO | mismo error latente | marcado local `local!idsRelanzadas` oculta el enlace; record sigue PENDIENTE (documentado) |
+| POSITIVO/NEGATIVO | integraciones condicionales en saveInto | idéntico | **justificado, no bug**: las reglas llamadas son integraciones HTTP puras, no smart services → el límite no aplica |
+| Asterisco fecha autorizada | "*" visible | sin "*" | la plataforma no renderiza `*` de required en site page → literal " *" en label (verificado en vivo) |
