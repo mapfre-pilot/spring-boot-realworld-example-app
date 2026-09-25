@@ -1,7 +1,7 @@
-/** Modelos derivados de tva-backend/openapi.yaml */
+/** Modelos derivados de tva-backend/openapi.yaml y del estado TVA_Sesion (§12.3). */
 
 export type Modalidad = 'VA' | 'VIA' | 'R2C';
-export type Canal = 'GV' | 'PFM' | 'OTRO';
+export type Canal = 'GV' | 'PFM' | 'OTRO' | string;
 
 export enum Pantalla {
   SISTEMA_CERRADO = 'SISTEMA_CERRADO',
@@ -21,10 +21,107 @@ export enum Pantalla {
   FIN = 'FIN',
 }
 
+/** Aviso Appian {clase, tipo, texto, mostrarEn} (+ codigo/mensaje legacy). */
 export interface Aviso {
   clase: number;
-  codigo: string;
-  mensaje: string;
+  tipo: 'INFO' | 'WARNING' | 'ERROR';
+  texto: string;
+  mostrarEn: 'CABECERA' | 'SECCION';
+  codigo?: string;
+  mensaje?: string;
+}
+
+/** Botón de la botonera (§12.4.3). */
+export interface Boton {
+  id: string;
+  label: string;
+  visible: boolean;
+  disabled: boolean;
+  confirm?: { header: string; message: string; ok: string; cancel: string };
+}
+
+export interface SeccionCaja {
+  id: string;
+  titulo: string;
+  datosValidos: boolean;
+  plegada: boolean;
+}
+
+export interface Caja {
+  id: string;
+  titulo: string;
+  plegada: boolean;
+  secciones: SeccionCaja[];
+}
+
+export interface DatosPersonales {
+  documentId?: string;
+  nombre?: string;
+  apellidos?: string;
+  fechaNacimiento?: string;
+  sexo?: string;
+  nacionalidad?: string;
+  [k: string]: unknown;
+}
+
+export interface Tomador {
+  datosPersonales: DatosPersonales;
+  domicilioHabitual: Record<string, unknown>;
+  mediosContacto: { tipo?: string; prefijo?: string; numero?: string; email?: string }[];
+  fatcaCrs?: Record<string, unknown>;
+  perfilCliente?: { perfil?: string; testConveniencia?: { estado?: string } };
+  datosGestionParticipante?: {
+    consentimientoProteccionDatos?: boolean;
+    documentoIdDigitalizado?: boolean;
+    testConvenienciaVigente?: boolean;
+    enviadosDocumentosPrecontractuales?: boolean;
+  };
+  domiciliaciones?: Record<string, unknown>;
+}
+
+export interface InvestmentOption {
+  commercialProductCode: string;
+  investmentPreferenceCode?: string | null;
+  operationTypeCode: 'S' | 'AE' | string;
+  policyId?: string | null;
+  uniqueContributionAmn?: number | null;
+  periodicContributionAmn?: number | null;
+  contributionFrequencyCode?: 'M' | 'T' | 'S' | 'A' | string | null;
+  insuranceOfferInd?: boolean;
+}
+
+/** Estado de sesión estructura TVA_Sesion (§12.3). */
+export interface EstadoSesion {
+  claveSesion: string;
+  modoFuncionamiento: Modalidad;
+  codigoProducto?: string | null;
+  companyId?: string | null;
+  distributionChannel?: string | null;
+  perfilUsuario: {
+    nuuma?: string;
+    oficina?: string;
+    productor?: string;
+    funcionalidades?: number[];
+  };
+  tomadores: Tomador[];
+  ventaInformada: {
+    opcionesInversion: Record<string, unknown>[];
+    cestaLibre: unknown[];
+    preferencias: Record<string, unknown>;
+  };
+  datosOperacion: Record<string, unknown>;
+  garantias: Record<string, unknown>[];
+  comisiones: Record<string, unknown>;
+  beneficiarios: Record<string, unknown>;
+  cajas: Caja[];
+  avisos: Aviso[];
+  documentosPrecontractuales: { tipo: string; enviado: boolean }[];
+  idPantallaActual: Pantalla | null;
+  idPantallaAnterior: Pantalla | null;
+  responseProposal: Record<string, unknown>;
+  investmentOption: InvestmentOption | null;
+  perfilClientesOK: boolean;
+  [k: string]: unknown;
 }
 
 export interface Sesion {
@@ -34,15 +131,25 @@ export interface Sesion {
   canal: Canal;
   pantalla_actual: Pantalla;
   version_esquema: number;
-  estado: Record<string, unknown>;
+  estado: EstadoSesion;
   abierta: boolean;
   creado: string;
   actualizado: string;
+  botones?: Boton[];
 }
 
+/** Contrato Appian de la Web API de inicio (§12.4.1). */
 export interface InicioRequest {
-  documentoCliente: string;
-  canal: Canal;
+  indFunctionMode: 'VA' | 'VIA' | 'R2C';
+  proposalId?: string;
+  companyId: string;
+  distributionChannel: string;
+  username: string;
+  policyHolders?: Record<string, unknown>[];
+  investment?: InvestmentOption[];
+  /** legacy */
+  documentoCliente?: string;
+  canal?: Canal;
   codigoProductor?: string;
   propuesta?: Record<string, unknown>;
 }
@@ -56,7 +163,16 @@ export interface AccionResponse {
   claveSesion: string;
   pantallaActual: Pantalla;
   avisos: Aviso[];
-  estado: Record<string, unknown>;
+  estado: EstadoSesion;
+  botones?: Boton[];
+}
+
+export interface WebApiError {
+  code: string;
+  message: string;
+  application: string;
+  timestamp: string;
+  errors: { code: string; message: string }[];
 }
 
 export interface ApiError {
@@ -84,7 +200,8 @@ export interface Traza {
 }
 
 export interface Producto {
-  productCode: string;
-  productDesc: string;
-  modalidades?: string[];
+  code?: string;
+  commercialProductCode: string;
+  commercialProductDesc: string;
+  unitLinkedInd?: boolean;
 }

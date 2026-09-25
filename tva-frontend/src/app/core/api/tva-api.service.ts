@@ -62,12 +62,21 @@ export class TvaApiService {
     });
   }
 
-  productos(): Observable<{
-    products: { productCode: string; productDesc: string; modalidades?: string[] }[];
+  productos(params?: {
+    companyId?: string;
+    nuuma?: string;
+    distributionChannel?: string;
+  }): Observable<{
+    products: import('../models/models').Producto[];
   }> {
-    return this.http.get<{
-      products: { productCode: string; productDesc: string; modalidades?: string[] }[];
-    }>(`${this.base}/productos/`);
+    let p = new HttpParams();
+    for (const [k, v] of Object.entries(params ?? {})) if (v) p = p.set(k, v);
+    return this.http.get<{ products: import('../models/models').Producto[] }>(
+      `${this.base}/productos/`,
+      {
+        params: p,
+      }
+    );
   }
 
   documento(

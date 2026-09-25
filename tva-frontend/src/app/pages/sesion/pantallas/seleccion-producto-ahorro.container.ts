@@ -1,55 +1,71 @@
-/** SELECCION_PRODUCTO_AHORRO (VIA): elige un producto de ahorro. */
+/** SELECCION_PRODUCTO_AHORRO (VIA): grid de tarjetas de producto, link "Contratación". */
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatRadioModule } from '@angular/material/radio';
+import { MatCardModule } from '@angular/material/card';
 
-import { Producto } from '../../../core/models/models';
+import { EstadoSesion, Producto } from '../../../core/models/models';
 import { TvaApiService } from '../../../core/api/tva-api.service';
 import { SesionStore } from '../../../core/state/sesion.store';
-import { BotoneraComponent } from '../../../shared/ui/botonera.component';
-import { CajaComponent } from '../../../shared/ui/caja.component';
+
+export const MSG_SIN_PRODUCTOS = 'El servicio no ha devuelvo ningún producto de ahorro';
 
 @Component({
   selector: 'app-seleccion-producto-ahorro',
-  imports: [MatRadioModule, ReactiveFormsModule, CajaComponent, BotoneraComponent],
+  imports: [MatCardModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <app-caja titulo="Seleccione el producto de ahorro">
-      <form [formGroup]="form">
-        <mat-radio-group formControlName="producto">
-          @for (p of productos(); track p.productCode) {
-            <mat-radio-button [value]="p.productCode">{{ p.productDesc }}</mat-radio-button>
-          }
-        </mat-radio-group>
-      </form>
-    </app-caja>
-    <app-botonera (siguiente)="avanzar()" (anterior)="anterior()" />
+    @if (productos().length === 0) {
+      <p>{{ MSG }}</p>
+    }
+    <div class="grid">
+      @for (p of productos(); track p.commercialProductCode) {
+        <mat-card class="tarjeta">
+          <mat-card-title
+            >{{ p.commercialProductCode }} - {{ p.commercialProductDesc }}</mat-card-title
+          >
+          <mat-card-content>
+            <a href="#" (click)="contratar(p); $event.preventDefault()">Contratación</a>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
   `,
   styles: `
-    mat-radio-button {
-      display: block;
-      margin: 4px 0;
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+    .tarjeta a {
+      color: #d81e05;
     }
   `,
 })
 export class SeleccionProductoAhorroContainer implements OnInit {
   private readonly api = inject(TvaApiService);
   private readonly store = inject(SesionStore);
-
+  readonly MSG = MSG_SIN_PRODUCTOS;
   readonly productos = signal<Producto[]>([]);
-  readonly form = inject(FormBuilder).nonNullable.group({ producto: ['', Validators.required] });
 
   ngOnInit(): void {
-    this.api.productos().subscribe(r => this.productos.set((r.products ?? []) as Producto[]));
+    const estado = (this.store.sesion()?.estado ?? {}) as EstadoSesion;
+    const enEstado = (estado['productos'] as Producto[] | undefined) ?? [];
+    if (enEstado.length) {
+      this.productos.set(enEstado);
+      return;
+    }
+    const perfil = estado.perfilUsuario ?? {};
+    this.api
+      .productos({
+        companyId: estado.companyId ?? undefined,
+        nuuma: perfil.nuuma,
+        distributionChannel: estado.distributionChannel ?? undefined,
+      })
+      .subscribe(r => this.productos.set(r.products ?? []));
   }
 
-  avanzar(): void {
+  contratar(p: Producto): void {
     this.store
-      .ejecutar('seleccionar-modalidad', { producto: this.form.value.producto })
+      .ejecutar('seleccionar-modalidad', { productCode: p.commercialProductCode })
       .subscribe();
-  }
-
-  anterior(): void {
-    this.store.ejecutar('anterior').subscribe();
   }
 }

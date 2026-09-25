@@ -8,6 +8,7 @@ import { SesionStore } from '../../core/state/sesion.store';
 import { AvisosComponent } from '../../shared/ui/avisos.component';
 import { CabeceraComponent } from '../../shared/ui/cabecera.component';
 import { MigasDePanComponent } from '../../shared/ui/migas-de-pan.component';
+import { BotoneraComponent } from '../../shared/ui/botonera.component';
 
 import { CapturaDatosSolicitudContainer } from './pantallas/captura-datos-solicitud.container';
 import { CapturaTomador1Container } from './pantallas/captura-tomador1.container';
@@ -73,6 +74,7 @@ const PASOS: Record<string, Pantalla[]> = {
     SistemaCerradoContainer,
     SinPerfilContainer,
     SoloAvisosContainer,
+    BotoneraComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -127,6 +129,7 @@ const PASOS: Record<string, Pantalla[]> = {
             <app-solo-avisos />
           }
         }
+        <app-botonera [botones]="store.botones()" (accion)="onAccion($event)" />
       }
     </div>
   `,
@@ -152,5 +155,9 @@ export class SesionPage implements OnInit {
   ngOnInit(): void {
     const clave = this.route.snapshot.paramMap.get('clave');
     if (clave) this.store.cargar(clave).subscribe();
+  }
+
+  onAccion(id: string): void {
+    this.store.ejecutar(id).subscribe();
   }
 }

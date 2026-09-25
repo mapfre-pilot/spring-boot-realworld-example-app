@@ -26,6 +26,6 @@ export class ResultadoFirmaContainer {
   );
 
   finalizar(): void {
-    this.store.ejecutar('siguiente').subscribe();
+    this.store.ejecutar('siguiente', {}).subscribe();
   }
 }

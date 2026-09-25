@@ -1,10 +1,8 @@
-/** CAPTURA_DATOS_SOLICITUD: importe, periodicidad, fecha efecto, opciones de inversión. */
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+/** CAPTURA_DATOS_SOLICITUD: operación, inversión, garantías, domiciliaciones. */
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 
 import { SesionStore } from '../../../core/state/sesion.store';
-import { BotoneraComponent } from '../../../shared/ui/botonera.component';
 import { CajaComponent } from '../../../shared/ui/caja.component';
 import { CampoSelectComponent, Opcion } from '../../../shared/ui/campo-select.component';
 import { CampoTextoComponent } from '../../../shared/ui/campo-texto.component';
@@ -24,17 +22,10 @@ const OPCIONES_INVERSION: Opcion[] = [
 
 @Component({
   selector: 'app-captura-datos-solicitud',
-  imports: [
-    ReactiveFormsModule,
-    MatButtonModule,
-    CajaComponent,
-    CampoTextoComponent,
-    CampoSelectComponent,
-    BotoneraComponent,
-  ],
+  imports: [ReactiveFormsModule, CajaComponent, CampoTextoComponent, CampoSelectComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <app-caja titulo="Datos de la solicitud">
+    <app-caja titulo="Datos del seguro">
       <form [formGroup]="form" class="formulario">
         <app-campo-texto [control]="form.controls.importe" etiqueta="Importe (€)" tipo="number" />
         <app-campo-select
@@ -55,7 +46,6 @@ const OPCIONES_INVERSION: Opcion[] = [
           tipo="number" />
       </form>
     </app-caja>
-    <app-botonera (siguiente)="guardar()" (anterior)="anterior()" (guardar)="guardarYVolver()" />
   `,
   styles: `
     .formulario {
@@ -64,7 +54,7 @@ const OPCIONES_INVERSION: Opcion[] = [
     }
   `,
 })
-export class CapturaDatosSolicitudContainer {
+export class CapturaDatosSolicitudContainer implements OnInit {
   private readonly store = inject(SesionStore);
 
   readonly periodicidades = PERIODICIDADES;
@@ -77,15 +67,8 @@ export class CapturaDatosSolicitudContainer {
     duracion: ['5', Validators.required],
   });
 
-  guardar(): void {
-    this.store.ejecutar('siguiente', { solicitud: this.form.getRawValue() }).subscribe();
-  }
-
-  guardarYVolver(): void {
-    this.store.ejecutar('guardar-solicitud', { solicitud: this.form.getRawValue() }).subscribe();
-  }
-
-  anterior(): void {
-    this.store.ejecutar('anterior').subscribe();
+  ngOnInit(): void {
+    this.store.datosPendientes.set({ solicitud: this.form.getRawValue() });
+    this.form.valueChanges.subscribe(v => this.store.datosPendientes.set({ solicitud: v }));
   }
 }

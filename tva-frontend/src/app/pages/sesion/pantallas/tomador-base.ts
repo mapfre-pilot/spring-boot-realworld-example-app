@@ -1,5 +1,5 @@
 /** Base compartida para captura de tomadores (campos de TVA_CapturaTomador_*). */
-import { Directive, inject } from '@angular/core';
+import { Directive, OnInit, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 
 import { SesionStore } from '../../../core/state/sesion.store';
@@ -31,7 +31,7 @@ export const TIPOS_BENEFICIARIO: Opcion[] = [
 ];
 
 @Directive()
-export abstract class TomadorBase {
+export abstract class TomadorBase implements OnInit {
   protected readonly store = inject(SesionStore);
 
   readonly tiposDocumento = TIPOS_DOCUMENTO;
@@ -74,11 +74,8 @@ export abstract class TomadorBase {
     beneficiarios: [''],
   });
 
-  continuar(): void {
-    this.store.ejecutar('continuar-tomador', { ...this.form.getRawValue() }).subscribe();
-  }
-
-  anterior(): void {
-    this.store.ejecutar('anterior').subscribe();
+  ngOnInit(): void {
+    this.store.datosPendientes.set({ ...this.form.getRawValue() });
+    this.form.valueChanges.subscribe(v => this.store.datosPendientes.set({ ...v }));
   }
 }

@@ -1,5 +1,5 @@
 /** RESUMEN_CONTRATACION: cajas resumen + tipo de firma + acción firmar. */
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
@@ -44,7 +44,7 @@ import { CajaComponent } from '../../../shared/ui/caja.component';
     }
   `,
 })
-export class ResumenContratacionContainer {
+export class ResumenContratacionContainer implements OnInit {
   private readonly store = inject(SesionStore);
   readonly form = inject(FormBuilder).nonNullable.group({
     tipoFirma: ['DIGITAL', Validators.required],
@@ -52,10 +52,19 @@ export class ResumenContratacionContainer {
   readonly estado = computed(() => this.store.sesion()?.estado ?? {});
 
   estadoJson(clave: string): string {
-    return JSON.stringify(this.estado()[clave] ?? this.estado(), null, 2);
+    return JSON.stringify(
+      (this.estado() as Record<string, unknown>)[clave] ?? this.estado(),
+      null,
+      2
+    );
   }
 
   firmar(): void {
     this.store.ejecutar('firmar', { tipoFirma: this.form.value.tipoFirma }).subscribe();
+  }
+
+  ngOnInit(): void {
+    this.store.datosPendientes.set({ tipoFirma: this.form.value.tipoFirma });
+    this.form.valueChanges.subscribe(v => this.store.datosPendientes.set(v));
   }
 }

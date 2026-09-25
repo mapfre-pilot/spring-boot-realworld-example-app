@@ -1,10 +1,9 @@
 /** R2C_CAPTURA: captura de datos de la renta. */
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { SesionStore } from '../../../core/state/sesion.store';
 import { esDocumentoIdentidadValido } from '../../../core/validaciones/documentos';
-import { BotoneraComponent } from '../../../shared/ui/botonera.component';
 import { CajaComponent } from '../../../shared/ui/caja.component';
 import { CampoSelectComponent, Opcion } from '../../../shared/ui/campo-select.component';
 import { CampoTextoComponent } from '../../../shared/ui/campo-texto.component';
@@ -16,13 +15,7 @@ const TIPOS_RENTA: Opcion[] = [
 
 @Component({
   selector: 'app-r2c-captura',
-  imports: [
-    ReactiveFormsModule,
-    CajaComponent,
-    CampoTextoComponent,
-    CampoSelectComponent,
-    BotoneraComponent,
-  ],
+  imports: [ReactiveFormsModule, CajaComponent, CampoTextoComponent, CampoSelectComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-caja titulo="Captura de rentas (R2C)">
@@ -46,7 +39,6 @@ const TIPOS_RENTA: Opcion[] = [
           tipo="number" />
       </form>
     </app-caja>
-    <app-botonera (siguiente)="calcular()" (anterior)="anterior()" />
   `,
   styles: `
     .formulario {
@@ -56,7 +48,7 @@ const TIPOS_RENTA: Opcion[] = [
     }
   `,
 })
-export class R2cCapturaContainer {
+export class R2cCapturaContainer implements OnInit {
   private readonly store = inject(SesionStore);
   readonly tiposRenta = TIPOS_RENTA;
   readonly form = inject(FormBuilder).nonNullable.group({
@@ -74,11 +66,8 @@ export class R2cCapturaContainer {
     duracion: ['10', Validators.required],
   });
 
-  calcular(): void {
-    this.store.ejecutar('siguiente', { captura: this.form.getRawValue() }).subscribe();
-  }
-
-  anterior(): void {
-    this.store.ejecutar('anterior').subscribe();
+  ngOnInit(): void {
+    this.store.datosPendientes.set({ captura: this.form.getRawValue() });
+    this.form.valueChanges.subscribe(v => this.store.datosPendientes.set({ captura: v }));
   }
 }

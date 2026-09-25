@@ -1,4 +1,4 @@
-/** Equivale a rule!MU_Aviso / TVA_MostrarAvisos: lista de avisos por clase. */
+/** Equivale a rule!MU_Aviso / TVA_MostrarAvisos: avisos por tipo (§12.3). */
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,11 +10,11 @@ import { Aviso } from '../../core/models/models';
   imports: [MatCardModule, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @for (aviso of avisos(); track $index) {
+    @for (aviso of visibles(); track $index) {
       <mat-card class="aviso" [class]="'aviso aviso-' + estilo(aviso)">
         <mat-card-content>
           <mat-icon>{{ icono(aviso) }}</mat-icon>
-          <span class="aviso-texto">{{ aviso.mensaje }}</span>
+          <span class="aviso-texto">{{ texto(aviso) }}</span>
         </mat-card-content>
       </mat-card>
     }
@@ -31,7 +31,7 @@ import { Aviso } from '../../core/models/models';
     .aviso-error {
       border-left: 4px solid #d81e05;
     }
-    .aviso-aviso {
+    .aviso-warning {
       border-left: 4px solid #f9a800;
     }
     .aviso-info {
@@ -41,14 +41,25 @@ import { Aviso } from '../../core/models/models';
 })
 export class AvisosComponent {
   readonly avisos = input.required<Aviso[]>();
+  readonly mostrarEn = input<'CABECERA' | 'SECCION'>('CABECERA');
 
-  /** clase 3=BUSQUEDA_RIC,5=DISCREPANCIAS… — convención: ERROR si el código acaba en _ERROR. */
-  estilo(aviso: Aviso): 'error' | 'aviso' | 'info' {
-    if (aviso.codigo.includes('ERROR')) return 'error';
+  visibles(): Aviso[] {
+    return this.avisos().filter(a => (a.mostrarEn ?? 'CABECERA') === this.mostrarEn());
+  }
+
+  texto(aviso: Aviso): string {
+    return aviso.texto ?? aviso.mensaje ?? '';
+  }
+
+  estilo(aviso: Aviso): 'error' | 'warning' | 'info' {
+    const t = aviso.tipo ?? (aviso.codigo?.includes('ERROR') ? 'ERROR' : 'INFO');
+    if (t === 'ERROR') return 'error';
+    if (t === 'WARNING') return 'warning';
     return 'info';
   }
 
   icono(aviso: Aviso): string {
-    return this.estilo(aviso) === 'error' ? 'error' : 'info';
+    const e = this.estilo(aviso);
+    return e === 'error' ? 'error' : e === 'warning' ? 'warning' : 'info';
   }
 }

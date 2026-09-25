@@ -2,7 +2,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 
-import { BotoneraComponent } from '../../../shared/ui/botonera.component';
 import { CajaComponent } from '../../../shared/ui/caja.component';
 import { CampoSelectComponent } from '../../../shared/ui/campo-select.component';
 import { CampoTextoComponent } from '../../../shared/ui/campo-texto.component';
@@ -39,20 +38,13 @@ const TEMPLATE = `
       <app-campo-texto [control]="form.controls.beneficiarios" etiqueta="Detalle (personas o texto libre)" />
     </form>
   </app-caja>
-  <app-botonera (siguiente)="continuar()" (anterior)="anterior()" />
 `;
 
 const STYLES = `.formulario { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }`;
 
 @Component({
   selector: 'app-tomador1',
-  imports: [
-    ReactiveFormsModule,
-    CajaComponent,
-    CampoTextoComponent,
-    CampoSelectComponent,
-    BotoneraComponent,
-  ],
+  imports: [ReactiveFormsModule, CajaComponent, CampoTextoComponent, CampoSelectComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: TEMPLATE,
   styles: STYLES,

@@ -14,8 +14,6 @@ import { SesionStore } from '../../../core/state/sesion.store';
       <mat-card-title>Precios de rentas</mat-card-title>
       <mat-card-content>
         <pre>{{ rentasJson() }}</pre>
-        <button mat-stroked-button (click)="recalcular()">Recalcular</button>
-        <button mat-flat-button color="primary" (click)="contratar()">Contratar</button>
       </mat-card-content>
     </mat-card>
   `,
@@ -30,12 +28,4 @@ export class R2cPreciosContainer {
   readonly rentasJson = computed(() =>
     JSON.stringify(this.store.sesion()?.estado?.['rentas'] ?? {}, null, 2)
   );
-
-  recalcular(): void {
-    this.store.ejecutar('recalcular-rentas').subscribe();
-  }
-
-  contratar(): void {
-    this.store.ejecutar('contratar-rentas').subscribe();
-  }
 }

@@ -1,76 +1,51 @@
-/** SEGUROS_AHORRO (VA): catálogo del taller con selección múltiple. */
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+/** SEGUROS_AHORRO (VA): lista de insurancesApplication de la propuesta. */
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import { JsonPipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 
-import { Producto } from '../../../core/models/models';
+import { EstadoSesion, Producto } from '../../../core/models/models';
 import { TvaApiService } from '../../../core/api/tva-api.service';
 import { SesionStore } from '../../../core/state/sesion.store';
-import { BotoneraComponent } from '../../../shared/ui/botonera.component';
 import { CajaComponent } from '../../../shared/ui/caja.component';
 
 @Component({
   selector: 'app-seguros-ahorro',
-  imports: [
-    MatCardModule,
-    MatCheckboxModule,
-    ReactiveFormsModule,
-    CajaComponent,
-    BotoneraComponent,
-  ],
+  imports: [MatCardModule, CajaComponent, JsonPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <app-caja titulo="Seguros de ahorro del taller">
-      @if (productos().length === 0) {
-        <p>Cargando catálogo…</p>
+    <app-caja titulo="Seguros de ahorro">
+      @for (ap of applications(); track $index) {
+        <mat-card class="tarjeta">
+          <mat-card-content>{{
+            ap['productDesc'] ?? ap['commercialProductCode'] ?? ap | json
+          }}</mat-card-content>
+        </mat-card>
       }
-      <form [formGroup]="form">
-        @for (p of productos(); track p.productCode) {
-          <mat-checkbox [formControlName]="p.productCode">
-            {{ p.productDesc }} ({{ p.productCode }})
-          </mat-checkbox>
-        }
-      </form>
+      @if (!applications().length) {
+        <p>No hay seguros de ahorro en la propuesta.</p>
+      }
     </app-caja>
-    <app-botonera (siguiente)="avanzar()" (anterior)="anterior()" />
-  `,
-  styles: `
-    mat-checkbox {
-      display: block;
-      margin: 4px 0;
-    }
   `,
 })
 export class SegurosAhorroContainer implements OnInit {
   private readonly api = inject(TvaApiService);
   private readonly store = inject(SesionStore);
-  private readonly fb = inject(FormBuilder);
-
   readonly productos = signal<Producto[]>([]);
-  readonly form = this.fb.group<Record<string, boolean>>({});
+  readonly applications = computed<Record<string, unknown>[]>(() => {
+    const estado = (this.store.sesion()?.estado ?? {}) as EstadoSesion;
+    const prop = estado.responseProposal ?? {};
+    const contracting = (prop['contractingProposal'] ?? {}) as Record<string, unknown>;
+    return (contracting['insurancesApplication'] as Record<string, unknown>[] | undefined) ?? [];
+  });
 
   ngOnInit(): void {
-    this.api.productos().subscribe(r => {
-      const ps = (r.products ?? []) as Producto[];
-      this.productos.set(ps);
-      for (const p of ps) this.form.addControl(p.productCode, this.fb.control(false));
-    });
-  }
-
-  avanzar(): void {
-    const seleccion = Object.entries(this.form.value)
-      .filter(([, v]) => v)
-      .map(([k]) => k);
-    this.store
-      .ejecutar('seleccionar-modalidad', {
-        productCode: seleccion[0] ?? '',
-        productosSeleccionados: seleccion,
-      })
-      .subscribe();
-  }
-
-  anterior(): void {
-    this.store.ejecutar('anterior').subscribe();
+    this.api.productos().subscribe(r => this.productos.set(r.products ?? []));
   }
 }

@@ -1,10 +1,9 @@
 /** MODALIDAD_CAMPANIA: elección de modalidad de campaña de marketing. */
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatRadioModule } from '@angular/material/radio';
 
 import { SesionStore } from '../../../core/state/sesion.store';
-import { BotoneraComponent } from '../../../shared/ui/botonera.component';
 import { CajaComponent } from '../../../shared/ui/caja.component';
 
 const OPCIONES = [
@@ -14,7 +13,7 @@ const OPCIONES = [
 
 @Component({
   selector: 'app-modalidad-campania',
-  imports: [MatRadioModule, ReactiveFormsModule, CajaComponent, BotoneraComponent],
+  imports: [MatRadioModule, ReactiveFormsModule, CajaComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-caja titulo="Modalidad de campaña">
@@ -26,7 +25,6 @@ const OPCIONES = [
         </mat-radio-group>
       </form>
     </app-caja>
-    <app-botonera (siguiente)="avanzar()" (anterior)="anterior()" />
   `,
   styles: `
     mat-radio-button {
@@ -35,20 +33,14 @@ const OPCIONES = [
     }
   `,
 })
-export class ModalidadCampaniaContainer {
+export class ModalidadCampaniaContainer implements OnInit {
   private readonly store = inject(SesionStore);
   readonly opciones = OPCIONES;
   readonly form = inject(FormBuilder).nonNullable.group({
     modalidadCampania: ['', Validators.required],
   });
 
-  avanzar(): void {
-    this.store
-      .ejecutar('siguiente', { modalidadCampania: this.form.value.modalidadCampania })
-      .subscribe();
-  }
-
-  anterior(): void {
-    this.store.ejecutar('anterior').subscribe();
+  ngOnInit(): void {
+    this.form.valueChanges.subscribe(v => this.store.datosPendientes.set(v));
   }
 }

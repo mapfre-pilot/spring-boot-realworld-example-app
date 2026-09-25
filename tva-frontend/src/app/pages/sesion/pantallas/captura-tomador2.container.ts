@@ -2,7 +2,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 
-import { BotoneraComponent } from '../../../shared/ui/botonera.component';
 import { CajaComponent } from '../../../shared/ui/caja.component';
 import { CampoSelectComponent } from '../../../shared/ui/campo-select.component';
 import { CampoTextoComponent } from '../../../shared/ui/campo-texto.component';
@@ -10,13 +9,7 @@ import { TomadorBase } from './tomador-base';
 
 @Component({
   selector: 'app-tomador2',
-  imports: [
-    ReactiveFormsModule,
-    CajaComponent,
-    CampoTextoComponent,
-    CampoSelectComponent,
-    BotoneraComponent,
-  ],
+  imports: [ReactiveFormsModule, CajaComponent, CampoTextoComponent, CampoSelectComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-caja titulo="Segundo tomador — datos personales">
@@ -47,7 +40,6 @@ import { TomadorBase } from './tomador-base';
         <app-campo-texto [control]="form.controls.iban" etiqueta="IBAN" />
       </form>
     </app-caja>
-    <app-botonera (siguiente)="continuar()" (anterior)="anterior()" />
   `,
   styles: `
     .formulario {

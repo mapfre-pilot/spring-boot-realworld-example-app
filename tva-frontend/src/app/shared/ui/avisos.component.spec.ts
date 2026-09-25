@@ -10,8 +10,9 @@ describe('AvisosComponent', () => {
     spectator = create({
       props: {
         avisos: [
-          { clase: 1, codigo: 'X_ERROR', mensaje: 'fallo' },
-          { clase: 2, codigo: 'OK', mensaje: 'todo bien' },
+          { clase: 1, tipo: 'ERROR', texto: 'fallo', mostrarEn: 'CABECERA' },
+          { clase: 2, tipo: 'INFO', texto: 'todo bien', mostrarEn: 'CABECERA' },
+          { clase: 3, tipo: 'INFO', texto: 'sección', mostrarEn: 'SECCION' },
         ],
       },
     });
