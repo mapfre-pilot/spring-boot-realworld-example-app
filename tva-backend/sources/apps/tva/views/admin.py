@@ -77,8 +77,9 @@ class TrazasView(APIView):
 
     @extend_schema(responses={200: TrazaSerializer(many=True)})
     def get(self, request):
-        qs = Traza.objects.all().order_by("-creado")[:500]
+        qs = Traza.objects.all()
         clave = request.query_params.get("clave")
         if clave:
             qs = qs.filter(clave_sesion=clave)
+        qs = qs.order_by("-creado")[:500]
         return Response(TrazaSerializer(qs, many=True).data)

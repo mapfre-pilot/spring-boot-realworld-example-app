@@ -24,6 +24,7 @@ import { SeleccionProductoAhorroContainer } from './pantallas/seleccion-producto
 import { SinPerfilContainer } from './pantallas/sin-perfil.container';
 import { SistemaCerradoContainer } from './pantallas/sistema-cerrado.container';
 import { SoloAvisosContainer } from './pantallas/solo-avisos.container';
+import { AdminPanelComponent } from '../admin/admin-panel.component';
 
 const PASOS: Record<string, Pantalla[]> = {
   VA: [
@@ -74,6 +75,7 @@ const PASOS: Record<string, Pantalla[]> = {
     SistemaCerradoContainer,
     SinPerfilContainer,
     SoloAvisosContainer,
+    AdminPanelComponent,
     BotoneraComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -127,6 +129,9 @@ const PASOS: Record<string, Pantalla[]> = {
           }
           @case (P.SOLO_AVISOS) {
             <app-solo-avisos />
+          }
+          @case (P.ADMINISTRACION) {
+            <app-admin-panel />
           }
         }
         <app-botonera [botones]="store.botones()" (accion)="onAccion($event)" />

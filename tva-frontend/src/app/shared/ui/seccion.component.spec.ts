@@ -33,4 +33,15 @@ describe('SeccionComponent', () => {
     s.query('button')!.click();
     expect(spy).toHaveBeenCalled();
   });
+
+  it('renderiza el aviso ERROR de la sección dentro de app-avisos', () => {
+    const s: Spectator<SeccionComponent> = create({
+      props: {
+        titulo: 't',
+        seccion: 'C/s',
+        avisos: [{ clase: 1, tipo: 'ERROR', texto: 'X', mostrarEn: 'SECCION', seccion: 'C/s' }],
+      },
+    });
+    expect(s.element.textContent).toContain('X');
+  });
 });

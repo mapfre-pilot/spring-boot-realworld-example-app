@@ -23,7 +23,7 @@ import { AvisosComponent } from './avisos.component';
           }
         </mat-panel-title>
       </mat-expansion-panel-header>
-      <app-avisos [avisos]="avisosSeccion()" />
+      <app-avisos [avisos]="avisosSeccion()" mostrarEn="SECCION" />
       <ng-content />
       <div class="acciones">
         <button mat-flat-button color="primary" (click)="continuar.emit()">Continuar</button>

@@ -16,6 +16,7 @@ import { TvaApiService } from '../api/tva-api.service';
 export const ACCION_POR_BOTON: Record<string, string> = {
   cancelar: 'cancelar',
   administracion: 'administracion',
+  volver: 'volver-administracion',
   atras: 'anterior',
   recalcular: 'recalcular-rentas',
   'guardar-y-volver': 'guardar-solicitud',

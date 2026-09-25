@@ -4,6 +4,7 @@ import pytest
 
 from apps.tva.models import Sesion
 from apps.tva.operators import dispatcher
+from apps.tva.operators.validaciones import errores_rentas_captura
 from apps.tva.operators.sesion_modelo import (
     CAJA_DATOS_DEL_SEGURO,
     CAJA_DATOS_PRODUCTORES,
@@ -337,3 +338,53 @@ def test_catalogos_view(api_client, auth_header):
     assert res.status_code == 200
     assert len(res.json()["valores"]) >= 50
     assert api_client.get("/api/tva/v1/catalogos/inexistente/", **auth_header).status_code == 404
+
+
+def test_errores_rentas_captura_vacio():
+    msgs = errores_rentas_captura({}, [])
+    assert "El importe total de la prima es obligatorio" in msgs
+    assert "La periodicidad de la renta es obligatoria" in msgs
+    assert "Son obligatorios dos tomadores" in msgs
+
+
+def test_errores_rentas_captura_por_tomador():
+    rentas = {"importeTotalPrima": 6000, "periodicidadRenta": "MENSUAL"}
+    msgs = errores_rentas_captura(rentas, [{}, {}])
+    assert "Tomador 1: el número de DNI es obligatorio" in msgs
+    assert "Tomador 1: la fecha de nacimiento es obligatoria" in msgs
+    assert "Tomador 1: el porcentaje de participación es obligatorio" in msgs
+    assert "Tomador 2: el número de DNI es obligatorio" in msgs
+
+
+def test_errores_rentas_captura_ok():
+    rentas = {"importeTotalPrima": 6000, "periodicidadRenta": "MENSUAL"}
+    t = {"datosPersonales": {"documentId": "1", "fechaNacimiento": "1980-01-01", "participationPerc": 50}}
+    assert errores_rentas_captura(rentas, [t, dict(t)]) == []
+
+
+def test_r2c_siguiente_habilitado_tras_validar():
+    s = _sesion(pantalla="R2C_CAPTURA", modalidad="R2C")
+    from apps.tva.operators.botonera import botones_para
+
+    assert {b["id"]: b for b in botones_para(s)}["siguiente"]["disabled"]
+    t = {"documentId": "1", "fechaNacimiento": "1980-01-01", "participationPerc": 50}
+    dispatcher.ejecutar_accion(
+        s,
+        "validar-seccion",
+        {
+            "caja": "R2C_CAPTURA",
+            "seccion": "captura",
+            "datos": {"rentas": {"importeTotalPrima": 6000, "periodicidadRenta": "MENSUAL"}, "tomadores": [t, dict(t)]},
+        },
+    )
+    s.refresh_from_db()
+    assert s.estado["rentas"]["importeTotalPrima"] == 6000
+    assert s.estado["tomadores"][0]["datosPersonales"]["documentId"] == "1"
+    assert not {b["id"]: b for b in botones_para(s)}["siguiente"]["disabled"]
+
+
+def test_volver_visible_en_administracion():
+    s = _sesion(pantalla="ADMINISTRACION")
+    from apps.tva.operators.botonera import botones_para
+
+    assert {b["id"]: b for b in botones_para(s, ["TVA_ADMIN_PORTAL"])}["volver"]["visible"]

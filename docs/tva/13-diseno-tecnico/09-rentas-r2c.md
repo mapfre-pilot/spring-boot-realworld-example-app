@@ -38,6 +38,8 @@ Atrás → pantalla_anterior → R2C_CAPTURA
 | File | Action | Description |
 |------|--------|-------------|
 | `tva-backend/sources/apps/tva/operators/rentas.py` | Modify | `recalcular`, `contratar` contra API Life annuity endpoints |
+| `tva-backend/sources/apps/tva/operators/validaciones.py` | Modify | `errores_rentas_captura` (`TVA_SimuladorRentas_Captura_Validacion`) |
+| `tva-backend/sources/apps/tva/operators/secciones.py` | Modify | Caja `R2C_CAPTURA` en `escribir_seccion`/`errores_seccion` |
 | `tva-backend/sources/apps/tva/operators/dispatcher.py` | Modify | Dispatch por modalidad + validación R2C |
 | `tva-backend/sources/apps/tva/operators/maquina_pantallas.py` | Modify | R2C_CAPTURA→R2C_PRECIOS, R2C_PRECIOS→R2C_CAPTURA en `pantalla_anterior` |
 | `tva-backend/sources/apps/tva/operators/botonera.py` | Modify | `atras`/`recalcular`/`contratar` visibles en R2C_PRECIOS |
@@ -54,5 +56,13 @@ def contratar(sesion: Sesion, datos: dict) -> dict:
     """individualAnnuityInsuranceApplication → pantalla RESUMEN_CONTRATACION"""
 
 # estado.rentas
-{ "recalcular": { /* response de la simulación */ } }
+{ "importeTotalPrima": 6000, "periodicidadRenta": "MENSUAL",
+  "recalcular": { /* response de la simulación */ } }
+
+# validaciones.py
+def errores_rentas_captura(rentas: dict, tomadores: list) -> list[str]: ...
+
+# validar-seccion caja R2C_CAPTURA
+{ "caja": "R2C_CAPTURA", "seccion": "captura",
+  "datos": {"rentas": {...}, "tomadores": [{"documentId": "…", "fechaNacimiento": "…", "participationPerc": 50}] } }
 ```

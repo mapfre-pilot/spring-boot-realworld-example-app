@@ -172,3 +172,12 @@ def test_admin_caches(api_client, admin_header):
 def test_admin_trazas(api_client, admin_header):
     r = api_client.get(f"{BASE}/admin/trazas/", **admin_header)
     assert r.status_code == 200
+
+
+def test_trazas_con_clave(api_client, admin_header):
+    from apps.tva.models import Traza
+
+    Traza.objects.create(clave_sesion="abc", tipo_contenido="INICIO", mensaje="m")
+    r = api_client.get(f"{BASE}/admin/trazas/?clave=abc", **admin_header)
+    assert r.status_code == 200
+    assert r.json()[0]["clave_sesion"] == "abc"

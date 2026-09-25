@@ -12,6 +12,7 @@ from apps.tva.models import Sesion
 
 from ._comun import guardar_y_trazar, resultado
 from .sesion_modelo import (
+    CAJA_R2C_CAPTURA,
     tomador_vacio,
     CAJA_DATOS_DEL_SEGURO,
     CAJA_DATOS_PRODUCTORES,
@@ -35,6 +36,7 @@ from .validaciones import (
     errores_opciones_inversion,
     errores_participante,
     errores_productores,
+    errores_rentas_captura,
 )
 
 logger = logging.getLogger(__name__)
@@ -62,6 +64,19 @@ def _indice_tomador(caja_id: str) -> int | None:
 def escribir_seccion(estado: dict, caja_id: str, seccion_id: str, datos: dict) -> dict:
     """Escribe ``datos`` en la sesión bajo el path de la sección."""
     nuevo = dict(estado or {})
+    if caja_id == CAJA_R2C_CAPTURA:
+        datos = datos or {}
+        if "rentas" in datos:
+            nuevo["rentas"] = {**(nuevo.get("rentas") or {}), **datos["rentas"]}
+        if "tomadores" in datos:
+            tomadores = [dict(t) for t in nuevo.get("tomadores") or []]
+            while len(tomadores) < 2:
+                tomadores.append(tomador_vacio())
+            for i, td in enumerate(datos["tomadores"][:2]):
+                dp = {**(tomadores[i].get("datosPersonales") or {}), **td}
+                tomadores[i]["datosPersonales"] = dp
+            nuevo["tomadores"] = tomadores
+        return nuevo
     idx = _indice_tomador(caja_id)
     if idx is not None:
         tomadores = [dict(t) for t in nuevo.get("tomadores") or []]
@@ -124,6 +139,9 @@ def errores_seccion(estado: dict, caja_id: str, seccion_id: str) -> list[str]:
         if seccion_id == "fatcaCrs":
             return []
         return []
+
+    if caja_id == CAJA_R2C_CAPTURA:
+        return errores_rentas_captura(estado.get("rentas"), estado.get("tomadores"))
 
     if caja_id == CAJA_DATOS_PRODUCTORES:
         return errores_productores(estado.get("datosProductores"))

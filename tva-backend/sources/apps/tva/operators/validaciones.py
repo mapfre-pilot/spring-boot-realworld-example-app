@@ -482,3 +482,26 @@ def test_conveniencia_valido(perfil: dict | None) -> bool:
         return datetime.date.fromisoformat(str(fecha)[:10]) >= datetime.date.today()
     except ValueError:
         return False
+
+
+def errores_rentas_captura(rentas: dict, tomadores: list) -> list[str]:
+    """``TVA_SimuladorRentas_Captura_Validacion`` — textos exactos (§12.4.4)."""
+    rentas = rentas or {}
+    tomadores = tomadores or []
+    errores: list[str] = []
+    if _vacio(rentas.get("importeTotalPrima")):
+        errores.append("El importe total de la prima es obligatorio")
+    if _vacio(rentas.get("periodicidadRenta")):
+        errores.append("La periodicidad de la renta es obligatoria")
+    if len(tomadores) != 2:
+        errores.append("Son obligatorios dos tomadores")
+    else:
+        for i, t in enumerate(tomadores, start=1):
+            dp = t.get("datosPersonales") or {}
+            if _vacio(dp.get("documentId")):
+                errores.append(f"Tomador {i}: el número de DNI es obligatorio")
+            if _vacio(dp.get("fechaNacimiento")):
+                errores.append(f"Tomador {i}: la fecha de nacimiento es obligatoria")
+            if _vacio(dp.get("participationPerc")):
+                errores.append(f"Tomador {i}: el porcentaje de participación es obligatorio")
+    return errores

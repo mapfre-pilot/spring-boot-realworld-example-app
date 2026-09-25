@@ -21,6 +21,7 @@ CAJA_RESUMEN_RENTAS = "RESUMEN_CONTRATACION_RENTAS"
 CAJA_SELECCION_TIPO_FIRMA = "SELECCION_TIPO_FIRMA"
 CAJA_DATOS_FIRMA = "DATOS_FIRMA"
 CAJA_RESULTADO_FIRMA = "RESULTADO_FIRMA"
+CAJA_R2C_CAPTURA = "R2C_CAPTURA"
 CAJA_R2C_TOMADORES = "R2C_CAJA_TOMADORES"
 CAJA_R2C_PRECIOS = "R2C_CAJA_PRECIOS"
 
@@ -75,7 +76,7 @@ def tomador_vacio() -> dict:
     }
 
 
-def cajas_iniciales() -> list[dict]:
+def cajas_iniciales(modalidad: str | None = None) -> list[dict]:
     """Cajas iniciales de la sesión (todas las secciones datosValidos=false)."""
     secciones_tomador = [
         seccion("datosPersonales", "Datos personales"),
@@ -96,7 +97,7 @@ def cajas_iniciales() -> list[dict]:
         ),
         caja(CAJA_TOMADOR1, "Tomador 1", list(secciones_tomador)),
         caja(CAJA_TOMADOR2, "Tomador 2", list(secciones_tomador)),
-    ]
+    ] + ([caja(CAJA_R2C_CAPTURA, "Datos de la renta", [seccion("captura", "Captura")])] if modalidad == "R2C" else [])
 
 
 def nueva_sesion_estado(
@@ -129,7 +130,7 @@ def nueva_sesion_estado(
         "garantias": [],
         "comisiones": {},
         "beneficiarios": {},
-        "cajas": cajas_iniciales(),
+        "cajas": cajas_iniciales(modo_funcionamiento),
         "avisos": [],
         "documentosPrecontractuales": [],
         "idPantallaActual": None,

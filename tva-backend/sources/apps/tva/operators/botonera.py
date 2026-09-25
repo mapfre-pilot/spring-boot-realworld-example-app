@@ -6,6 +6,8 @@ acompaña a cada respuesta de acción/sesión.
 
 from apps.tva.models import Modalidad, Pantalla, Parametro, Sesion
 
+from .validaciones import errores_rentas_captura
+
 from .sesion_modelo import (
     CAJA_DATOS_DEL_SEGURO,
     CAJA_DATOS_PRODUCTORES,
@@ -112,6 +114,7 @@ def botones_para(sesion: Sesion, roles: list[str] | None = None) -> list[dict]:
     botones = [
         _boton("cancelar", "Cancelar", visible=solicitud or tomador or r2c_captura or r2c_precios or resumen, confirm=_CONFIRM_CANCELAR),
         _boton("administracion", "Administración", visible=es_admin and p != Pantalla.ADMINISTRACION),
+        _boton("volver", "Volver", visible=p == Pantalla.ADMINISTRACION),
         _boton("atras", "Atrás", visible=r2c_precios),
         _boton(
             "recalcular",
@@ -135,7 +138,12 @@ def botones_para(sesion: Sesion, roles: list[str] | None = None) -> list[dict]:
             or (r2c_precios and not (base_validos and tc_ok and (not flag_docs or docs_enviados))),
         ),
         _boton("continuar", "Continuar", visible=tomador, disabled=not caja_tomador_ok),
-        _boton("siguiente", "Siguiente", visible=r2c_captura, disabled=len(estado.get("tomadores") or []) < 2),
+        _boton(
+            "siguiente",
+            "Siguiente",
+            visible=r2c_captura,
+            disabled=bool(errores_rentas_captura(estado.get("rentas"), estado.get("tomadores"))),
+        ),
         _boton("firmar", "Firmar", visible=False),
     ]
     return botones
