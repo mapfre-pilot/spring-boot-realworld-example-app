@@ -444,3 +444,31 @@ isSynchronous devuelve pv.idSolicitud al finalizar.
 | Buscador sin filas 1807 | No es isSynchronous: `SCA2 Solicitud` id=7 PDTE-500033 ALTA existe + `SCA2 Error` id=17 ALTA_ERROR PENDIENTE con payload completo — `generarStudAnul` PRE falló (soapenv 4007 BD), mismo error que en altas anteriores (paridad backend PRE). Proceso funcionó por diseño (Error relanzable desde BandejaErrores) |
 | Tabs Errores/Gestiones visibles | JJGONZ2 estaba en `SCA2 Administrators` → eliminado del grupo; quedan devin + GGALV10. visibilityExpr ya activa (v8) |
 | Estado "EN_ACCION" crudo | Regla `SCA2_textoEstadoSolicitud` desplegada era versión antigua sin rama `accion` → redeployada con match por acción (CONTRAANULAR→"Contra anulación en curso", etc., default EN_ACCION→"Solicitud Pendiente"). testRule verificado |
+
+### 8.z Relanzar Alta PDTE-500033 (2002000011807) — payload diff vs SCA
+
+Relanzamientos por vía testProcessModel `SCA2 CMD Alta` con contexto fresco de
+`SCA2_construirContextoAlta` (usuario JJGONZ2). El 4007 original era **divergencia
+de payload, no flakiness PRE**: `codTpOrigen` enviaba "SCA2" (bug ya corregido).
+Tras el fix el error pasó a 4005 "Los datos pasados como parametro no son los
+esperados". Diff campo a campo del DTO SCA real vs SCA2 reveló:
+
+| Campo | SCA (payload real) | SCA2 (antes) | SCA2 (fix) |
+|---|---|---|---|
+| codTpOrigen | 2 | SCA2 → 2 | 2 |
+| fecAnulacion | dd/MM/yyyy ("04/03/2027") | ISO ("2027-02-04") | dd/MM/yyyy |
+| infoUsuarios.codCiaUsuario | 41 | ausente | local!usr.codCiaUsuario |
+| datosReemplazo.codCiaReemplazo | 41 | "0" | COD_CIA/codciaNSE |
+| nuuma / codPerfil / codSubPerfil | JJGONZ2 / CE_RM / CE_RM_OFICINA | = | = |
+| codTpCatalogacion / CanalEntrada / TpNegocio | 2 / 1 / 1 | = | = |
+
+Fixes desplegados en `SCA2_construirContextoAlta` (PUT + re-GET):
+`fecAnulacion` se reformatea a dd/MM/yyyy (text, sin todate — "Date out of
+range"), `infoUsuarios` incluye `codCiaUsuario`, `codCiaReemplazo` usa el
+COD_CIA de la póliza como SCA.
+
+**Relanzamiento final**: `generarStudAnul` → `success:true`,
+`result:["0","","15787527","2",""]` → **Core7 creó la solicitud 15787527**
+(proc COMPLETED). Error 17 → RELANZADO; filas de intentos fallidos (19–24)
+→ DESCARTADO. Logs: `t20/relanzar_1807_v6.log`, `ctx_1807_v4.json`,
+`diff_payload.py`.
