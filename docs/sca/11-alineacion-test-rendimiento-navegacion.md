@@ -415,3 +415,18 @@ JJGONZ2@mapfrenopro.onmicrosoft.com (grupo CE_RM)**. Filas Error 14-16 quedan
 PENDIENTE/BLOQUEADO con mensaje vacío (escritas antes del fix de mensaje).
 Logs: `t20/decidir_15787516.log`, `t20/crearaccion_15787516.log`,
 `t20/sol_15787516.json`, `t20/dto_15787516.json`, `t20/dec_15787516.json`.
+
+### 8.x Paridad funcional JJGONZ2 (tanda post-15787516)
+
+| Item | Cambio SCA2 | Resultado |
+|---|---|---|
+| Post-GUARDAR | `SCA2_AltaSolicitudPage`: `isSynchronous:true` + `onSuccess` guarda `local!idSolGenerada` (pv.idSolicitud); se muestra card `style:"INFO"` (azul) con "Su solicitud se ha generado correctamente. Se le va a redirigir a la acción correspondiente" + OK→`/buscador?idSolicitud=…&numPoliza=…` | Mismo mensaje azul que SCA |
+| Refresh tareas/sol | `SCA2_DetalleSolicitud`: `a!refreshVariable(refreshInterval: if(estado in ALTA/DECIDIDA o tareas vacío, 0.5, "NEVER"))` en `local!sol` y `local!tareas` | Polling solo hasta EN_ACCION |
+| Cabecera Detalle | Detalle usa `SCA2_obtenerDatosCabecera` (misma llamada que Alta) → `estructuraCabecera.datosCliente/datosPoliza/datosContacto` | Campos cliente poblados |
+| Acordeón Alta | Campos Perfil/Grupo/Nuuma/Nivel desde `SCA2_consultaGestion(codSolicitud).infoUsuario` + `nivelIntervencion` | "RED MAPFRE"/"OFICINA"/"JJGONZ2"/"1" |
+| Popup Tipo póliza | Dropdown {"NO VIDA","VIDA"}{1,2} → `local!eleccionPoliza` (bloque idéntico a SCA, antes de Número póliza) | Añadido |
+| Site | Pages Errores + Gestiones mantenimiento `visibilityExpr: a!isUserMemberOfGroup(loggedInUser(), cons!SCA2_GRP_ADMINISTRADORES)` | Solo admins ven las tabs |
+| Trazabilidad técnica | Ya estaba `showWhen: local!esAdmin` (misma condición de grupo) | Sin cambios |
+
+`testInterface` SCA2_DetalleSolicitud(15787516): sin errores, 3.5 s; re-GET
+confirma las 3 interfaces (`sca2_ui/*_reget.sail`) y el site v8.
