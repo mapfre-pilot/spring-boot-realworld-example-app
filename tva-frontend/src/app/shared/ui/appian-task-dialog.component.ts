@@ -156,6 +156,10 @@ export class AppianTaskDialogComponent implements OnDestroy {
   }
 
   reintentar(): void {
+    this.observer?.disconnect();
+    this.tarea?.destroy?.();
+    this.tarea?.remove();
+    this.tarea = undefined;
     this.estado.set('cargando');
     this.iniciar();
   }

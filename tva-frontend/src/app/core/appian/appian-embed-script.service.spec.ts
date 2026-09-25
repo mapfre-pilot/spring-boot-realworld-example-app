@@ -1,4 +1,5 @@
 import { DOCUMENT } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { createServiceFactory, SpectatorService } from '@ngneat/spectator/jest';
 
 import { EnvironmentService } from '@mapfre-tech/ngx-multienvironment/core';
@@ -22,7 +23,7 @@ describe('AppianEmbedScriptService', () => {
 
   it('añade el script una sola vez con los atributos correctos', async () => {
     const s: SpectatorService<AppianEmbedScriptService> = create();
-    const doc = TestBed_doc(s);
+    const doc = TestBed.inject(DOCUMENT);
     const p1 = s.service.cargar();
     const script = doc.getElementById('appianEmbedded') as HTMLScriptElement;
     expect(script).toBeTruthy();
@@ -35,8 +36,3 @@ describe('AppianEmbedScriptService', () => {
     expect(s.service.disponible()).toBe(true);
   });
 });
-
-import { TestBed } from '@angular/core/testing';
-function TestBed_doc(s: { service: unknown }): Document {
-  return TestBed.inject(DOCUMENT);
-}
