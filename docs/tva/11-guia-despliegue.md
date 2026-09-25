@@ -143,12 +143,19 @@ o inyecta `window.__TVA_ENV__ = 'pre'` en el `index.html` servido.
 
 ## Estado de la implementación
 
-**Cubierto**: flujo completo VA (seguros ahorro → datos solicitud → tomador 1/2 →
+**Cubierto**: contrato real de `inicio` (indFunctionMode/companyId/distributionChannel/
+username/investment, validaciones con los textos exactos de Appian y sobre de error
+`{code:"02", errors:[…]}`); modelo de sesión TVA_Sesion (cajas/secciones, avisos
+`{clase,tipo,texto,mostrarEn}`); navegación dirigida por datos
+(`siguiente_pantalla`, reglas VA/VIA/R2C) y botonera calculada por pantalla/modo
+(`botones` en cada respuesta, con confirmaciones); acciones cancelar / administración /
+volver-administracion / doc-precontractual / contratar; catálogo mock de 21 productos
+DEV de API Life; flujo completo VA (seguros ahorro → datos solicitud → tomador 1/2 →
 resumen → resultado firma → fin), VIA (selección producto → modalidad campaña → datos →
 tomador 1 → resumen → firma), R2C (captura → precios → resumen → firma); login local,
 admin (parámetros, batch apertura/cierre + abrir/cerrar manual, cachés, trazas);
-pantallas SISTEMA_CERRADO / SIN_PERFIL / SOLO_AVISOS; 62 tests backend (80% coverage),
-18 tests frontend.
+pantallas SISTEMA_CERRADO / SIN_PERFIL / SOLO_AVISOS; 97 tests backend (81% coverage),
+22 tests frontend.
 
 **Pendiente**: firma real (servicio de firma), descarga de documentos reales,
 digitalización de DNI, cesión de derechos, RGPD, notas, propuestas persistidas en API

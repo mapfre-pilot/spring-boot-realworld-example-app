@@ -114,7 +114,6 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/InicioRequest'
-        required: true
       responses:
         '201':
           description: No response body
@@ -139,7 +138,6 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/InicioRequest'
-        required: true
       responses:
         '201':
           description: No response body
@@ -150,7 +148,7 @@ paths:
   /api/tva/v1/productos/:
     get:
       operationId: api_tva_v1_productos_retrieve
-      description: GET /productos/ — catálogo del taller cacheado.
+      description: GET /productos/ — catálogo del taller cacheado (params opcionales).
       tags:
       - api
       responses:
@@ -213,9 +211,13 @@ paths:
         schema:
           type: string
           enum:
+          - administracion
           - anterior
+          - cancelar
           - continuar-tomador
+          - contratar
           - contratar-rentas
+          - doc-precontractual
           - firmar
           - guardar-solicitud
           - importe-maximo
@@ -224,6 +226,7 @@ paths:
           - siguiente
           - validar-reinversion
           - verificar-productores
+          - volver-administracion
       - in: path
         name: clave
         schema:
@@ -482,6 +485,25 @@ components:
       type: object
       description: Body de POST /inicio/ahorro y /inicio/rentas.
       properties:
+        indFunctionMode:
+          type: string
+          maxLength: 5
+        proposalId:
+          type: string
+        companyId:
+          type: string
+          maxLength: 10
+        distributionChannel:
+          type: string
+          maxLength: 10
+        username:
+          type: string
+        policyHolders:
+          type: array
+          items: {}
+        investment:
+          type: array
+          items: {}
         documentoCliente:
           type: string
           maxLength: 20
@@ -494,8 +516,6 @@ components:
           default: ''
           maxLength: 20
         propuesta: {}
-      required:
-      - documentoCliente
     ModalidadEnum:
       enum:
       - VA
