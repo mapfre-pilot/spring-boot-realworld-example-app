@@ -388,3 +388,30 @@ añadida normalización `local!pantalla` (a!match de los 15 valores de
 `SCA_TXT_ACCIONES` a las 5 claves de pantalla) antes del match de la pantalla.
 Columna "Asignado a" ya existe en la grid de `SCA2_DetalleTareas`; el acordeón de
 SCA muestra solo Grupo/Nuuma (igual que SCA2) — sin cambios ahí.
+**Decidir 15787516 (DTO nulo + constante PM + mensaje error)**: el
+`SCA2_mapearDatosDecidirAccion` declaraba `datosSolicitud` con tipo record-type
+*SCA2 Solicitud* — Appian casteaba el `sol` completo al record y descartaba
+`datosCompletosSolicitud`/`datosPerfilesPca`/`datosPolizaAutos`, así que todos
+los `reduce` devolvían null → `consultarServiciosReglas` → `accion:ERROR` →
+`ERROR_DECISION` tras 3 reintentos (diseño: XOR `accion=ERROR` y
+`intentos<3` → Write Error PENDIENTE + Start Decidir reintento; `intentos>=3` →
+Write Error BLOQUEADO; las 3 filas Error 14-16 corresponden a eso).
+Además las claves del CDT estaban en camelCase pero `cargarSolicitud` emite
+minúsculas (`canalentrada`, `codmotivo`, `claveproduccion`…). Fixes:
+input `datosSolicitud` → `Map`, claves → minúsculas; DTO ahora poblado y la
+decisión PRE devuelve `CONTRAANULAR` para 2002000010177.
+Mensaje de Error vacío: nodos 7/8 escribían `mensaje/payload` desde `pv!err`
+(null); ahora `a!toJson(pv!decision)` como fallback (re-GET confirmado).
+`SCA2_textoEstadoSolicitud`: `ERROR_DECISION` → "Error en el servicio de
+decisión" (paridad con texto SCA).
+Bug extra encontrado: nodos Start Process usaban `cons!SCA2_PM_CMD_CREARACCION`
+pero la constante real es `SCA2_PM_CMD_CREAR_ACCION` → runtime "-2147483647";
+corregido en Decidir n12 y CompletarAccion n10 (re-GET OK). Relanzamiento:
+Decidir COMPLETED parcial (decisión OK, falló solo el Start CrearAccion por la
+constante) → tras el fix, `SCA2 CMD CrearAccion` para 15787516 COMPLETED:
+Solicitud `EN_ACCION`/`CONTRA_ANULAR`/`estadoTarea PENDIENTE`, Transicion OK
+DECIDIDA→EN_ACCION y **Tarea id=2 CONTRAANULAR PENDIENTE asignada a
+JJGONZ2@mapfrenopro.onmicrosoft.com (grupo CE_RM)**. Filas Error 14-16 quedan
+PENDIENTE/BLOQUEADO con mensaje vacío (escritas antes del fix de mensaje).
+Logs: `t20/decidir_15787516.log`, `t20/crearaccion_15787516.log`,
+`t20/sol_15787516.json`, `t20/dto_15787516.json`, `t20/dec_15787516.json`.
