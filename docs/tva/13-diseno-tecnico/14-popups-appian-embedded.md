@@ -20,7 +20,7 @@ backend actualiza `datosGestionParticipante` / `perfilCliente.testConveniencia` 
 | 2 | HTTP | `requests.Session` directo, **sin reintentos** | `BaseHttpClient` con reintentos | Estos POST inician procesos en Appian; reintentar duplicaría tareas |
 | 3 | Entorno | `APPIAN_EMBED_MODE=mock|real` con `get_appian_embed_client()` singleton | Siempre real | Permite desarrollo y pruebas sin red ni allow-list de IP |
 | 4 | Login Appian | Detectar `#appianLoginIframe` → `window.open(src,'_blank')` y esperar `#task-body` (5 min) | Login embebido en iframe | Las cookies de terceros bloquean el login dentro del iframe; `data-signin="appiantestmapfrenopro"` marca el proveedor |
-| 5 | Resultado | El frontend envía `SUBMIT`/`DISMISS`/`ERROR`; el backend aplica el flag | Callback de Appian al backend | La Web API devuelve el taskId pero no notifica cierre; el cliente ve el `submit` del componente |
+| 5 | Resultado | El frontend envía `SUBMIT`/`DISMISS`/`ERROR`; en SUBMIT el backend consulta `cmp-respuesta-componente` y aplica el flag solo con el resultado real | Callback de Appian al backend / fiarse del `submit` del componente | El evento `submit` solo indica cierre; la Web API one-shot guarda el resultado real (y lo elimina al leerlo: se persiste en `respuestasComponentes`) |
 | 6 | Limitación | DNI usa `cmp-captura-dni`, que solo responde desde IPs permitidas (IP allow-list MAPFRE); desde fuera devuelve 401 "Origen no válido" y se reporta como 502 | — | Limitación de la infraestructura, no del código |
 
 ## Data Flow
@@ -33,7 +33,10 @@ Requisitos del tomador (botón) → AppianPopupService.abrir(clave, popup, idxTo
     → cargar() → <script embeddedBootstrap.nocache.js data-themeidentifier data-signin>
     → <appian-task taskId> → submit|error ; #appianLoginIframe → nueva pestaña → #task-body
   → afterClosed → POST /sesiones/{clave}/popups/{popup}/completar/ {idxTomador, taskId, resultado}
-    → completar_popup → flags datosGestionParticipante / perfilCliente.testConveniencia
+    → completar_popup → si SUBMIT: POST cmp-respuesta-componente {usuarioAppian, idTarea}
+      → evaluar_respuesta(popup, respuesta) → SUBMIT|DISMISS|ERROR reales
+      → persistir datosGestionParticipante.respuestasComponentes[popup] + traza
+    → flags datosGestionParticipante / perfilCliente.testConveniencia (solo SUBMIT real)
     → guardar_y_trazar → resultado(sesion) → store → UI
 ```
 
@@ -67,7 +70,12 @@ Requisitos del tomador (botón) → AppianPopupService.abrir(clave, popup, idxTo
 
 def construir_body(sesion: Sesion, popup: str, idx_tomador: int, user) -> dict: ...
 def lanzar_popup(sesion: Sesion, popup: str, idx_tomador: int, user) -> dict: ...
-def completar_popup(sesion: Sesion, popup: str, idx_tomador: int, task_id: str, resultado: str, roles) -> dict: ...
+def completar_popup(sesion: Sesion, popup: str, idx_tomador: int, task_id: str,
+                    resultado: str, roles, user) -> dict: ...
+def evaluar_respuesta(popup: str, respuesta: dict | None) -> tuple[str, dict | None]: ...
+# rgpd/dni: None|error→ERROR, cancelado→DISMISS, enviado/digitalizacion|movilidad→SUBMIT
+# test-conveniencia: None→SUBMIT (no hay respuesta CMP confirmada)
+# AppianEmbedError → ERROR con aviso "No se ha podido comprobar el resultado de …"
 
 # POST /popups/<popup>/lanzar/  {idxTomador} → {popup, idxTomador, taskId, taskUrl, modo}
 # POST /popups/<popup>/completar/ {idxTomador, taskId, resultado: SUBMIT|DISMISS|ERROR} → resultado(sesion)

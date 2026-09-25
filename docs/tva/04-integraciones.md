@@ -23,6 +23,30 @@ Devuelven `taskId`/`taskUrl` que el frontend embebe con `embeddedBootstrap.nocac
 desde fuera devuelve 401 "Origen no válido". La API key solo vive en el backend
 (`APPIAN_EMBED_API_KEY`). Ver [13-diseno-tecnico/14-popups-appian-embedded.md](13-diseno-tecnico/14-popups-appian-embedded.md).
 
+### CMP Devolver Respuesta Componente (`webapi/cmp-respuesta-componente`)
+
+Cuando el componente embebido envía `submit`, el backend **no confía en el
+evento**: consulta esta Web API (mismo `POST` + `Appian-API-Key`, body
+`{"usuarioAppian": "<user>", "idTarea": "<taskId>"}`) para obtener el resultado
+real del componente.
+
+- **One-shot**: recuperar la respuesta la elimina en Appian. El backend la
+  persiste en `datosGestionParticipante.respuestasComponentes[popup]`
+  (`{taskId, resultado, respuesta}`) y en la traza; nunca consulta dos veces el
+  mismo `taskId`.
+- **Errores**: HTTP 500 `code "4"` («idTarea no encontrado en la BD») = sin
+  respuesta almacenada → `None`; 401 = usuario Appian inválido; otros 500 /
+  errores de red → `AppianEmbedError`.
+- **Respuesta RGPD**: `{idCliente, nombre, apellidos, email, telefono,
+  tipoDocumento, numeroDNINIE, canalFirma: "email"|"sms"|"manuscrito"|"biometrica"|"",
+  accion: "enviado"|"cancelado"|null, error: bool, idProyecto, idsConsentimiento}`.
+- **Respuesta DNI**: `{solicitante, nombre, apellidos, email, telefono,
+  emailOK, emailKO, emailWarning, tipoDocumento, numeroDNINIE, idRic,
+  idSolicitud, accion: "digitalizacion"|"movilidad"|"cancelado"|null, error: bool}`.
+- **test-conveniencia** (app TI): no está confirmado que almacene respuesta
+  CMP; «no encontrado» se trata como «sin respuesta» y se mantiene el
+  comportamiento SUBMIT anterior.
+
 ## Integraciones (20)
 
 Todas las de API Life heredan URL base y autenticación del sistema conectado y envían la
