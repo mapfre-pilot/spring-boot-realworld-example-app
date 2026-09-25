@@ -7,7 +7,7 @@ arquetipos corporativos.
 Estructura:
 
 - `docs/tva/` — análisis funcional/técnico de la aplicación Appian y planes de migración
-  (ver [índice](docs/tva/README.md)).
+  (ver [índice](docs/tva/README.md); diseño técnico por feature en [docs/tva/13-diseno-tecnico/](docs/tva/13-diseno-tecnico/README.md)).
 - `arquetipos/` — arquetipos corporativos de referencia (front Angular, back Django).
 - `tva-frontend/` — SPA Angular 21 (Material, signals, zoneless) — ver `tva-frontend/README.md`.
 - `tva-backend/` — backend Django 5.2/DRF — ver `tva-backend/README.md`.

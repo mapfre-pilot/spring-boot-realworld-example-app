@@ -55,3 +55,5 @@ Puntos clave:
   entre ellas una regla que devuelve valores tipo credencial hardcodeados por entorno,
   ~50 reglas `MOCK`/`prueba` desplegadas junto al código productivo, y un volumen alto
   de código comentado.
+
+- **[13-diseno-tecnico/](13-diseno-tecnico/README.md)** — documentos de diseño técnico por feature (índice + 13 fichas: autenticación/stubs, inicio/Web API, sesión TVA, navegación, botonera, catálogos, tomador, solicitud, R2C, firma, administración, conectores, observabilidad).
