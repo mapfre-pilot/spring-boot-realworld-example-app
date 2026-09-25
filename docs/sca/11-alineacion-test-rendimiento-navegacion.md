@@ -430,3 +430,8 @@ Logs: `t20/decidir_15787516.log`, `t20/crearaccion_15787516.log`,
 
 `testInterface` SCA2_DetalleSolicitud(15787516): sin errores, 3.5 s; re-GET
 confirma las 3 interfaces (`sca2_ui/*_reget.sail`) y el site v8.
+
+`refreshInterval` corregido a `if(cond, 0.5, null)` (NEVER no es valor válido).
+testInterface Detalle 15787516 (EN_ACCION): sin errores 3.7 s; PDTE-268927149
+(ALTA): sin errores 6.7 s. PM Alta verificado: sin nodos attended →
+isSynchronous devuelve pv.idSolicitud al finalizar.
