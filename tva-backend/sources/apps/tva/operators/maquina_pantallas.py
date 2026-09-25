@@ -158,7 +158,6 @@ def siguiente_pantalla(sesion: Sesion) -> Pantalla:
     """
     estado = sesion.estado or {}
     actual = Pantalla(sesion.pantalla_actual)
-    modalidad = sesion.modalidad
     tomadores = estado.get("tomadores") or []
     perfil_ok = bool(estado.get("perfilClientesOK"))
 

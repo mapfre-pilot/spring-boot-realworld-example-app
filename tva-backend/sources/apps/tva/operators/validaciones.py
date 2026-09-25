@@ -3,6 +3,9 @@
 Cada función devuelve una lista de avisos (vacía = válido).
 """
 
+import re
+
+from apps.tva.models import Parametro
 from apps.tva.schemas.errors import AvisosClase, aviso
 
 LONGITUD_DOCUMENTO = 9
@@ -78,10 +81,6 @@ def validar_datos_operacion(datos: dict) -> list:
 
 
 # --- Contrato real de la Web API de inicio (§12.4.1) -----------------------
-
-import re
-
-from apps.tva.models import Parametro
 
 MODOS_FUNCIONAMIENTO = ("VA", "VIA", "R2C")
 OPERATION_TYPES = ("S", "AE")  # Suscripción / Aportación extraordinaria
