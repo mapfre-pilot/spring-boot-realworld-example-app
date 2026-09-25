@@ -169,7 +169,7 @@ Tomador 1 → Continuar: si hay dos tomadores → CAPTURA_TOMADOR2, si no → CA
 | APPINVE (perfil usuario / productores) | perfil, oficina, productor, comisiones | M |
 | RIC (buscar cliente) | tomadores por documento | M (`TVA_FLAG_SIMULAR_BUSQUEDA_CLIENTE_RIC`) |
 | MISV | trazas | M |
-| Perfil cliente (test conveniencia / idoneidad) | `perfilCliente`, `TVA_EsValidoTestConveniencia` | N |
+| Perfil cliente (test conveniencia / idoneidad) | `perfilCliente`, `TVA_EsValidoTestConveniencia` | N (servicio real pendiente; la derivación `perfilClientesOK` desde `policyHolders[].testData.convenience` del inicio está hecha) |
 | Firma (manuscrita / electrónica / biométrica; flags `TVA_FLAG_FIRMA_*`) | resumen | N (simulada) |
 | RGPD, Digitalización DNI, Cesión derechos, Intervinientes, Notas (pop-ups) | tomador / solicitud | N |
 | Resolver IP local (`CMP_CS_OBTENER_IP`) | firma | N |
