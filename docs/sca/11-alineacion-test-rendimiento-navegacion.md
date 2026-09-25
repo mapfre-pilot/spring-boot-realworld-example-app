@@ -588,3 +588,12 @@ Alta→Decidir→CrearAccion completa).
 | Imprimir plantilla / ojo documento | Código ya era paridad con SCA: print → `a!startProcess(PM_DOCXPDF, isSynchronous)` + `onSuccess` guarda `plantillaCarta` y `mcaVisualizarDoc` + `SCA2_guardarImpr`; eye → `PM_OBTENER_DOCUMENTO_GD` con `isSynchronous`, disabled si `idDocumento` nulo o ausente en `consultarDocumentos`. "No hizo nada" = mismo comportamiento SCA cuando el servicio PRE de documentos no devuelve documento. | Sin cambio: paridad confirmada vs `SCA_AccionesAdministrativasDocumentacion` (mismas llamadas, mismas condiciones). |
 | Etiqueta "Contraanular" | `SCA2_D_TiposGestiones` carecía del caso `CONTRAANULAR` (default `proper()`). | Añadido `equals: "CONTRAANULAR", then: "CONTRA ANULACIÓN"`. Deploy + `testRule("CONTRAANULAR")` → "CONTRA ANULACIÓN". El `a!match` de `DetalleTareas` para la pantalla ya cubría ambos (`CONTRAANULAR`/`CONTRA ANULAR` → `ContraAnulacionPrincipal`). |
 | Selector compañía deshabilitado | Paridad SCA: `disabled: not(activoPanCatalogacion)` en `SCA_CompañaContrariaCatalogacion` l.136 = nuestra l.132. | Justificado no tocar: el selector se habilita solo cuando la argumentación/llamada activa el panel, igual que en SCA. |
+
+### §8.z8 — Auditoría de paridad acciones (t21)
+
+Barrido SAIL completo SCA2 vs SCA TEST → `docs/sca/analisis/t21_paridad_acciones.md`. Divergencias reales corregidas:
+
+- `SCA2_MecanizacionPrincipal`: `resultadoOperacion` del botón ANULAR PÓLIZA/FINALIZAR SOLICITUD era `"CANCELAR"` fijo → `if(local!controlRechazo,"OK","CANCELAR")` (paridad SCA); CANCELAR llevaba confirmación que SCA no tiene → eliminada. Deploy + re-GET ok.
+- Resto auditado en paridad: Reasignar (popup idéntico, botón por fila en acordeón vs botón único en cabecera — justificado), Autorización/FueraNorma (textos de confirmación, disabled, grupos de validación, payload CompletarAccion), VERTI, etiquetas tarea (`D_TiposGestiones`+`CONTRAANULAR`, ya en §8.z7), sources de dropdowns.
+
+Pendiente no bloqueante: `SCA_PopUpMensajeAutorizacion` (flujos autorización nivel 2/3 no ejercitados) — documentado en t21.
