@@ -435,3 +435,12 @@ confirma las 3 interfaces (`sca2_ui/*_reget.sail`) y el site v8.
 testInterface Detalle 15787516 (EN_ACCION): sin errores 3.7 s; PDTE-268927149
 (ALTA): sin errores 6.7 s. PM Alta verificado: sin nodos attended →
 isSynchronous devuelve pv.idSolicitud al finalizar.
+
+### 8.y Retest JJGONZ2 (2002000011807)
+
+| Hallazgo | Fix |
+|---|---|
+| OK abría nueva pestaña (a!safeLink + querystring no enlaza site inputs) | OK = `a!dynamicLink` que guarda `ri!idSolicitudSel`→`ri!idSolicitud` y `ri!vista`="DETALLE"; nuevo input `idSolicitudSel` en AltaSolicitudPage, cableado desde Buscador — misma técnica que BuscadorTabla→Detalle, misma pestaña |
+| Buscador sin filas 1807 | No es isSynchronous: `SCA2 Solicitud` id=7 PDTE-500033 ALTA existe + `SCA2 Error` id=17 ALTA_ERROR PENDIENTE con payload completo — `generarStudAnul` PRE falló (soapenv 4007 BD), mismo error que en altas anteriores (paridad backend PRE). Proceso funcionó por diseño (Error relanzable desde BandejaErrores) |
+| Tabs Errores/Gestiones visibles | JJGONZ2 estaba en `SCA2 Administrators` → eliminado del grupo; quedan devin + GGALV10. visibilityExpr ya activa (v8) |
+| Estado "EN_ACCION" crudo | Regla `SCA2_textoEstadoSolicitud` desplegada era versión antigua sin rama `accion` → redeployada con match por acción (CONTRAANULAR→"Contra anulación en curso", etc., default EN_ACCION→"Solicitud Pendiente"). testRule verificado |
