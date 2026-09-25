@@ -541,3 +541,31 @@ Alta→Decidir→CrearAccion completa).
   - *Catalogación '---'*: `datosSolicitud.catalogacion` vacío en la fila Datos —
     mismo estado que una solicitud SCA sin catalogación escrita; el desplegable
     muestra el placeholder a la espera de selección (paridad).
+
+### 8.z5 Cabecera de acciones + argumentos backend PRE
+
+- **Cabecera en blanco en acciones (ContraAnulación, AccAdm, FueraNorma)**:
+  causa raíz — el input `datosCabecera` de `SCA2_DatosCabecera_Estrategicas` estaba
+  tipado como `{urn:recordtype:datatype}04f597de…` (record SCA2 Datos Cabecera) en
+  vez de CDT; cualquier mapa/CDT pasado no coercionaba → `ri!datosCabecera` null y
+  la llamada interna de fallback también se rompía dentro del wrapper → cabecera
+  vacía. SCA declara el input como `SCAC_DS_datosCabecera`. En TEST el CDT no es
+  reconocido por la API como tipo de input → fijado a **Map** (equivale a CDT para
+  index()). Además `SCA2_ContraAnulacionPrincipal` ahora prefiere el record
+  `sol.datosCompletosSolicitud.datosCabecera` (remapeado a la forma
+  datosCliente/datosPoliza/datosContacto) con fallback a
+  `SCA2_obtenerDatosCabecera` en vivo (igual que SCA). testInterface verifica:
+  15787529 → "2002000033843 - ZOJE AXSED ZOREC VUDA - NIF: 37772582G",
+  15787528 → "…- SAZAET MATAL NAJFUER - NIF: 11597358E". Afectaba también a
+  AccionesAdministrativas y FueraNorma (mismo componente).
+- **Argumentos**: se probó la integración `SCAC_consultarListadoArgumentosREST`
+  con el body completo de SCA para **15787515/2002000048398** (la solicitud donde
+  SCA mostró 8 argumentos): **ORA-00936 igual que con 15787528** → el servicio PRE
+  está caído hoy para cualquier body → la rejilla vacía es paridad backend con
+  SCA (misma respuesta, mismo render). `argsrest_15787515.json`.
+- **"Documento no disponible"**: SCA muestra el mismo texto cuando aún no hay
+  plantilla/generado — paridad, sin cambio.
+- Bug path corregido en `SCA2_ContraAnulacionOpciones`/`Principal`:
+  `sol.datosCompletosSolicitud.datosCabecera` (antes `sol.datosCabecera`, path
+  inexistente → nombre/apellidos/idCliente de la sección argumentario siempre
+  vacíos).
