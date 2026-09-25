@@ -84,7 +84,7 @@ tva-frontend:
     - ./mi-environments.json:/usr/share/nginx/html/assets/environments.json:ro
 ```
 
-o inyecta `window.__TVA_ENV__ = 'pre'` en el `index.html` servido.
+o ajusta `TVA_ENV` del contenedor frontend (regenera `assets/env.js` con `window.okcdApplicationEnvironment` al arrancar).
 
 ## Variables de entorno
 
@@ -120,11 +120,19 @@ o inyecta `window.__TVA_ENV__ = 'pre'` en el `index.html` servido.
 
 ## Matriz stub → paquete corporativo
 
+Frontend ya usa los paquetes corporativos reales: `@mapfre-tech/ngx-multienvironment` 4.0.0
+y los executores `@mapfre-tech/nx-angular` (`application`, `dev-server`), `@mapfre-tech/nx-tools`,
+`nx-angular-esp`, `nx-version-esp`. El `.npmrc` del repo apunta al feed de Azure Artifacts
+(`pkgs.dev.azure.com/devopsmapfre/.../releases/npm/`); **la autenticación va en `~/.npmrc`
+del usuario** (líneas `_auth`/`email`/`always-auth` con un PAT en base64 como en la
+documentación corporativa — nunca en el repo). `pnpm install` resuelve los paquetes.
+La elección de entorno es `window.okcdApplicationEnvironment` en `public/assets/env.js`
+(dev local); el contenedor la genera en `docker/entrypoint.sh` desde `TVA_ENV` (defecto `pro`).
+
+Solo el backend conserva stubs (el feed Python no está en alcance):
+
 | Stub local | Paquete corporativo | Cómo restaurarlo |
 |---|---|---|
-| `tva-frontend/libs/stubs/ngx-multienvironment` | `@mapfre-tech/ngx-multienvironment` | Quitar `libs/**` de `pnpm-workspace.yaml`, fijar versión real en `package.json`, restaurar `.npmrc.corporate` → `.npmrc`, quitar `paths` del stub en `tsconfig.json` |
-| Ejecutores `@angular/build` + `project.corporate.json` | `@mapfre-tech/nx-angular`, `nx-tools` | `cp project.corporate.json project.json` + `.npmrc` corporativo |
-| `.npmrc` público | `.npmrc.corporate` (feed Azure Artifacts) | Renombrar |
 | `apps/core/auth.py` | `arch-ram-lib-django-auth` | Descomentar bloque en `pyproject.toml`, adaptar settings |
 | `apps/core/observability.py` | `arch-ram-lib-django-observability` | Ídem |
 | `apps/core/httpclient.py` | `arch-ram-lib-django-httpclient` | Ídem |

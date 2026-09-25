@@ -234,7 +234,7 @@ la fase 7 depende de terceros.
 
 ## 10.8 Decisiones a validar por el equipo
 
-> **Estado: implementado** con stubs (sin acceso a Azure Artifacts). Las decisiones se aplicaron tal como se propusieron; la guía de despliegue (`11-guia-despliegue.md`) documenta la matriz stub → paquete corporativo para restaurarlas en infraestructura MAPFRE.
+> **Estado: implementado**. Frontend ya con los paquetes corporativos reales (`ngx-multienvironment` 4.0.0, executors `@mapfre-tech/nx-angular`, feed Azure Artifacts + `~/.npmrc` con PAT); el backend conserva los stubs `arch-ram-lib-*` (feed Python fuera de alcance).
 
 1. **Ubicación**: desarrollo en `feature/tva` de este repo como `tva-frontend/` y
    `tva-backend/` (cada uno con la estructura exacta de su arquetipo para poder moverlos a

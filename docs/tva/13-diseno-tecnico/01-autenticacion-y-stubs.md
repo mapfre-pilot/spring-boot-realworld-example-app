@@ -5,7 +5,7 @@
 Los paquetes corporativos (`arch-ram-lib-django-auth`, `arch-ram-lib-django-httpclient`,
 `arch-ram-lib-django-cache`, `arch-ram-lib-django-observability`, `@mapfre-tech/ngx-multienvironment`,
 `@mapfre-tech/nx-angular|nx-tools`) no son instalables desde el clone (registro privado de Azure
-Artifacts). Se reemplazan por stubs locales que conservan exactamente la misma responsabilidad
+Artifacts). El frontend usa ya el paquete real `ngx-multienvironment`; el backend conserva stubs locales que replican la misma responsabilidad
 y un punto de sustitución documentado. La autenticación replica la del portal TVA: JWT Bearer con
 roles `TVA_USUARIO` / `TVA_ADMIN_PORTAL` / `TVA_DEBUG`; en `ENVIRONMENT=local` se valida un HS256
 firmado con `SECRET_KEY` (generado con `manage.py crear_token_local`), y fuera de local se valida
@@ -18,11 +18,11 @@ RS256 contra el JWKS del IdP corporativo (OIDC). En Angular, `AuthService` manti
 
 | # | Decision | Choice | Alternatives Rejected | Rationale |
 |---|----------|--------|------------------------|-----------|
-| 1 | Forma de sustituir las libs corporativas | Stubs locales con misma API y punto de swap documentado | Vendored forks, reescritura total | El usuario despliega en su infra con los paquetes reales; el stub debe ser reemplazable sin tocar el código de la app |
+| 1 | Forma de las libs corporativas | Paquete real `@mapfre-tech/ngx-multienvironment` 4.0.0 (frontend) + stubs locales `arch-ram-lib-*` (backend, feed Python fuera de alcance) | Vendored forks, reescritura total | El feed npm está disponible con `~/.npmrc` + PAT; el frontend usa los tokens del paquete vía `EnvironmentService` propio |
 | 2 | Doble backend JWT | `LocalJWTAuthentication` (HS256) + `OIDCJWTAuthentication` (RS256/JWKS) elegidos por `ENVIRONMENT` | Solo OIDC, solo mock header | Desarrollo offline sin IdP; producción con el mismo claim `roles` |
 | 3 | Usuario autenticado | `TokenUser` dataclass (`sub`, `roles`, `claims`), sin modelo User de Django | `django.contrib.auth` | La app no gestiona usuarios; el JWT corporativo es la fuente de verdad |
 | 4 | Token en frontend | `localStorage` + signals (`token`, `roles`, `autenticado`) | Cookies, sessionStorage | Mismo esquema que el portal; almacenable por clave configurable `tokenStorageKey` |
-| 5 | Multi-entorno | `initMultiEnvironmentApp` lee `assets/environments.json` en runtime (`window.__TVA_ENV__` \|\| hostname \|\| `dev`) | Build-time fileReplacements | Appian/Appian-like: un solo build servido en todos los entornos |
+| 5 | Multi-entorno | `initMultiEnvironmentApp` (paquete real) + `window.okcdApplicationEnvironment` en `assets/env.js` (`TVA_ENV` en el contenedor) | Selector interactivo del paquete, build-time fileReplacements | Un solo build para todos los entornos sin selector en UI |
 | 6 | OIDC en frontend | `angular-auth-oidc-client` inicializado solo si `auth.mode==='oidc'`; login documentado como TODO | Implementar flujo completo sin IdP | Sin IdP accesible no se puede probar end-to-end; se deja el punto de conexión |
 
 ## Data Flow
@@ -49,7 +49,6 @@ Frontend: login page → token pegado en localStorage
 | `tva-frontend/src/app/core/auth/auth.service.ts` | Create | `AuthService` signals `token`, `roles`, `autenticado`; `login`/`logout` |
 | `tva-frontend/src/app/core/auth/auth.interceptor.ts` | Create | `authInterceptor` añade `Authorization: Bearer` |
 | `tva-frontend/src/app/core/auth/guards.ts` | Create | `authGuard`, `roleGuard(role)` |
-| `tva-frontend/libs/stubs/ngx-multienvironment/` | Create | Stub `initMultiEnvironmentApp`, `provideEnvironment`, `ENVIRONMENT_CONFIG`, `EnvironmentService` |
 
 ## Interfaces / Contracts
 
@@ -70,11 +69,14 @@ class OIDCJWTAuthentication(authentication.BaseAuthentication): ...
 ```
 
 ```typescript
-// libs/stubs/ngx-multienvironment
-export function initMultiEnvironmentApp(): Promise<{ env: string; envConfig: EnvironmentConfig }>;
-export function provideEnvironment(env: string, envConfig: EnvironmentConfig): Provider[];
+// @mapfre-tech/ngx-multienvironment/core (paquete real)
+export function initMultiEnvironmentApp(opts?): Promise<{ env: string; envConfig: EnvironmentConfig }>;
+export function provideEnvironment(env: string, envConfig: EnvironmentConfig): EnvironmentProviders;
+export const ENVIRONMENT: InjectionToken<string>;
 export const ENVIRONMENT_CONFIG: InjectionToken<EnvironmentConfig>;
-export class EnvironmentService { config: EnvironmentConfig }
+
+// core/config/environment.service.ts
+export class EnvironmentService { env: string; config: TvaEnvironmentConfig }
 
 // core/auth
 export class AuthService { token: Signal<string | null>; roles: Signal<string[]>; ... }
