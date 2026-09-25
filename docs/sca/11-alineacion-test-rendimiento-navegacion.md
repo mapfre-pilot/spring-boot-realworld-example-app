@@ -472,3 +472,21 @@ COD_CIA de la póliza como SCA.
 (proc COMPLETED). Error 17 → RELANZADO; filas de intentos fallidos (19–24)
 → DESCARTADO. Logs: `t20/relanzar_1807_v6.log`, `ctx_1807_v4.json`,
 `diff_payload.py`.
+
+### 8.z2 Upsert Solicitud en relanzar de Alta (PDTE)
+
+El relanzar de un `ALTA_ERROR` insertaba una fila nueva de `Solicitud` por cada
+intento (6 duplicados PDTE para 1807). Fix para que el PM reutilice la fila:
+
+- `SCA2_parametrosRelanzarAlta`: `idSolicitudExistente` ahora devuelve el id previo
+  siempre (PDTE incluido; antes null si PDTE-).
+- PM Alta n14 (¿Reanudar?): reanudar solo si `idSolicitudExistente` no nulo Y no
+  empieza por `PDTE-` (los PDTE siguen por la rama de generar).
+- PM Alta n4 (generarStudAnul): si falla el servicio y hay PDTE previo, reutiliza
+  ese id en vez de `PDTE-`&pp!id nuevo.
+- PM Alta n9/n206 (Write Solicitud): upsert con OR `idSolicitud = pv!idSolicitud`
+  OR `idSolicitud = pv!idSolicitudExistente` → actualiza la fila PDTE existente.
+
+Limpieza 1807: filas Solicitud 7-12 eliminadas; queda única fila id=13
+(15787527, EN_ACCION). Tarea 3 CONTRAANULAR asignada JJGONZ2 (cadena
+Alta→Decidir→CrearAccion completa).
