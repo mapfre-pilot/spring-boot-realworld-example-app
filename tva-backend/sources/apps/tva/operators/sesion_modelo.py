@@ -33,12 +33,37 @@ def caja(id: str, titulo: str, secciones: list[dict]) -> dict:
     return {"id": id, "titulo": titulo, "plegada": False, "secciones": secciones}
 
 
-def _tomador_vacio() -> dict:
+def tomador_vacio() -> dict:
+    """``TVA_Tomador`` vacío (§12.3) — estructura por defecto de un tomador."""
     return {
-        "datosPersonales": {},
-        "domicilioHabitual": {},
+        "datosPersonales": {
+            "documentId": None,
+            "nombre": None,
+            "primerApellido": None,
+            "segundoApellido": None,
+            "fechaNacimiento": None,
+            "sexo": None,
+            "nacionalidad": None,
+            "paisNacimiento": None,
+            "actividad": None,
+            "sector": None,
+            "profesion": None,
+            "responsabilidadPublica": False,
+            "residenciaHabitualEspanya": True,
+        },
+        "domicilioHabitual": {
+            "tipoVia": None,
+            "nombreVia": None,
+            "numero": None,
+            "complementoDireccion": None,
+            "codigoPostal": None,
+            "localidad": None,
+            "provincia": None,
+            "pais": "ES",
+        },
         "mediosContacto": [],
-        "fatcaCrs": {},
+        "fatcaCrs": {"residenteFiscalOtroPais": False},
+        "legalRepresentative": None,
         "perfilCliente": {},
         "datosGestionParticipante": {
             "consentimientoProteccionDatos": False,
@@ -98,7 +123,7 @@ def nueva_sesion_estado(
         "companyId": company_id,
         "distributionChannel": distribution_channel,
         "perfilUsuario": perfil,
-        "tomadores": tomadores if tomadores is not None else [_tomador_vacio()],
+        "tomadores": tomadores if tomadores is not None else [tomador_vacio()],
         "ventaInformada": {"opcionesInversion": [], "cestaLibre": [], "preferencias": {}},
         "datosOperacion": {},
         "garantias": [],
@@ -115,7 +140,7 @@ def nueva_sesion_estado(
     }
 
 
-def _buscar_caja(estado: dict, caja_id: str) -> dict | None:
+def buscar_caja(estado: dict, caja_id: str) -> dict | None:
     for c in (estado or {}).get("cajas", []):
         if c.get("id") == caja_id:
             return c
@@ -135,7 +160,7 @@ def set_seccion_valida(estado: dict, caja_id: str, seccion_id: str, valida: bool
 
 def caja_valida(estado: dict, caja_id: str) -> bool:
     """True si todas las secciones de la caja tienen datosValidos."""
-    c = _buscar_caja(estado, caja_id)
+    c = buscar_caja(estado, caja_id)
     if not c:
         return False
     return all(s.get("datosValidos") for s in c.get("secciones", []))

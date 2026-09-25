@@ -47,6 +47,7 @@ class Accion(StrEnum):
     VOLVER_ADMINISTRACION = "volver-administracion"
     DOC_PRECONTRACTUAL = "doc-precontractual"
     CONTRATAR = "contratar"
+    VALIDAR_SECCION = "validar-seccion"
 
 
 ACCIONES_VALIDAS = [a.value for a in Accion]

@@ -29,7 +29,20 @@ def ejecutar(sesion: Sesion, datos: dict) -> dict:
 
     estado = dict(sesion.estado or {})
     estado["modalidadProducto"] = modalidad_prod
+    estado["codigoProducto"] = modalidad_prod
     estado["taller"] = taller or estado.get("taller", {})
+    # Copiar datos del producto seleccionado al estado (garantías con las
+    # obligatorias preseleccionadas y opciones de inversión del producto).
+    producto = next(
+        (p for p in estado.get("productos") or [] if str(p.get("commercialProductCode") or p.get("code")) == str(modalidad_prod)),
+        {},
+    )
+    if producto:
+        estado["productoSeleccionado"] = producto
+        estado["garantias"] = [{**g, "seleccionada": bool(g.get("obligatoria"))} for g in producto.get("garantias") or []]
+        via = dict(estado.get("ventaInformada") or {})
+        via["opcionesInversion"] = [dict(o) for o in producto.get("opcionesInversion") or []]
+        estado["ventaInformada"] = via
     sesion.estado = estado
     sesion.pantalla_actual = siguiente_pantalla(sesion).value
     guardar_y_trazar(sesion, "SELECCIONAR_MODALIDAD", datos=datos)

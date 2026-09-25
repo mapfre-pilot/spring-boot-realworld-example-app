@@ -1,0 +1,16 @@
+{
+  "valores": [
+    {
+      "codigo": "MOVIL",
+      "descripcion": "Móvil"
+    },
+    {
+      "codigo": "FIJO",
+      "descripcion": "Teléfono fijo"
+    },
+    {
+      "codigo": "EMAIL",
+      "descripcion": "Correo electrónico"
+    }
+  ]
+}

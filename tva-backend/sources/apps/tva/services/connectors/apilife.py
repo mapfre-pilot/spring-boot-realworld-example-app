@@ -145,16 +145,38 @@ _PRODUCTOS_DEV: list[tuple[int, str, bool]] = [
 ]
 
 
+_GARANTIA_FC = {"codigo": "FC", "descripcion": "Fallecimiento por cualquier causa", "obligatoria": True, "seleccionada": True}
+_GARANTIA_FA = {"codigo": "FA", "descripcion": "Fallecimiento por accidente", "obligatoria": False, "seleccionada": False}
+_OPCIONES_427 = [
+    {"investmentPreferenceCode": "ES0112835006", "descripcion": "MAPFRE Fondtesoro", "seleccionada": False},
+    {"investmentPreferenceCode": "ES0112835007", "descripcion": "MAPFRE Renta Fija", "seleccionada": False},
+    {"investmentPreferenceCode": "CESTA LIBRE", "descripcion": "Cesta libre", "seleccionada": False},
+]
+_OPCIONES_UL = [
+    {"investmentPreferenceCode": "ES0112835006", "descripcion": "MAPFRE Fondtesoro", "seleccionada": False},
+    {"investmentPreferenceCode": "ES0112835007", "descripcion": "MAPFRE Renta Fija", "seleccionada": False},
+]
+
+
 def _catalogo_dev() -> list[dict]:
-    return [
-        {
-            "code": f"{code:05d}",
-            "commercialProductCode": f"{code:05d}",
-            "commercialProductDesc": desc,
-            "unitLinkedInd": ul,
-        }
-        for code, desc, ul in sorted(_PRODUCTOS_DEV, key=lambda p: p[1])
-    ]
+    """Catálogo DEV: producto + garantías, periodicidades, primas y opciones UL."""
+    productos = []
+    for code, desc, ul in sorted(_PRODUCTOS_DEV, key=lambda p: p[1]):
+        productos.append(
+            {
+                "code": f"{code:05d}",
+                "commercialProductCode": f"{code:05d}",
+                "commercialProductDesc": desc,
+                "unitLinkedInd": ul,
+                "garantias": [dict(_GARANTIA_FC), dict(_GARANTIA_FA)],
+                "periodicidades": ["M", "T", "S", "A"] if ul else ["A"],
+                "primaMinima": 600,
+                "primaMaxima": 1_000_000,
+                "opcionesInversion": [dict(o) for o in (_OPCIONES_427 if code == 427 else _OPCIONES_UL)] if ul else [],
+                "requiereAsegurado": False,
+            }
+        )
+    return productos
 
 
 class MockApiLifeClient(ApiLifeClient):

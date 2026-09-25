@@ -5,17 +5,21 @@ import logging
 from apps.tva.models import Pantalla, Sesion
 from apps.tva.schemas.errors import AvisosClase, aviso
 
+from apps.tva.services.connectors.apilife import get_apilife_client
+
 from . import (
     continuar_tomador,
     firmar,
     guardar_solicitud,
     importe_maximo,
     rentas,
+    secciones,
     seleccionar_modalidad,
     validar_reinversion,
     verificar_productores,
 )
 from ._comun import add_aviso, guardar_y_trazar, resultado
+from .botonera import condiciones_contratar
 from .maquina_pantallas import (
     ACCIONES_VALIDAS,
     Accion,
@@ -68,8 +72,6 @@ def _accion_doc_precontractual(sesion: Sesion, datos: dict, roles: list[str]) ->
     """Doc. Precontractual (VIA): envío mock de documentos al cliente."""
     estado = dict(sesion.estado or {})
     try:
-        from apps.tva.services.connectors.apilife import get_apilife_client
-
         get_apilife_client().individual_documents(datos or {})
     except Exception as exc:
         logger.warning("Envío doc. precontractual falló: %s", exc)
@@ -99,25 +101,7 @@ def _accion_doc_precontractual(sesion: Sesion, datos: dict, roles: list[str]) ->
 
 def _accion_contratar(sesion: Sesion, datos: dict, roles: list[str]) -> dict:
     """Contratar (VIA): valida las condiciones de habilitado y va a RESUMEN."""
-    from .botonera import (
-        _flag_bool,
-        _hay_avisos_error,
-        _seguro_y_productores_validos,
-        _test_conveniencia_valido,
-    )
-
-    estado = dict(sesion.estado or {})
-    motivo = None
-    if not _seguro_y_productores_validos(estado):
-        motivo = "Los datos de productores y del seguro no son válidos"
-    elif _flag_bool("TVA_FLAG_TEST_CONVENIENCIA_OBLIGATORIO") and not _test_conveniencia_valido(estado):
-        motivo = "Es necesario que el cliente tenga realizado su test de conveniencia"
-    elif _flag_bool("TVA_FLAG_DOCUMENTOS_PRECONTRACTUALES_OBLIGATORIOS") and not (estado.get("documentosPrecontractuales")):
-        motivo = "Es obligatorio enviar la documentación precontractual"
-    elif sesion.modalidad == "VIA" and not estado.get("documentosPrecontractuales"):
-        motivo = "Es necesario enviar la documentación precontractual antes de contratar"
-    elif _hay_avisos_error(estado):
-        motivo = "Hay avisos de error pendientes"
+    motivo = condiciones_contratar(sesion)
 
     if motivo:
         a = add_aviso(sesion, AvisosClase.GENERAL, "TVA_ERROR_CONTRATAR", motivo, tipo="ERROR")
@@ -176,6 +160,7 @@ def ejecutar_accion(sesion: Sesion, accion: str, datos: dict, roles: list[str] |
         Accion.VALIDAR_REINVERSION: validar_reinversion.ejecutar,
         Accion.VERIFICAR_PRODUCTORES: verificar_productores.ejecutar,
         Accion.IMPORTE_MAXIMO: importe_maximo.ejecutar,
+        Accion.VALIDAR_SECCION: secciones.ejecutar,
     }
     if a in (Accion.RECALCULAR_RENTAS, Accion.CONTRATAR_RENTAS) and sesion.modalidad != "R2C":
         sesion.estado = {
@@ -191,6 +176,8 @@ def ejecutar_accion(sesion: Sesion, accion: str, datos: dict, roles: list[str] |
         }
         guardar_y_trazar(sesion, a.upper())
         return resultado(sesion, roles=roles)
+    if a == Accion.VALIDAR_SECCION:
+        return secciones.ejecutar(sesion, datos, roles=roles)
     res = dispatch[a](sesion, datos)
     # los operadores devuelven el dict de resultado; añadir botones si falta
     if isinstance(res, dict) and "botones" not in res:

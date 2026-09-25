@@ -7,12 +7,16 @@ from apps.tva.schemas.errors import AvisosClase, aviso
 from apps.tva.services.connectors.apilife import ApiLifeError, get_apilife_client
 
 from ._comun import guardar_y_trazar, resultado
+from .secciones import revalidar_caja
+from .sesion_modelo import CAJA_DATOS_DEL_SEGURO, CAJA_DATOS_PRODUCTORES
 
 logger = logging.getLogger(__name__)
 
 
 def ejecutar(sesion: Sesion, datos: dict) -> dict:
     """Guarda la solicitud en API Life y avisa del resultado."""
+    revalidar_caja(sesion, CAJA_DATOS_PRODUCTORES)
+    revalidar_caja(sesion, CAJA_DATOS_DEL_SEGURO)
     avisos = []
     try:
         response = get_apilife_client().save_proposal({"estado": sesion.estado, **datos})

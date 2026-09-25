@@ -24,7 +24,7 @@ from apps.tva.services.connectors.perfil_usuario import get_perfil_usuario_clien
 from apps.tva.services.connectors.ric import get_ric_client
 
 from .maquina_pantallas import pantalla_inicio
-from .sesion_modelo import nueva_sesion_estado
+from .sesion_modelo import nueva_sesion_estado, tomador_vacio
 from .validaciones import nuuma_desde_username, validar_parametros_inicio, validar_parametros_inicio_body
 
 logger = logging.getLogger(__name__)
@@ -52,15 +52,13 @@ def _es_contrato_nuevo(datos: dict) -> bool:
 
 
 def _tomadores_desde_policy_holders(policy_holders: list) -> list:
-    from .sesion_modelo import _tomador_vacio
-
     tomadores = []
     for ph in policy_holders or []:
-        t = _tomador_vacio()
+        t = tomador_vacio()
         t["datosPersonales"] = dict(ph)
         tomadores.append(t)
     if not tomadores:
-        tomadores = [_tomador_vacio()]
+        tomadores = [tomador_vacio()]
     return tomadores
 
 

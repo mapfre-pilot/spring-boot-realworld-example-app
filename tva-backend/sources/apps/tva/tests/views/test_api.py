@@ -96,7 +96,7 @@ def test_accion_invalida(api_client, auth_header):
 
 
 def test_accion_continuar_tomador(api_client, auth_header):
-    s = _sesion(modalidad="VA", pantalla="CAPTURA_TOMADOR1", estado={"avisos": [], "tomadores": [{}]})
+    s = _sesion(modalidad="VA", pantalla="CAPTURA_TOMADOR1", estado={"avisos": [], "tomadores": [{}, {}]})
     r = api_client.post(
         f"{BASE}/sesiones/{s.clave}/acciones/continuar-tomador/",
         {"datos": {"datosPersonales": {"documento": "X", "birthDate": "1980-01-01"}}},

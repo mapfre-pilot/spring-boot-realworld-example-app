@@ -19,8 +19,8 @@ ROLE_ADMIN_PORTAL = "TVA_ADMIN_PORTAL"
 _CONFIRM_CANCELAR = {
     "header": "Cancelar",
     "message": "Va a cancelar el proceso de captura. ¿Está seguro?",
-    "ok": "Sí",
-    "cancel": "No",
+    "ok": "Aceptar",
+    "cancel": "Cancelar",
 }
 _CONFIRM_DOC = {
     "header": "Documentación precontractual",
@@ -59,6 +59,30 @@ def _seguro_y_productores_validos(estado: dict) -> bool:
 
 def _hay_avisos_error(estado: dict) -> bool:
     return any(a.get("tipo") == "ERROR" for a in (estado or {}).get("avisos", []))
+
+
+def condiciones_contratar(sesion: Sesion) -> str | None:
+    """Motivo por el que Contratar está deshabilitado, o ``None`` si procede.
+
+    Misma regla que el ``disabled`` de la botonera (§12.4.3): la reutiliza el
+    operador ``contratar`` para devolver el aviso de error correspondiente.
+    """
+    estado = sesion.estado or {}
+    flag_tc = _flag_bool("TVA_FLAG_TEST_CONVENIENCIA_OBLIGATORIO")
+    flag_docs = _flag_bool("TVA_FLAG_DOCUMENTOS_PRECONTRACTUALES_OBLIGATORIOS")
+    docs = estado.get("documentosPrecontractuales") or []
+    docs_enviados = bool(docs) and all(d.get("enviado") for d in docs)
+    if not _seguro_y_productores_validos(estado):
+        return "Los datos de productores y del seguro no son válidos"
+    if flag_tc and not _test_conveniencia_valido(estado):
+        return "Es necesario que el cliente tenga realizado su test de conveniencia"
+    if flag_docs and not docs_enviados:
+        return "Es obligatorio enviar la documentación precontractual"
+    if sesion.modalidad == Modalidad.VENTA_INFORMADA and not docs_enviados:
+        return "Es necesario enviar la documentación precontractual antes de contratar"
+    if _hay_avisos_error(estado):
+        return "Hay avisos de error pendientes"
+    return None
 
 
 def botones_para(sesion: Sesion, roles: list[str] | None = None) -> list[dict]:
@@ -107,12 +131,8 @@ def botones_para(sesion: Sesion, roles: list[str] | None = None) -> list[dict]:
             "contratar",
             "Contratar",
             visible=(solicitud and (via or r2c)) or r2c_precios,
-            disabled=not (
-                base_validos
-                and tc_ok
-                and (not via or (docs_enviados and not _hay_avisos_error(estado)))
-                and (not r2c or not flag_docs or docs_enviados)
-            ),
+            disabled=(solicitud and condiciones_contratar(sesion) is not None)
+            or (r2c_precios and not (base_validos and tc_ok and (not flag_docs or docs_enviados))),
         ),
         _boton("continuar", "Continuar", visible=tomador, disabled=not caja_tomador_ok),
         _boton("siguiente", "Siguiente", visible=r2c_captura, disabled=len(estado.get("tomadores") or []) < 2),
