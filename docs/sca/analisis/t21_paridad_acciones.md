@@ -99,3 +99,10 @@ El alta UI de 2002000014944 **sí se completó**: 15787543 EN_ACCION, Tarea ACCI
 | Fecha anulación autorizada | `required`, poblada desde `solicitudAnulacion.datosCompletosSolicitud.datosSolicitud.fecAnulacion` | path `sol.datos.fecAnulacion` roto → vacío | Path correcto + parse dd/MM/yyyy (deployed, testInterface sin error) |
 | Header Catalogación | "A FECHA" desde gestión | "-" (catal nunca escrito — key inexistente `datosSolicitud.catalogacion` en el contexto) | PM nodo7 lee `datosCod.codTpCatalogacion`; backfill rows 11/12 = "4" |
 | `sol.datos` | `datosSolicitud` equivalente | clave ausente → todos los `sol.datos.*` null | alias `datos` + keys lowercase uniformes |
+
+## Posponer/fechaAlta — fixes UI (25/09 noche v2)
+
+| Punto | Causa | Fix |
+|---|---|---|
+| POSPONER UI no arranca PM | `obtenerCaducidadNivel` devuelve Datetime; PV `fechaDietario` es Date → fallo silencioso de a!startProcess (solo UI; testProcessModel con Date sí funcionaba) | `todate()` en los 4 saveInto POSPONER |
+| OK alta → Detalle en vez de acción | `local!tareaNueva` lazy, solo usada en saveInto → null | `refreshAlways: true` |
