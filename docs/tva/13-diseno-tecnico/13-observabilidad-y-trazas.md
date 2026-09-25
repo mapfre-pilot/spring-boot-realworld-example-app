@@ -42,7 +42,7 @@ Admin → GET /admin/trazas/?clave=<clave> → Traza.objects.filter(clave_sesion
 | `tva-backend/sources/apps/tva/operators/_comun.py` | Modify | `guardar_y_trazar` persiste + crea Traza + `set_clave_sesion` |
 | `tva-backend/sources/apps/tva/views/admin.py` | Modify | `TrazasView` |
 | `tva-backend/sources/config/settings.py` | Modify | Logger `django.db.backends` WARNING salvo `SQL_DEBUG` |
-| `tva-frontend/src/app/core/api/` | Modify | `errorInterceptor` → MatSnackBar |
+| `tva-frontend/libs/core/src/lib/infra/http/` | Modify | `errorInterceptor` → MatSnackBar |
 
 ## Interfaces / Contracts
 

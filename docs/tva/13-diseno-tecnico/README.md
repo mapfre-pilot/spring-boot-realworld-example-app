@@ -11,6 +11,7 @@ los ficheros implicados y los contratos públicos reales del código.
 
 | # | Feature | Fichero |
 |---|---------|---------|
+| 00 | Arquitectura de referencia (Clean Architecture) | [00-arquitectura-referencia-frontend.md](00-arquitectura-referencia-frontend.md) |
 | 01 | Autenticación y stubs corporativos | [01-autenticacion-y-stubs.md](01-autenticacion-y-stubs.md) |
 | 02 | Inicio y contrato Web API | [02-inicio-y-contrato-web-api.md](02-inicio-y-contrato-web-api.md) |
 | 03 | Modelo de sesión TVA | [03-modelo-de-sesion-tva.md](03-modelo-de-sesion-tva.md) |

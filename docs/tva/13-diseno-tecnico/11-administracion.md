@@ -43,7 +43,7 @@ Botón volver-administracion → idPantallaAnterior
 | `tva-backend/sources/apps/tva/fixtures/parametros.json` | Modify | Fechas vacías + `TVA_APLICACION_CERRADA=0` + flags |
 | `tva-backend/sources/apps/tva/management/commands/cargar_parametros.py` | Modify | Carga del fixture |
 | `tva-frontend/src/app/pages/admin/admin.page.ts` | Modify | Tabla + botones apertura/cierre |
-| `tva-frontend/src/app/core/auth/guards.ts` | Modify | `roleGuard('TVA_ADMIN_PORTAL')` |
+| `tva-frontend/libs/core/src/lib/infra/auth/guards.ts` | Modify | `roleGuard('TVA_ADMIN_PORTAL')` |
 
 ## Interfaces / Contracts
 

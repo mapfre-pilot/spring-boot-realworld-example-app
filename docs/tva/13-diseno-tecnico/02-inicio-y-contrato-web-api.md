@@ -50,7 +50,7 @@ Frontend: InicioPage (TVA_Utilidades_Inicio) → api.inicioAhorro/inicioRentas
 | `tva-backend/sources/apps/tva/operators/validaciones.py` | Modify | `validar_parametros_inicio_body`, `validar_investment_option`, `nuuma_desde_username`, `test_conveniencia_valido` |
 | `tva-backend/sources/apps/tva/schemas/errors.py` | Modify | `webapi_error_response` con sobre `{code:"02", errors:[…]}` |
 | `tva-frontend/src/app/pages/inicio/inicio.page.ts` | Modify | Formulario completo Utilidades Inicio + tabla investment + `policyHolders` con `testData.convenience` |
-| `tva-frontend/src/app/core/utils/nuuma.ts` | Create | `nuumaDe(username)` read-only |
+| `tva-frontend/libs/core/src/lib/domain/nuuma.ts` | Create | `nuumaDe(username)` read-only |
 
 ## Interfaces / Contracts
 

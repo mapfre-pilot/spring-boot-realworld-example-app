@@ -44,8 +44,8 @@ Operador (validar-seccion / continuar / acción)
 | `tva-backend/sources/apps/tva/models.py` | Create | `Sesion` (JSONField estado), `Traza`, `Parametro` |
 | `tva-backend/sources/apps/tva/operators/sesion_modelo.py` | Create | `tomador_vacio`, `cajas_iniciales`, `nueva_sesion_estado`, `set_seccion_valida`, `caja_valida`, `buscar_caja`, ids `CAJA_*` |
 | `tva-backend/sources/apps/tva/schemas/errors.py` | Modify | `aviso` con shape §12.3 + `webapi_error_response` |
-| `tva-frontend/src/app/core/state/sesion.store.ts` | Create | `SesionStore` signals y métodos |
-| `tva-frontend/src/app/core/models/models.ts` | Create | `EstadoSesion`, `Tomador`, `Caja`, `SeccionCaja`, `Aviso`, `Boton`… |
+| `tva-frontend/libs/core/src/lib/application/state/sesion.store.ts` | Create | `SesionStore` signals y métodos |
+| `tva-frontend/libs/core/src/lib/domain/*.model.ts` | Create | `EstadoSesion`, `Tomador`, `Caja`, `SeccionCaja`, `Aviso`, `Boton`… |
 | `tva-backend/sources/apps/tva/views/sesiones.py` | Modify | GET devuelve `botones`; acción pasa `request.user.roles` |
 
 ## Interfaces / Contracts

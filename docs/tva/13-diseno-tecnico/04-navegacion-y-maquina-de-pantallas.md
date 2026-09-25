@@ -44,7 +44,7 @@ POST /sesiones/<clave>/acciones/<accion>/
 | `tva-backend/sources/apps/tva/operators/dispatcher.py` | Modify | `_accion_cancelar`, `_accion_administracion`, `_accion_doc_precontractual`, `_accion_contratar`, `VALIDAR_SECCION` |
 | `tva-backend/sources/apps/tva/views/sesiones.py` | Modify | `SesionAccionView` pasa `request.user.roles` |
 | `tva-frontend/src/app/pages/sesion/sesion.page.ts` | Modify | `@switch` por pantalla + `app-botonera` data-driven |
-| `tva-frontend/src/app/core/state/sesion.store.ts` | Modify | `ACCION_POR_BOTON` map botón→acción backend |
+| `tva-frontend/libs/core/src/lib/application/state/sesion.store.ts` | Modify | `ACCION_POR_BOTON` map botón→acción backend |
 
 ## Interfaces / Contracts
 

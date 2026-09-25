@@ -50,8 +50,8 @@ Botonera "Continuar" → ejecutar('continuar-tomador')
 | `tva-frontend/src/app/pages/sesion/pantallas/tomador-base.ts` | Modify | `TomadorBase` con formularios por sección + catálogos + requisitos |
 | `tva-frontend/src/app/pages/sesion/pantallas/captura-tomador1.container.ts` | Modify | Template compartido `TOMADOR_TEMPLATE` |
 | `tva-frontend/src/app/pages/sesion/pantallas/captura-tomador2.container.ts` | Modify | Mismo template con `cajaId='CAPTURA_DATOS_TOMADOR2'` |
-| `tva-frontend/src/app/shared/ui/seccion.component.ts` | Create | Plegado/validez/avisos de sección + botón Continuar |
-| `tva-frontend/src/app/shared/ui/caja.component.ts` | Modify | Contenedor mat-expansion-panel |
+| `tva-frontend/src/app/ui/seccion.component.ts` | Create | Plegado/validez/avisos de sección + botón Continuar |
+| `tva-frontend/src/app/ui/caja.component.ts` | Modify | Contenedor mat-expansion-panel |
 
 ## Interfaces / Contracts
 

@@ -46,10 +46,10 @@ avisos: estado.avisos
 | `tva-backend/sources/apps/tva/operators/botonera.py` | Create | `botones_para`, `condiciones_contratar`, `_CONFIRM_CANCELAR`, `_CONFIRM_DOC` |
 | `tva-backend/sources/apps/tva/operators/_comun.py` | Modify | `resultado` incluye `botones`; `add_aviso` con `tipo`/`mostrar_en` |
 | `tva-backend/sources/apps/tva/operators/dispatcher.py` | Modify | `_accion_contratar` usa `condiciones_contratar` |
-| `tva-frontend/src/app/shared/ui/botonera.component.ts` | Create | Render data-driven + MatDialog confirm |
-| `tva-frontend/src/app/shared/ui/confirm-dialog.component.ts` | Create | Diálogo con header/message/ok/cancel |
-| `tva-frontend/src/app/shared/ui/avisos.component.ts` | Modify | `texto`/`tipo`/`mostrarEn` CABECERA |
-| `tva-frontend/src/app/shared/ui/seccion.component.ts` | Create | Plegado + check + avisos de sección |
+| `tva-frontend/src/app/ui/botonera.component.ts` | Create | Render data-driven + MatDialog confirm |
+| `tva-frontend/src/app/ui/confirm-dialog.component.ts` | Create | Diálogo con header/message/ok/cancel |
+| `tva-frontend/src/app/ui/avisos.component.ts` | Modify | `texto`/`tipo`/`mostrarEn` CABECERA |
+| `tva-frontend/src/app/ui/seccion.component.ts` | Create | Plegado + check + avisos de sección |
 
 ## Interfaces / Contracts
 

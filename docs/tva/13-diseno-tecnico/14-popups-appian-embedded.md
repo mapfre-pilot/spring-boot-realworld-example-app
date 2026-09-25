@@ -49,11 +49,11 @@ Requisitos del tomador (botón) → AppianPopupService.abrir(clave, popup, idxTo
 | `tva-backend/sources/apps/tva/tests/test_popups.py` | Create | 19 tests (connector mockeado, bodies, completar, vistas) |
 | `tva-backend/docker/docker-compose.yml` | Modify | `APPIAN_EMBED_*` en environment (comentadas/mock) |
 | `tva-frontend/public/assets/environments.json` | Modify | bloque `appianEmbed` por entorno |
-| `tva-frontend/src/app/core/models/models.ts` | Modify | `PopupAppian`, `PopupLanzadoResponse`, `PopupResultado` |
-| `tva-frontend/src/app/core/api/tva-api.service.ts` | Modify | `lanzarPopup`, `completarPopup` |
-| `tva-frontend/src/app/core/appian/appian-embed-script.service.ts` | Create | Carga única del script embedded |
-| `tva-frontend/src/app/core/appian/appian-popup.service.ts` | Create | Orquestación lanzar→diálogo→completar (+ snackbar de error) |
-| `tva-frontend/src/app/shared/ui/appian-task-dialog.component.ts` | Create | Diálogo `<appian-task>` (mock/login/error/reintentar) |
+| `tva-frontend/libs/core/src/lib/domain/*.model.ts` | Modify | `PopupAppian`, `PopupLanzadoResponse`, `PopupResultado` |
+| `tva-frontend/libs/core/src/lib/data/repositories/*-http.repository.ts (+ ports/*-repository.port.ts)` | Modify | `lanzarPopup`, `completarPopup` |
+| `tva-frontend/libs/core/src/lib/infra/appian/appian-embed-script.service.ts` | Create | Carga única del script embedded |
+| `tva-frontend/src/app/ui/appian/appian-popup.service.ts` | Create | Orquestación lanzar→diálogo→completar (+ snackbar de error) |
+| `tva-frontend/src/app/ui/appian-task-dialog.component.ts` | Create | Diálogo `<appian-task>` (mock/login/error/reintentar) |
 | `tva-frontend/src/app/pages/sesion/pantallas/tomador-base.ts` | Modify | `requisitos` con `popup`/`habilitado` + `abrirRequisito` |
 | `tva-frontend/src/app/pages/sesion/pantallas/captura-tomador1.container.ts` | Modify | Filas icono+botón en lugar de chips "Pendiente de integración" |
 

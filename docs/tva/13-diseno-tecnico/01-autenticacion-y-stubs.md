@@ -46,9 +46,9 @@ Frontend: login page → token pegado en localStorage
 | `tva-backend/sources/apps/core/auth.py` | Create | `TokenUser`, `_decode_hs256`, `_decode_rs256` (PyJWKClient), `LocalJWTAuthentication`, `OIDCJWTAuthentication` |
 | `tva-backend/sources/apps/tva/views/_auth.py` | Create | `es_admin`, `puede_ver_sesion`, roles `ROLE_USUARIO`/`ROLE_ADMIN_PORTAL`/`ROLE_DEBUG` |
 | `tva-backend/sources/apps/tva/management/commands/crear_token_local.py` | Create | Genera JWT HS256 con `sub` y `roles` para desarrollo |
-| `tva-frontend/src/app/core/auth/auth.service.ts` | Create | `AuthService` signals `token`, `roles`, `autenticado`; `login`/`logout` |
-| `tva-frontend/src/app/core/auth/auth.interceptor.ts` | Create | `authInterceptor` añade `Authorization: Bearer` |
-| `tva-frontend/src/app/core/auth/guards.ts` | Create | `authGuard`, `roleGuard(role)` |
+| `tva-frontend/libs/core/src/lib/infra/auth/auth.service.ts` | Create | `AuthService` signals `token`, `roles`, `autenticado`; `login`/`logout` |
+| `tva-frontend/libs/core/src/lib/infra/auth/auth.interceptor.ts` | Create | `authInterceptor` añade `Authorization: Bearer` |
+| `tva-frontend/libs/core/src/lib/infra/auth/guards.ts` | Create | `authGuard`, `roleGuard(role)` |
 
 ## Interfaces / Contracts
 

@@ -252,3 +252,13 @@ la fase 7 depende de terceros.
    servicio común Vida.
 8. **Credencial Azure Artifacts** para instalar paquetes corporativos desde mi máquina,
    o construir con stubs y sustituir después.
+
+## Arquitectura del frontend
+
+`tva-frontend` sigue la Arquitectura de Referencia "Clean Architecture" del
+arquetipo corporativo: librería `libs/core` (`@tva/core`) con capas
+`domain`/`ports`/`application`/`data`/`infra` generadas con
+`@mapfre-tech/nx-angular(-esp)`, usecases por acción del API, puertos con
+`InjectionToken` cableados en `provideTvaCore()`, y la app limitada a
+`pages/` + `ui/`. Ver
+[13-diseno-tecnico/00-arquitectura-referencia-frontend.md](13-diseno-tecnico/00-arquitectura-referencia-frontend.md).
