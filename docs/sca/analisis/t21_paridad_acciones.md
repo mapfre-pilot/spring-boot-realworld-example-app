@@ -91,3 +91,11 @@ Sin solicitud en Core7 ni fila en SCA2 Solicitud, cabecera sin errores:
 ## Alta 14944 — diagnóstico
 
 El alta UI de 2002000014944 **sí se completó**: 15787543 EN_ACCION, Tarea ACCIONES ADMINISTRATIVAS PENDIENTE (JJGONZ2, CE_RM), transiciones OK. El "silencio" fue el tiempo del proceso síncrono; el usuario no llegó a ver/clickar el mensaje azul. El PM idempotente rechaza duplicados con ALTA_ERROR "Solicitud de anulacion ya existente" (verificado vía 2 relanzamientos de prueba → PDTE-8920113/PDTE-12066623, filas eliminadas).
+
+## Autorización/FueraNorma + datos (25/09 noche)
+
+| Punto | SCA | SCA2 antes | Corrección |
+|---|---|---|---|
+| Fecha anulación autorizada | `required`, poblada desde `solicitudAnulacion.datosCompletosSolicitud.datosSolicitud.fecAnulacion` | path `sol.datos.fecAnulacion` roto → vacío | Path correcto + parse dd/MM/yyyy (deployed, testInterface sin error) |
+| Header Catalogación | "A FECHA" desde gestión | "-" (catal nunca escrito — key inexistente `datosSolicitud.catalogacion` en el contexto) | PM nodo7 lee `datosCod.codTpCatalogacion`; backfill rows 11/12 = "4" |
+| `sol.datos` | `datosSolicitud` equivalente | clave ausente → todos los `sol.datos.*` null | alias `datos` + keys lowercase uniformes |
