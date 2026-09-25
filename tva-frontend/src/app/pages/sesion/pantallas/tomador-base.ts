@@ -225,15 +225,18 @@ export abstract class TomadorBase implements OnInit {
   abrirRequisito(popup: PopupAppian, etiqueta: string): void {
     const clave = this.store.claveSesion();
     if (!clave) return;
-    this.popups.abrir(clave, popup, this.indiceTomador, etiqueta).subscribe(res => {
-      const s = this.store.sesion();
-      if (s) {
-        this.store.sesion.set({
-          ...s,
-          pantalla_actual: res.pantallaActual,
-          estado: { ...res.estado, avisos: res.avisos },
-        });
-      }
+    this.popups.abrir(clave, popup, this.indiceTomador, etiqueta).subscribe({
+      next: res => {
+        const s = this.store.sesion();
+        if (s) {
+          this.store.sesion.set({
+            ...s,
+            pantalla_actual: res.pantallaActual,
+            estado: { ...res.estado, avisos: res.avisos },
+          });
+        }
+      },
+      error: () => undefined,
     });
   }
 }
