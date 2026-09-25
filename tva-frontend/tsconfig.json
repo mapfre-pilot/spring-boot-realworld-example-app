@@ -9,14 +9,12 @@
     "importHelpers": true,
     "target": "es2022",
     "module": "preserve",
-    "lib": ["es2020", "dom"],
+    "lib": [
+      "es2020",
+      "dom"
+    ],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
-    "paths": {
-      "@package": ["./package.json"],
-      "@mapfre-tech/ngx-multienvironment": ["./libs/stubs/ngx-multienvironment/src/index.ts"],
-      "@mapfre-tech/ngx-multienvironment/core": ["./libs/stubs/ngx-multienvironment/src/index.ts"]
-    },
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -24,7 +22,12 @@
     "noFallthroughCasesInSwitch": true,
     "isolatedModules": true,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "paths": {
+      "@package": [
+        "./package.json"
+      ]
+    }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
@@ -43,5 +46,8 @@
     }
   ],
   "compileOnSave": false,
-  "exclude": ["node_modules", "tmp"]
+  "exclude": [
+    "node_modules",
+    "tmp"
+  ]
 }

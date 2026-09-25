@@ -28,6 +28,8 @@ services:
     build:
       context: ./tva-frontend
       dockerfile: docker/Dockerfile
+    environment:
+      TVA_ENV: pro
     ports:
       - "8080:80"
     # Para cambiar de entorno en runtime monta un environments.json propio:

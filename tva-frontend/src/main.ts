@@ -1,6 +1,6 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 
-import { initMultiEnvironmentApp } from '@mapfre-tech/ngx-multienvironment';
+import { initMultiEnvironmentApp } from '@mapfre-tech/ngx-multienvironment/core';
 
 import { AppComponent } from './app/app.component';
 import { appConfig } from './app/app.config';

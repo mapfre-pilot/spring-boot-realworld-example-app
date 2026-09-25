@@ -1,7 +1,7 @@
 /** Carga perezosa del script `embeddedBootstrap.nocache.js` de Appian (una sola vez). */
 import { DOCUMENT, inject, Injectable } from '@angular/core';
 
-import { EnvironmentService } from '@mapfre-tech/ngx-multienvironment/core';
+import { EnvironmentService } from '../config/environment.service';
 
 @Injectable({ providedIn: 'root' })
 export class AppianEmbedScriptService {

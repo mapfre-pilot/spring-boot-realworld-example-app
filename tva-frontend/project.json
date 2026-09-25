@@ -7,7 +7,7 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@angular/build:application",
+      "executor": "@mapfre-tech/nx-angular:application",
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
@@ -118,7 +118,7 @@
     },
     "serve": {
       "continuous": true,
-      "executor": "@angular/build:dev-server",
+      "executor": "@mapfre-tech/nx-angular:dev-server",
       "defaultConfiguration": "development",
       "options": {
         "host": "0.0.0.0"
@@ -163,7 +163,7 @@
       }
     },
     "build-with-env": {
-      "executor": "@angular/build:application",
+      "executor": "@mapfre-tech/nx-angular:application",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/apps/tva",

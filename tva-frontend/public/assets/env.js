@@ -1,0 +1,1 @@
+window.okcdApplicationEnvironment = { env: 'dev' };

@@ -9,7 +9,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { EnvironmentService } from '@mapfre-tech/ngx-multienvironment/core';
+import { EnvironmentService } from '../config/environment.service';
 
 interface JwtClaims {
   sub?: string;

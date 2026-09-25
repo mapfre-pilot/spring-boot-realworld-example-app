@@ -2,7 +2,7 @@ import { DOCUMENT } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { createServiceFactory, SpectatorService } from '@ngneat/spectator/jest';
 
-import { EnvironmentService } from '@mapfre-tech/ngx-multienvironment/core';
+import { EnvironmentService } from '../config/environment.service';
 
 import { AppianEmbedScriptService } from './appian-embed-script.service';
 

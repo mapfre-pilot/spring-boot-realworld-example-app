@@ -42,9 +42,10 @@ Pega el token en `/login`. Se guarda en `localStorage[tva_token]` y el
 Multi-entorno en runtime (sin fileReplacements): al arrancar, `initMultiEnvironmentApp()`
 descarga `assets/environments.json` y elige la clave por:
 
-1. `window.__TVA_ENV__` (inyectable por infraestructura, p.ej. en index.html),
-2. mapa de hostname (localhost → `dev`),
-3. fallback `dev`.
+1. `window.okcdApplicationEnvironment` (fijado en `assets/env.js`; en el contenedor lo
+   genera `docker/entrypoint.sh` desde `TVA_ENV`, defecto `pro`),
+2. si `environments.json` tiene varias claves, el selector interactivo del paquete (en
+   `env.js` ya fijamos el entorno para evitarlo).
 
 Claves: `dev` (api localhost:8888, `auth.mode: local`), `pre`/`pro` (`auth.mode: oidc` con
 `authority`/`clientId`/`scope`/`redirectUrl` = CHANGEME). Cada entorno lleva también
@@ -58,24 +59,23 @@ Claves: `dev` (api localhost:8888, `auth.mode: local`), `pre`/`pro` (`auth.mode:
 
 ## Stubs corporativos
 
-`@mapfre-tech/ngx-multienvironment` no es instalable (feed privado). Hay un stub local en
-`libs/stubs/ngx-multienvironment/` (`"workspace:*"`, exporta `initMultiEnvironmentApp`,
-`provideEnvironment`, `EnvironmentConfig`, `ENVIRONMENT_CONFIG`, `EnvironmentService`).
+`@mapfre-tech/ngx-multienvironment` 4.0.0 se instala desde el feed corporativo de
+Azure Artifacts (`.npmrc` apunta a `pkgs.dev.azure.com`; la autenticación vive en
+`~/.npmrc` del usuario, nunca en el repo). La app lo usa vía
+`initMultiEnvironmentApp` (main.ts), `provideEnvironment` y los tokens
+`ENVIRONMENT`/`ENVIRONMENT_CONFIG` a través de `core/config/environment.service.ts`
+(`EnvironmentService` + `TvaEnvironmentConfig`).
 
-**Swap a la librería corporativa**: restaura `.npmrc.corporate` → `.npmrc`, quita
-`libs/**` de `pnpm-workspace.yaml`, fija la versión real en `package.json`, borra el stub
-y **elimina el bloque `paths` de `@mapfre-tech/ngx-multienvironment` en `tsconfig.json`**
-(necesario para que el stub TS se compile AOT/JIT dentro del workspace).
+La elección de entorno evita el selector interactivo del paquete: `public/assets/env.js`
+fija `window.okcdApplicationEnvironment = { env: 'dev' }` en local y el
+`docker/entrypoint.sh` del contenedor la regenera con `TVA_ENV` (por defecto `pro`).
 
 ## Ejecutores Nx corporativos
 
-El `project.json` corporativo se conserva en `project.corporate.json`
-(`@mapfre-tech/nx-angular:*`, `nx-tools:*`, targets `assemble-*`/`release-*`). Para restaurarlo
-en un entorno con Azure Artifacts: `cp project.corporate.json project.json` + `.npmrc` corporativo.
+`project.json` usa los executores del arquetipo (`@mapfre-tech/nx-angular:application`
+y `@mapfre-tech/nx-angular:dev-server`), con nombre `tva`, `outputPath dist/apps/tva`,
+los `styles` propios (material-icons + roboto) y configuraciones `dev`/`pre`/`pro`.
 
-El `project.json` público usa `@angular/build:application` (mismos budgets/assets) y
-`@angular/build:dev-server`; `build-with-env` = configuraciones `dev`/`pre`/`pro`
-(el entorno es runtime vía `environments.json`, no fileReplacements).
 
 ## Comandos
 

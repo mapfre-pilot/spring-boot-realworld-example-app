@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { EnvironmentService } from '@mapfre-tech/ngx-multienvironment/core';
+import { EnvironmentService } from '../config/environment.service';
 
 import {
   AccionResponse,
