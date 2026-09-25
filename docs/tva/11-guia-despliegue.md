@@ -53,8 +53,12 @@ pnpm exec nx serve tva        # http://localhost:4200
 ## Arranque con Docker Compose
 
 ```bash
+export AZURE_ARTIFACTS_NPM_PAT_B64=<PAT de Azure Artifacts en base64>
 docker compose up --build -d
 ```
+
+El build del frontend recibe el PAT como *build secret* de Docker (`id=npm_pat_b64`),
+nunca como `ARG`/`ENV`: no queda en capas ni en la imagen final.
 
 Servicios (raíz `docker-compose.yml`):
 

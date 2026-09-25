@@ -28,6 +28,8 @@ services:
     build:
       context: ./tva-frontend
       dockerfile: docker/Dockerfile
+      secrets:
+        - npm_pat_b64
     environment:
       TVA_ENV: pro
     ports:
@@ -56,3 +58,7 @@ services:
 
 volumes:
   postgres-data:
+
+secrets:
+  npm_pat_b64:
+    environment: AZURE_ARTIFACTS_NPM_PAT_B64
