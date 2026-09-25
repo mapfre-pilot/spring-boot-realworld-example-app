@@ -65,3 +65,16 @@ Sin solicitud en Core7 ni fila en SCA2 Solicitud, cabecera sin errores:
 - **Para SCA**: `2002000063789`, `2002000092160`
 - **Para SCA2**: `2002000014944`, `2002000061459`
 - Spare: `2002000085139`. Descartada `2002000065087` (ya tiene solicitud Core7 `15787538`).
+
+## Posponer — estado de tarea tras posponer (25/09 PM)
+
+| Punto | SCA | SCA2 antes | Corrección |
+|---|---|---|---|
+| Escritura tras posponer | `SCA Posponer Accion/ContraAnulacion` solo toca **caducidad** (dietario) — la gestión/tarea sigue "Incompleta" (PENDIENTE) con la nueva fecha dietario. | CMD Posponer escribía `estadoTarea="POSPUESTA"` + `Tarea.estado="POSPUESTA"` → ocultaba el botón RETOMAR (`showWhen: estado="PENDIENTE"`). | **Corregido**: nodo 5 del PM escribe `PENDIENTE` + `fechaCaducidad`/`fechaDietario`/`contadorPosponer+1` (re-GET: 0×POSPUESTA). Backfill Tarea 4,7 + Solicitud 14,17 → PENDIENTE conservando dietario 2026-10-02. |
+| Feedback UI | `a!save(ri!numPoliza,null)`/vuelta al detalle | `a!save(ri!onCompletar,true)` en `onSuccess` (presente en CA Opciones, AccAdm, FueraNorma, VERTI — verificado). | Paridad. La falta de efecto en UI fue click pre-deploy; verificado por PM real (15787528, 15787538 → COMPLETED + writes correctos). |
+
+## Acc. Adm. — grid de documentos vacía
+
+| Punto | SCA | SCA2 | Estado |
+|---|---|---|---|
+| Filas del grid | `listaDocumentosNuevo` construido desde `documento1..9` ← `ri!listaDocumentos` ← `SCA_consultarDocumentos(codSolicitud)` | Misma cadena con `SCA2_consultarDocumentos`; `testRule(15787538)` → `MSSConsultarDocumentos:null` | Paridad: el servicio PRE devuelve null para solicitudes sin documentos → grid vacía en ambas. `SCA2_insertarObservaciones` también devuelve `success:false` PRE (no lanza excepción → no bloquea saveInto). |

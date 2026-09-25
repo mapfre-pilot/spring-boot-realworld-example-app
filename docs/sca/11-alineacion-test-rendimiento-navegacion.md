@@ -604,3 +604,10 @@ Pendiente no bloqueante: `SCA_PopUpMensajeAutorizacion` (flujos autorización ni
 - Bonus: las copias literales llamaban a `rule!SCA_TablaOtrasSolAnulación*`, `rule!SCA_SolicitudAnulación` (dependencias cruzadas a SCA) → sustituidas por `SCA2_TablaOtrasSolAnulacion` y `SCA2_SolicitudAnulacion` (con `sol: SCA2_cargarSolicitud`, su contrato).
 - Ambos PUT + re-GET confirmados en TEST.
 - Nuevas pólizas de prueba sin solicitud (cabecera OK): SCA→`2002000063789`, `2002000092160`; SCA2→`2002000014944`, `2002000061459` (spare `2002000085139`).
+
+### §8.z10 — Posponer paridad estado tarea + grid docs + Alta 12636
+
+- **Posponer**: SCA solo mueve la caducidad dietario (tarea sigue Incompleta). `SCA2 CMD Posponer` nodo 5 ahora escribe `PENDIENTE` (+dietario+contador) en vez de `POSPUESTA` — re-GET nodo sin POSPUESTA. Backfill Tarea 4,7 / Solicitud 14,17 → PENDIENTE con dietario 2026-10-02 (pospuestas reales de hoy). `onCompletar` ya estaba en `onSuccess` de las 4 acciones (CA, AccAdm, FueraNorma, VERTI).
+- **Grid documentos Acc.Adm.**: paridad — `consultarDocumentos` PRE devuelve `MSSConsultarDocumentos:null` para 15787538 (sin docs) → "No hay elementos disponibles" igual que SCA.
+- **Alta 2002000012636**: cadena UI completa OK → `15787539` EN_ACCION, tarea `AUTORIZACION` PENDIENTE (esperada — motivo autorización). Sin error rows.
+- **SCA Alta 2002000063789** (check lectura): `consultarSolicitudes` → null → NO se creó solicitud Core7 en SCA (paridad: mismo alta pre-fallando en SCA, no solo en SCA2).
