@@ -308,7 +308,20 @@ export class InicioPage implements OnInit {
       companyId: v.companyId,
       distributionChannel: v.distributionChannel,
       username: v.username,
-      policyHolders: Array.from({ length: Number(v.numTomadores) || 1 }, () => ({})),
+      policyHolders: Array.from({ length: Number(v.numTomadores) || 1 }, () =>
+        v.perfilado
+          ? {
+              testData: {
+                convenience: {
+                  profileCode: 'ME',
+                  profileDesc: 'Medios',
+                  signatureStatus: 'FI',
+                  expirationDate: '2028-01-17',
+                },
+              },
+            }
+          : {}
+      ),
       investment: v.indFunctionMode === 'VA' ? (v.investment as InvestmentOption[]) : undefined,
     };
     this.cargando.set(true);

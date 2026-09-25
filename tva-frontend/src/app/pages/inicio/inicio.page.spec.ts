@@ -59,3 +59,46 @@ describe('InicioPage', () => {
     expect(s.component.investment.length).toBe(0);
   });
 });
+
+describe('policyHolders según Perfilado', () => {
+  const create2 = createComponentFactory({
+    component: InicioPage,
+    providers: [
+      provideHttpClient(),
+      provideHttpClientTesting(),
+      provideRouter([]),
+      { provide: ENVIRONMENT, useValue: 'test' },
+      {
+        provide: ENVIRONMENT_CONFIG,
+        useValue: { apiBaseUrl: 'http://t', auth: { tokenStorageKey: 'k' } },
+      },
+    ],
+  });
+
+  it('envía testData.convenience solo cuando Perfilado está marcado', () => {
+    const s = create2();
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne(r => r.url === 'http://t/productos/').flush({ products: [] });
+    s.component.form.controls.perfilado.setValue(false);
+    s.component.iniciar();
+    let req = http.expectOne(r => r.url === 'http://t/inicio/ahorro/');
+    expect(req.request.body.policyHolders).toEqual([{}]);
+    req.flush({ errors: [] }, { status: 400, statusText: 'Bad Request' });
+    s.component.form.controls.perfilado.setValue(true);
+    s.component.iniciar();
+    req = http.expectOne(r => r.url === 'http://t/inicio/ahorro/');
+    expect(req.request.body.policyHolders).toEqual([
+      {
+        testData: {
+          convenience: {
+            profileCode: 'ME',
+            profileDesc: 'Medios',
+            signatureStatus: 'FI',
+            expirationDate: '2028-01-17',
+          },
+        },
+      },
+    ]);
+    req.flush({ errors: [] }, { status: 400, statusText: 'Bad Request' });
+  });
+});
