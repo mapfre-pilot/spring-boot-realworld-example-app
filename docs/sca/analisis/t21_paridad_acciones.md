@@ -50,3 +50,18 @@ Auditoría a nivel SAIL de las pantallas de acción. Columnas: divergencia | com
 - `consultarListadoArgumentos` (argumentos CA): ORA-00936 con body idéntico para SCA y SCA2 → grid vacío es paridad.
 - `generarStudAnul`/`generarContraAnul` PRE: errores 4005/4007 esporádicos; payload ya alineado (diff campo a campo §8.z).
 EOF
+
+## Milestone Alta/Detalle (`SCA_MilestoneMasDatosAltaSolicitud[Estrategicas]`)
+
+| Punto | SCA | SCA2 antes | Corrección |
+|---|---|---|---|
+| `choose(local!seleccionado, …4 opciones)` con seleccionado=5 (popup sin solicitud; 2002000012636, 2002000066004) | **Bug SCA**: error "choose index 5 with 4 choices" — el milestone no renderiza. | Copia literal → mismo error. | **Corregido** (divergencia justificada — SCA falla): `choose(min(local!seleccionado,4),…)`: 5→Datos contacto (opción 4, correcta), 6→último fallback. Deploy + re-GET en ambas variantes. |
+| Referencias a reglas `SCA_*` dentro de interfaces SCA2 | `'rule!SCA_TablaOtrasSolAnulación[_Estrategicas]'`, `'rule!SCA_SolicitudAnulación'` | Idénticas (copia literal) — interfaz rota si la regla SCA no resuelve. | **Corregido**: `SCA2_TablaOtrasSolAnulacion(numPoliza, idSolicitudSel)` y `SCA2_SolicitudAnulacion(idSolicitud, sol: SCA2_cargarSolicitud)` — firmas adaptadas a los contratos SCA2. |
+
+## Candidatas de prueba (verify 25/09/2026, consultarSolicitudes + obtenerDatosCabecera)
+
+Sin solicitud en Core7 ni fila en SCA2 Solicitud, cabecera sin errores:
+
+- **Para SCA**: `2002000063789`, `2002000092160`
+- **Para SCA2**: `2002000014944`, `2002000061459`
+- Spare: `2002000085139`. Descartada `2002000065087` (ya tiene solicitud Core7 `15787538`).

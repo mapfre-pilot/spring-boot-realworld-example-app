@@ -597,3 +597,10 @@ Barrido SAIL completo SCA2 vs SCA TEST → `docs/sca/analisis/t21_paridad_accion
 - Resto auditado en paridad: Reasignar (popup idéntico, botón por fila en acordeón vs botón único en cabecera — justificado), Autorización/FueraNorma (textos de confirmación, disabled, grupos de validación, payload CompletarAccion), VERTI, etiquetas tarea (`D_TiposGestiones`+`CONTRAANULAR`, ya en §8.z7), sources de dropdowns.
 
 Pendiente no bloqueante: `SCA_PopUpMensajeAutorizacion` (flujos autorización nivel 2/3 no ejercitados) — documentado en t21.
+
+### §8.z9 — Milestone choose(5/4) + refs cruzadas SCA_
+
+- `SCA2_MilestoneMasDatosAltaSolicitud[Estrategicas]`: el `choose` de la rama sin solicitud (4 opciones) fallaba con `local!seleccionado`=5 — **bug heredado de SCA** (SCA errora igual para 2002000012636/066004). Fix justificado: `min(local!seleccionado,4)` → 5 = Datos contacto (la opción 4 correcta), 6 = último fallback.
+- Bonus: las copias literales llamaban a `rule!SCA_TablaOtrasSolAnulación*`, `rule!SCA_SolicitudAnulación` (dependencias cruzadas a SCA) → sustituidas por `SCA2_TablaOtrasSolAnulacion` y `SCA2_SolicitudAnulacion` (con `sol: SCA2_cargarSolicitud`, su contrato).
+- Ambos PUT + re-GET confirmados en TEST.
+- Nuevas pólizas de prueba sin solicitud (cabecera OK): SCA→`2002000063789`, `2002000092160`; SCA2→`2002000014944`, `2002000061459` (spare `2002000085139`).
