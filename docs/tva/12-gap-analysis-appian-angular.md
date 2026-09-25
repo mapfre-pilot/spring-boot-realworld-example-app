@@ -171,7 +171,7 @@ Tomador 1 → Continuar: si hay dos tomadores → CAPTURA_TOMADOR2, si no → CA
 | MISV | trazas | M |
 | Perfil cliente (test conveniencia / idoneidad) | `perfilCliente`, `TVA_EsValidoTestConveniencia` | N (servicio real pendiente; la derivación `perfilClientesOK` desde `policyHolders[].testData.convenience` del inicio está hecha) |
 | Firma (manuscrita / electrónica / biométrica; flags `TVA_FLAG_FIRMA_*`) | resumen | N (simulada) |
-| RGPD, Digitalización DNI, Cesión derechos, Intervinientes, Notas (pop-ups) | tomador / solicitud | N |
+| RGPD, Digitalización DNI, Cesión derechos, Intervinientes, Notas (pop-ups) | tomador / solicitud | P (RGPD/DNI/test integrados vía Appian Embedded; cesión/intervinientes pendientes) |
 | Resolver IP local (`CMP_CS_OBTENER_IP`) | firma | N |
 
 Grupos: `TVA_GRP_USUARIOS`, `TVA_GRP_ADMINISTRADORES_PORTAL` (botón Administración), `TVA_GRP_DEBUG` (JSON de sesión, IP local),
@@ -184,8 +184,8 @@ y el resto de los 11 grupos descritos en `06-seguridad.md`. En la rama existen r
 | Prio | Bloque | Contenido | Estado |
 |---|---|---|---|
 | 1 | Navegación y sesión | Portar H1 (`siguientePantalla`), H2 (estructura `TVA_Sesion`), H3 (cajas/secciones con `datosValidos`), H4 (parámetros y validación de inicio), H6 (botonera por pantalla/modo) | **en curso en esta rama** |
-| 2 | Tomador | Secciones datos personales / domicilio / contacto / FATCA / representante legal con validaciones §12.4.4, panel de requisitos (RGPD, DNI, test conveniencia), plegado con validez | hecho (parcial: pop-ups RGPD/DNI/test conveniencia pendientes de integración) |
-| 3 | Solicitud | Cajas Productores, Datos del seguro (operación, opciones de inversión con reparto, garantías, domiciliaciones), Captura ampliada (contacto, asegurado, beneficiarios, notas), Doc. Precontractual/Contratar con reglas de habilitado | hecho (parcial: pop-ups RGPD/DNI/test conveniencia pendientes de integración) |
+| 2 | Tomador | Secciones datos personales / domicilio / contacto / FATCA / representante legal con validaciones §12.4.4, panel de requisitos (RGPD, DNI, test conveniencia), plegado con validez | hecho (pop-ups RGPD/DNI/test conveniencia integrados vía Embedded Interfaces; el DNI requiere IP MAPFRE) |
+| 3 | Solicitud | Cajas Productores, Datos del seguro (operación, opciones de inversión con reparto, garantías, domiciliaciones), Captura ampliada (contacto, asegurado, beneficiarios, notas), Doc. Precontractual/Contratar con reglas de habilitado | hecho (pop-ups RGPD/DNI/test conveniencia integrados vía Embedded Interfaces; el DNI requiere IP MAPFRE) |
 | 4 | Catálogo | 21 productos DEV en mock API Life, filtro por canal/NUUMA, caso sin productos, campaña (`insuranceOfferInd`) | pendiente |
 | 5 | Resumen y firma | Tipos de firma según flags, documentos precontractuales, resultado y descarga | pendiente (requiere contratos de firma) |
 | 6 | R2C | Validación captura, Recalcular, Contratar | pendiente |

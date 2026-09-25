@@ -102,6 +102,9 @@ o inyecta `window.__TVA_ENV__ = 'pre'` en el `index.html` servido.
 | `CORS_ALLOWED_ORIGINS` | http://localhost:4200 | Orígenes del SPA (coma-separados) |
 | `SQL_DEBUG` | — | `True` para loguear SQL (por defecto WARNING) |
 | `APILIFE_MODE`/`MISV_MODE`/`RIC_MODE`/`PERFIL_MODE` | `mock` | `real` usa los conectores HTTP |
+| `APPIAN_EMBED_MODE` | `mock` | `real` llama a las Web APIs Appian TEST (pop-ups RGPD/DNI/test) |
+| `APPIAN_EMBED_API_KEY` | — | clave `Appian-API-Key` (solo `real`; va en `.env`, no versionada) |
+| `APPIAN_EMBED_BASE_URL` | `https://mapfrespain-test.appiancloud.com/suite` | base `/suite` de la instancia Appian |
 | `APILIFE_*`/`MISV_*`/`RIC_*` (URL/usuario/clave) | CHANGEME | Credenciales conector real |
 | `CACHE_DEFAULT_TIMEOUT` | 300 | TTL caché (productos) |
 | `TVA_TRAZA_DIAS_PERMANENCIA` | 365 | Purga de trazas |

@@ -24,6 +24,7 @@ los ficheros implicados y los contratos públicos reales del código.
 | 11 | Administración | [11-administracion.md](11-administracion.md) |
 | 12 | Integraciones mock y conectores | [12-integraciones-mock-y-conectores.md](12-integraciones-mock-y-conectores.md) |
 | 13 | Observabilidad y trazas | [13-observabilidad-y-trazas.md](13-observabilidad-y-trazas.md) |
+| 14 | Pop-ups Appian Embedded | [14-popups-appian-embedded.md](14-popups-appian-embedded.md) |
 
 Referencias cruzadas: [12-gap-analysis-appian-angular.md](../12-gap-analysis-appian-angular.md)
 (especificación §12.* citada en cada documento) y

@@ -13,6 +13,16 @@
 > **PRE** de Mapfre (hosts PRE). Las contraseñas están enmascaradas en Appian y
 > no se documentan.
 
+## Web APIs privadas de Appian (Embedded Interfaces)
+
+Los pop-ups de la captura del tomador (firma RGPD `cmp-firma-rgpd`, captura DNI
+`cmp-captura-dni`, test de conveniencia `testIdoneidad`) son Web APIs privadas de la
+instancia Appian TEST (`{base}/suite/webapi/…`) autenticadas con `Appian-API-Key`.
+Devuelven `taskId`/`taskUrl` que el frontend embebe con `embeddedBootstrap.nocache.js`
+(`<appian-task>`). La captura DNI solo responde desde IPs permitidas (allow-list MAPFRE);
+desde fuera devuelve 401 "Origen no válido". La API key solo vive en el backend
+(`APPIAN_EMBED_API_KEY`). Ver [13-diseno-tecnico/14-popups-appian-embedded.md](13-diseno-tecnico/14-popups-appian-embedded.md).
+
 ## Integraciones (20)
 
 Todas las de API Life heredan URL base y autenticación del sistema conectado y envían la
