@@ -1,41 +1,52 @@
-/** Equivale a rule!MU_Aviso / TVA_MostrarAvisos: avisos por tipo (§12.3). */
+/** Equivale a rule!MU_Aviso / TVA_MostrarAvisos: banners ERROR/WARNING/INFO (§12.3). */
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 
 import { Aviso } from '@tva/core';
 
 @Component({
   selector: 'app-avisos',
-  imports: [MatCardModule, MatIconModule],
+  imports: [MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @for (aviso of visibles(); track $index) {
-      <mat-card class="aviso" [class]="'aviso aviso-' + estilo(aviso)">
-        <mat-card-content>
-          <mat-icon>{{ icono(aviso) }}</mat-icon>
-          <span class="aviso-texto">{{ texto(aviso) }}</span>
-        </mat-card-content>
-      </mat-card>
+      <div class="aviso" [class]="'aviso aviso-' + estilo(aviso)" role="alert">
+        <mat-icon aria-hidden="true">{{ icono(aviso) }}</mat-icon>
+        <span class="aviso-texto">{{ texto(aviso) }}</span>
+      </div>
     }
   `,
   styles: `
     .aviso {
-      margin-bottom: 8px;
-    }
-    .aviso mat-card-content {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      margin-bottom: 8px;
+      padding: 10px 14px;
+      border-radius: 4px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .aviso mat-icon {
+      flex-shrink: 0;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
     }
     .aviso-error {
-      border-left: 4px solid #d81e05;
+      background: #fdecea;
+      border-left: 4px solid var(--tva-primary, #d81e05);
+      color: #7f1d12;
     }
     .aviso-warning {
-      border-left: 4px solid #f9a800;
+      background: #fff8e1;
+      border-left: 4px solid #f9a825;
+      color: #7a5d00;
     }
     .aviso-info {
-      border-left: 4px solid #0067b1;
+      background: #e8f2fb;
+      border-left: 4px solid #1565c0;
+      color: #0d3c6e;
     }
   `,
 })

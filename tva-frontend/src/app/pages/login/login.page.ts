@@ -21,23 +21,31 @@ import { AuthService } from '@tva/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="contenedor">
-      <mat-card>
-        <mat-card-title>Tarificador Vida Ahorro — acceso</mat-card-title>
+      <mat-card class="login-card">
         <mat-card-content>
+          <div class="marca">MAPFRE</div>
+          <p class="subtitulo">Tarificador Vida Ahorro</p>
           @if (auth.authMode === 'local') {
-            <p>Pega el token local generado con <code>manage.py crear_token_local</code>.</p>
+            <p class="ayuda">
+              Pega el token local generado con <code>manage.py crear_token_local</code>.
+            </p>
             <form [formGroup]="form" (ngSubmit)="entrar()">
               <mat-form-field appearance="outline" class="campo">
                 <mat-label>Token JWT local</mat-label>
                 <textarea matInput formControlName="token" rows="3"></textarea>
               </mat-form-field>
-              <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid">
+              <button
+                mat-flat-button
+                color="primary"
+                type="submit"
+                class="entrar"
+                [disabled]="form.invalid">
                 Entrar
               </button>
             </form>
           } @else {
-            <p>Acceso corporativo (OIDC).</p>
-            <button mat-flat-button color="primary" (click)="auth.loginOidc()">
+            <p class="ayuda">Acceso corporativo (OIDC).</p>
+            <button mat-flat-button color="primary" class="entrar" (click)="auth.loginOidc()">
               Entrar con SSO
             </button>
           }
@@ -49,13 +57,35 @@ import { AuthService } from '@tva/core';
     .contenedor {
       display: flex;
       justify-content: center;
-      padding-top: 10vh;
+      padding-top: 12vh;
     }
-    mat-card {
+    .login-card {
       max-width: 480px;
       width: 100%;
     }
+    .login-card mat-card-content {
+      padding: 32px 28px 28px;
+    }
+    .marca {
+      color: var(--tva-primary, #d81e05);
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 3px;
+    }
+    .subtitulo {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--tva-text-muted, #666);
+      margin: 2px 0 20px;
+    }
+    .ayuda {
+      font-size: 13px;
+      color: var(--tva-text-muted, #666);
+    }
     .campo {
+      width: 100%;
+    }
+    .entrar {
       width: 100%;
     }
   `,

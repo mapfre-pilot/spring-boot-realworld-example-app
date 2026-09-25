@@ -13,6 +13,6 @@ describe('MigasDePanComponent', () => {
         actual: Pantalla.CAPTURA_DATOS_SOLICITUD,
       },
     });
-    expect(s.query('.paso.activo')?.textContent).toContain('Datos solicitud');
+    expect(s.query('.paso.actual')?.textContent).toContain('Datos solicitud');
   });
 });

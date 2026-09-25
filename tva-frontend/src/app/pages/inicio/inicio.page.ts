@@ -76,14 +76,31 @@ const FRECUENCIAS: Opcion[] = [
     .checks {
       display: flex;
       gap: 24px;
-      margin: 8px 0;
+      align-items: center;
+      margin: 12px 0;
+      padding: 8px 0;
     }
     .errores {
-      color: #d81e05;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
       margin: 12px 0;
+      padding: 10px 14px;
+      border-radius: 4px;
+      border-left: 4px solid var(--tva-primary, #d81e05);
+      background: #fdecea;
+      color: #7f1d12;
+    }
+    .errores mat-icon {
+      flex-shrink: 0;
+    }
+    .errores ul {
+      margin: 6px 0 0;
+      padding-left: 18px;
     }
     .ok {
-      color: #137333;
+      color: #2e7d32;
+      font-weight: 500;
     }
   `,
 })

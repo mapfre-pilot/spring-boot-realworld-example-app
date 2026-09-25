@@ -33,22 +33,24 @@ interface AppianTaskElement extends HTMLElement {
   imports: [MatDialogModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h2 mat-dialog-title>
+    <h2 mat-dialog-title class="dialogo-titulo">
       {{ data.titulo }}
-      <button mat-icon-button class="cerrar" (click)="ref.close('DISMISS')">
+      <button mat-icon-button class="cerrar" aria-label="Cerrar" (click)="ref.close('DISMISS')">
         <mat-icon>close</mat-icon>
       </button>
     </h2>
     <mat-dialog-content>
       @if (estado() === 'cargando' || estado() === 'login') {
-        <mat-spinner diameter="40" />
-        <p>
-          @if (estado() === 'login') {
-            Complete el inicio de sesión en la pestaña abierta; la tarea aparecerá aquí.
-          } @else {
-            Cargando la tarea de Appian…
-          }
-        </p>
+        <div class="cargando">
+          <mat-spinner diameter="40" />
+          <p>
+            @if (estado() === 'login') {
+              Complete el inicio de sesión en la pestaña abierta; la tarea aparecerá aquí.
+            } @else {
+              Cargando tarea de Appian…
+            }
+          </p>
+        </div>
       }
       @if (estado() === 'mock') {
         <p>Appian en modo simulado (stub local).</p>
@@ -66,16 +68,36 @@ interface AppianTaskElement extends HTMLElement {
     </mat-dialog-content>
   `,
   styles: `
+    .dialogo-titulo {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 4px solid var(--tva-primary, #d81e05);
+      padding-top: 16px;
+      font-size: 16px;
+      font-weight: 600;
+    }
     mat-dialog-content {
-      min-width: 640px;
+      min-height: 480px;
+      overflow: auto;
+    }
+    mat-dialog-content appian-task,
+    mat-dialog-content iframe {
+      width: 100%;
+    }
+    .cargando {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       min-height: 320px;
+      text-align: center;
     }
     .cerrar {
-      float: right;
+      margin-left: auto;
     }
     mat-spinner {
-      display: inline-block;
-      margin-right: 8px;
+      margin-bottom: 16px;
     }
   `,
 })

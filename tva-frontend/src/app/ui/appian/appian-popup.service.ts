@@ -32,7 +32,8 @@ export class AppianPopupService {
       switchMap(lanzado => {
         const ref = this.dialog.open(AppianTaskDialogComponent, {
           disableClose: true,
-          width: '900px',
+          width: 'min(960px, 96vw)',
+          maxWidth: '96vw',
           data: { titulo, taskId: lanzado.taskId, modo: lanzado.modo } as AppianTaskDialogData,
         });
         return ref.afterClosed().pipe(

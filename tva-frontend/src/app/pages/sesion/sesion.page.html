@@ -1,9 +1,9 @@
 <app-cabecera [modalidad]="store.modalidad()" />
-<div class="pagina">
-  @if (store.cargando()) {
-    <mat-spinner />
-  } @else if (store.sesion(); as sesion) {
-    <app-migas-de-pan [pasos]="pasos()" [actual]="store.pantallaActual()" />
+@if (store.cargando()) {
+  <div class="cargando"><mat-spinner /></div>
+} @else if (store.sesion()) {
+  <app-migas-de-pan [pasos]="pasos()" [actual]="store.pantallaActual()" />
+  <div class="pagina">
     <app-avisos [avisos]="store.avisos()" />
     @switch (store.pantallaActual()) {
       @case (P.SEGUROS_AHORRO) {
@@ -53,5 +53,5 @@
       }
     }
     <app-botonera [botones]="store.botones()" (accion)="onAccion($event)" />
-  }
-</div>
+  </div>
+}

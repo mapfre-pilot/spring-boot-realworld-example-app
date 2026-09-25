@@ -93,3 +93,29 @@ pnpm nx g @mapfre-tech/nx-angular:page pages/<nombre> --project tva
 - Reglas ESLint activas (`error`): `prefer-on-push-component-change-detection`,
   `prefer-signals`, `prefer-inject`, `prefer-standalone`,
   `template/prefer-control-flow`, `component-class-suffix: ['Component','Container','Page']`.
+
+## Diseño visual (tema MAPFRE)
+
+Estilos globales en `src/styles.scss` (tema Angular Material M3); estilos de
+componente colocalizados en `src/app/ui` y `src/app/pages`. Sin cambios de
+contrato ni de arquitectura: solo presentación.
+
+- **Tokens**: `--tva-primary: #D81E05` (hover `#B71C1C`), `--tva-ok: #2E7D32`,
+  `--tva-surface: #F4F5F7`, `--tva-border: #E0E0E0`, texto `#212121`/muted `#666`.
+  `mat.theme()` con `primary: mat.$red-palette`, `tertiary: azure`,
+  `typography: Roboto`, `density: -1`; el rojo exacto se fija sobre
+  `--mat-sys-primary`.
+- **Layout**: `.pagina` = contenedor 1200px centrado, padding 24px + 96px
+  inferior (la botonera va fija, 64px, blanca con borde superior); <900px
+  columna única. Cabecera roja 56px (marca `MAPFRE` letter-spacing 2px +
+  título + chip de modalidad + usuario + logout). Sub-barra blanca de 40px con
+  `app-migas-de-pan` (pasos con chevron, completados con check, actual en rojo).
+- **Componentes**: cajas = tarjetas blancas radius 8, borde 1px, sombra suave;
+  secciones = filas con separadores, check verde cuando son válidas, borde
+  izquierdo rojo al expandir; formularios en grid 2 columnas
+  (`grid-template-columns: repeat(2, 1fr); gap 12px 16px`); tablas con cabecera
+  `#F5F5F5`, zebra e inputs compactos 36px con `€`; avisos como banners
+  ERROR/WARNING/INFO; panel de requisitos del tomador como lista icono+label+
+  enlace "Realizar"; diálogo Appian con borde superior rojo y spinner centrado.
+- **Accesibilidad**: contraste ≥4.5:1, `:focus-visible` con outline rojo,
+  `aria-label` en botones de icono.

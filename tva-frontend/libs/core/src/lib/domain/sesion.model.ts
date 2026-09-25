@@ -39,6 +39,7 @@ export interface Boton {
   visible: boolean;
   disabled: boolean;
   confirm?: { header: string; message: string; ok: string; cancel: string };
+  tooltip?: string;
 }
 
 export interface SeccionCaja {

@@ -5,6 +5,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { CajaComponent } from '../../../ui/caja.component';
 import { CampoSelectComponent } from '../../../ui/campo-select.component';
@@ -25,6 +26,7 @@ import { TomadorBase } from './tomador-base';
     MatSlideToggleModule,
     MatButtonModule,
     MatIconModule,
+    MatTooltipModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: TOMADOR_TEMPLATE,
