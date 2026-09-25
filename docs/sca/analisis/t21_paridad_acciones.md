@@ -106,3 +106,11 @@ El alta UI de 2002000014944 **sí se completó**: 15787543 EN_ACCION, Tarea ACCI
 |---|---|---|
 | POSPONER UI no arranca PM | `obtenerCaducidadNivel` devuelve Datetime; PV `fechaDietario` es Date → fallo silencioso de a!startProcess (solo UI; testProcessModel con Date sí funcionaba) | `todate()` en los 4 saveInto POSPONER |
 | OK alta → Detalle en vez de acción | `local!tareaNueva` lazy, solo usada en saveInto → null | `refreshAlways: true` |
+
+## §t21.b — Posponer UI (verificado en navegador, 25/09)
+
+| Divergencia | SCA | SCA2 antes | Fix |
+|---|---|---|---|
+| POSPONER no hacía nada | popup CORRECTO + tarea al grupo | sin efecto | Constante `SCA2_PM_CMD_POSPONER` era TEXT→PROCESS_MODEL; `insertarObservaciones`/`guardarTrazabilidad` en saveInto/onSuccess violaban el límite de 1 smart service por evaluación (incluye onSuccess) → eliminadas (PM ya escribe obs; CompletarAccion tiene nodo traza); onSuccess = `a!save(ri!onCompletar,true)`. Card de error/debug en AccAdm. |
+| Traza técnica en posponer | se escribe | se escribía desde UI | pérdida documentada: no hay traza en Posponer/Mecanizar UI (añadir nodo PM si se requiere) |
+| POSITIVO/NEGATIVO CA Opciones | encadena integraciones OK (legacy `_26r3`) | "second smart service" | pendiente: refactor mayor (PM o pasos divididos) |
