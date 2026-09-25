@@ -78,6 +78,29 @@ export class SesionStore {
     );
   }
 
+  /** POST validar-seccion para una sección concreta (§12.4.4). */
+  validarSeccion(
+    caja: string,
+    seccion: string,
+    datos: Record<string, unknown>
+  ): Observable<AccionResponse> {
+    const clave = this.claveSesion();
+    if (!clave) throw new Error('Sin sesión cargada');
+    return this.api.validarSeccion(clave, caja, seccion, datos).pipe(
+      tap(res => {
+        const s = this.sesion();
+        if (s) {
+          this.sesion.set({
+            ...s,
+            pantalla_actual: res.pantallaActual,
+            estado: { ...res.estado, avisos: res.avisos },
+          });
+        }
+        this.botones.set(res.botones ?? []);
+      })
+    );
+  }
+
   guardarEstado(patch: Record<string, unknown>): Observable<Sesion> {
     const s = this.sesion();
     if (!s) throw new Error('Sin sesión cargada');

@@ -56,6 +56,21 @@ export class TvaApiService {
     });
   }
 
+  validarSeccion(
+    clave: string,
+    caja: string,
+    seccion: string,
+    datos: Record<string, unknown>
+  ): Observable<AccionResponse> {
+    return this.accion(clave, 'validar-seccion', { caja, seccion, datos });
+  }
+
+  catalogo(nombre: string): Observable<{ valores: { codigo: string; descripcion: string }[] }> {
+    return this.http.get<{ valores: { codigo: string; descripcion: string }[] }>(
+      `${this.base}/catalogos/${nombre}/`
+    );
+  }
+
   clientes(documento: string): Observable<Record<string, unknown>> {
     return this.http.get<Record<string, unknown>>(`${this.base}/clientes/`, {
       params: new HttpParams().set('documento', documento),

@@ -27,6 +27,7 @@ export interface Aviso {
   tipo: 'INFO' | 'WARNING' | 'ERROR';
   texto: string;
   mostrarEn: 'CABECERA' | 'SECCION';
+  seccion?: string;
   codigo?: string;
   mensaje?: string;
 }
@@ -57,10 +58,18 @@ export interface Caja {
 export interface DatosPersonales {
   documentId?: string;
   nombre?: string;
+  primerApellido?: string;
+  segundoApellido?: string;
   apellidos?: string;
   fechaNacimiento?: string;
   sexo?: string;
   nacionalidad?: string;
+  paisNacimiento?: string;
+  actividad?: string;
+  sector?: string;
+  profesion?: string;
+  responsabilidadPublica?: boolean;
+  residenciaHabitualEspanya?: boolean;
   [k: string]: unknown;
 }
 
@@ -69,6 +78,7 @@ export interface Tomador {
   domicilioHabitual: Record<string, unknown>;
   mediosContacto: { tipo?: string; prefijo?: string; numero?: string; email?: string }[];
   fatcaCrs?: Record<string, unknown>;
+  legalRepresentative?: DatosPersonales | null;
   perfilCliente?: { perfil?: string; testConveniencia?: { estado?: string } };
   datosGestionParticipante?: {
     consentimientoProteccionDatos?: boolean;
@@ -204,4 +214,19 @@ export interface Producto {
   commercialProductCode: string;
   commercialProductDesc: string;
   unitLinkedInd?: boolean;
+  garantias?: {
+    codigo: string;
+    descripcion: string;
+    obligatoria: boolean;
+    seleccionada?: boolean;
+  }[];
+  periodicidades?: string[];
+  primaMinima?: number;
+  primaMaxima?: number;
+  opcionesInversion?: {
+    investmentPreferenceCode: string;
+    descripcion: string;
+    seleccionada?: boolean;
+  }[];
+  requiereAsegurado?: boolean;
 }

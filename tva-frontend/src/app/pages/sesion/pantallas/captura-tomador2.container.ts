@@ -1,52 +1,36 @@
-/** CAPTURA_TOMADOR2: segundo tomador (solo VA). */
+/** CAPTURA_TOMADOR2 — misma estructura que Tomador 1 con caja CAPTURA_DATOS_TOMADOR2. */
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { CajaComponent } from '../../../shared/ui/caja.component';
 import { CampoSelectComponent } from '../../../shared/ui/campo-select.component';
 import { CampoTextoComponent } from '../../../shared/ui/campo-texto.component';
+import { SeccionComponent } from '../../../shared/ui/seccion.component';
+import { TOMADOR_STYLES, TOMADOR_TEMPLATE } from './captura-tomador1.container';
 import { TomadorBase } from './tomador-base';
 
 @Component({
   selector: 'app-tomador2',
-  imports: [ReactiveFormsModule, CajaComponent, CampoTextoComponent, CampoSelectComponent],
+  imports: [
+    ReactiveFormsModule,
+    CajaComponent,
+    SeccionComponent,
+    CampoTextoComponent,
+    CampoSelectComponent,
+    MatCheckboxModule,
+    MatSlideToggleModule,
+    MatChipsModule,
+    MatTooltipModule,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <app-caja titulo="Segundo tomador — datos personales">
-      <form [formGroup]="form" class="formulario">
-        <app-campo-select
-          [control]="form.controls.tipoDocumento"
-          etiqueta="Tipo documento"
-          [opciones]="tiposDocumento" />
-        <app-campo-texto [control]="form.controls.documento" etiqueta="Nº documento" />
-        <app-campo-texto [control]="form.controls.nombre" etiqueta="Nombre" />
-        <app-campo-texto [control]="form.controls.apellido1" etiqueta="Primer apellido" />
-        <app-campo-texto [control]="form.controls.apellido2" etiqueta="Segundo apellido" />
-        <app-campo-texto
-          [control]="form.controls.fechaNacimiento"
-          etiqueta="Fecha de nacimiento"
-          tipo="date" />
-        <app-campo-select [control]="form.controls.sexo" etiqueta="Sexo" [opciones]="sexos" />
-      </form>
-    </app-caja>
-    <app-caja titulo="Contacto">
-      <form [formGroup]="form" class="formulario">
-        <app-campo-texto [control]="form.controls.direccion" etiqueta="Dirección" />
-        <app-campo-texto [control]="form.controls.codigoPostal" etiqueta="Código postal" />
-        <app-campo-texto [control]="form.controls.poblacion" etiqueta="Población" />
-        <app-campo-texto [control]="form.controls.provincia" etiqueta="Provincia" />
-        <app-campo-texto [control]="form.controls.telefono" etiqueta="Teléfono" />
-        <app-campo-texto [control]="form.controls.email" etiqueta="Email" tipo="email" />
-        <app-campo-texto [control]="form.controls.iban" etiqueta="IBAN" />
-      </form>
-    </app-caja>
-  `,
-  styles: `
-    .formulario {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-  `,
+  template: TOMADOR_TEMPLATE,
+  styles: TOMADOR_STYLES,
 })
-export class CapturaTomador2Container extends TomadorBase {}
+export class CapturaTomador2Container extends TomadorBase {
+  readonly cajaId = 'CAPTURA_DATOS_TOMADOR2';
+  readonly indiceTomador = 1;
+}
