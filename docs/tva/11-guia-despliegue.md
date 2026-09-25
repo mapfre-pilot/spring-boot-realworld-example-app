@@ -149,13 +149,18 @@ username/investment, validaciones con los textos exactos de Appian y sobre de er
 `{clase,tipo,texto,mostrarEn}`); navegación dirigida por datos
 (`siguiente_pantalla`, reglas VA/VIA/R2C) y botonera calculada por pantalla/modo
 (`botones` en cada respuesta, con confirmaciones); acciones cancelar / administración /
-volver-administracion / doc-precontractual / contratar; catálogo mock de 21 productos
-DEV de API Life; flujo completo VA (seguros ahorro → datos solicitud → tomador 1/2 →
-resumen → resultado firma → fin), VIA (selección producto → modalidad campaña → datos →
-tomador 1 → resumen → firma), R2C (captura → precios → resumen → firma); login local,
-admin (parámetros, batch apertura/cierre + abrir/cerrar manual, cachés, trazas);
-pantallas SISTEMA_CERRADO / SIN_PERFIL / SOLO_AVISOS; 97 tests backend (81% coverage),
-22 tests frontend.
+volver-administracion / doc-precontractual / contratar; `validar-seccion` con los
+textos exactos de §12.4.4 (datos personales, domicilio, contacto, operación,
+inversión, garantías, domiciliaciones, beneficiarios, notas, productores) y avisos
+a nivel sección; catálogos estáticos `GET /catalogos/<nombre>/` (sexos, países,
+provincias, tipos de vía, actividad/sector/profesión, periodicidades, duración,
+beneficiarios, medios de contacto); catálogo mock de 21 productos DEV de API Life
+con garantías, periodicidades, primas y opciones UL; flujo completo VA
+(seguros ahorro → datos solicitud → tomador 1/2 → resumen → resultado firma → fin),
+VIA (selección producto → modalidad campaña → datos → tomador 1 → resumen → firma),
+R2C (captura → precios → resumen → firma); login local, admin (parámetros, batch
+apertura/cierre + abrir/cerrar manual, cachés, trazas); pantallas SISTEMA_CERRADO /
+SIN_PERFIL / SOLO_AVISOS; 135 tests backend (82% coverage), 28 tests frontend.
 
 **Pendiente**: firma real (servicio de firma), descarga de documentos reales,
 digitalización de DNI, cesión de derechos, RGPD, notas, propuestas persistidas en API

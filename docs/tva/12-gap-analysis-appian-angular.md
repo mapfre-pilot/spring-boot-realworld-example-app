@@ -184,8 +184,8 @@ y el resto de los 11 grupos descritos en `06-seguridad.md`. En la rama existen r
 | Prio | Bloque | Contenido | Estado |
 |---|---|---|---|
 | 1 | Navegación y sesión | Portar H1 (`siguientePantalla`), H2 (estructura `TVA_Sesion`), H3 (cajas/secciones con `datosValidos`), H4 (parámetros y validación de inicio), H6 (botonera por pantalla/modo) | **en curso en esta rama** |
-| 2 | Tomador | Secciones datos personales / domicilio / contacto / FATCA / representante legal con validaciones §12.4.4, panel de requisitos (RGPD, DNI, test conveniencia), plegado con validez | en curso |
-| 3 | Solicitud | Cajas Productores, Datos del seguro (operación, opciones de inversión con reparto, garantías, domiciliaciones), Captura ampliada (contacto, asegurado, beneficiarios, notas), Doc. Precontractual/Contratar con reglas de habilitado | en curso |
+| 2 | Tomador | Secciones datos personales / domicilio / contacto / FATCA / representante legal con validaciones §12.4.4, panel de requisitos (RGPD, DNI, test conveniencia), plegado con validez | hecho (parcial: pop-ups RGPD/DNI/test conveniencia pendientes de integración) |
+| 3 | Solicitud | Cajas Productores, Datos del seguro (operación, opciones de inversión con reparto, garantías, domiciliaciones), Captura ampliada (contacto, asegurado, beneficiarios, notas), Doc. Precontractual/Contratar con reglas de habilitado | hecho (parcial: pop-ups RGPD/DNI/test conveniencia pendientes de integración) |
 | 4 | Catálogo | 21 productos DEV en mock API Life, filtro por canal/NUUMA, caso sin productos, campaña (`insuranceOfferInd`) | pendiente |
 | 5 | Resumen y firma | Tipos de firma según flags, documentos precontractuales, resultado y descarga | pendiente (requiere contratos de firma) |
 | 6 | R2C | Validación captura, Recalcular, Contratar | pendiente |

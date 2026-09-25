@@ -80,6 +80,21 @@ paths:
                 items:
                   $ref: '#/components/schemas/Traza'
           description: ''
+  /api/tva/v1/catalogos/{nombre}/:
+    get:
+      operationId: api_tva_v1_catalogos_retrieve
+      description: GET /catalogos/<nombre>/ — catálogo estático desde fixtures/catalogos/.
+      parameters:
+      - in: path
+        name: nombre
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          description: No response body
   /api/tva/v1/clientes/:
     get:
       operationId: api_tva_v1_clientes_retrieve
@@ -225,6 +240,7 @@ paths:
           - seleccionar-modalidad
           - siguiente
           - validar-reinversion
+          - validar-seccion
           - verificar-productores
           - volver-administracion
       - in: path
