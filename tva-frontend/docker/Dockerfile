@@ -24,6 +24,8 @@ RUN pnpm exec nx build tva --configuration=pro
 
 FROM nginx:alpine
 
+RUN apk add --no-cache jq
+
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker/entrypoint.sh /entrypoint.sh
 COPY --from=build /app/dist/apps/tva/browser /usr/share/nginx/html

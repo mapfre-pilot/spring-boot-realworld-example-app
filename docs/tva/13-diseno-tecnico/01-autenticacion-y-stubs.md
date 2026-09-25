@@ -22,7 +22,7 @@ RS256 contra el JWKS del IdP corporativo (OIDC). En Angular, `AuthService` manti
 | 2 | Doble backend JWT | `LocalJWTAuthentication` (HS256) + `OIDCJWTAuthentication` (RS256/JWKS) elegidos por `ENVIRONMENT` | Solo OIDC, solo mock header | Desarrollo offline sin IdP; producción con el mismo claim `roles` |
 | 3 | Usuario autenticado | `TokenUser` dataclass (`sub`, `roles`, `claims`), sin modelo User de Django | `django.contrib.auth` | La app no gestiona usuarios; el JWT corporativo es la fuente de verdad |
 | 4 | Token en frontend | `localStorage` + signals (`token`, `roles`, `autenticado`) | Cookies, sessionStorage | Mismo esquema que el portal; almacenable por clave configurable `tokenStorageKey` |
-| 5 | Multi-entorno | `initMultiEnvironmentApp` (paquete real) + `window.okcdApplicationEnvironment` en `assets/env.js` (`TVA_ENV` en el contenedor) | Selector interactivo del paquete, build-time fileReplacements | Un solo build para todos los entornos sin selector en UI |
+| 5 | Multi-entorno | `initMultiEnvironmentApp` (paquete real); el contenedor reduce `assets/environments.json` a la clave `TVA_ENV` → el paquete no muestra selector (patrón documentado) | Selector interactivo del paquete, build-time fileReplacements | Un solo build para todos los entornos sin selector en UI |
 | 6 | OIDC en frontend | `angular-auth-oidc-client` inicializado solo si `auth.mode==='oidc'`; login documentado como TODO | Implementar flujo completo sin IdP | Sin IdP accesible no se puede probar end-to-end; se deja el punto de conexión |
 
 ## Data Flow

@@ -88,7 +88,7 @@ tva-frontend:
     - ./mi-environments.json:/usr/share/nginx/html/assets/environments.json:ro
 ```
 
-o ajusta `TVA_ENV` del contenedor frontend (regenera `assets/env.js` con `window.okcdApplicationEnvironment` al arrancar).
+o ajusta `TVA_ENV` del contenedor frontend: al arrancar, `docker/entrypoint.sh` reduce `assets/environments.json` a la única clave `${TVA_ENV}` (patrón ngx-multienvironment: con una sola clave el paquete no muestra el selector; falla con `exit 1` si la clave no existe).
 
 ## Variables de entorno
 
@@ -130,8 +130,11 @@ y los executores `@mapfre-tech/nx-angular` (`application`, `dev-server`), `@mapf
 (`pkgs.dev.azure.com/devopsmapfre/.../releases/npm/`); **la autenticación va en `~/.npmrc`
 del usuario** (líneas `_auth`/`email`/`always-auth` con un PAT en base64 como en la
 documentación corporativa — nunca en el repo). `pnpm install` resuelve los paquetes.
-La elección de entorno es `window.okcdApplicationEnvironment` en `public/assets/env.js`
-(dev local); el contenedor la genera en `docker/entrypoint.sh` desde `TVA_ENV` (defecto `pro`).
+La elección de entorno sigue el patrón del paquete: en local, `environments.json` tiene
+varias claves y `initMultiEnvironmentApp` muestra su selector una vez (la elección se
+recuerda en `localStorage` bajo `OKCD_APPLICATION_ENVIRONMENT`); en el contenedor,
+`docker/entrypoint.sh` filtra `assets/environments.json` a la única clave `TVA_ENV`
+(defecto `pro`), por lo que el selector nunca aparece.
 
 Solo el backend conserva stubs (el feed Python no está en alcance):
 

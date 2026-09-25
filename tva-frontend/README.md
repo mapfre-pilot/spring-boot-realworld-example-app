@@ -40,12 +40,11 @@ Pega el token en `/login`. Se guarda en `localStorage[tva_token]` y el
 ## Entornos — `public/assets/environments.json`
 
 Multi-entorno en runtime (sin fileReplacements): al arrancar, `initMultiEnvironmentApp()`
-descarga `assets/environments.json` y elige la clave por:
-
-1. `window.okcdApplicationEnvironment` (fijado en `assets/env.js`; en el contenedor lo
-   genera `docker/entrypoint.sh` desde `TVA_ENV`, defecto `pro`),
-2. si `environments.json` tiene varias claves, el selector interactivo del paquete (en
-   `env.js` ya fijamos el entorno para evitarlo).
+descarga `assets/environments.json`; si tiene varias claves muestra su selector una
+única vez y recuerda la elección en `localStorage` (`OKCD_APPLICATION_ENVIRONMENT`).
+En el contenedor, `docker/entrypoint.sh` reduce el fichero a la única clave `TVA_ENV`
+(defecto `pro`), por lo que el selector nunca aparece (si la clave no existe, el
+contenedor falla con mensaje claro).
 
 Claves: `dev` (api localhost:8888, `auth.mode: local`), `pre`/`pro` (`auth.mode: oidc` con
 `authority`/`clientId`/`scope`/`redirectUrl` = CHANGEME). Cada entorno lleva también
@@ -66,9 +65,10 @@ Azure Artifacts (`.npmrc` apunta a `pkgs.dev.azure.com`; la autenticación vive 
 `ENVIRONMENT`/`ENVIRONMENT_CONFIG` a través de `core/config/environment.service.ts`
 (`EnvironmentService` + `TvaEnvironmentConfig`).
 
-La elección de entorno evita el selector interactivo del paquete: `public/assets/env.js`
-fija `window.okcdApplicationEnvironment = { env: 'dev' }` en local y el
-`docker/entrypoint.sh` del contenedor la regenera con `TVA_ENV` (por defecto `pro`).
+La elección de entorno sigue el patrón documentado del paquete: en local el selector
+aparece una vez (se memoriza en `localStorage`); en el contenedor
+`docker/entrypoint.sh` filtra `assets/environments.json` con `TVA_ENV` (por defecto
+`pro`) para que quede una sola clave y el selector no se muestre.
 
 ## Ejecutores Nx corporativos
 
