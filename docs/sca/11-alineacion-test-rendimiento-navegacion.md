@@ -569,3 +569,12 @@ Alta→Decidir→CrearAccion completa).
   `sol.datosCompletosSolicitud.datosCabecera` (antes `sol.datosCabecera`, path
   inexistente → nombre/apellidos/idCliente de la sección argumentario siempre
   vacíos).
+
+### §8.z6 — Smart service único por evaluación + cabecera record→Map + footer
+
+| Fix | Detalle |
+|---|---|
+| **"second smart service"** en POSPONER (CA Opciones, AccAdm, FueraNorma, VERTI) y en los dos botones de Mecanización + Relanzar de BandejaErrores | `SCA2_posponerTarea`/`SCA2_guardarTrazabilidad`/`SCA2_relanzarError` contienen `a!writeRecords` — dos en el mismo saveInto violan el límite (en SCA eran dos `a!startProcess_26r3` legacy, permitido). POSPONER ahora lanza `a!startProcess(cons!SCA2_PM_CMD_POSPONER, idSolicitud/idTarea/fechaDietario:SCA2_obtenerCaducidadNivel(codPerfil,false,null,"2"), motivo:observaciones)` con `SCA2_guardarTrazabilidad` en `onSuccess` (evaluación separada). Mecanización: traza movida a `onSuccess` de sus dos `a!startProcess`. BandejaErrores Relanzar: `SCA2_relanzarError` movido a `onSuccess` del `a!startProcess`. |
+| **Cabecera acciones "debe indexarse por sus campos"** | inputs `estructuraCabecera` de `SCA2_MilestoneMasDatosAltaSolicitud` (20053322) y `_Estrategicas` (20053071) y `datosCabecera` de `SCA2_DatosCabecera` (20053077) estaban tipados record-datatype → todo valor Map/CDT quedaba no indexable. PUT → **Map** (HTTP 200, re-GET). Con `SCA2_cargarSolicitud` devolviendo a!map y `ContraAnulacionPrincipal` mapeando `clienteNombre→datosCliente.nombre`, la cadena es Map-shaped en todos los callers. testInterface `SCA2_DatosCabecera_Estrategicas(15787530)` renderiza cabecera con datos. |
+| **Footer duplicado en acciones** | `SCA2_Buscador` renderizaba `SCA2_PieDePagina` a nivel página también en vista DETALLE/acción, duplicando el de los Principales → `if(a!isNullOrEmpty(ri!idSolicitud), PieDePagina, {})` (solo vista búsqueda, como SCA). |
+| **Paridad botones CA Opciones** | añadido `local!mostrarBotonesCancelarPosponer` (`SCA2_mostrarBotonCancelarPosponer` con perfil/subperfil/nuumaPropietario/nivel/carterizado como SCA) → `showWhen` en CANCELAR y POSPONER; POSPONER disabled+tooltip "Se ha de seleccionar una de las oficinas" cuando `masDeUnaOficina` sin selección (como SCA). AccAdm: confirm POSPONER → "Se va a posponer la solicitud de anulación" (literal SCA). |
