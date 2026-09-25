@@ -388,3 +388,19 @@ def test_volver_visible_en_administracion():
     from apps.tva.operators.botonera import botones_para
 
     assert {b["id"]: b for b in botones_para(s, ["TVA_ADMIN_PORTAL"])}["volver"]["visible"]
+
+
+def test_legal_representative_null_opcional():
+    s = _sesion()
+    res = dispatcher.ejecutar_accion(
+        s,
+        "validar-seccion",
+        {
+            "caja": "CAPTURA_DATOS_TOMADOR1",
+            "seccion": "legalRepresentative",
+            "datos": {"legalRepresentative": None},
+        },
+    )
+    assert not [a for a in res["avisos"] if a.get("tipo") == "ERROR"]
+    s.refresh_from_db()
+    assert s.estado["tomadores"][0]["legalRepresentative"] is None

@@ -181,3 +181,11 @@ def test_trazas_con_clave(api_client, admin_header):
     r = api_client.get(f"{BASE}/admin/trazas/?clave=abc", **admin_header)
     assert r.status_code == 200
     assert r.json()[0]["clave_sesion"] == "abc"
+
+
+def test_accion_continuar_tomador_botones_con_roles(api_client, admin_header):
+    s = _sesion(modalidad="VA", pantalla="CAPTURA_TOMADOR1", estado={"avisos": [], "tomadores": [{}, {}]})
+    r = api_client.post(f"{BASE}/sesiones/{s.clave}/acciones/continuar-tomador/", {"datos": {}}, format="json", **admin_header)
+    assert r.status_code == 200
+    botones = {b["id"]: b for b in r.json()["botones"]}
+    assert botones["administracion"]["visible"] is True

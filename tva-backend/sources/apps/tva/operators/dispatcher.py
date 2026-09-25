@@ -19,7 +19,7 @@ from . import (
     verificar_productores,
 )
 from ._comun import add_aviso, guardar_y_trazar, resultado
-from .botonera import condiciones_contratar
+from .botonera import botones_para, condiciones_contratar
 from .maquina_pantallas import (
     ACCIONES_VALIDAS,
     Accion,
@@ -179,7 +179,8 @@ def ejecutar_accion(sesion: Sesion, accion: str, datos: dict, roles: list[str] |
     if a == Accion.VALIDAR_SECCION:
         return secciones.ejecutar(sesion, datos, roles=roles)
     res = dispatch[a](sesion, datos)
-    # los operadores devuelven el dict de resultado; añadir botones si falta
-    if isinstance(res, dict) and "botones" not in res:
-        res["botones"] = resultado(sesion, roles=roles)["botones"]
+    # los operadores devuelven el dict de resultado; los botones se recalculan
+    # siempre con los roles de la petición para no perder los dependientes de rol
+    if isinstance(res, dict):
+        res["botones"] = botones_para(sesion, roles)
     return res

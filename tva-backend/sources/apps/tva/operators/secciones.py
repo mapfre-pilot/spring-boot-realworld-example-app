@@ -85,7 +85,10 @@ def escribir_seccion(estado: dict, caja_id: str, seccion_id: str, datos: dict) -
         if caja_id in (CAJA_DOMICILIACIONES_T1, CAJA_DOMICILIACIONES_T2):
             tomadores[idx]["domiciliaciones"] = datos
         else:
-            tomadores[idx][seccion_id] = datos
+            if seccion_id == "legalRepresentative" and isinstance(datos, dict) and "legalRepresentative" in datos:
+                tomadores[idx][seccion_id] = datos["legalRepresentative"]
+            else:
+                tomadores[idx][seccion_id] = datos
         nuevo["tomadores"] = tomadores
         return nuevo
 
