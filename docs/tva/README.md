@@ -25,7 +25,7 @@ Documentación resultante del análisis **de solo lectura** de la aplicación Ap
 8. [Limitaciones del análisis](08-limitaciones.md)
 9. [Plan de migración a Angular Material + backend](09-plan-migracion-angular.md)
 10. [Plan de migración basado en los arquetipos corporativos (Angular + Django)](10-plan-migracion-arquetipos.md) — **implementado** en `tva-frontend/` y `tva-backend/` (stubs de libs corporativas)
-11. [Guía de despliegue](11-guia-despliegue.md) — arranque local, Docker Compose, variables, swaps stub→corporativo
+11. [Guía de despliegue](11-guia-despliegue.md) — checklist de instalación local verificado desde clon limpio, Docker Compose, variables, integraciones mock vs real, swaps stub→corporativo
 12. [Gap analysis Appian ↔ Angular](12-gap-analysis-appian-angular.md) — matriz de cobertura por pantalla
 13. [Diseño técnico por feature](13-diseno-tecnico/README.md) — 00 arquitectura referencia + 14 diseños
 14. [Análisis funcional](14-analisis-funcional.md) — visión de negocio de TVA con trazabilidad Appian

@@ -10,7 +10,9 @@ https://docs.djangoproject.com/en/2.0/howto/deployment/wsgi/
 import os
 
 from django.core.wsgi import get_wsgi_application
+from dotenv import load_dotenv
 
 
+load_dotenv()  # tva-backend/.env junto a sources/ (ver .env.sample)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 application = get_wsgi_application()

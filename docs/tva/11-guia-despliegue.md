@@ -1,7 +1,9 @@
 # 11. Guía de despliegue — TVA
 
 Cómo levantar la migración completa (frontend Angular + backend Django + PostgreSQL +
-Redis) desde un clon limpio de la rama `feature/tva`, usando solo dependencias públicas.
+Redis) desde un clon limpio de la rama `feature/tva`. El backend usa solo dependencias
+públicas; el frontend además necesita acceso al feed corporativo de Azure Artifacts
+(PAT, ver requisitos).
 
 ## Requisitos
 
@@ -12,6 +14,30 @@ Redis) desde un clon limpio de la rama `feature/tva`, usando solo dependencias p
 | Python | 3.11 (pyenv recomendado) |
 | Poetry | ≥ 2.5 |
 | Docker + Docker Compose | cualquier versión reciente (v2+) |
+| PAT de Azure Artifacts | usuario `~/.npmrc` con `_auth`/`username`/`_password`/`email` hacia `pkgs.dev.azure.com` (ver §3 Frontend) |
+
+## Instalación paso a paso en local (checklist)
+
+1. `git clone --branch feature/tva <repo>` (rama `feature/tva`).
+2. PAT en `~/.npmrc` (bloque de §3 — sin él `pnpm install` falla).
+3. Backend: `cd tva-backend/sources && poetry install && cp ../.env.sample ../.env`
+   (`.env` se carga vía `python-dotenv` desde `manage.py`/`wsgi.py`; los defaults
+   sirven en local) `&& poetry run python manage.py migrate &&
+   poetry run python manage.py cargar_parametros`.
+4. `poetry run python manage.py runserver 0:8888` — `curl
+   http://localhost:8888/api/tva/v1/salud/` → `integraciones` todo `mock`.
+5. Token: `poetry run python manage.py crear_token_local --usuario operador1
+   --roles TVA_USUARIO,TVA_ADMIN_PORTAL` → pegar en `/login` del SPA.
+6. Frontend: `cd tva-frontend && pnpm install && pnpm exec nx serve tva` →
+   `http://localhost:4200`; el selector de entorno aparece una vez (elegir `dev`
+   → `apiBaseUrl` localhost:8888).
+7. Datos de prueba mock: en Inicio `documentoCliente` cualquier NIF válido (p.ej.
+   `12345678Z`), `canal` GV, `username` `operador1@mapfre.net`; el mock acepta
+   cualquier productor.
+8. Para integraciones reales: `*_MODE=real` + variables del § "Integraciones:
+   mock vs real" y verificación con `smoke_integraciones`.
+9. Comprobaciones opcionales: `poetry run python manage.py check` y
+   `poetry run python manage.py smoke_integraciones` (todo OK en mock).
 
 ## Arranque local (sin Docker)
 
@@ -44,11 +70,29 @@ Pega el token en la página `/login` del frontend (se guarda en `localStorage[tv
 
 ### 3. Frontend
 
+Antes de `pnpm install`, autentica el feed corporativo en `~/.npmrc` del usuario
+(una vez; el `.npmrc` del repo solo apunta al registro):
+
+```
+//pkgs.dev.azure.com/devopsmapfre/devopsmapfre/_packaging/releases/npm/registry/:username=mapfre
+//pkgs.dev.azure.com/devopsmapfre/devopsmapfre/_packaging/releases/npm/registry/:_password=<PAT_BASE64>
+//pkgs.dev.azure.com/devopsmapfre/devopsmapfre/_packaging/releases/npm/registry/:email=<tu-email>
+//pkgs.dev.azure.com/devopsmapfre/devopsmapfre/_packaging/releases/npm/registry/:always-auth=true
+```
+
+(equivalente corporativo: `:_auth=<PAT_BASE64>` en vez de `username`/`_password`;
+nunca en el repo).
+
 ```bash
 cd tva-frontend
 pnpm install
 pnpm exec nx serve tva        # http://localhost:4200
 ```
+
+En la primera carga aparece una vez el selector de entorno del paquete
+corporativo (claves `dev`/`pre`/`pro`); elige `dev` — su `apiBaseUrl` apunta a
+`http://localhost:8888/api/tva/v1`. La elección se recuerda en `localStorage`
+(`OKCD_APPLICATION_ENVIRONMENT`).
 
 ## Arranque con Docker Compose
 
@@ -105,11 +149,10 @@ o ajusta `TVA_ENV` del contenedor frontend: al arrancar, `docker/entrypoint.sh` 
 | `OAUTH_JWKS_URI`/`OAUTH_AUDIENCE`/`OAUTH_ISSUER` | CHANGEME | OIDC RS256 (no-local) |
 | `CORS_ALLOWED_ORIGINS` | http://localhost:4200 | Orígenes del SPA (coma-separados) |
 | `SQL_DEBUG` | — | `True` para loguear SQL (por defecto WARNING) |
-| `APILIFE_MODE`/`MISV_MODE`/`RIC_MODE`/`PERFIL_MODE` | `mock` | `real` usa los conectores HTTP |
-| `APPIAN_EMBED_MODE` | `mock` | `real` llama a las Web APIs Appian TEST (pop-ups RGPD/DNI/test) |
+| `APILIFE_MODE`/`MISV_MODE`/`RIC_MODE`/`PERFIL_USUARIO_MODE` | `mock` | `real` usa los conectores HTTP — variables por conector en § "Integraciones: mock vs real" (`APILIFE_*`, `MISV_*`, `RIC_*`, `SOA_*`) |
+| `APPIAN_EMBED_MODE` | `mock` | `real` llama a las Web APIs Appian (pop-ups RGPD/DNI/test) |
 | `APPIAN_EMBED_API_KEY` | — | clave `Appian-API-Key` (solo `real`; va en `.env`, no versionada) |
-| `APPIAN_EMBED_BASE_URL` | `https://mapfrespain-test.appiancloud.com/suite` | base `/suite` de la instancia Appian |
-| `APILIFE_*`/`MISV_*`/`RIC_*` (URL/usuario/clave) | CHANGEME | Credenciales conector real |
+| `APPIAN_EMBED_BASE_URL` | URL Appian `/suite` | base de la instancia Appian |
 | `CACHE_DEFAULT_TIMEOUT` | 300 | TTL caché (productos) |
 | `TVA_TRAZA_DIAS_PERMANENCIA` | 365 | Purga de trazas |
 
@@ -148,8 +191,13 @@ Solo el backend conserva stubs (el feed Python no está en alcance):
 
 ## Integraciones reales pendientes
 
-- **API Life / MISV / RIC / perfil de usuario**: modo `real` listo — falta `*_MODE=real` +
-  URLs/credenciales por env y validar contratos con los fixtures.
+- **API Life / MISV / RIC / perfil de usuario**: clientes `real` implementados y
+  configurables (ver § "Integraciones: mock vs real") — pendiente validación
+  end-to-end con red/credenciales; el contrato RIC debe confirmarse con los
+  dueños de MU. Constantes cross-app no presentes en el dump y por tanto
+  con defaults env-overridables: `CMP_VAL_TRADUCCION_ES`→`APILIFE_ACCEPT_LANGUAGE=es`,
+  `VIDA_ACRONIMO_APLICACION`→`MISV_APLICACION=VIDA`,
+  `VIDA_CODIGOS_TIPO_PERSONA_FISICA`→`MISV_TIPO_PERSONA=F`.
 - **EntraID OIDC**: alta de app registrations (SPA + API) por el equipo; luego rellenar
   `authority`/`clientId`/`scope`/`redirectUrl` del frontend y `OAUTH_*` del backend.
 - **PostgreSQL/Redis productivos**: el compose es para local; en infra real apuntar `DB_*`
@@ -173,7 +221,7 @@ arranque si falta alguna variable obligatoria. Comprobar con
 | MISV perfilado | `MISV_MODE`, `MISV_BASE_URL`, `MISV_USERNAME`, `MISV_PASSWORD` (+ `MISV_APLICACION`, `MISV_TIPO_PERSONA`, `MISV_TIMEOUT`) | Connected system "TVA MISV" (Basic, usuario APPCMPA), integración `TVA_PerfiladoClientes` | `GET /NOVAServices/rest/RSPerfiladoClienteV2/obtenerPerfiladoCliente` (query USUARIO/APLICACION/NIF/TIPO_PERSONA) | `smoke_integraciones --solo misv --nif <nif>` | Implementado; verificado solo con tests |
 | Perfil de usuario (SOA7) | `PERFIL_USUARIO_MODE`, `SOA_BASE_URL`, `SOA_USERNAME`, `SOA_PASSWORD` (+ `SOA_TIMEOUT`) | Integración `TVA_WSDL_IGestionarPerfilUsuario` (SOAP, WSSE UsernameToken, usuario APPRIMO) | `POST {SOA_BASE_URL}/MAVISA_910Usuario_SOAMEDWeb/sca/MAVISA_910Usuario_WSDL` | `smoke_integraciones --solo perfil-usuario --usuario <u>` | Implementado; verificado solo con tests (sobre XML de muestra) |
 | RIC | `RIC_MODE`, `RIC_BASE_URL`, `RIC_PATH`, `RIC_USERNAME`, `RIC_PASSWORD` | Regla cross-app `MU_ObtenerClienteRIC` (Appian DEV usa mock bajo `TVA_FLAG_SIMULAR_BUSQUEDA_CLIENTE_RIC`) | `GET {RIC_BASE_URL}/{RIC_PATH}?documento=<nif>` | `smoke_integraciones --solo ric --nif <nif>` | Implementado; **contrato por confirmar con los dueños de MU** |
-| Appian Embedded (pop-ups) | `APPIAN_EMBED_MODE`, `APPIAN_EMBED_BASE_URL`, `APPIAN_EMBED_API_KEY` | Web APIs `tva-lanzar-*` + `cmp-respuesta-componente` | `POST {base}/webapi/…` | `smoke_integraciones --solo appian` (solo config) | Real verificado contra TEST |
+| Appian Embedded (pop-ups) | `APPIAN_EMBED_MODE`, `APPIAN_EMBED_BASE_URL`, `APPIAN_EMBED_API_KEY` | Web APIs `cmp-firma-rgpd`, `cmp-captura-dni`, `testIdoneidad`, `cmp-respuesta-componente` | `POST {base}/webapi/…` | `smoke_integraciones --solo appian` (solo config) | Real verificado contra TEST |
 
 ## Estado de la implementación
 
@@ -194,8 +242,18 @@ con garantías, periodicidades, primas y opciones UL; flujo completo VA
 VIA (selección producto → modalidad campaña → datos → tomador 1 → resumen → firma),
 R2C (captura → precios → resumen → firma); login local, admin (parámetros, batch
 apertura/cierre + abrir/cerrar manual, cachés, trazas); pantallas SISTEMA_CERRADO /
-SIN_PERFIL / SOLO_AVISOS; 135 tests backend (82% coverage), 28 tests frontend.
+SIN_PERFIL / SOLO_AVISOS; pop-ups RGPD / Captura DNI / test de conveniencia como
+tareas embebidas Appian TEST con verificación real de resultado
+(`cmp-respuesta-componente`); resumen estructurado (no JSON); frontend en
+Clean Architecture (`libs/core` ports/usecases/repositorios) y tema visual
+MAPFRE; conectores reales configurables (API Life spec-driven, MISV, SOAP SOA7,
+RIC) con checks de configuración y `smoke_integraciones`; **193 tests backend
+(84% coverage), 26 + 57 tests frontend**.
 
-**Pendiente**: firma real (servicio de firma), descarga de documentos reales,
-digitalización de DNI, cesión de derechos, RGPD, notas, propuestas persistidas en API
-Life, i18n, tests E2E automatizados, OIDC end-to-end.
+**Pendiente**: firma/contratación real (servicio de firma), documentos
+precontractuales reales y descarga, cesión de derechos, notas, propuestas
+persistidas en API Life, catálogo dinámico real, precio R2C real, EntraID OIDC
+end-to-end, sustituir stubs `arch-ram-lib-*` por los paquetes corporativos,
+integraciones reales verificadas solo con tests (HTTP mockeado — sin
+red/credenciales aquí), `docker compose up` sin verificar en esta máquina
+(`docker compose config` validado), i18n, tests E2E automatizados.
