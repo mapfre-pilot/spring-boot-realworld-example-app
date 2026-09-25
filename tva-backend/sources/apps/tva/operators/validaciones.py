@@ -468,3 +468,17 @@ def errores_productores(prod: dict) -> list[str]:
 def avisos_seccion(errores: list[str], clase=AvisosClase.GENERAL, seccion_ref: str = "") -> list:
     """Envuelve los textos §12.4.4 en avisos tipo ERROR mostrarEn=SECCION."""
     return [{**aviso(clase, "TVA_ERROR_VALIDACION", e, tipo="ERROR", mostrar_en="SECCION"), "seccion": seccion_ref} for e in errores]
+
+
+def test_conveniencia_valido(perfil: dict | None) -> bool:
+    """``TVA_EsValidoTestConveniencia``: firma ``FI`` y fecha no caducada."""
+    perfil = perfil or {}
+    if str(perfil.get("testConvenienciaEstadoFirma") or "") != "FI":
+        return False
+    fecha = perfil.get("testConvenienciaFechaCaducidad")
+    if not fecha:
+        return False
+    try:
+        return datetime.date.fromisoformat(str(fecha)[:10]) >= datetime.date.today()
+    except ValueError:
+        return False

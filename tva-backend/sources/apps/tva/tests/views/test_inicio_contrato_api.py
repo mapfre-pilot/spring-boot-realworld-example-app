@@ -87,3 +87,46 @@ def test_iniciar_sesion_via_sin_productos_aviso():
     datos["investment"] = []
     sesion, _ = iniciar_sesion(usuario="tester", datos=datos)
     assert any(a["texto"] == "El servicio no ha devuelvo ningún producto de ahorro" for a in sesion.estado["avisos"])
+
+
+def _conv(fecha="2028-01-17"):
+    return {
+        "testData": {
+            "convenience": {
+                "profileCode": "ME",
+                "profileDesc": "Medios",
+                "signatureStatus": "FI",
+                "expirationDate": fecha,
+            }
+        }
+    }
+
+
+def test_inicio_via_sin_perfilado_va_a_tomador1():
+    """Bug reportado: Perfilado desmarcado debe ir a Tomador 1 (no Solicitud)."""
+    datos = dict(BODY)
+    datos["policyHolders"] = [{}]
+    sesion, errores = iniciar_sesion(usuario="tester", datos=datos)
+    assert errores == []
+    assert sesion.estado["perfilClientesOK"] is False
+    assert sesion.estado["idPantallaActual"] == "CAPTURA_TOMADOR1"
+
+
+def test_inicio_via_perfilado_va_a_solicitud():
+    datos = dict(BODY)
+    datos["policyHolders"] = [_conv()]
+    sesion, _ = iniciar_sesion(usuario="tester", datos=datos)
+    assert sesion.estado["perfilClientesOK"] is True
+    assert sesion.estado["idPantallaActual"] == "CAPTURA_DATOS_SOLICITUD"
+    t = sesion.estado["tomadores"][0]
+    assert t["perfilCliente"]["testConvenienciaEstadoFirma"] == "FI"
+    assert t["datosGestionParticipante"]["testConvenienciaVigente"] is True
+    assert "testData" not in t["datosPersonales"]
+
+
+def test_inicio_via_perfilado_caducado():
+    datos = dict(BODY)
+    datos["policyHolders"] = [_conv("2020-01-01")]
+    sesion, _ = iniciar_sesion(usuario="tester", datos=datos)
+    assert sesion.estado["perfilClientesOK"] is False
+    assert sesion.estado["idPantallaActual"] == "CAPTURA_TOMADOR1"

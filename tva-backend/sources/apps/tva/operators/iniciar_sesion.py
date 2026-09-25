@@ -25,7 +25,7 @@ from apps.tva.services.connectors.ric import get_ric_client
 
 from .maquina_pantallas import pantalla_inicio
 from .sesion_modelo import nueva_sesion_estado, tomador_vacio
-from .validaciones import nuuma_desde_username, validar_parametros_inicio, validar_parametros_inicio_body
+from .validaciones import nuuma_desde_username, test_conveniencia_valido, validar_parametros_inicio, validar_parametros_inicio_body
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,16 @@ def _tomadores_desde_policy_holders(policy_holders: list) -> list:
     tomadores = []
     for ph in policy_holders or []:
         t = tomador_vacio()
-        t["datosPersonales"] = dict(ph)
+        conv = (ph.get("testData") or {}).get("convenience") or {}
+        if conv:
+            t["perfilCliente"] = {
+                "testConvenienciaEstadoFirma": conv.get("signatureStatus"),
+                "testConvenienciaFechaCaducidad": conv.get("expirationDate"),
+                "profileCode": conv.get("profileCode"),
+                "profileDesc": conv.get("profileDesc"),
+            }
+            t["datosGestionParticipante"]["testConvenienciaVigente"] = test_conveniencia_valido(t["perfilCliente"])
+        t["datosPersonales"] = {k: v for k, v in ph.items() if k != "testData"}
         tomadores.append(t)
     if not tomadores:
         tomadores = [tomador_vacio()]
@@ -155,7 +164,14 @@ def iniciar_sesion(usuario: str, datos: dict) -> tuple[Sesion | None, list[str]]
         logger.warning("ProductList falló en inicio: %s", exc)
         productos = []
 
-    tomadores = _tomadores_desde_policy_holders(datos.get("policyHolders") or [])
+    policy_holders = datos.get("policyHolders") or []
+    tomadores = _tomadores_desde_policy_holders(policy_holders)
+    # ``perfilClientesOK`` se deriva SOLO de los policyHolders del request
+    # (TVA_InicializarSesion): no vacío y todos con test de conveniencia válido.
+    if _es_contrato_nuevo(datos):
+        perfil_ok = bool(policy_holders) and all(test_conveniencia_valido(t.get("perfilCliente")) for t in tomadores)
+    else:
+        perfil_ok = bool(cliente.get("perfilClientesOK", True))
     estado = nueva_sesion_estado(
         "",
         modalidad,
@@ -167,7 +183,7 @@ def iniciar_sesion(usuario: str, datos: dict) -> tuple[Sesion | None, list[str]]
         tomadores=tomadores,
         propuesta=propuesta,
         investment_option=investment_option,
-        perfil_clientes_ok=bool(cliente.get("perfilClientesOK", True)),
+        perfil_clientes_ok=perfil_ok,
     )
     estado["documentoCliente"] = documento_cliente
     estado["clienteVida"] = cliente.get("clienteVida", cliente)
