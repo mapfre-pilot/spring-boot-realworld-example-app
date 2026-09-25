@@ -122,6 +122,6 @@ El alta UI de 2002000014944 **sí se completó**: 15787543 EN_ACCION, Tarea ACCI
 | FINALIZAR CA Opciones no llamaba al cierre Core7 | PM cierra con IContraAnularPCA | saveInto sin integración | nodo 300 XOR + 301 Call Integration en CompletarAccion; UI pasa `finalizarCAPca` |
 | FINALIZAR Autorización no llamaba aceptarAutorizacion | PM llama IGestionarAutorizacionesPCA | idem | nodo 302; UI pasa `operacion:"Autorizacion"` + `mSEAceptarAutorizacion` |
 | Mecanización onSuccess con guardarTrazabilidad | traza técnica | "second smart service" latente | eliminado del onSuccess (traza la escribe el PM) — pérdida documentada |
-| BandejaErrores Relanzar onSuccess writeRecords | marca RELANZADO | mismo error latente | marcado local `local!idsRelanzadas` oculta el enlace; record sigue PENDIENTE (documentado) |
+| BandejaErrores Relanzar onSuccess writeRecords | marca RELANZADO | mismo error latente | nuevo PM `SCA2 CMD MarcarErrorRelanzado`: marca Error RELANZADO en PM + arranca el CMD por XOR comando (verificado: error 8 RELANZADO) |
 | POSITIVO/NEGATIVO | integraciones condicionales en saveInto | idéntico | **justificado, no bug**: las reglas llamadas son integraciones HTTP puras, no smart services → el límite no aplica |
 | Asterisco fecha autorizada | "*" visible | sin "*" | la plataforma no renderiza `*` de required en site page → literal " *" en label (verificado en vivo) |
