@@ -78,3 +78,16 @@ Sin solicitud en Core7 ni fila en SCA2 Solicitud, cabecera sin errores:
 | Punto | SCA | SCA2 | Estado |
 |---|---|---|---|
 | Filas del grid | `listaDocumentosNuevo` construido desde `documento1..9` ← `ri!listaDocumentos` ← `SCA_consultarDocumentos(codSolicitud)` | Misma cadena con `SCA2_consultarDocumentos`; `testRule(15787538)` → `MSSConsultarDocumentos:null` | Paridad: el servicio PRE devuelve null para solicitudes sin documentos → grid vacía en ambas. `SCA2_insertarObservaciones` también devuelve `success:false` PRE (no lanza excepción → no bloquea saveInto). |
+
+## Alta post-OK + posponer — paridad post-observación SCA 15787542 (25/09 tarde)
+
+| Punto | SCA | SCA2 antes | Corrección |
+|---|---|---|---|
+| Tras GUARDAR + OK | `SCA_AltaSolicitudEstrategicas` guarda `ri!idSolicitud = pv.codSolicitud` → la página renderiza directamente la acción pendiente ("Revisión autorización…"). | OK → `vista=DETALLE` (acordeón, había que RETOMAR). | **Corregido**: `SCA2_AltaSolicitudPage` +inputs `tipoAccion`/`idTarea`, `local!tareaNueva` (refreshVariable 0.5 sobre Tarea PENDIENTE de la solicitud) → OK abre la acción directamente; fallback a Detalle si aún no hay tarea. |
+| Tarea tras posponer | SCA solo mueve caducidad; el owner vuelve al **grupo** → `RETOMAR` solo si `taskOwner=loggedInUser` → tras posponer aparece solo REASIGNAR. | Tarea quedaba asignada al usuario; RETOMAR seguía visible. | **Corregido**: PM CMD Posponer nodo 5 escribe `asignadoA=null`; DetalleSolicitud RETOMAR `showWhen: touser(asignadoA)=loggedInUser()` + puedeGestionar; REASIGNAR `showWhen: no-owner`. |
+| Feedback posponer | Popup `SCA_PopUpMensajeAutorizacion` "CORRECTO / Los datos se han guardado correctamente" → vuelta al Buscador. | Texto verde "Acción registrada. Vuelva al detalle…" dentro de la acción. | **Corregido**: `SCA2_DetalleTareas` muestra card CORRECTO (check-circle, texto, ACEPTAR rojo) → `ri!idSolicitud=null` → vuelve al Buscador. |
+| Alta fallida (Core7 KO) | Popup "ERROR / Los datos no se han podido guardar correctamente". | Card azul de éxito incluso con `idSolicitud=PDTE-*`. | **Corregido**: éxito solo si idSolGenerada no es `PDTE-*`; si `PDTE-*` → mensaje ERROR "Los datos no se han podido guardar correctamente (pestaña Errores)". |
+
+## Alta 14944 — diagnóstico
+
+El alta UI de 2002000014944 **sí se completó**: 15787543 EN_ACCION, Tarea ACCIONES ADMINISTRATIVAS PENDIENTE (JJGONZ2, CE_RM), transiciones OK. El "silencio" fue el tiempo del proceso síncrono; el usuario no llegó a ver/clickar el mensaje azul. El PM idempotente rechaza duplicados con ALTA_ERROR "Solicitud de anulacion ya existente" (verificado vía 2 relanzamientos de prueba → PDTE-8920113/PDTE-12066623, filas eliminadas).

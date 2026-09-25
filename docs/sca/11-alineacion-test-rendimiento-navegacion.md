@@ -611,3 +611,10 @@ Pendiente no bloqueante: `SCA_PopUpMensajeAutorizacion` (flujos autorización ni
 - **Grid documentos Acc.Adm.**: paridad — `consultarDocumentos` PRE devuelve `MSSConsultarDocumentos:null` para 15787538 (sin docs) → "No hay elementos disponibles" igual que SCA.
 - **Alta 2002000012636**: cadena UI completa OK → `15787539` EN_ACCION, tarea `AUTORIZACION` PENDIENTE (esperada — motivo autorización). Sin error rows.
 - **SCA Alta 2002000063789** (check lectura): `consultarSolicitudes` → null → NO se creó solicitud Core7 en SCA (paridad: mismo alta pre-fallando en SCA, no solo en SCA2).
+
+### §8.z11 — Paridad post-alta/posponer (observación SCA 15787542)
+
+- **OK → acción directa**: `SCA2_AltaSolicitudPage` gana inputs `tipoAccion`/`idTarea` + `local!tareaNueva` (polling Tarea PENDIENTE cada 0.5s); OK abre la acción si la tarea existe, sino Detalle. `SCA2_Buscador` propaga los inputs.
+- **Posponer paridad SCA**: PM escribe `Tarea.asignadoA=null` (vuelta al grupo) + RETOMAR solo para owner en `SCA2_DetalleSolicitud`, REASIGNAR para no-owner; popup CORRECTO/ACEPTAR→Buscador en `SCA2_DetalleTareas`.
+- **Error de alta visible**: card azul solo si id no `PDTE-*`; si `PDTE-*` → texto ERROR (paridad PopUpMensajeAutorizacion SCA).
+- Alta 14944 funcionó (15787543 EN_ACCION, tarea ACC ADM pendiente); silencio = latencia del proceso síncrono. Filas PDTE-8920113/PDTE-12066623 + errores de mis verificaciones eliminadas.
