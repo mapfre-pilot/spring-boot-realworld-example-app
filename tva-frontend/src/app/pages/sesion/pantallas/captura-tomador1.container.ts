@@ -2,9 +2,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatChipsModule } from '@angular/material/chips';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { CajaComponent } from '../../../shared/ui/caja.component';
 import { CampoSelectComponent } from '../../../shared/ui/campo-select.component';
@@ -91,13 +91,14 @@ export const TOMADOR_TEMPLATE = `
   </div>
   <div class="col-der">
     <app-caja titulo="Requisitos del tomador">
-      <mat-chip-set>
-        @for (r of requisitos(); track r.etiqueta) {
-          <mat-chip [color]="r.hecho ? 'primary' : 'warn'" [disableRipple]="true" matTooltip="Pendiente de integración" [disabled]="true">
-            {{ r.etiqueta }} — {{ r.hecho ? 'OK' : 'Pendiente de integración' }}
-          </mat-chip>
-        }
-      </mat-chip-set>
+      @for (r of requisitos(); track r.etiqueta) {
+        <div class="requisito">
+          <mat-icon [class.ok]="r.hecho">{{ r.hecho ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+          <button mat-button type="button" [disabled]="r.hecho || !r.habilitado" (click)="abrirRequisito(r.popup, r.etiqueta)">
+            {{ r.etiqueta }}
+          </button>
+        </div>
+      }
     </app-caja>
   </div>
 </div>
@@ -106,6 +107,8 @@ export const TOMADOR_TEMPLATE = `
 export const TOMADOR_STYLES = `
   .layout { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
   .formulario { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .requisito { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .requisito .ok { color: #2e7d32; }
 `;
 
 @Component({
@@ -118,8 +121,8 @@ export const TOMADOR_STYLES = `
     CampoSelectComponent,
     MatCheckboxModule,
     MatSlideToggleModule,
-    MatChipsModule,
-    MatTooltipModule,
+    MatButtonModule,
+    MatIconModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: TOMADOR_TEMPLATE,

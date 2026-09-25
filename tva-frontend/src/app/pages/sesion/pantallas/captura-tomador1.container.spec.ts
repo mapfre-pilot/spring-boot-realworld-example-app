@@ -4,6 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { createComponentFactory } from '@ngneat/spectator/jest';
 import { of } from 'rxjs';
 
+import { AppianPopupService } from '../../../core/appian/appian-popup.service';
 import { TvaApiService } from '../../../core/api/tva-api.service';
 import { SesionStore } from '../../../core/state/sesion.store';
 import { CapturaTomador1Container } from './captura-tomador1.container';
@@ -16,6 +17,7 @@ describe('CapturaTomador1Container', () => {
       provideHttpClient(),
       provideHttpClientTesting(),
       { provide: TvaApiService, useValue: api },
+      { provide: AppianPopupService, useValue: { abrir: jest.fn() } },
     ],
   });
 
@@ -45,5 +47,20 @@ describe('CapturaTomador1Container', () => {
       'datosPersonales',
       expect.objectContaining({ documentId: '00000000T', nombre: 'Juan' })
     );
+  });
+
+  it('botones de requisitos deshabilitados hasta validar datos personales', () => {
+    api.catalogo.mockReturnValue(of({ valores: [] }));
+    const s = create();
+    const store = TestBed.inject(SesionStore);
+    store.sesion.set({
+      clave: 'k',
+      pantalla_actual: 'CAPTURA_TOMADOR1',
+      estado: { tomadores: [{}], cajas: [], avisos: [] },
+    } as never);
+    s.detectChanges();
+    const botones = s.element.querySelectorAll('.requisito button');
+    expect(botones.length).toBe(3);
+    botones.forEach(b => expect((b as HTMLButtonElement).disabled).toBe(true));
   });
 });

@@ -2,7 +2,8 @@
 import { Directive, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
-import { Caja } from '../../../core/models/models';
+import { Caja, PopupAppian } from '../../../core/models/models';
+import { AppianPopupService } from '../../../core/appian/appian-popup.service';
 import { SesionStore } from '../../../core/state/sesion.store';
 import { esDocumentoIdentidadValido } from '../../../core/validaciones/documentos';
 import { Opcion } from '../../../shared/ui/campo-select.component';
@@ -11,6 +12,7 @@ import { Opcion } from '../../../shared/ui/campo-select.component';
 export abstract class TomadorBase implements OnInit {
   protected readonly store = inject(SesionStore);
   protected readonly fb = inject(FormBuilder);
+  protected readonly popups = inject(AppianPopupService);
 
   /** Id de la caja del tomador (CAPTURA_DATOS_TOMADOR1/2). */
   abstract readonly cajaId: string;
@@ -189,15 +191,49 @@ export abstract class TomadorBase implements OnInit {
       });
   }
 
-  /** Panel derecho — requisitos del tomador (pop-ups externos aún no integrados). */
-  readonly requisitos = computed(() => {
-    const t = this.tomador();
-    const g = t?.datosGestionParticipante ?? {};
-    const tc = t?.perfilCliente?.testConveniencia?.estado;
-    return [
-      { etiqueta: 'Consentimiento RGPD', hecho: !!g.consentimientoProteccionDatos },
-      { etiqueta: 'Digitalizar DNI', hecho: !!g.documentoIdDigitalizado },
-      { etiqueta: 'Test de conveniencia', hecho: tc === 'FIRMADO' || !!g.testConvenienciaVigente },
-    ];
-  });
+  /** Panel derecho — requisitos del tomador (pop-ups Appian Embedded). */
+  readonly requisitos = computed(
+    (): { etiqueta: string; popup: PopupAppian; hecho: boolean; habilitado: boolean }[] => {
+      const t = this.tomador();
+      const g = t?.datosGestionParticipante ?? {};
+      const tc = t?.perfilCliente?.testConveniencia?.estado;
+      const datosOk = this.seccionValida('datosPersonales');
+      const mediosOk = this.seccionValida('mediosContacto');
+      return [
+        {
+          etiqueta: 'Consentimiento RGPD',
+          popup: 'rgpd',
+          hecho: !!g.consentimientoProteccionDatos,
+          habilitado: datosOk,
+        },
+        {
+          etiqueta: 'Digitalizar NIF / NIE',
+          popup: 'dni',
+          hecho: !!g.documentoIdDigitalizado,
+          habilitado: datosOk,
+        },
+        {
+          etiqueta: 'Realizar test de conveniencia',
+          popup: 'test-conveniencia',
+          hecho: tc === 'FIRMADO' || !!g.testConvenienciaVigente,
+          habilitado: datosOk && mediosOk,
+        },
+      ];
+    }
+  );
+
+  abrirRequisito(popup: PopupAppian, etiqueta: string): void {
+    const clave = this.store.claveSesion();
+    if (!clave) return;
+    this.popups.abrir(clave, popup, this.indiceTomador, etiqueta).subscribe(res => {
+      const s = this.store.sesion();
+      if (s) {
+        this.store.sesion.set({
+          ...s,
+          pantalla_actual: res.pantallaActual,
+          estado: { ...res.estado, avisos: res.avisos },
+        });
+      }
+    });
+  }
 }

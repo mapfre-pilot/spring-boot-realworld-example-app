@@ -2,9 +2,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatChipsModule } from '@angular/material/chips';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { CajaComponent } from '../../../shared/ui/caja.component';
 import { CampoSelectComponent } from '../../../shared/ui/campo-select.component';
@@ -23,8 +23,8 @@ import { TomadorBase } from './tomador-base';
     CampoSelectComponent,
     MatCheckboxModule,
     MatSlideToggleModule,
-    MatChipsModule,
-    MatTooltipModule,
+    MatButtonModule,
+    MatIconModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: TOMADOR_TEMPLATE,

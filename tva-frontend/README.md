@@ -47,7 +47,9 @@ descarga `assets/environments.json` y elige la clave por:
 3. fallback `dev`.
 
 Claves: `dev` (api localhost:8888, `auth.mode: local`), `pre`/`pro` (`auth.mode: oidc` con
-`authority`/`clientId`/`scope`/`redirectUrl` = CHANGEME).
+`authority`/`clientId`/`scope`/`redirectUrl` = CHANGEME). Cada entorno lleva también
+`appianEmbed: { baseUrl, themeIdentifier, signIn }` para los pop-ups Appian Embedded
+(en `dev` apunta a Appian TEST; en `pre`/`pro` son CHANGEME).
 
 > **OIDC**: `angular-auth-oidc-client` está instalado y `app.config.ts` ya registra
 > `provideAuth` cuando `auth.mode === 'oidc'`. El flujo de login real (redirect, callback,

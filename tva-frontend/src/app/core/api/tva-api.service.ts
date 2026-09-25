@@ -6,6 +6,9 @@ import { EnvironmentService } from '@mapfre-tech/ngx-multienvironment/core';
 
 import {
   AccionResponse,
+  PopupAppian,
+  PopupLanzadoResponse,
+  PopupResultado,
   Aviso,
   InicioRequest,
   InicioResponse,
@@ -63,6 +66,28 @@ export class TvaApiService {
     datos: Record<string, unknown>
   ): Observable<AccionResponse> {
     return this.accion(clave, 'validar-seccion', { caja, seccion, datos });
+  }
+
+  lanzarPopup(
+    clave: string,
+    popup: PopupAppian,
+    idxTomador: number
+  ): Observable<PopupLanzadoResponse> {
+    return this.http.post<PopupLanzadoResponse>(
+      `${this.base}/sesiones/${clave}/popups/${popup}/lanzar/`,
+      { idxTomador }
+    );
+  }
+
+  completarPopup(
+    clave: string,
+    popup: PopupAppian,
+    body: { idxTomador: number; taskId: string; resultado: PopupResultado }
+  ): Observable<AccionResponse> {
+    return this.http.post<AccionResponse>(
+      `${this.base}/sesiones/${clave}/popups/${popup}/completar/`,
+      body
+    );
   }
 
   catalogo(nombre: string): Observable<{ valores: { codigo: string; descripcion: string }[] }> {

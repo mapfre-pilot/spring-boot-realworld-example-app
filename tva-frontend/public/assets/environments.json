@@ -1,7 +1,15 @@
 {
   "dev": {
     "apiBaseUrl": "http://localhost:8888/api/tva/v1",
-    "auth": { "mode": "local", "tokenStorageKey": "tva_token" }
+    "auth": {
+      "mode": "local",
+      "tokenStorageKey": "tva_token"
+    },
+    "appianEmbed": {
+      "baseUrl": "https://mapfrespain-test.appiancloud.com/suite",
+      "themeIdentifier": "mapfre",
+      "signIn": "appiantestmapfrenopro"
+    }
   },
   "pre": {
     "apiBaseUrl": "https://CHANGEME/api/tva/v1",
@@ -12,6 +20,11 @@
       "scope": "openid profile CHANGEME",
       "redirectUrl": "https://CHANGEME",
       "tokenStorageKey": "tva_token"
+    },
+    "appianEmbed": {
+      "baseUrl": "https://CHANGEME/suite",
+      "themeIdentifier": "CHANGEME",
+      "signIn": "CHANGEME"
     }
   },
   "pro": {
@@ -23,6 +36,11 @@
       "scope": "openid profile CHANGEME",
       "redirectUrl": "https://CHANGEME",
       "tokenStorageKey": "tva_token"
+    },
+    "appianEmbed": {
+      "baseUrl": "https://CHANGEME/suite",
+      "themeIdentifier": "CHANGEME",
+      "signIn": "CHANGEME"
     }
   }
 }
