@@ -65,3 +65,42 @@ def get_ric_client() -> RicClient: ...
 def get_misv_client() -> MisvClient: ...
 def get_perfil_usuario_client() -> PerfilUsuarioClient: ...
 ```
+
+## Clientes reales spec-driven
+
+`RealApiLifeClient.call` está dirigido por `ENDPOINT_SPECS: dict[str, EndpointSpec]`,
+transcripción directa de `integrations/*.json` del dump Appian:
+
+```python
+@dataclass(frozen=True)
+class EndpointSpec:
+    method: str                    # GET/POST/PUT
+    path: str                      # plantilla con {param} resueltos desde el payload
+    timeout: int = 10
+    body: bool = False             # True → el resto del payload es el body JSON
+    query: tuple[tuple[str, str], ...] = ()
+    headers: tuple[tuple[str, str], ...] = ()
+    credential: str = "apilife"    # "appinve" → credenciales APILIFE_APPINVE_*
+```
+
+Las fuentes (`p:<key>[|<default>]`, `const:<valor>`, `lang`, `appid`) se extraen
+con `pop` del payload; el resto forma el body con nulls eliminados
+(`removeNullsFromJson`). GET nunca envía body; `Host` no se envía (requests lo
+calcula). Errores no-2xx: último `errors[]` → `ApiLifeError` con `.code`;
+red → `APILIFE_NO_DISPONIBLE`.
+
+Los demás clientes reales:
+
+- **MISV**: `GET /NOVAServices/rest/RSPerfiladoClienteV2/obtenerPerfiladoCliente`
+  con `USUARIO`/`APLICACION`/`NIF` (normalizado por `arreglo_nif_pfm`, puerto de
+  `TVA_ArregloNIF_PFM`)/`TIPO_PERSONA`; Basic auth.
+- **Perfil de usuario**: POST SOAP a SOA7 con WSSE UsernameToken
+  (nonce aleatorio + `Created` ISO-8601); `parsear_perfil_soap` replica
+  `TVA_ObtenerPerfilUsuario`/`TVA_ObtenerFuncionalidades` (cdOficina, dirReg,
+  claveProductor, dgt, lista de funcionalidades).
+- **RIC**: `GET {RIC_BASE_URL}/{RIC_PATH}?documento=` configurable; contrato
+  orientativo por confirmar con MU.
+- **System checks** (`apps/tva/checks.py`, `tva.E001..E005`): modo `real` sin
+  variables obligatorias o valor distinto de `mock|real` → error en arranque.
+- **`manage.py smoke_integraciones`**: humo por conector (solo config en
+  Appian Embed); `salud/` publica los modos en `integraciones`.

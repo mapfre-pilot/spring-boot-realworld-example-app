@@ -191,7 +191,7 @@ y el resto de los 11 grupos descritos en `06-seguridad.md`. En la rama existen r
 | 6 | R2C | Validación captura, Recalcular, Contratar | pendiente |
 | 7 | Perfil cliente | Test de conveniencia/idoneidad y flag obligatorio | pendiente (requiere servicio) |
 | 8 | Admin/Debug/Log | Cachés, grupo debug, JSON de sesión, log filtrable | pendiente |
-| 9 | Integraciones reales | Sustituir mocks por API Life / APPINVE / RIC / MISV | requiere red y credenciales |
+| 9 | Integraciones reales | Sustituir mocks por API Life / APPINVE / RIC / MISV | clientes reales implementados y configurables por `*_MODE=real` (spec-driven desde `integrations/*.json`); verificados solo con tests de HTTP mockeado — falta red y credenciales para validación end-to-end; contrato RIC por confirmar con MU |
 
 ## 12.7. Lo que no se pudo verificar en DEV
 

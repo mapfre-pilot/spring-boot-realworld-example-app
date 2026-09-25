@@ -57,8 +57,10 @@ Ver `.env.sample`. Todo lo sensible es `CHANGEME`/localhost. Destacadas:
 | `ENVIRONMENT` | `local` → JWT HS256 + sqlite; otro valor → OIDC RS256 + PostgreSQL/Redis |
 | `DB_*` | PostgreSQL. Sin `DB_HOST` se usa sqlite (`sources/db.sqlite3`) |
 | `REDIS_*` | Redis para caché y broker Celery; sin `REDIS_HOST` se usa LocMem |
-| `APILIFE_MODE` | `mock` (fixtures locales) o `real` (HTTP a `APILIFE_BASE_URL`) |
-| `MISV_MODE` / `RIC_MODE` / `PERFIL_USUARIO_MODE` | igual que APILIFE |
+| `APILIFE_MODE` | `mock` (fixtures locales) o `real` (HTTP a `APILIFE_BASE_URL`, Basic `APILIFE_USERNAME`/`PASSWORD`; specs por endpoint en `ENDPOINT_SPECS`) |
+| `MISV_MODE` + `MISV_BASE_URL`/`USERNAME`/`PASSWORD` | perfilado MISV real (`GET …/obtenerPerfiladoCliente`) |
+| `PERFIL_USUARIO_MODE` + `SOA_BASE_URL`/`SOA_USERNAME`/`SOA_PASSWORD` | perfil de usuario real (SOAP SOA7, WSSE) |
+| `RIC_MODE` + `RIC_BASE_URL`/`RIC_PATH`/`RIC_USERNAME`/`RIC_PASSWORD` | RIC real (contrato por confirmar con MU) |
 | `OAUTH_JWKS_URI` / `OAUTH_AUDIENCE` / `OAUTH_ISSUER` | validación OIDC en no-local |
 | `APPIAN_EMBED_MODE` | `mock` (taskId local) o `real` (Web APIs Appian TEST para RGPD/DNI/test conveniencia) |
 | `APPIAN_EMBED_API_KEY` | clave `Appian-API-Key` de las Web APIs (solo en `real`; no versionar) |

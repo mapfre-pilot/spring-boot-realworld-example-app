@@ -159,6 +159,22 @@ Solo el backend conserva stubs (el feed Python no está en alcance):
 - **CI corporativo**: workflows del arquetipo copiados sin cambios — esperan los secretos
   habituales del pipeline (Azure Artifacts, Sonar, etc.).
 
+## Integraciones: mock vs real
+
+Cada conector externo se selecciona por `*_MODE` (`mock` por defecto; la app funciona
+sin configuración). En `real`, los system checks (`apps/tva/checks.py`) fallan el
+arranque si falta alguna variable obligatoria. Comprobar con
+`python manage.py smoke_integraciones [--solo …] [--nif …] [--usuario …]` y con
+`GET /api/tva/v1/salud/` (campo `integraciones`, solo modos — sin URLs ni credenciales).
+
+| Conector | Variables | Objeto Appian equivalente | Endpoint(s) relativos | Verificar | Estado |
+|---|---|---|---|---|---|
+| API Life | `APILIFE_MODE`, `APILIFE_BASE_URL`, `APILIFE_USERNAME`, `APILIFE_PASSWORD` (+ `APILIFE_APPINVE_*`, `APILIFE_ACCEPT_LANGUAGE`, `APILIFE_APPLICATION_ID`, `APILIFE_TIMEOUT`) | Connected system "TVA API Life" (Basic, usuario APPSAVI) + "TVA API Life APPINVE" (APPINVE) | `/apisbc*…/api/life/1.0/…` (17 integraciones `TVA_API_Life_*`), `/sbccliente_be-web/api/1.0/vida/cliente/{nif}/individual/ahorro/importe/maximo`, `personavida_be-web/api/1.0/vida/gestionarPersonas` (PUT, `channelCode=01`) | `smoke_integraciones --solo apilife` (hace `generalTable`) | Implementado; verificado solo con tests (HTTP mockeado) |
+| MISV perfilado | `MISV_MODE`, `MISV_BASE_URL`, `MISV_USERNAME`, `MISV_PASSWORD` (+ `MISV_APLICACION`, `MISV_TIPO_PERSONA`, `MISV_TIMEOUT`) | Connected system "TVA MISV" (Basic, usuario APPCMPA), integración `TVA_PerfiladoClientes` | `GET /NOVAServices/rest/RSPerfiladoClienteV2/obtenerPerfiladoCliente` (query USUARIO/APLICACION/NIF/TIPO_PERSONA) | `smoke_integraciones --solo misv --nif <nif>` | Implementado; verificado solo con tests |
+| Perfil de usuario (SOA7) | `PERFIL_USUARIO_MODE`, `SOA_BASE_URL`, `SOA_USERNAME`, `SOA_PASSWORD` (+ `SOA_TIMEOUT`) | Integración `TVA_WSDL_IGestionarPerfilUsuario` (SOAP, WSSE UsernameToken, usuario APPRIMO) | `POST {SOA_BASE_URL}/MAVISA_910Usuario_SOAMEDWeb/sca/MAVISA_910Usuario_WSDL` | `smoke_integraciones --solo perfil-usuario --usuario <u>` | Implementado; verificado solo con tests (sobre XML de muestra) |
+| RIC | `RIC_MODE`, `RIC_BASE_URL`, `RIC_PATH`, `RIC_USERNAME`, `RIC_PASSWORD` | Regla cross-app `MU_ObtenerClienteRIC` (Appian DEV usa mock bajo `TVA_FLAG_SIMULAR_BUSQUEDA_CLIENTE_RIC`) | `GET {RIC_BASE_URL}/{RIC_PATH}?documento=<nif>` | `smoke_integraciones --solo ric --nif <nif>` | Implementado; **contrato por confirmar con los dueños de MU** |
+| Appian Embedded (pop-ups) | `APPIAN_EMBED_MODE`, `APPIAN_EMBED_BASE_URL`, `APPIAN_EMBED_API_KEY` | Web APIs `tva-lanzar-*` + `cmp-respuesta-componente` | `POST {base}/webapi/…` | `smoke_integraciones --solo appian` (solo config) | Real verificado contra TEST |
+
 ## Estado de la implementación
 
 **Cubierto**: contrato real de `inicio` (indFunctionMode/companyId/distributionChannel/
