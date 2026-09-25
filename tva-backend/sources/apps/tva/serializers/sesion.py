@@ -8,7 +8,16 @@ from apps.tva.models import Canal, Modalidad, Pantalla, Parametro, Sesion, Traza
 class InicioRequestSerializer(serializers.Serializer):
     """Body de POST /inicio/ahorro y /inicio/rentas."""
 
-    documentoCliente = serializers.CharField(max_length=20)
+    # Contrato Appian (§12.4.1) — primario
+    indFunctionMode = serializers.CharField(max_length=5, required=False, allow_blank=True)
+    proposalId = serializers.CharField(required=False, allow_blank=True)
+    companyId = serializers.CharField(max_length=10, required=False, allow_blank=True)
+    distributionChannel = serializers.CharField(max_length=10, required=False, allow_blank=True)
+    username = serializers.CharField(required=False, allow_blank=True)
+    policyHolders = serializers.ListField(child=serializers.JSONField(), required=False)
+    investment = serializers.ListField(child=serializers.JSONField(), required=False)
+    # Legacy (compatibilidad con tests/consumidores anteriores)
+    documentoCliente = serializers.CharField(max_length=20, required=False, allow_blank=True)
     canal = serializers.ChoiceField(choices=Canal.choices, default=Canal.OTRO)
     codigoProductor = serializers.CharField(max_length=20, required=False, allow_blank=True, default="")
     propuesta = serializers.JSONField(required=False)

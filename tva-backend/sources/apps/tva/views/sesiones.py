@@ -35,7 +35,11 @@ class SesionDetailView(APIView):
         sesion = _get_sesion(clave, request.user)
         if sesion is None:
             return Response(error_response(ErrorCodes.SESION_NO_ENCONTRADA, "Sesión no encontrada"), status=status.HTTP_404_NOT_FOUND)
-        return Response(SesionSerializer(sesion).data)
+        data = SesionSerializer(sesion).data
+        from apps.tva.operators.botonera import botones_para
+
+        data["botones"] = botones_para(sesion, getattr(request.user, "roles", []) or [])
+        return Response(data)
 
 
 class SesionEstadoView(APIView):
@@ -74,7 +78,9 @@ class SesionAccionView(APIView):
         serializer = AccionRequestSerializer(data=request.data or {})
         serializer.is_valid(raise_exception=True)
         try:
-            resultado = ejecutar_accion(sesion, accion, serializer.validated_data.get("datos", {}))
+            resultado = ejecutar_accion(
+                sesion, accion, serializer.validated_data.get("datos", {}), getattr(request.user, "roles", []) or []
+            )
         except AccionInvalida:
             return Response(
                 error_response(ErrorCodes.ACCION_INVALIDA, f"Acción '{accion}' no reconocida"),

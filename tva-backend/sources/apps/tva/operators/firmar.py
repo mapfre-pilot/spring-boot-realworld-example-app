@@ -7,7 +7,7 @@ from apps.tva.schemas.errors import AvisosClase, MENSAJES, aviso
 from apps.tva.services.connectors.apilife import ApiLifeError, get_apilife_client
 
 from ._comun import guardar_y_trazar, resultado
-from .maquina_pantallas import siguiente
+from .maquina_pantallas import siguiente_pantalla
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ def ejecutar(sesion: Sesion, datos: dict) -> dict:
     try:
         response = get_apilife_client().policy_documents({"estado": sesion.estado, "tipoFirma": tipo_firma, **datos})
         sesion.estado = {**(sesion.estado or {}), "firma": {"tipo": tipo_firma, "response": response}, "avisos": []}
-        sesion.pantalla_actual = siguiente(sesion).value
+        sesion.pantalla_actual = siguiente_pantalla(sesion).value
         if sesion.pantalla_actual != Pantalla.FIN.value and sesion.pantalla_actual != Pantalla.RESULTADO_FIRMA.value:
             sesion.pantalla_actual = Pantalla.RESULTADO_FIRMA.value
     except ApiLifeError as exc:

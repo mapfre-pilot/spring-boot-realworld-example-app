@@ -51,11 +51,35 @@ MENSAJES = {
 }
 
 
-def aviso(clase: AvisosClase | int, codigo: str, mensaje: str) -> dict:
-    """Construye un aviso {clase, codigo, mensaje}."""
-    return {"clase": int(clase), "codigo": codigo, "mensaje": mensaje}
+def aviso(clase: AvisosClase | int, codigo: str, mensaje: str, tipo: str = "INFO", mostrar_en: str = "CABECERA") -> dict:
+    """Construye un aviso Appian ``{clase, tipo, texto, mostrarEn}``.
+
+    Se conservan ``codigo`` y ``mensaje`` para compatibilidad con el
+    contrato REST ya existente.
+    """
+    return {
+        "clase": int(clase),
+        "tipo": tipo,
+        "texto": mensaje,
+        "mostrarEn": mostrar_en,
+        "codigo": codigo,
+        "mensaje": mensaje,
+    }
 
 
 def error_response(codigo: str, mensaje: str, avisos: list | None = None) -> dict:
     """Sobre de error estándar de la API."""
     return {"error": {"codigo": codigo, "mensaje": mensaje}, "avisos": avisos or []}
+
+
+def webapi_error_response(mensajes: list[str]) -> dict:
+    """Sobre de error de la Web API de inicio (forma Appian ``errors[]``)."""
+    from datetime import datetime, timezone
+
+    return {
+        "code": "02",
+        "message": "Error en los datos proporcionados",
+        "application": "TVA",
+        "timestamp": datetime.now(tz=timezone.utc).isoformat(),
+        "errors": [{"code": "02", "message": m} for m in mensajes],
+    }

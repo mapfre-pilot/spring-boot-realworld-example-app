@@ -42,6 +42,11 @@ class Accion(StrEnum):
     VALIDAR_REINVERSION = "validar-reinversion"
     VERIFICAR_PRODUCTORES = "verificar-productores"
     IMPORTE_MAXIMO = "importe-maximo"
+    CANCELAR = "cancelar"
+    ADMINISTRACION = "administracion"
+    VOLVER_ADMINISTRACION = "volver-administracion"
+    DOC_PRECONTRACTUAL = "doc-precontractual"
+    CONTRATAR = "contratar"
 
 
 ACCIONES_VALIDAS = [a.value for a in Accion]
@@ -132,7 +137,7 @@ def pantalla_inicio(modalidad: str, estado: dict | None = None) -> Pantalla:
         return Pantalla.SEGUROS_AHORRO
     if modalidad == Modalidad.VENTA_INFORMADA:
         investment = estado.get("investmentOption")
-        if not investment:
+        if investment is None:
             return Pantalla.SELECCION_PRODUCTO_AHORRO
         if investment.get("insuranceOfferInd"):
             return Pantalla.MODALIDAD_CAMPANIA
@@ -140,3 +145,72 @@ def pantalla_inicio(modalidad: str, estado: dict | None = None) -> Pantalla:
     if modalidad == Modalidad.RENTAS:
         return Pantalla.R2C_CAPTURA
     return Pantalla.SOLO_AVISOS
+
+
+# --- Navegación data-driven (§12.4.2) ---------------------------------------
+
+
+def siguiente_pantalla(sesion: Sesion) -> Pantalla:
+    """Siguiente pantalla según datos de la sesión (§12.4.2).
+
+    Reproduce ``TVA_propuestaProductosAhorro_siguientePantalla`` y las
+    transiciones de los PM ``*-Continuar``.
+    """
+    estado = sesion.estado or {}
+    actual = Pantalla(sesion.pantalla_actual)
+    modalidad = sesion.modalidad
+    tomadores = estado.get("tomadores") or []
+    perfil_ok = bool(estado.get("perfilClientesOK"))
+
+    if actual == Pantalla.SELECCION_PRODUCTO_AHORRO:
+        investment = estado.get("investmentOption") or {}
+        if investment.get("insuranceOfferInd"):
+            return Pantalla.MODALIDAD_CAMPANIA
+        return Pantalla.CAPTURA_DATOS_SOLICITUD if perfil_ok else Pantalla.CAPTURA_TOMADOR1
+
+    if actual == Pantalla.MODALIDAD_CAMPANIA:
+        return Pantalla.CAPTURA_DATOS_SOLICITUD if perfil_ok else Pantalla.CAPTURA_TOMADOR1
+
+    if actual == Pantalla.SEGUROS_AHORRO:
+        return Pantalla.CAPTURA_DATOS_SOLICITUD
+
+    if actual == Pantalla.CAPTURA_TOMADOR1:
+        return Pantalla.CAPTURA_TOMADOR2 if len(tomadores) >= 2 else Pantalla.CAPTURA_DATOS_SOLICITUD
+
+    if actual == Pantalla.CAPTURA_TOMADOR2:
+        return Pantalla.CAPTURA_DATOS_SOLICITUD
+
+    if actual == Pantalla.CAPTURA_DATOS_SOLICITUD:
+        return Pantalla.RESUMEN_CONTRATACION
+
+    if actual == Pantalla.RESUMEN_CONTRATACION:
+        return Pantalla.RESULTADO_FIRMA
+
+    if actual == Pantalla.RESULTADO_FIRMA:
+        return Pantalla.FIN
+
+    if actual == Pantalla.R2C_CAPTURA:
+        return Pantalla.R2C_PRECIOS
+
+    if actual == Pantalla.R2C_PRECIOS:
+        return Pantalla.RESUMEN_CONTRATACION
+
+    return actual
+
+
+def pantalla_anterior(sesion: Sesion) -> Pantalla:
+    """Acción ``anterior``: R2C_PRECIOS → R2C_CAPTURA; ADMINISTRACION → previa."""
+    estado = sesion.estado or {}
+    actual = Pantalla(sesion.pantalla_actual)
+    if actual == Pantalla.R2C_PRECIOS:
+        return Pantalla.R2C_CAPTURA
+    if actual == Pantalla.ADMINISTRACION:
+        return Pantalla(estado.get("idPantallaAnterior") or actual)
+    return actual
+
+
+def sincronizar_pantalla(sesion: Sesion) -> None:
+    """Mantiene ``estado.idPantallaActual`` en sync con ``sesion.pantalla_actual``."""
+    estado = dict(sesion.estado or {})
+    estado["idPantallaActual"] = sesion.pantalla_actual
+    sesion.estado = estado

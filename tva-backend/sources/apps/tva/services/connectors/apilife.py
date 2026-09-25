@@ -79,8 +79,22 @@ class ApiLifeClient:
     def get_proposal(self, payload: dict) -> dict:
         return self.call("getProposal", payload)
 
-    def product_list(self, payload: dict | None = None) -> dict:
-        return self.call("ProductList", payload or {})
+    def product_list(
+        self,
+        company_id: str | None = None,
+        product_type_code: str | None = None,
+        nuuma: str | None = None,
+        distribution_channel: str | None = None,
+    ) -> dict:
+        return self.call(
+            "ProductList",
+            {
+                "companyId": company_id,
+                "productTypeCode": product_type_code,
+                "nuuma": nuuma,
+                "distributionChannel": distribution_channel,
+            },
+        )
 
     def general_table(self, table: str) -> dict:
         return self.call("generalTable", {"table": table})
@@ -104,10 +118,53 @@ class ApiLifeClient:
         return self.call("sbcMaximo", payload)
 
 
+# Catálogo DEV de productos de ahorro — 21 productos, ordenado por desc.
+# ``commercialProductCode`` a 5 dígitos; ``unitLinkedInd`` = UL.
+_PRODUCTOS_DEV: list[tuple[int, str, bool]] = [
+    (369, "SIALP Finance Europe", False),
+    (427, "PIAS ELECCION", True),
+    (444, "MULTIFONDOS ESTRATEGIA", True),
+    (447, "Dividendo Vida II", False),
+    (451, "PIAS AHORRO INVERSION", True),
+    (457, "PPA MAPFRE JUBILACION", False),
+    (459, "MULTIFONDOS OPEN", True),
+    (479, "CLON PIAS ELECCION", True),
+    (505, "DIVIDENDO EUROPA", False),
+    (515, "RENTA DIVIDENDO EUROPA", False),
+    (521, "PROGRAMA HORIZONTE INVERSIÓN", True),
+    (526, "MULTIFONDOS COMPROMISO ESG", True),
+    (527, "ACTIVO MULTIFONDOS II", True),
+    (528, "PIAS HORIZONTE INVERSION", True),
+    (534, "MILLÓN VIDA", False),
+    (560, "DIVIDENDO AMERICA", False),
+    (573, "MILLÓN VIDA PREMIUM", False),
+    (584, "PIAS VALOR 6M", False),
+    (587, "PENTAPLAN SIALP", False),
+    (869, "PLAN PERIODICO 6M", False),
+    (893, "GARANTÍA MEMORIA", False),
+]
+
+
+def _catalogo_dev() -> list[dict]:
+    return [
+        {
+            "code": f"{code:05d}",
+            "commercialProductCode": f"{code:05d}",
+            "commercialProductDesc": desc,
+            "unitLinkedInd": ul,
+        }
+        for code, desc, ul in sorted(_PRODUCTOS_DEV, key=lambda p: p[1])
+    ]
+
+
 class MockApiLifeClient(ApiLifeClient):
     """Cliente mock: devuelve los fixtures JSON por endpoint."""
 
     def call(self, endpoint: str, payload: dict | None = None) -> dict:
+        if endpoint == "ProductList":
+            # nuuma == "SINPRODUCTOS" permite probar el caso vacío.
+            nuuma = (payload or {}).get("nuuma") or ""
+            return {"products": [] if nuuma == "SINPRODUCTOS" else _catalogo_dev()}
         name = ENDPOINT_FIXTURES.get(endpoint, endpoint)
         path = FIXTURES_DIR / f"{name}.json"
         if not path.exists():

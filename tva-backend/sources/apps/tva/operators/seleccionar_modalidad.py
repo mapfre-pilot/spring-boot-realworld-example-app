@@ -7,7 +7,7 @@ from apps.tva.schemas.errors import AvisosClase
 from apps.tva.services.connectors.apilife import get_apilife_client
 
 from ._comun import add_aviso, guardar_y_trazar, resultado
-from .maquina_pantallas import siguiente
+from .maquina_pantallas import siguiente_pantalla
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +31,6 @@ def ejecutar(sesion: Sesion, datos: dict) -> dict:
     estado["modalidadProducto"] = modalidad_prod
     estado["taller"] = taller or estado.get("taller", {})
     sesion.estado = estado
-    sesion.pantalla_actual = siguiente(sesion).value
+    sesion.pantalla_actual = siguiente_pantalla(sesion).value
     guardar_y_trazar(sesion, "SELECCIONAR_MODALIDAD", datos=datos)
     return resultado(sesion)

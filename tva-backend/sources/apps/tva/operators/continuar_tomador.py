@@ -5,7 +5,7 @@ import logging
 from apps.tva.models import Sesion
 
 from ._comun import guardar_y_trazar, resultado
-from .maquina_pantallas import siguiente
+from .maquina_pantallas import siguiente_pantalla
 from .validaciones import validar_datos_personales, validar_domiciliacion, validar_domicilio
 
 logger = logging.getLogger(__name__)
@@ -30,6 +30,6 @@ def ejecutar(sesion: Sesion, datos: dict) -> dict:
     estado["tomadores"] = tomadores
     estado["avisos"] = []
     sesion.estado = estado
-    sesion.pantalla_actual = siguiente(sesion).value
+    sesion.pantalla_actual = siguiente_pantalla(sesion).value
     guardar_y_trazar(sesion, "CONTINUAR_TOMADOR", datos=datos)
     return resultado(sesion)

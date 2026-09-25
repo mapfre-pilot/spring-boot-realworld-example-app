@@ -83,10 +83,9 @@ def test_put_estado(api_client, auth_header):
 
 
 def test_accion_siguiente(api_client, auth_header):
-    s = _sesion()
+    s = _sesion(estado={"avisos": [], "investmentOption": {}, "perfilClientesOK": True})
     r = api_client.post(f"{BASE}/sesiones/{s.clave}/acciones/siguiente/", {}, format="json", **auth_header)
     assert r.status_code == 200
-    # modalidadCampania no marcada → se salta MODALIDAD_CAMPANIA
     assert r.json()["pantallaActual"] == "CAPTURA_DATOS_SOLICITUD"
 
 
@@ -97,7 +96,7 @@ def test_accion_invalida(api_client, auth_header):
 
 
 def test_accion_continuar_tomador(api_client, auth_header):
-    s = _sesion(modalidad="VA", pantalla="CAPTURA_TOMADOR1")
+    s = _sesion(modalidad="VA", pantalla="CAPTURA_TOMADOR1", estado={"avisos": [], "tomadores": [{}]})
     r = api_client.post(
         f"{BASE}/sesiones/{s.clave}/acciones/continuar-tomador/",
         {"datos": {"datosPersonales": {"documento": "X", "birthDate": "1980-01-01"}}},
