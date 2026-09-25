@@ -504,3 +504,40 @@ Alta→Decidir→CrearAccion completa).
   if(isNotNullOrEmpty(pv!idSolicitudExistente), idSolicitudExistente, pv!idSolicitud)`.
 - Reanudación `idSolicitudExistente="15787528"`: COMPLETED — Solicitud EN_ACCION,
   Transiciones Alta+Decidir OK, Tarea 4 CONTRAANULAR asignada JJGONZ2.
+
+### 8.z4 Nuuma bare en contexto + popup permisos + ContraAnulación body/cabecera
+
+- **Nuuma (Error 25 / 2002000033843)**: el popup pasaba `loggedInUser()` (email)
+  a `construirContextoAlta` → `infoUsuarios.nuuma` con @ → 4005 en generarStudAnul.
+  Fix: `usuario: local!nuuma` en `SCA2_AltaSolicitudPage` (l.530) + split `@`
+  robusto en `SCA2_construirContextoAlta` (acepta email o nuuma). Relanzar Error 25
+  por la vía real → fila Solicitud id=15 **actualizada in place** a `15787529`
+  EN_ACCION (sin duplicado), Transiciones Alta/Decidir/CrearAccion OK, **Tarea 5
+  CONTRAANULAR asignada JJGONZ2**, nuuma bare `JJGONZ2` en el payload.
+- **Navegación misma pestaña**: flecha atrás de `SCA2_DetalleSolicitud` (l.121) ahora
+  `a!dynamicLink` saveInto ri!vista (como el botón OK). Auditoría safeLinks: el
+  resto son externos intencionados (GESVIDA `NEW_TAB`, mailto, portal NSE,
+  TeCuidamos, FICHAAMPLIADA, último siniestro).
+- **Popup permisos**: paridad con SCA — eliminada la validación
+  `SCA2_isUsuarioProceso` del campo póliza (en SCA es código muerto:
+  `local!errorRolAltitude: false` + card ERROR `showWhen:`). Redesplegado;
+  re-GET confirma `isUsuarioProceso: 0`, `errorRolAltitude: 2`.
+- **ContraAnulación (15787528)**:
+  - *Argumentos*: `local!body` alineado a `SCA_ContraAnulacionOpcionesEstrategicas`
+    (~25 campos: compania, codGestion con filtro accionRealizada=2+INCOMPLETA,
+    lineaNegocio, claveProduccion, codigoDetalleAnulacion, descripcionSCA="1",
+    anulaTecnico/Experto, mecanizada, modoAcceso="G", numApli, fecAnulPca,
+    estadoUltimaGestion, subgrupo, codCentroEmisor, infoUsuario+codSubPerfil).
+    Antes el servicio devolvía `'numeroAplicacion' no puede ser nulo` (numApli
+    ausente); con el body completo PRE responde **ORA-00936 idéntico en SCA2 y
+    SCAC** con el mismo body → paridad backend; la rejilla vacía es comportamiento
+    idéntico al de SCA con el mismo input.
+  - *Cabecera en blanco*: el PM Alta nunca escribía el record `SCA2 Datos
+    Cabecera` (`datosCabecera: null` en cargarSolicitud para todas las solicitudes).
+    Nodo 8 Write Datos ahora incluye el record mapeado desde `pv!cab`
+    (`SCA2_obtenerDatosCabecera`, ya calculado en nodo 7). Backfill de las 5
+    solicitudes existentes (15787499/516/527/528/529) con nombre, apellidos, NIF,
+    póliza, producto, vencimiento, línea y forma de pago.
+  - *Catalogación '---'*: `datosSolicitud.catalogacion` vacío en la fila Datos —
+    mismo estado que una solicitud SCA sin catalogación escrita; el desplegable
+    muestra el placeholder a la espera de selección (paridad).
