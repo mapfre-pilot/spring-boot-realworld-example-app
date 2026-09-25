@@ -1,0 +1,13 @@
+.campo-lectura {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.etiqueta {
+  font-size: 12px;
+  color: var(--tva-text-muted, #666);
+}
+.valor {
+  font-size: 14px;
+  color: var(--tva-text, #212121);
+}

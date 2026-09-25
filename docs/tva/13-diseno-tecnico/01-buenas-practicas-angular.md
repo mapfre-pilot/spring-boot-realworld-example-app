@@ -59,6 +59,7 @@ Reglas aplicadas en `refactor(tva-frontend)` sobre `src/app` y `libs/core`.
 | ui/confirm-dialog.component | 18 | 6 | 3 |
 | ui/migas-de-pan.component | 50 | 17 | 43 |
 | ui/seccion.component | 29 | 19 | 42 |
+| ui/campo-lectura.component | 13 | 4 | 13 |
 | app.component | 10 | 1 | - |
 | pages/login/login.page | 34 | 32 | 34 |
 | pages/inicio/inicio.page | 175 | 133 | 42 |
@@ -80,7 +81,7 @@ Reglas aplicadas en `refactor(tva-frontend)` sobre `src/app` y `libs/core`.
 | pantallas/modalidad-campania.container | 31 | 9 | 4 |
 | pantallas/r2c-captura.container | 80 | 34 | 10 |
 | pantallas/r2c-precios.container | 20 | 6 | 3 |
-| pantallas/resumen-contratacion.container | 41 | 20 | 8 |
+| pantallas/resumen-contratacion.container | 134 | 111 | 80 |
 | pantallas/resultado-firma.container | 24 | 7 | - |
 | pantallas/seguros-ahorro.container | 36 | 12 | - |
 | pantallas/seleccion-producto-ahorro.container | 51 | 13 | 8 |

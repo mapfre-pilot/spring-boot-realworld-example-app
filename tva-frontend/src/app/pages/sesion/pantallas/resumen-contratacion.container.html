@@ -1,20 +1,111 @@
-<app-caja titulo="Solicitud">
-  <pre>{{ estadoJson('solicitud') }}</pre>
-</app-caja>
-<app-caja titulo="Tomador(es)">
-  <pre>{{ estadoJson('tomador') }}</pre>
-</app-caja>
-<app-caja titulo="Producto / rentas">
-  <pre>{{ estadoJson('producto') }}</pre>
-</app-caja>
-<app-caja titulo="Tipo de firma">
-  <form [formGroup]="form">
-    <mat-radio-group formControlName="tipoFirma">
-      <mat-radio-button value="DIGITAL">Firma digital</mat-radio-button>
-      <mat-radio-button value="MANUSCRITA">Firma manuscrita</mat-radio-button>
-    </mat-radio-group>
-  </form>
-</app-caja>
-<button mat-flat-button color="primary" (click)="firmar()" [disabled]="form.invalid">
-  Firmar y contratar
-</button>
+<div class="layout-resumen">
+  <div class="col-izq">
+    <app-caja titulo="Resumen de la contratación">
+      <div class="resumen-cuerpo">
+        <p class="producto">
+          <strong>{{ producto().codigo }}</strong>
+          @if (producto().desc) {
+            — {{ producto().desc }}
+          }
+        </p>
+        @if (primaUnica()) {
+          <h3 class="titulo-seccion">Prima única</h3>
+          <div class="grid-lectura">
+            <app-campo-lectura
+              etiqueta="Importe"
+              [valor]="primaUnica() | currency: 'EUR' : 'symbol' : '1.2-2' : 'es'" />
+            <app-campo-lectura etiqueta="Periodicidad" valor="Única" />
+            <app-campo-lectura
+              etiqueta="Fecha efecto"
+              [valor]="fechaEfecto() | date: 'dd/MM/yyyy'" />
+            <app-campo-lectura etiqueta="IBAN" [valor]="iban()" />
+          </div>
+        }
+        @if (aportacionPeriodica()) {
+          <h3 class="titulo-seccion">Prima periódica</h3>
+          <div class="grid-lectura">
+            <app-campo-lectura
+              etiqueta="Importe"
+              [valor]="aportacionPeriodica() | currency: 'EUR' : 'symbol' : '1.2-2' : 'es'" />
+            <app-campo-lectura
+              etiqueta="Periodicidad"
+              [valor]="periodicidadEtiqueta(periodicidad())" />
+            <app-campo-lectura etiqueta="Día de cobro" [valor]="diaCobro()" />
+            <app-campo-lectura etiqueta="IBAN" [valor]="iban()" />
+          </div>
+        }
+        @if (esRenta() && renta()) {
+          <h3 class="titulo-seccion">Renta</h3>
+          <div class="grid-lectura">
+            <app-campo-lectura
+              etiqueta="Renta"
+              [valor]="renta() | currency: 'EUR' : 'symbol' : '1.2-2' : 'es'" />
+            <app-campo-lectura
+              etiqueta="Periodicidad"
+              [valor]="periodicidadEtiqueta(periodicidadRenta())" />
+          </div>
+        }
+      </div>
+    </app-caja>
+
+    <app-caja titulo="Tomador(es)">
+      <div class="resumen-cuerpo">
+        @for (t of tomadores(); track $index) {
+          <div class="tomador">
+            <p class="nombre">{{ nombreTomador(t) }}</p>
+            <div class="grid-lectura">
+              <app-campo-lectura etiqueta="Documento" [valor]="textoTomador(t, 'documentId')" />
+              <app-campo-lectura
+                etiqueta="Fecha nacimiento"
+                [valor]="textoTomador(t, 'fechaNacimiento') | date: 'dd/MM/yyyy'" />
+              <app-campo-lectura etiqueta="Email" [valor]="contactoTomador(t).email" />
+              <app-campo-lectura etiqueta="Teléfono" [valor]="contactoTomador(t).telefono" />
+            </div>
+            <div class="requisitos">
+              @for (r of requisitosTomador(t); track r.etiqueta) {
+                <span class="requisito" [class.hecho]="r.hecho">
+                  <mat-icon>{{ r.hecho ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+                  {{ r.etiqueta }}
+                </span>
+              }
+            </div>
+          </div>
+        }
+        @if (!tomadores().length) {
+          <p>Sin tomadores en la sesión.</p>
+        }
+      </div>
+    </app-caja>
+
+    <app-caja titulo="Tipo de firma">
+      <form [formGroup]="form" class="resumen-cuerpo">
+        <mat-radio-group formControlName="tipoFirma">
+          <mat-radio-button value="DIGITAL">Firma digital</mat-radio-button>
+          <mat-radio-button value="MANUSCRITA">Firma manuscrita</mat-radio-button>
+        </mat-radio-group>
+      </form>
+    </app-caja>
+
+    <button mat-flat-button color="primary" (click)="firmar()" [disabled]="form.invalid">
+      Firmar y contratar
+    </button>
+  </div>
+
+  <div class="col-der">
+    <app-caja titulo="Documentación precontractual">
+      <div class="resumen-cuerpo">
+        @for (d of documentos(); track $index) {
+          <div class="doc">
+            <mat-icon [class.enviado]="d['enviado']">{{
+              d['enviado'] ? 'check_circle' : 'schedule'
+            }}</mat-icon>
+            <span>{{ d['tipo'] ?? d['descripcion'] ?? 'Documento' }}</span>
+          </div>
+        }
+        @if (!documentos().length) {
+          <p>Sin documentos.</p>
+        }
+      </div>
+    </app-caja>
+  </div>
+</div>

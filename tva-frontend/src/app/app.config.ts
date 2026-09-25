@@ -1,3 +1,5 @@
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es';
 import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
@@ -8,6 +10,8 @@ import { EnvironmentConfig, provideEnvironment } from '@mapfre-tech/ngx-multienv
 import { provideTvaCore } from '@tva/core';
 
 import { routes } from './app.routes';
+
+registerLocaleData(localeEs);
 
 export function appConfig(env: string, envConfig: EnvironmentConfig): ApplicationConfig {
   const auth = envConfig['auth'] as Record<string, string> | undefined;
