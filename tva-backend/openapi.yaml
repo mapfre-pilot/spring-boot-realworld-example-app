@@ -326,6 +326,80 @@ paths:
           description: No response body
         '404':
           description: No response body
+  /api/tva/v1/sesiones/{clave}/popups/{popup}/completar/:
+    post:
+      operationId: api_tva_v1_sesiones_popups_completar_create
+      description: POST /sesiones/{clave}/popups/{popup}/completar/ — SUBMIT/DISMISS/ERROR.
+      parameters:
+      - in: path
+        name: clave
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: popup
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PopupCompletar'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PopupCompletar'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PopupCompletar'
+        required: true
+      responses:
+        '200':
+          description: No response body
+        '400':
+          description: No response body
+        '404':
+          description: No response body
+  /api/tva/v1/sesiones/{clave}/popups/{popup}/lanzar/:
+    post:
+      operationId: api_tva_v1_sesiones_popups_lanzar_create
+      description: POST /sesiones/{clave}/popups/{popup}/lanzar/ — obtiene taskId
+        de Appian.
+      parameters:
+      - in: path
+        name: clave
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: popup
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PopupLanzar'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PopupLanzar'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PopupLanzar'
+      responses:
+        '200':
+          description: No response body
+        '400':
+          description: No response body
+        '404':
+          description: No response body
+        '502':
+          description: No response body
   /docs/schema/:
     get:
       operationId: docs_schema_retrieve
@@ -599,6 +673,37 @@ components:
       required:
       - actualizado
       - clave
+    PopupCompletar:
+      type: object
+      properties:
+        idxTomador:
+          type: integer
+          minimum: 0
+          default: 0
+        taskId:
+          type: string
+          default: ''
+        resultado:
+          $ref: '#/components/schemas/ResultadoEnum'
+      required:
+      - resultado
+    PopupLanzar:
+      type: object
+      properties:
+        idxTomador:
+          type: integer
+          minimum: 0
+          default: 0
+    ResultadoEnum:
+      enum:
+      - SUBMIT
+      - DISMISS
+      - ERROR
+      type: string
+      description: |-
+        * `SUBMIT` - SUBMIT
+        * `DISMISS` - DISMISS
+        * `ERROR` - ERROR
     Sesion:
       type: object
       description: Vista completa de la sesión (GET /sesiones/{clave}).

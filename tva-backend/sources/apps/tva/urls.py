@@ -5,6 +5,7 @@ from apps.tva.views.catalogos import CatalogosView
 from apps.tva.views.clientes import ClientesView
 from apps.tva.views.documentos import DocumentosView
 from apps.tva.views.inicio import InicioAhorroView, InicioRentasView
+from apps.tva.views.popups import PopupCompletarView, PopupLanzarView
 from apps.tva.views.productos import ProductosView
 from apps.tva.views.salud import SaludView
 from apps.tva.views.sesiones import SesionAccionView, SesionDetailView, SesionEstadoView
@@ -17,6 +18,8 @@ urlpatterns = [
     path("sesiones/<str:clave>/estado/", SesionEstadoView.as_view(), name="tva-sesion-estado"),
     path("sesiones/<str:clave>/acciones/<str:accion>/", SesionAccionView.as_view(), name="tva-sesion-accion"),
     path("sesiones/<str:clave>/documentos/<str:tipo>/", DocumentosView.as_view(), name="tva-sesion-documentos"),
+    path("sesiones/<str:clave>/popups/<str:popup>/lanzar/", PopupLanzarView.as_view(), name="tva-sesion-popup-lanzar"),
+    path("sesiones/<str:clave>/popups/<str:popup>/completar/", PopupCompletarView.as_view(), name="tva-sesion-popup-completar"),
     path("clientes/", ClientesView.as_view(), name="tva-clientes"),
     path("productos/", ProductosView.as_view(), name="tva-productos"),
     path("catalogos/<str:nombre>/", CatalogosView.as_view(), name="tva-catalogos"),

@@ -238,6 +238,11 @@ RIC_BASE_URL = os.environ.get("RIC_BASE_URL", "")
 RIC_MODE = os.environ.get("RIC_MODE", "mock")
 PERFIL_USUARIO_BASE_URL = os.environ.get("PERFIL_USUARIO_BASE_URL", "")
 PERFIL_USUARIO_MODE = os.environ.get("PERFIL_USUARIO_MODE", "mock")
+APPIAN_EMBED_BASE_URL = os.environ.get("APPIAN_EMBED_BASE_URL", "https://mapfrespain-test.appiancloud.com/suite")
+APPIAN_EMBED_API_KEY = os.environ.get("APPIAN_EMBED_API_KEY", "")
+APPIAN_EMBED_MODE = os.environ.get("APPIAN_EMBED_MODE", "mock")  # mock | real
+APPIAN_EMBED_TIMEOUT = int(os.environ.get("APPIAN_EMBED_TIMEOUT", "30"))
+APPIAN_EMBED_EMAIL_AVISOS = os.environ.get("APPIAN_EMBED_EMAIL_AVISOS", "")
 ALERTAS_EMAIL_TO = os.environ.get("ALERTAS_EMAIL_TO", "")
 ALERTAS_EMAIL_FROM = os.environ.get("ALERTAS_EMAIL_FROM", "noReply@tva.local")
 

@@ -16,6 +16,11 @@ services:
       REDIS_HOST: redis
       CELERY_BROKER_URL: redis://redis:6379/1
       CELERY_RESULT_BACKEND: redis://redis:6379/1
+      # Pop-ups Appian Embedded: real + API key en .env (valor no versionado)
+      APPIAN_EMBED_MODE: ${APPIAN_EMBED_MODE:-mock}
+      APPIAN_EMBED_BASE_URL: ${APPIAN_EMBED_BASE_URL:-https://mapfrespain-test.appiancloud.com/suite}
+      APPIAN_EMBED_API_KEY: ${APPIAN_EMBED_API_KEY:-}
+      APPIAN_EMBED_EMAIL_AVISOS: ${APPIAN_EMBED_EMAIL_AVISOS:-}
     depends_on:
       - postgres
       - redis

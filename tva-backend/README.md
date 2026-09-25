@@ -60,6 +60,9 @@ Ver `.env.sample`. Todo lo sensible es `CHANGEME`/localhost. Destacadas:
 | `APILIFE_MODE` | `mock` (fixtures locales) o `real` (HTTP a `APILIFE_BASE_URL`) |
 | `MISV_MODE` / `RIC_MODE` / `PERFIL_USUARIO_MODE` | igual que APILIFE |
 | `OAUTH_JWKS_URI` / `OAUTH_AUDIENCE` / `OAUTH_ISSUER` | validación OIDC en no-local |
+| `APPIAN_EMBED_MODE` | `mock` (taskId local) o `real` (Web APIs Appian TEST para RGPD/DNI/test conveniencia) |
+| `APPIAN_EMBED_API_KEY` | clave `Appian-API-Key` de las Web APIs (solo en `real`; no versionar) |
+| `APPIAN_EMBED_BASE_URL` / `APPIAN_EMBED_TIMEOUT` / `APPIAN_EMBED_EMAIL_AVISOS` | base `/suite`, timeout y email de avisos del alta cliente |
 
 ## API
 
