@@ -14,7 +14,7 @@ import {
   Parametro,
   Traza,
 } from '@tva/core';
-import { CabeceraComponent } from '../../ui/cabecera.component';
+import { CabeceraComponent } from '../../shared/ui/layout/cabecera.component';
 
 @Component({
   selector: 'app-admin-page',
@@ -36,11 +36,11 @@ export class AdminPage implements OnInit {
   private readonly limpiarCaches = inject(LimpiarCachesUsecase);
   private readonly obtenerTrazas = inject(ObtenerTrazasUsecase);
 
-  readonly parametros = signal<Parametro[]>([]);
-  readonly trazas = signal<Traza[]>([]);
-  readonly estadoApertura = signal('');
-  readonly columnas = ['clave', 'valor', 'tipo'];
-  readonly columnasTrazas = ['creado', 'clase', 'mensaje'];
+  protected readonly parametros = signal<Parametro[]>([]);
+  protected readonly trazas = signal<Traza[]>([]);
+  protected readonly estadoApertura = signal('');
+  protected readonly columnas = ['clave', 'valor', 'tipo'];
+  protected readonly columnasTrazas = ['creado', 'clase', 'mensaje'];
   readonly trazaForm = inject(FormBuilder).nonNullable.group({ clave: [''] });
 
   ngOnInit(): void {
@@ -51,19 +51,19 @@ export class AdminPage implements OnInit {
     });
   }
 
-  guardar(p: Parametro, valor: string): void {
+  protected guardar(p: Parametro, valor: string): void {
     this.guardarParametro.execute({ clave: p.clave, valor }).subscribe(n => {
       this.parametros.update(ps => ps.map(x => (x.clave === n.clave ? n : x)));
     });
   }
 
-  apertura(): void {
+  protected apertura(): void {
     this.alternarApertura
       .execute()
       .subscribe(r => this.estadoApertura.set(r.cerrada ? 'cerrada' : 'abierta'));
   }
 
-  fijarCierre(valor: '0' | '1'): void {
+  protected fijarCierre(valor: '0' | '1'): void {
     this.guardarParametro.execute({ clave: 'TVA_APLICACION_CERRADA', valor }).subscribe(() => {
       this.estadoApertura.set(valor === '1' ? 'cerrada' : 'abierta');
       this.parametros.update(ps =>
@@ -72,11 +72,11 @@ export class AdminPage implements OnInit {
     });
   }
 
-  limpiar(): void {
+  protected limpiar(): void {
     this.limpiarCaches.execute().subscribe();
   }
 
-  buscarTrazas(): void {
+  protected buscarTrazas(): void {
     this.obtenerTrazas
       .execute(this.trazaForm.value.clave ?? undefined)
       .subscribe(t => this.trazas.set(t));

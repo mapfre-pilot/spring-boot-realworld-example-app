@@ -8,7 +8,6 @@ import { MatInputModule } from '@angular/material/input';
   selector: 'app-campo-texto',
   imports: [MatFormFieldModule, MatInputModule, ReactiveFormsModule],
   templateUrl: './campo-texto.component.html',
-  styleUrl: './campo-texto.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CampoTextoComponent {

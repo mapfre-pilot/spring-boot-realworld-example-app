@@ -19,7 +19,7 @@ module.exports = {
     'jest-preset-angular/build/serializers/html-comment',
   ],
   moduleNameMapper: {
-    '^@tva/core$': '<rootDir>/libs/core/src/index.ts',
+    '^@tva/core$': '<rootDir>/src/app/core/index.ts',
   },
   testMatch: [
     '<rootDir>/src/**/__tests__/**/*.[jt]s?(x)',

@@ -46,8 +46,8 @@ export class AppianTaskDialogComponent implements OnDestroy {
 
   private readonly contenedor = viewChild.required<ElementRef<HTMLElement>>('contenedor');
 
-  readonly estado = signal<'cargando' | 'login' | 'tarea' | 'error' | 'mock'>('cargando');
-  readonly mensajeError = signal('Appian no responde');
+  protected readonly estado = signal<'cargando' | 'login' | 'tarea' | 'error' | 'mock'>('cargando');
+  protected readonly mensajeError = signal('Appian no responde');
 
   constructor() {
     afterNextRender(() => this.iniciar(), { injector: this.injector });
@@ -110,7 +110,7 @@ export class AppianTaskDialogComponent implements OnDestroy {
     this.observer.observe(this.doc.documentElement, { childList: true, subtree: true });
   }
 
-  reintentar(): void {
+  protected reintentar(): void {
     this.observer?.disconnect();
     this.tarea?.destroy?.();
     this.tarea?.remove();

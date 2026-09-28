@@ -10,7 +10,7 @@ import {
   InsuranceApplicationProposal,
   SesionStore,
 } from '@tva/core';
-import { CajaComponent } from '../../../ui/caja.component';
+import { CajaComponent } from '../../../../shared/ui/contenedores/caja.component';
 
 @Component({
   selector: 'app-seguros-ahorro',
@@ -24,7 +24,7 @@ export class SegurosAhorroContainer {
 
   private readonly estado = computed(() => (this.store.sesion()?.estado ?? {}) as EstadoSesion);
 
-  readonly applications = computed<InsuranceApplicationProposal[]>(() => {
+  protected readonly applications = computed<InsuranceApplicationProposal[]>(() => {
     const prop = (this.estado().responseProposal ?? {}) as Record<string, unknown>;
     const contracting = (prop['contractingProposal'] ?? {}) as Record<string, unknown>;
     return (
@@ -34,7 +34,7 @@ export class SegurosAhorroContainer {
 
   /** TVA_Pantalla_SegurosAhorro: en VA sin la funcionalidad 4045 hace falta
    * test de conveniencia vigente en todos los tomadores para poder capturar. */
-  readonly capturaDeshabilitada = computed(() => {
+  protected readonly capturaDeshabilitada = computed(() => {
     const estado = this.estado();
     if ((this.store.sesion()?.modalidad ?? estado.modoFuncionamiento) !== 'VA') return false;
     const funcionalidades = estado.perfilUsuario?.funcionalidades ?? [];
@@ -45,7 +45,7 @@ export class SegurosAhorroContainer {
       : tomadores.some(t => !t.datosGestionParticipante?.testConvenienciaVigente);
   });
 
-  capturar(ap: InsuranceApplicationProposal): void {
+  protected capturar(ap: InsuranceApplicationProposal): void {
     this.ejecutarAccion
       .execute('seleccionar-modalidad', { productCode: ap.commercialProductCode })
       .subscribe();

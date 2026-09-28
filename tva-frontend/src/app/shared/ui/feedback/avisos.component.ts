@@ -15,22 +15,22 @@ export class AvisosComponent {
   readonly avisos = input.required<Aviso[]>();
   readonly mostrarEn = input<'CABECERA' | 'SECCION'>('CABECERA');
 
-  visibles(): Aviso[] {
+  protected visibles(): Aviso[] {
     return this.avisos().filter(a => (a.mostrarEn ?? 'CABECERA') === this.mostrarEn());
   }
 
-  texto(aviso: Aviso): string {
+  protected texto(aviso: Aviso): string {
     return aviso.texto ?? aviso.mensaje ?? '';
   }
 
-  estilo(aviso: Aviso): 'error' | 'warning' | 'info' {
+  protected estilo(aviso: Aviso): 'error' | 'warning' | 'info' {
     const t = aviso.tipo ?? (aviso.codigo?.includes('ERROR') ? 'ERROR' : 'INFO');
     if (t === 'ERROR') return 'error';
     if (t === 'WARNING') return 'warning';
     return 'info';
   }
 
-  icono(aviso: Aviso): string {
+  protected icono(aviso: Aviso): string {
     const e = this.estilo(aviso);
     return e === 'error' ? 'error' : e === 'warning' ? 'warning' : 'info';
   }

@@ -1,0 +1,49 @@
+/* Utilidades transversales. */
+
+/* Caja de errores de validación. */
+.errores {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-radius: 4px;
+  border-left: 4px solid var(--tva-primary);
+  background: #fdecea;
+  color: #7f1d12;
+}
+.errores mat-icon {
+  flex-shrink: 0;
+}
+.errores ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+.ok {
+  color: var(--tva-ok);
+  font-weight: 500;
+}
+
+/* Grid de tarjetas seleccionables. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.tarjeta a {
+  color: var(--tva-primary);
+}
+
+/* Checks/checkboxes en línea. */
+.checks {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  margin: 12px 0;
+  padding: 8px 0;
+}
+
+/* Texto multilínea en diálogos. */
+.mensaje {
+  white-space: pre-line;
+}

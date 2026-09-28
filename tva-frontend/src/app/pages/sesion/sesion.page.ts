@@ -4,54 +4,27 @@ import { ActivatedRoute } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { CargarSesionUsecase, EjecutarAccionUsecase, Pantalla, SesionStore } from '@tva/core';
-import { AvisosComponent } from '../../ui/avisos.component';
-import { CabeceraComponent } from '../../ui/cabecera.component';
-import { MigasDePanComponent } from '../../ui/migas-de-pan.component';
-import { BotoneraComponent } from '../../ui/botonera.component';
+import { AvisosComponent } from '../../shared/ui/feedback/avisos.component';
+import { CabeceraComponent } from '../../shared/ui/layout/cabecera.component';
+import { MigasDePanComponent } from '../../shared/ui/layout/migas-de-pan.component';
+import { BotoneraComponent } from '../../shared/ui/layout/botonera.component';
 
-import { CapturaDatosSolicitudContainer } from './pantallas/captura-datos-solicitud.container';
-import { CapturaTomador1Container } from './pantallas/captura-tomador1.container';
-import { CapturaTomador2Container } from './pantallas/captura-tomador2.container';
-import { FinContainer } from './pantallas/fin.container';
-import { ModalidadCampaniaContainer } from './pantallas/modalidad-campania.container';
-import { R2cCapturaContainer } from './pantallas/r2c-captura.container';
-import { R2cPreciosContainer } from './pantallas/r2c-precios.container';
-import { ResumenContratacionContainer } from './pantallas/resumen-contratacion.container';
-import { ResultadoFirmaContainer } from './pantallas/resultado-firma.container';
-import { SegurosAhorroContainer } from './pantallas/seguros-ahorro.container';
-import { SeleccionProductoAhorroContainer } from './pantallas/seleccion-producto-ahorro.container';
-import { SinPerfilContainer } from './pantallas/sin-perfil.container';
-import { SistemaCerradoContainer } from './pantallas/sistema-cerrado.container';
-import { SoloAvisosContainer } from './pantallas/solo-avisos.container';
+import { CapturaDatosSolicitudContainer } from './pantallas/solicitud/captura-datos-solicitud.container';
+import { CapturaTomador1Container } from './pantallas/tomador/captura-tomador1.container';
+import { CapturaTomador2Container } from './pantallas/tomador/captura-tomador2.container';
+import { FinContainer } from './pantallas/cierre/fin.container';
+import { ModalidadCampaniaContainer } from './pantallas/ahorro/modalidad-campania.container';
+import { R2cCapturaContainer } from './pantallas/rentas/r2c-captura.container';
+import { R2cPreciosContainer } from './pantallas/rentas/r2c-precios.container';
+import { ResumenContratacionContainer } from './pantallas/cierre/resumen-contratacion.container';
+import { ResultadoFirmaContainer } from './pantallas/cierre/resultado-firma.container';
+import { SegurosAhorroContainer } from './pantallas/ahorro/seguros-ahorro.container';
+import { SeleccionProductoAhorroContainer } from './pantallas/ahorro/seleccion-producto-ahorro.container';
+import { SinPerfilContainer } from './pantallas/avisos/sin-perfil.container';
+import { SistemaCerradoContainer } from './pantallas/avisos/sistema-cerrado.container';
+import { SoloAvisosContainer } from './pantallas/avisos/solo-avisos.container';
 import { AdminPanelComponent } from '../admin/admin-panel.component';
-
-const PASOS: Record<string, Pantalla[]> = {
-  VA: [
-    Pantalla.SEGUROS_AHORRO,
-    Pantalla.CAPTURA_DATOS_SOLICITUD,
-    Pantalla.CAPTURA_TOMADOR1,
-    Pantalla.CAPTURA_TOMADOR2,
-    Pantalla.RESUMEN_CONTRATACION,
-    Pantalla.RESULTADO_FIRMA,
-    Pantalla.FIN,
-  ],
-  VIA: [
-    Pantalla.SELECCION_PRODUCTO_AHORRO,
-    Pantalla.MODALIDAD_CAMPANIA,
-    Pantalla.CAPTURA_DATOS_SOLICITUD,
-    Pantalla.CAPTURA_TOMADOR1,
-    Pantalla.RESUMEN_CONTRATACION,
-    Pantalla.RESULTADO_FIRMA,
-    Pantalla.FIN,
-  ],
-  R2C: [
-    Pantalla.R2C_CAPTURA,
-    Pantalla.R2C_PRECIOS,
-    Pantalla.RESUMEN_CONTRATACION,
-    Pantalla.RESULTADO_FIRMA,
-    Pantalla.FIN,
-  ],
-};
+import { PASOS } from './sesion.const';
 
 @Component({
   selector: 'app-sesion-page',
@@ -77,7 +50,6 @@ const PASOS: Record<string, Pantalla[]> = {
     AdminPanelComponent,
     BotoneraComponent,
   ],
-  styleUrl: './sesion.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sesion.page.html',
 })
@@ -86,16 +58,16 @@ export class SesionPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly cargarSesion = inject(CargarSesionUsecase);
   private readonly ejecutarAccion = inject(EjecutarAccionUsecase);
-  readonly P = Pantalla;
+  protected readonly P = Pantalla;
 
-  readonly pasos = computed(() => PASOS[this.store.modalidad() ?? 'VA'] ?? []);
+  protected readonly pasos = computed(() => PASOS[this.store.modalidad() ?? 'VA'] ?? []);
 
   ngOnInit(): void {
     const clave = this.route.snapshot.paramMap.get('clave');
     if (clave) this.cargarSesion.execute(clave).subscribe();
   }
 
-  onAccion(id: string): void {
+  protected onAccion(id: string): void {
     this.ejecutarAccion.execute(id).subscribe();
   }
 }

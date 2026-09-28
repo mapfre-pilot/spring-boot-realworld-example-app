@@ -14,22 +14,22 @@
       [control]="form().controls.tipoDuracion"
       etiqueta="Tipo de duración"
       [opciones]="tiposDuracion()" />
-    @if (valor()?.tipoDuracion === 'ANIOS') {
+    @if (valor().tipoDuracion === 'ANIOS') {
       <app-campo-texto
         [control]="form().controls.duracion"
         etiqueta="Duración (años)"
         tipo="number" />
     }
-    @if (valor()?.tipoDuracion === 'TABLA') {
+    @if (valor().tipoDuracion === 'TABLA') {
       <app-campo-texto [control]="form().controls.tabla" etiqueta="Tabla" />
     }
-    @if (valor()?.tipoDuracion === 'EDAD_VENCIMIENTO') {
+    @if (valor().tipoDuracion === 'EDAD_VENCIMIENTO') {
       <app-campo-texto
         [control]="form().controls.edadVencimiento"
         etiqueta="Edad de vencimiento"
         tipo="number" />
     }
-    @if (valor()?.tipoDuracion === 'FECHA_VENCIMIENTO') {
+    @if (valor().tipoDuracion === 'FECHA_VENCIMIENTO') {
       <app-campo-texto
         [control]="form().controls.fechaVencimiento"
         etiqueta="Fecha de vencimiento"
@@ -43,7 +43,7 @@
       [control]="form().controls.aportacionPeriodica"
       etiqueta="Aportación periódica (€)"
       tipo="number" />
-    @if (valor()?.aportacionPeriodica) {
+    @if (valor().aportacionPeriodica) {
       <app-campo-select
         [control]="form().controls.periodicidad"
         etiqueta="Periodicidad"
@@ -53,14 +53,14 @@
     <mat-slide-toggle formControlName="revalorizacion"
       >¿Quieres revalorizar tu aportación?</mat-slide-toggle
     >
-    @if (valor()?.revalorizacion) {
+    @if (valor().revalorizacion) {
       <app-campo-texto
         [control]="form().controls.porcentajeCrecimiento"
         etiqueta="Porcentaje anual de crecimiento (%)"
         tipo="number" />
     }
     <mat-slide-toggle formControlName="reinversionActiva">Reinversión</mat-slide-toggle>
-    @if (valor()?.reinversionActiva) {
+    @if (valor().reinversionActiva) {
       <app-campo-texto [control]="form().controls.reinversionOperacion" etiqueta="Operación" />
       <app-campo-texto [control]="form().controls.reinversionPoliza" etiqueta="Póliza" />
       <app-campo-texto [control]="form().controls.reinversionTipo" etiqueta="Tipo de reinversión" />
@@ -69,7 +69,7 @@
       [control]="form().controls.gradoMinusvalia"
       etiqueta="Grado de minusvalía (%)"
       tipo="number" />
-    @if (valor()?.gradoMinusvalia) {
+    @if (valor().gradoMinusvalia) {
       <app-campo-texto
         [control]="form().controls.fechaAltaMinusvalia"
         etiqueta="Fecha de alta de la minusvalía"

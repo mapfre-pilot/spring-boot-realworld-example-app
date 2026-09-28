@@ -4,7 +4,6 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { createComponentFactory } from '@ngneat/spectator/jest';
-import { of } from 'rxjs';
 
 import { SESION_REPOSITORY, SesionStore } from '@tva/core';
 import { ResumenContratacionContainer } from './resumen-contratacion.container';

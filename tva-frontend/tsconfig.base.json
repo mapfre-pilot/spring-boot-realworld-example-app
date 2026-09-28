@@ -15,7 +15,7 @@
     "skipDefaultLibCheck": true,
     "paths": {
       "@package": ["./package.json"],
-      "@tva/core": ["./libs/core/src/index.ts"]
+      "@tva/core": ["./src/app/core/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

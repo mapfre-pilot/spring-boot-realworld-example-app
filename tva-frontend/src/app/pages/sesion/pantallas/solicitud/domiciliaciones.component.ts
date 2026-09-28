@@ -14,8 +14,8 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { Aviso, FormulariosSolicitud } from '@tva/core';
-import { CampoTextoComponent } from '../../../../ui/campo-texto.component';
-import { SeccionComponent } from '../../../../ui/seccion.component';
+import { CampoTextoComponent } from '../../../../shared/ui/formularios/campo-texto.component';
+import { SeccionComponent } from '../../../../shared/ui/contenedores/seccion.component';
 
 @Component({
   selector: 'app-domiciliaciones',
@@ -31,7 +31,7 @@ export class DomiciliacionesComponent implements OnInit {
   readonly continuar = output<void>();
 
   private readonly destroyRef = inject(DestroyRef);
-  readonly requierePrestaciones = signal(false);
+  protected readonly requierePrestaciones = signal(false);
 
   ngOnInit(): void {
     const c = this.form().controls.requierePrestaciones;

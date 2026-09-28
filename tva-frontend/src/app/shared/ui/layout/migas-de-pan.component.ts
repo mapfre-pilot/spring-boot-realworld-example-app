@@ -34,17 +34,17 @@ export class MigasDePanComponent {
     this.pasos().indexOf(this.actual() ?? ('' as Pantalla))
   );
 
-  completado(i: number): boolean {
+  protected completado(i: number): boolean {
     const idx = this.indiceActual();
     return idx >= 0 && i < idx;
   }
 
-  futuro(i: number): boolean {
+  protected futuro(i: number): boolean {
     const idx = this.indiceActual();
     return idx >= 0 && i > idx;
   }
 
-  etiqueta(paso: Pantalla): string {
+  protected etiqueta(paso: Pantalla): string {
     return ETIQUETAS[paso] ?? paso;
   }
 }

@@ -1,11 +1,9 @@
 /** Sección Opciones de inversión (tabla con importes) — presentacional (§12.4.4). */
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 
 import { Aviso } from '@tva/core';
-import { SeccionComponent } from '../../../../ui/seccion.component';
+import { SeccionComponent } from '../../../../shared/ui/contenedores/seccion.component';
+import { MATERIAL } from '../../../../shared/ui/material';
 
 export interface OpcionInversion {
   investmentPreferenceCode: string;
@@ -21,10 +19,9 @@ export interface ImporteOpcion {
 
 @Component({
   selector: 'app-opciones-inversion',
-  imports: [SeccionComponent, MatCheckboxModule, MatFormFieldModule, MatInputModule],
+  imports: [...MATERIAL, SeccionComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './opciones-inversion.component.html',
-  styleUrl: './opciones-inversion.component.scss',
 })
 export class OpcionesInversionComponent {
   readonly opciones = input.required<OpcionInversion[]>();
@@ -43,7 +40,7 @@ export class OpcionesInversionComponent {
     ev: Event;
   }>();
 
-  importe(i: number, campo: 'unica' | 'periodica' | 'plazo'): number | string {
+  protected importe(i: number, campo: 'unica' | 'periodica' | 'plazo'): number | string {
     return this.importes()[i]?.[campo] ?? '';
   }
 }

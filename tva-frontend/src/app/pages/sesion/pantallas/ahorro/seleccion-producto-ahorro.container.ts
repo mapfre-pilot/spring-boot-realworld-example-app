@@ -16,15 +16,14 @@ export const MSG_SIN_PRODUCTOS = 'El servicio no ha devuelvo ningún producto de
   selector: 'app-seleccion-producto-ahorro',
   imports: [MatCardModule],
   templateUrl: './seleccion-producto-ahorro.container.html',
-  styleUrl: './seleccion-producto-ahorro.container.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SeleccionProductoAhorroContainer implements OnInit {
   private readonly obtenerProductos = inject(ObtenerProductosUsecase);
   private readonly ejecutarAccion = inject(EjecutarAccionUsecase);
   private readonly store = inject(SesionStore);
-  readonly MSG = MSG_SIN_PRODUCTOS;
-  readonly productos = signal<Producto[]>([]);
+  protected readonly MSG = MSG_SIN_PRODUCTOS;
+  protected readonly productos = signal<Producto[]>([]);
 
   ngOnInit(): void {
     const estado = (this.store.sesion()?.estado ?? {}) as EstadoSesion;
@@ -43,7 +42,7 @@ export class SeleccionProductoAhorroContainer implements OnInit {
       .subscribe(r => this.productos.set(r.products ?? []));
   }
 
-  contratar(p: Producto): void {
+  protected contratar(p: Producto): void {
     this.ejecutarAccion
       .execute('seleccionar-modalidad', { productCode: p.commercialProductCode })
       .subscribe();

@@ -1,0 +1,55 @@
+/* Tablas: cabecera gris bold, zebra, inputs compactos con € a la derecha. */
+table.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+table.tabla thead tr {
+  background: #f5f5f5;
+}
+table.tabla th {
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--tva-border);
+  white-space: nowrap;
+}
+table.tabla tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+table.tabla td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+table.tabla tr.totales td,
+table.tabla .totales {
+  font-weight: 600;
+  text-align: right;
+}
+table.tabla input[type='text'],
+table.tabla input[type='number'],
+table.tabla input:not([type]) {
+  height: 36px;
+  border: 1px solid #bdbdbd;
+  border-radius: 4px;
+  padding: 0 8px;
+  font: inherit;
+}
+table.tabla input[type='number'],
+table.tabla td.numero,
+table.tabla .numero {
+  text-align: right;
+}
+td.numero::after {
+  content: ' €';
+  color: var(--tva-text-muted);
+}
+
+/* Columna numérica estrecha (p. ej. opciones de inversión). */
+.celda {
+  width: 110px;
+}
+.num {
+  text-align: right;
+}

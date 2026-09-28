@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { Aviso } from '@tva/core';
-import { SeccionComponent } from '../../../../ui/seccion.component';
+import { SeccionComponent } from '../../../../shared/ui/contenedores/seccion.component';
 
 export interface Garantia {
   codigo: string;

@@ -1,0 +1,106 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+  font-size: 14px;
+  color: var(--tva-text);
+  background: var(--tva-surface);
+}
+
+/* Contenedor de página: 1200px centrado, padding para la botonera fija. */
+.pagina {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 24px 96px;
+}
+
+@media (max-width: 900px) {
+  .pagina {
+    padding: 16px 12px 96px;
+  }
+}
+
+/* Tarjetas: blanco, radius 8, borde fino y sombra suave. */
+.mat-mdc-card {
+  border-radius: 8px !important;
+  border: 1px solid var(--tva-border);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 8%) !important;
+}
+
+/* Tipografía funcional. */
+h1,
+.titulo-pagina {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 16px;
+}
+h2,
+.titulo-caja {
+  font-size: 16px;
+  font-weight: 600;
+}
+h3,
+.titulo-seccion {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Chips de sub-ruta bajo el título. */
+.chips-ruta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.chips-ruta .chip {
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  background: #ececec;
+  color: var(--tva-text-muted);
+}
+.chips-ruta .chip.activo {
+  background: var(--tva-primary);
+  color: #fff;
+}
+
+/* Botones: foco visible y hover MAPFRE. */
+.mat-mdc-raised-button:not(:disabled):hover,
+.mat-mdc-unelevated-button:not(:disabled):hover {
+  background: var(--tva-primary-dark) !important;
+}
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--tva-primary);
+  outline-offset: 2px;
+}
+
+/* Snackbar de error. */
+.snack-error {
+  --mdc-snackbar-container-color: #d81e05;
+  --mdc-snackbar-supporting-text-color: #fff;
+}
+
+/* Estado de carga centrado. */
+.cargando {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+/* Totales de tablas. */
+.suma {
+  text-align: right;
+  font-weight: 600;
+  padding: 8px 10px;
+}
+
+/* Spinner centrado y ancho algo menor en la página de sesión. */
+app-sesion-page mat-spinner {
+  display: block;
+  margin: 48px auto;
+}
+app-sesion-page .pagina {
+  max-width: 960px;
+}

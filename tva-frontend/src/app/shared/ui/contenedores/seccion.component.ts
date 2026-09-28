@@ -5,7 +5,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 
 import { Aviso } from '@tva/core';
-import { AvisosComponent } from './avisos.component';
+import { AvisosComponent } from '../feedback/avisos.component';
 
 @Component({
   selector: 'app-seccion',

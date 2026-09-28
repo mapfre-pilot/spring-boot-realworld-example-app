@@ -10,55 +10,23 @@ import {
 import { FormBuilder } from '@angular/forms';
 
 import { SesionStore, ValidarSeccionUsecase, crearFormulariosSolicitud } from '@tva/core';
-import { CajaComponent } from '../../../ui/caja.component';
-import { Opcion } from '../../../ui/campo-select.component';
-import { CapturaAmpliadaComponent } from './solicitud/captura-ampliada.component';
-import { DatosOperacionComponent } from './solicitud/datos-operacion.component';
-import { DatosProductoresComponent } from './solicitud/datos-productores.component';
-import { DomiciliacionesComponent } from './solicitud/domiciliaciones.component';
-import { Garantia, GarantiasComponent } from './solicitud/garantias.component';
+import { CajaComponent } from '../../../../shared/ui/contenedores/caja.component';
+import { CapturaAmpliadaComponent } from './captura-ampliada.component';
+import { DatosOperacionComponent } from './datos-operacion.component';
+import { DatosProductoresComponent } from './datos-productores.component';
+import { DomiciliacionesComponent } from './domiciliaciones.component';
+import { Garantia, GarantiasComponent } from './garantias.component';
 import {
   ImporteOpcion,
   OpcionInversion,
   OpcionesInversionComponent,
-} from './solicitud/opciones-inversion.component';
-
-const TIPOS_DURACION: Opcion[] = [
-  { valor: 'ANIOS', etiqueta: 'Años' },
-  { valor: 'TABLA', etiqueta: 'Tabla' },
-  { valor: 'EDAD_VENCIMIENTO', etiqueta: 'Edad de vencimiento' },
-  { valor: 'FECHA_VENCIMIENTO', etiqueta: 'Fecha de vencimiento' },
-  { valor: 'JUBILACION', etiqueta: 'Jubilación' },
-];
-
-const TIPOS_BENEFICIARIO: Opcion[] = [
-  { valor: 'HEREDEROS', etiqueta: 'Herederos legales' },
-  { valor: 'HIJOS', etiqueta: 'Hijos' },
-  { valor: 'PADRES', etiqueta: 'Padres' },
-  { valor: 'CONYUGE', etiqueta: 'Cónyuge' },
-  { valor: 'TOMADOR', etiqueta: 'Tomador' },
-  { valor: 'HERMANOS', etiqueta: 'Hermanos' },
-  { valor: 'TEXTO_LIBRE', etiqueta: 'Texto libre' },
-];
-
-const PERIODICIDADES: Opcion[] = [
-  { valor: 'M', etiqueta: 'Mensual' },
-  { valor: 'T', etiqueta: 'Trimestral' },
-  { valor: 'S', etiqueta: 'Semestral' },
-  { valor: 'A', etiqueta: 'Anual' },
-];
-
-const SECCIONES: [string, string][] = [
-  ['DATOS_PRODUCTORES', 'productores'],
-  ['DATOS_DEL_SEGURO', 'operacion'],
-  ['DATOS_DEL_SEGURO', 'opcionesInversion'],
-  ['DATOS_DEL_SEGURO', 'garantias'],
-  ['DATOS_DEL_SEGURO', 'domiciliaciones'],
-  ['DATOS_DEL_SEGURO', 'datosContacto'],
-  ['DATOS_DEL_SEGURO', 'asegurado'],
-  ['DATOS_DEL_SEGURO', 'beneficiarios'],
-  ['DATOS_DEL_SEGURO', 'notas'],
-];
+} from './opciones-inversion.component';
+import {
+  PERIODICIDADES,
+  SECCIONES,
+  TIPOS_BENEFICIARIO,
+  TIPOS_DURACION,
+} from './datos-solicitud.const';
 
 @Component({
   selector: 'app-captura-datos-solicitud',
@@ -79,17 +47,17 @@ export class CapturaDatosSolicitudContainer implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly validarSeccion = inject(ValidarSeccionUsecase);
 
-  readonly tiposDuracion = TIPOS_DURACION;
-  readonly tiposBeneficiario = TIPOS_BENEFICIARIO;
-  readonly avisos = this.store.avisos;
-  readonly ampliada = signal(false);
-  readonly expandida = signal<string>('productores');
-  readonly validas = signal<Record<string, boolean>>({});
-  readonly opcionSel = signal<boolean[]>([]);
+  protected readonly tiposDuracion = TIPOS_DURACION;
+  protected readonly tiposBeneficiario = TIPOS_BENEFICIARIO;
+  protected readonly avisos = this.store.avisos;
+  protected readonly ampliada = signal(false);
+  protected readonly expandida = signal<string>('productores');
+  protected readonly validas = signal<Record<string, boolean>>({});
+  protected readonly opcionSel = signal<boolean[]>([]);
   readonly importes = signal<Record<string, ImporteOpcion>>({});
 
   readonly estado = computed(() => this.store.sesion()?.estado);
-  readonly producto = computed(
+  protected readonly producto = computed(
     () =>
       ((this.estado() as Record<string, unknown> | undefined)?.['productoSeleccionado'] as
         | Record<string, unknown>
@@ -103,20 +71,20 @@ export class CapturaDatosSolicitudContainer implements OnInit {
           String(p['commercialProductCode']) === String(this.estado()?.codigoProducto)
       )
   );
-  readonly opcionesProducto = computed(
+  protected readonly opcionesProducto = computed(
     () => (this.producto()?.['opcionesInversion'] ?? []) as OpcionInversion[]
   );
-  readonly garantias = computed(
+  protected readonly garantias = computed(
     () =>
       ((this.estado() as Record<string, unknown> | undefined)?.['garantias'] ??
         []) as unknown as Garantia[]
   );
-  readonly periodicidadesProducto = computed(() => {
+  protected readonly periodicidadesProducto = computed(() => {
     const codigos = this.producto()?.['periodicidades'] as string[] | undefined;
     return PERIODICIDADES.filter(p => !codigos || codigos.includes(p.valor));
   });
   /** Validez por sección para la plantilla (`CAJA/seccion` → bool). */
-  readonly validez = computed(() => {
+  protected readonly validez = computed(() => {
     const map: Record<string, boolean> = {};
     for (const [cajaId, seccionId] of SECCIONES) {
       const key = `${cajaId}/${seccionId}`;
@@ -178,7 +146,7 @@ export class CapturaDatosSolicitudContainer implements OnInit {
     this._post('DATOS_DEL_SEGURO', seccionId, this.formularios[seccionId].getRawValue(), '');
   }
 
-  continuarProductores(): void {
+  protected continuarProductores(): void {
     this._post(
       'DATOS_PRODUCTORES',
       'productores',
@@ -196,7 +164,7 @@ export class CapturaDatosSolicitudContainer implements OnInit {
     }
   }
 
-  setImporte(i: number, campo: 'unica' | 'periodica' | 'plazo', ev: Event): void {
+  protected setImporte(i: number, campo: 'unica' | 'periodica' | 'plazo', ev: Event): void {
     const v = (ev.target as HTMLInputElement).valueAsNumber;
     this.importes.update(m => ({
       ...m,
@@ -204,14 +172,14 @@ export class CapturaDatosSolicitudContainer implements OnInit {
     }));
   }
 
-  suma(campo: 'unica' | 'periodica'): number {
+  protected suma(campo: 'unica' | 'periodica'): number {
     return this.opcionesProducto().reduce(
       (acc, _, i) => (this.opcionSel()[i] ? acc + (this.importes()[i]?.[campo] ?? 0) : acc),
       0
     );
   }
 
-  continuarOpciones(): void {
+  protected continuarOpciones(): void {
     const opciones = this.opcionesProducto().map((o, i) => ({
       ...o,
       seleccionada: !!this.opcionSel()[i],
@@ -222,7 +190,7 @@ export class CapturaDatosSolicitudContainer implements OnInit {
     this._post('DATOS_DEL_SEGURO', 'opcionesInversion', opciones, 'garantias');
   }
 
-  toggleGarantia(i: number, sel: boolean): void {
+  protected toggleGarantia(i: number, sel: boolean): void {
     const est = this.estado();
     const garantias = (((est?.garantias as unknown) ?? []) as Garantia[]).map((g, j) =>
       j === i ? { ...g, seleccionada: sel } : g
@@ -230,11 +198,11 @@ export class CapturaDatosSolicitudContainer implements OnInit {
     (est as Record<string, unknown>)['garantias'] = garantias;
   }
 
-  continuarGarantias(): void {
+  protected continuarGarantias(): void {
     this._post('DATOS_DEL_SEGURO', 'garantias', this.garantias(), 'domiciliaciones');
   }
 
-  continuarAmpliada(seccionId: string): void {
+  protected continuarAmpliada(seccionId: string): void {
     switch (seccionId) {
       case 'datosContacto':
         this._post(

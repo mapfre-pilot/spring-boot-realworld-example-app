@@ -3,17 +3,11 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { SesionStore, ValidarSeccionUsecase } from '@tva/core';
-import { CajaComponent } from '../../../ui/caja.component';
-import { CampoSelectComponent, Opcion } from '../../../ui/campo-select.component';
-import { CampoTextoComponent } from '../../../ui/campo-texto.component';
-import { SeccionComponent } from '../../../ui/seccion.component';
-
-const PERIODICIDADES_RENTA: Opcion[] = [
-  { valor: 'MENSUAL', etiqueta: 'Mensual' },
-  { valor: 'TRIMESTRAL', etiqueta: 'Trimestral' },
-  { valor: 'SEMESTRAL', etiqueta: 'Semestral' },
-  { valor: 'ANUAL', etiqueta: 'Anual' },
-];
+import { CajaComponent } from '../../../../shared/ui/contenedores/caja.component';
+import { CampoSelectComponent } from '../../../../shared/ui/formularios/campo-select.component';
+import { CampoTextoComponent } from '../../../../shared/ui/formularios/campo-texto.component';
+import { SeccionComponent } from '../../../../shared/ui/contenedores/seccion.component';
+import { PERIODICIDADES_RENTA } from './r2c.const';
 
 @Component({
   selector: 'app-r2c-captura',
@@ -25,18 +19,17 @@ const PERIODICIDADES_RENTA: Opcion[] = [
     CampoSelectComponent,
   ],
   templateUrl: './r2c-captura.container.html',
-  styleUrl: './r2c-captura.container.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class R2cCapturaContainer implements OnInit {
   private readonly store = inject(SesionStore);
   private readonly fb = inject(FormBuilder);
   private readonly validarSeccion = inject(ValidarSeccionUsecase);
-  readonly periodicidades = PERIODICIDADES_RENTA;
-  readonly avisos = this.store.avisos;
-  readonly valida = signal(false);
+  protected readonly periodicidades = PERIODICIDADES_RENTA;
+  protected readonly avisos = this.store.avisos;
+  protected readonly valida = signal(false);
 
-  readonly rentas = this.fb.nonNullable.group({
+  protected readonly rentas = this.fb.nonNullable.group({
     importeTotalPrima: [null as number | null, Validators.required],
     periodicidadRenta: ['', Validators.required],
   });

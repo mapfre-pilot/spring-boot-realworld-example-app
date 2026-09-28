@@ -9,10 +9,6 @@ import {
   signal,
 } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 
 import {
@@ -27,34 +23,17 @@ import {
   WebApiError,
   nuumaDe,
 } from '@tva/core';
-import { CabeceraComponent } from '../../ui/cabecera.component';
-import { CampoSelectComponent, Opcion } from '../../ui/campo-select.component';
-import { CampoTextoComponent } from '../../ui/campo-texto.component';
-
-const MODOS: Opcion[] = [
-  { valor: 'VA', etiqueta: 'Venta Asesorada' },
-  { valor: 'VIA', etiqueta: 'Venta Informada Ahorro' },
-  { valor: 'R2C', etiqueta: 'Rentas' },
-];
-const OPERACIONES: Opcion[] = [
-  { valor: 'S', etiqueta: 'Suscripción' },
-  { valor: 'AE', etiqueta: 'Aportación extraordinaria' },
-];
-const FRECUENCIAS: Opcion[] = [
-  { valor: 'M', etiqueta: 'Mensual' },
-  { valor: 'T', etiqueta: 'Trimestral' },
-  { valor: 'S', etiqueta: 'Semestral' },
-  { valor: 'A', etiqueta: 'Anual' },
-];
+import { CabeceraComponent } from '../../shared/ui/layout/cabecera.component';
+import { CampoSelectComponent, Opcion } from '../../shared/ui/formularios/campo-select.component';
+import { CampoTextoComponent } from '../../shared/ui/formularios/campo-texto.component';
+import { MATERIAL } from '../../shared/ui/material';
+import { MODOS, OPERACIONES, FRECUENCIAS } from './inicio.const';
 
 @Component({
   selector: 'app-inicio-page',
   imports: [
+    ...MATERIAL,
     ReactiveFormsModule,
-    MatCardModule,
-    MatButtonModule,
-    MatCheckboxModule,
-    MatIconModule,
     CabeceraComponent,
     CampoTextoComponent,
     CampoSelectComponent,
@@ -70,21 +49,21 @@ export class InicioPage implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
 
-  readonly modos = MODOS;
-  readonly operaciones = OPERACIONES;
-  readonly frecuencias = FRECUENCIAS;
-  readonly productos = signal<Producto[]>([]);
-  readonly opcionesProductos = computed<Opcion[]>(() =>
+  protected readonly modos = MODOS;
+  protected readonly operaciones = OPERACIONES;
+  protected readonly frecuencias = FRECUENCIAS;
+  protected readonly productos = signal<Producto[]>([]);
+  protected readonly opcionesProductos = computed<Opcion[]>(() =>
     this.productos().map(p => ({
       valor: p.commercialProductCode,
       etiqueta: `${p.commercialProductCode} - ${p.commercialProductDesc}`,
     }))
   );
-  readonly cargando = signal(false);
+  protected readonly cargando = signal(false);
   readonly errores = signal<string[]>([]);
-  readonly sesionIniciada = signal<string | null>(null);
+  protected readonly sesionIniciada = signal<string | null>(null);
 
-  readonly nuumaControl = this.fb.nonNullable.control({ value: '', disabled: true });
+  protected readonly nuumaControl = this.fb.nonNullable.control({ value: '', disabled: true });
 
   readonly form = crearFormularioInicio(this.fb.nonNullable);
 
@@ -118,11 +97,11 @@ export class InicioPage implements OnInit {
     });
   }
 
-  controlEn(i: number, nombre: string) {
+  protected controlEn(i: number, nombre: string) {
     return this.investment.at(i).get(nombre) as never;
   }
 
-  ayuda(i: number): string {
+  protected ayuda(i: number): string {
     const code = this.investment.at(i).get('commercialProductCode')?.value;
     return (
       this.productos().find(p => p.commercialProductCode === code)?.commercialProductDesc ?? ''

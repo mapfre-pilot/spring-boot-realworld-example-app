@@ -5,10 +5,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { Boton } from '@tva/core';
-import { ConfirmDialogComponent } from './confirm-dialog.component';
-
-const IZQUIERDA = new Set(['cancelar', 'administracion']);
-const STROKED = new Set(['atras', 'administracion', 'guardar-y-volver', 'volver', 'recalcular']);
+import { ConfirmDialogComponent } from '../feedback/confirm-dialog.component';
+import { IZQUIERDA, STROKED } from './botonera.const';
 
 @Component({
   selector: 'app-botonera',
@@ -23,19 +21,19 @@ export class BotoneraComponent {
   readonly accion = output<string>();
   private readonly dialog = inject(MatDialog);
 
-  grupoIzquierdo(): Boton[] {
+  protected grupoIzquierdo(): Boton[] {
     return this.botones().filter(b => b.visible && IZQUIERDA.has(b.id));
   }
 
-  grupoDerecho(): Boton[] {
+  protected grupoDerecho(): Boton[] {
     return this.botones().filter(b => b.visible && !IZQUIERDA.has(b.id));
   }
 
-  stroked(b: Boton): boolean {
+  protected stroked(b: Boton): boolean {
     return STROKED.has(b.id);
   }
 
-  tooltip(b: Boton): string {
+  protected tooltip(b: Boton): string {
     return b.disabled ? (b.tooltip ?? 'Acción no disponible') : '';
   }
 

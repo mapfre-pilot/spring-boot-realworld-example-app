@@ -5,7 +5,7 @@
   <app-caja titulo="Datos de contacto">
     <app-seccion
       titulo="Dirección de correspondencia"
-      [valida]="validez()['DATOS_DEL_SEGURO/datosContacto'] ?? false"
+      [valida]="validez()['DATOS_DEL_SEGURO/datosContacto']"
       [expandida]="expandidaId() === 'datosContacto'"
       [avisos]="avisos()"
       seccion="DATOS_DEL_SEGURO/datosContacto"
@@ -32,7 +32,7 @@
   <app-caja titulo="Asegurado">
     <app-seccion
       titulo="Asegurado"
-      [valida]="validez()['DATOS_DEL_SEGURO/asegurado'] ?? false"
+      [valida]="validez()['DATOS_DEL_SEGURO/asegurado']"
       [expandida]="expandidaId() === 'asegurado'"
       [avisos]="avisos()"
       seccion="DATOS_DEL_SEGURO/asegurado"
@@ -59,7 +59,7 @@
   <app-caja titulo="Beneficiarios">
     <app-seccion
       titulo="Beneficiarios"
-      [valida]="validez()['DATOS_DEL_SEGURO/beneficiarios'] ?? false"
+      [valida]="validez()['DATOS_DEL_SEGURO/beneficiarios']"
       [expandida]="expandidaId() === 'beneficiarios'"
       [avisos]="avisos()"
       seccion="DATOS_DEL_SEGURO/beneficiarios"
@@ -78,7 +78,7 @@
   <app-caja titulo="Notas">
     <app-seccion
       titulo="Notas"
-      [valida]="validez()['DATOS_DEL_SEGURO/notas'] ?? false"
+      [valida]="validez()['DATOS_DEL_SEGURO/notas']"
       [expandida]="expandidaId() === 'notas'"
       [avisos]="avisos()"
       seccion="DATOS_DEL_SEGURO/notas"

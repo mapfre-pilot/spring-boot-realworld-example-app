@@ -15,15 +15,14 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { Aviso, FormulariosSolicitud } from '@tva/core';
-import { CajaComponent } from '../../../../ui/caja.component';
-import { CampoSelectComponent, Opcion } from '../../../../ui/campo-select.component';
-import { CampoTextoComponent } from '../../../../ui/campo-texto.component';
-import { SeccionComponent } from '../../../../ui/seccion.component';
-
-const TIPOS_DIRECCION: Opcion[] = [
-  { valor: 'CORRESPONDENCIA', etiqueta: 'Correspondencia' },
-  { valor: 'FISCAL', etiqueta: 'Fiscal' },
-];
+import { CajaComponent } from '../../../../shared/ui/contenedores/caja.component';
+import {
+  CampoSelectComponent,
+  Opcion,
+} from '../../../../shared/ui/formularios/campo-select.component';
+import { CampoTextoComponent } from '../../../../shared/ui/formularios/campo-texto.component';
+import { SeccionComponent } from '../../../../shared/ui/contenedores/seccion.component';
+import { TIPOS_DIRECCION } from './solicitud.const';
 
 @Component({
   selector: 'app-captura-ampliada',
@@ -50,10 +49,10 @@ export class CapturaAmpliadaComponent implements OnInit {
   readonly ampliada = model.required<boolean>();
   readonly continuar = output<string>();
 
-  readonly tiposDireccion = TIPOS_DIRECCION;
+  protected readonly tiposDireccion = TIPOS_DIRECCION;
   private readonly destroyRef = inject(DestroyRef);
-  readonly esTomador = signal(true);
-  readonly beneficiarioTipo = signal('');
+  protected readonly esTomador = signal(true);
+  protected readonly beneficiarioTipo = signal('');
 
   ngOnInit(): void {
     const esT = this.asegurado().controls.esTomador;

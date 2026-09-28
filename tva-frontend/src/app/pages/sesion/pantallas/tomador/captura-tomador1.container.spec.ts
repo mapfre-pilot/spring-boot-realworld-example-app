@@ -5,7 +5,7 @@ import { createComponentFactory } from '@ngneat/spectator/jest';
 import { of } from 'rxjs';
 
 import { CATALOGO_REPOSITORY, SESION_REPOSITORY, SesionStore } from '@tva/core';
-import { AppianPopupService } from '../../../ui/appian/appian-popup.service';
+import { AppianPopupService } from '../../../../core/infra/appian/appian-popup.service';
 import { CapturaTomador1Container } from './captura-tomador1.container';
 
 describe('CapturaTomador1Container', () => {

@@ -10,7 +10,7 @@
 <app-caja titulo="Datos de productores">
   <app-datos-productores
     [form]="formularios.productores"
-    [valida]="validez()['DATOS_PRODUCTORES/productores'] ?? false"
+    [valida]="validez()['DATOS_PRODUCTORES/productores']"
     [expandida]="expandida() === 'productores'"
     [avisos]="avisos()"
     (continuar)="continuarProductores()" />
@@ -21,7 +21,7 @@
     [form]="formularios.operacion"
     [tiposDuracion]="tiposDuracion"
     [periodicidades]="periodicidadesProducto()"
-    [valida]="validez()['DATOS_DEL_SEGURO/operacion'] ?? false"
+    [valida]="validez()['DATOS_DEL_SEGURO/operacion']"
     [expandida]="expandida() === 'operacion'"
     [avisos]="avisos()"
     (continuar)="continuarSeccion('operacion')" />
@@ -32,7 +32,7 @@
     [importes]="importes()"
     [sumaUnica]="suma('unica')"
     [sumaPeriodica]="suma('periodica')"
-    [valida]="validez()['DATOS_DEL_SEGURO/opcionesInversion'] ?? false"
+    [valida]="validez()['DATOS_DEL_SEGURO/opcionesInversion']"
     [expandida]="expandida() === 'opcionesInversion'"
     [avisos]="avisos()"
     (opcionCambiada)="seleccionarOpcion($event.i, $event.sel)"
@@ -41,7 +41,7 @@
 
   <app-garantias
     [garantias]="garantias()"
-    [valida]="validez()['DATOS_DEL_SEGURO/garantias'] ?? false"
+    [valida]="validez()['DATOS_DEL_SEGURO/garantias']"
     [expandida]="expandida() === 'garantias'"
     [avisos]="avisos()"
     (garantiaCambiada)="toggleGarantia($event.i, $event.sel)"
@@ -49,7 +49,7 @@
 
   <app-domiciliaciones
     [form]="formularios.domiciliaciones"
-    [valida]="validez()['DATOS_DEL_SEGURO/domiciliaciones'] ?? false"
+    [valida]="validez()['DATOS_DEL_SEGURO/domiciliaciones']"
     [expandida]="expandida() === 'domiciliaciones'"
     [avisos]="avisos()"
     (continuar)="continuarSeccion('domiciliaciones')" />

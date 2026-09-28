@@ -16,7 +16,7 @@ export class FinContainer {
   private readonly store = inject(SesionStore);
   private readonly router = inject(Router);
 
-  volver(): void {
+  protected volver(): void {
     this.store.limpiar();
     void this.router.navigate(['/']);
   }

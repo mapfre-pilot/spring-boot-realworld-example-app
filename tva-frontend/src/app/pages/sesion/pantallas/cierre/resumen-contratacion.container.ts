@@ -2,9 +2,6 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatRadioModule } from '@angular/material/radio';
 
 import {
   EjecutarAccionUsecase,
@@ -12,8 +9,9 @@ import {
   RentasEstado,
   SesionStore,
 } from '@tva/core';
-import { CajaComponent } from '../../../ui/caja.component';
-import { CampoLecturaComponent } from '../../../ui/campo-lectura.component';
+import { CajaComponent } from '../../../../shared/ui/contenedores/caja.component';
+import { CampoLecturaComponent } from '../../../../shared/ui/formularios/campo-lectura.component';
+import { MATERIAL } from '../../../../shared/ui/material';
 
 const PERIODICIDADES: Record<string, string> = {
   M: 'Mensual',
@@ -32,11 +30,9 @@ interface Tomador {
 @Component({
   selector: 'app-resumen-contratacion',
   imports: [
+    ...MATERIAL,
     CurrencyPipe,
     DatePipe,
-    MatRadioModule,
-    MatButtonModule,
-    MatIconModule,
     ReactiveFormsModule,
     CajaComponent,
     CampoLecturaComponent,
@@ -48,15 +44,15 @@ interface Tomador {
 export class ResumenContratacionContainer implements OnInit {
   private readonly store = inject(SesionStore);
   private readonly ejecutarAccion = inject(EjecutarAccionUsecase);
-  readonly form = inject(FormBuilder).nonNullable.group({
+  protected readonly form = inject(FormBuilder).nonNullable.group({
     tipoFirma: ['DIGITAL', Validators.required],
   });
   readonly estado = computed(() => (this.store.sesion()?.estado ?? {}) as Record<string, unknown>);
 
-  readonly esRenta = computed(
+  protected readonly esRenta = computed(
     () => (this.store.sesion()?.modalidad ?? this.estado()['modoFuncionamiento']) === 'R2C'
   );
-  readonly producto = computed(() => {
+  protected readonly producto = computed(() => {
     const est = this.estado();
     const codigo = String(est['codigoProducto'] ?? '');
     const sel = est['productoSeleccionado'] as Record<string, unknown> | undefined;
@@ -65,38 +61,42 @@ export class ResumenContratacionContainer implements OnInit {
     const desc = (p?.['commercialProductDesc'] ?? p?.['productDesc'] ?? '') as string;
     return { codigo, desc };
   });
-  readonly operacion = computed(
+  protected readonly operacion = computed(
     () => (this.estado()['datosOperacion'] ?? {}) as Record<string, unknown>
   );
-  readonly primaUnica = computed(() => this.operacion()['primaUnica'] as number | undefined);
-  readonly aportacionPeriodica = computed(
+  protected readonly primaUnica = computed(
+    () => this.operacion()['primaUnica'] as number | undefined
+  );
+  protected readonly aportacionPeriodica = computed(
     () => this.operacion()['aportacionPeriodica'] as number | undefined
   );
-  readonly fechaEfecto = computed(() => this.operacion()['fechaEfecto'] as string | undefined);
-  readonly diaCobro = computed(() => this.operacion()['diaCobro'] as number | undefined);
-  readonly periodicidad = computed(() => this.operacion()['periodicidad']);
+  protected readonly fechaEfecto = computed(
+    () => this.operacion()['fechaEfecto'] as string | undefined
+  );
+  protected readonly diaCobro = computed(() => this.operacion()['diaCobro'] as number | undefined);
+  protected readonly periodicidad = computed(() => this.operacion()['periodicidad']);
   private readonly rentasEstado = computed(() => (this.estado()['rentas'] ?? {}) as RentasEstado);
   private readonly idxSimulacion = computed(
     () => this.rentasEstado().idxSimulacionSeleccionada ?? null
   );
-  readonly primaTotalRenta = computed(() => this.rentasEstado().importeTotalPrima);
-  readonly capitalDecreciente = computed(() => {
+  protected readonly primaTotalRenta = computed(() => this.rentasEstado().importeTotalPrima);
+  protected readonly capitalDecreciente = computed(() => {
     const i = this.idxSimulacion();
     return i !== null
       ? (this.rentasEstado().deathCapitalOptions?.[i]?.deathCapitalPremiumPerc ?? null)
       : null;
   });
-  readonly renta = computed(() => {
+  protected readonly renta = computed(() => {
     const directa = this.operacion()['renta'] as number | undefined;
     if (directa !== undefined) return directa;
     if (this.rentasEstado().rentaObjetivo != null) return this.rentasEstado().rentaObjetivo;
     const i = this.idxSimulacion();
     return i !== null ? this.rentasEstado().simulaciones?.[i]?.projectData?.incomeAmn : undefined;
   });
-  readonly periodicidadRenta = computed(
+  protected readonly periodicidadRenta = computed(
     () => this.operacion()['periodicidadRenta'] ?? this.rentasEstado().periodicidadRenta
   );
-  readonly iban = computed(() => {
+  protected readonly iban = computed(() => {
     const est = this.estado();
     const op = this.operacion();
     const dom = (est['domiciliaciones'] ?? {}) as Record<string, unknown>;
@@ -107,23 +107,25 @@ export class ResumenContratacionContainer implements OnInit {
     >;
     return (op['ibanRecibos'] ?? dom['ibanRecibos'] ?? tdom['ibanRecibos'] ?? '') as string;
   });
-  readonly tomadores = computed(() => (this.estado()['tomadores'] as Tomador[] | undefined) ?? []);
-  readonly documentos = computed(
+  protected readonly tomadores = computed(
+    () => (this.estado()['tomadores'] as Tomador[] | undefined) ?? []
+  );
+  protected readonly documentos = computed(
     () =>
       (this.estado()['documentosPrecontractuales'] as Record<string, unknown>[] | undefined) ?? []
   );
 
-  textoTomador(t: Tomador, campo: string): string {
+  protected textoTomador(t: Tomador, campo: string): string {
     const dp = (t.datosPersonales ?? {}) as Record<string, unknown>;
     return String(dp[campo] ?? '');
   }
 
-  nombreTomador(t: Tomador): string {
+  protected nombreTomador(t: Tomador): string {
     const dp = (t.datosPersonales ?? {}) as Record<string, unknown>;
     return [dp['nombre'], dp['primerApellido'], dp['segundoApellido']].filter(Boolean).join(' ');
   }
 
-  contactoTomador(t: Tomador): { email: string; telefono: string } {
+  protected contactoTomador(t: Tomador): { email: string; telefono: string } {
     const medios = t.mediosContacto ?? [];
     const email = medios.find(m => m['tipo'] === 'EMAIL');
     const tel = medios.find(m => m['tipo'] !== 'EMAIL' && (m['numero'] || m['contactMethodValue']));
@@ -135,7 +137,7 @@ export class ResumenContratacionContainer implements OnInit {
     };
   }
 
-  requisitosTomador(t: Tomador): { etiqueta: string; hecho: boolean }[] {
+  protected requisitosTomador(t: Tomador): { etiqueta: string; hecho: boolean }[] {
     const g = (t.datosGestionParticipante ?? {}) as Record<string, unknown>;
     return [
       { etiqueta: 'RGPD', hecho: !!g['consentimientoProteccionDatos'] },
@@ -144,11 +146,11 @@ export class ResumenContratacionContainer implements OnInit {
     ];
   }
 
-  periodicidadEtiqueta(codigo: unknown): string {
+  protected periodicidadEtiqueta(codigo: unknown): string {
     return PERIODICIDADES[String(codigo)] ?? String(codigo ?? '');
   }
 
-  firmar(): void {
+  protected firmar(): void {
     this.ejecutarAccion.execute('firmar', { tipoFirma: this.form.value.tipoFirma }).subscribe();
   }
 

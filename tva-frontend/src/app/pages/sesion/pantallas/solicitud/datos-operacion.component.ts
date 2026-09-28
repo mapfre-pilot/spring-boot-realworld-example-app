@@ -14,9 +14,12 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { Aviso, FormulariosSolicitud } from '@tva/core';
-import { CampoSelectComponent, Opcion } from '../../../../ui/campo-select.component';
-import { CampoTextoComponent } from '../../../../ui/campo-texto.component';
-import { SeccionComponent } from '../../../../ui/seccion.component';
+import {
+  CampoSelectComponent,
+  Opcion,
+} from '../../../../shared/ui/formularios/campo-select.component';
+import { CampoTextoComponent } from '../../../../shared/ui/formularios/campo-texto.component';
+import { SeccionComponent } from '../../../../shared/ui/contenedores/seccion.component';
 
 @Component({
   selector: 'app-datos-operacion',
@@ -40,9 +43,9 @@ export class DatosOperacionComponent implements OnInit {
   readonly continuar = output<void>();
 
   private readonly destroyRef = inject(DestroyRef);
-  readonly valor = signal<Partial<ReturnType<FormulariosSolicitud['operacion']['getRawValue']>>>(
-    {}
-  );
+  protected readonly valor = signal<
+    Partial<ReturnType<FormulariosSolicitud['operacion']['getRawValue']>>
+  >({});
 
   ngOnInit(): void {
     const f = this.form();

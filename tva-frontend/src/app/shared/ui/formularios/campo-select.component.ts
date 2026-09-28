@@ -13,7 +13,6 @@ export interface Opcion {
   selector: 'app-campo-select',
   imports: [MatFormFieldModule, MatSelectModule, ReactiveFormsModule],
   templateUrl: './campo-select.component.html',
-  styleUrl: './campo-select.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CampoSelectComponent {

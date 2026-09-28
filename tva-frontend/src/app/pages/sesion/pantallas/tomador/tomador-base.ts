@@ -10,8 +10,8 @@ import {
   ValidarSeccionUsecase,
   crearFormulariosTomador,
 } from '@tva/core';
-import { AppianPopupService } from '../../../ui/appian/appian-popup.service';
-import { Opcion } from '../../../ui/campo-select.component';
+import { AppianPopupService } from '../../../../core/infra/appian/appian-popup.service';
+import { Opcion } from '../../../../shared/ui/formularios/campo-select.component';
 import { RequisitoTomador } from './tomador-form.component';
 
 @Directive()
@@ -28,36 +28,36 @@ export abstract class TomadorBase implements OnInit {
 
   readonly formularios = crearFormulariosTomador(this.fb.nonNullable);
   readonly datosPersonales = this.formularios.datosPersonales;
-  readonly domicilioHabitual = this.formularios.domicilioHabitual;
-  readonly mediosContacto = this.formularios.mediosContacto;
-  readonly correo = this.formularios.correo;
-  readonly fatcaCrs = this.formularios.fatcaCrs;
-  readonly legalRepresentative = this.formularios.legalRepresentative;
+  protected readonly domicilioHabitual = this.formularios.domicilioHabitual;
+  protected readonly mediosContacto = this.formularios.mediosContacto;
+  protected readonly correo = this.formularios.correo;
+  protected readonly fatcaCrs = this.formularios.fatcaCrs;
+  protected readonly legalRepresentative = this.formularios.legalRepresentative;
 
-  readonly hayRepresentante = signal(false);
+  protected readonly hayRepresentante = signal(false);
 
   /** Catálogos desde /catalogos/<nombre>/ (signals por catálogo). */
-  readonly catalogos = signal<Record<string, Opcion[]>>({});
+  protected readonly catalogos = signal<Record<string, Opcion[]>>({});
 
   /** Secciones plegadas/validas marcadas localmente tras cada validar-seccion OK. */
-  readonly validas = signal<Record<string, boolean>>({});
-  readonly expandida = signal<string>('datosPersonales');
+  protected readonly validas = signal<Record<string, boolean>>({});
+  protected readonly expandida = signal<string>('datosPersonales');
 
-  readonly avisos = this.store.avisos;
-  readonly tomador = computed(
+  protected readonly avisos = this.store.avisos;
+  protected readonly tomador = computed(
     () => (this.store.sesion()?.estado?.tomadores ?? [])[this.indiceTomador]
   );
-  readonly caja = computed<Caja | null>(
+  protected readonly caja = computed<Caja | null>(
     () => (this.store.sesion()?.estado?.cajas ?? []).find(c => c.id === this.cajaId) ?? null
   );
 
-  seccionValida(id: string): boolean {
+  protected seccionValida(id: string): boolean {
     const sec = this.caja()?.secciones.find(s => s.id === id);
     return this.validas()[id] ?? sec?.datosValidos ?? false;
   }
 
   /** Validez por sección para la plantilla (local + datosValidos del backend). */
-  readonly validez = computed(() => ({
+  protected readonly validez = computed(() => ({
     datosPersonales: this.seccionValida('datosPersonales'),
     domicilioHabitual: this.seccionValida('domicilioHabitual'),
     mediosContacto: this.seccionValida('mediosContacto'),
@@ -115,7 +115,7 @@ export abstract class TomadorBase implements OnInit {
     });
   }
 
-  continuarMedios(): void {
+  protected continuarMedios(): void {
     const t = this.tomador();
     const medios = [
       ...(t?.mediosContacto ?? []),
@@ -135,11 +135,11 @@ export abstract class TomadorBase implements OnInit {
     });
   }
 
-  continuarFatca(): void {
+  protected continuarFatca(): void {
     this.continuar('fatcaCrs', this.fatcaCrs);
   }
 
-  continuarRepresentante(): void {
+  protected continuarRepresentante(): void {
     const datos = this.hayRepresentante() ? this.legalRepresentative.getRawValue() : null;
     this.validarSeccion
       .execute(this.cajaId, 'legalRepresentative', { legalRepresentative: datos } as never)
@@ -151,7 +151,7 @@ export abstract class TomadorBase implements OnInit {
   }
 
   /** Despacha el Continuar de cada sección emitido por app-tomador-form. */
-  onContinuar(seccionId: string): void {
+  protected onContinuar(seccionId: string): void {
     switch (seccionId) {
       case 'datosPersonales':
         this.continuar('datosPersonales', this.datosPersonales);
@@ -171,12 +171,12 @@ export abstract class TomadorBase implements OnInit {
     }
   }
 
-  onRequisito(r: RequisitoTomador): void {
+  protected onRequisito(r: RequisitoTomador): void {
     this.abrirRequisito(r.popup, r.etiqueta);
   }
 
   /** Panel derecho — requisitos del tomador (pop-ups Appian Embedded). */
-  readonly requisitos = computed((): RequisitoTomador[] => {
+  protected readonly requisitos = computed((): RequisitoTomador[] => {
     const t = this.tomador();
     const g = t?.datosGestionParticipante ?? {};
     const tc = t?.perfilCliente?.testConveniencia?.estado;
@@ -204,7 +204,7 @@ export abstract class TomadorBase implements OnInit {
     ];
   });
 
-  abrirRequisito(popup: PopupAppian, etiqueta: string): void {
+  protected abrirRequisito(popup: PopupAppian, etiqueta: string): void {
     if (!this.store.claveSesion()) return;
     this.popups.abrir(popup, this.indiceTomador, etiqueta).subscribe({
       error: () => undefined,

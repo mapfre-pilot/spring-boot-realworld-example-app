@@ -1,0 +1,32 @@
+/* Grid de formularios: 2 columnas (<900px → 1). */
+.formulario {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 16px;
+}
+.formulario.formulario-corto {
+  grid-template-columns: repeat(3, 1fr);
+}
+@media (max-width: 900px) {
+  .formulario,
+  .formulario.formulario-corto {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Campo Material a ancho completo. */
+.campo {
+  width: 100%;
+}
+
+/* Título de sub-grupo dentro de un formulario en grid. */
+.formulario h4 {
+  grid-column: 1 / -1;
+  margin: 4px 0;
+}
+
+/* Radios apilados (p. ej. modalidad de campaña). */
+app-modalidad-campania mat-radio-button {
+  display: block;
+  margin: 4px 0;
+}

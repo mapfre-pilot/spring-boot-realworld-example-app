@@ -14,11 +14,11 @@ import { EjecutarAccionUsecase, SesionStore } from '@tva/core';
 export class ResultadoFirmaContainer {
   private readonly store = inject(SesionStore);
   private readonly ejecutarAccion = inject(EjecutarAccionUsecase);
-  readonly resultado = computed(() =>
+  protected readonly resultado = computed(() =>
     JSON.stringify(this.store.sesion()?.estado?.['firma'] ?? {}, null, 2)
   );
 
-  finalizar(): void {
+  protected finalizar(): void {
     this.ejecutarAccion.execute('siguiente', {}).subscribe();
   }
 }

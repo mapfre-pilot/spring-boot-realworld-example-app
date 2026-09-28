@@ -3,7 +3,7 @@
     <app-caja titulo="Datos del tomador">
       <app-seccion
         titulo="Datos personales"
-        [valida]="validez()['datosPersonales'] ?? false"
+        [valida]="validez()['datosPersonales']"
         [expandida]="expandidaId() === 'datosPersonales'"
         [avisos]="avisos()"
         [seccion]="cajaId() + '/datosPersonales'"
@@ -26,27 +26,27 @@
           <app-campo-select
             [control]="grupos().datosPersonales.controls.sexo"
             etiqueta="Sexo"
-            [opciones]="catalogos()['sexos'] ?? []" />
+            [opciones]="catalogo('sexos')" />
           <app-campo-select
             [control]="grupos().datosPersonales.controls.nacionalidad"
             etiqueta="Nacionalidad"
-            [opciones]="catalogos()['nacionalidades'] ?? []" />
+            [opciones]="catalogo('nacionalidades')" />
           <app-campo-select
             [control]="grupos().datosPersonales.controls.paisNacimiento"
             etiqueta="País de nacimiento"
-            [opciones]="catalogos()['paises'] ?? []" />
+            [opciones]="catalogo('paises')" />
           <app-campo-select
             [control]="grupos().datosPersonales.controls.actividad"
             etiqueta="Actividad"
-            [opciones]="catalogos()['actividades'] ?? []" />
+            [opciones]="catalogo('actividades')" />
           <app-campo-select
             [control]="grupos().datosPersonales.controls.sector"
             etiqueta="Sector"
-            [opciones]="catalogos()['sectores'] ?? []" />
+            [opciones]="catalogo('sectores')" />
           <app-campo-select
             [control]="grupos().datosPersonales.controls.profesion"
             etiqueta="Profesión"
-            [opciones]="catalogos()['profesiones'] ?? []" />
+            [opciones]="catalogo('profesiones')" />
           <mat-checkbox formControlName="responsabilidadPublica"
             >Prevención de blanqueo de capitales (declara que es o ha sido)</mat-checkbox
           >
@@ -58,7 +58,7 @@
 
       <app-seccion
         titulo="Domicilio habitual"
-        [valida]="validez()['domicilioHabitual'] ?? false"
+        [valida]="validez()['domicilioHabitual']"
         [expandida]="expandidaId() === 'domicilioHabitual'"
         [avisos]="avisos()"
         [seccion]="cajaId() + '/domicilioHabitual'"
@@ -67,7 +67,7 @@
           <app-campo-select
             [control]="grupos().domicilioHabitual.controls.tipoVia"
             etiqueta="Tipo de vía"
-            [opciones]="catalogos()['tiposVia'] ?? []" />
+            [opciones]="catalogo('tiposVia')" />
           <app-campo-texto
             [control]="grupos().domicilioHabitual.controls.nombreVia"
             etiqueta="Nombre de la vía" />
@@ -86,17 +86,17 @@
           <app-campo-select
             [control]="grupos().domicilioHabitual.controls.provincia"
             etiqueta="Provincia"
-            [opciones]="catalogos()['provincias'] ?? []" />
+            [opciones]="catalogo('provincias')" />
           <app-campo-select
             [control]="grupos().domicilioHabitual.controls.pais"
             etiqueta="País"
-            [opciones]="catalogos()['paises'] ?? []" />
+            [opciones]="catalogo('paises')" />
         </form>
       </app-seccion>
 
       <app-seccion
         titulo="Medios de contacto"
-        [valida]="validez()['mediosContacto'] ?? false"
+        [valida]="validez()['mediosContacto']"
         [expandida]="expandidaId() === 'mediosContacto'"
         [avisos]="avisos()"
         [seccion]="cajaId() + '/mediosContacto'"
@@ -105,7 +105,7 @@
           <app-campo-select
             [control]="grupos().mediosContacto.controls.tipo"
             etiqueta="Tipo de teléfono"
-            [opciones]="catalogos()['tiposMedioContacto'] ?? []" />
+            [opciones]="catalogo('tiposMedioContacto')" />
           <app-campo-texto
             [control]="grupos().mediosContacto.controls.prefijo"
             etiqueta="Prefijo" />
@@ -121,7 +121,7 @@
 
       <app-seccion
         titulo="Residencia fiscal (FATCA/CRS)"
-        [valida]="validez()['fatcaCrs'] ?? false"
+        [valida]="validez()['fatcaCrs']"
         [expandida]="expandidaId() === 'fatcaCrs'"
         [avisos]="avisos()"
         [seccion]="cajaId() + '/fatcaCrs'"
@@ -135,7 +135,7 @@
 
       <app-seccion
         titulo="Representante legal"
-        [valida]="validez()['legalRepresentative'] ?? false"
+        [valida]="validez()['legalRepresentative']"
         [expandida]="expandidaId() === 'legalRepresentative'"
         [avisos]="avisos()"
         [seccion]="cajaId() + '/legalRepresentative'"
@@ -163,7 +163,7 @@
             <app-campo-select
               [control]="grupos().legalRepresentative.controls.sexo"
               etiqueta="Sexo"
-              [opciones]="catalogos()['sexos'] ?? []" />
+              [opciones]="catalogo('sexos')" />
             <app-campo-texto
               [control]="grupos().legalRepresentative.controls.parentesco"
               etiqueta="Parentesco" />

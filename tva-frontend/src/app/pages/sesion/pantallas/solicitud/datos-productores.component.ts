@@ -4,8 +4,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { Aviso, FormulariosSolicitud } from '@tva/core';
-import { CampoTextoComponent } from '../../../../ui/campo-texto.component';
-import { SeccionComponent } from '../../../../ui/seccion.component';
+import { CampoTextoComponent } from '../../../../shared/ui/formularios/campo-texto.component';
+import { SeccionComponent } from '../../../../shared/ui/contenedores/seccion.component';
 
 @Component({
   selector: 'app-datos-productores',
