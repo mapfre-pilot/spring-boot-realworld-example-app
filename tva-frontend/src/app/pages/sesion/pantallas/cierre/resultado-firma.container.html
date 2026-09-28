@@ -1,7 +1,32 @@
 <mat-card>
   <mat-card-title>Resultado de la firma</mat-card-title>
   <mat-card-content>
-    <pre>{{ resultado() }}</pre>
+    @if (firma().tipo) {
+      <p>Tipo de firma: {{ firma().tipo }}</p>
+    }
+    @if (resp().signatureStatus) {
+      <p>Estado: {{ resp().signatureStatus }}</p>
+    }
+    @if (resp().signatureRequestId) {
+      <p>Solicitud de firma: {{ resp().signatureRequestId }}</p>
+    }
+    @if (documentos().length) {
+      <p>Documentos:</p>
+      <ul>
+        @for (doc of documentos(); track doc.name) {
+          <li>
+            {{ doc.name }}
+            @if (doc.documentType) {
+              ({{ doc.documentType }})
+            }
+          </li>
+        }
+      </ul>
+    }
+    <details>
+      <summary>Detalle</summary>
+      <pre>{{ resultado() }}</pre>
+    </details>
   </mat-card-content>
   <button mat-flat-button color="primary" (click)="finalizar()">Finalizar</button>
 </mat-card>

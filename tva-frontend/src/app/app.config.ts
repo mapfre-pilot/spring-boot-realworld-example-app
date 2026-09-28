@@ -1,6 +1,11 @@
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
-import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
+import {
+  ApplicationConfig,
+  DEFAULT_CURRENCY_CODE,
+  LOCALE_ID,
+  provideZonelessChangeDetection,
+} from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { provideAuth } from 'angular-auth-oidc-client';
@@ -33,6 +38,8 @@ export function appConfig(env: string, envConfig: EnvironmentConfig): Applicatio
   return {
     providers: [
       provideZonelessChangeDetection(),
+      { provide: LOCALE_ID, useValue: 'es' },
+      { provide: DEFAULT_CURRENCY_CODE, useValue: 'EUR' },
       provideAnimations(),
       provideRouter(routes),
       provideTvaCore(),

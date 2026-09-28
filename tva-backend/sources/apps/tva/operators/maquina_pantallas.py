@@ -27,6 +27,8 @@ from enum import StrEnum
 
 from apps.tva.models import Modalidad, Pantalla, Sesion
 
+from .sesion_modelo import CAJA_TOMADOR1, CAJA_TOMADOR2, caja_valida
+
 logger = logging.getLogger(__name__)
 
 
@@ -182,6 +184,14 @@ def siguiente_pantalla(sesion: Sesion) -> Pantalla:
         return Pantalla.CAPTURA_DATOS_SOLICITUD
 
     if actual == Pantalla.CAPTURA_DATOS_SOLICITUD:
+        # VA: «Guardar y volver» avanza a la primera caja de tomador sin
+        # validar (T1 → T2), o al resumen si todas están completas.
+        if sesion.modalidad == Modalidad.VENTA_ASESORADA:
+            if tomadores and not caja_valida(estado, CAJA_TOMADOR1):
+                return Pantalla.CAPTURA_TOMADOR1
+            if len(tomadores) >= 2 and not caja_valida(estado, CAJA_TOMADOR2):
+                return Pantalla.CAPTURA_TOMADOR2
+            return Pantalla.RESUMEN_CONTRATACION
         return Pantalla.RESUMEN_CONTRATACION
 
     if actual == Pantalla.RESUMEN_CONTRATACION:

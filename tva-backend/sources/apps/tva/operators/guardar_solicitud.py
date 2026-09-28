@@ -7,6 +7,7 @@ from apps.tva.schemas.errors import AvisosClase, aviso
 from apps.tva.services.connectors.apilife import ApiLifeError, get_apilife_client
 
 from ._comun import guardar_y_trazar, resultado
+from .maquina_pantallas import siguiente_pantalla
 from .secciones import revalidar_caja
 from .sesion_modelo import CAJA_DATOS_DEL_SEGURO, CAJA_DATOS_PRODUCTORES
 
@@ -25,6 +26,7 @@ def ejecutar(sesion: Sesion, datos: dict) -> dict:
             avisos.append(aviso(AvisosClase.SAVE_PROPOSAL, "TVA_ERROR_SERVICIO_EXTERNO", "Errores al guardar la propuesta"))
         else:
             avisos.append(aviso(AvisosClase.SAVE_PROPOSAL, "TVA_OK_SAVE_PROPOSAL", "Solicitud guardada"))
+            sesion.pantalla_actual = siguiente_pantalla(sesion).value
     except ApiLifeError as exc:
         avisos.append(aviso(AvisosClase.SAVE_PROPOSAL, "TVA_ERROR_SERVICIO_EXTERNO", str(exc)))
     sesion.estado = {**(sesion.estado or {}), "avisos": avisos}

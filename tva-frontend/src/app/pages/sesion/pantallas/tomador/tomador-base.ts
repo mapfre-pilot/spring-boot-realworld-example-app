@@ -117,16 +117,23 @@ export abstract class TomadorBase implements OnInit {
 
   protected continuarMedios(): void {
     const t = this.tomador();
-    const medios = [
-      ...(t?.mediosContacto ?? []),
-      {
-        tipo: this.mediosContacto.value.tipo,
+    const propios = new Set(['MOVIL', 'FIJO', 'OTRO', 'EMAIL']);
+    const medios: Record<string, unknown>[] = (
+      (t?.mediosContacto ?? []) as {
+        tipo?: string;
+      }[]
+    ).filter(m => !propios.has(m.tipo ?? '')) as Record<string, unknown>[];
+    const numero = this.mediosContacto.value.numero;
+    if (numero) {
+      medios.push({
+        tipo: this.mediosContacto.value.tipo ?? 'MOVIL',
         prefijo: this.mediosContacto.value.prefijo,
-        numero: this.mediosContacto.value.numero,
-        contactMethodValue: this.mediosContacto.value.numero,
-      },
-      { tipo: 'EMAIL', contactMethodValue: this.correo.value.contactMethodValue },
-    ];
+        numero,
+        contactMethodValue: numero,
+      });
+    }
+    const email = this.correo.value.contactMethodValue;
+    if (email) medios.push({ tipo: 'EMAIL', contactMethodValue: email });
     this.validarSeccion.execute(this.cajaId, 'mediosContacto', medios as never).subscribe(res => {
       const ref = `${this.cajaId}/mediosContacto`;
       const hayErrores = res.avisos.some(a => a.seccion === ref && a.tipo === 'ERROR');

@@ -20,7 +20,7 @@
               prestación de fallecimiento.
             }
           </p>
-          @for (rt of rentaTomador(); track $index) {
+          @for (rt of rentaTomador(i); track $index) {
             <p>Renta Tomador {{ $index + 1 }}: {{ rt | currency: 'EUR' }}</p>
           }
         </mat-card-content>

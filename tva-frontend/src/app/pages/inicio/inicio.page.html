@@ -24,83 +24,92 @@
           <app-campo-texto [control]="nuumaControl" etiqueta="NUUMA" />
         </div>
 
-        @if (form.controls.indFunctionMode.value === 'VIA') {
+        @if (
+          form.controls.indFunctionMode.value === 'VIA' ||
+          form.controls.indFunctionMode.value === 'VA'
+        ) {
           <div class="checks">
-            <mat-checkbox formControlName="tomador">Tomador</mat-checkbox>
+            @if (form.controls.indFunctionMode.value === 'VIA') {
+              <mat-checkbox formControlName="tomador">Tomador</mat-checkbox>
+            }
             <mat-checkbox formControlName="perfilado">Perfilado</mat-checkbox>
-            <mat-checkbox formControlName="inversion">Inversión</mat-checkbox>
+            @if (form.controls.indFunctionMode.value === 'VIA') {
+              <mat-checkbox formControlName="inversion">Inversión</mat-checkbox>
+            }
           </div>
         }
 
         @if (form.controls.indFunctionMode.value === 'VA') {
           <h3>Opciones de inversión</h3>
-          <table class="tabla">
-            <thead>
-              <tr>
-                <th>Cód. Modalidad</th>
-                <th>Ayuda</th>
-                <th>Cód. Preferencia</th>
-                <th>Tipo operación</th>
-                <th>Id póliza</th>
-                <th>Aportación única</th>
-                <th>Aportación periódica</th>
-                <th>Frecuencia</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody formArrayName="investment">
-              @for (row of investment.controls; track $index; let i = $index) {
-                <tr [formGroupName]="i">
-                  <td>
-                    <app-campo-select
-                      [control]="controlEn(i, 'commercialProductCode')"
-                      etiqueta=""
-                      [opciones]="opcionesProductos()" />
-                  </td>
-                  <td class="ayuda">{{ ayuda(i) }}</td>
-                  <td>
-                    <app-campo-texto
-                      [control]="controlEn(i, 'investmentPreferenceCode')"
-                      etiqueta="" />
-                  </td>
-                  <td>
-                    <app-campo-select
-                      [control]="controlEn(i, 'operationTypeCode')"
-                      etiqueta=""
-                      [opciones]="operaciones" />
-                  </td>
-                  <td><app-campo-texto [control]="controlEn(i, 'policyId')" etiqueta="" /></td>
-                  <td>
-                    <app-campo-texto
-                      [control]="controlEn(i, 'uniqueContributionAmn')"
-                      etiqueta=""
-                      tipo="number" />
-                  </td>
-                  <td>
-                    <app-campo-texto
-                      [control]="controlEn(i, 'periodicContributionAmn')"
-                      etiqueta=""
-                      tipo="number" />
-                  </td>
-                  <td>
-                    <app-campo-select
-                      [control]="controlEn(i, 'contributionFrequencyCode')"
-                      etiqueta=""
-                      [opciones]="frecuencias" />
-                  </td>
-                  <td>
-                    <button
-                      mat-icon-button
-                      type="button"
-                      (click)="borrarOpcion(i)"
-                      aria-label="Borrar">
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                  </td>
+          <div class="tabla-scroll">
+            <table class="tabla">
+              <thead>
+                <tr>
+                  <th>Cód. Modalidad</th>
+                  <th>Ayuda</th>
+                  <th>Cód. Preferencia</th>
+                  <th>Tipo operación</th>
+                  <th>Id póliza</th>
+                  <th>Aportación única</th>
+                  <th>Aportación periódica</th>
+                  <th>Frecuencia</th>
+                  <th></th>
                 </tr>
-              }
-            </tbody>
-          </table>
+              </thead>
+              <tbody formArrayName="investment">
+                @for (row of investment.controls; track $index; let i = $index) {
+                  <tr [formGroupName]="i">
+                    <td>
+                      <app-campo-select
+                        [control]="controlEn(i, 'commercialProductCode')"
+                        etiqueta=""
+                        [opciones]="opcionesProductos()" />
+                    </td>
+                    <td class="ayuda">{{ ayuda(i) }}</td>
+                    <td>
+                      <app-campo-texto
+                        [control]="controlEn(i, 'investmentPreferenceCode')"
+                        etiqueta="" />
+                    </td>
+                    <td>
+                      <app-campo-select
+                        [control]="controlEn(i, 'operationTypeCode')"
+                        etiqueta=""
+                        [opciones]="operaciones" />
+                    </td>
+                    <td><app-campo-texto [control]="controlEn(i, 'policyId')" etiqueta="" /></td>
+                    <td>
+                      <app-campo-texto
+                        [control]="controlEn(i, 'uniqueContributionAmn')"
+                        etiqueta=""
+                        tipo="number" />
+                    </td>
+                    <td>
+                      <app-campo-texto
+                        [control]="controlEn(i, 'periodicContributionAmn')"
+                        etiqueta=""
+                        tipo="number" />
+                    </td>
+                    <td>
+                      <app-campo-select
+                        [control]="controlEn(i, 'contributionFrequencyCode')"
+                        etiqueta=""
+                        [opciones]="frecuencias" />
+                    </td>
+                    <td>
+                      <button
+                        mat-icon-button
+                        type="button"
+                        (click)="borrarOpcion(i)"
+                        aria-label="Borrar">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
           <button mat-stroked-button type="button" (click)="nuevaOpcion()">
             Añadir opción de inversión
           </button>

@@ -173,6 +173,22 @@ export interface SimulacionRenta {
   projectData?: { premiumAmn?: number; incomeAmn?: number; expectedReturnPerc?: number };
 }
 
+/** Documento devuelto por ``policy_documents`` (mock shape Appian). */
+export interface DocumentoFirma {
+  documentType?: string;
+  name?: string;
+  format?: string;
+}
+
+export interface FirmaEstado {
+  tipo?: string;
+  response?: {
+    signatureRequestId?: string;
+    signatureStatus?: string;
+    documents?: DocumentoFirma[];
+  };
+}
+
 /** Estado ``estado.rentas`` de la modalidad R2C. */
 export interface RentasEstado {
   importeTotalPrima?: number;

@@ -226,7 +226,11 @@ def iniciar_sesion(usuario: str, datos: dict) -> tuple[Sesion | None, list[str]]
     if modalidad == "VA" and pantalla == Pantalla.CAPTURA_DATOS_SOLICITUD:
         applications = ((propuesta.get("contractingProposal") or {}).get("insurancesApplication")) or []
         if applications:
-            estado = aplicar_producto(estado, str(applications[0].get("commercialProductCode") or ""))
+            estado = aplicar_producto(
+                estado,
+                str(applications[0].get("commercialProductCode") or ""),
+                (applications[0].get("investmentOptions") or [None])[0],
+            )
 
     sesion = Sesion.objects.create(
         usuario=usuario,

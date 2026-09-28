@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 
-import { EjecutarAccionUsecase, SesionStore } from '@tva/core';
+import { DocumentoFirma, EjecutarAccionUsecase, FirmaEstado, SesionStore } from '@tva/core';
 
 @Component({
   selector: 'app-resultado-firma',
@@ -17,6 +17,11 @@ export class ResultadoFirmaContainer {
   protected readonly resultado = computed(() =>
     JSON.stringify(this.store.sesion()?.estado?.['firma'] ?? {}, null, 2)
   );
+  protected readonly firma = computed(
+    () => (this.store.sesion()?.estado?.['firma'] ?? {}) as FirmaEstado
+  );
+  protected readonly resp = computed(() => this.firma().response ?? {});
+  protected readonly documentos = computed<DocumentoFirma[]>(() => this.resp().documents ?? []);
 
   protected finalizar(): void {
     this.ejecutarAccion.execute('siguiente', {}).subscribe();

@@ -43,4 +43,46 @@ describe('CapturaTomador2Container', () => {
       expect.anything()
     );
   });
+
+  it('continuarMedios reconstruye la lista: filas vacías previas no persisten', () => {
+    api.catalogo.mockReturnValue(of({ valores: [] }));
+    api.validarSeccion.mockReturnValue(
+      of({ avisos: [], botones: [], pantallaActual: 'CAPTURA_TOMADOR2', estado: {} })
+    );
+    const s = create();
+    TestBed.inject(SesionStore).sesion.set({
+      clave: 'k',
+      pantalla_actual: 'CAPTURA_TOMADOR2',
+      estado: {
+        tomadores: [{}, { mediosContacto: [{ tipo: 'MOVIL' }, { tipo: 'EMAIL' }] }],
+        cajas: [],
+        avisos: [],
+      },
+    } as never);
+    s.detectChanges();
+    const comp = s.component as unknown as { continuarMedios(): void };
+    comp.continuarMedios();
+    expect(api.validarSeccion).toHaveBeenLastCalledWith(
+      'k',
+      'CAPTURA_DATOS_TOMADOR2',
+      'mediosContacto',
+      []
+    );
+    s.component.formularios.mediosContacto.patchValue({
+      tipo: 'MOVIL',
+      prefijo: '+34',
+      numero: '600123456',
+    });
+    s.component.formularios.correo.patchValue({ contactMethodValue: 'a@b.es' });
+    comp.continuarMedios();
+    expect(api.validarSeccion).toHaveBeenLastCalledWith(
+      'k',
+      'CAPTURA_DATOS_TOMADOR2',
+      'mediosContacto',
+      [
+        { tipo: 'MOVIL', prefijo: '+34', numero: '600123456', contactMethodValue: '600123456' },
+        { tipo: 'EMAIL', contactMethodValue: 'a@b.es' },
+      ]
+    );
+  });
 });

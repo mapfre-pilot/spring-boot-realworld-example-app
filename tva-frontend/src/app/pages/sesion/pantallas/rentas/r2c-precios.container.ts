@@ -42,13 +42,12 @@ export class R2cPreciosContainer {
     const i = this.idx();
     return i !== null ? (this.opciones()[i]?.deathCapitalPremiumPerc ?? null) : null;
   });
-  protected readonly rentaTomador = computed(() => {
-    const i = this.idx();
-    const income = i !== null ? (this.simulaciones()[i]?.projectData?.incomeAmn ?? 0) : 0;
+  protected rentaTomador(i: number): number[] {
+    const income = this.simulaciones()[i]?.projectData?.incomeAmn ?? 0;
     return (this.estado().tomadores ?? [])
       .slice(0, 2)
       .map(t => income * (Number(t.datosPersonales?.['participationPerc'] ?? 0) / 100));
-  });
+  }
 
   readonly rentaControl = new FormControl<number | null>(null);
 
