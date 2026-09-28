@@ -1,9 +1,7 @@
 /** Administración TVA (rol TVA_ADMIN_PORTAL): parámetros, apertura/cierre, cachés, trazas. */
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatInputModule } from '@angular/material/input';
-import { MatTableModule } from '@angular/material/table';
+import { MatCardModule } from '@angular/material/card';
+import { MatTabsModule } from '@angular/material/tabs';
 
 import {
   AlternarAperturaCierreUsecase,
@@ -15,15 +13,21 @@ import {
   Traza,
 } from '@tva/core';
 import { CabeceraComponent } from '../../shared/ui/layout/cabecera.component';
+import { EncabezadoPantallaComponent } from '../../shared/ui/layout/encabezado-pantalla.component';
+import { OperacionesAdminComponent } from './operaciones-admin.component';
+import { ParametrosAdminComponent } from './parametros-admin.component';
+import { TrazasAdminComponent } from './trazas-admin.component';
 
 @Component({
   selector: 'app-admin-page',
   imports: [
-    ReactiveFormsModule,
-    MatTableModule,
-    MatButtonModule,
-    MatInputModule,
+    MatCardModule,
+    MatTabsModule,
     CabeceraComponent,
+    EncabezadoPantallaComponent,
+    ParametrosAdminComponent,
+    OperacionesAdminComponent,
+    TrazasAdminComponent,
   ],
   styleUrl: './admin.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,9 +43,6 @@ export class AdminPage implements OnInit {
   protected readonly parametros = signal<Parametro[]>([]);
   protected readonly trazas = signal<Traza[]>([]);
   protected readonly estadoApertura = signal('');
-  protected readonly columnas = ['clave', 'valor', 'tipo'];
-  protected readonly columnasTrazas = ['creado', 'clase', 'mensaje'];
-  readonly trazaForm = inject(FormBuilder).nonNullable.group({ clave: [''] });
 
   ngOnInit(): void {
     this.obtenerParametros.execute().subscribe(p => {
@@ -76,9 +77,7 @@ export class AdminPage implements OnInit {
     this.limpiarCaches.execute().subscribe();
   }
 
-  protected buscarTrazas(): void {
-    this.obtenerTrazas
-      .execute(this.trazaForm.value.clave ?? undefined)
-      .subscribe(t => this.trazas.set(t));
+  protected buscarTrazas(clave: string): void {
+    this.obtenerTrazas.execute(clave || undefined).subscribe(t => this.trazas.set(t));
   }
 }

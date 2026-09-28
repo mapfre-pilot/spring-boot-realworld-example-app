@@ -2,32 +2,46 @@
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
+  margin-bottom: 16px;
 }
 
 .opcion {
   flex: 1 1 320px;
+  cursor: pointer;
 }
 
 .opcion.seleccionada {
-  outline: 2px solid var(--mat-sys-primary);
+  border: 2px solid var(--mat-sys-primary) !important;
+  background: #fdf1ef;
 }
 
-.renta {
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
-.capital {
-  margin-top: 16px;
-}
-
-.campo-renta {
+.cabecera-opcion {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 8px;
 }
 
-.campo-renta input {
-  max-width: 160px;
-  padding: 8px;
+.renta {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.explicacion {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--tva-text-muted, #666);
+}
+
+.ajustar {
+  max-width: 480px;
+}
+
+.ajustar .mat-mdc-card-title {
+  padding: 20px 20px 0;
+}
+
+.campo-renta {
+  width: 100%;
+  max-width: 240px;
 }

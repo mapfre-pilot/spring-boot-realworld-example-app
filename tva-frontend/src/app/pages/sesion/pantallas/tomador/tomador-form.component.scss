@@ -45,7 +45,14 @@
   flex: 1;
   font-size: 13px;
 }
+.sticky {
+  position: sticky;
+  top: 88px;
+  align-self: start;
+}
+.col-der {
+  align-self: start;
+}
 .requisito .realizar {
   font-size: 12px;
-  color: var(--tva-primary, #d81e05);
 }

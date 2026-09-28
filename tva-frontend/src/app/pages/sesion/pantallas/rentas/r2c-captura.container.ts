@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { SesionStore, ValidarSeccionUsecase } from '@tva/core';
+import { EncabezadoPantallaComponent } from '../../../../shared/ui/layout/encabezado-pantalla.component';
 import { CajaComponent } from '../../../../shared/ui/contenedores/caja.component';
 import { CampoSelectComponent } from '../../../../shared/ui/formularios/campo-select.component';
 import { CampoTextoComponent } from '../../../../shared/ui/formularios/campo-texto.component';
@@ -12,6 +13,7 @@ import { PERIODICIDADES_RENTA } from './r2c.const';
 @Component({
   selector: 'app-r2c-captura',
   imports: [
+    EncabezadoPantallaComponent,
     ReactiveFormsModule,
     CajaComponent,
     SeccionComponent,

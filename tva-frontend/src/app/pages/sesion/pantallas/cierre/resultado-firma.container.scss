@@ -1,0 +1,21 @@
+.datos {
+  width: 100%;
+  max-width: 560px;
+  margin-top: 12px;
+}
+.docs {
+  width: 100%;
+  max-width: 560px;
+}
+.detalle {
+  width: 100%;
+  max-width: 560px;
+  margin-top: 8px;
+  text-align: left;
+}
+.detalle pre {
+  max-height: 240px;
+  overflow: auto;
+  font-size: 12px;
+  margin: 0;
+}

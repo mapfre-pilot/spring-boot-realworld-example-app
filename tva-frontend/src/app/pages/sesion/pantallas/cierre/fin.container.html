@@ -1,5 +1,8 @@
-<mat-card>
-  <mat-card-title>Sesión finalizada</mat-card-title>
-  <mat-card-content>La sesión de tarificación ha finalizado correctamente.</mat-card-content>
-  <button mat-flat-button color="primary" (click)="volver()">Nueva sesión</button>
-</mat-card>
+<app-panel-resultado
+  tipo="ok"
+  titulo="Sesión finalizada"
+  mensaje="La sesión de tarificación ha finalizado correctamente.">
+  <button acciones mat-flat-button color="primary" type="button" (click)="volver()">
+    Nueva sesión
+  </button>
+</app-panel-resultado>

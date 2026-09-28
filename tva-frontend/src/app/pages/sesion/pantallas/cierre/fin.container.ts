@@ -1,14 +1,14 @@
 /** FIN: cierre de la sesión y vuelta a inicio. */
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { Router } from '@angular/router';
 
 import { SesionStore } from '@tva/core';
+import { PanelResultadoComponent } from '../../../../shared/ui/feedback/panel-resultado.component';
 
 @Component({
   selector: 'app-fin',
-  imports: [MatCardModule, MatButtonModule],
+  imports: [MatButtonModule, PanelResultadoComponent],
   templateUrl: './fin.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

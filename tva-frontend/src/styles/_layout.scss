@@ -102,5 +102,14 @@ app-sesion-page mat-spinner {
   margin: 48px auto;
 }
 app-sesion-page .pagina {
-  max-width: 960px;
+  max-width: 1100px;
+}
+
+/* Título de tarjetas: 16px/600 consistente en toda la app. */
+.mat-mdc-card-title {
+  font-size: 16px !important;
+  font-weight: 600;
+}
+.mat-mdc-card-content {
+  padding: 8px 20px 20px;
 }

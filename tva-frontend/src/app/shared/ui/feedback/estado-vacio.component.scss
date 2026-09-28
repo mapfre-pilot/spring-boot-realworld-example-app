@@ -1,0 +1,19 @@
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--tva-text-muted, #666);
+}
+.vacio mat-icon {
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+  color: #bdbdbd;
+}
+.vacio p {
+  margin: 0;
+  font-size: 13px;
+}

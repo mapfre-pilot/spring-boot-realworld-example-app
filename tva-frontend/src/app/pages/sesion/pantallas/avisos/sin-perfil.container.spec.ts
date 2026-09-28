@@ -7,7 +7,7 @@ describe('SinPerfilContainer', () => {
 
   it('muestra el aviso de usuario sin perfil', () => {
     const s = create();
-    expect(s.query('mat-card-title')).toHaveText('Sin perfil');
+    expect(s.query('.titulo')).toHaveText('Sin perfil');
     expect(s.query('mat-card-content')).toHaveText('no dispone de perfil');
   });
 });

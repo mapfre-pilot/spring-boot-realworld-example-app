@@ -4,6 +4,8 @@ import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 
 import {
@@ -14,11 +16,26 @@ import {
   RentasEstado,
   SesionStore,
 } from '@tva/core';
-import { CajaComponent } from '../../../../shared/ui/contenedores/caja.component';
+import {
+  ItemListaDatos,
+  ListaDatosComponent,
+} from '../../../../shared/ui/contenedores/lista-datos.component';
+import { EncabezadoPantallaComponent } from '../../../../shared/ui/layout/encabezado-pantalla.component';
+
+const MONEDA = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
 
 @Component({
   selector: 'app-r2c-precios',
-  imports: [MatCardModule, MatRadioModule, ReactiveFormsModule, CurrencyPipe, CajaComponent],
+  imports: [
+    MatCardModule,
+    MatRadioModule,
+    MatFormFieldModule,
+    MatInputModule,
+    ReactiveFormsModule,
+    CurrencyPipe,
+    ListaDatosComponent,
+    EncabezadoPantallaComponent,
+  ],
   templateUrl: './r2c-precios.container.html',
   styleUrl: './r2c-precios.container.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,6 +59,35 @@ export class R2cPreciosContainer {
     const i = this.idx();
     return i !== null ? (this.opciones()[i]?.deathCapitalPremiumPerc ?? null) : null;
   });
+  protected readonly recalcular = computed(() => !!this.rentas().recalcular);
+
+  protected itemsSim(i: number): ItemListaDatos[] {
+    const sim = this.simulaciones()[i];
+    const pct = this.opciones()[i]?.deathCapitalPremiumPerc;
+    const items: ItemListaDatos[] = [
+      {
+        etiqueta: 'Prima total',
+        valor:
+          sim?.projectData?.premiumAmn != null ? MONEDA.format(sim.projectData.premiumAmn) : null,
+      },
+      {
+        etiqueta: 'Rentabilidad esperada',
+        valor:
+          sim?.projectData?.expectedReturnPerc != null
+            ? `${sim.projectData.expectedReturnPerc}%`
+            : null,
+      },
+      {
+        etiqueta: 'Capital decreciente',
+        valor: pct != null ? `hasta el ${pct}%` : null,
+      },
+    ];
+    this.rentaTomador(i).forEach((r, j) =>
+      items.push({ etiqueta: `Renta Tomador ${j + 1}`, valor: MONEDA.format(r) })
+    );
+    return items;
+  }
+
   protected rentaTomador(i: number): number[] {
     const income = this.simulaciones()[i]?.projectData?.incomeAmn ?? 0;
     return (this.estado().tomadores ?? [])

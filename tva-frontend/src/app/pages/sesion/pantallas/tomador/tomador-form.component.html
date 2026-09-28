@@ -173,7 +173,7 @@
     </app-caja>
   </div>
   <div class="col-der">
-    <app-caja titulo="Requisitos del tomador">
+    <app-caja titulo="Requisitos del tomador" class="sticky">
       @for (r of requisitos(); track r.etiqueta) {
         <div class="requisito" [class.hecho]="r.hecho" [class.pendiente]="!r.hecho">
           <mat-icon [class.ok]="r.hecho" [class.pendiente]="!r.hecho">{{
@@ -181,7 +181,7 @@
           }}</mat-icon>
           <span class="requisito-label">{{ r.etiqueta }}</span>
           <button
-            mat-button
+            mat-stroked-button
             type="button"
             class="realizar"
             [disabled]="r.hecho || !r.habilitado"

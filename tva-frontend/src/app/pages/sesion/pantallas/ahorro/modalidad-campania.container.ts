@@ -4,12 +4,13 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatRadioModule } from '@angular/material/radio';
 
 import { SesionStore } from '@tva/core';
+import { EncabezadoPantallaComponent } from '../../../../shared/ui/layout/encabezado-pantalla.component';
 import { CajaComponent } from '../../../../shared/ui/contenedores/caja.component';
 import { OPCIONES } from './modalidad-campania.const';
 
 @Component({
   selector: 'app-modalidad-campania',
-  imports: [MatRadioModule, ReactiveFormsModule, CajaComponent],
+  imports: [EncabezadoPantallaComponent, MatRadioModule, ReactiveFormsModule, CajaComponent],
   templateUrl: './modalidad-campania.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

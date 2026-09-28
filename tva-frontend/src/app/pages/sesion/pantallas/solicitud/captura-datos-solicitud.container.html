@@ -1,11 +1,10 @@
-<div class="chips-ruta">
-  <span class="chip">Tomador 1</span>
-  <span class="chip activo">Solicitud</span>
-  <span class="chip">Resumen</span>
-</div>
-@if (producto(); as p) {
-  <h3>{{ p['commercialProductCode'] }} - {{ p['commercialProductDesc'] }}</h3>
-}
+<app-encabezado-pantalla titulo="Datos de la solicitud" [subtitulo]="subtitulo()">
+  <div class="chips-ruta">
+    <span class="chip">Tomador 1</span>
+    <span class="chip activo">Solicitud</span>
+    <span class="chip">Resumen</span>
+  </div>
+</app-encabezado-pantalla>
 
 <app-caja titulo="Datos de productores">
   <app-datos-productores

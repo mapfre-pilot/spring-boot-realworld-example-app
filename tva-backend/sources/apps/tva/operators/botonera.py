@@ -147,6 +147,6 @@ def botones_para(sesion: Sesion, roles: list[str] | None = None) -> list[dict]:
             visible=r2c_captura,
             disabled=bool(errores_rentas_captura(estado.get("rentas"), estado.get("tomadores"))),
         ),
-        _boton("firmar", "Firmar", visible=False),
+        _boton("firmar", "Firmar y contratar", visible=resumen),
     ]
     return botones

@@ -42,7 +42,7 @@ describe('SeleccionProductoAhorroContainer', () => {
     const s = create();
     s.detectChanges();
     expect(s.queryAll('mat-card.tarjeta')).toHaveLength(1);
-    s.click('mat-card.tarjeta a');
+    s.click('mat-card.tarjeta button');
     expect(api.ejecutarAccion).toHaveBeenCalledWith(
       'k',
       'seleccionar-modalidad',

@@ -12,7 +12,7 @@ describe('FinContainer', () => {
 
   it('muestra el cierre y "Nueva sesión" limpia y vuelve al inicio', () => {
     const s = create();
-    expect(s.query('mat-card-title')).toHaveText('Sesión finalizada');
+    expect(s.query('.titulo')).toHaveText('Sesión finalizada');
     s.click('button');
     expect(s.inject(Router).navigate).toHaveBeenCalledWith(['/']);
     expect(s.inject(SesionStore).sesion()).toBeNull();

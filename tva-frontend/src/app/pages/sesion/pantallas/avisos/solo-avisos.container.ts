@@ -1,10 +1,10 @@
 /** SOLO_AVISOS: la sesión solo puede mostrar avisos. */
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
+import { PanelResultadoComponent } from '../../../../shared/ui/feedback/panel-resultado.component';
 
 @Component({
   selector: 'app-solo-avisos',
-  imports: [MatCardModule],
+  imports: [PanelResultadoComponent],
   templateUrl: './solo-avisos.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

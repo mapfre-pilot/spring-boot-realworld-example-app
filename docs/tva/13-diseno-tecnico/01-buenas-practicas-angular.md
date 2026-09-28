@@ -101,3 +101,27 @@ Reglas aplicadas en `refactor(tva-frontend)` sobre `src/app` y `src/app/core`.
 | pantallas/avisos/sin-perfil.container | 11 | 4 | - |
 | pantallas/avisos/sistema-cerrado.container | 11 | 4 | - |
 | pantallas/avisos/solo-avisos.container | 11 | 4 | - |
+
+## Sistema de diseño
+
+Convenciones aplicadas en `feat(tva): rediseño UX/UI con componentes de diseño
+compartidos` (tokens MAPFRE de `src/styles/_tokens.scss`):
+
+- **Layout**: `.pagina` 1100px (sesión) / 1200px, 24px de padding y 96px de
+  margen inferior para la botonera fija; `mat-card-title` 16px/600;
+  botonera fija con grupo izquierdo (Cancelar texto, Administración stroked) y
+  derecho (secundarios stroked, primario flat); migas con check verde en pasos
+  completados, actual en negrita primario y futuros atenuados.
+- **Encabezados**: cada pantalla abre con `app-encabezado-pantalla`
+  (`layout/`; inputs `titulo`, `subtitulo?`, `<ng-content>` para chips).
+- **Feedback**: `app-panel-resultado` (`feedback/`) para pantallas de cierre
+  (fin, resultado-firma, sin-perfil, sistema-cerrado, solo-avisos): icono
+  grande por `tipo` (`ok|error|info|aviso`), título, mensaje y slot
+  `[acciones]`; `app-estado-vacio` (`feedback/`) para tablas/catálogos/listas
+  vacías (`mensaje`, `icono?`); `app-avisos` con borde coloreado por severidad.
+- **Datos**: `app-lista-datos` (`contenedores/`; `items {etiqueta,valor}`,
+  `columnas` 2|3|4) — dl responsive 12px etiqueta muted / 14px valor; sustituye
+  los grids ad-hoc de resumen y resultado-firma. `.chip-estado` (ok/pendiente/
+  error) en `_utilities.scss` para estados (requisitos, documentos, tabla).
+- **Tablas**: `table.tabla`/`table.tva-tabla` comparten estilos en
+  `_tables.scss` (cabecera gris, zebra, `.num` derecha, `.tabla-scroll`).

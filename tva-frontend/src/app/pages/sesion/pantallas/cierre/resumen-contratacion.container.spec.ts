@@ -64,7 +64,7 @@ describe('ResumenContratacionContainer', () => {
     const html = s.element.innerHTML;
     expect(html).toContain('00427');
     expect(html).toContain('PIAS ELECCION');
-    expect(html).toContain('5.000,00');
+    expect(html).toContain('5000,00');
     expect(html).toContain('Única');
     expect(html).toContain('Ana');
     expect(html).toContain('00000000T');

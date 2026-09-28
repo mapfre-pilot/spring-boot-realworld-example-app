@@ -1,53 +1,52 @@
-<app-caja titulo="Precios de rentas">
-  <div class="opciones">
-    @for (sim of simulaciones(); track $index; let i = $index) {
-      <mat-card class="opcion" [class.seleccionada]="idx() === i">
-        <mat-card-content>
-          <mat-radio-button [checked]="idx() === i" (change)="seleccionar(i)" class="opcion-radio">
-            <span class="renta"
-              >{{ sim.projectData?.incomeAmn | currency: 'EUR' }} /{{ periodo() }}</span
-            >
-          </mat-radio-button>
-          <p>Importe total de la prima {{ sim.projectData?.premiumAmn | currency: 'EUR' }}</p>
-          <p>Rentabilidad esperada {{ sim.projectData?.expectedReturnPerc }}%</p>
-          <p>Opción capital decreciente hasta el {{ opciones()[i]?.deathCapitalPremiumPerc }}%</p>
-          <p>
-            @if (opciones()[i]?.deathCapitalPremiumPerc === 50) {
-              Alcanzado ese porcentaje, el capital de fallecimiento permanece constante durante el
-              resto de vigencia de la póliza.
-            } @else {
-              A partir del momento en que se alcance ese porcentaje, la póliza deja de tener
-              prestación de fallecimiento.
-            }
-          </p>
-          @for (rt of rentaTomador(i); track $index) {
-            <p>Renta Tomador {{ $index + 1 }}: {{ rt | currency: 'EUR' }}</p>
-          }
-        </mat-card-content>
-      </mat-card>
-    }
-  </div>
+<app-encabezado-pantalla titulo="Precios de rentas" />
 
-  @if (idx() !== null) {
-    <mat-card class="capital">
-      <mat-card-title>Capital decreciente</mat-card-title>
+<div class="opciones">
+  @for (sim of simulaciones(); track $index; let i = $index) {
+    <mat-card
+      class="opcion"
+      [class.seleccionada]="idx() === i"
+      appearance="outlined"
+      (click)="seleccionar(i)">
       <mat-card-content>
-        <p>Opción capital decreciente hasta el {{ pctSeleccionado() }}%</p>
-        <p>
-          @if (pctSeleccionado() === 50) {
-            Con la opción seleccionada garantiza que sus herederos tendrán un reembolso de al menos
-            un 50% de la prima.
+        <div class="cabecera-opcion">
+          <mat-radio-button
+            [checked]="idx() === i"
+            (change)="seleccionar(i)"
+            (click)="$event.stopPropagation()"
+            [attr.aria-label]="'Opción ' + (i + 1)" />
+          <span class="renta"
+            >{{ sim.projectData?.incomeAmn | currency: 'EUR' : 'symbol' : '1.2-2' : 'es' }} /{{
+              periodo()
+            }}</span
+          >
+        </div>
+        <app-lista-datos [items]="itemsSim(i)" [columnas]="2" />
+        <p class="explicacion">
+          @if (opciones()[i]?.deathCapitalPremiumPerc === 50) {
+            Alcanzado ese porcentaje, el capital de fallecimiento permanece constante durante el
+            resto de vigencia de la póliza.
           } @else {
-            Con la opción seleccionada sus herederos tendrán reembolso solo si en el momento de
-            fallecimiento no se ha consumido en prestaciones la totalidad de la prima.
+            A partir del momento en que se alcance ese porcentaje, la póliza deja de tener
+            prestación de fallecimiento.
           }
         </p>
-        <p>¿Qué renta {{ adjetivo() }} necesita?</p>
-        <label class="campo-renta">
-          Renta {{ periodo() }}
-          <input type="number" [formControl]="rentaControl" (blur)="cambiarRenta()" />
-        </label>
       </mat-card-content>
     </mat-card>
   }
-</app-caja>
+</div>
+
+@if (idx() !== null) {
+  <mat-card class="ajustar" appearance="outlined">
+    <mat-card-title>Ajustar renta objetivo</mat-card-title>
+    <mat-card-content>
+      <p class="explicacion">¿Qué renta {{ adjetivo() }} necesita?</p>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="campo-renta">
+        <mat-label>Renta {{ periodo() }} (€)</mat-label>
+        <input matInput type="number" [formControl]="rentaControl" (blur)="cambiarRenta()" />
+        @if (recalcular()) {
+          <mat-hint>Pulsa Recalcular para actualizar la prima</mat-hint>
+        }
+      </mat-form-field>
+    </mat-card-content>
+  </mat-card>
+}

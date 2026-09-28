@@ -56,10 +56,11 @@ src/app/
 │       └── avisos/       #   sin-perfil, sistema-cerrado, solo-avisos
 │
 ├── shared/ui/            # componentes presentacionales por responsabilidad:
-│   ├── layout/           #   cabecera, migas-de-pan, botonera
+│   ├── layout/           #   cabecera, migas-de-pan, botonera, encabezado-pantalla
 │   ├── formularios/      #   campo-texto, campo-lectura, campo-select
-│   ├── feedback/         #   confirm-dialog, avisos, appian-task-dialog
-│   ├── contenedores/     #   caja, seccion
+│   ├── feedback/         #   confirm-dialog, avisos, appian-task-dialog,
+│   │                     #   panel-resultado, estado-vacio
+│   ├── contenedores/     #   caja, seccion, lista-datos
 │   └── material.ts       #   const MATERIAL = [Mat*Module ≥3 usos]
 │
 └── src/styles/           # partials globales (@use desde styles.scss):

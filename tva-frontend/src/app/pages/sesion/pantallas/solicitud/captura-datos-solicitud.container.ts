@@ -11,6 +11,7 @@ import { FormBuilder } from '@angular/forms';
 
 import { SesionStore, ValidarSeccionUsecase, crearFormulariosSolicitud } from '@tva/core';
 import { CajaComponent } from '../../../../shared/ui/contenedores/caja.component';
+import { EncabezadoPantallaComponent } from '../../../../shared/ui/layout/encabezado-pantalla.component';
 import { CapturaAmpliadaComponent } from './captura-ampliada.component';
 import { DatosOperacionComponent } from './datos-operacion.component';
 import { DatosProductoresComponent } from './datos-productores.component';
@@ -38,6 +39,7 @@ import {
     GarantiasComponent,
     DomiciliacionesComponent,
     CapturaAmpliadaComponent,
+    EncabezadoPantallaComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './captura-datos-solicitud.container.html',
@@ -72,6 +74,12 @@ export class CapturaDatosSolicitudContainer implements OnInit {
       )
   );
   protected readonly unitLinked = computed(() => !!this.producto()?.['unitLinkedInd']);
+  protected readonly subtitulo = computed(() => {
+    const p = this.producto();
+    return p
+      ? `${p['commercialProductCode'] ?? ''} - ${p['commercialProductDesc'] ?? ''}`
+      : undefined;
+  });
   protected readonly opcionesProducto = computed(
     () => (this.producto()?.['opcionesInversion'] ?? []) as OpcionInversion[]
   );

@@ -1,3 +1,5 @@
+<app-encabezado-pantalla titulo="Resumen de la contratación" />
+
 <div class="layout-resumen">
   <div class="col-izq">
     <app-caja titulo="Resumen de la contratación">
@@ -10,71 +12,28 @@
         </p>
         @if (primaUnica()) {
           <h3 class="titulo-seccion">Prima única</h3>
-          <div class="grid-lectura">
-            <app-campo-lectura
-              etiqueta="Importe"
-              [valor]="primaUnica() | currency: 'EUR' : 'symbol' : '1.2-2' : 'es'" />
-            <app-campo-lectura etiqueta="Periodicidad" valor="Única" />
-            <app-campo-lectura
-              etiqueta="Fecha efecto"
-              [valor]="fechaEfecto() | date: 'dd/MM/yyyy'" />
-            <app-campo-lectura etiqueta="IBAN" [valor]="iban()" />
-          </div>
+          <app-lista-datos [items]="itemsPrimaUnica()" [columnas]="4" />
         }
         @if (aportacionPeriodica()) {
           <h3 class="titulo-seccion">Prima periódica</h3>
-          <div class="grid-lectura">
-            <app-campo-lectura
-              etiqueta="Importe"
-              [valor]="aportacionPeriodica() | currency: 'EUR' : 'symbol' : '1.2-2' : 'es'" />
-            <app-campo-lectura
-              etiqueta="Periodicidad"
-              [valor]="periodicidadEtiqueta(periodicidad())" />
-            <app-campo-lectura etiqueta="Día de cobro" [valor]="diaCobro()" />
-            <app-campo-lectura etiqueta="IBAN" [valor]="iban()" />
-          </div>
+          <app-lista-datos [items]="itemsPrimaPeriodica()" [columnas]="4" />
         }
         @if (esRenta() && renta()) {
           <h3 class="titulo-seccion">Renta</h3>
-          <div class="grid-lectura">
-            <app-campo-lectura
-              etiqueta="Prima"
-              [valor]="primaTotalRenta() | currency: 'EUR' : 'symbol' : '1.2-2' : 'es'" />
-            <app-campo-lectura
-              etiqueta="Renta objetivo"
-              [valor]="renta() | currency: 'EUR' : 'symbol' : '1.2-2' : 'es'" />
-            <app-campo-lectura
-              etiqueta="Periodicidad"
-              [valor]="periodicidadEtiqueta(periodicidadRenta())" />
-            <app-campo-lectura
-              etiqueta="Capital decreciente"
-              [valor]="capitalDecreciente() !== null ? capitalDecreciente() + ' %' : ''" />
-          </div>
+          <app-lista-datos [items]="itemsRenta()" [columnas]="4" />
         }
       </div>
     </app-caja>
 
     <app-caja titulo="Tomador(es)">
       <div class="resumen-cuerpo">
-        @for (t of tomadores(); track $index) {
+        @for (t of tomadores(); track $index; let i = $index) {
           <div class="tomador">
             <p class="nombre">{{ nombreTomador(t) }}</p>
-            <div class="grid-lectura">
-              <app-campo-lectura etiqueta="Documento" [valor]="textoTomador(t, 'documentId')" />
-              <app-campo-lectura
-                etiqueta="Fecha nacimiento"
-                [valor]="textoTomador(t, 'fechaNacimiento') | date: 'dd/MM/yyyy'" />
-              <app-campo-lectura etiqueta="Email" [valor]="contactoTomador(t).email" />
-              <app-campo-lectura etiqueta="Teléfono" [valor]="contactoTomador(t).telefono" />
-              @if (esRenta()) {
-                <app-campo-lectura
-                  etiqueta="Participación"
-                  [valor]="textoTomador(t, 'participationPerc') + ' %'" />
-              }
-            </div>
+            <app-lista-datos [items]="itemsTomador(t)" [columnas]="4" />
             <div class="requisitos">
               @for (r of requisitosTomador(t); track r.etiqueta) {
-                <span class="requisito" [class.hecho]="r.hecho">
+                <span class="chip-estado" [class.ok]="r.hecho" [class.pendiente]="!r.hecho">
                   <mat-icon>{{ r.hecho ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
                   {{ r.etiqueta }}
                 </span>
@@ -83,27 +42,23 @@
           </div>
         }
         @if (!tomadores().length) {
-          <p>Sin tomadores en la sesión.</p>
+          <app-estado-vacio mensaje="Sin tomadores en la sesión" icono="person_off" />
         }
       </div>
     </app-caja>
 
     <app-caja titulo="Tipo de firma">
       <form [formGroup]="form" class="resumen-cuerpo">
-        <mat-radio-group formControlName="tipoFirma">
+        <mat-radio-group formControlName="tipoFirma" class="radios-inline">
           <mat-radio-button value="DIGITAL">Firma digital</mat-radio-button>
           <mat-radio-button value="MANUSCRITA">Firma manuscrita</mat-radio-button>
         </mat-radio-group>
       </form>
     </app-caja>
-
-    <button mat-flat-button color="primary" (click)="firmar()" [disabled]="form.invalid">
-      Firmar y contratar
-    </button>
   </div>
 
   <div class="col-der">
-    <app-caja titulo="Documentación precontractual">
+    <app-caja titulo="Documentación precontractual" class="sticky">
       <div class="resumen-cuerpo">
         @for (d of documentos(); track $index) {
           <div class="doc">
@@ -114,7 +69,7 @@
           </div>
         }
         @if (!documentos().length) {
-          <p>Sin documentos.</p>
+          <app-estado-vacio mensaje="Sin documentos" icono="description" />
         }
       </div>
     </app-caja>

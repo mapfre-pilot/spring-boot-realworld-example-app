@@ -1,32 +1,28 @@
-<mat-card>
-  <mat-card-title>Resultado de la firma</mat-card-title>
-  <mat-card-content>
-    @if (firma().tipo) {
-      <p>Tipo de firma: {{ firma().tipo }}</p>
-    }
-    @if (resp().signatureStatus) {
-      <p>Estado: {{ resp().signatureStatus }}</p>
-    }
-    @if (resp().signatureRequestId) {
-      <p>Solicitud de firma: {{ resp().signatureRequestId }}</p>
-    }
-    @if (documentos().length) {
-      <p>Documentos:</p>
-      <ul>
-        @for (doc of documentos(); track doc.name) {
-          <li>
-            {{ doc.name }}
-            @if (doc.documentType) {
-              ({{ doc.documentType }})
-            }
-          </li>
-        }
-      </ul>
-    }
-    <details>
-      <summary>Detalle</summary>
-      <pre>{{ resultado() }}</pre>
-    </details>
-  </mat-card-content>
-  <button mat-flat-button color="primary" (click)="finalizar()">Finalizar</button>
-</mat-card>
+<app-panel-resultado [tipo]="tipoPanel()" titulo="Resultado de la firma" [mensaje]="mensaje()">
+  <app-lista-datos [items]="items()" [columnas]="3" class="datos" />
+
+  @if (documentos().length) {
+    <mat-list class="docs">
+      @for (doc of documentos(); track doc.name) {
+        <mat-list-item>
+          <mat-icon matListItemIcon aria-hidden="true">picture_as_pdf</mat-icon>
+          <span matListItemTitle>{{ doc.name }}</span>
+          @if (doc.documentType) {
+            <span matListItemLine>{{ doc.documentType }}</span>
+          }
+        </mat-list-item>
+      }
+    </mat-list>
+  }
+
+  <mat-expansion-panel class="detalle">
+    <mat-expansion-panel-header>
+      <mat-panel-title>Detalle técnico</mat-panel-title>
+    </mat-expansion-panel-header>
+    <pre>{{ resultado() }}</pre>
+  </mat-expansion-panel>
+
+  <button acciones mat-flat-button color="primary" type="button" (click)="finalizar()">
+    Finalizar
+  </button>
+</app-panel-resultado>

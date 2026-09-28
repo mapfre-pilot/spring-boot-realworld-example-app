@@ -7,7 +7,7 @@ describe('SistemaCerradoContainer', () => {
 
   it('muestra el aviso de aplicación cerrada', () => {
     const s = create();
-    expect(s.query('mat-card-title')).toHaveText('Sistema cerrado');
+    expect(s.query('.titulo')).toHaveText('Sistema cerrado');
     expect(s.query('mat-card-content')).toHaveText('cerrado fuera del horario');
   });
 });

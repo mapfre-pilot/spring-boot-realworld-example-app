@@ -11,11 +11,21 @@ import {
   SesionStore,
 } from '@tva/core';
 import { CajaComponent } from '../../../../shared/ui/contenedores/caja.component';
+import { EncabezadoPantallaComponent } from '../../../../shared/ui/layout/encabezado-pantalla.component';
+import { EstadoVacioComponent } from '../../../../shared/ui/feedback/estado-vacio.component';
 
 @Component({
   selector: 'app-seguros-ahorro',
-  imports: [MatCardModule, MatButtonModule, CajaComponent, CurrencyPipe],
+  imports: [
+    MatCardModule,
+    MatButtonModule,
+    CajaComponent,
+    CurrencyPipe,
+    EncabezadoPantallaComponent,
+    EstadoVacioComponent,
+  ],
   templateUrl: './seguros-ahorro.container.html',
+  styleUrl: './seguros-ahorro.container.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SegurosAhorroContainer {
@@ -23,6 +33,11 @@ export class SegurosAhorroContainer {
   private readonly store = inject(SesionStore);
 
   private readonly estado = computed(() => (this.store.sesion()?.estado ?? {}) as EstadoSesion);
+
+  protected readonly subtitulo = computed(() => {
+    const id = this.estado()['proposalId'] ?? this.estado()['propuestaId'];
+    return id ? `Propuesta ${String(id)}` : undefined;
+  });
 
   protected readonly applications = computed<InsuranceApplicationProposal[]>(() => {
     const prop = (this.estado().responseProposal ?? {}) as Record<string, unknown>;

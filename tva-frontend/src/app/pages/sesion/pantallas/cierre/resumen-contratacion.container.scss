@@ -1,6 +1,6 @@
 .layout-resumen {
   display: grid;
-  grid-template-columns: 4fr 1fr;
+  grid-template-columns: 2fr 1fr;
   gap: 16px;
 }
 @media (max-width: 900px) {
@@ -8,22 +8,19 @@
     grid-template-columns: 1fr;
   }
 }
+.col-der .sticky {
+  position: sticky;
+  top: 88px;
+  align-self: start;
+}
+.col-der {
+  min-width: 280px;
+}
 .resumen-cuerpo {
   padding: 12px 16px 16px;
 }
 .producto {
   margin: 0 0 8px;
-}
-.grid-lectura {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px 16px;
-  margin-bottom: 8px;
-}
-@media (max-width: 900px) {
-  .grid-lectura {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 .tomador {
   border-bottom: 1px solid #eee;
@@ -40,23 +37,9 @@
 }
 .requisitos {
   display: flex;
-  gap: 16px;
+  gap: 8px;
   flex-wrap: wrap;
-}
-.requisito {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  color: var(--tva-text-muted, #666);
-}
-.requisito mat-icon {
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
-}
-.requisito.hecho mat-icon {
-  color: var(--tva-ok, #2e7d32);
+  margin-top: 8px;
 }
 .doc {
   display: flex;
@@ -74,7 +57,8 @@
 .doc mat-icon.enviado {
   color: var(--tva-ok, #2e7d32);
 }
-mat-radio-button {
-  display: block;
-  margin: 4px 0;
+.radios-inline {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
 }

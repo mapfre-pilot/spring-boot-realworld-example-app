@@ -1,10 +1,10 @@
 /** SISTEMA_CERRADO: la aplicación está cerrada (TVA_APLICACION_CERRADA). */
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
+import { PanelResultadoComponent } from '../../../../shared/ui/feedback/panel-resultado.component';
 
 @Component({
   selector: 'app-sistema-cerrado',
-  imports: [MatCardModule],
+  imports: [PanelResultadoComponent],
   templateUrl: './sistema-cerrado.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

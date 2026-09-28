@@ -1,0 +1,8 @@
+<dl class="lista" [class]="'lista cols-' + columnas()">
+  @for (it of items(); track it.etiqueta) {
+    <div class="item">
+      <dt class="etiqueta">{{ it.etiqueta }}</dt>
+      <dd class="valor">{{ it.valor ?? '—' }}</dd>
+    </div>
+  }
+</dl>
