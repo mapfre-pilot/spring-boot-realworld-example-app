@@ -132,7 +132,7 @@ Tomador 1 → Continuar: si hay dos tomadores → CAPTURA_TOMADOR2, si no → CA
 | Guardar y volver | Solicitud + VA | productores y seguro válidos | PM Guardar y volver |
 | Doc. Precontractual (confirmación: "Se va a enviar un correo al cliente con la información precontractual.\nSi continúa ya no podrá modificar los datos de la solicitud." Continuar/Volver) | Solicitud + VIA | productores y seguro válidos; test conveniencia válido si flag; no enviados ya | PM Documentación precontractual; error → aviso "Error al enviar la documentación precontractual" |
 | Contratar (VIA) | Solicitud + VIA | productores y seguro válidos; test conveniencia; documentos precontractuales presentes; sin avisos de error | PM Guardar y volver (contratación) |
-| Contratar (R2C) | Solicitud + R2C | productores, seguro (y doc. precontractual si flag) válidos; test conveniencia | PM Rentas contratar |
+| Contratar (R2C) | Solicitud + R2C; R2C precios | Solicitud: productores, seguro (y doc. precontractual si flag) válidos; test conveniencia. Precios: simulación seleccionada y no pendiente de recalcular | PM Rentas contratar |
 | Continuar (Tomador 1/2) | Tomador 1/2 | caja tomador válida; caja representante legal válida si hay representante; test conveniencia si flag | PM Tomador N continuar |
 | Siguiente (R2C captura) | R2C captura | `TVA_SimuladorRentas_Captura_Validacion` vacío | PM R2C siguiente |
 | Firmar | oculto (`showWhen: false`) | — | (firma se lanza desde la caja de firma) |
@@ -140,8 +140,9 @@ Tomador 1 → Continuar: si hay dos tomadores → CAPTURA_TOMADOR2, si no → CA
 ### 12.4.4. Validaciones de secciones
 
 - Datos personales (`TVA_CapturaTomador_DatosPersonales_Validacion`): documento, nombre, primer apellido,
-  fecha de nacimiento, sexo, nacionalidad, país de nacimiento, `Los campos Actividad, Sector y Profesión son obligatorios`,
-  `El móvil es obligatorio`, `El correo electrónico es obligatorio`.
+  fecha de nacimiento, sexo, nacionalidad, país de nacimiento, `Los campos Actividad, Sector y Profesión son obligatorios`.
+  En Angular cada sección valida solo sus campos: `El móvil es obligatorio` y `El correo electrónico es obligatorio`
+  se emiten al validar *Medios de contacto*, no *Datos personales*.
 - Domicilio habitual: tipo de vía, nombre de vía, número, código postal, localidad, provincia, país (`El/La … es obligatorio/a`).
 - Dirección de correspondencia (`TVA_Address_Validacion`): mismos campos + `El campo tipo de dirección es obligatorio`.
   El servicio devuelve además los códigos de campo (`addressRoadTypeCode: el campo es obligatorio; …`).
@@ -188,7 +189,7 @@ y el resto de los 11 grupos descritos en `06-seguridad.md`. En la rama existen r
 | 3 | Solicitud | Cajas Productores, Datos del seguro (operación, opciones de inversión con reparto, garantías, domiciliaciones), Captura ampliada (contacto, asegurado, beneficiarios, notas), Doc. Precontractual/Contratar con reglas de habilitado | hecho (pop-ups RGPD/DNI/test conveniencia integrados vía Embedded Interfaces con verificación real de resultado; la Captura DNI ya funciona desde esta máquina — origen whitelisted, tarea real creada en TEST) |
 | 4 | Catálogo | 21 productos DEV en mock API Life, filtro por canal/NUUMA, caso sin productos, campaña (`insuranceOfferInd`) | pendiente |
 | 5 | Resumen y firma | Tipos de firma según flags, documentos precontractuales, resultado y descarga | pendiente (requiere contratos de firma) |
-| 6 | R2C | Validación captura, Recalcular, Contratar | pendiente |
+| 6 | R2C | Validación captura, Recalcular, Contratar | hecho en mock: *Siguiente* simula una vez por opción de capital decreciente (50 %/100 %, como `TVA_R2C_Capt-Siguiente`), pantalla de precios con selección de opción y renta objetivo (`TVA_R2C_SeccionPrecios`/`TVA_OpcionImporteRenta`), Recalcular/Contratar habilitados según `idxSimulacionSeleccionada` y `rentas.recalcular`; contratación → Resumen → firma. Las opciones de capital del producto y `individualAnnuitySimulation` reales quedan para `APILIFE_MODE=real` |
 | 7 | Perfil cliente | Test de conveniencia/idoneidad y flag obligatorio | pendiente (requiere servicio) |
 | 8 | Admin/Debug/Log | Cachés, grupo debug, JSON de sesión, log filtrable | pendiente |
 | 9 | Integraciones reales | Sustituir mocks por API Life / APPINVE / RIC / MISV | clientes reales implementados y configurables por `*_MODE=real` (spec-driven desde `integrations/*.json`); verificados solo con tests de HTTP mockeado — falta red y credenciales para validación end-to-end; contrato RIC por confirmar con MU |

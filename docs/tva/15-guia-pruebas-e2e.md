@@ -70,11 +70,13 @@ Orden real de pantallas en VIA: **Selección producto → Tomador 1 → Datos so
 ### 3.3 Tomador 1
 Secciones: **Datos personales**, **Domicilio habitual**, **Medios de contacto** y la caja de
 **Requisitos** (RGPD, digitalización DNI, test de conveniencia). Cada sección tiene su propio
-*Continuar*; el *Continuar* inferior queda deshabilitado hasta que todas sean válidas.
+*Continuar* y **solo valida sus propios campos** (los errores de Medios de contacto no aparecen
+al validar Datos personales); el *Continuar* inferior queda deshabilitado hasta que todas sean
+válidas.
 
 | # | [Introducir] | [Verificar] |
 |---|---|---|
-| 3.3.1 | *Continuar* de Datos personales con la sección vacía | `El documento identificativo no puede ser nulo`, `El nombre es obligatorio`, `La fecha de nacimiento es obligatoria`, `El sexo es obligatorio`, `Los campos Actividad, Sector y Profesión son obligatorios` |
+| 3.3.1 | *Continuar* de Datos personales con la sección vacía | `El documento identificativo no puede ser nulo`, `El nombre es obligatorio`, `La fecha de nacimiento es obligatoria`, `El sexo es obligatorio`, `Los campos Actividad, Sector y Profesión son obligatorios`. **No** aparecen `El móvil es obligatorio` ni `El correo electrónico es obligatorio` |
 | 3.3.2 | Documento `12345678Z`, Nombre `PRUEBA`, Apellidos `TVA` `UNO`, Fecha nacimiento `1980-05-10`, Sexo, Nacionalidad `España`, Actividad/Sector/Profesión cualquiera → *Continuar* | Sección válida (icono verde). En mock **no se precarga nada** al teclear el documento |
 | 3.3.3 | Domicilio: Tipo de vía `Calle`, Nombre `Mayor`, Número `1`, CP `28001`, Provincia `Madrid`, Localidad `Madrid`, País `España` → *Continuar* | Válida |
 | 3.3.4 | Contacto: *Continuar* vacío | `El campo Prefijo es obligatorio`, `El móvil es obligatorio`, `El correo electrónico es obligatorio` |
@@ -122,27 +124,66 @@ que todo es válido). No hay *Siguiente*: se avanza con *Contratar*.
 
 ## 4. Flujo VA (Venta Asesorada con propuesta y dos tomadores)
 
+Como en Appian, el inicio VA llama a `GetProposal(proposalId)` y guarda la respuesta en
+`responseProposal`; en mock la propuesta `PROP-0001` contiene **una** solicitud del producto
+`00447 - Dividendo Vida II` con aportación única `12.000 €` (fixture `get_proposal.json`).
+La navegación sigue `TVA_propuestaProductosAhorro_siguientePantalla`: con una sola solicitud
+sin estado y tomadores **perfilados** se entra directamente en *Datos solicitud*; en el resto de
+casos se pasa por *Seguros ahorro*.
+
+### 4.1 Con Seguros ahorro (tomadores sin perfilar)
 - **[Introducir]** en Inicio: Modo `VA`, ProposalId `PROP-0001`, Número de tomadores `2`,
-  una fila en *Opciones de inversión*: Cód. modalidad `00447`, Tipo operación (cualquiera),
-  Aportación única `12000`, Frecuencia `A` → *INICIAR TVA*.
-- **[Verificar]** secuencia de migas de pan: **Seguros ahorro** (tabla con la fila
-  introducida y ayuda del producto) → **Datos solicitud** (prima precargada `12000`; botones
-  *Continuar*, *Cancelar*, *Administración* y *Guardar y volver* en vez de *Doc. Precontractual*) → **Tomador 1** →
-  **Tomador 2** (repetir 3.3 con documento `87654321X`, Nombre `PRUEBA DOS`) → **Resumen**
-  (dos tomadores listados) → **Resultado de la firma** → **Fin**.
+  casilla *Perfilado* **desmarcada**, una fila en *Opciones de inversión*: Cód. modalidad
+  `00447`, Tipo operación (cualquiera), Aportación única `12000`, Frecuencia `A` → *INICIAR TVA*.
+- **[Verificar]** miga de pan **Seguros ahorro** con una tabla de una fila: Producto
+  `00447 - Dividendo Vida II`, Aportación única `12.000,00 €`, Aportación periódica `0,00 €`,
+  Estado vacío y botón *Captura datos* habilitado (el perfil mock incluye la funcionalidad
+  `4045`, que permite capturar sin test de conveniencia vigente; sin ella el botón estaría
+  deshabilitado hasta que todos los tomadores tengan test vigente).
+- **[Introducir]** *Captura datos*.
+- **[Verificar]** secuencia: **Datos solicitud** (prima precargada `12000`; botones
+  *Continuar*, *Cancelar*, *Administración* y *Guardar y volver* en vez de *Doc. Precontractual*)
+  → **Tomador 1** → **Tomador 2** (repetir 3.3 con documento `87654321X`, Nombre `PRUEBA DOS`)
+  → **Resumen** (dos tomadores listados) → **Resultado de la firma** → **Fin**.
 - **[Verificar]** en Tomador 2 los requisitos son independientes de los del Tomador 1.
+
+### 4.2 Directo a Datos solicitud (tomadores perfilados)
+- **[Introducir]** igual que 4.1 pero con *Perfilado* **marcada**.
+- **[Verificar]** la sesión se abre directamente en **Datos solicitud** con el producto `00447`
+  ya seleccionado (no se muestra *Seguros ahorro*).
+
+### 4.3 Negativa
+- **[Introducir]** Modo `VA` sin ProposalId.
+- **[Verificar]** `El campo proposalId no puede ser nulo si indFunctionMode es VA` (no se crea sesión).
 
 ## 5. Flujo R2C (Rentas)
 
+El simulador de rentas de Appian (`TVA_SimuladorRentas_Captura_Validacion`, producto
+`FUTURO VITALICIO DOS TOMADORES`) exige **siempre dos tomadores**; por eso en Inicio, al elegir
+`R2C`, el *Número de tomadores* se fija en `2` y queda bloqueado.
+
+### 5.1 Captura
 - **[Introducir]** en Inicio: Modo `R2C`, Username `operador1@mapfre.net` → *INICIAR TVA*.
-- **[Verificar]** miga de pan **Captura R2C**, caja *Datos de la renta*.
-- **[Introducir]** Importe total de la prima `50000`, Periodicidad de la renta (cualquiera),
-  Tomador 1: Nº de DNI `12345678Z`, Fecha de nacimiento `1960-01-15`, % de participación `100`
-  → *Siguiente*.
-- **[Verificar]** **Precios de rentas** con la respuesta de la simulación (mock, JSON);
-  botones *Atrás*, *Recalcular*, *Contratar*. *Recalcular* repite la llamada sin error;
-  *Contratar* → **Resumen** con la renta → firma → **Fin**.
-- Negativas: prima vacía o participación ≠ 100 % deben avisar en la sección antes de avanzar.
+- **[Verificar]** miga de pan **Captura R2C**, caja *Datos de la renta* con dos tomadores.
+- **[Introducir]** Importe total de la prima `50000`, Periodicidad de la renta `Anual`,
+  Tomador 1: Nº de DNI `12345678Z`, Fecha de nacimiento `1960-01-15`, % de participación `60`;
+  Tomador 2: Nº de DNI `87654321X`, Fecha de nacimiento `1962-03-20`, % de participación `40`
+  → *Continuar* de la sección → *Siguiente*.
+- Negativas: prima vacía → `El importe total de la prima es obligatorio`; DNI/fecha/% vacíos
+  → `Tomador N: … es obligatorio`. Con errores, *Siguiente* no avanza y muestra los avisos.
+
+### 5.2 Precios de rentas
+*Siguiente* ejecuta `individualAnnuitySimulation` una vez por opción de capital decreciente
+(50 % y 100 %), como el PM `TVA_R2C_Capt-Siguiente`.
+
+| # | [Introducir] | [Verificar] |
+|---|---|---|
+| 5.2.1 | — | Dos tarjetas: `1.415,89 € /año` (prima `50.000,00 €`, rentabilidad `2.3%`, capital decreciente hasta el `50%`) y `1.058,17 € /año` (rentabilidad `2.41%`, hasta el `100%`). Botones *Atrás*, *Cancelar*, *Recalcular* y *Contratar* **deshabilitados** (sin opción seleccionada) |
+| 5.2.2 | Seleccionar la opción del 50 % | Aparece la tarjeta **Capital decreciente** con el texto de la opción, `Renta Tomador 1: 849,53 €` / `Renta Tomador 2: 566,36 €` y el campo *Renta año* = `1415.89`. *Contratar* habilitado, *Recalcular* deshabilitado |
+| 5.2.3 | Cambiar *Renta año* a `2000` (salir del campo) | *Recalcular* habilitado y *Contratar* deshabilitado (hay que recalcular) |
+| 5.2.4 | *Recalcular* | Las dos tarjetas se recalculan para la renta objetivo: opción 50 % con prima `70.626,53 €` y renta `2.000,00 €`; *Contratar* vuelve a habilitarse |
+| 5.2.5 | *Contratar* | Miga de pan **Resumen** con la renta: prima, renta objetivo, periodicidad, % de capital decreciente y los dos tomadores |
+| 5.2.6 | Elegir tipo de firma → *Firmar y contratar* → *Finalizar* | **Resultado de la firma** → **Fin** |
 
 ## 6. Administración
 

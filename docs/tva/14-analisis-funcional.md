@@ -207,10 +207,10 @@ Estados: **Completo** · **Parcial** · **Mock** · **Pendiente** (consistente c
 | Caso de uso | Estado | Notas |
 |---|---|---|
 | Inicio (request, validaciones exactas, siguiente pantalla) | Completo | contrato §12.4.1 portado |
-| Selección de producto VIA / Seguros ahorro VA | Parcial | catálogo con 21 productos en mock API Life |
+| Selección de producto VIA / Seguros ahorro VA | Completo (mock) | catálogo con 21 productos en mock API Life; VA carga la propuesta con `GetProposal(proposalId)` y navega según `TVA_propuestaProductosAhorro_siguientePantalla` |
 | Captura tomador 1/2 (secciones, requisitos, representante) | Completo | pop-ups RGPD/DNI/test con verificación real de resultado (`cmp-respuesta-componente`, one-shot) |
 | Datos de la solicitud (operación, inversión, garantías, domiciliaciones) | Completo | validaciones §12.4.4 portadas; cesión/intervinientes pendientes |
-| Rentas R2C (captura, precios, recalcular, contratar) | Parcial | validación captura + recalcular; contratación con datos mock |
+| Rentas R2C (captura, precios, recalcular, contratar) | Completo (mock) | dos tomadores obligatorios; simulación por opción de capital decreciente (50 %/100 %), selección de opción y renta objetivo, Recalcular/Contratar según `idxSimulacionSeleccionada`/`recalcular`; tarifa real pendiente de `APILIFE_MODE=real` |
 | Resumen y firma | Parcial | tipos de firma y documentos pendientes (mock) |
 | Administración (parámetros, apertura/cierre, cachés, trazas) | Completo | implementado con parámetros y trazas propias |
 | Integraciones API Life / RIC / MISV / APPINVE / perfil cliente | Mock | conectores con fixtures/mock según `APPIAN_EMBED_MODE` y flags |
