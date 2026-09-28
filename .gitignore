@@ -1,8 +1,10 @@
 .gradle
 build/
 node_modules/
+.pnpm-store/
 dist/
 .venv/
 __pycache__/
 .env
 .DS_Store
+.devcontainer/.tva-token

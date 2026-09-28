@@ -15,3 +15,5 @@ Estructura:
 
 Arranque rápido: `docker compose up --build -d` → http://localhost:8080.
 Guía completa: [docs/tva/11-guia-despliegue.md](docs/tva/11-guia-despliegue.md).
+
+Opción recomendada para desarrollo local: [Dev Container TVA](.devcontainer/README.md).
