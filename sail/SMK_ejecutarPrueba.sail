@@ -695,6 +695,34 @@ a!match(
       detalle: ""
     )
   ),
+  equals: "DB_SCA2_DATABASE_AWS",
+  then: a!localVariables(
+    local!ds: a!queryRecordType(
+      recordType: 'recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud',
+      fields: {'recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud.fields.{11313fc1-239e-4e39-9a00-d8494bcd63c2}id'},
+      pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1),
+      fetchTotalCount: true,
+    ),
+    a!map(
+      resultado: "OK",
+      mensaje: "Consulta OK sobre SCA2 Solicitud (" & local!ds.totalCount & " filas)",
+      detalle: ""
+    )
+  ),
+  equals: "DB_SMK_DATABASE_AWS",
+  then: a!localVariables(
+    local!ds: a!queryRecordType(
+      recordType: 'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test',
+      fields: {'recordType!{8cb90847-702c-4704-aae6-03acd830a9b7}SMK Test.fields.{b7020821-b4b7-41fc-a9eb-4f11ced13c7c}id'},
+      pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1),
+      fetchTotalCount: true,
+    ),
+    a!map(
+      resultado: "OK",
+      mensaje: "Consulta OK sobre SMK Test (" & local!ds.totalCount & " filas)",
+      detalle: ""
+    )
+  ),
   equals: "HTTP_LOGIN_MICROSOFTONLINE_COM",
   then: rule!SMK_evaluarHttp(rule!SMK_INT_HTTP_url(urlBase: cons!SMK_URL_LOGIN_MICROSOFTONLINE_COM)),
   equals: "HTTP_CONFIG_ZSCALER_COM",

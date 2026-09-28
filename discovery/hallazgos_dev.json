@@ -1,11 +1,45 @@
 {
- "nuevos": [],
- "desaparecidos": [],
+ "nuevos": [
+  {
+   "cs": "SCA2 DataBase AWS",
+   "tipo": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "apps": [
+    "SCA2 Sistema Comercial de Anulaciones"
+   ]
+  },
+  {
+   "cs": "SMK Database AWS",
+   "tipo": "system.[DataSource].[AuroraPostgreSqlConnectedSystem]",
+   "apps": [
+    "SMK Pruebas de Humo"
+   ]
+  }
+ ],
+ "desaparecidos": [
+  {
+   "cs": "PAI_SistTest",
+   "tipo": "system.http"
+  },
+  {
+   "cs": "PPP Proxy API GW",
+   "tipo": "system.http"
+  }
+ ],
  "cambiados": [
   {
+   "cs": "GCD Denodo",
+   "antes": "http://denodo-desa.es.mapfre.net:25014/",
+   "ahora": "https://denodo-desa.es.mapfre.net:25056/"
+  },
+  {
    "cs": "RH GD Corporativo",
-   "antes": "https://ws-gdu.pre.azure.mapfre.net:25021/",
-   "ahora": "https://alb.appian.es.int.emea.aws.mapfre.net:443/"
+   "antes": "https://alb.appian.es.int.emea.aws.mapfre.net:443/",
+   "ahora": "https://alb.appian.es.int.emea.aws.mapfre.net/"
+  },
+  {
+   "cs": "SGI UiPath",
+   "antes": "https://cloud.uipath.com/MAPFRE_AC/M_Spain/orchestrator_/t/65495ac6-f8bd-4ee4-b4c0-2ea8e7666e7a/Test_ArgumentosAppian",
+   "ahora": "https://cloud.uipath.com/MAPFRE_AC/M_Spain/orchestrator_/t/65495ac6-f8bd-4ee4-b4c0-2ea8e7666e7a/"
   }
  ],
  "sinCobertura": [
@@ -90,16 +124,24 @@
    "propuesta": "Sin record types dependientes: no hay consulta read-only posible sin crear objetos"
   },
   {
-   "tipo": "HTTP",
-   "cs": "PAI_SistTest",
-   "uuid": "_a-0000eebe-52f3-8000-9ca6-011c48011c48_18307535",
-   "host": "ackñaisfñkasdñfk",
-   "port": null,
-   "auth": "Basic",
+   "tipo": "DB",
+   "cs": "SCA2 DataBase AWS",
+   "uuid": "_a-0000f069-4f37-8000-9cc8-011c48011c48_20050863",
    "apps": [
-    "PAPELERA OT"
+    "SCA2 Sistema Comercial de Anulaciones"
    ],
-   "propuesta": "Integración GET ligera vía CS 'PAI_SistTest' → código HTTP_ACK_AISF_KASD_FK"
+   "recordTypes": [],
+   "propuesta": "Sin record types dependientes: no hay consulta read-only posible sin crear objetos"
+  },
+  {
+   "tipo": "DB",
+   "cs": "SMK Database AWS",
+   "uuid": "_a-0000f069-4f37-8000-9cc8-011c48011c48_20048092",
+   "apps": [
+    "SMK Pruebas de Humo"
+   ],
+   "recordTypes": [],
+   "propuesta": "Sin record types dependientes: no hay consulta read-only posible sin crear objetos"
   },
   {
    "tipo": "DB",
