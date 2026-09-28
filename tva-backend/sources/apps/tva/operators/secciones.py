@@ -186,7 +186,9 @@ def ejecutar(sesion: Sesion, datos: dict, roles: list[str] | None = None) -> dic
     datos = datos or {}
     caja_id = datos.get("caja")
     seccion_id = datos.get("seccion")
-    payload = datos.get("datos") or {}
+    payload = datos.get("datos")
+    if payload is None:
+        payload = [] if seccion_id == "mediosContacto" else {}
 
     estado = escribir_seccion(sesion.estado or {}, caja_id, seccion_id, payload)
     sesion.estado = estado

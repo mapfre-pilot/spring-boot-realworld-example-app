@@ -119,7 +119,7 @@ export abstract class TomadorBase implements OnInit {
     const t = this.tomador();
     const propios = new Set(['MOVIL', 'FIJO', 'OTRO', 'EMAIL']);
     const medios: Record<string, unknown>[] = (
-      (t?.mediosContacto ?? []) as {
+      (Array.isArray(t?.mediosContacto) ? t.mediosContacto : []) as {
         tipo?: string;
       }[]
     ).filter(m => !propios.has(m.tipo ?? '')) as Record<string, unknown>[];
