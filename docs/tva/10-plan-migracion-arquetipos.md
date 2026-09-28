@@ -256,9 +256,9 @@ la fase 7 depende de terceros.
 ## Arquitectura del frontend
 
 `tva-frontend` sigue la Arquitectura de Referencia "Clean Architecture" del
-arquetipo corporativo: librería `libs/core` (`@tva/core`) con capas
+arquetipo corporativo: librería `src/app/core` (`@tva/core`) con capas
 `domain`/`ports`/`application`/`data`/`infra` generadas con
 `@mapfre-tech/nx-angular(-esp)`, usecases por acción del API, puertos con
 `InjectionToken` cableados en `provideTvaCore()`, y la app limitada a
-`pages/` + `ui/`. Ver
+`pages/` + `shared/ui/`. Ver
 [13-diseno-tecnico/00-arquitectura-referencia-frontend.md](13-diseno-tecnico/00-arquitectura-referencia-frontend.md).

@@ -2,8 +2,10 @@
 
 ## Technical Approach
 
-`RESUMEN_CONTRATACION` muestra los datos consolidados (cajas de resumen y JSON del
-estado en la versión mock) y la selección del tipo de firma (`DIGITAL`/`MANUSCRITA`).
+`RESUMEN_CONTRATACION` muestra los datos consolidados en cajas de resumen
+(producto, prima única/periódica — o bloque de rentas en R2C con prima, renta
+objetivo, periodicidad y % de capital decreciente —, tomadores con DNI/% y
+requisitos, documentos) y la selección del tipo de firma (`DIGITAL`/`MANUSCRITA`).
 La acción `firmar` (lanzada desde la caja de firma, no desde la botonera — botón
 oculto `showWhen: false`) simula el alta en API Life (`savingInsuranceApplication` /
 `annuityInsuranceApplication` según modalidad), marca el resultado y avanza a
@@ -20,7 +22,7 @@ oculto `showWhen: false`) simula el alta en API Life (`savingInsuranceApplicatio
 | 3 | Fin | `FIN` + `abierta=false` | Mantener abierta | Equivalente al fin de proceso Appian |
 | 4 | Tipo de firma | Campo `tipoFirma` en el payload de `firmar` | Enum cerrado de flags | Los flags `TVA_FLAG_FIRMA_*` aún pendientes; se admite el tipo como dato |
 | 5 | Documentos | Endpoint `documentos/<tipo>/` con fixtures/mock | Generación real | Punto de swap para los documentos reales de API Life |
-| 6 | Resumen | Cajas de resumen + JSON del estado (modo demo) | Vista definitiva | Muestra la estructura TVA_Sesion tal cual para depurar |
+| 6 | Resumen | Cajas de resumen estructuradas (también para R2C: renta, periodicidad, capital decreciente) | Vista definitiva | Replica la caja de resumen Appian |
 
 ## Data Flow
 
@@ -39,9 +41,9 @@ GET /sesiones/<clave>/documentos/<tipo>/
 |------|--------|-------------|
 | `tva-backend/sources/apps/tva/operators/firmar.py` | Modify | `ejecutar` alta + resultadoFirma + avance |
 | `tva-backend/sources/apps/tva/views/documentos.py` | Modify | `DocumentosView` por tipo |
-| `tva-frontend/src/app/pages/sesion/pantallas/resumen-contratacion.container.ts` | Modify | Cajas resumen + tipo firma → `datosPendientes` |
-| `tva-frontend/src/app/pages/sesion/pantallas/resultado-firma.container.ts` | Modify | Resultado + siguiente |
-| `tva-frontend/src/app/pages/sesion/pantallas/fin.container.ts` | Modify | Pantalla fin |
+| `tva-frontend/src/app/pages/sesion/pantallas/cierre/resumen-contratacion.container.ts` | Modify | Cajas resumen + tipo firma → `datosPendientes` |
+| `tva-frontend/src/app/pages/sesion/pantallas/cierre/resultado-firma.container.ts` | Modify | Resultado + siguiente |
+| `tva-frontend/src/app/pages/sesion/pantallas/cierre/fin.container.ts` | Modify | Pantalla fin |
 
 ## Interfaces / Contracts
 

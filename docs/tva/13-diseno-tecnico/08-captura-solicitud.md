@@ -50,7 +50,7 @@ Botonera "Contratar" → condiciones_contratar OK → RESUMEN_CONTRATACION
 | `tva-backend/sources/apps/tva/operators/guardar_solicitud.py` | Modify | Revalida cajas antes de `save_proposal` |
 | `tva-backend/sources/apps/tva/operators/verificar_productores.py` | Modify | Wrapper `verify_producers` |
 | `tva-backend/sources/apps/tva/operators/validar_reinversion.py` | Modify | Wrapper `validate_reinvestment` |
-| `tva-frontend/src/app/pages/sesion/pantallas/captura-datos-solicitud.container.ts` | Modify | Cajas+secciones completas + ampliar captura |
+| `tva-frontend/src/app/pages/sesion/pantallas/solicitud/captura-datos-solicitud.container.ts` | Modify | Cajas+secciones completas + ampliar captura |
 | `tva-backend/sources/apps/tva/operators/dispatcher.py` | Modify | `_accion_doc_precontractual`, `_accion_contratar` |
 
 ## Interfaces / Contracts

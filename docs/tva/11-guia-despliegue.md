@@ -245,7 +245,7 @@ apertura/cierre + abrir/cerrar manual, cachés, trazas); pantallas SISTEMA_CERRA
 SIN_PERFIL / SOLO_AVISOS; pop-ups RGPD / Captura DNI / test de conveniencia como
 tareas embebidas Appian TEST con verificación real de resultado
 (`cmp-respuesta-componente`); resumen estructurado (no JSON); frontend en
-Clean Architecture (`libs/core` ports/usecases/repositorios) y tema visual
+Clean Architecture (`src/app/core` ports/usecases/repositorios) y tema visual
 MAPFRE; conectores reales configurables (API Life spec-driven, MISV, SOAP SOA7,
 RIC) con checks de configuración y `smoke_integraciones`; **193 tests backend
 (84% coverage), 26 + 57 tests frontend**.

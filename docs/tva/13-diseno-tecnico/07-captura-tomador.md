@@ -47,11 +47,11 @@ Botonera "Continuar" → ejecutar('continuar-tomador')
 | `tva-backend/sources/apps/tva/operators/secciones.py` | Create | `escribir_seccion`, `errores_seccion`, `ejecutar`, `revalidar_caja` |
 | `tva-backend/sources/apps/tva/operators/continuar_tomador.py` | Modify | Revalida cajas tomador y avanza; INFO importe máximo VIA |
 | `tva-backend/sources/apps/tva/operators/validaciones.py` | Modify | `errores_datos_personales`, `errores_medios_contacto`, `errores_domicilio_habitual`, `errores_participante`, `errores_direccion_correspondencia` |
-| `tva-frontend/src/app/pages/sesion/pantallas/tomador-base.ts` | Modify | `TomadorBase` con formularios por sección + catálogos + requisitos |
-| `tva-frontend/src/app/pages/sesion/pantallas/captura-tomador1.container.ts` | Modify | Template compartido `TOMADOR_TEMPLATE` |
-| `tva-frontend/src/app/pages/sesion/pantallas/captura-tomador2.container.ts` | Modify | Mismo template con `cajaId='CAPTURA_DATOS_TOMADOR2'` |
-| `tva-frontend/src/app/ui/seccion.component.ts` | Create | Plegado/validez/avisos de sección + botón Continuar |
-| `tva-frontend/src/app/ui/caja.component.ts` | Modify | Contenedor mat-expansion-panel |
+| `tva-frontend/src/app/pages/sesion/pantallas/tomador/tomador-base.ts` | Modify | `TomadorBase` con formularios por sección + catálogos + requisitos |
+| `tva-frontend/src/app/pages/sesion/pantallas/tomador/captura-tomador1.container.ts` | Modify | Template compartido `TOMADOR_TEMPLATE` |
+| `tva-frontend/src/app/pages/sesion/pantallas/tomador/captura-tomador2.container.ts` | Modify | Mismo template con `cajaId='CAPTURA_DATOS_TOMADOR2'` |
+| `tva-frontend/src/app/shared/ui/contenedores/seccion.component.ts` | Create | Plegado/validez/avisos de sección + botón Continuar |
+| `tva-frontend/src/app/shared/ui/contenedores/caja.component.ts` | Modify | Contenedor mat-expansion-panel |
 
 ## Interfaces / Contracts
 

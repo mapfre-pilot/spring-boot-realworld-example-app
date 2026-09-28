@@ -14,6 +14,19 @@ creación de la `Sesion` con el estado `TVA_Sesion` y la pantalla inicial según
 el bug original lo tomaba del mock RIC. Los errores devuelven HTTP 400 con el sobre Appian
 `{code:"02", message, application:"TVA", timestamp, errors:[…]}`.
 
+Para VA con `proposalId`, el PM de inicio replica la llamada Appian `GetProposal`:
+`get_apilife_client().get_proposal({proposalId, companyId, distributionChannel})`
+y la respuesta se guarda en `estado.responseProposal` (shape
+`contractingProposal.insurancesApplication[]`); un fallo deja `propuesta = {}` y
+añade el aviso `TVA_ERROR_SERVICIO_EXTERNO` (TALLER). Si
+`pantalla_inicio` devuelve el atajo `CAPTURA_DATOS_SOLICITUD` (1 aplicación +
+`perfilClientesOK` + `statusDesc` nulo, regla Appian), el producto se aplica en
+estado llamando al mismo helper `aplicar_producto(estado, codigo)` de
+`seleccionar_modalidad.py` (codigoProducto, productoSeleccionado, garantías,
+ventaInformada.opcionesInversion, taller) con
+`applications[0].commercialProductCode` — evitando el paso por
+SEGUROS_AHORRO/`seleccionar-modalidad`.
+
 ## Architecture Decisions
 
 | # | Decision | Choice | Alternatives Rejected | Rationale |
@@ -24,6 +37,7 @@ el bug original lo tomaba del mock RIC. Los errores devuelven HTTP 400 con el so
 | 4 | `perfilClientesOK` | Derivado solo de `policyHolders[].testData.convenience` (FI + fecha) | RIC/perfil externo por defecto | Bug encontrado: el mock RIC devolvía True siempre y saltaba Tomador 1 |
 | 5 | Catálogo para validar investment | `product_list(companyId, nuuma, channel)` como lista de códigos válidos | Lista fija hardcodeada | Mismo catálogo que verá el usuario; caso SINPRODUCTOS testeable |
 | 6 | Pantalla inicial | `pantalla_inicio(modalidad, estado)` con la regla Appian | Secuencia fija por modalidad | La regla decide por datos (cerrado, sin perfil, sin productos) |
+| 7 | Propuesta VA | `get_proposal` al inicio → `estado.responseProposal`; atajo VA → `aplicar_producto` | Leer la propuesta en SEGUROS_AHORRO | Appian carga la propuesta en inicio y, con 1 aplicación + perfil OK, entra directo a la solicitud |
 
 ## Data Flow
 
@@ -46,11 +60,12 @@ Frontend: InicioPage (TVA_Utilidades_Inicio) → api.inicioAhorro/inicioRentas
 |------|--------|-------------|
 | `tva-backend/sources/apps/tva/views/inicio.py` | Modify | `_InicioBase.post`, `InicioAhorroView`, `InicioRentasView`; 400 con `webapi_error_response` |
 | `tva-backend/sources/apps/tva/serializers/sesion.py` | Modify | Campos nuevos opcionales del contrato |
-| `tva-backend/sources/apps/tva/operators/iniciar_sesion.py` | Modify | `_es_contrato_nuevo`, `_tomadores_desde_policy_holders` (testData→perfilCliente), `perfilClientesOK` derivado |
+| `tva-backend/sources/apps/tva/operators/iniciar_sesion.py` | Modify | `_es_contrato_nuevo`, `_tomadores_desde_policy_holders` (testData→perfilCliente), `perfilClientesOK` derivado, `get_proposal` VA → `responseProposal`, atajo VA → `aplicar_producto` |
+| `tva-backend/sources/apps/tva/operators/seleccionar_modalidad.py` | Modify | Helper `aplicar_producto(estado, codigo)` reutilizado por inicio VA y `ejecutar` |
 | `tva-backend/sources/apps/tva/operators/validaciones.py` | Modify | `validar_parametros_inicio_body`, `validar_investment_option`, `nuuma_desde_username`, `test_conveniencia_valido` |
 | `tva-backend/sources/apps/tva/schemas/errors.py` | Modify | `webapi_error_response` con sobre `{code:"02", errors:[…]}` |
 | `tva-frontend/src/app/pages/inicio/inicio.page.ts` | Modify | Formulario completo Utilidades Inicio + tabla investment + `policyHolders` con `testData.convenience` |
-| `tva-frontend/libs/core/src/lib/domain/nuuma.ts` | Create | `nuumaDe(username)` read-only |
+| `tva-frontend/src/app/core/domain/nuuma.ts` | Create | `nuumaDe(username)` read-only |
 
 ## Interfaces / Contracts
 

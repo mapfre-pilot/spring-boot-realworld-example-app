@@ -79,7 +79,7 @@ válidas.
 | 3.3.1 | *Continuar* de Datos personales con la sección vacía | `El documento identificativo no puede ser nulo`, `El nombre es obligatorio`, `La fecha de nacimiento es obligatoria`, `El sexo es obligatorio`, `Los campos Actividad, Sector y Profesión son obligatorios`. **No** aparecen `El móvil es obligatorio` ni `El correo electrónico es obligatorio` |
 | 3.3.2 | Documento `12345678Z`, Nombre `PRUEBA`, Apellidos `TVA` `UNO`, Fecha nacimiento `1980-05-10`, Sexo, Nacionalidad `España`, Actividad/Sector/Profesión cualquiera → *Continuar* | Sección válida (icono verde). En mock **no se precarga nada** al teclear el documento |
 | 3.3.3 | Domicilio: Tipo de vía `Calle`, Nombre `Mayor`, Número `1`, CP `28001`, Provincia `Madrid`, Localidad `Madrid`, País `España` → *Continuar* | Válida |
-| 3.3.4 | Contacto: *Continuar* vacío | `El campo Prefijo es obligatorio`, `El móvil es obligatorio`, `El correo electrónico es obligatorio` |
+| 3.3.4 | Contacto: *Continuar* vacío | `El móvil es obligatorio`, `El correo electrónico es obligatorio` (con móvil sin prefijo: `El campo Prefijo es obligatorio`) |
 | 3.3.5 | Prefijo `+34`, Móvil `600000000`, Email `prueba@example.com` → *Continuar* | Válida |
 | 3.3.6 | Requisito **RGPD** → *Realizar* | Diálogo «Consentimiento RGPD» con el texto «Appian en modo simulado (stub local)» y botones **Simular completado** / **Cancelar** |
 | 3.3.7 | *Cancelar* en el diálogo | El requisito sigue **pendiente** (no hay falso positivo) |
@@ -141,8 +141,10 @@ casos se pasa por *Seguros ahorro*.
   `4045`, que permite capturar sin test de conveniencia vigente; sin ella el botón estaría
   deshabilitado hasta que todos los tomadores tengan test vigente).
 - **[Introducir]** *Captura datos*.
-- **[Verificar]** secuencia: **Datos solicitud** (prima precargada `12000`; botones
-  *Continuar*, *Cancelar*, *Administración* y *Guardar y volver* en vez de *Doc. Precontractual*)
+- **[Verificar]** secuencia: **Datos solicitud** (prima única precargada `12000` desde la
+  propuesta; botones *Cancelar*, *Administración* y *Guardar y volver* — en VA no hay
+  *Doc. Precontractual* ni *Contratar*; rellenar productores y seguro como en 3.4 y avanzar con
+  *Guardar y volver*, que guarda la propuesta y pasa a la siguiente pantalla)
   → **Tomador 1** → **Tomador 2** (repetir 3.3 con documento `87654321X`, Nombre `PRUEBA DOS`)
   → **Resumen** (dos tomadores listados) → **Resultado de la firma** → **Fin**.
 - **[Verificar]** en Tomador 2 los requisitos son independientes de los del Tomador 1.
@@ -178,10 +180,10 @@ El simulador de rentas de Appian (`TVA_SimuladorRentas_Captura_Validacion`, prod
 
 | # | [Introducir] | [Verificar] |
 |---|---|---|
-| 5.2.1 | — | Dos tarjetas: `1.415,89 € /año` (prima `50.000,00 €`, rentabilidad `2.3%`, capital decreciente hasta el `50%`) y `1.058,17 € /año` (rentabilidad `2.41%`, hasta el `100%`). Botones *Atrás*, *Cancelar*, *Recalcular* y *Contratar* **deshabilitados** (sin opción seleccionada) |
+| 5.2.1 | — | Dos tarjetas: `1.415,89 € /año` (prima `50.000,00 €`, rentabilidad `2.3%`, capital decreciente hasta el `50%`) y `1.058,17 € /año` (rentabilidad `2.41%`, hasta el `100%`). Botones *Atrás* y *Cancelar* habilitados; *Recalcular* y *Contratar* **deshabilitados** (sin opción seleccionada) |
 | 5.2.2 | Seleccionar la opción del 50 % | Aparece la tarjeta **Capital decreciente** con el texto de la opción, `Renta Tomador 1: 849,53 €` / `Renta Tomador 2: 566,36 €` y el campo *Renta año* = `1415.89`. *Contratar* habilitado, *Recalcular* deshabilitado |
 | 5.2.3 | Cambiar *Renta año* a `2000` (salir del campo) | *Recalcular* habilitado y *Contratar* deshabilitado (hay que recalcular) |
-| 5.2.4 | *Recalcular* | Las dos tarjetas se recalculan para la renta objetivo: opción 50 % con prima `70.626,53 €` y renta `2.000,00 €`; *Contratar* vuelve a habilitarse |
+| 5.2.4 | *Recalcular* | Las dos tarjetas se recalculan para la renta objetivo: opción 50 % con prima `70.626,96 €` y renta `2.000,00 €`; *Contratar* vuelve a habilitarse |
 | 5.2.5 | *Contratar* | Miga de pan **Resumen** con la renta: prima, renta objetivo, periodicidad, % de capital decreciente y los dos tomadores |
 | 5.2.6 | Elegir tipo de firma → *Firmar y contratar* → *Finalizar* | **Resultado de la firma** → **Fin** |
 

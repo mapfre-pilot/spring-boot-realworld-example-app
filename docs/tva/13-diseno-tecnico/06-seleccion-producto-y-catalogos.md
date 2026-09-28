@@ -47,8 +47,8 @@ POST acciones/seleccionar-modalidad {productCode}
 | `tva-backend/sources/apps/tva/views/catalogos.py` | Create | `CatalogosView` sirviendo JSON estático + 404 |
 | `tva-backend/sources/apps/tva/fixtures/catalogos/*.json` | Create | 12 catálogos estáticos |
 | `tva-backend/sources/apps/tva/operators/seleccionar_modalidad.py` | Modify | Copia producto → estado |
-| `tva-frontend/src/app/pages/sesion/pantallas/seleccion-producto-ahorro.container.ts` | Modify | Grid de tarjetas + texto de catálogo vacío |
-| `tva-frontend/libs/core/src/lib/data/repositories/*-http.repository.ts (+ ports/*-repository.port.ts)` | Modify | `productos(params)`, `catalogo(nombre)` |
+| `tva-frontend/src/app/pages/sesion/pantallas/ahorro/seleccion-producto-ahorro.container.ts` | Modify | Grid de tarjetas + texto de catálogo vacío |
+| `tva-frontend/src/app/core/data/repositories/*-http.repository.ts (+ ports/*-repository.port.ts)` | Modify | `productos(params)`, `catalogo(nombre)` |
 
 ## Interfaces / Contracts
 
