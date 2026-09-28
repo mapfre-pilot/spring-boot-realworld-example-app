@@ -71,6 +71,7 @@ export class CapturaDatosSolicitudContainer implements OnInit {
           String(p['commercialProductCode']) === String(this.estado()?.codigoProducto)
       )
   );
+  protected readonly unitLinked = computed(() => !!this.producto()?.['unitLinkedInd']);
   protected readonly opcionesProducto = computed(
     () => (this.producto()?.['opcionesInversion'] ?? []) as OpcionInversion[]
   );

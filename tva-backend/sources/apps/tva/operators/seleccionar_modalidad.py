@@ -8,6 +8,7 @@ from apps.tva.services.connectors.apilife import get_apilife_client
 
 from ._comun import add_aviso, guardar_y_trazar, resultado
 from .maquina_pantallas import siguiente_pantalla
+from .sesion_modelo import CAJA_DATOS_DEL_SEGURO, seccion
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,17 @@ def aplicar_producto(estado: dict, codigo_producto: str, investment_option: dict
         via = dict(nuevo.get("ventaInformada") or {})
         via["opcionesInversion"] = [dict(o) for o in producto.get("opcionesInversion") or []]
         nuevo["ventaInformada"] = via
+        # TVA_CajaDatosDelSeguro: la sección de opciones de inversión solo
+        # existe en productos unit linked.
+        for caja in nuevo.get("cajas") or []:
+            if caja.get("id") != CAJA_DATOS_DEL_SEGURO:
+                continue
+            secs = caja.get("secciones") or []
+            tiene = any(s.get("id") == "opcionesInversion" for s in secs)
+            if not producto.get("unitLinkedInd") and tiene:
+                caja["secciones"] = [s for s in secs if s.get("id") != "opcionesInversion"]
+            elif producto.get("unitLinkedInd") and not tiene:
+                secs.insert(1, seccion("opcionesInversion", "Opciones de inversión"))
     if investment_option:
         op = dict(nuevo.get("datosOperacion") or {})
         if not op.get("primaUnica"):

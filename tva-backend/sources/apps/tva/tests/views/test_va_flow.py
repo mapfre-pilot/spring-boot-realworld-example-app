@@ -53,6 +53,48 @@ def test_va_guardar_y_volver_avanza(api_client, auth_header):
     assert data["pantallaActual"] == "CAPTURA_DATOS_SOLICITUD", data
     assert data["estado"]["datosOperacion"]["primaUnica"] == 12000
 
+    # 00447 no es unit linked → la caja no tiene sección opcionesInversion
+    caja_seguro = next(c for c in data["estado"]["cajas"] if c["id"] == "DATOS_DEL_SEGURO")
+    ids = [s["id"] for s in caja_seguro["secciones"]]
+    assert "opcionesInversion" not in ids
+
+    # Valida con operación + garantías + domiciliaciones (sin opciones)
+    estado = data["estado"]
+    _accion(
+        api_client,
+        clave,
+        "validar-seccion",
+        {"caja": "DATOS_PRODUCTORES", "seccion": "productores", "datos": {"oficina": "0001", "productor": "12345"}},
+        **auth_header,
+    )
+    _accion(
+        api_client,
+        clave,
+        "validar-seccion",
+        {
+            "caja": "DATOS_DEL_SEGURO",
+            "seccion": "operacion",
+            "datos": {"fechaEfecto": "2026-09-29", "tipoDuracion": "ANIOS", "duracion": 10, "primaUnica": 12000},
+        },
+        **auth_header,
+    )
+    _accion(
+        api_client,
+        clave,
+        "validar-seccion",
+        {"caja": "DATOS_DEL_SEGURO", "seccion": "garantias", "datos": estado["garantias"]},
+        **auth_header,
+    )
+    r = _accion(
+        api_client,
+        clave,
+        "validar-seccion",
+        {"caja": "DATOS_DEL_SEGURO", "seccion": "domiciliaciones", "datos": {"ibanRecibos": "ES9121000418450200051332"}},
+        **auth_header,
+    )
+    gyv = next(b for b in r.json()["botones"] if b["id"] == "guardar-y-volver")
+    assert gyv["disabled"] is False
+
     # Guardar y volver: en VA es el botón de avance → CAPTURA_TOMADOR1
     r = _accion(api_client, clave, "guardar-solicitud", {}, **auth_header)
     data = r.json()

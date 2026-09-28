@@ -26,18 +26,20 @@
     [avisos]="avisos()"
     (continuar)="continuarSeccion('operacion')" />
 
-  <app-opciones-inversion
-    [opciones]="opcionesProducto()"
-    [seleccionadas]="opcionSel()"
-    [importes]="importes()"
-    [sumaUnica]="suma('unica')"
-    [sumaPeriodica]="suma('periodica')"
-    [valida]="validez()['DATOS_DEL_SEGURO/opcionesInversion']"
-    [expandida]="expandida() === 'opcionesInversion'"
-    [avisos]="avisos()"
-    (opcionCambiada)="seleccionarOpcion($event.i, $event.sel)"
-    (importeCambiado)="setImporte($event.i, $event.campo, $event.ev)"
-    (continuar)="continuarOpciones()" />
+  @if (unitLinked()) {
+    <app-opciones-inversion
+      [opciones]="opcionesProducto()"
+      [seleccionadas]="opcionSel()"
+      [importes]="importes()"
+      [sumaUnica]="suma('unica')"
+      [sumaPeriodica]="suma('periodica')"
+      [valida]="validez()['DATOS_DEL_SEGURO/opcionesInversion']"
+      [expandida]="expandida() === 'opcionesInversion'"
+      [avisos]="avisos()"
+      (opcionCambiada)="seleccionarOpcion($event.i, $event.sel)"
+      (importeCambiado)="setImporte($event.i, $event.campo, $event.ev)"
+      (continuar)="continuarOpciones()" />
+  }
 
   <app-garantias
     [garantias]="garantias()"
