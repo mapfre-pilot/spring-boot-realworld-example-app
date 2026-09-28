@@ -29,6 +29,7 @@ Documentación resultante del análisis **de solo lectura** de la aplicación Ap
 12. [Gap analysis Appian ↔ Angular](12-gap-analysis-appian-angular.md) — matriz de cobertura por pantalla
 13. [Diseño técnico por feature](13-diseno-tecnico/README.md) — 00 arquitectura referencia + 14 diseños
 14. [Análisis funcional](14-analisis-funcional.md) — visión de negocio de TVA con trazabilidad Appian
+15. [Guía de pruebas end-to-end](15-guia-pruebas-e2e.md) — recorrido manual con datos exactos y pantallas a verificar (VIA, VA, R2C, admin)
 
 ## Resumen ejecutivo
 
