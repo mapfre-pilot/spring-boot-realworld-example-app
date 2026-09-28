@@ -20,8 +20,8 @@ log "Preparando los volúmenes del frontend."
   "$HOME/.local/share/pnpm"
 
 log "Activando Corepack y pnpm 11.21.0."
-if ! corepack enable 2>/dev/null; then
-  "${SUDO[@]}" corepack enable
+if ! command -v pnpm >/dev/null 2>&1; then
+  "${SUDO[@]}" env "PATH=$PATH" corepack enable
 fi
 COREPACK_ENABLE_DOWNLOAD_PROMPT=0 corepack prepare pnpm@11.21.0 --activate
 pnpm config set store-dir "$HOME/.local/share/pnpm/store" --location=user

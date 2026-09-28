@@ -4,11 +4,6 @@
   "service": "dev",
   "workspaceFolder": "/workspaces/tva",
   "shutdownAction": "stopCompose",
-  "features": {
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "22"
-    }
-  },
   "forwardPorts": [4200, 8888],
   "portsAttributes": {
     "4200": {
