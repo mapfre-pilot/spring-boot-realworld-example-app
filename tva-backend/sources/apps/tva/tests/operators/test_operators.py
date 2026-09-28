@@ -113,11 +113,19 @@ def test_tomador1_dos_tomadores_va_a_tomador2():
     assert res["pantallaActual"] == "CAPTURA_TOMADOR2"
 
 
-def test_tomador1_un_tomador_va_a_solicitud():
+def test_tomador1_un_tomador_va_a_resumen():
+    # VA: los tomadores van después de la solicitud → T1 con un tomador → Resumen
     s = _s(modalidad="VA", pantalla="CAPTURA_TOMADOR1")
     s.estado = {"avisos": [], "tomadores": [{}]}
     res = dispatcher.ejecutar_accion(s, "siguiente", {})
-    assert res["pantallaActual"] == "CAPTURA_DATOS_SOLICITUD"
+    assert res["pantallaActual"] == "RESUMEN_CONTRATACION"
+
+
+def test_tomador2_va_a_resumen():
+    s = _s(modalidad="VA", pantalla="CAPTURA_TOMADOR2")
+    s.estado = {"avisos": [], "tomadores": [{}, {}]}
+    res = dispatcher.ejecutar_accion(s, "siguiente", {})
+    assert res["pantallaActual"] == "RESUMEN_CONTRATACION"
 
 
 def test_cancelar_fin_y_sin_avisos():

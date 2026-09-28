@@ -52,14 +52,17 @@ Distribution channel `500`, Número de tomadores `1`.
 
 Orden real de pantallas en VIA: **Selección producto → Tomador 1 → Datos solicitud → Resumen
 → Resultado de la firma → Fin** (el tomador va antes que la solicitud; en VA es al revés).
+Excepción: con *Perfilado* marcada en el inicio, VIA entra **directamente en Datos solicitud**
+y se salta al Tomador (`perfilClientesOK` ya es válido).
 
 ### 3.1 Inicio
-- **[Introducir]** Modo `VIA`, Username `operador1@mapfre.net`, casillas *Tomador* ✔,
-  *Perfilado* ✔, *Inversión* ✔ → *INICIAR TVA*.
+- **[Introducir]** Modo `VIA`, Username `operador1@mapfre.net`, casilla *Tomador* ✔,
+  *Perfilado* **desmarcada** (si se marca, se va directo a Datos solicitud), *Inversión* ✔ →
+  *INICIAR TVA*.
 - **[Verificar]** URL `/sesion/<clave>`, miga de pan **Selección producto**; rejilla
   de 21 tarjetas `código - descripción` (p. ej. `00427 - PIAS ELECCION`,
   `00447 - DIVIDENDO VIDA II`, `00534 - MILLÓN VIDA`), cada una con el enlace *Contratación*.
-  Botones: *Cancelar* y, con rol admin, *Administración*.
+  Botones: solo *Administración* (y solo con rol admin); **no hay *Cancelar*** en esta pantalla.
 
 ### 3.2 Selección de producto
 - **[Introducir]** pulsar *Contratación* en `00427 - PIAS ELECCION` (producto Unit Linked:
@@ -99,7 +102,7 @@ que todo es válido). No hay *Siguiente*: se avanza con *Contratar*.
 | # | [Introducir] | [Verificar] |
 |---|---|---|
 | 3.4.1 | Productores → Productor `P0001`, Oficina `9275` → *Continuar* | Sección válida |
-| 3.4.2 | Operación: *Prima única* y *Aportación periódica* vacías → *Continuar* | `Debe rellenar la prima única o la prima periódica`, `La fecha de efecto no puede ser nula`, `El tipo de duración no puede ser nulo` |
+| 3.4.2 | Operación: *Prima única* y *Aportación periódica* vacías → *Continuar* (la fecha de efecto y el tipo de duración vienen prellenados) | `Debe rellenar la prima única o la prima periódica`, `La duración no puede ser nula` |
 | 3.4.3 | Prima única `100` | `El importe de la prima debe estar entre 600 y 1000000` |
 | 3.4.4 | Prima única vacía, Aportación periódica `1200`, sin periodicidad | `Debe seleccionar la periodicidad` (solo es obligatoria con aportación periódica) |
 | 3.4.5 | Prima única `6000`, Fecha de efecto = hoy, Tipo de duración informado → *Continuar* | Sección válida |
@@ -107,10 +110,10 @@ que todo es válido). No hay *Siguiente*: se avanza con *Contratar*.
 | 3.4.7 | Garantías: *FC* aparece obligatoria; marcar/desmarcar *FA* → *Continuar* | Válida |
 | 3.4.8 | Domiciliaciones: IBAN recibos `ES0000000000000000000000` | `IBAN inválido` |
 | 3.4.9 | IBAN recibos `ES9121000418450200051332` → *Continuar* | Válida |
-| 3.4.10 | Con alguna sección inválida, *Contratar* (si está habilitado) | `Los datos de productores y del seguro no son válidos` (y `Hay avisos de error pendientes` al repetir) |
-| 3.4.11 | Todo válido, *Contratar* sin documentación | `Es necesario enviar la documentación precontractual antes de contratar` |
+| 3.4.10 | Con alguna sección inválida | *Contratar* permanece **deshabilitado** |
+| 3.4.11 | Todo válido pero sin documentación enviada | *Contratar* sigue **deshabilitado**; *Doc. Precontractual* habilitado |
 | 3.4.12 | *Doc. Precontractual* → diálogo «Documentación precontractual» («Se va a enviar un correo… ya no podrá modificar») → *Continuar* (*Volver* cancela) | Panel de documentos con `PRECONTRACTUAL · enviado` |
-| 3.4.13 | *Cancelar* → diálogo `Va a cancelar el proceso de captura. ¿Está seguro?` → *Cancelar* | Se mantiene la pantalla (*Aceptar* cierra la sesión y vuelve al inicio) |
+| 3.4.13 | *Cancelar* → diálogo `Va a cancelar el proceso de captura. ¿Está seguro?` → *Cancelar* | Se mantiene la pantalla (*Aceptar* cierra la sesión y lleva a **Fin**) |
 | 3.4.14 | *Contratar* | Miga de pan **Resumen** |
 
 ### 3.5 Resumen, firma y fin

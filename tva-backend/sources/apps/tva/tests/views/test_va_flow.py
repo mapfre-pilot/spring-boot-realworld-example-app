@@ -52,6 +52,9 @@ def test_va_guardar_y_volver_avanza(api_client, auth_header):
     data = r.json()
     assert data["pantallaActual"] == "CAPTURA_DATOS_SOLICITUD", data
     assert data["estado"]["datosOperacion"]["primaUnica"] == 12000
+    # periodicContributionAmn = 0 en la propuesta → no se prellena (evita
+    # «Debe seleccionar la periodicidad»)
+    assert not data["estado"]["datosOperacion"].get("aportacionPeriodica")
 
     # 00447 no es unit linked → la caja no tiene sección opcionesInversion
     caja_seguro = next(c for c in data["estado"]["cajas"] if c["id"] == "DATOS_DEL_SEGURO")

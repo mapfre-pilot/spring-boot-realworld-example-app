@@ -53,10 +53,12 @@ def aplicar_producto(estado: dict, codigo_producto: str, investment_option: dict
                 secs.insert(1, seccion("opcionesInversion", "Opciones de inversión"))
     if investment_option:
         op = dict(nuevo.get("datosOperacion") or {})
-        if not op.get("primaUnica"):
-            op["primaUnica"] = investment_option.get("uniqueContributionAmn")
-        if not op.get("aportacionPeriodica"):
-            op["aportacionPeriodica"] = investment_option.get("periodicContributionAmn")
+        unica = investment_option.get("uniqueContributionAmn")
+        periodica = investment_option.get("periodicContributionAmn")
+        if not op.get("primaUnica") and isinstance(unica, int | float) and unica > 0:
+            op["primaUnica"] = unica
+        if not op.get("aportacionPeriodica") and isinstance(periodica, int | float) and periodica > 0:
+            op["aportacionPeriodica"] = periodica
         nuevo["datosOperacion"] = op
     return nuevo
 

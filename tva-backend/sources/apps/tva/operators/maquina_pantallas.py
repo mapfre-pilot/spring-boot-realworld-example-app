@@ -178,10 +178,13 @@ def siguiente_pantalla(sesion: Sesion) -> Pantalla:
         return Pantalla.CAPTURA_DATOS_SOLICITUD
 
     if actual == Pantalla.CAPTURA_TOMADOR1:
+        if sesion.modalidad == Modalidad.VENTA_ASESORADA:
+            # VA: los tomadores van después de la solicitud → T2 o Resumen.
+            return Pantalla.CAPTURA_TOMADOR2 if len(tomadores) >= 2 else Pantalla.RESUMEN_CONTRATACION
         return Pantalla.CAPTURA_TOMADOR2 if len(tomadores) >= 2 else Pantalla.CAPTURA_DATOS_SOLICITUD
 
     if actual == Pantalla.CAPTURA_TOMADOR2:
-        return Pantalla.CAPTURA_DATOS_SOLICITUD
+        return Pantalla.RESUMEN_CONTRATACION if sesion.modalidad == Modalidad.VENTA_ASESORADA else Pantalla.CAPTURA_DATOS_SOLICITUD
 
     if actual == Pantalla.CAPTURA_DATOS_SOLICITUD:
         # VA: «Guardar y volver» avanza a la primera caja de tomador sin

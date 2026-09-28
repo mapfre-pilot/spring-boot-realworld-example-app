@@ -119,7 +119,9 @@ R2C: CAPTURA_DATOS_SOLICITUD
 otro: SOLO_AVISOS
 ```
 Además: aplicación cerrada → SISTEMA_CERRADO; usuario sin perfil → SIN_PERFIL; taller con error → SOLO_AVISOS.
-Tomador 1 → Continuar: si hay dos tomadores → CAPTURA_TOMADOR2, si no → CAPTURA_DATOS_SOLICITUD.
+Tomador 1 → Continuar: si hay dos tomadores → CAPTURA_TOMADOR2, si no → CAPTURA_DATOS_SOLICITUD
+(en VA los tomadores van después de la solicitud: Tomador 1 con un tomador → RESUMEN_CONTRATACION
+y Tomador 2 → RESUMEN_CONTRATACION).
 
 ### 12.4.3. Botonera (`TVA_Botonera`)
 

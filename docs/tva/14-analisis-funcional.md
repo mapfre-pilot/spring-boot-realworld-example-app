@@ -115,7 +115,7 @@ R2C: `R2C_CAPTURA`→`R2C_PRECIOS`). La apertura/cierre se controla por el pará
 | Entrada | Secciones: datos personales, domicilio habitual, medios de contacto, FATCA/CRS, representante legal (opcional); panel derecho de requisitos |
 | Reglas de negocio (avisos literales) | Datos personales: documento/nombre/primer apellido/fecha nacimiento/sexo/nacionalidad/país obligatorios; `Los campos Actividad, Sector y Profesión son obligatorios`; `El móvil es obligatorio`; `El correo electrónico es obligatorio`. Domicilio: `El/La … es obligatorio/a` (tipo vía, nombre, número, CP, localidad, provincia, país). Dirección de correspondencia: `El campo tipo de dirección es obligatorio`. Medios de contacto: tipo/prefijo/valor |
 | Requisitos | RGPD (`consentimientoProteccionDatos`), digitalización DNI (`documentoIdDigitalizado`), test de conveniencia (`testConvenienciaVigente` + `perfilCliente.testConveniencia`), habilitados al ser válidos datos personales (y medios de contacto para el test). El resultado se verifica por la respuesta real del componente, no por el simple cierre |
-| Salidas | Caja `CAPTURA_DATOS_TOMADOR_N` con `datosValidos` → Continuar (PM `TVA_CapturaTomadorN-Continuar`) → Tomador 2 o Solicitud |
+| Salidas | Caja `CAPTURA_DATOS_TOMADOR_N` con `datosValidos` → Continuar (PM `TVA_CapturaTomadorN-Continuar`) → VIA: Tomador 2 o Solicitud; VA (tomadores después de la solicitud): Tomador 2 o Resumen |
 | Fuente Appian | `TVA_Pantalla_CapturaTomador`, `TVA_DatosParticipanteV2`, `TVA_DomicilioV2`, `TVA_MediosContacto`, `TVA_CapturaTomador_PanelDerecho`, `rule!TVA_CapturaTomador_*_Validacion`, PM `TVA_PopUp_RGPD/DigitalizacionDNI/TestConveniencia` |
 
 ### 4.4 Datos de la solicitud
