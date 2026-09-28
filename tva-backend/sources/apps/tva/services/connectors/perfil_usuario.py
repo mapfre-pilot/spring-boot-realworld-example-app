@@ -106,7 +106,7 @@ class MockPerfilUsuarioClient(PerfilUsuarioClient):
         if path.exists():
             data = json.loads(path.read_text(encoding="utf8"))
             return dict(data.get("response", data))
-        return {"usuario": usuario, "conPerfil": True, "funcionalidades": ["4016", "4017", "4018"], "codProductor": "P0001"}
+        return {"usuario": usuario, "conPerfil": True, "funcionalidades": ["4016", "4017", "4018", "4045"], "codProductor": "P0001"}
 
 
 class RealPerfilUsuarioClient(PerfilUsuarioClient):

@@ -1,10 +1,27 @@
 {
  "response": {
+  "operationResult": {
+   "operationStatusCode": "01",
+   "operationStatusDesc": "Accepted"
+  },
   "contractingProposal": {
+   "proposalId": "PROP-0001",
    "insurancesApplication": [
     {
-     "applicationId": "APP-0001",
-     "statusDesc": null
+     "operationTypeCode": "S",
+     "insuranceApplicationId": "0",
+     "endorsementId": "0",
+     "operationId": "1",
+     "commercialProductCode": "00447",
+     "commercialProductName": "Dividendo Vida II",
+     "investmentOptions": [
+      {
+       "uniqueContributionAmn": 12000,
+       "periodicContributionAmn": 0
+      }
+     ],
+     "statusDesc": null,
+     "statusDate": "2024-10-10"
     }
    ]
   }

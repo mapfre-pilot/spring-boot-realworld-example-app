@@ -6,7 +6,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatRadioModule } from '@angular/material/radio';
 
-import { EjecutarAccionUsecase, SesionStore } from '@tva/core';
+import {
+  EjecutarAccionUsecase,
+  PERIODICIDAD_RENTA_ADJETIVO,
+  RentasEstado,
+  SesionStore,
+} from '@tva/core';
 import { CajaComponent } from '../../../ui/caja.component';
 import { CampoLecturaComponent } from '../../../ui/campo-lectura.component';
 
@@ -15,6 +20,7 @@ const PERIODICIDADES: Record<string, string> = {
   T: 'Trimestral',
   S: 'Semestral',
   A: 'Anual',
+  ...PERIODICIDAD_RENTA_ADJETIVO,
 };
 
 interface Tomador {
@@ -69,8 +75,27 @@ export class ResumenContratacionContainer implements OnInit {
   readonly fechaEfecto = computed(() => this.operacion()['fechaEfecto'] as string | undefined);
   readonly diaCobro = computed(() => this.operacion()['diaCobro'] as number | undefined);
   readonly periodicidad = computed(() => this.operacion()['periodicidad']);
-  readonly renta = computed(() => this.operacion()['renta'] as number | undefined);
-  readonly periodicidadRenta = computed(() => this.operacion()['periodicidadRenta']);
+  private readonly rentasEstado = computed(() => (this.estado()['rentas'] ?? {}) as RentasEstado);
+  private readonly idxSimulacion = computed(
+    () => this.rentasEstado().idxSimulacionSeleccionada ?? null
+  );
+  readonly primaTotalRenta = computed(() => this.rentasEstado().importeTotalPrima);
+  readonly capitalDecreciente = computed(() => {
+    const i = this.idxSimulacion();
+    return i !== null
+      ? (this.rentasEstado().deathCapitalOptions?.[i]?.deathCapitalPremiumPerc ?? null)
+      : null;
+  });
+  readonly renta = computed(() => {
+    const directa = this.operacion()['renta'] as number | undefined;
+    if (directa !== undefined) return directa;
+    if (this.rentasEstado().rentaObjetivo != null) return this.rentasEstado().rentaObjetivo;
+    const i = this.idxSimulacion();
+    return i !== null ? this.rentasEstado().simulaciones?.[i]?.projectData?.incomeAmn : undefined;
+  });
+  readonly periodicidadRenta = computed(
+    () => this.operacion()['periodicidadRenta'] ?? this.rentasEstado().periodicidadRenta
+  );
   readonly iban = computed(() => {
     const est = this.estado();
     const op = this.operacion();

@@ -24,6 +24,7 @@ from apps.tva.services.connectors.perfil_usuario import get_perfil_usuario_clien
 from apps.tva.services.connectors.ric import get_ric_client
 
 from .maquina_pantallas import pantalla_inicio
+from .seleccionar_modalidad import aplicar_producto
 from .sesion_modelo import nueva_sesion_estado, tomador_vacio
 from .validaciones import nuuma_desde_username, test_conveniencia_valido, validar_parametros_inicio, validar_parametros_inicio_body
 
@@ -108,6 +109,30 @@ def iniciar_sesion(usuario: str, datos: dict) -> tuple[Sesion | None, list[str]]
         investment_option = (datos.get("investment") or [None])[0]
         company_id = str(datos.get("companyId") or "")
         distribution_channel = str(datos.get("distributionChannel") or "")
+        # VA: Appian llama a GetProposal(proposalId) en el inicio y guarda
+        # la respuesta en ``responseProposal``.
+        if modalidad == "VA" and datos.get("proposalId"):
+            try:
+                propuesta = get_apilife_client().get_proposal(
+                    {
+                        "proposalId": str(datos.get("proposalId")),
+                        "companyId": company_id,
+                        "distributionChannel": distribution_channel,
+                    }
+                )
+            except Exception as exc:
+                logger.warning("GetProposal(%s) falló: %s", datos.get("proposalId"), exc)
+                propuesta = {}
+                aviso_propuesta = aviso(
+                    AvisosClase.TALLER,
+                    "TVA_ERROR_SERVICIO_EXTERNO",
+                    f"No se ha podido recuperar la propuesta {datos.get('proposalId')}",
+                    tipo="ERROR",
+                )
+            else:
+                aviso_propuesta = None
+        else:
+            aviso_propuesta = None
     else:
         # Contrato legacy
         avisos = validar_parametros_inicio(datos.get("documentoCliente", ""), datos.get("canal", ""))
@@ -190,9 +215,18 @@ def iniciar_sesion(usuario: str, datos: dict) -> tuple[Sesion | None, list[str]]
     estado["productos"] = productos
     if not productos and modalidad == "VIA":
         estado["avisos"] = [aviso(AvisosClase.TALLER, "TVA_ERROR_SIN_PRODUCTOS", MSG_SIN_PRODUCTOS, tipo="ERROR")]
+    if _es_contrato_nuevo(datos) and aviso_propuesta:
+        estado.setdefault("avisos", []).append(aviso_propuesta)
 
     pantalla = pantalla_inicio(modalidad, estado)
     estado["idPantallaActual"] = pantalla.value
+    # VA con propuesta de una sola aplicación y perfil OK entra directa en
+    # datos de la solicitud: el producto queda seleccionado como en
+    # seleccionar-modalidad.
+    if modalidad == "VA" and pantalla == Pantalla.CAPTURA_DATOS_SOLICITUD:
+        applications = ((propuesta.get("contractingProposal") or {}).get("insurancesApplication")) or []
+        if applications:
+            estado = aplicar_producto(estado, str(applications[0].get("commercialProductCode") or ""))
 
     sesion = Sesion.objects.create(
         usuario=usuario,

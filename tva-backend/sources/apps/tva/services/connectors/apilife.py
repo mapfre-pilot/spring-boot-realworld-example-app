@@ -192,6 +192,33 @@ _OPCIONES_UL = [
 ]
 
 
+# Factores DEV de individualAnnuitySimulation por % de capital decreciente
+# (muestra Appian DEV: prima 50 000 → 1 415,89 / 1 058,17).
+_FACTORES_ANNUITY = {50.0: (0.0283178, 2.3), 100.0: (0.0211634, 2.41)}
+
+
+def _mock_annuity_simulation(payload: dict) -> dict:
+    """Simulación determinista: renta = prima × factor, o prima = renta / factor."""
+    pct = float(payload.get("deathCapitalPremiumPerc") or 50.0)
+    factor, retorno = _FACTORES_ANNUITY.get(pct, (0.0283178, 2.3))
+    income = payload.get("incomeAmn")
+    prima = float(payload.get("importeTotalPrima") or 0)
+    if income is not None:
+        income_amn = float(income)
+        premium_amn = round(income_amn / factor, 2)
+    else:
+        premium_amn = prima
+        income_amn = round(prima * factor, 2)
+    return {
+        "operationResult": {"operationStatusCode": "01", "operationStatusDesc": "Accepted"},
+        "projectData": {
+            "premiumAmn": premium_amn,
+            "incomeAmn": income_amn,
+            "expectedReturnPerc": retorno,
+        },
+    }
+
+
 def _catalogo_dev() -> list[dict]:
     """Catálogo DEV: producto + garantías, periodicidades, primas y opciones UL."""
     productos = []
@@ -223,6 +250,8 @@ class MockApiLifeClient(ApiLifeClient):
             # nuuma == "SINPRODUCTOS" permite probar el caso vacío.
             nuuma = (payload or {}).get("nuuma") or ""
             return {"products": [] if nuuma == "SINPRODUCTOS" else _catalogo_dev()}
+        if endpoint == "individualAnnuitySimulation":
+            return _mock_annuity_simulation(payload or {})
         name = ENDPOINT_FIXTURES.get(endpoint, endpoint)
         path = FIXTURES_DIR / f"{name}.json"
         if not path.exists():

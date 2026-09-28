@@ -8,7 +8,9 @@ from apps.tva.services.connectors.ric import MockRicClient
 
 def test_mock_apilife_endpoints():
     c = MockApiLifeClient()
-    assert c.annuity_simulation({})["results"]
+    assert c.annuity_simulation({"importeTotalPrima": 50000, "deathCapitalPremiumPerc": 50})["projectData"]["incomeAmn"] == pytest.approx(
+        1415.89, abs=0.01
+    )
     assert c.get_proposal({})["contractingProposal"]
     assert c.sbc_maximo({})["importeMaximo"] == 240000.0
     assert c.client_search("X")["clientId"]

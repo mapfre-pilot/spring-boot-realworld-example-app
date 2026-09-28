@@ -150,3 +150,52 @@ export interface Sesion {
 }
 
 /** Contrato Appian de la Web API de inicio (§12.4.1). */
+
+/** Aplicación de seguro dentro de la propuesta VA (TVA_MOCK_OutContractingProposal). */
+export interface InsuranceApplicationProposal {
+  operationTypeCode?: string;
+  insuranceApplicationId?: string;
+  endorsementId?: string;
+  operationId?: string;
+  commercialProductCode?: string;
+  commercialProductName?: string;
+  investmentOptions?: {
+    uniqueContributionAmn?: number | null;
+    periodicContributionAmn?: number | null;
+  }[];
+  statusDesc?: string | null;
+  statusDate?: string | null;
+}
+
+/** Simulación de rentas devuelta por individualAnnuitySimulation. */
+export interface SimulacionRenta {
+  operationResult?: { operationStatusCode?: string; operationStatusDesc?: string };
+  projectData?: { premiumAmn?: number; incomeAmn?: number; expectedReturnPerc?: number };
+}
+
+/** Estado ``estado.rentas`` de la modalidad R2C. */
+export interface RentasEstado {
+  importeTotalPrima?: number;
+  periodicidadRenta?: string;
+  simulaciones?: SimulacionRenta[];
+  deathCapitalOptions?: { deathCapitalPremiumPerc?: number }[];
+  idxSimulacionSeleccionada?: number | null;
+  rentaObjetivo?: number | null;
+  recalcular?: boolean;
+}
+
+/** Etiquetas por periodicidad de la renta (valores enviados por R2C_CAPTURA). */
+export const PERIODICIDAD_RENTA_ETIQUETA: Record<string, string> = {
+  MENSUAL: 'mes',
+  TRIMESTRAL: 'trimestre',
+  SEMESTRAL: 'semestre',
+  ANUAL: 'año',
+};
+
+/** Forma adjetival (¿Qué renta mensual…?) por periodicidad. */
+export const PERIODICIDAD_RENTA_ADJETIVO: Record<string, string> = {
+  MENSUAL: 'mensual',
+  TRIMESTRAL: 'trimestral',
+  SEMESTRAL: 'semestral',
+  ANUAL: 'anual',
+};

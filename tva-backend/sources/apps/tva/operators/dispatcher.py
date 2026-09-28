@@ -27,6 +27,7 @@ from .maquina_pantallas import (
     siguiente_pantalla,
     sincronizar_pantalla,
 )
+from .validaciones import avisos_seccion, errores_rentas_captura
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +138,22 @@ def ejecutar_accion(sesion: Sesion, accion: str, datos: dict, roles: list[str] |
         return _accion_contratar(sesion, datos, roles)
 
     if a == Accion.SIGUIENTE:
-        if datos:
+        if sesion.pantalla_actual == Pantalla.R2C_CAPTURA.value:
+            if datos:
+                sesion.estado = {**(sesion.estado or {}), **datos}
+            errores = errores_rentas_captura(sesion.estado.get("rentas"), sesion.estado.get("tomadores"))
+            if errores:
+                estado = dict(sesion.estado or {})
+                estado["avisos"] = [
+                    *[a for a in estado.get("avisos", []) if a.get("seccion") != "R2C_CAPTURA/captura"],
+                    *avisos_seccion(errores, seccion_ref="R2C_CAPTURA/captura"),
+                ]
+                sesion.estado = estado
+                guardar_y_trazar(sesion, "SIGUIENTE", estado.get("avisos"))
+                return resultado(sesion, roles=roles)
+            if not rentas.simular(sesion):
+                return resultado(sesion, roles=roles)
+        elif datos:
             sesion.estado = {**(sesion.estado or {}), **datos}
         sesion.pantalla_actual = siguiente_pantalla(sesion).value
         sincronizar_pantalla(sesion)
@@ -156,6 +172,7 @@ def ejecutar_accion(sesion: Sesion, accion: str, datos: dict, roles: list[str] |
         Accion.CONTINUAR_TOMADOR: continuar_tomador.ejecutar,
         Accion.RECALCULAR_RENTAS: rentas.recalcular,
         Accion.CONTRATAR_RENTAS: rentas.contratar,
+        Accion.ACTUALIZAR_RENTAS: rentas.actualizar,
         Accion.FIRMAR: firmar.ejecutar,
         Accion.VALIDAR_REINVERSION: validar_reinversion.ejecutar,
         Accion.VERIFICAR_PRODUCTORES: verificar_productores.ejecutar,

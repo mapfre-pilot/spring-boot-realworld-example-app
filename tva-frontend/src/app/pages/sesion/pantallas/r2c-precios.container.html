@@ -1,6 +1,53 @@
-<mat-card>
-  <mat-card-title>Precios de rentas</mat-card-title>
-  <mat-card-content>
-    <pre>{{ rentasJson() }}</pre>
-  </mat-card-content>
-</mat-card>
+<app-caja titulo="Precios de rentas">
+  <div class="opciones">
+    @for (sim of simulaciones(); track $index; let i = $index) {
+      <mat-card class="opcion" [class.seleccionada]="idx() === i">
+        <mat-card-content>
+          <mat-radio-button [checked]="idx() === i" (change)="seleccionar(i)" class="opcion-radio">
+            <span class="renta"
+              >{{ sim.projectData?.incomeAmn | currency: 'EUR' }} /{{ periodo() }}</span
+            >
+          </mat-radio-button>
+          <p>Importe total de la prima {{ sim.projectData?.premiumAmn | currency: 'EUR' }}</p>
+          <p>Rentabilidad esperada {{ sim.projectData?.expectedReturnPerc }}%</p>
+          <p>Opción capital decreciente hasta el {{ opciones()[i]?.deathCapitalPremiumPerc }}%</p>
+          <p>
+            @if (opciones()[i]?.deathCapitalPremiumPerc === 50) {
+              Alcanzado ese porcentaje, el capital de fallecimiento permanece constante durante el
+              resto de vigencia de la póliza.
+            } @else {
+              A partir del momento en que se alcance ese porcentaje, la póliza deja de tener
+              prestación de fallecimiento.
+            }
+          </p>
+          @for (rt of rentaTomador(); track $index) {
+            <p>Renta Tomador {{ $index + 1 }}: {{ rt | currency: 'EUR' }}</p>
+          }
+        </mat-card-content>
+      </mat-card>
+    }
+  </div>
+
+  @if (idx() !== null) {
+    <mat-card class="capital">
+      <mat-card-title>Capital decreciente</mat-card-title>
+      <mat-card-content>
+        <p>Opción capital decreciente hasta el {{ pctSeleccionado() }}%</p>
+        <p>
+          @if (pctSeleccionado() === 50) {
+            Con la opción seleccionada garantiza que sus herederos tendrán un reembolso de al menos
+            un 50% de la prima.
+          } @else {
+            Con la opción seleccionada sus herederos tendrán reembolso solo si en el momento de
+            fallecimiento no se ha consumido en prestaciones la totalidad de la prima.
+          }
+        </p>
+        <p>¿Qué renta {{ adjetivo() }} necesita?</p>
+        <label class="campo-renta">
+          Renta {{ periodo() }}
+          <input type="number" [formControl]="rentaControl" (blur)="cambiarRenta()" />
+        </label>
+      </mat-card-content>
+    </mat-card>
+  }
+</app-caja>

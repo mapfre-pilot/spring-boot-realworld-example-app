@@ -1,12 +1,47 @@
 <app-caja titulo="Seguros de ahorro">
-  @for (ap of applications(); track $index) {
-    <mat-card class="tarjeta">
-      <mat-card-content>{{
-        ap['productDesc'] ?? ap['commercialProductCode'] ?? ap | json
-      }}</mat-card-content>
-    </mat-card>
-  }
-  @if (!applications().length) {
+  @if (applications().length) {
+    <table class="tva-tabla">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Aportación única</th>
+          <th>Aportación periódica</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (ap of applications(); track $index) {
+          <tr>
+            <td>{{ ap.commercialProductCode }} - {{ ap.commercialProductName }}</td>
+            <td>
+              {{
+                ap.investmentOptions?.[0]?.uniqueContributionAmn ?? null
+                  | currency: 'EUR' : 'symbol' : '1.2-2' : 'es'
+              }}
+            </td>
+            <td>
+              {{
+                ap.investmentOptions?.[0]?.periodicContributionAmn ?? null
+                  | currency: 'EUR' : 'symbol' : '1.2-2' : 'es'
+              }}
+            </td>
+            <td>{{ ap.statusDesc ?? '' }}</td>
+            <td>
+              <button
+                mat-flat-button
+                color="primary"
+                type="button"
+                [disabled]="capturaDeshabilitada()"
+                (click)="capturar(ap)">
+                Captura datos
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else {
     <p>No hay seguros de ahorro en la propuesta.</p>
   }
 </app-caja>

@@ -104,12 +104,15 @@ def botones_para(sesion: Sesion, roles: list[str] | None = None) -> list[dict]:
 
     base_validos = _seguro_y_productores_validos(estado)
     flag_tc = _flag_bool("TVA_FLAG_TEST_CONVENIENCIA_OBLIGATORIO")
-    flag_docs = _flag_bool("TVA_FLAG_DOCUMENTOS_PRECONTRACTUALES_OBLIGATORIOS")
     tc_ok = _test_conveniencia_valido(estado) if flag_tc else True
     docs = estado.get("documentosPrecontractuales") or []
     docs_enviados = bool(docs) and all(d.get("enviado") for d in docs)
 
     caja_tomador_ok = caja_valida(estado, CAJA_TOMADOR1 if p == Pantalla.CAPTURA_TOMADOR1 else CAJA_TOMADOR2) and tc_ok
+
+    rentas_estado = estado.get("rentas") or {}
+    idx_sim = rentas_estado.get("idxSimulacionSeleccionada")
+    recalculando = bool(rentas_estado.get("recalcular"))
 
     botones = [
         _boton("cancelar", "Cancelar", visible=solicitud or tomador or r2c_captura or r2c_precios or resumen, confirm=_CONFIRM_CANCELAR),
@@ -120,7 +123,7 @@ def botones_para(sesion: Sesion, roles: list[str] | None = None) -> list[dict]:
             "recalcular",
             "Recalcular",
             visible=r2c_precios,
-            disabled=not bool((estado.get("rentas") or {}).get("recalcular")),
+            disabled=not (idx_sim is not None and recalculando),
         ),
         _boton("guardar-y-volver", "Guardar y volver", visible=solicitud and va, disabled=not base_validos),
         _boton(
@@ -135,7 +138,7 @@ def botones_para(sesion: Sesion, roles: list[str] | None = None) -> list[dict]:
             "Contratar",
             visible=(solicitud and (via or r2c)) or r2c_precios,
             disabled=(solicitud and condiciones_contratar(sesion) is not None)
-            or (r2c_precios and not (base_validos and tc_ok and (not flag_docs or docs_enviados))),
+            or (r2c_precios and not (idx_sim is not None and not recalculando)),
         ),
         _boton("continuar", "Continuar", visible=tomador, disabled=not caja_tomador_ok),
         _boton(

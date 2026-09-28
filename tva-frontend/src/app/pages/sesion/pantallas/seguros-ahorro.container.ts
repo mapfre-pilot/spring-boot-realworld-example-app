@@ -1,36 +1,53 @@
-/** SEGUROS_AHORRO (VA): lista de insurancesApplication de la propuesta. */
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
-import { JsonPipe } from '@angular/common';
+/** SEGUROS_AHORRO (VA): tabla de insurancesApplication de la propuesta (TVA_Pantalla_SegurosAhorro). */
+import { CurrencyPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 
-import { EstadoSesion, Producto, ObtenerProductosUsecase, SesionStore } from '@tva/core';
+import {
+  EjecutarAccionUsecase,
+  EstadoSesion,
+  InsuranceApplicationProposal,
+  SesionStore,
+} from '@tva/core';
 import { CajaComponent } from '../../../ui/caja.component';
 
 @Component({
   selector: 'app-seguros-ahorro',
-  imports: [MatCardModule, CajaComponent, JsonPipe],
+  imports: [MatCardModule, MatButtonModule, CajaComponent, CurrencyPipe],
   templateUrl: './seguros-ahorro.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SegurosAhorroContainer implements OnInit {
-  private readonly obtenerProductos = inject(ObtenerProductosUsecase);
+export class SegurosAhorroContainer {
+  private readonly ejecutarAccion = inject(EjecutarAccionUsecase);
   private readonly store = inject(SesionStore);
-  readonly productos = signal<Producto[]>([]);
-  readonly applications = computed<Record<string, unknown>[]>(() => {
-    const estado = (this.store.sesion()?.estado ?? {}) as EstadoSesion;
-    const prop = estado.responseProposal ?? {};
+
+  private readonly estado = computed(() => (this.store.sesion()?.estado ?? {}) as EstadoSesion);
+
+  readonly applications = computed<InsuranceApplicationProposal[]>(() => {
+    const prop = (this.estado().responseProposal ?? {}) as Record<string, unknown>;
     const contracting = (prop['contractingProposal'] ?? {}) as Record<string, unknown>;
-    return (contracting['insurancesApplication'] as Record<string, unknown>[] | undefined) ?? [];
+    return (
+      (contracting['insurancesApplication'] as InsuranceApplicationProposal[] | undefined) ?? []
+    );
   });
 
-  ngOnInit(): void {
-    this.obtenerProductos.execute().subscribe(r => this.productos.set(r.products ?? []));
+  /** TVA_Pantalla_SegurosAhorro: en VA sin la funcionalidad 4045 hace falta
+   * test de conveniencia vigente en todos los tomadores para poder capturar. */
+  readonly capturaDeshabilitada = computed(() => {
+    const estado = this.estado();
+    if ((this.store.sesion()?.modalidad ?? estado.modoFuncionamiento) !== 'VA') return false;
+    const funcionalidades = estado.perfilUsuario?.funcionalidades ?? [];
+    if (funcionalidades.map(String).includes('4045')) return false;
+    const tomadores = estado.tomadores ?? [];
+    return !tomadores.length
+      ? true
+      : tomadores.some(t => !t.datosGestionParticipante?.testConvenienciaVigente);
+  });
+
+  capturar(ap: InsuranceApplicationProposal): void {
+    this.ejecutarAccion
+      .execute('seleccionar-modalidad', { productCode: ap.commercialProductCode })
+      .subscribe();
   }
 }

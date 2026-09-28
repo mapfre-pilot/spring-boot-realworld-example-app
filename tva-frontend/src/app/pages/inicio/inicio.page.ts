@@ -108,6 +108,13 @@ export class InicioPage implements OnInit {
         prop.clearValidators();
       }
       prop.updateValueAndValidity();
+      const ntom = this.form.controls.numTomadores;
+      if (modo === 'R2C') {
+        ntom.setValue(2);
+        ntom.disable();
+      } else {
+        ntom.enable();
+      }
     });
   }
 

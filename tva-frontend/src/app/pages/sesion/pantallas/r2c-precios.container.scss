@@ -1,3 +1,33 @@
-button {
-  margin-right: 8px;
+.opciones {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.opcion {
+  flex: 1 1 320px;
+}
+
+.opcion.seleccionada {
+  outline: 2px solid var(--mat-sys-primary);
+}
+
+.renta {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.capital {
+  margin-top: 16px;
+}
+
+.campo-renta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.campo-renta input {
+  max-width: 160px;
+  padding: 8px;
 }

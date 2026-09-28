@@ -131,7 +131,7 @@ def errores_seccion(estado: dict, caja_id: str, seccion_id: str) -> list[str]:
         if caja_id in (CAJA_DOMICILIACIONES_T1, CAJA_DOMICILIACIONES_T2):
             return errores_domiciliaciones(t.get("domiciliaciones"))
         if seccion_id == "datosPersonales":
-            return errores_datos_personales(t.get("datosPersonales"), t.get("mediosContacto"))
+            return errores_datos_personales(t.get("datosPersonales"))
         if seccion_id == "domicilioHabitual":
             return errores_domicilio_habitual(t.get("domicilioHabitual"))
         if seccion_id == "mediosContacto":

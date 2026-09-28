@@ -38,6 +38,7 @@ class Accion(StrEnum):
     CONTINUAR_TOMADOR = "continuar-tomador"
     RECALCULAR_RENTAS = "recalcular-rentas"
     CONTRATAR_RENTAS = "contratar-rentas"
+    ACTUALIZAR_RENTAS = "actualizar-rentas"
     FIRMAR = "firmar"
     VALIDAR_REINVERSION = "validar-reinversion"
     VERIFICAR_PRODUCTORES = "verificar-productores"

@@ -38,11 +38,17 @@
           <h3 class="titulo-seccion">Renta</h3>
           <div class="grid-lectura">
             <app-campo-lectura
-              etiqueta="Renta"
+              etiqueta="Prima"
+              [valor]="primaTotalRenta() | currency: 'EUR' : 'symbol' : '1.2-2' : 'es'" />
+            <app-campo-lectura
+              etiqueta="Renta objetivo"
               [valor]="renta() | currency: 'EUR' : 'symbol' : '1.2-2' : 'es'" />
             <app-campo-lectura
               etiqueta="Periodicidad"
               [valor]="periodicidadEtiqueta(periodicidadRenta())" />
+            <app-campo-lectura
+              etiqueta="Capital decreciente"
+              [valor]="capitalDecreciente() !== null ? capitalDecreciente() + ' %' : ''" />
           </div>
         }
       </div>
@@ -60,6 +66,11 @@
                 [valor]="textoTomador(t, 'fechaNacimiento') | date: 'dd/MM/yyyy'" />
               <app-campo-lectura etiqueta="Email" [valor]="contactoTomador(t).email" />
               <app-campo-lectura etiqueta="Teléfono" [valor]="contactoTomador(t).telefono" />
+              @if (esRenta()) {
+                <app-campo-lectura
+                  etiqueta="Participación"
+                  [valor]="textoTomador(t, 'participationPerc') + ' %'" />
+              }
             </div>
             <div class="requisitos">
               @for (r of requisitosTomador(t); track r.etiqueta) {
