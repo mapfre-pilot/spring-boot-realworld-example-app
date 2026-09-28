@@ -1,4 +1,5 @@
 /** RESUMEN_CONTRATACION: resumen estructurado (port de TVA_CajaResumenContratacionInformada). */
+import { formatCurrency } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
@@ -12,7 +13,6 @@ import { EstadoVacioComponent } from '../../../../shared/ui/feedback/estado-vaci
 import { EncabezadoPantallaComponent } from '../../../../shared/ui/layout/encabezado-pantalla.component';
 import { MATERIAL } from '../../../../shared/ui/material';
 
-const MONEDA = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
 const FECHA = new Intl.DateTimeFormat('es-ES', {
   day: '2-digit',
   month: '2-digit',
@@ -20,7 +20,13 @@ const FECHA = new Intl.DateTimeFormat('es-ES', {
 });
 
 function moneda(v: unknown): string | null {
-  return typeof v === 'number' ? MONEDA.format(v) : null;
+  const n =
+    typeof v === 'number'
+      ? v
+      : typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v))
+        ? Number(v)
+        : null;
+  return n === null ? null : formatCurrency(n, 'es', '€', 'EUR', '1.2-2');
 }
 function fecha(v: unknown): string | null {
   if (!v) return null;

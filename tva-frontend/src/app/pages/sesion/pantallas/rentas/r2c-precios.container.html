@@ -39,7 +39,7 @@
   <mat-card class="ajustar" appearance="outlined">
     <mat-card-title>Ajustar renta objetivo</mat-card-title>
     <mat-card-content>
-      <p class="explicacion">¿Qué renta {{ adjetivo() }} necesita?</p>
+      <p class="texto-ayuda">¿Qué renta {{ adjetivo() }} necesita?</p>
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="campo-renta">
         <mat-label>Renta {{ periodo() }} (€)</mat-label>
         <input matInput type="number" [formControl]="rentaControl" (blur)="cambiarRenta()" />

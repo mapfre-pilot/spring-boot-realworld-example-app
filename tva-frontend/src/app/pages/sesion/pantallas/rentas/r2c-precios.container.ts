@@ -1,6 +1,6 @@
 /** R2C_PRECIOS: opciones de capital decreciente + renta objetivo
  *  (TVA_R2C_SeccionPrecios / TVA_OpcionImporteRenta). */
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, formatCurrency } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -22,7 +22,9 @@ import {
 } from '../../../../shared/ui/contenedores/lista-datos.component';
 import { EncabezadoPantallaComponent } from '../../../../shared/ui/layout/encabezado-pantalla.component';
 
-const MONEDA = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+function MONEDA(v: number): string {
+  return formatCurrency(v, 'es', '€', 'EUR', '1.2-2');
+}
 
 @Component({
   selector: 'app-r2c-precios',
@@ -67,8 +69,7 @@ export class R2cPreciosContainer {
     const items: ItemListaDatos[] = [
       {
         etiqueta: 'Prima total',
-        valor:
-          sim?.projectData?.premiumAmn != null ? MONEDA.format(sim.projectData.premiumAmn) : null,
+        valor: sim?.projectData?.premiumAmn != null ? MONEDA(sim.projectData.premiumAmn) : null,
       },
       {
         etiqueta: 'Rentabilidad esperada',
@@ -83,7 +84,7 @@ export class R2cPreciosContainer {
       },
     ];
     this.rentaTomador(i).forEach((r, j) =>
-      items.push({ etiqueta: `Renta Tomador ${j + 1}`, valor: MONEDA.format(r) })
+      items.push({ etiqueta: `Renta Tomador ${j + 1}`, valor: MONEDA(r) })
     );
     return items;
   }

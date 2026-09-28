@@ -64,11 +64,26 @@ describe('ResumenContratacionContainer', () => {
     const html = s.element.innerHTML;
     expect(html).toContain('00427');
     expect(html).toContain('PIAS ELECCION');
-    expect(html).toContain('5000,00');
+    expect(html).toContain('5.000,00');
     expect(html).toContain('Única');
     expect(html).toContain('Ana');
     expect(html).toContain('00000000T');
     expect(html).toContain('ana@test.com');
     expect(html).toContain('Sin documentos');
+  });
+
+  it('formatea la prima única cuando llega como cadena', () => {
+    const s = create();
+    const store = TestBed.inject(SesionStore);
+    store.sesion.set({
+      clave: 'k',
+      pantalla_actual: 'RESUMEN_CONTRATACION',
+      estado: {
+        ...ESTADO,
+        datosOperacion: { ...ESTADO.datosOperacion, primaUnica: '6000' },
+      },
+    } as never);
+    s.detectChanges();
+    expect(s.element.innerHTML).toContain('6.000,00');
   });
 });

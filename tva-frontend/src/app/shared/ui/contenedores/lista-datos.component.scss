@@ -3,15 +3,15 @@
 }
 .lista {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px 16px;
   margin: 0;
 }
 .lista.cols-2 {
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .lista.cols-4 {
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 .item {
   min-width: 0;
@@ -24,17 +24,17 @@
 .valor {
   margin: 0;
   font-size: 14px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
-@media (max-width: 900px) {
+@media (max-width: 700px) {
   .lista,
   .lista.cols-4 {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (max-width: 600px) {
-  .lista,
-  .lista.cols-2,
-  .lista.cols-4 {
+  .lista.cols-2 {
     grid-template-columns: 1fr;
   }
 }

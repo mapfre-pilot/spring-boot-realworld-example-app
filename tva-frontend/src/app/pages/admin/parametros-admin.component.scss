@@ -1,8 +1,10 @@
 .campo-valor {
   width: 100%;
-  max-width: 260px;
+  max-width: 200px;
 }
-
-.mat-column-clave {
-  width: 60%;
+.col-clave {
+  word-break: break-all;
+}
+.col-tipo {
+  width: 64px;
 }
