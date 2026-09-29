@@ -28,7 +28,7 @@ const ESTADOS_OK = new Set(['SENT', 'SIGNED', 'COMPLETED', 'OK']);
     ListaDatosComponent,
   ],
   templateUrl: './resultado-firma.container.html',
-  styleUrl: './resultado-firma.container.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ResultadoFirmaContainer {

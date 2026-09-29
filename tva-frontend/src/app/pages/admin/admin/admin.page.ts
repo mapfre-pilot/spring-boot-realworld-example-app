@@ -14,9 +14,9 @@ import {
 } from '@tva/core';
 import { CabeceraComponent } from '../../../shared/ui/layout/cabecera/cabecera.component';
 import { EncabezadoPantallaComponent } from '../../../shared/ui/layout/encabezado-pantalla/encabezado-pantalla.component';
-import { OperacionesAdminComponent } from '../operaciones-admin/operaciones-admin.component';
-import { ParametrosAdminComponent } from '../parametros-admin/parametros-admin.component';
-import { TrazasAdminComponent } from '../trazas-admin/trazas-admin.component';
+import { OperacionesAdminComponent } from '../operaciones/operaciones-admin.component';
+import { ParametrosAdminComponent } from '../parametros/parametros-admin.component';
+import { TrazasAdminComponent } from '../trazas/trazas-admin.component';
 
 @Component({
   selector: 'app-admin-page',
@@ -29,7 +29,7 @@ import { TrazasAdminComponent } from '../trazas-admin/trazas-admin.component';
     OperacionesAdminComponent,
     TrazasAdminComponent,
   ],
-  styleUrl: './admin.page.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin.page.html',
 })

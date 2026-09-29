@@ -1,0 +1,278 @@
+@use 'tokens' as t;
+
+/* Caja (expansible). */
+app-caja .caja {
+  margin-bottom: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--tva-border);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 8%);
+  background: #fff;
+  overflow: hidden;
+}
+app-caja .caja .mat-expansion-panel-body {
+  padding: 0;
+}
+
+/* Sección dentro de una caja. */
+app-seccion {
+  display: block;
+  border-bottom: 1px solid #eee;
+}
+app-seccion:last-child {
+  border-bottom: none;
+}
+app-seccion .seccion {
+  box-shadow: none;
+  border-radius: 0;
+  background: #fff;
+}
+app-seccion .seccion.mat-expanded {
+  border-left: 3px solid var(--tva-primary);
+  background: #fafafa;
+}
+app-seccion .seccion .mat-expansion-panel-body {
+  padding: 0 16px 16px;
+}
+app-seccion .icono-ok {
+  color: var(--tva-ok);
+  font-size: 18px;
+  margin-left: 8px;
+}
+app-seccion .icono-error {
+  color: #c62828;
+  font-size: 18px;
+  margin-left: 8px;
+}
+app-seccion .punto {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid #bdbdbd;
+  margin-left: 8px;
+}
+app-seccion .acciones {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+/* Lista de datos (dl responsive). */
+app-lista-datos {
+  display: block;
+}
+app-lista-datos .lista {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 16px;
+  margin: 0;
+}
+app-lista-datos .lista.cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+app-lista-datos .lista.cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+app-lista-datos .item {
+  min-width: 0;
+}
+app-lista-datos .etiqueta {
+  font-size: 12px;
+  color: var(--tva-text-muted);
+  margin-bottom: 2px;
+}
+app-lista-datos .valor {
+  margin: 0;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+@media (max-width: 700px) {
+  app-lista-datos .lista,
+  app-lista-datos .lista.cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@include t.sm {
+  app-lista-datos .lista.cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Campo de solo lectura. */
+app-campo-lectura .campo-lectura {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+app-campo-lectura .etiqueta {
+  font-size: 12px;
+  color: var(--tva-text-muted);
+}
+app-campo-lectura .valor {
+  font-size: 14px;
+  color: var(--tva-text);
+}
+
+/* Estado vacío. */
+app-estado-vacio .vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--tva-text-muted);
+}
+app-estado-vacio .vacio mat-icon {
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+  color: #bdbdbd;
+}
+app-estado-vacio .vacio p {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* Panel de resultado (hero). */
+app-panel-resultado {
+  display: block;
+  max-width: 720px;
+  margin: 24px auto;
+}
+app-panel-resultado .panel .cuerpo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 24px;
+}
+app-panel-resultado .icono {
+  font-size: 56px;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 12px;
+}
+app-panel-resultado .panel-ok .icono {
+  color: var(--tva-ok);
+}
+app-panel-resultado .panel-error .icono {
+  color: var(--tva-primary);
+}
+app-panel-resultado .panel-info .icono {
+  color: #1565c0;
+}
+app-panel-resultado .panel-aviso .icono {
+  color: #f9a825;
+}
+app-panel-resultado .titulo {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+}
+app-panel-resultado .mensaje {
+  margin: 0 0 8px;
+  color: var(--tva-text-muted);
+}
+app-panel-resultado .acciones {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 16px;
+}
+app-panel-resultado .acciones:empty {
+  display: none;
+}
+
+/* Avisos (banners por severidad). */
+app-avisos .aviso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+app-avisos .aviso mat-icon {
+  flex-shrink: 0;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+app-avisos .aviso-error {
+  background: #fdecea;
+  border-left: 4px solid var(--tva-primary);
+  color: #7f1d12;
+}
+app-avisos .aviso-warning {
+  background: #fff8e1;
+  border-left: 4px solid #f9a825;
+  color: #7a5d00;
+}
+app-avisos .aviso-info {
+  background: #e8f2fb;
+  border-left: 4px solid #1565c0;
+  color: #0d3c6e;
+}
+
+/* Encabezado de pantalla. */
+app-encabezado-pantalla {
+  display: block;
+  margin-bottom: 16px;
+}
+app-encabezado-pantalla .encabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+app-encabezado-pantalla .textos {
+  min-width: 0;
+}
+app-encabezado-pantalla .titulo {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+app-encabezado-pantalla .subtitulo {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--tva-text-muted);
+}
+
+/* Diálogo de tareas Appian. */
+app-appian-task-dialog .dialogo-titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 4px solid var(--tva-primary);
+  padding-top: 16px;
+  font-size: 16px;
+  font-weight: 600;
+}
+app-appian-task-dialog mat-dialog-content {
+  min-height: 480px;
+  overflow: auto;
+}
+app-appian-task-dialog mat-dialog-content appian-task,
+app-appian-task-dialog mat-dialog-content iframe {
+  width: 100%;
+}
+app-appian-task-dialog .cargando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  text-align: center;
+}
+app-appian-task-dialog .cerrar {
+  margin-left: auto;
+}
+app-appian-task-dialog mat-spinner {
+  margin-bottom: 16px;
+}

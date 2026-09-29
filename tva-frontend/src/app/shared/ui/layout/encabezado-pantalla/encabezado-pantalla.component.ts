@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   selector: 'app-encabezado-pantalla',
   imports: [],
   templateUrl: './encabezado-pantalla.component.html',
-  styleUrl: './encabezado-pantalla.component.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EncabezadoPantallaComponent {

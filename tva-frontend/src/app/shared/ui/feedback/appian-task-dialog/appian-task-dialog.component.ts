@@ -32,7 +32,7 @@ interface AppianTaskElement extends HTMLElement {
   selector: 'app-appian-task-dialog',
   imports: [MatDialogModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
   templateUrl: './appian-task-dialog.component.html',
-  styleUrl: './appian-task-dialog.component.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppianTaskDialogComponent implements OnDestroy {

@@ -11,7 +11,7 @@ import { EstadoVacioComponent } from '../../../shared/ui/feedback/estado-vacio/e
   selector: 'app-parametros-admin',
   imports: [MatTableModule, MatFormFieldModule, MatInputModule, EstadoVacioComponent],
   templateUrl: './parametros-admin.component.html',
-  styleUrl: './parametros-admin.component.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParametrosAdminComponent {

@@ -5,7 +5,6 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   selector: 'app-campo-lectura',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './campo-lectura.component.html',
-  styleUrl: './campo-lectura.component.scss',
 })
 export class CampoLecturaComponent {
   readonly etiqueta = input.required<string>();

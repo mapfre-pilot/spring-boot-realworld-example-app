@@ -22,7 +22,7 @@ const ETIQUETAS: Partial<Record<Pantalla, string>> = {
   selector: 'app-migas-de-pan',
   imports: [MatIconModule],
   templateUrl: './migas-de-pan.component.html',
-  styleUrl: './migas-de-pan.component.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'app-migas' },
 })

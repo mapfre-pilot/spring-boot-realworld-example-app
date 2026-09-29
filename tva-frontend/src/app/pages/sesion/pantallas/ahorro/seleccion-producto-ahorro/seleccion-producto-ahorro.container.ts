@@ -27,7 +27,7 @@ export const MSG_SIN_PRODUCTOS = 'El servicio no ha devuelvo ningún producto de
   selector: 'app-seleccion-producto-ahorro',
   imports: [...MATERIAL, ReactiveFormsModule, EncabezadoPantallaComponent, EstadoVacioComponent],
   templateUrl: './seleccion-producto-ahorro.container.html',
-  styleUrl: './seleccion-producto-ahorro.container.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SeleccionProductoAhorroContainer implements OnInit {

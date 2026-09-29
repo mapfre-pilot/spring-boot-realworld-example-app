@@ -43,7 +43,7 @@ import { DESCRIPCIONES_MODO, FRECUENCIAS, MODOS, OPERACIONES } from './inicio.co
     CampoTextoComponent,
     CampoSelectComponent,
   ],
-  styleUrl: './inicio.page.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './inicio.page.html',
 })

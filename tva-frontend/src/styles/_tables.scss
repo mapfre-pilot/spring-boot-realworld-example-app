@@ -73,6 +73,13 @@ td.numero::after {
   text-align: right;
 }
 
+/* Scroll horizontal interno para tablas anchas (sin desbordar la página). */
 .tabla-scroll {
   overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+.tabla-scroll table {
+  width: 100%;
+  min-width: 640px;
 }

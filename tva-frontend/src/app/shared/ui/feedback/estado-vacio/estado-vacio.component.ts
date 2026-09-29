@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
   selector: 'app-estado-vacio',
   imports: [MatIconModule],
   templateUrl: './estado-vacio.component.html',
-  styleUrl: './estado-vacio.component.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EstadoVacioComponent {

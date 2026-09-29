@@ -10,7 +10,7 @@ import { MATERIAL } from '../../shared/ui/material';
   selector: 'app-login-page',
   imports: [...MATERIAL, ReactiveFormsModule],
   templateUrl: './login.page.html',
-  styleUrl: './login.page.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginPage {

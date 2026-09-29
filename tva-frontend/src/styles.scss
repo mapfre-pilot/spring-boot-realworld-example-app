@@ -3,6 +3,10 @@
 @use './styles/layout';
 @use './styles/forms';
 @use './styles/tables';
+@use './styles/shell';
+@use './styles/ui';
+@use './styles/pages';
+@use './styles/sesion';
 @use './styles/utilities';
 @use '@angular/material' as mat;
 

@@ -10,7 +10,7 @@ export interface ItemListaDatos {
   selector: 'app-lista-datos',
   imports: [],
   templateUrl: './lista-datos.component.html',
-  styleUrl: './lista-datos.component.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListaDatosComponent {

@@ -8,7 +8,7 @@ import { Aviso } from '@tva/core';
   selector: 'app-avisos',
   imports: [MatIconModule],
   templateUrl: './avisos.component.html',
-  styleUrl: './avisos.component.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AvisosComponent {

@@ -64,7 +64,6 @@ interface Tomador {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './resumen-contratacion.container.html',
-  styleUrl: './resumen-contratacion.container.scss',
 })
 export class ResumenContratacionContainer implements OnInit {
   private readonly store = inject(SesionStore);

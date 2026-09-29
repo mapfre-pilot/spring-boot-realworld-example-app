@@ -8,7 +8,7 @@ import { MATERIAL } from '../../material';
   selector: 'app-cabecera',
   imports: [...MATERIAL],
   templateUrl: './cabecera.component.html',
-  styleUrl: './cabecera.component.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'app-cabecera' },
 })

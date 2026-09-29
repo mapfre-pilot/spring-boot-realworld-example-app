@@ -1,3 +1,5 @@
+@use 'tokens' as t;
+
 html,
 body {
   height: 100%;
@@ -8,16 +10,28 @@ body {
   background: var(--tva-surface);
 }
 
-/* Contenedor de página: 1200px centrado, padding para la botonera fija. */
-.pagina {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px 24px 96px;
+/* Estructura de página: columna flexible a alto completo; la botonera se pega
+   abajo con position: sticky (ver _shell.scss), sin paddings mágicos. */
+app-sesion-page,
+app-admin-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
 }
 
-@media (max-width: 900px) {
+.pagina {
+  flex: 1 1 auto;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+@include t.md {
   .pagina {
-    padding: 16px 12px 96px;
+    padding: 16px 12px;
   }
 }
 
@@ -89,6 +103,7 @@ a:focus-visible,
   justify-content: center;
   padding: 48px 0;
 }
+
 /* Totales de tablas. */
 .suma {
   text-align: right;
@@ -101,9 +116,6 @@ app-sesion-page mat-spinner {
   display: block;
   margin: 48px auto;
 }
-app-sesion-page .pagina {
-  max-width: 1100px;
-}
 
 /* Título de tarjetas: 16px/600 consistente en toda la app. */
 .mat-mdc-card-title {
@@ -112,4 +124,10 @@ app-sesion-page .pagina {
 }
 .mat-mdc-card-content {
   padding: 8px 20px 20px;
+}
+
+/* Los diálogos Material no pueden exceder el viewport. */
+.mat-mdc-dialog-container .mat-mdc-dialog-surface,
+.cdk-overlay-pane.mat-mdc-dialog-panel {
+  max-width: 95vw !important;
 }

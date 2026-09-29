@@ -31,7 +31,6 @@ export interface RequisitoTomador {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './tomador-form.component.html',
-  styleUrl: './tomador-form.component.scss',
 })
 export class TomadorFormComponent {
   readonly grupos = input.required<FormulariosTomador>();

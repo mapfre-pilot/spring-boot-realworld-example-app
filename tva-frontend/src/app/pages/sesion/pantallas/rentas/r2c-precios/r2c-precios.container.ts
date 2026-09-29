@@ -39,7 +39,7 @@ function MONEDA(v: number): string {
     EncabezadoPantallaComponent,
   ],
   templateUrl: './r2c-precios.container.html',
-  styleUrl: './r2c-precios.container.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class R2cPreciosContainer {

@@ -25,7 +25,7 @@ import { EstadoVacioComponent } from '../../../../../shared/ui/feedback/estado-v
     EstadoVacioComponent,
   ],
   templateUrl: './seguros-ahorro.container.html',
-  styleUrl: './seguros-ahorro.container.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SegurosAhorroContainer {

@@ -12,7 +12,7 @@ import { IZQUIERDA, STROKED } from '../botonera.const';
   selector: 'app-botonera',
   imports: [MatButtonModule, MatDialogModule, MatTooltipModule],
   templateUrl: './botonera.component.html',
-  styleUrl: './botonera.component.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'app-botonera' },
 })

@@ -20,7 +20,7 @@ import { EstadoVacioComponent } from '../../../shared/ui/feedback/estado-vacio/e
     EstadoVacioComponent,
   ],
   templateUrl: './trazas-admin.component.html',
-  styleUrl: './trazas-admin.component.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TrazasAdminComponent {

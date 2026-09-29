@@ -6,7 +6,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
   selector: 'app-caja',
   imports: [MatExpansionModule],
   templateUrl: './caja.component.html',
-  styleUrl: './caja.component.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CajaComponent {

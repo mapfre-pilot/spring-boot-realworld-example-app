@@ -1,4 +1,21 @@
 /* Tokens corporativos MAPFRE. */
+
+/* Breakpoints del sistema de diseño. */
+$bp-md: 900px;
+$bp-sm: 600px;
+
+@mixin md {
+  @media (max-width: $bp-md) {
+    @content;
+  }
+}
+
+@mixin sm {
+  @media (max-width: $bp-sm) {
+    @content;
+  }
+}
+
 :root {
   --mat-sys-primary: #d81e05;
   --mat-sys-on-primary: #ffffff;

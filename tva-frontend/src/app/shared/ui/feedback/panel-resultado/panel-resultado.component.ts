@@ -16,7 +16,7 @@ const ICONOS: Record<TipoPanel, string> = {
   selector: 'app-panel-resultado',
   imports: [MatCardModule, MatIconModule],
   templateUrl: './panel-resultado.component.html',
-  styleUrl: './panel-resultado.component.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PanelResultadoComponent {

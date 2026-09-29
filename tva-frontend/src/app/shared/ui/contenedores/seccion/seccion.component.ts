@@ -11,7 +11,7 @@ import { AvisosComponent } from '../../feedback/avisos/avisos.component';
   selector: 'app-seccion',
   imports: [MatExpansionModule, MatButtonModule, MatIconModule, AvisosComponent],
   templateUrl: './seccion.component.html',
-  styleUrl: './seccion.component.scss',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SeccionComponent {
