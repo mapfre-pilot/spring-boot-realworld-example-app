@@ -1,9 +1,13 @@
+:host {
+  display: block;
+  padding-bottom: 24px;
+}
 .layout-resumen {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
   gap: 16px;
 }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .layout-resumen {
     grid-template-columns: 1fr;
   }

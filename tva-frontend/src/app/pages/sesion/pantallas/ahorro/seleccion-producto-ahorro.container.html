@@ -5,19 +5,31 @@
   <input matInput [formControl]="filtro" />
   <mat-icon matIconPrefix aria-hidden="true">search</mat-icon>
 </mat-form-field>
+@if (productos().length) {
+  <p class="resultados">{{ productosFiltrados().length }} productos</p>
+}
 
 @if (productos().length === 0) {
   <app-estado-vacio [mensaje]="MSG" icono="inventory_2" />
 } @else {
   <div class="grid">
     @for (p of productosFiltrados(); track p.commercialProductCode) {
-      <mat-card class="tarjeta" appearance="outlined">
-        <mat-card-header>
-          <span class="chip-codigo">{{ p.commercialProductCode }}</span>
-          <mat-card-title>{{ p.commercialProductDesc }}</mat-card-title>
+      <mat-card class="tarjeta" appearance="outlined" (click)="contratar(p)">
+        <mat-card-header class="cabecera">
+          <span class="badge" aria-hidden="true"><mat-icon>savings</mat-icon></span>
+          <div class="titulos">
+            <mat-card-title class="nombre">{{ p.commercialProductDesc }}</mat-card-title>
+            <span class="chip-codigo">Código {{ p.commercialProductCode }}</span>
+          </div>
         </mat-card-header>
-        <mat-card-actions align="end">
-          <button mat-stroked-button color="primary" type="button" (click)="contratar(p)">
+        <mat-card-content class="relleno"></mat-card-content>
+        <mat-card-actions>
+          <button
+            mat-flat-button
+            color="primary"
+            type="button"
+            class="contratar"
+            (click)="contratar(p); $event.stopPropagation()">
             Contratar <mat-icon aria-hidden="true">arrow_forward</mat-icon>
           </button>
         </mat-card-actions>

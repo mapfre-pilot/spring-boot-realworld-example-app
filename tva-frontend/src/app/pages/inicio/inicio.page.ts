@@ -74,7 +74,9 @@ export class InicioPage implements OnInit {
   ngOnInit(): void {
     this.obtenerProductos.execute().subscribe(r => this.productos.set(r.products ?? []));
     const user = this.auth.usuario();
-    this.form.controls.username.setValue(user ? `${user}@mapfre.net` : '');
+    this.form.controls.username.setValue(
+      user ? (user.includes('@') ? user : `${user}@mapfre.net`) : ''
+    );
     this.form.controls.username.valueChanges.subscribe(v => this.nuumaControl.setValue(nuumaDe(v)));
     this.nuumaControl.setValue(nuumaDe(this.form.controls.username.value));
     this.form.controls.indFunctionMode.valueChanges.subscribe(modo => {
