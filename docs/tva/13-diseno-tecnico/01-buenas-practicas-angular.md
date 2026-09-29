@@ -4,9 +4,12 @@ Reglas aplicadas en `refactor(tva-frontend)` sobre `src/app` y `src/app/core`.
 
 ## Reglas
 
-- **Ficheros separados**: ningún componente lleva `template:`/`styles:` inline;
-  cada uno tiene `<nombre>.component.html` / `.scss` (o `.container.*`,
-  `.page.*`). Los antiguos `TOMADOR_TEMPLATE`/`TOMADOR_STYLES` compartidos se
+- **Una carpeta por componente**: cada componente/página/contenedor vive en su
+  propia carpeta `<nombre>/` junto a su `<nombre>.component.html` (o
+  `.container.*`, `.page.*`) y su `.spec.ts`; los `*.const.ts`/`*.model.ts`
+  compartidos por varios quedan en el nivel del dominio (`tomador-base.ts`,
+  `r2c.const.ts`, `sesion.const.ts`). Ningún componente lleva `template:`
+  inline. Los antiguos `TOMADOR_TEMPLATE`/`TOMADOR_STYLES` compartidos se
   sustituyeron por el componente presentacional `app-tomador-form`, que usan
   `captura-tomador1` y `captura-tomador2`.
 - **Tamaños**: clase ≤150 líneas (máx. 300), plantilla ≤100 (máx. 200),
@@ -25,11 +28,14 @@ Reglas aplicadas en `refactor(tva-frontend)` sobre `src/app` y `src/app/core`.
   Appian Embedded en `src/app/core/infra/appian/appian-embed-script.service.ts`
   (capa infra, justificado: es un web component externo; usa `DOCUMENT` y
   `MutationObserver` dentro del diálogo, no en componentes).
-- **Estilos**: colores/tipografía/espaciados centralizados como variables CSS
-  (`--tva-*`, `--mat-sys-*`) en `src/styles/_tokens.scss` + clases globales en
-  los partials de `src/styles/` (`_layout`, `_forms`, `_tables`, `_utilities`)
-  importados por `styles.scss`; los `.scss` de componente solo contienen
-  reglas realmente locales (los triviales se eliminaron).
+- **Estilos 100% globales**: no hay `.scss` por componente ni `styleUrl` en
+  `src/app/**`. Todos los estilos viven en `src/styles/` (ver `README.md`
+  allí): `_tokens` (variables `--tva-*`/`--mat-sys-*`, breakpoints `$bp-md`/
+  `$bp-sm` + mixins `md`/`sm`) → `_layout` (shell flex-column y `.pagina`) →
+  `_forms`/`_tables` → `_shell` (cabecera, migas, botonera) → `_ui`
+  (shared/ui) → `_pages`/`_sesion` → `_utilities`. Cada regla se espacia por
+  el selector host del componente (`app-x .clase`); prohibido `:host`,
+  `::ng-deep` y `ViewEncapsulation`.
 - **Angular Material**: se extiende Material; los `<input>` nativos de las
   tablas pasaron a `matInput` en `mat-form-field appearance="outline"
   subscriptSizing="dynamic"`.
@@ -58,7 +64,10 @@ Reglas aplicadas en `refactor(tva-frontend)` sobre `src/app` y `src/app/core`.
 - `sesion.model.ts` (201): modelo de dominio, puras interfaces.
 - `inicio.page.ts` (161): orquestación del formulario de utilidades + payload.
 
-## Conteo de líneas tras el refactor (ts | html | scss)
+## Conteo de líneas tras el refactor (ts | html)
+
+Los `.scss` por componente desaparecieron; sus reglas viven en `src/styles/`
+(por eso la columna scss se muestra como referencia histórica vacía).
 
 | Fichero | ts | html | scss |
 |---|---|---|---|
@@ -107,10 +116,13 @@ Reglas aplicadas en `refactor(tva-frontend)` sobre `src/app` y `src/app/core`.
 Convenciones aplicadas en `feat(tva): rediseño UX/UI con componentes de diseño
 compartidos` (tokens MAPFRE de `src/styles/_tokens.scss`):
 
-- **Layout**: `.pagina` 1100px (sesión) / 1200px, 24px de padding y 96px de
-  margen inferior para la botonera fija; `mat-card-title` 16px/600;
-  botonera fija con grupo izquierdo (Cancelar texto, Administración stroked) y
-  derecho (secundarios stroked, primario flat); migas con check verde en pasos
+- **Layout**: shell flex-column (`display:flex; flex-direction:column;
+  min-height:100dvh` en el host de la página) con `.pagina` `flex:1`, 1100px
+  (sesión) / 1200px, 24px de padding; `app-botonera` es el último hijo del
+  host (fuera de `.pagina`) con `position:sticky; bottom:0` — sin
+  `position:fixed` ni paddings mágicos; grupo izquierdo (Cancelar texto,
+  Administración stroked) y derecho (secundarios stroked, primario flat) con
+  wrap en estrecho; `mat-card-title` 16px/600; migas con check verde en pasos
   completados, actual en negrita primario y futuros atenuados.
 - **Encabezados**: cada pantalla abre con `app-encabezado-pantalla`
   (`layout/`; inputs `titulo`, `subtitulo?`, `<ng-content>` para chips).
@@ -124,4 +136,14 @@ compartidos` (tokens MAPFRE de `src/styles/_tokens.scss`):
   los grids ad-hoc de resumen y resultado-firma. `.chip-estado` (ok/pendiente/
   error) en `_utilities.scss` para estados (requisitos, documentos, tabla).
 - **Tablas**: `table.tabla`/`table.tva-tabla` comparten estilos en
-  `_tables.scss` (cabecera gris, zebra, `.num` derecha, `.tabla-scroll`).
+  `_tables.scss` (cabecera gris, zebra, `.num` derecha); cada tabla va dentro
+  de `<div class="tabla-scroll">` (`overflow-x:auto`, `min-width:640px`
+  interna) para scroll horizontal interno sin desbordar la página; los grids
+  de tarjetas usan `repeat(auto-fill, minmax(260px, 1fr))` y `min-width:0`.
+- **Tests**: un `.spec.ts` junto a cada componente, página, contenedor,
+  servicio, interceptor, guard, repositorio, store, validador y util de
+  `src/app/**` (no aplica a `*.model.ts`/`*.const.ts`/`index.ts`/config
+  type-only); convenciones Spectator/Jest existentes, aserciones sobre
+  render y ramas clave. `jest.config.cts` fija `collectCoverageFrom` y
+  `coverageThreshold` global de **80% de líneas** (`pnpm nx test tva
+  --coverage`).

@@ -21,6 +21,15 @@ module.exports = {
   moduleNameMapper: {
     '^@tva/core$': '<rootDir>/src/app/core/index.ts',
   },
+  collectCoverageFrom: [
+    'src/app/**/*.ts',
+    '!src/app/**/*.spec.ts',
+    '!src/app/**/index.ts',
+    '!src/app/**/*.model.ts',
+    '!src/app/**/*.const.ts',
+    '!src/main.ts',
+  ],
+  coverageThreshold: { global: { lines: 80 } },
   testMatch: [
     '<rootDir>/src/**/__tests__/**/*.[jt]s?(x)',
     '<rootDir>/src/**/*(*.)@(spec|test).[jt]s?(x)',
