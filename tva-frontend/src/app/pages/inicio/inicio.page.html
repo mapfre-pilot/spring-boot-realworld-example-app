@@ -19,9 +19,13 @@
               [control]="form.controls.indFunctionMode"
               etiqueta="Modo"
               [opciones]="modos"
+              subscriptSizing="dynamic"
               [pista]="pistaModo" />
             @if (form.controls.indFunctionMode.value === 'VA') {
-              <app-campo-texto [control]="form.controls.proposalId" etiqueta="ProposalId" />
+              <app-campo-texto
+                [control]="form.controls.proposalId"
+                etiqueta="ProposalId"
+                subscriptSizing="dynamic" />
             }
           </div>
         </section>
@@ -29,14 +33,19 @@
         <section class="bloque">
           <h3 class="titulo-bloque">Canal y tomadores</h3>
           <div class="formulario formulario-corto">
-            <app-campo-texto [control]="form.controls.companyId" etiqueta="CompanyId" />
+            <app-campo-texto
+              [control]="form.controls.companyId"
+              etiqueta="CompanyId"
+              subscriptSizing="dynamic" />
             <app-campo-texto
               [control]="form.controls.distributionChannel"
-              etiqueta="Distribution channel" />
+              etiqueta="Distribution channel"
+              subscriptSizing="dynamic" />
             <app-campo-texto
               [control]="form.controls.numTomadores"
               etiqueta="Número de tomadores"
               tipo="number"
+              subscriptSizing="dynamic"
               [pista]="pistaTomadores" />
           </div>
         </section>
@@ -44,10 +53,14 @@
         <section class="bloque">
           <h3 class="titulo-bloque">Usuario</h3>
           <div class="formulario grid-usuario">
-            <app-campo-texto [control]="form.controls.username" etiqueta="Username" />
+            <app-campo-texto
+              [control]="form.controls.username"
+              etiqueta="Username"
+              subscriptSizing="dynamic" />
             <app-campo-texto
               [control]="nuumaControl"
               etiqueta="NUUMA"
+              subscriptSizing="dynamic"
               pista="Se calcula a partir del username" />
           </div>
         </section>
@@ -115,28 +128,37 @@
                         class="campo-span-2"
                         [control]="controlEn(i, 'commercialProductCode')"
                         etiqueta="Modalidad"
+                        subscriptSizing="dynamic"
                         [opciones]="opcionesProductos()" />
                       <app-campo-texto
                         [control]="controlEn(i, 'investmentPreferenceCode')"
-                        etiqueta="Cód. preferencia" />
+                        etiqueta="Cód. preferencia"
+                        subscriptSizing="dynamic" />
                       <app-campo-select
                         [control]="controlEn(i, 'operationTypeCode')"
                         etiqueta="Tipo de operación"
+                        subscriptSizing="dynamic"
                         [opciones]="operaciones" />
-                      <app-campo-texto [control]="controlEn(i, 'policyId')" etiqueta="Id póliza" />
+                      <app-campo-texto
+                        [control]="controlEn(i, 'policyId')"
+                        etiqueta="Id póliza"
+                        subscriptSizing="dynamic" />
                       <app-campo-texto
                         [control]="controlEn(i, 'uniqueContributionAmn')"
                         etiqueta="Aportación única"
                         tipo="number"
+                        subscriptSizing="dynamic"
                         sufijo="€" />
                       <app-campo-texto
                         [control]="controlEn(i, 'periodicContributionAmn')"
                         etiqueta="Aportación periódica"
                         tipo="number"
+                        subscriptSizing="dynamic"
                         sufijo="€" />
                       <app-campo-select
                         [control]="controlEn(i, 'contributionFrequencyCode')"
                         etiqueta="Frecuencia"
+                        subscriptSizing="dynamic"
                         [opciones]="frecuencias" />
                     </div>
                   </div>

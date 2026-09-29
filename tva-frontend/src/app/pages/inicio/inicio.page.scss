@@ -13,7 +13,7 @@ form {
 }
 
 .cabecera-pagina {
-  padding: 24px 24px 0;
+  padding: 24px 16px 0;
 }
 
 .introduccion {
@@ -32,6 +32,8 @@ form {
 
 .titulo-pagina {
   margin: 0;
+  font-size: 20px !important;
+  font-weight: 600 !important;
 }
 
 .descripcion {
@@ -41,27 +43,19 @@ form {
 }
 
 mat-card-content {
-  padding-top: 20px;
+  padding-top: 28px;
 }
 
 .bloque {
-  margin-top: 20px;
-}
-
-.bloque-modo {
-  margin-top: 0;
+  margin-bottom: 20px;
 }
 
 .titulo-bloque {
-  margin: 20px 0 12px;
+  margin: 0 0 12px;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--tva-border);
   font-size: 14px;
   font-weight: 600;
-}
-
-.bloque-modo .titulo-bloque {
-  margin-top: 0;
 }
 
 .formulario,
@@ -100,6 +94,9 @@ mat-card-content {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--tva-border);
 }
 
 .titulo-conteo {
@@ -110,7 +107,9 @@ mat-card-content {
 }
 
 .titulo-conteo .titulo-bloque {
-  margin-top: 20px;
+  margin: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
 .cabecera-opciones > button {

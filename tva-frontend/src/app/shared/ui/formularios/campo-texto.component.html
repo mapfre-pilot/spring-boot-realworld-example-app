@@ -1,4 +1,4 @@
-<mat-form-field appearance="outline" class="campo">
+<mat-form-field appearance="outline" class="campo" [subscriptSizing]="subscriptSizing()">
   <mat-label>{{ etiqueta() }}</mat-label>
   <input matInput [formControl]="control()" [type]="tipo()" [placeholder]="placeholder()" />
   @if (pista()) {

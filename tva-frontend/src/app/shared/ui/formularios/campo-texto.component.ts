@@ -17,4 +17,5 @@ export class CampoTextoComponent {
   readonly placeholder = input('');
   readonly pista = input('');
   readonly sufijo = input('');
+  readonly subscriptSizing = input<'fixed' | 'dynamic'>('fixed');
 }

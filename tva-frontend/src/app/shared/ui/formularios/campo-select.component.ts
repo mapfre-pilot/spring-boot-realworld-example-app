@@ -20,4 +20,5 @@ export class CampoSelectComponent {
   readonly etiqueta = input.required<string>();
   readonly opciones = input.required<Opcion[]>();
   readonly pista = input('');
+  readonly subscriptSizing = input<'fixed' | 'dynamic'>('fixed');
 }

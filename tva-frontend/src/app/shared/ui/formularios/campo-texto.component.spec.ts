@@ -1,4 +1,6 @@
 import { FormControl } from '@angular/forms';
+import { By } from '@angular/platform-browser';
+import { MatFormField } from '@angular/material/form-field';
 import { createComponentFactory } from '@ngneat/spectator/jest';
 
 import { CampoTextoComponent } from './campo-texto.component';
@@ -21,9 +23,13 @@ describe('CampoTextoComponent', () => {
         etiqueta: 'Aportación',
         pista: 'Importe de la aportación',
         sufijo: '€',
+        subscriptSizing: 'dynamic',
       },
     });
     expect(s.query('mat-hint')).toHaveText('Importe de la aportación');
     expect(s.query('[matTextSuffix]')).toHaveText('€');
+    const formField = s.fixture.debugElement.query(By.directive(MatFormField))
+      .componentInstance as MatFormField;
+    expect(formField.subscriptSizing).toBe('dynamic');
   });
 });

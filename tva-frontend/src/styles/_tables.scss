@@ -17,6 +17,12 @@ table.tva-tabla th {
   border-bottom: 1px solid var(--tva-border);
   white-space: nowrap;
 }
+table.tabla th.num,
+table.tva-tabla th.num,
+table.tabla th.numero,
+table.tva-tabla th.numero {
+  text-align: right;
+}
 table.tabla tbody tr:nth-child(even),
 table.tva-tabla tbody tr:nth-child(even) {
   background: #fafafa;
