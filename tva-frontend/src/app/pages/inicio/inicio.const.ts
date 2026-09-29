@@ -7,6 +7,12 @@ export const MODOS: Opcion[] = [
   { valor: 'R2C', etiqueta: 'Rentas' },
 ];
 
+export const DESCRIPCIONES_MODO: Record<string, string> = {
+  VA: 'Parte de una propuesta existente',
+  VIA: 'Venta informada de ahorro',
+  R2C: 'Rentas (dos tomadores)',
+};
+
 export const OPERACIONES: Opcion[] = [
   { valor: 'S', etiqueta: 'Suscripción' },
   { valor: 'AE', etiqueta: 'Aportación extraordinaria' },

@@ -5,11 +5,11 @@ table.tva-tabla {
   border-collapse: collapse;
   font-size: 14px;
 }
-table.tabla,
+table.tabla thead tr,
 table.tva-tabla thead tr {
   background: #f5f5f5;
 }
-table.tabla,
+table.tabla th,
 table.tva-tabla th {
   font-weight: 600;
   text-align: left;
@@ -17,40 +17,40 @@ table.tva-tabla th {
   border-bottom: 1px solid var(--tva-border);
   white-space: nowrap;
 }
-table.tabla,
+table.tabla tbody tr:nth-child(even),
 table.tva-tabla tbody tr:nth-child(even) {
   background: #fafafa;
 }
-table.tabla,
+table.tabla td,
 table.tva-tabla td {
   padding: 6px 10px;
   border-bottom: 1px solid #eee;
   vertical-align: middle;
 }
-table.tabla,
+table.tabla tr.totales td,
 table.tva-tabla tr.totales td,
-table.tabla,
+table.tabla .totales,
 table.tva-tabla .totales {
   font-weight: 600;
   text-align: right;
 }
-table.tabla,
-table.tva-tabla input[type='text'],
-table.tabla,
-table.tva-tabla input[type='number'],
-table.tabla,
-table.tva-tabla input:not([type]) {
+table.tabla input[type='text']:not(.mat-mdc-input-element),
+table.tva-tabla input[type='text']:not(.mat-mdc-input-element),
+table.tabla input[type='number']:not(.mat-mdc-input-element),
+table.tva-tabla input[type='number']:not(.mat-mdc-input-element),
+table.tabla input:not([type]):not(.mat-mdc-input-element),
+table.tva-tabla input:not([type]):not(.mat-mdc-input-element) {
   height: 36px;
   border: 1px solid #bdbdbd;
   border-radius: 4px;
   padding: 0 8px;
   font: inherit;
 }
-table.tabla,
+table.tabla input[type='number'],
 table.tva-tabla input[type='number'],
-table.tabla,
+table.tabla td.numero,
 table.tva-tabla td.numero,
-table.tabla,
+table.tabla .numero,
 table.tva-tabla .numero {
   text-align: right;
 }

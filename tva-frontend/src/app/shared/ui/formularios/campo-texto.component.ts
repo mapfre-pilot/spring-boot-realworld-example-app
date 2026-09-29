@@ -15,4 +15,6 @@ export class CampoTextoComponent {
   readonly etiqueta = input.required<string>();
   readonly tipo = input('text');
   readonly placeholder = input('');
+  readonly pista = input('');
+  readonly sufijo = input('');
 }

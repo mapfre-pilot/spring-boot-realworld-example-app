@@ -1,118 +1,149 @@
 <app-cabecera />
 <div class="pagina">
   <mat-card>
-    <mat-card-header>
-      <mat-card-title class="titulo-pagina">Utilidades — Inicio TVA</mat-card-title>
+    <mat-card-header class="cabecera-pagina">
+      <div class="introduccion">
+        <span class="overline">Utilidades</span>
+        <mat-card-title class="titulo-pagina">Inicio TVA</mat-card-title>
+        <p class="descripcion">
+          Configura los parámetros de entrada para iniciar una sesión del Tarificador Vida Ahorro.
+        </p>
+      </div>
     </mat-card-header>
     <mat-card-content>
       <form [formGroup]="form" (ngSubmit)="iniciar()">
-        <div class="formulario">
-          <app-campo-select
-            [control]="form.controls.indFunctionMode"
-            etiqueta="Modo de funcionamiento"
-            [opciones]="modos" />
-          <app-campo-texto [control]="form.controls.proposalId" etiqueta="ProposalId" />
-          <app-campo-texto [control]="form.controls.companyId" etiqueta="CompanyId" />
-          <app-campo-texto
-            [control]="form.controls.numTomadores"
-            etiqueta="Número de tomadores"
-            tipo="number" />
-          <app-campo-texto
-            [control]="form.controls.distributionChannel"
-            etiqueta="Distribution channel" />
-          <app-campo-texto [control]="form.controls.username" etiqueta="Username" />
-          <app-campo-texto [control]="nuumaControl" etiqueta="NUUMA" />
-        </div>
+        <section class="bloque bloque-modo">
+          <h3 class="titulo-bloque">Modo de funcionamiento</h3>
+          <div class="formulario grid-modo">
+            <app-campo-select
+              [control]="form.controls.indFunctionMode"
+              etiqueta="Modo"
+              [opciones]="modos"
+              [pista]="pistaModo" />
+            @if (form.controls.indFunctionMode.value === 'VA') {
+              <app-campo-texto [control]="form.controls.proposalId" etiqueta="ProposalId" />
+            }
+          </div>
+        </section>
+
+        <section class="bloque">
+          <h3 class="titulo-bloque">Canal y tomadores</h3>
+          <div class="formulario formulario-corto">
+            <app-campo-texto [control]="form.controls.companyId" etiqueta="CompanyId" />
+            <app-campo-texto
+              [control]="form.controls.distributionChannel"
+              etiqueta="Distribution channel" />
+            <app-campo-texto
+              [control]="form.controls.numTomadores"
+              etiqueta="Número de tomadores"
+              tipo="number"
+              [pista]="pistaTomadores" />
+          </div>
+        </section>
+
+        <section class="bloque">
+          <h3 class="titulo-bloque">Usuario</h3>
+          <div class="formulario grid-usuario">
+            <app-campo-texto [control]="form.controls.username" etiqueta="Username" />
+            <app-campo-texto
+              [control]="nuumaControl"
+              etiqueta="NUUMA"
+              pista="Se calcula a partir del username" />
+          </div>
+        </section>
 
         @if (
           form.controls.indFunctionMode.value === 'VIA' ||
           form.controls.indFunctionMode.value === 'VA'
         ) {
-          <div class="checks">
-            @if (form.controls.indFunctionMode.value === 'VIA') {
-              <mat-checkbox formControlName="tomador">Tomador</mat-checkbox>
-            }
-            <mat-checkbox formControlName="perfilado">Perfilado</mat-checkbox>
-            @if (form.controls.indFunctionMode.value === 'VIA') {
-              <mat-checkbox formControlName="inversion">Inversión</mat-checkbox>
-            }
-          </div>
+          <section class="bloque">
+            <h3 class="titulo-bloque">Opciones de simulación</h3>
+            <div class="checks panel-simulacion">
+              @if (form.controls.indFunctionMode.value === 'VIA') {
+                <mat-checkbox formControlName="tomador">Tomador</mat-checkbox>
+              }
+              <mat-checkbox formControlName="perfilado">Perfilado</mat-checkbox>
+              @if (form.controls.indFunctionMode.value === 'VIA') {
+                <mat-checkbox formControlName="inversion">Inversión</mat-checkbox>
+              }
+            </div>
+          </section>
         }
 
         @if (form.controls.indFunctionMode.value === 'VA') {
-          <h3>Opciones de inversión</h3>
-          <div class="tabla-scroll">
-            <table class="tabla">
-              <thead>
-                <tr>
-                  <th>Cód. Modalidad</th>
-                  <th>Ayuda</th>
-                  <th>Cód. Preferencia</th>
-                  <th>Tipo operación</th>
-                  <th>Id póliza</th>
-                  <th>Aportación única</th>
-                  <th>Aportación periódica</th>
-                  <th>Frecuencia</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody formArrayName="investment">
-                @for (row of investment.controls; track $index; let i = $index) {
-                  <tr [formGroupName]="i">
-                    <td>
-                      <app-campo-select
-                        [control]="controlEn(i, 'commercialProductCode')"
-                        etiqueta=""
-                        [opciones]="opcionesProductos()" />
-                    </td>
-                    <td class="ayuda">{{ ayuda(i) }}</td>
-                    <td>
-                      <app-campo-texto
-                        [control]="controlEn(i, 'investmentPreferenceCode')"
-                        etiqueta="" />
-                    </td>
-                    <td>
-                      <app-campo-select
-                        [control]="controlEn(i, 'operationTypeCode')"
-                        etiqueta=""
-                        [opciones]="operaciones" />
-                    </td>
-                    <td><app-campo-texto [control]="controlEn(i, 'policyId')" etiqueta="" /></td>
-                    <td>
-                      <app-campo-texto
-                        [control]="controlEn(i, 'uniqueContributionAmn')"
-                        etiqueta=""
-                        tipo="number" />
-                    </td>
-                    <td>
-                      <app-campo-texto
-                        [control]="controlEn(i, 'periodicContributionAmn')"
-                        etiqueta=""
-                        tipo="number" />
-                    </td>
-                    <td>
-                      <app-campo-select
-                        [control]="controlEn(i, 'contributionFrequencyCode')"
-                        etiqueta=""
-                        [opciones]="frecuencias" />
-                    </td>
-                    <td>
+          <section class="bloque bloque-inversion">
+            <div class="cabecera-opciones">
+              <div class="titulo-conteo">
+                <h3 class="titulo-bloque">Opciones de inversión</h3>
+                <span class="chip-estado pendiente">{{ investment.length }}</span>
+              </div>
+              <button mat-stroked-button color="primary" type="button" (click)="nuevaOpcion()">
+                <mat-icon>add</mat-icon>
+                Añadir opción
+              </button>
+            </div>
+            @if (investment.length === 0) {
+              <div class="estado-vacio">
+                <mat-icon>playlist_add</mat-icon>
+                <p>
+                  Aún no hay opciones de inversión. Añade al menos una para iniciar en Venta
+                  Asesorada.
+                </p>
+              </div>
+            } @else {
+              <div class="opciones" formArrayName="investment">
+                @for (opcion of investment.controls; track $index; let i = $index) {
+                  <div class="opcion" [formGroupName]="i">
+                    <div class="cabecera-opcion">
+                      <div class="titulo-opcion">
+                        <strong>Opción {{ i + 1 }}</strong>
+                        @if (ayuda(i); as descripcion) {
+                          <span>{{ descripcion }}</span>
+                        }
+                      </div>
                       <button
                         mat-icon-button
                         type="button"
                         (click)="borrarOpcion(i)"
-                        aria-label="Borrar">
+                        matTooltip="Eliminar opción"
+                        [attr.aria-label]="'Eliminar opción ' + (i + 1)">
                         <mat-icon>delete</mat-icon>
                       </button>
-                    </td>
-                  </tr>
+                    </div>
+                    <div class="opcion-grid">
+                      <app-campo-select
+                        class="campo-span-2"
+                        [control]="controlEn(i, 'commercialProductCode')"
+                        etiqueta="Modalidad"
+                        [opciones]="opcionesProductos()" />
+                      <app-campo-texto
+                        [control]="controlEn(i, 'investmentPreferenceCode')"
+                        etiqueta="Cód. preferencia" />
+                      <app-campo-select
+                        [control]="controlEn(i, 'operationTypeCode')"
+                        etiqueta="Tipo de operación"
+                        [opciones]="operaciones" />
+                      <app-campo-texto [control]="controlEn(i, 'policyId')" etiqueta="Id póliza" />
+                      <app-campo-texto
+                        [control]="controlEn(i, 'uniqueContributionAmn')"
+                        etiqueta="Aportación única"
+                        tipo="number"
+                        sufijo="€" />
+                      <app-campo-texto
+                        [control]="controlEn(i, 'periodicContributionAmn')"
+                        etiqueta="Aportación periódica"
+                        tipo="number"
+                        sufijo="€" />
+                      <app-campo-select
+                        [control]="controlEn(i, 'contributionFrequencyCode')"
+                        etiqueta="Frecuencia"
+                        [opciones]="frecuencias" />
+                    </div>
+                  </div>
                 }
-              </tbody>
-            </table>
-          </div>
-          <button mat-stroked-button type="button" (click)="nuevaOpcion()">
-            Añadir opción de inversión
-          </button>
+              </div>
+            }
+          </section>
         }
 
         @if (errores().length) {
@@ -135,9 +166,16 @@
           </p>
         }
 
-        <button mat-flat-button color="primary" type="submit" [disabled]="cargando()">
-          INICIAR TVA
-        </button>
+        <div class="acciones">
+          <button mat-flat-button color="primary" type="submit" [disabled]="cargando()">
+            @if (cargando()) {
+              <mat-spinner diameter="18" aria-label="Cargando"></mat-spinner>
+            } @else {
+              <mat-icon>play_arrow</mat-icon>
+            }
+            Iniciar TVA
+          </button>
+        </div>
       </form>
     </mat-card-content>
   </mat-card>

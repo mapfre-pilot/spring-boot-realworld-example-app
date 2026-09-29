@@ -5,6 +5,9 @@
       <mat-option [value]="op.valor">{{ op.etiqueta }}</mat-option>
     }
   </mat-select>
+  @if (pista()) {
+    <mat-hint>{{ pista() }}</mat-hint>
+  }
   @if (control().invalid && control().touched) {
     <mat-error>Seleccione una opción</mat-error>
   }

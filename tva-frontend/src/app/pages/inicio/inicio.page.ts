@@ -9,6 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router } from '@angular/router';
 
 import {
@@ -27,12 +28,13 @@ import { CabeceraComponent } from '../../shared/ui/layout/cabecera.component';
 import { CampoSelectComponent, Opcion } from '../../shared/ui/formularios/campo-select.component';
 import { CampoTextoComponent } from '../../shared/ui/formularios/campo-texto.component';
 import { MATERIAL } from '../../shared/ui/material';
-import { MODOS, OPERACIONES, FRECUENCIAS } from './inicio.const';
+import { DESCRIPCIONES_MODO, FRECUENCIAS, MODOS, OPERACIONES } from './inicio.const';
 
 @Component({
   selector: 'app-inicio-page',
   imports: [
     ...MATERIAL,
+    MatProgressSpinnerModule,
     ReactiveFormsModule,
     CabeceraComponent,
     CampoTextoComponent,
@@ -66,6 +68,14 @@ export class InicioPage implements OnInit {
   protected readonly nuumaControl = this.fb.nonNullable.control({ value: '', disabled: true });
 
   readonly form = crearFormularioInicio(this.fb.nonNullable);
+
+  protected get pistaModo(): string {
+    return DESCRIPCIONES_MODO[this.form.controls.indFunctionMode.value];
+  }
+
+  protected get pistaTomadores(): string {
+    return this.form.controls.indFunctionMode.value === 'R2C' ? 'R2C requiere 2 tomadores' : '';
+  }
 
   get investment(): FormArray<FormGroup> {
     return this.form.controls.investment;

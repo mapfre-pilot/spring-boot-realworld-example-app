@@ -61,6 +61,32 @@ describe('InicioPage', () => {
     expect(prop.disabled).toBe(true);
   });
 
+  it('muestra un estado vacío de opciones de inversión en VA', () => {
+    const s = crear();
+    s.component.form.controls.indFunctionMode.setValue('VA');
+    s.detectChanges();
+    expect(s.element.textContent).toContain('Aún no hay opciones de inversión');
+  });
+
+  it('muestra los campos etiquetados de una opción de inversión en VA', () => {
+    const s = crear();
+    s.component.form.controls.indFunctionMode.setValue('VA');
+    s.component.nuevaOpcion();
+    s.detectChanges();
+    expect(s.element.textContent).toContain('Opción 1');
+    expect(s.element.textContent).toContain('Modalidad');
+    expect(s.element.textContent).toContain('Aportación única');
+  });
+
+  it('solo renderiza ProposalId en el modo VA', () => {
+    const s = crear();
+    s.detectChanges();
+    expect(s.element.textContent).not.toContain('ProposalId');
+    s.component.form.controls.indFunctionMode.setValue('VA');
+    s.detectChanges();
+    expect(s.element.textContent).toContain('ProposalId');
+  });
+
   it('renderiza la lista de errores del backend', () => {
     const s = crear();
     s.component.errores.set(['El campo companyId no puede ser nulo']);

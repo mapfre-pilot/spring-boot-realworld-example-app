@@ -19,4 +19,5 @@ export class CampoSelectComponent {
   readonly control = input.required<FormControl>();
   readonly etiqueta = input.required<string>();
   readonly opciones = input.required<Opcion[]>();
+  readonly pista = input('');
 }
