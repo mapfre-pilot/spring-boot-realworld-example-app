@@ -246,6 +246,38 @@
       "options": {
         "command": "nx run tva:build:production --statsJson && pnpm dlx esbuild-visualizer --metadata dist/apps/tva/stats.json --filename dist/apps/tva/stats.html --open true"
       }
+    },
+    "assemble-web": {
+      "executor": "@mapfre-tech/nx-angular:assemble-web",
+      "options": {
+        "buildTarget": "tva:build:production",
+        "artifactName": "tva",
+        "excludeSourceMaps": false
+      },
+      "configurations": {
+        "production": {
+          "excludeSourceMaps": true
+        }
+      }
+    },
+    "package-debug-files-web": {
+      "executor": "@mapfre-tech/nx-tools:zip",
+      "options": {
+        "filePath": "dist/apps/tva",
+        "zipName": "tva-debug-files-web"
+      }
+    },
+    "release-debug-files-web": {
+      "executor": "@mapfre-tech/nx-tools:release-debug-files-web",
+      "options": {
+        "file": "dist/artifacts/tva/tva-debug-files-web.zip"
+      }
+    },
+    "release-web": {
+      "executor": "@mapfre-tech/nx-tools:release-spa",
+      "options": {
+        "file": "dist/artifacts/tva/tva.zip"
+      }
     }
   }
 }
