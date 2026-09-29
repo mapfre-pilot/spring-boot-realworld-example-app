@@ -15,7 +15,7 @@ Convención: **[Introducir]** = datos a teclear · **[Verificar]** = lo que debe
 | Configuración | `poetry run python manage.py check` (en `tva-backend/sources`) | `System check identified no issues` |
 | Conectores | `poetry run python manage.py smoke_integraciones` | 5 líneas `OK` y código de salida 0 |
 | Swagger | http://localhost:8888/docs/swagger/ | Se listan `sesiones`, `acciones`, `catalogos`, `admin`, `popups`… |
-| Frontend | http://localhost:4200 (o :8080 con Docker) | Redirige a `/login`. La primera vez `ngx-multienvironment` muestra un selector de entorno: elegir **dev** (apunta a `localhost:8888`) |
+| Frontend | http://localhost:4200 | Redirige a `/login`. La primera vez `ngx-multienvironment` muestra un selector de entorno: elegir **dev** (apunta a `localhost:8888`) |
 
 ## 1. Login
 

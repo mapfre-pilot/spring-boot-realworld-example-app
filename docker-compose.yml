@@ -1,5 +1,6 @@
-# Pila completa TVA desde un clon limpio: postgres + redis + backend + frontend.
-# Frontend en http://localhost:8080 (nginx, proxy /api/ → backend :8888).
+# Pila backend TVA desde un clon limpio: postgres + redis + backend.
+# El frontend se publica como artefacto SPA (`pnpm nx run tva:assemble-web`),
+# no como contenedor.
 services:
   tva-backend:
     build:
@@ -51,22 +52,6 @@ services:
       - postgres
       - redis
 
-  tva-frontend:
-    build:
-      context: ./tva-frontend
-      dockerfile: docker/Dockerfile
-      secrets:
-        - npm_pat_b64
-    environment:
-      TVA_ENV: pro
-    ports:
-      - "8080:80"
-    # Para cambiar de entorno en runtime monta un environments.json propio:
-    #   volumes:
-    #     - ./mi-environments.json:/usr/share/nginx/html/assets/environments.json:ro
-    depends_on:
-      - tva-backend
-
   postgres:
     image: postgres:16
     environment:
@@ -85,7 +70,3 @@ services:
 
 volumes:
   postgres-data:
-
-secrets:
-  npm_pat_b64:
-    environment: AZURE_ARTIFACTS_NPM_PAT_B64

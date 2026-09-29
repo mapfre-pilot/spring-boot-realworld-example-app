@@ -42,9 +42,9 @@ Pega el token en `/login`. Se guarda en `localStorage[tva_token]` y el
 Multi-entorno en runtime (sin fileReplacements): al arrancar, `initMultiEnvironmentApp()`
 descarga `assets/environments.json`; si tiene varias claves muestra su selector una
 única vez y recuerda la elección en `localStorage` (`OKCD_APPLICATION_ENVIRONMENT`).
-En el contenedor, `docker/entrypoint.sh` reduce el fichero a la única clave `TVA_ENV`
-(defecto `pro`), por lo que el selector nunca aparece (si la clave no existe, el
-contenedor falla con mensaje claro).
+El frontend se publica como artefacto SPA (`pnpm nx run tva:assemble-web`), no
+como contenedor; para fijar el entorno sin selector, el artefacto se empaqueta
+con la clave correspondiente.
 
 Claves: `dev` (api localhost:8888, `auth.mode: local`), `pre`/`pro` (`auth.mode: oidc` con
 `authority`/`clientId`/`scope`/`redirectUrl` = CHANGEME). Cada entorno lleva también
@@ -66,9 +66,9 @@ Azure Artifacts (`.npmrc` apunta a `pkgs.dev.azure.com`; la autenticación vive 
 (`EnvironmentService` + `TvaEnvironmentConfig`).
 
 La elección de entorno sigue el patrón documentado del paquete: en local el selector
-aparece una vez (se memoriza en `localStorage`); en el contenedor
-`docker/entrypoint.sh` filtra `assets/environments.json` con `TVA_ENV` (por defecto
-`pro`) para que quede una sola clave y el selector no se muestre.
+aparece una vez (se memoriza en `localStorage`); para producción, el artefacto
+debiera empaquetar `environments.json` con una sola clave para que el selector
+no se muestre.
 
 ## Ejecutores Nx corporativos
 

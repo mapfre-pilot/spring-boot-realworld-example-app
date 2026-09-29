@@ -97,42 +97,40 @@ corporativo (claves `dev`/`pre`/`pro`); elige `dev` — su `apiBaseUrl` apunta a
 ## Arranque con Docker Compose
 
 ```bash
-export AZURE_ARTIFACTS_NPM_PAT_B64=<PAT de Azure Artifacts en base64>
 docker compose up --build -d
 ```
 
-El build del frontend recibe el PAT como *build secret* de Docker (`id=npm_pat_b64`),
-nunca como `ARG`/`ENV`: no queda en capas ni en la imagen final.
+La pila de contenedores solo levanta el backend y su infraestructura. El
+frontend **no es un contenedor**: se publica como artefacto SPA con los targets
+Nx del `project.json`:
+
+```bash
+cd tva-frontend
+pnpm nx run tva:assemble-web --configuration=production   # genera dist/artifacts/tva/tva.zip
+pnpm nx run tva:release-web                               # publica el artefacto
+```
 
 Servicios (raíz `docker-compose.yml`):
 
 | Servicio | Puerto | Qué hace |
 |---|---|---|
 | `tva-backend` | 8888 | Dockerfile.public + `docker/entrypoint.sh` (migrate → cargar_parametros → gunicorn) |
-| `tva-frontend` | 8080 | build Nx `--configuration=pro` → nginx SPA + proxy `/api/` → backend |
 | `postgres` | 5432 | PostgreSQL 16 (volumen `postgres-data`) |
 | `redis` | 6379 | Redis 7 (cache/broker Celery) |
 
 Verificación:
 
 ```bash
-curl http://localhost:8080/                      # index del SPA
-curl http://localhost:8080/api/tva/v1/salud/     # backend vía proxy nginx
+curl http://localhost:8888/api/tva/v1/salud/     # backend
 docker compose down -v                          # parar y limpiar volúmenes
 ```
 
-### Entorno del frontend en el contenedor
+### Entorno del frontend
 
-El entorno se decide en runtime leyendo `assets/environments.json` (véase
-`tva-frontend/README.md`): sobreescribe el fichero montando un volumen:
-
-```yaml
-tva-frontend:
-  volumes:
-    - ./mi-environments.json:/usr/share/nginx/html/assets/environments.json:ro
-```
-
-o ajusta `TVA_ENV` del contenedor frontend: al arrancar, `docker/entrypoint.sh` reduce `assets/environments.json` a la única clave `${TVA_ENV}` (patrón ngx-multienvironment: con una sola clave el paquete no muestra el selector; falla con `exit 1` si la clave no existe).
+El entorno se decide en runtime leyendo `assets/environments.json` (patrón
+`ngx-multienvironment`, véase `tva-frontend/README.md`): el selector solo
+aparece cuando el fichero tiene varias claves; para fijar un entorno el
+artefacto se empaqueta con la clave correspondiente.
 
 ## Variables de entorno
 
@@ -175,9 +173,7 @@ del usuario** (líneas `_auth`/`email`/`always-auth` con un PAT en base64 como e
 documentación corporativa — nunca en el repo). `pnpm install` resuelve los paquetes.
 La elección de entorno sigue el patrón del paquete: en local, `environments.json` tiene
 varias claves y `initMultiEnvironmentApp` muestra su selector una vez (la elección se
-recuerda en `localStorage` bajo `OKCD_APPLICATION_ENVIRONMENT`); en el contenedor,
-`docker/entrypoint.sh` filtra `assets/environments.json` a la única clave `TVA_ENV`
-(defecto `pro`), por lo que el selector nunca aparece.
+recuerda en `localStorage` bajo `OKCD_APPLICATION_ENVIRONMENT`).
 
 Solo el backend conserva stubs (el feed Python no está en alcance):
 
