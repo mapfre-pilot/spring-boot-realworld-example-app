@@ -11,8 +11,8 @@ import {
   crearFormulariosTomador,
 } from '@tva/core';
 import { AppianPopupService } from '../../../../core/infra/appian/appian-popup.service';
-import { Opcion } from '../../../../shared/ui/formularios/campo-select.component';
-import { RequisitoTomador } from './tomador-form.component';
+import { Opcion } from '../../../../shared/ui/formularios/campo-select/campo-select.component';
+import { RequisitoTomador } from './tomador-form/tomador-form.component';
 
 @Directive()
 export abstract class TomadorBase implements OnInit {

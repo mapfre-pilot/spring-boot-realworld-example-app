@@ -12,12 +12,12 @@ export const routes: Routes = [
   {
     path: 'sesion/:clave',
     canActivate: [authGuard],
-    loadComponent: () => import('./pages/sesion/sesion.page').then(m => m.SesionPage),
+    loadComponent: () => import('./pages/sesion/sesion/sesion.page').then(m => m.SesionPage),
   },
   {
     path: 'admin',
     canActivate: [roleGuard('TVA_ADMIN_PORTAL')],
-    loadComponent: () => import('./pages/admin/admin.page').then(m => m.AdminPage),
+    loadComponent: () => import('./pages/admin/admin/admin.page').then(m => m.AdminPage),
   },
   { path: '**', redirectTo: '' },
 ];

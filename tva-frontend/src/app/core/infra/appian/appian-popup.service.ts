@@ -15,7 +15,7 @@ import {
 import {
   AppianTaskDialogComponent,
   AppianTaskDialogData,
-} from '../../../shared/ui/feedback/appian-task-dialog.component';
+} from '../../../shared/ui/feedback/appian-task-dialog/appian-task-dialog.component';
 
 @Injectable({ providedIn: 'root' })
 export class AppianPopupService {

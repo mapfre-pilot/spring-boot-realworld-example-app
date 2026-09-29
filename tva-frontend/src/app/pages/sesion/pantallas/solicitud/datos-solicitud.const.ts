@@ -1,5 +1,5 @@
 /** Constantes de presentación de captura-datos-solicitud. */
-import { Opcion } from '../../../../shared/ui/formularios/campo-select.component';
+import { Opcion } from '../../../../shared/ui/formularios/campo-select/campo-select.component';
 
 export const TIPOS_DURACION: Opcion[] = [
   { valor: 'ANIOS', etiqueta: 'Años' },

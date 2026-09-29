@@ -1,5 +1,5 @@
 /** Constantes de presentación de r2c-captura. */
-import { Opcion } from '../../../../shared/ui/formularios/campo-select.component';
+import { Opcion } from '../../../../shared/ui/formularios/campo-select/campo-select.component';
 
 export const PERIODICIDADES_RENTA: Opcion[] = [
   { valor: 'MENSUAL', etiqueta: 'Mensual' },

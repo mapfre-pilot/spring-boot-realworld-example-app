@@ -1,5 +1,5 @@
 /** Constantes de presentación de inicio. */
-import { Opcion } from '../../shared/ui/formularios/campo-select.component';
+import { Opcion } from '../../shared/ui/formularios/campo-select/campo-select.component';
 
 export const MODOS: Opcion[] = [
   { valor: 'VA', etiqueta: 'Venta Asesorada' },

@@ -24,9 +24,12 @@ import {
   WebApiError,
   nuumaDe,
 } from '@tva/core';
-import { CabeceraComponent } from '../../shared/ui/layout/cabecera.component';
-import { CampoSelectComponent, Opcion } from '../../shared/ui/formularios/campo-select.component';
-import { CampoTextoComponent } from '../../shared/ui/formularios/campo-texto.component';
+import { CabeceraComponent } from '../../shared/ui/layout/cabecera/cabecera.component';
+import {
+  CampoSelectComponent,
+  Opcion,
+} from '../../shared/ui/formularios/campo-select/campo-select.component';
+import { CampoTextoComponent } from '../../shared/ui/formularios/campo-texto/campo-texto.component';
 import { MATERIAL } from '../../shared/ui/material';
 import { DESCRIPCIONES_MODO, FRECUENCIAS, MODOS, OPERACIONES } from './inicio.const';
 
