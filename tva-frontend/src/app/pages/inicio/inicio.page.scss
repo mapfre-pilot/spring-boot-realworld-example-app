@@ -142,7 +142,7 @@ mat-card-content {
 
 .opcion {
   margin-bottom: 12px;
-  padding: 12px 16px 4px;
+  padding: 12px 16px 16px;
   border: 1px solid var(--tva-border);
   border-radius: 8px;
   background: #fff;
@@ -175,7 +175,7 @@ mat-card-content {
 .opcion-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 4px 16px;
+  gap: 16px;
 }
 
 .campo-span-2 {
