@@ -469,3 +469,21 @@ Coordinación: `SCA2_ContraAnulacionOpciones` (v27 viva) y `SCA2 CMD CompletarAc
 - Grabaciones: `~/screencasts/s5-ciclo-positivo/s5-ciclo-positivo-edited.mp4` (alta → CA → POSITIVO + carta → ACEPTAR → buscador/detalle) y `~/screencasts/s5-positivo-relectura/s5-positivo-relectura-edited.mp4` (relectura SCA2 con F5 y comparación con SCA).
 - Capturas: `~/sca2work/shots/s5pos_01…15` (ciclo) y `s5pr_01…06` (relectura SCA2/SCA: buscador, tarjeta CA, documentos).
 - Backups/scripts LCP: `~/sca2work/backup/SCA2_altaDocumento.live_*.json`, `SCA2_subirDocumentosGD.live_*.json`/`.new_*.txt`, `SCA2_altaDocumentoIntegracion.integ.live.json`, `SCA2_CMD_CompletarAccion.live_*.json`, `proc_11037241.json`; `~/sca2work/edits/edit_docs_retry.py`, `edit_docs_retry2.py`, `verificar_ciclo.py`.
+
+### 10.6 Nodo 340 «Write FINALIZADA_POSITIVO»: `estadoTarea = COMPLETADA` (decisión del analista, ≠→OK)
+
+Homogeneiza el record `SCA2 Solicitud` con `SCA2 Tarea` y con `SCA2 CMD Finalizar` (nodo 8), que ya escribía `estadoTarea: "COMPLETADA"`.
+
+- `SCA2 CMD CompletarAccion` (uuid `0000f06f-1307-8000-65b1-7f0000014e7a`): GET vivo (46 nodos) → backup → PUT completo (HTTP 200) → re-GET: 46 nodos, mismos ids y PVs, **única diferencia el nodo 340**; conservados 303-305/`AUT_GUARDAR_FAIL` (S4), rama docs AccAdm (S3), 330 con clave `-R` y 200 `contains()` (S2), 301 CDT / 312 `property()` / 350-353 (S5). Instancias posteriores en **v31**.
+- Cambio en el `a!writeRecords` del nodo 340 (una línea):
+
+```
+'recordType!{…}SCA2 Solicitud.fields.{b32247b9-…}interfazActiva': "FIN",
+'recordType!{…}SCA2 Solicitud.fields.{aeee7621-…}estadoTarea': "COMPLETADA",   /* nuevo */
+'recordType!{…}SCA2 Solicitud.fields.{074b8e94-…}procesoActivo': null()
+```
+
+- `/test` del PM con la solicitud ya cerrada 15787728 (`idTarea=41`, `resultado` CA positivo): instancia 537393824 **COMPLETED** en 0,7 s por la rama `¿Ya ejecutado?` (transición OK `SCA2 CMD CompletarAccion|15787728|41` existente), sin llamadas a CORE ni escritura (`caSuccess`/`docsResult` nulos; record sin cambios: `FINALIZADA_POSITIVO`, versión 5). Los records ya cerrados (15787728, 15787723, 15787719, 15787722) conservan `estadoTarea=PENDIENTE`: no se han retocado a mano (sin efecto visible; `SCA2 Tarea` COMPLETADA).
+- Script y backups: `~/sca2work/edits/edit_340_tarea.py`, `~/sca2work/backup/SCA2_CMD_CompletarAccion.live_*.json` / `.after_*.json`.
+
+Con esto S5 queda cerrada; a partir de aquí el PM pasa a S4 (persistencia de `observaciones`), sin más PUT desde S5.
