@@ -378,3 +378,86 @@ Grabaciones (`~/screencasts/`): `s2-ronda4-sca-sca2-edited.mp4` (ciclo SCA 15787
 | Refresco de la traza tras VOLVER AL DETALLE | **pendiente** (§10.5, decisión a/b) |
 | Acción 4 en el FINALIZAR negativo | diferencia backend documentada, pendiente de decisión |
 | Observación técnica del alta | no confirmada como divergencia (SCA nueva tampoco la muestra) |
+
+## 11. Ronda 5 (30/09/2026, 16:20–17:40 CEST) — VOLVER AL DETALLE por navegación, gestión de acción 4 en SCA2, ciclo `2002000066861`, tarjeta «Impresion» y RETOMAR/REASIGNAR
+
+Decisiones aplicadas (SCA TEST como referencia): (a) VOLVER AL DETALLE de `SCA2_DetalleTareas` navega a la página del Detalle (recarga completa) y se retiran los sondeos sin efecto de `SCA2_DetalleSolicitud`; (b) SCA2 crea también la gestión CORE de acción 4 (Impresión) en el FINALIZAR negativo, como SCA.
+
+### 11.1 Solicitud creada y ciclo
+
+| App | Póliza | idSolicitud | Ciclo | Estado final |
+|---|---|---|---|---|
+| SCA2 | `2002000066861` (reserva autorizada) | **15787741** | Alta 16:36 → Contra Anular → argumento NEGATIVO + Carta firmada (subida por fila, `0900ab4481a0486a`) → FINALIZAR ①16:41 (fallo, §11.3) → FINALIZAR ②16:48 (CORRECTO) → redirección NSE-Autos → VOLVER AL DETALLE | `codEstSolic=2`, record `PDTE_MECANIZAR`/`MECANIZAR`/`PENDIENTE`, tarea MECANIZAR pendiente (`CE_RM`), **ANULAR PÓLIZA no pulsado** |
+| SCA (referencia, solo lectura) | `2002000062827` | 15787734 | — | igual que en §10 |
+
+### 11.2 Gestiones CORE: acción 4 creada como en SCA
+
+`SCA2_consultaGestion(15787741)` tras el ciclo:
+
+| numGestion | accionRealizada | codEstGestion | inicio → fin |
+|---|---|---|---|
+| 43704940 | 8 (Alta) | FINALIZADA | 16:36:51 |
+| 43704941 | 2 (Contra Anulación) | **FINALIZADA NEGATIVA** | 16:37:08 → 16:41:29 |
+| **43704944** | **4 (Impresión)** | FINALIZADA | 16:41:30 (creada en el 1er FINALIZAR; el reintento **no** la duplicó) |
+| 43704945 | 5 (Mecanización) | INCOMPLETA | 16:48:32 |
+
+Misma secuencia 8 → 2 → 4 → 5 que SCA 15787734 (43704919 / 43704921 / 43704922 / 43704924). BBDD SCA: `codTipEstSolicPca=2`, mecanización `codTipEstMecaniza=3`, `codUsr=JJGONZ2`. Documento: `idDoc=555974`, tipo 6, `DOCS_SCA_SOAN_0001`, `idReferencia=b8ccb1a0f2c35b0d`, GD y BBDD `success=true`, 1 intento, sin `DOC_GD_FAIL`. Sin fila `SCA2 Error` para 15787741 (comprobado con `/test` de la interfaz de errores).
+
+**Cómo crea SCA la 4** (leído en `SCA_Finalizar_Contra_Anulacion`): el nodo 19 «Resultado Contra Anulación» separa POSITIVO (→24) / NEGATIVO (→21) / CANCELAR (→15); en el camino NEGATIVO el nodo 21 llama a `SCA_GuardarImprimir` (→ `SCA_consultaImpr` para la plantilla → `SCAC_guardarImprIntegracion`, SOAP `IGenerarContraAnul.guardarImpr` con `codCia, nuuma, codPerfil, codSubPerfil, codSolicitud, codPlantilla, nivelIntervencion`); es CORE quien registra la gestión 4 y después se crea la 5. Solo ocurre en la CA negativa (no en Acción Administrativa ni Autorización).
+
+**Réplica en SCA2** (`SCA2 CMD CompletarAccion`, uuid `0000f06f-1307-8000-65b1-7f0000014e7a`, 46 → **49 nodos**, GET vivo antes de cada PUT): tras `Finalizar CA PCA` (350) y antes de `Write Transicion OK` (330) se añaden 360 «Guardar impresion CA» (`rule!SCA2_GuardarImprimir`, misma lógica que SCA con `SCA2_consultaImpr`/`SCA2_guardarImprIntegracion` uuid `0d02f616-3464-4b12-8d83-55be07f945ea`), 361 «¿Impresion ok?» y 362 «Capturar error impresion» (fila `SCA2 Error` `IMPR_GUARDAR_FAIL` sin cortar el flujo). Conservados: 301 (CDT tipado), 303-305, 313-314, 330/200 (`contains()`), 340, 350-353, rama Acción Administrativa, nodo 5 y relanzamiento (S4/S5).
+
+### 11.3 Fallo del 1er FINALIZAR (exclusivo SCA2, corregido)
+
+Instancia `9994107` (PM v33) quedó `ACTIVE` en el nodo 360 con `Expression evaluation error at function 'and': Cannot compare incompatible operands of type Any Type and type Boolean` (`index(local!res,"success",null)=true`). La UI mostró «No se ha podido confirmar la finalización de la contra anulación. Revise el estado de la solicitud o la bandeja de errores antes de volver a intentarlo.» (captura `ss_bec25211.png`); CORE ya tenía la CA `FINALIZADA NEGATIVA` y la gestión 4, y el record quedó `PDTE_FINALIZAR`. Corrección (PM v34): `tostring(a!defaultValue(index(local!res,"success",null),false))="true"` en 360 y la misma forma en la condición del 361. El 2º FINALIZAR (instancia `8942224`, PM v34, `COMPLETED` en 6,7 s) siguió la ruta `¿Ya ejecutado?` → `Finalizar CA PCA` (CA ya finalizada) → 330 → Decidir → mecanizar sin duplicar gestiones. La instancia `9994107` sigue `ACTIVE`: el plugin LCP devuelve 501 `Operation not implemented` en `/processes/{id}/cancel|resume`; hay que cancelarla desde Appian Designer (no se ha insistido).
+
+### 11.4 Navegación y refresco (corregido y verificado)
+
+- `SCA2_DetalleTareas` v10 → **v11**: VOLVER AL DETALLE pasa de saves locales a `a!safeLink(uri: a!urlForSite(sitePage: 'site!{bb62c468-…}SCA2 Anulaciones.pages.{ee42d0ad-…}buscador', urlParameters: a!map(idSolicitud: ri!idSolicitud)), openLinkIn: "SAME_TAB")` (recarga completa, como vuelve SCA por navegación). Verificado: la tarjeta Mecanización muestra sin F5 los hitos y las observaciones nuevas (dos «Consulta NEW» de 16:48:57) y F5 no cambia nada.
+- `SCA2_DetalleSolicitud` v33 → **v34**: eliminados `local!estadoRT`/`local!versionRT` (sondeo `refreshInterval: 0.5` sin efecto) y `local!versionRT` de los `refreshOnVarChange`; se conserva el `refreshOnVarChange: ri!tipoAccion` de S3.
+- `SCA2_ContraAnulacionOpciones` v27 → **v28**: `mcaFisicoJuridico` en las 6 llamadas de insertar observaciones con `tipoGestion: "CA"` (mismo payload que SCA).
+
+### 11.5 Popup CORRECTO doble (exclusivo SCA2, corregido en `SCA2_DetalleTareas` v12, **sin re-verificar**)
+
+En el 2º FINALIZAR aparecieron dos pantallas CORRECTO: la primera sin «Se va a redirigir a la anulación.» (16:48:32,9) y, tras ACEPTAR, otra con la frase (16:48:46) que sí abrió NSE-Autos. Causa: la frase dependía de `local!tareaMecanizar` (`a!refreshVariable(refreshAlways: true, refreshInterval: 0.5)`) y la tarea MECANIZAR se creó a las 16:48:33, un instante después del primer render; el `refreshAlways` re-evaluó la interfaz con el clic. SCA (`SCA_GenerarSolicitudPopup(mecanizar: ri!mecanizar)`) muestra la frase por el resultado, no por la tarea. Cambio v12: `local!caNegativa` (CORE `SCA2_consultaGestion` → gestión 2 `FINALIZADA NEGATIVA`, `refreshOnVarChange: local!hecho`), `showWhen: or(isNotNullOrEmpty(tareaMecanizar), caNegativa)` y sin `refreshAlways`. `/test` OK; requiere un FINALIZAR nuevo para verificarlo en UI (no queda póliza autorizada).
+
+### 11.6 Tarjeta «Impresion» y RETOMAR/REASIGNAR en el Detalle (exclusivo SCA2, corregido y verificado)
+
+- SCA (`SCA_DetalleSolicitud`) lista todas las gestiones CORE; para `SCA_D_TiposGestiones(4)="IMPRESION"` pinta cabecera «Impresion» + tag `Finalizada` **rojo** (`SCA_D_ColorEstadoGestion`) y cuerpo `null` (franja vacía). SCA2 construía el acordeón solo con sus tareas y no mostraba la 4. `SCA2_DetalleSolicitud` v34 → **v35/v36**: `local!impresiones` (gestiones `accionRealizada=4`) insertadas en `local!acciones` antes de la tarea MECANIZAR; fila solo-cabecera (`local!esImpr`), tag rojo para IMPRESION/FINALIZADA y franja vacía al desplegar. Verificado en UI: orden Alta → Contra Anulacion → Impresion → Mecanizacion como SCA 15787734 (`ss_ba59234a.png` vs `ss_bdf78580.png`).
+- REASIGNAR/RETOMAR: en SCA los botones usan la tarea pendiente de la solicitud (`SCA_queryProcessReport`) desde cualquier tarjeta (`local!disabled` solo si la gestión está finalizada **y** no hay tarea), por eso la CA `Finalizada Negativa` de 15787734 muestra REASIGNAR. SCA2 v35: `local!tareaPendiente` + `local!tareaBtn` (tarea propia si pendiente, si no la pendiente de la solicitud); RETOMAR si `asignadoA = loggedInUser()`, REASIGNAR en caso contrario (`SCA2_puedeGestionarTarea`), ocultos en la fila Impresion. Verificado: CA y Mecanización de 15787741 muestran RETOMAR abajo a la derecha (`ss_23806c96.png`, `ss_518c0934.png`); SCA muestra REASIGNAR (`ss_819687d3.png`) porque su tarea está asignada al grupo, mientras `SCA2 CMD CrearAccion` asigna la tarea MECANIZAR al usuario (`asignadoA=JJGONZ2`) → **REASIGNAR no verificable en UI** con datos propios (divergencia de asignación en el CMD de S5, no corregida aquí).
+
+### 11.7 Divergencias observadas no corregidas (documentadas)
+
+| Divergencia | Ámbito | Motivo |
+|---|---|---|
+| Traza Mecanización: SCA «Inicia Subproceso Appian 15787734 - 2002000062827» (lo escribe el PM `SCA_Mecanizacion`, `ANL_INT_InsertarObservaciones`); SCA2 no la tiene | `SCA2 CMD CrearAccion` (S5) | fuera de los CMD asignados a S2 |
+| Traza Mecanización: SCA2 muestra dos «Consulta NEW …» (16:48:57); SCA 15787734 no | común en código: `SCA_ContraAnulacionDetalleAnulacionPoliza` también llama 2× a `SCA_guardarObservaciones` al abrir la pantalla; en SCA la observación no llegó a BBDD | servicio/datos SCA, no exclusivo SCA2 |
+| Tarea MECANIZAR asignada al usuario (RETOMAR) vs grupo en SCA (REASIGNAR) | `SCA2 CMD CrearAccion` (S5) | ver §11.6 |
+| Página `/errores` no accesible a JJGONZ2 («La página no existe o no tiene permiso», `ss_052a81ba.png`) | seguridad del site | decisión de diseño ya elevada (§8) |
+| Reabrir la CA finalizada para reintentar solo fue posible por el historial del navegador (sin RETOMAR en la CA hasta v35) | flujo de recuperación | ahora la CA muestra RETOMAR/REASIGNAR sobre la tarea pendiente (v35) |
+
+### 11.8 Objetos SCA2 modificados en la ronda 5
+
+| Objeto | uuid | Antes → después | Cambio |
+|---|---|---|---|
+| `SCA2_DetalleTareas` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055554` | v10 → v11 → **v12** | v11 VOLVER AL DETALLE por `a!urlForSite`; v12 frase de redirección por resultado CORE, sin `refreshAlways` |
+| `SCA2_DetalleSolicitud` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055572` | v33 → v34 → v35 → **v36** | v34 sin sondeo `estadoRT/versionRT`; v35 fila Impresion + RETOMAR/REASIGNAR sobre la tarea pendiente; v36 tag rojo Impresion y franja vacía |
+| `SCA2_ContraAnulacionOpciones` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056435` | v27 → **v28** | `mcaFisicoJuridico` en observaciones CA |
+| `SCA2 CMD CompletarAccion` | `0000f06f-1307-8000-65b1-7f0000014e7a` | 46 → **49 nodos** (PM v33 → v34) | nodos 360-362 Guardar impresión CA (acción 4) + corrección de tipos |
+
+No se han tocado `SCA2_subirDocumentosGD`, `SCA2 CMD CrearAccion`/`Decidir`, ni objetos de SCA/SCAC/CORE/GAIA/PRE/Documentum. Backups y SAIL antes/después en `~/sca2work/backups/` (fuera del repo).
+
+### 11.9 Evidencias ronda 5 (fuera del repo)
+
+Grabaciones (`~/screencasts/`): `s2-ronda5-ciclo-edited.mp4` (alta → CA → NEGATIVO + carta → 1er FINALIZAR con fallo), `s2-ronda5-segundo-intento-edited.mp4` (2º FINALIZAR, redirección, VOLVER AL DETALLE, traza sin F5, comparación SCA), `s2-v35-lectura-final-edited.mp4` (Impresion y RETOMAR/REASIGNAR v35). Capturas (`~/screenshots/`): `ss_bec25211.png` (fallo 1er FINALIZAR), `ss_052a81ba.png` (/errores), `ss_e7890ea5.png`/`ss_c0714465.png` (doble CORRECTO), `ss_cb9d8a08.png` (NSE-Autos), `ss_91929afc.png`/`ss_0a949bb8.png` (traza sin F5 / con F5), `ss_ba59234a.png`/`ss_bdf78580.png` (acordeón SCA2/SCA), `ss_23806c96.png`/`ss_819687d3.png` (CA RETOMAR/REASIGNAR), `ss_518c0934.png` (MEC).
+
+### 11.10 Estado final S2
+
+| Aspecto | Veredicto |
+|---|---|
+| FINALIZAR negativo a la primera (CMD v34) | corregido; el ciclo 15787741 necesitó 2 pulsaciones por el fallo de tipos ya corregido (**sin ciclo limpio posterior**) |
+| Gestiones 8/2/4/5, `codEstSolic=2`, documento GD/CORE, record, `SCA2 Error`, CMD COMPLETED | igual que SCA |
+| Redirección + VOLVER AL DETALLE con traza refrescada | igual (v11) |
+| Fila Impresion, RETOMAR/REASIGNAR en tarjetas | igual (v35/v36); REASIGNAR no verificable con tarea asignada al usuario |
+| Popup CORRECTO doble | corregido en v12, sin verificar en UI |
+| Traza «Inicia Subproceso Appian» / asignación al grupo | pendiente (CMD CrearAccion, S5) |
