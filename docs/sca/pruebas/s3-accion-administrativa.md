@@ -434,3 +434,58 @@ Sobre la no-redirección: en el ciclo CA de S2 (15787726, misma `SCA2_DetalleTar
 - Grabaciones: `s3-ronda3-ciclo-edited.mp4` (alta → documentos → POSPONER → Detalle), `s3-ronda3-continuacion-edited.mp4` (F5, REASIGNAR, RETOMAR, bloqueo documental), `s3-ronda3-finalizar-ui-edited.mp4` (RETOMAR → 2 documentos → FINALIZAR → CORRECTO → ACEPTAR), `s3-ronda3-lectura-final-edited.mp4` (refresco 0 s/40 s/F5, NSE-Autos, buscador, SCA lectura).
 - Capturas `~/sca2work/shots/ronda3/05…27` (18 dos documentos + FINALIZAR activo, 19/19b CORRECTO y redirección, 20 destino Detalle, 21/22/23 refresco, 24 NSE-Autos, 25 vuelta, 26 buscador, 27 Detalle SCA completo) y log `ciclo-clicks-utc.txt`.
 - Backups SAIL/JSON antes/después: `~/sca2work/fix/` (`put_posponer_v6.py`, `put_principal_v19.py`, `put_detalle_refresh_v23.py`, `put_detalletareas_v10.py`) y `~/sca2work/live/` (`pm_posponer_before6_*/after6_*`, `proc_12088505.json`, `proc_16283229.json`).
+
+## 10. Ronda 4 — re-prueba UI con póliza 2002000044711 (SCA2 15787736): DetalleTareas v10 y observaciones del buscador
+
+Objetivo (analista): repetir el ciclo completo con las versiones vivas (`SCA2 CMD Posponer` v7 y `SCA2 CMD CompletarAccion` v32 de S4, `SCA2_DetalleTareas` v10, `SCA2_AccionesAdministrativasPrincipal` v19, `SCA2_DetalleSolicitud` v28 de S2, `SCA2_BuscadorTabla` v6) y verificar a la primera: ACEPTAR → mecanización, columna Observaciones del buscador SCA2 tras POSPONER y FINALIZAR, cierre completo. **Sin ningún PUT en esta ronda** (los CMD, `SCA2_BuscadorTabla`, REASIGNAR y `SCA2_DetalleSolicitud` son de S4/S2). Antes del ciclo se comprobó por GET vivo que v7 conserva el nodo 8 «Subir documentos GD» (+ PVs `listaNombreDocs`/`nuuma`/`docsRes`/`docsErr`) y v32 los nodos 313/314 «Subir documentos GD AccAdm».
+
+### 10.1 Póliza y solicitud
+
+| App | Póliza | Solicitud | Uso |
+|---|---|---|---|
+| SCA2 | `2002000044711` (LCP antes del alta: NSE-Autos, `SCA2_consultarSolicitudes` vacío) | **15787736** | alta y ciclo completo por UI |
+| SCA | — | 15787736 | solo lectura (buscador y Detalle) |
+
+### 10.2 Cronología UTC y verificación (log `ronda4/ciclo-clicks-utc.txt`)
+
+| Hora UTC | Acción UI (SCA2) | Pantalla | Verificación LCP |
+|---|---|---|---|
+| 13:32:55 → 13:33:48 | GUARDAR alta (1/5/14) → OK | abre **Acciones Administrativas** directamente | record 15787736 creado 13:33:08; CORE 43704925 (acción 8) FINALIZADA 15:33:00, 43704926 (acción 3) INCOMPLETA 15:33:17 |
+| 13:34:51 / 13:35:10 | AÑADIR DNI y compra/venta | ambos «Entregado» ✔, FINALIZAR habilitado | — |
+| 13:35:32 → 13:35:38 → 13:35:48 | POSPONER (obs. «Prueba S3 ronda4 posponer SCA2», oficina MADRID CORREDORES NORTE II) → ACEPTAR → CORRECTO → ACEPTAR | Detalle inmediato (13:36:16): AccAdm Incompleta, observación de POSPONER y **2 documentos ya visibles** (subidos por el nodo 8 del CMD) | `SCA2 CMD Posponer` **v7** instancia **17325615** COMPLETED (13:35:38.3 → 13:35:48.5); `idgestionsgc = 233844110`; `datos.fecimpresion` = observación (nodo 5 de S4) |
+| 13:36:43 | Buscador SCA2 | **Solicitud Pendiente**, columna Observaciones = «Prueba S3 ronda4 posponer SCA2» | = SCA (columna `fecimpresion`, S4 v7) |
+| 13:37:15 / 13:37:22 / 13:37:39 | REASIGNAR → F5 → RETOMAR | Documentación con DNI y compra **«Entregado»** y FINALIZAR habilitado (sin reposición) → bloqueo de la ronda 3 (§9.3) **resuelto a la primera**. La oficina vuelve a «--Seleccione una oficina--» (igual que SCA, §5.4) | `SCA2_consultarDocumentos` → `0900ab4481a04865` (tipo 1) y `0900ab4481a0484a` (tipo 7) |
+| 13:38:18 → 13:38:24 | FINALIZAR (obs. «Prueba S3 ronda4 finalizar SCA2») → ACEPTAR | popup CORRECTO; frase «Se va a redirigir a la anulación.» visible a las 13:39:23 | `SCA2 CMD CompletarAccion` **v32** instancia **17325628** COMPLETED (13:38:25.9 → 13:38:30.8), sin error; CORE 43704926 **FINALIZADA** 15:38:25 (observaciones «Prueba S3 ronda4 posponer SCA2,Prueba S3 ronda4 finalizar SCA2»); CORE **43704927 acción 5 INCOMPLETA** 15:38:38; `codEstSolic=2`; record `PDTE_MECANIZAR` / `MECANIZAR` / `PENDIENTE` / `CE_RM` / caducidad 2026-10-07; `fecimpresion` = «Prueba S3 ronda4 finalizar SCA2» |
+| **13:39:26** | **ACEPTAR del popup** | **abre «Detalle consulta NSE-Autos»** (captura 08, 13:40:11): VOLVER AL DETALLE / CANCELAR / ANULAR PÓLIZA (**no pulsado**) | **`SCA2_DetalleTareas` v10 verificado por UI** (R10 cerrada) |
+| 13:40:21 | VOLVER AL DETALLE | Detalle inmediato (13:40:28) y tras 40 s (13:41:37): AccAdm **Incompleta**, fin «-», solo observación de POSPONER; tarjeta Mecanizacion Incompleta con perfil/grupo/usuario = correo completo / CE_RM / correo (datos de `SCA2 Tarea`), resultado «-» | CORE ya FINALIZADA desde 13:38:25 → **datos obsoletos ≥ 3 min hasta F5** |
+| 13:41:40 | F5 | AccAdm **Finalizada** verde, fin 30/09/2026 15:38:25, ambas observaciones, documentos; Mecanizacion con RED MAPFRE / OFICINA / JJGONZ2 y «MECANIZACIÓN INCOMPLETA» (datos CORE) | = SCA |
+| 13:42:39 | Buscador SCA2 | **Pendiente**, Observaciones = «Prueba S3 ronda4 finalizar SCA2» | ✔ (S4 v32) |
+| 13:43 | SCA solo lectura: buscador y Detalle | Detalle SCA: mismos documentos, fechas y observaciones de AccAdm; Mecanización Incompleta; listado SCA con Observaciones = traza técnica «Consulta NEW: codMotivo: 0001 codDetalle: 0004 codCausa: 0012 … reservaPrima: S importe: -257.09 nvlCumplimiento: 00000005» | ver §10.3 |
+| 13:43:52 | SCA: flecha «volver» del Detalle | popup «Ha ocurrido un error» (`sca_datoscabecera` ← `sca_detallesolicitud` ← `sca_buscarsolicitudclientepoliza` ← `sca_buscadorsolicitudprincipal`, `a!submitLink` línea 23: «The save target must be a local variable that does not refresh…, but instead was: 2002000044711») | error propio de SCA (no se toca); la prueba se detuvo ahí sin aceptar el popup |
+
+### 10.3 Veredictos ronda 4
+
+| Paso | SCA | SCA2 | Veredicto |
+|---|---|---|---|
+| Alta → AccAdm directa, documentos, POSPONER con SGC + observación + documentos, RETOMAR con documentos conservados, FINALIZAR (CMD COMPLETED, CORE 3 FINALIZADA + 5 INCOMPLETA, `codEstSolic=2`, tarea MECANIZAR) | referencia | igual, **a la primera** y sin reposición LCP | = |
+| ACEPTAR del popup CORRECTO → mecanización NSE-Autos | encadena la mecanización | abre «Detalle consulta NSE-Autos» (v10) | **= (divergencia R10 corregida y verificada)** |
+| Columna Observaciones del buscador | observación de la última gestión | POSPONER → «…posponer SCA2»; FINALIZAR → «…finalizar SCA2» | = (S4, CMD v7/v32) |
+| Listado SCA tras FINALIZAR | muestra la traza técnica del alta «Consulta NEW: …» en Observaciones, no la frase de FINALIZAR | muestra la frase de FINALIZAR | ≠ con origen en SCA (SCA lee `txtObs` CORE del alta); SCA2 es más útil; documentado, no se corrige |
+| Detalle SCA2 tras VOLVER AL DETALLE sin F5 (0 s / 40 s) | SCA no vuelve al Detalle en esa secuencia | tarjeta AccAdm obsoleta (Incompleta) y Mecanizacion con datos de `SCA2 Tarea` en vez de CORE hasta F5 | ≠ exclusiva SCA2, **solo documentada** (`SCA2_DetalleSolicitud` v28 es de S2; ya lo tiene) |
+| Icono «ver documento» | ojo rojo | ojo gris | ≠ menor, S2 |
+| Botones tarjeta Mecanizacion | solo TRAZAR ANULACIÓN (gris) | RETOMAR + TRAZAR ANULACIÓN (gris) | ≠ ya documentada (§8.6, `SCA2_puedeGestionarTarea` v3) |
+
+### 10.4 Objetos SCA2 en la ronda 4
+
+Ningún PUT. Versiones vivas al cerrar S3: `SCA2_DetalleTareas` **10**, `SCA2_AccionesAdministrativasPrincipal` **19**, `SCA2_AccionesAdministrativasDocumentacion` **3**, `SCA2_DetalleSolicitud` **28** (S2; conserva el `refreshOnVarChange` de v23), `SCA2 CMD Posponer` **7** (S4; conserva el nodo 8 de v6), `SCA2 CMD CompletarAccion` **32** (S5/S4; conserva 313/314 de v26), `SCA2_posponerGestionSGC` **1**, `SCA2_subirDocumentosGD` **5** (S5), `SCA2_puedeGestionarTarea` **3**, `SCA2_BuscadorTabla` **6** (S4), `SCA2_Buscador` **13**.
+
+### 10.5 Pendientes al cierre de S3
+
+- Refresco de las tarjetas del Detalle tras VOLVER AL DETALLE/ACEPTAR (gestiones CORE y datos de la tarjeta Mecanizacion) — S2.
+- Icono ojo gris vs rojo; observación técnica del alta — S2.
+- RETOMAR visible en la tarjeta Mecanizacion de SCA2 (pool nivel 1) frente a solo TRAZAR en SCA — decisión del analista (§8.6).
+- Error de SCA al pulsar la flecha «volver» del Detalle (`sca_datoscabecera`, `a!submitLink`) — propio de SCA, fuera de alcance.
+
+### 10.6 Evidencias ronda 4 (fuera del repo)
+
+- Grabación `s3-ronda4-ciclo-edited.mp4`; capturas `~/sca2work/shots/ronda4/01…15` (01 alta, 02 AccAdm directa, 03 documentos, 04 Detalle tras POSPONER, 05 buscador POSPONER, 06 RETOMAR con documentos, 07 CORRECTO + redirección, **08 destino NSE-Autos**, 09/10/11 refresco 0 s/40 s/F5, 12 buscador FINALIZAR, 13 listado SCA, 14 Detalle SCA, 15 error SCA volver); log `ciclo-clicks-utc.txt`; instancias `proc_17325615.json` / `proc_17325628.json` y `sol_15787736_final.json` en `~/sca2work/live/`.
