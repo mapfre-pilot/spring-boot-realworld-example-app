@@ -407,3 +407,65 @@ Backups antes/después de cada PUT en `~/sca2work/backup/` (fuera del repo).
 - Grabaciones: `~/screencasts/sca-sca2-s5-final/sca-sca2-s5-final-edited.mp4` (ciclo 15787724 hasta el error controlado + cancelación de 16282979/16282981) y `~/screencasts/sca-sca2-s5-post-relaunch/sca-sca2-s5-post-relaunch-edited.mp4` (verificación tras el relanzamiento).
 - Capturas: `~/sca2work/shots/s5f_01…18` (alta, argumentos, carta —error de permisos y entrega—, FINALIZAR, error, buscador/filtro/detalle SCA2 y SCA), `s5f_b01…b10` (cancelación de instancias), `s5p_01…10` (post-relanzamiento: buscador, filtro, CA SCA2/SCA, documentos, mecanización, `/errores`).
 - Scripts LCP: `~/sca2work/edits/edit_relanzar.py`, `edit_consulta301.py`, `edit_positivo.py`, `edit_idem330.py`, `edit_finsol.py`, `relanzar_positivos.py`, `relanzar_uno.py`, `verificar_ciclo.py`; backups en `~/sca2work/backup/`.
+
+## 10. Fase 7 (30/09/2026, 14:40–15:00 CEST) — causa raíz del `DOC_GD_FAIL` a la primera, reintentos acotados como SCA y ciclo POSITIVO de UI con la póliza `2002000065541`
+
+Decisiones del analista recogidas: (1) el payload de `finalizarSolicitud` (nodo 351) se mantiene **exactamente como SCA lo envía por la red** (`idSolicitud` + `infoUsuario` con `codCiaUsuario=""`, sin `datosAnulacion`): SCA TEST es la referencia, no la intención del nodo; (2) `/errores` para JJGONZ2 y la tarjeta «Mecanizar» quedan fuera del alcance de S5.
+
+### 10.1 Causa raíz del `DOC_GD_FAIL` de 15787724 (fila `SCA2 Error` 42)
+
+Evidencia revisada:
+
+- Fila 42: `wrNodo="Subir documentos GD"`, `wrCodigo="DOC_GD_FAIL"`, `wrErrMsg="Error subiendo documentos: "`; payload `docsResult.resultados[0] = {idDoc: 555817, tipoDocumento: "6", success: false, mensaje: null}`. El documento **era accesible** (guard `SCA2_documentoAccesible` → `accesible=true`, ya consolidado por `a!submitUploadedFiles` de la interfaz v23+), es decir, no es la carrera de §8.5 (fichero temporal).
+- Cronología: fichero creado 12:10:07Z, actualizado (consolidación) 12:10:08Z; el PM arrancó a las 12:10:07.590Z y llamó a `SCA2_altaDocumento` en ese mismo segundo. La integración `SCA2_altaDocumentoIntegracion` (uuid `e53724d0-920b-4a43-ad1b-5886c2fc7f54`, v2; POST multipart `documents-web/api/sgd/1.0/documents`, partes `file` + `body`, `Host: webservices.pre.mapfre.net`, timeout 20 s) devolvió `success=false` **sin `result.body`**; `SCA2_altaDocumento` v1 sólo devolvía `error: local!body`, por lo que el motivo real (`result.error.message`, `statusCode`) se perdía y el mensaje quedaba vacío.
+- Permisos de carpeta: descartados como causa de la fila 42 — el fallo de permisos observado (14:09) fue en la carga desde la UI (`SCA2_FLD_CONTRA_ANULACION`), anterior e independiente, ya corregido por S3 (Editor en las carpetas documentales SCA2).
+- Con `file=null` la integración devuelve HTTP 500 con cuerpo `{"code":"UNKNOWN_ERROR","message":"Required request part 'file' is not present",…}`: cuando el servicio responde, siempre hay cuerpo. Un `success=false` sin cuerpo corresponde a un fallo de transporte/servicio SGD (timeout, conexión) y no a una validación.
+
+Conclusión (inferencia con la evidencia disponible, no reproducible a demanda): **fallo transitorio de la integración SGD/Documentum sin cuerpo de respuesta**, coincidente en el tiempo con la consolidación del fichero; no una carrera con `a!submitUploadedFiles` (el guard confirma el documento accesible) ni permisos. SCA no muestra este problema al usuario porque su PM `SCA_Subir_Docs_Documentum_BBDD` **reintenta**: nodo 44 `Success?` vuelve a «Llamada a altaDocumento rest» mientras `contadorErrores3 < 3`, y nodo 57 hace lo mismo con «SCA_modificarCrearDocumentos» (`contadorErrores4 < 3`); sólo tras 3 fallos llega a `InterfazErrorDocumentacion`. SCA2 hacía un único intento (hallazgo confirmado por S3, §8 de su informe).
+
+### 10.2 Corrección determinista: reintento acotado (3+3) portado a `SCA2_subirDocumentosGD` (≠→OK)
+
+Procedimiento por objeto: GET vivo → backup local → edición mínima → PUT completo → re-GET (expresión idéntica) → `/test`.
+
+| Objeto | uuid | Versión | Cambio |
+|---|---|---|---|
+| `SCA2_altaDocumento` | `_a-0001f076-8f0a-8000-9d26-011c48011c48_5481374` | v1 → **v2** | En la rama de fallo devuelve `error: a!defaultValue(local!body, index(index(local!respose,"error",null),"message",null))`, `statusCode: index(local!respose,"result","statusCode",null)` y `transitorio: and(a!isNullOrEmpty(local!body), a!isNotNullOrEmpty(ri!file))` (fallo sin cuerpo con fichero informado). Test `file=null` → `{success:false, error:"Documento no informado", transitorio:false, template:"DOCS_SCA_SOAN_0001"}`. |
+| `SCA2_subirDocumentosGD` | `_a-0001f076-8f0a-8000-9d26-011c48011c48_5481351` | v3 → v4 → **v5** | Por documento: hasta **3 intentos** de `SCA2_altaDocumento` (`local!gd1/gd2/gd3`, el siguiente sólo si el anterior `success=false`) y, si GD OK, hasta **3 intentos** del registro en BBDD CORE (`local!bbdd1/2/3`), mismo criterio y tope que los nodos 44/57 de SCA (v4 reintentaba sólo `transitorio=true`; v5 iguala a SCA: cualquier `success=false`). El resultado incluye `intentos`, `intentosBbdd` y mensajes `Error alta documento SGD (HTTP <status>) tras <n> intento(s): …` / `Error registrando documento en BBDD CORE tras <n> intento(s): …`. Tests: `999999999_6` → `success=false, omitido=true` (no accesible, sin reintentar y sin pausar); lista vacía → `success=true, numDocumentos=0`. |
+
+Fragmento (v5):
+
+```
+local!gd1: rule!SCA2_altaDocumento(...),
+local!gd2: if(not(a!defaultValue(index(local!gd1,"success",false),false)), rule!SCA2_altaDocumento(...), null),
+local!gd3: if(and(a!isNotNullOrEmpty(local!gd2), not(a!defaultValue(index(local!gd2,"success",false),false))), rule!SCA2_altaDocumento(...), null),
+local!gd: if(a!isNotNullOrEmpty(local!gd3), local!gd3, if(a!isNotNullOrEmpty(local!gd2), local!gd2, local!gd1)),
+/* idem local!bbdd1/2/3 sobre el registro CORE cuando local!gdOk */
+```
+
+Coordinación: `SCA2_ContraAnulacionOpciones` (v27 viva) y `SCA2 CMD CompletarAccion` (GET vivo: 46 nodos, instancias v30, con 303-305 de S4, rama docs AccAdm de S3, 330/200 de S2 y 312/340/350-353 de S5) **no se han modificado** en esta fase; el encadenado `a!submitUploadedFiles(onSuccess: a!startProcess(...))` de S2 está presente en las tres ramas (positivo, negativo, finalizar) y es correcto: el PM arranca sólo tras la consolidación.
+
+### 10.3 Ciclo POSITIVO de UI con la póliza `2002000065541` → solicitud SCA2 **15787728** (agente de pruebas, una sola pulsación por acción)
+
+| Paso | SCA2 (UI) | Backend (LCP) | Veredicto |
+|---|---|---|---|
+| Alta (motivo → Contra Anular) | 14:40:09, redirección al detalle | CORE gestión 43704895 acción 8 `FINALIZADA`; obs. «Prueba S5 ciclo positivo Devin» | = SCA (S1) |
+| Contra Anular → argumento + carta (tipo 6) por fila | PDF subido una vez, «Carta entregada» | doc Appian 555851 (`555851_6_15787728`) | = |
+| **POSITIVO → ACEPTAR (una vez)** | sin mensaje de error, **retorno directo al buscador** | CMD `11037241` v30 **COMPLETED** 12:43:07.4Z→12:43:21.5Z, `wrErr=false`; `docsResult.success=true`, **`intentos=1`**, `bbdd.success=true`; `caBody` `<respuesta>true</respuesta>`; `fsBody` `<respuesta>true</respuesta>` (nodos 350-353) | = SCA: **a la primera, sin `SCA2 Error`** |
+| CORE | — | gestión 43704898 acción 2 **`FINALIZADA POSITIVA`** 14:40:27 → 14:43:17; `consultarSolicitudes.codEstSolic` **2→3**, `fecResolucion` 14:43:18; `consultarDocumentos` → `0900ab4481a047e8` tipo 6 | = SCA |
+| Record `SCA2 Solicitud` | — | `FINALIZADA_POSITIVO`, `interfazActiva=FIN`, `procesoActivo=null`, versión 5; `SCA2 Tarea` 41 `CONTRAANULAR` **COMPLETADA**; sin `SCA2 Error` pendiente | OK |
+| Buscador SCA2 | «Finalizada positivo», verde, resolución 14:43:20 | — | = SCA («Finalizado positivamente», verde) salvo la hora de resolución (ver 10.4) |
+| Detalle SCA2 (lectura inmediata, ~14:44) | tarjeta CA «**Incompleta**», naranja, sin fecha fin | CORE ya `FINALIZADA POSITIVA` a 14:43:17 según la lectura posterior | **no reproducido**: ver 10.4 |
+| Detalle SCA2 tras F5 (14:49:17) vs SCA (14:50:59) | CA **Finalizada Positiva**, verde, 14:40:27 → 14:43:17, argumento «INCREMENTO PRIMA SINIESTROS — Positivo», carta `0900ab4481a047e8` (30/09/2026), observaciones «-»; estado «FINALIZADA POSITIVAMENTE» | SCA idéntico campo a campo | = |
+
+### 10.4 Observaciones y pendientes de la fase 7
+
+1. **Tarjeta CA «Incompleta» justo tras el cierre**: la primera lectura del detalle (≈1 min después del ACEPTAR) mostró la gestión CA `INCOMPLETA`; en la relectura (14:49) SCA y SCA2 mostraban `FINALIZADA POSITIVA` con fin 14:43:17. La tarjeta SCA2 lee la gestión de CORE (`SCA2_consultaGestion`, §12.4 doc 12), el CMD ya había terminado con `respuesta=true` en las dos integraciones, y S1 §10.3 documenta que también en SCA el buscador muestra «Pendiente» ~2 min tras la CA positiva mientras CORE procesa `finalizarSolicitud`. Inferencia: latencia de actualización en CORE, común a SCA y SCA2; no se ha podido reproducir (una sola pulsación por decisión de prueba) y **no se corrige en SCA2**. Si se quiere una prueba determinista habría que consultar `SCA2_consultaGestion` cada pocos segundos tras un cierre nuevo.
+2. Hora de resolución en el buscador: SCA 14:43:18 (CORE `fecResolucion`) vs SCA2 14:43:20 (`modifiedAt` del record): misma divergencia record vs CORE que S1 está corrigiendo en el buscador (no tocada).
+3. Campo `estadoTarea` del record `SCA2 Solicitud` queda `PENDIENTE` en los cierres `FINALIZADA_POSITIVO` (nodo 340; también 15787723 de S1 y 15787719/15787722), mientras `SCA2 CMD Finalizar` lo pone `COMPLETADA`. Ninguna interfaz ni regla del volcado lee ese campo (la UI usa `SCA2 Tarea.estado`, que sí queda `COMPLETADA`), por lo que no hay efecto visible; se deja anotado y no se ha hecho PUT del PM por ello. Si el analista quiere homogeneizarlo: añadir `estadoTarea: "COMPLETADA"` al `a!writeRecords` del nodo 340.
+4. Los reintentos de v5 no se han ejercitado en un fallo real (en 15787728 `intentos=1`); quedan cubiertos por la lógica idéntica a los nodos 44/57 de SCA y los tests de la regla.
+
+### 10.5 Evidencias de la fase 7 (fuera del repo, máquina de la sesión)
+
+- Grabaciones: `~/screencasts/s5-ciclo-positivo/s5-ciclo-positivo-edited.mp4` (alta → CA → POSITIVO + carta → ACEPTAR → buscador/detalle) y `~/screencasts/s5-positivo-relectura/s5-positivo-relectura-edited.mp4` (relectura SCA2 con F5 y comparación con SCA).
+- Capturas: `~/sca2work/shots/s5pos_01…15` (ciclo) y `s5pr_01…06` (relectura SCA2/SCA: buscador, tarjeta CA, documentos).
+- Backups/scripts LCP: `~/sca2work/backup/SCA2_altaDocumento.live_*.json`, `SCA2_subirDocumentosGD.live_*.json`/`.new_*.txt`, `SCA2_altaDocumentoIntegracion.integ.live.json`, `SCA2_CMD_CompletarAccion.live_*.json`, `proc_11037241.json`; `~/sca2work/edits/edit_docs_retry.py`, `edit_docs_retry2.py`, `verificar_ciclo.py`.
