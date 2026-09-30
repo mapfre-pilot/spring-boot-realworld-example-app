@@ -13,7 +13,7 @@ referencia funcional; solo se corrigen objetos de SCA2.
 | SCA2 (`sca2`), repetición tras corregir | `2002000024237` (reserva) | **15787714** | Idéntica | Alta `43704858` (acción 8), Autorización `43704859` (acción 7) |
 | SCA2 (`sca2`), ronda 2 (POSPONER SGC + FINALIZAR v15…v18) | `2002000045500` | **15787721** | Idéntica | Alta `43704873` (8), Autorización `43704876` (7), Mecanización `43704882` (5) |
 | SCA2 (`sca2`), ronda final (FINALIZAR v19 punta a punta) | `2002000040119` (reserva 2) | **15787725** | Idéntica | Alta `43704884` (8), Autorización `43704885` (7), Mecanización `43704888` (5) |
-| SCA2 (`sca2`), ronda final (FINALIZAR v19 punta a punta) | `2002000025123` (reserva 2) | **15787732** | Idéntica | Alta `43704884` (8), Autorización `43704885` (7), Mecanización `43704888` (5) |
+| SCA2 (`sca2`), ronda 4 (CMD genéricos, §3.10) | `2002000025123` | **15787732** | Idéntica | Alta `43704912` (8), Autorización `43704913` (7), Mecanización `43704914` (5) |
 
 La primera reserva se usó para repetir FINALIZAR en SCA2 tras la primera corrección del PM (§3.4); las dos
 pólizas de la segunda asignación para la ronda 2 (§3.5-§3.7). No se ha tocado ninguna otra solicitud.
