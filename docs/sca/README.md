@@ -25,6 +25,7 @@ exclusivamente con operaciones `get*`/`list*`. **No se ha modificado ningún obj
 10. [Plan de despliegue de SCA2 a TEST](10-plan-despliegue-test.md) — decisiones previas, prerrequisitos (dependencias SCA/SCAC por UUID), matriz DEV→TEST de connected system/constantes/secretos, BBDD `sca2_anulaciones`, ejecución, validación y rollback.
 11. [Alineación con SCA TEST, navegación F5 y rendimiento](11-alineacion-test-rendimiento-navegacion.md) — veredictos de los 13 objetos divergentes y 3 ausentes en TEST, mecanismo final de persistencia en URL (`?$sp` con rule inputs + parámetros de URL del site) y medición de rendimiento del Alta con mejoras propuestas.
 12. [Correcciones tras la revisión del analista](12-correcciones-analista-contra-anulacion.md) — Alta (2ª póliza, Cancelar, salto directo a la acción decidida), Alta gestión CORE, argumentos GAIA (`listadoArgumentos`/`mcaEstado`), catalogación, visor de documento nulo y subida de documentos a GD replicada de forma atómica en `CMD CompletarAccion`.
+13. [Pruebas comparativas SCA vs SCA2 en TEST (S1–S5)](pruebas/00-consolidado-s1-s5.md) — consolidado de las cinco sesiones paralelas (POSITIVO, NEGATIVO+GD, Acción Administrativa, Autorización, Detalle/buscador/errores): veredicto por flujo, causas raíz corregidas, hallazgos comunes a SCA y pendientes; informes detallados `pruebas/s1…s5`.
 10. [Anexo: inventario generado](anexos/inventario-generado.md) — volcado tabular (process models, integraciones, record types, referencias cruzadas).
 
 ## Alcance y limitaciones
