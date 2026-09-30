@@ -81,7 +81,7 @@ re-GET → `POST .../test` → repetición UI. SAIL antes/después guardado en l
 | `SCA2_BuscadorTabla` (interfaz) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056379` | 6 → **7** (ronda 5) | Envuelta en `a!localVariables` con `local!ultimas: SCA2_consultarUltimaGestionREST(nuuma)` (una llamada por carga, como SCA); columna Observaciones = `txtObs` por `numSolicitud`, respaldo `fecimpresion` |
 | `SCA2_DetalleSolicitud` (interfaz) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055572` | 31 → **32** (ronda 6; esperaba 28 tras la ronda 5, la expresión viva era idéntica a mi snapshot) | Tarjeta de la gestión con `showWhen: not(local!showPopupReasignar)` y `SCA2_PopUpReasignarTarea` como hermano de la tarjeta (como SCA) |
 | `SCA2_colorEstadoSolicitud` (regla) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20063676` | 4 → **5** (ronda 6) | Solo «Caducada» `#734B30` y «Cancelada» `#0D82BD` |
-| `SCA2_liberarTarea` (regla **nueva**) | `_a-0001f076-8f0a-8000-9d26-011c48011c48_5484899` | — → **1** (ronda 6) | `a!writeRecords` sobre `SCA2 Tarea`: `asignadoA`/`propietario` = null (devolver al pool). Creada para restaurar por LCP la tarea 50 de 15787739; reutilizable, borrable si no se quiere |
+| `SCA2_liberarTarea` (regla **nueva**) | `_a-0001f076-8f0a-8000-9d26-011c48011c48_5484899` | — → **1** (ronda 6) | `a!writeRecords` sobre `SCA2 Tarea`: `asignadoA`/`propietario` = null (devolver al pool). Creada para restaurar por LCP la tarea 50 de 15787739; reutilizable; **se conserva** por decisión del analista |
 
 ### 3.1 Fragmentos relevantes
 
@@ -544,7 +544,7 @@ con `fecFinGestion = null` (así lo devuelve CORE; no se reinterpreta), `nivelIn
 - Ronda 5: botón REASIGNAR visible mientras se muestra el popup de confirmación en SCA2 (SCA lo oculta); `SCA2_DetalleSolicitud` (v28, S3 activa) no tocada.
 - Formato de «Fecha solicitud»: SCA `2026-09-30 15:48:31` (CORE) vs SCA2 `30/09/2026 15:48:31` (S1); no tratado en S4.
 - Ronda 6: colores «Caducada»/«Cancelada» (v5) verificados solo por test LCP; sin filas con esos estados en TEST.
-- Ronda 6: `SCA2_liberarTarea` es un objeto nuevo en SCA2 (creado para restaurar la tarea 50); puede borrarse o reutilizarse (devolver tarea al pool).
+- Ronda 6: `SCA2_liberarTarea` (`_a-0001f076-8f0a-8000-9d26-011c48011c48_5484899`) es un objeto nuevo en SCA2, creado para restaurar la tarea 50; **se conserva** por decisión del analista como equivalente de la devolución al pool que hace SCA (asignadoA/propietario = null).
 - Ronda 6: la ocultación de documentos/observaciones bajo el popup se ejercitó sobre Mecanizacion (sin documentos); la Autorización estaba ya finalizada.
 
 ## 6. Evidencias (no incluidas en el repo)
@@ -582,4 +582,4 @@ Estados de procesos: `~/sca2work/proceso_<id>.json` y `procesos_completaraccion.
 - Buscador SCA2, columna Observaciones: resuelto de forma genérica en los CMD (§3.10). Queda por decidir si las
   solicitudes anteriores al fix (p. ej. 15787720 de S3) deben rellenarse desde CORE o se dejan hasta su próximo ciclo.
 - Ronda 5: Observaciones del buscador se leen ahora de CORE con una llamada por carga (misma fuente y regla que SCA, §3.11). Si se prefiere no depender de CORE en el buscador, la alternativa es mantener `fecimpresion` y aceptar la divergencia de la traza técnica en AccAdm/CA negativa.
-- Ronda 6: ¿se conserva `SCA2_liberarTarea` (devolver tarea al pool, equivalente SCA) o se borra?
+- Ronda 6: `SCA2_liberarTarea` se conserva (decisión del analista): regla de utilidad para devolver una tarea al pool, equivalente SCA.
