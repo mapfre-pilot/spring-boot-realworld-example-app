@@ -168,13 +168,13 @@ Estado final de las gestiones CA (CORE, 30/09/2026 ~13:00): 15787701 → 4370482
 
 | § | Divergencia | Motivo de no corregir |
 |---|---|---|
-| 5.1 | Cancelar en Alta conserva el filtro de póliza en SCA2 (SCA limpia la búsqueda) | Menor; requiere decidir si el analista quiere limpiar la búsqueda (comportamiento SCA) — pregunta abierta |
-| 5.2 | Buscador SCA2: fecha de solicitud = `createdAt` del record (+9 s frente a `fecSolicitud` CORE) y observaciones «-» (SCA muestra las de CORE) | El buscador SCA2 lee el record local; alinear implica leer CORE por fila (rendimiento) — decisión de diseño |
+| 5.1 | Cancelar en Alta conserva el filtro de póliza en SCA2 (SCA limpia la búsqueda) | **Corregida en ronda 2** (§9.2, `SCA2_Buscador` v13) |
+| 5.2 | Buscador SCA2: fecha de solicitud = `createdAt` del record (+9 s frente a `fecSolicitud` CORE) y observaciones «-» (SCA muestra las de CORE) | **Corregida en ronda 2** (§9.2: `CMD Alta` persiste `fecSolicitud` CORE en `SCA2 Datos Solicitud`; `SCA2_BuscadorTabla` v6 la muestra desde el record) |
 | 5.3 | SCA2 no encuentra solicitudes creadas en SCA (15787701) al buscar por póliza | SCA2 solo lista records `SCA2 Solicitud`; que muestre solicitudes de SCA es una decisión funcional (doc 11 §alineación) |
-| 5.4 | Tras POSITIVO, SCA2 muestra dos avisos más («Los datos se han guardado correctamente…» y «CORRECTO») antes de volver al buscador; SCA vuelve directo | Los avisos vienen de la copia de las modales de SCA (`ModalRecuperacionPoliza` + `Rehabilitacion`); suprimirlos cambia la UX validada en §12 — confirmar con el analista |
-| 5.5 | F5 sobre la URL de la acción con la solicitud finalizada reabre el formulario de Contra Anular en SCA2 (SCA no tiene URL directa) | Falta un guard en `SCA2_ContraAnulacionOpciones`/página de acción por `estadoSolicitud`; no forma parte de S1 y afecta a todas las acciones — proponer en S5 |
+| 5.4 | Tras POSITIVO, SCA2 muestra dos avisos más («Los datos se han guardado correctamente…» y «CORRECTO») antes de volver al buscador; SCA vuelve directo | **Corregida en ronda 2** (§9.2: avisos suprimidos, `onVolver` hasta `SCA2_DetalleTareas`). La rama de éxito sigue **sin validar por UI** porque CORE falló en los dos ciclos (§9.4) |
+| 5.5 | F5 sobre la URL de la acción con la solicitud finalizada reabre el formulario de Contra Anular en SCA2 (SCA no tiene URL directa) | **Corregida en ronda 2** (§9.2, guard en `SCA2_DetalleSolicitud` v21: «La tarea solicitada no está disponible», validado por UI en 15787719 y 15787722) |
 | 5.6 | Texto de estado en cruce SCA/SCA2 de 15787702 («Finalizada no requerida contraanulación» vs «Finalizada. Anulación realizada») | Consecuencia del cierre erróneo previo a 4.7 (`codEstSolic=5`); no se re-cierra 15787702 |
-| 5.7 | La UI SCA2 muestra CORRECTO aunque CORE falle (record `FINALIZADA_POSITIVO` con gestión INCOMPLETA) | Con 320/321 el fallo queda en `SCA2 Error`, pero el record ya se escribió como finalizado antes de llamar a CORE (nodo 7 → 301). Decidir si el `Write` debe ir tras el cierre CORE o si basta con la relanzabilidad de la bandeja |
+| 5.7 | Record `FINALIZADA_POSITIVO` aunque CORE falle (gestión INCOMPLETA; SCA muestra Pendiente) | **Sigue pendiente — lo lleva S5** (`SCA2 CMD CompletarAccion`, no tocado por S1 en la ronda 2). Reproducido en 15787719 (PM v17) y en 15787722 (PM v19): la UI ya no muestra CORRECTO sino el error CORE, pero el nodo 7 `Write PDTE_FINALIZAR` sigue escribiendo `FINALIZADA_POSITIVO`/`FIN` **antes** del nodo 301 `Finalizar CA PCA` y la rama 321→199 no revierte el estado (§9.4) |
 
 Problemas **comunes / de SCA** (no se corrigen): flecha «volver» del Detalle de SCA (error `sca_datoscabecera` / `a!submitLink`, paso 13/25); tiempos de Alta de 40–90 s en ambas apps (servicios CORE/motor de reglas); CORE responde 4007 ante `codPerfil` descriptivo o `codCiaUsuario` vacío también desde la regla de SCA.
 
@@ -197,3 +197,65 @@ Problemas **comunes / de SCA** (no se corrigen): flecha «volver» del Detalle d
 Grabaciones: `sca_sca2_alta_fase1`, `sca_sca2_fase2_positivo_finalizar` (`…/sca_sca2_fase2_positivo_finalizar-edited.mp4`), `sca2_fase3_reintento_positivo` (`…/sca2_fase3_reintento_positivo-edited.mp4`).
 Capturas Fase 2: 30–40 (`30_sca2_pendiente_tras_f5`, `31_sca_confirmacion`, `31_sca2_confirmacion`, `32_sca_aceptar_retorna_buscador`, `32_sca2_aviso_guardado`, `33_sca2_segundo_aceptar_correcto`, `34_sca2_f5_argumentos_pendientes`, `35_sca2_buscador_propia`, `36_sca_detalle_contra_positiva`, `36_sca2_detalle_contra_incompleta`, `37_sca_buscador_ambas_finalizadas`, `37_sca2_cruce_15787701_sin_resultados`, `38_sca_error_volver`, `39_sca_cruce_detalle_15787702`, `40_sca2_errores_sin_permiso`). Fase 3: 41–55 (`41_sca2_reserva_sin_solicitud` … `55_sca2_f5_accion_reabre_formulario`).
 Objetos de SCA leídos sin modificar: `SCA_ContraAnulacionOpcionesEstrategicas` (v8), `SCA_ContraAnulacionModalRecuperacionPolizaEstrategicas` (v7), `SCA_ContraAnulacionModalInformativoEstrategicas` (v3), PM `SCA Contra Anulación`, `SCA Finalizar Contra Anulacion`, `SCA_finalizarContraAnulPca`, `SCA_obtenerInformacionUsuario`, constantes `SCA_GRP_*`.
+
+## 9. Ronda 2 — correcciones 5.1/5.2/5.4/5.5 y ciclos completos en SCA2 (pólizas nuevas)
+
+Pólizas asignadas en la ronda 2 (Devin Bot, 30/09/2026): `2002000058825` (SCA2, ciclo completo) y `2002000011336` (reserva). SCA se comparó **en lectura** sobre las mismas solicitudes (mismo backend CORE), sin alta nueva en SCA.
+
+### 9.1 Solicitudes creadas en la ronda 2
+
+| Póliza | App Alta | idSolicitud | Alta (gestión CORE) | Contra Anular (gestión CORE) | `codEstSolic` | Record `SCA2 Solicitud` | Instancia `SCA2 CMD CompletarAccion` |
+|---|---|---|---|---|---|---|---|
+| `2002000058825` | SCA2 | **15787719** | 43704868, accion 8, FINALIZADA, `fecSolicitud 30/09/2026 13:29:08`, obs. «Prueba S1 Devin ciclo2» | 43704870, accion 2, **INCOMPLETA**, inicio 13:29:26, sin fecha fin | 2 | `FINALIZADA_POSITIVO`, `interfazActiva FIN`, `procesoActivo null`, `estadoTarea PENDIENTE` | processId 521788, **COMPLETED** (no pausada), PM v17.0, 8 tareas, 11:31:32–11:31:40 UTC; `wrErr=true`, `wrCodigo=FINALIZAR_CA_ERROR` |
+| `2002000011336` | SCA2 | **15787722** | 43704874, accion 8, FINALIZADA, `fecSolicitud 30/09/2026 13:40:25`, obs. «Prueba S1 Devin ciclo3» | 43704875, accion 2, **INCOMPLETA**, inicio 13:40:42, sin fecha fin | 2 | `FINALIZADA_POSITIVO`, `interfazActiva FIN`, `procesoActivo null`, `estadoTarea PENDIENTE`, `modifiedAt 11:42:30 UTC` | processId 537393577, **COMPLETED** (no pausada), PM **v19.0** (versión de S5), 11:42:27–11:42:33 UTC; `wrErr=true`, `wrNodo=Finalizar CA PCA`, `wrCodigo=FINALIZAR_CA_ERROR`, `wrErrMsg=Failed to connect to https://core7.pre.mapfre.net:26007/PCA_CORECFSA_HTTPRouter/IContraAnularPCA` |
+
+`SCA2 Error`: `SCA2_contarErroresPendientes(idSolicitud, comando)` devuelve **1** para 15787719 con `comando="SCA2 CMD CompletarAccion - 30/09/2026 13:31 CEST"` (v17 guardaba `pp!name`) y **1** para 15787722 con `comando="SCA2 CMD CompletarAccion"` (v19 guarda `index(split(pp!name," - "),1)`), estado PENDIENTE en ambos. Ningún ciclo llevaba adjuntos, por lo que «Subir documentos GD» (aviso S4) no aplicó: las dos instancias terminaron COMPLETED.
+
+### 9.2 Objetos SCA2 modificados en la ronda 2 (GET vivo → backup → PUT completo → re-GET → `POST …/test` HTTP 200, `diagnostics.error=null` → UI)
+
+| § | Objeto | UUID | Versión | Cambio (paridad con SCA) |
+|---|---|---|---|---|
+| 5.1 | `SCA2_Buscador` | `…_20055660` | v12 → **v13** | Los filtros (`local!fPoliza`, `fSolicitud`, `fNombre`, `fApe1`, `fApe2`, `fTipoDoc`, `fNumDoc`, `eleccionPoliza`, `fEstado`, `fLineaNegocio`, `fMatricula`, `fBastidor`) pasan a `a!refreshVariable(value: null, refreshOnVarChange: ri!vista)`: al volver de Alta (Cancelar) la búsqueda queda limpia y se muestra la lista de últimas solicitudes, como SCA. La query añade los campos relacionados `datosSolicitud.fecsolicitudanul` y `datosSolicitud.fecimpresion` |
+| 5.2 | `SCA2_BuscadorTabla` | `…_20056379` | v5 → **v6** | Columna «Fecha solicitud» = `SCA2 Datos Solicitud.fecsolicitudanul` (fecha CORE; `createdAt` solo como fallback) y columna «Observaciones» = `SCA2 Datos Solicitud.fecimpresion` (observaciones del Alta), leídas del record relacionado, sin llamar a CORE por fila |
+| 5.2 | PM `SCA2 CMD Alta` | `0000f06f-28fc-8000-6693-7f0000014e7a` | (LCP sin versión; backup `r2/backup/pm_SCA2_CMD_Alta_v_112257.json`) | Nodo 8 `Write Datos`: `fecsolicitudanul` se rellena con `fecSolicitud` de `SCA2_consultarSolicitudes(numPoliza, "", "0")` filtrando por `idSolicitud` (fallback `now()`); 22 nodos / 32 pv conservados. Verificado: `fecsolicitudanul = 30/09/2026 13:29:08` (15787719) y `13:40:25` (15787722), idénticas a `fecSolicitud` CORE y a lo que muestra SCA |
+| 5.4 | `SCA2_ContraAnulacionModalRecuperacionPoliza` | `…_20052951` | v2 → v3 → **v4** | El ACEPTAR de la confirmación positiva ya no muestra «Los datos se han guardado correctamente. Pulse ACEPTAR para continuar»: `{a!save(ri!return, true), a!save(ri!mcaVentanaInfo, false), ri!onFinalizarPositivo}` en las dos ramas positivas. v4 añade el cierre de la ventana de recuperación (`mcaVentanaInfo=false`) porque en v3 el error CORE se pintaba en **dos bloques** (captura 68); en 15787722 aparece **una sola vez** (captura 86) |
+| 5.4 | `SCA2_ContraAnulacionOpciones` | `…_20056435` | v24 → **v25** (hoy v26 por S2, `a!submitUploadedFiles`; cambio conservado) | Nuevo input `onVolver`; el cierre positivo lo invoca en lugar de `onCompletar` (no se muestra el popup CORRECTO). No se tocó la subida de documentos (S2) |
+| 5.4 | `SCA2_ContraAnulacionPrincipal` | `…_20056441` | v3 → **v4** | Nuevo input `onVolver`, pasado a `SCA2_ContraAnulacionOpciones` |
+| 5.4 | `SCA2_DetalleTareas` | `…_20055554` | v7 → **v8** | `onVolver` = `{a!save(ri!accionAbierta,false), a!save(ri!tipoAccion,null), a!save(ri!idTareaAccion,null), a!save(local!hecho,false), a!save(ri!idSolicitud,null)}` → vuelve directo al buscador como SCA |
+| 5.5 | `SCA2_DetalleSolicitud` | `…_20055572` | v20 → **v21** (hoy v22 por otra sesión; guard conservado) | `local!solicitudCerrada: or(interfazActiva="FIN", contains({FINALIZADA, FINALIZADA_SIN_ANULAR, FINALIZADA_POSITIVO, RECHAZADA, CANCELADA, CADUCADA, CADUCADA_NEGATIVA}, estadoSolicitud))`; si llega `ri!tipoAccion` con la solicitud cerrada se muestra el Detalle con la tarjeta WARN «La tarea solicitada no está disponible» (texto de SCA) en vez de reabrir el formulario |
+
+No se modificó `SCA2 CMD CompletarAccion` (S5) ni ningún objeto de SCA/SCAC/CORE. Backups y JSON posteriores en `~/sca2work/r2/backup|after` (fuera del repo).
+
+### 9.3 Tabla paso a paso ronda 2 (SCA2 con 2002000058825 → 15787719 y 2002000011336 → 15787722; SCA en lectura)
+
+| Paso | SCA (referencia) | SCA2 | Veredicto |
+|---|---|---|---|
+| Buscador por póliza nueva | «Sin resultados» y botón Alta | Igual (capturas 60, 80) | igual |
+| Alta → Cancelar | Vuelve al buscador con la búsqueda limpia y la lista de últimas solicitudes | v13: filtros vacíos, BUSCAR deshabilitado, lista restablecida (62) | divergencia corregida (5.1) |
+| Alta (segunda, misma póliza) | Formulario con datos de la póliza | Igual; motivo DECISION DE CLIENTE / PRECIO / ME HA SUBIDO MUCHO LA PRIMA, PRESENCIAL, A VENCIMIENTO, fecha automática (63, 81) | igual |
+| Guardar → aviso → redirección | Aviso «generado correctamente…» y navega a Contra Anular | «Determinando la acción…» → «Se le va a redirigir a la acción correspondiente» → OK abre Contra Anular directamente (64–65, 82–83) | igual |
+| Argumentarios GAIA | 8 argumentos; obligatorio según póliza | 8 argumentos; INCREMENTO PRIMA PLATINO (15787719) / INCREMENTO PRIMA SINIESTROS (15787722) (66, 84) | igual |
+| POSITIVO → confirmación | Un bloque «¡Enhorabuena en la retención de la póliza!…» | Un solo bloque, formulario oculto (67, 85) | igual |
+| ACEPTAR → cierre CORE | SCA: `SCA_finalizarContraAnulPca` (no probado en esta ronda: no hubo alta en SCA) | Error CORE «Failed to connect …/IContraAnularPCA», una sola vez en v4 (dos veces en v3, corregido) (68, 86) | no probado en SCA / servicio externo caído |
+| Estado tras el fallo CORE — buscador | **Pendiente**, resolución «-» | **Finalizada positivo**, resolución `13:42:30` (69, 87, 72, 89) | divergencia pendiente (5.7, S5) |
+| Estado tras el fallo CORE — detalle | Contra Anulación **Incompleta**, argumento **Positivo** verde, usuario JJGONZ2 RED MAPFRE/OFICINA nivel 1 | Igual (70, 73, 88, 90, 91) | igual (tarjeta CORE) |
+| Fecha solicitud / observaciones en buscador | `2026-09-30 13:29:08` / `13:40:25`; «Prueba S1 Devin ciclo2/3» | `30/09/2026 13:29:08` / `13:40:25`; mismas observaciones (69/72, 87/89) | divergencia corregida (5.2) |
+| F5 sobre `/suite/sites/sca2/page/buscador?$sp=…` con acción finalizada | SCA: «La tarea solicitada no está disponible» | Detalle con tarjeta «La tarea solicitada no está disponible», sin reabrir el formulario (75, 92) | divergencia corregida (5.5) |
+| Retorno directo al buscador tras cierre positivo con éxito | Vuelve directo | No validable: CORE falló antes en los dos ciclos | no probado |
+
+### 9.4 Diagnóstico del fallo de cierre en la ronda 2
+
+- **Servicio externo**: `IContraAnularPCA` (`https://core7.pre.mapfre.net:26007/PCA_CORECFSA_HTTPRouter/IContraAnularPCA`) devolvió `Failed to connect` a las 11:31 y 11:42 UTC desde el PM; el resto de servicios CORE (alta, argumentos, consulta de gestiones, `IGenerarContraAnul`) respondieron. No es una divergencia de SCA2 y no se reintentó ningún cierre (no se relanzaron los `SCA2 Error`).
+- **Divergencia SCA2 pendiente (5.7 / S5)**: en `SCA2 CMD CompletarAccion` (v17 y v19 vivos) el flujo es `7 Write PDTE_FINALIZAR` → `310 Subir documentos GD` → `300` → `301 Finalizar CA PCA` → `320 ¿CA ok?` → (KO) `321 Capturar error CA` → `199 Write Error` → End. El nodo 7 ya escribe `estadoSolicitud=FINALIZADA_POSITIVO`, `interfazActiva=FIN`, `procesoActivo=null` cuando `finalizadoCA=true` y `estadoFinalizar="3"`, y la rama de error no lo revierte: por eso SCA2 muestra «Finalizada positivo» y SCA «Pendiente» con la misma gestión INCOMPLETA. La UI ya no muestra CORRECTO (v19 + Modal v4 de S1): muestra el error CORE y «queda registrado en la bandeja de errores para su relanzamiento».
+- Los dos avisos suprimidos (5.4) no aparecieron; el retorno directo al buscador en la rama de éxito solo podrá validarse cuando `IContraAnularPCA` vuelva a responder, con una póliza nueva autorizada.
+
+### 9.5 Evidencias ronda 2 (fuera del repo)
+
+- Grabaciones: `sca2_s1_ciclo2` (`~/screencasts/sca2_s1_ciclo2/sca2_s1_ciclo2-edited.mp4`, 2002000058825) y `sca2_s1_ciclo3` (`~/screencasts/sca2_s1_ciclo3/sca2_s1_ciclo3-edited.mp4`, 2002000011336).
+- Capturas ciclo 2 (`~/sca2work/shots/`): `60_sca2_popup_alta`, `61_sca2_alta_antes_cancelar`, `62_sca2_cancelar_filtros_limpios`, `63_sca2_alta_ciclo2_rellena`, `64_sca2_alta_generada_esperando`, `65_sca2_alta_generada_ok`, `66_sca2_argumentos_platino`, `67_sca2_confirmacion_positivo`, `68_sca2_error_finalizar_duplicado` (v3), `69_sca2_buscador_15787719`, `70_sca2_detalle_positivo_incompleta`, `71_sca2_url_accion_retorna_buscador`, `72_sca_buscador_15787719`, `73_sca_detalle_positivo_incompleta`, `74_sca2_detalle_comparativa`, `75_sca2_f5_banner_tarea_no_disponible`.
+- Capturas ciclo 3: `80_sca2_ciclo3_sin_resultados`, `81_sca2_alta_ciclo3_rellena`, `82_sca2_alta_generada_esperando`, `83_sca2_alta_ok`, `84_sca2_argumentos_siniestros`, `85_sca2_confirmacion_positivo`, `86_sca2_error_core7_unico` (v4, un solo bloque), `87_sca2_buscador_15787722`, `88_sca2_detalle_incompleta`, `89_sca_buscador_15787722`, `90_sca_detalle_incompleta`, `91_sca2_detalle_comparativa`, `92_sca2_f5_tarea_no_disponible`.
+- La bandeja `/errores` sigue sin ser visible para JJGONZ2 (solo administradores); los `SCA2 Error` se verificaron por LCP.
+
+### 9.6 Decisión técnica a revisar
+
+Devin Bot pidió persistir `fecSolicitud`/`observaciones` en `SCA2 Solicitud`. Se ha hecho **sin cambiar el esquema**: `CMD Alta` ya escribía el record relacionado `SCA2 Datos Solicitud` (1:N), cuyos campos `fecsolicitudanul` y `fecimpresion` contienen la fecha CORE y las observaciones del Alta, y el buscador los lee por la relación `datosSolicitud`. Si se prefiere un campo propio en `SCA2 Solicitud` (y que los CMD que modifican observaciones lo actualicen), hay que añadirlo al record type/tabla: no se ha hecho para no alterar el modelo compartido con S2/S3/S5.
