@@ -419,7 +419,8 @@ a JJGONZ2 (solo RETOMAR), por lo que el popup no era activable. Para no tocar so
 por LCP (`SCA2_liberarTarea`, regla nueva; antes se había probado `SCA2_reasignarTarea` por LCP, que la asignó al usuario de servicio y
 tampoco mostraba el botón porque `SCA2_puedeGestionarTarea` exige pool o propio usuario). Con la tarea en el pool JJGONZ2 vio REASIGNAR,
 al pulsarlo desapareció la tarjeta completa y quedó solo el popup horizontal (captura s4-510), y al cerrar con X volvió la tarjeta con
-RETOMAR (s4-511) → la tarea 50 quedó de nuevo asignada a JJGONZ2 (estado original, confirmado por test LCP del Detalle). En SCA la gestión
+RETOMAR (s4-511) → la tarea 50 quedó de nuevo asignada a JJGONZ2 (estado original; el test LCP del Detalle como usuario de servicio no
+muestra REASIGNAR ni RETOMAR, coherente con una tarea asignada a otro usuario). En SCA la gestión
 de referencia (15787698) no ofrecía REASIGNAR (tarea propia) y se capturó solo la tarjeta (s4-505/506).
 
 **Hex.** `SCA2_colorEstadoSolicitud` v5: «Caducada» `#734B30`, «Cancelada» `#0D82BD` (los de `SCA_BuscadorTabla`); resto sin cambios. Test LCP de
