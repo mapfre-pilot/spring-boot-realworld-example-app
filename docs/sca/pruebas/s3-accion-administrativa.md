@@ -427,6 +427,7 @@ Sobre la no-redirección: en el ciclo CA de S2 (15787726, misma `SCA2_DetalleTar
 - No se ha pulsado ANULAR PÓLIZA, CANCELAR, TRAZAR ANULACIÓN ni ninguna acción en SCA; FINALIZAR ejecutado una sola vez.
 - Refresco del Detalle tras ACEPTAR: documentado, corrección delegada a S2 por indicación del analista.
 - `/errores` sin acceso para JJGONZ2 (diseño); ausencia de `SCA2 Error` comprobada por LCP.
+- Observaciones en el buscador SCA2 (S4, `CMD Posponer` v7 / `CMD CompletarAccion` v32 → `SCA2 Datos Solicitud.fecimpresion`): el ciclo de 15787730 se ejecutó con Posponer v5 (12088505) y CompletarAccion v31 (16283229), anteriores a ese cambio, por lo que la columna Observaciones muestra «-» (captura 26); **no comprobable en S3** sin un ciclo nuevo.
 
 ### 9.8 Evidencias ronda 3 (fuera del repo)
 
