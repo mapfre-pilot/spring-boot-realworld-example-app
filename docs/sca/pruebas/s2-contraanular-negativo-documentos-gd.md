@@ -297,3 +297,84 @@ Grabaciones (`~/screencasts/`): `s2-ronda3-limpia-edited.mp4` (ciclo completo ha
 | Refresco del Detalle tras ACEPTAR | pendiente (menor) |
 | Pantalla operativa de anulación SCA vs `SCA2_MecanizacionPrincipal` | no comparada (no se puede abrir en SCA sin alterar una solicitud ajena; ANULAR PÓLIZA no ejecutado) |
 | Etiqueta buscador `codEstSolic=4`, `/errores`, buscador SCA2 con solicitudes de SCA | fuera de alcance / propietario S5-S1 |
+
+## 10. Ronda 4 (30/09/2026, 15:00–16:20 CEST) — referencia SCA `2002000062827`, pantalla operativa, RETOMAR, marcos, ojo y refresco
+
+Decisiones recibidas: SCA es la referencia también para el estilo de las tarjetas (marco), para la regla de visibilidad de RETOMAR/REASIGNAR y para el refresco del Detalle; nueva póliza NSE para **SCA** `2002000062827`; no pulsar ANULAR PÓLIZA en ninguna app; no tocar los CMD (S4 añade la persistencia genérica de `observaciones`); `SCA2_DetalleSolicitud` compartida con S3/S4 (GET vivo antes de cada PUT).
+
+### 10.1 Solicitud SCA creada (referencia) y ciclo completo
+
+| | SCA `15787734` (póliza `2002000062827`) | SCA2 `15787726` (póliza `2002000047913`, ronda 3, en lectura salvo RETOMAR) |
+|---|---|---|
+| Alta → Contra Anular → argumento NEGATIVO → Carta firmada (PDF) → FINALIZAR → «Se va a redirigir a la anulación.» → pantalla operativa | hecho en UI (grabación `s2-ronda4-sca-sca2-edited.mp4`); parado antes de ANULAR PÓLIZA | ya hecho en ronda 3; en esta ronda solo RETOMAR → pantalla operativa → VOLVER AL DETALLE |
+| Gestiones CORE (`SCA2_consultaGestion`) | acción 8 `43704919` FINALIZADA; acción 2 `43704921` **FINALIZADA NEGATIVA**; acción 4 `43704922` FINALIZADA; acción 5 `43704924` INCOMPLETA | acción 8 `43704886`; acción 2 `43704887` FINALIZADA NEGATIVA; acción 5 `43704891` INCOMPLETA (no hay acción 4) |
+| Solicitud | `codEstSolic=2`, `fecResolucion=null` | `codEstSolic=2` |
+| Documento (`SCA2_consultarDocumentos`) | tipo 6, `0900ab4481a04e22` | tipo 6, `0900ab4481a04e6` |
+| Traza BBDD (`SCA2_consultaBBDDSCA.observaciones`) | 1 fila: «Inicia Subproceso Appian 15787734 - 2002000062827» (no aparece la observación «Consulta NEW…» ni la del alta) | 11 filas al inicio de la ronda (alta 14:28:22 + 10 de la gestión de mecanización); cada apertura de la pantalla operativa añade 2 «Consulta NEW…» (con/sin importe) |
+
+**Acción 4**: SCA crea acción 4 (FINALIZADA) y 5 (INCOMPLETA) al finalizar el NEGATIVO; SCA2 solo crea la 5. Sin efecto visible en Detalle/buscador (la tarjeta Mecanización lee la 5); queda como diferencia backend documentada, pendiente de decidir si SCA2 debe crear también la 4 (S5 es propietaria de `SCA2 CMD CompletarAccion`).
+
+**Observación técnica del alta** (hallazgo de S3): en la solicitud SCA nueva la traza tampoco la muestra, así que **no se confirma** como divergencia exclusiva de SCA2 en esta ronda.
+
+### 10.2 Pantalla operativa de anulación: `SCA_ContraAnulacionDetalleAnulacionPolizaEstrategicas` vs `SCA2_MecanizacionPrincipal`
+
+Comparación campo a campo (capturas `ss_21f1cb63.png` SCA / `ss_3a652609.png` SCA2): mismo título «Detalle consulta NSE-Autos», mismo aviso naranja y misma pregunta «¿Desea anular la póliza con la información que se indica?»; mismos campos en el mismo orden (Póliza, Causa, Fecha anulación póliza, Importe anulación, Reserva prima, Nivel cumplimiento, Controles técnicos) y mismos botones CANCELAR / ANULAR PÓLIZA (mismo estilo). Única diferencia: SCA2 añade arriba el botón **VOLVER AL DETALLE** (SCA no lo tiene: se vuelve por navegación del site, que recarga el Detalle). Los valores difieren solo por ser solicitudes distintas. **No se pulsó ANULAR PÓLIZA ni CANCELAR en ninguna app.** Veredicto: igual (botón adicional documentado, ver §10.5).
+
+### 10.3 RETOMAR / REASIGNAR en la tarjeta Mecanización
+
+| | SCA (15787734, mecanización pendiente) | SCA2 (15787726, tarea MECANIZAR pendiente) |
+|---|---|---|
+| Botones | REASIGNAR + RETOMAR abajo a la derecha de la tarjeta (usuario asignado) | RETOMAR abajo a la derecha (v28+; antes estaba junto a Grupo/Nuuma) → abre la pantalla operativa |
+| Regla | tarea Appian propia pendiente y asignada | tarea `SCA2 Tarea` MECANIZAR pendiente; REASIGNAR se muestra con la misma condición (popup de S4, `local!showPopupReasignar`) pero **no se ha verificado en UI** en esta ronda |
+
+### 10.4 Marco interior, ojo documental e hitos (`SCA2_DetalleSolicitud` v28→v29)
+
+Comprobado en UI con SCA: la tarjeta Mecanización de SCA **sí** lleva un recuadro interior con margen (la CA no); el icono «ojo» de los documentos es rojo en SCA; los hitos Mecaniza/Anulación se pintan cuando hay gestión de mecanización aunque no haya observaciones. Cambios v29 (GET vivo v28 → backup → PUT → re-GET v29 → `/test` 15787726/15787734/15787705 HTTP 200 → UI):
+
+```sail
+/* ojo documental: se quita style: "OUTLINE", color: "SECONDARY" → estilo por defecto (rojo, como SCA) */
+/* tarjeta Mecanización: recuadro interior solo en Mecanización, como SCA */
+a!cardLayout(showBorder: local!esMec, padding: if(local!esMec, "STANDARD", "NONE"), contents: {...})
+/* hitos/fecha con la gestión CORE aunque no haya observaciones */
+local!mecanizaOk: or(if(local!hayObsMec, ..., false), a!isNotNullOrEmpty(local!numGestionCA)),
+local!fecTxtMec: if(a!isNullOrEmpty(local!indexMecaMec), left(tostring(index(local!gestionCA, "fecInicioGestion", null)), 10), ...),
+showWhen: and(local!esMec, or(local!hayObsMec, a!isNotNullOrEmpty(local!numGestionCA))),
+```
+
+Resultado UI (grabación `s2-v29-marcos-refresco-edited.mp4`; capturas SCA `ss_deb714e0.png`/`ss_ebe5becd.png`/`ss_zoom_ed685d39.png` vs SCA2 `ss_36286d23.png`/`ss_3821454a.png`/`ss_zoom_654e4275.png`): marco, ojo rojo, hitos y posición de RETOMAR **iguales** a SCA; CA sin marco general en ambas. Otras tarjetas (Impresión, Autorización…) no aparecen en estas solicitudes: paridad no probada.
+
+### 10.5 Refresco del Detalle tras volver de la pantalla operativa (**no corregido**; causa raíz identificada)
+
+Síntoma (S3 §9.5 y esta ronda): tras RETOMAR → pantalla operativa → VOLVER AL DETALLE, la traza de la tarjeta Mecanización no muestra las 2 observaciones «Consulta NEW…» nuevas hasta F5 (10→12, 12→14, 14→16 entradas en tres repeticiones), aunque la tarjeta y la traza permanecen abiertas. Intentos (todos con GET vivo → backup → PUT → re-GET → `/test` → UI con grabación):
+
+| Versión | Cambio | Resultado UI |
+|---|---|---|
+| v29 | `local!obsBBDDMec` envuelta en `a!refreshVariable(refreshOnVarChange: {ri!tipoAccion, local!versionRT})` | sigue obsoleta (`s2-v29-marcos-refresco-edited.mp4`) |
+| v30 | + `local!ultimoRetorno: a!refreshVariable(value: now(), refreshOnVarChange: ri!tipoAccion)` en el nivel superior y en el `refreshOnVarChange` de la tarjeta | sigue obsoleta a los 9 s y 64 s (`s2-v30-refresco-edited.mp4`) |
+| v31 | consulta subida al nivel superior (`local!obsBBDD`) con `refreshOnVarChange` **y `refreshInterval: 0.5`** | sigue obsoleta a los 10 s y 60 s (`s2-v31-refresco-edited.mp4`) |
+| v33 | vuelta al contenido de v29 (consulta perezosa en la tarjeta, sin sondeo) sobre v32 de S4 | — (`/test` OK) |
+
+Diagnóstico: el backend **no** tiene retardo — con LCP, `SCA2_MecanizacionPrincipal/test` (equivale a abrir la pantalla) añade las 2 observaciones y `SCA2_consultaBBDDSCA/test` las devuelve 11 s después (17→19, `lag_test.py`). La integración SCAC `SCAC_consultaBBDDSCA` (uuid `e9720d1a-5bf4-42a0-a4e6-a24cb435a763`, v4, `usage: QUERY`, objeto SCAC, no modificable) devuelve el mismo resultado a la interfaz mientras la página no se recarga aunque `a!refreshVariable` la reevalúe (por cambio de variable o por intervalo); F5 sí la refresca. Inferencia: caché de Appian de las integraciones de tipo «consulta» con los mismos inputs dentro de la misma instancia de la página (no verificado en documentación). SCA no tiene el síntoma porque **no tiene VOLVER AL DETALLE**: el regreso es una navegación del site que recarga el Detalle. Opciones (decisión pendiente, no aplicadas): (a) que VOLVER AL DETALLE de `SCA2_DetalleTareas` (S3) navegue a la página del Detalle (`a!sitePageLink`) en vez de `a!save(ri!tipoAccion, null)`, replicando SCA; (b) eliminar el botón como en SCA. El refresco de estado/gestiones CORE tras ACEPTAR sí funciona con el sondeo del record de v28 (`local!estadoRT`, 30 s), porque `SCA2_consultaGestion` cambia de inputs al cambiar la versión del record — no se ha re-probado en esta ronda.
+
+### 10.6 Objetos SCA2 modificados en la ronda 4
+
+| Objeto | uuid | Antes → después | Cambio |
+|---|---|---|---|
+| `SCA2_DetalleSolicitud` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055572` | v27 → v28 → v29 → v30 → v31 → (v32 S4) → **v33** | v28 sondeo del record/`versionRT` y RETOMAR/REASIGNAR abajo a la derecha; v29 ojo rojo, marco interior de Mecanización, hitos con gestión CORE; v30/v31 intentos de refresco (revertidos); v33 = v29 + v32 de S4 (`showWhen: not(local!showPopupReasignar)`). Inputs conservados (`idSolicitud`, `idSel`, `tipoAccion`, `idTarea`). Backups en `~/sca2work/backups/`. |
+
+No se han tocado los CMD, `SCA2_subirDocumentosGD`, `SCA2_DetalleTareas` ni ningún objeto de SCA/SCAC.
+
+### 10.7 Evidencias ronda 4 (fuera del repo)
+
+Grabaciones (`~/screencasts/`): `s2-ronda4-sca-sca2-edited.mp4` (ciclo SCA 15787734 + comparación pantalla operativa y tarjetas), `s2-v29-marcos-refresco-edited.mp4`, `s2-v30-refresco-edited.mp4`, `s2-v31-refresco-edited.mp4`. Capturas (`~/screenshots/`): SCA `ss_5dd03fe5.png` (buscador), `ss_21f1cb63.png` (pantalla operativa), `ss_ea7abbe6.png` (REASIGNAR/RETOMAR), `ss_deb714e0.png`, `ss_ebe5becd.png`; SCA2 `ss_3a652609.png`, `ss_649f6cd4.png`, `ss_36286d23.png`, `ss_3821454a.png`; refresco `ss_15f027ad.png`/`ss_8d032659.png` (v29), `ss_11444057.png`/`ss_3b8efbdf.png` (v30), `ss_dc47747a.png`/`ss_1a34b74a.png` (v31).
+
+### 10.8 Estado de las divergencias tras la ronda 4
+
+| Aspecto | Veredicto |
+|---|---|
+| Pantalla operativa NSE-Autos | igual (SCA2 añade VOLVER AL DETALLE) |
+| RETOMAR en Mecanización | igual (posición y regla); REASIGNAR SCA2 no verificado en UI |
+| Marco interior / ojo documental / hitos | igual (v29) |
+| Refresco de la traza tras VOLVER AL DETALLE | **pendiente** (§10.5, decisión a/b) |
+| Acción 4 en el FINALIZAR negativo | diferencia backend documentada, pendiente de decisión |
+| Observación técnica del alta | no confirmada como divergencia (SCA nueva tampoco la muestra) |
