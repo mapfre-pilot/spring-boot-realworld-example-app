@@ -55,6 +55,9 @@ llevó directamente a la pantalla «Revisión autorización de fecha de anulaci�
 | 25 | Popup «La tarea se ha reasignado correctamente» (REASIGNAR) | Tarjeta INFO centrada (`a!columnsLayout` NARROW / auto / NARROW) a ~2/3 del ancho de la tarjeta de la gestión | En v17-v24 la llamada a `SCA2_PopUpReasignarTarea` estaba dentro de la 9ª columna del layout de botones (popup estrecho con el texto en vertical). En la v28 viva (ediciones de S2/S3 posteriores a la ronda 4) la llamada está al nivel de la tarjeta y el popup se ve igual que en SCA (captura s4-407). Sin cambios de S4 | = (corregido en v28) |
 | 26 | Columna Observaciones del buscador: regla exacta de SCA | `fv!row.txtObs` de `SCA_consultarUltimaGestionREST(nuuma)` (una llamada por carga): **última observación registrada en CORE para la solicitud (máx `codObs`)**, sea de la gestión que sea — incluida la traza técnica «Consulta NEW: …» que CORE escribe como observación de la gestión de mecanización (acción 5) al crearla en FINALIZAR de AccAdm/CA negativa | `fecimpresion` del record (observación del usuario en el CMD): coincidía con SCA solo cuando la última observación es la del usuario (Autorización sí; AccAdm 15787736/15787730 y CA negativa 15787726 no) → `SCA2_BuscadorTabla` v7 usa la misma llamada CORE con join por `numSolicitud` y `fecimpresion` como respaldo; 15787736 muestra la misma traza en ambas apps (capturas s4-411/412/413) | ≠SCA2 ✔ |
 | 27 | Ciclo completo 15787739 (alta → POSPONER → REASIGNAR → RETOMAR → 2 documentos → FINALIZAR) | referencia | CORE autorización `codEstado=2` / `mcaAutorizada=S` / `codGestion=43704935`; gestión 7 FINALIZADA 15:54:54 (obs. «Prueba S4 posponer v21,Prueba S4 finalizar v21»), gestión 5 INCOMPLETA; documentos `893801a0f298b67b` (tipo 7) y `0900ab4481a0484f` (tipo 8); record `PDTE_MECANIZAR` / `MECANIZAR` / `PENDIENTE` v6 con `fecimpresion="Prueba S4 finalizar v21"`; Detalle F5 «Aceptada» verde + 2 docs + observaciones + Mecanizacion/Incompleta; `SCA2_BandejaErrores` sin filas de 15787739; PM Posponer v7.0 (`522219`) y CompletarAccion v32.0 (`14190911`) COMPLETED | = |
+| 28 | Popup de REASIGNAR: tarjeta de la gestión mientras se muestra | La tarjeta completa (campos, documentos, observaciones, botones) lleva `showWhen: local!showPopupReasignar = false`; solo queda el popup y al cerrarlo (X) vuelve la tarjeta | En v28-v31 el botón REASIGNAR y los campos seguían visibles bajo el popup → `SCA2_DetalleSolicitud` v32: misma tarjeta con `showWhen: not(local!showPopupReasignar)` y el popup como hermano; verificado en 15787739/Mecanizacion (capturas s4-509/510/511) | ≠SCA2 ✔ |
+| 29 | Color de «Caducada» / «Cancelada» en el buscador | `#734B30` / `#0D82BD` (`SCA_BuscadorTabla`) | `#9F9F9F` → `SCA2_colorEstadoSolicitud` v5 con los hex de SCA (test LCP: CADUCADA→#734B30, CANCELADA→#0D82BD, resto igual). Sin filas con esos estados en TEST: no verificable en UI | ≠SCA2 ✔ (LCP) |
+| 30 | Fuente del texto de estado del buscador | `estSolicitud` de CORE (`consultarUltimaGestion`) → `SCA_D_EstadosSolicitud` | `estadoSolicitud` del record → `SCA2_textoEstadoSolicitud`. Fuentes distintas pero coincidentes en todas las solicitudes actuales (15787728 CORE 3 / record `FINALIZADA_POSITIVO`; 15787739 CORE 2 / `PDTE_MECANIZAR`). 15787723: CORE 2 / record `FINALIZADA_POSITIVO` → artefacto histórico (cerrada por S1 antes de `finalizarSolicitud` 350-353 de S5), no divergencia de regla; no tocada | = (nota) |
 
 ## 3. Divergencias y correcciones en SCA2
 
@@ -76,6 +79,9 @@ re-GET → `POST .../test` → repetición UI. SAIL antes/después guardado en l
 | `SCA2_textoEstadoSolicitud` (regla) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20063670` | 8 → **9** (ronda 5) | Mapeo completo estado interno → texto `SCA_D_EstadosSolicitud` (§3.11); antes solo `PDTE_MECANIZAR` → «Pendiente» y el resto «Solicitud Pendiente» |
 | `SCA2_colorEstadoSolicitud` (regla) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20063676` | 3 → **4** (ronda 5) | Solo **añade** «Finalizada positivamente» `#008C47`, «Finalizado negativo con contraanulación` y «Finalizada no requerida contraanulación» `#BE0F0F` (hex de `SCA_BuscadorTabla`); las entradas existentes no se tocan |
 | `SCA2_BuscadorTabla` (interfaz) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056379` | 6 → **7** (ronda 5) | Envuelta en `a!localVariables` con `local!ultimas: SCA2_consultarUltimaGestionREST(nuuma)` (una llamada por carga, como SCA); columna Observaciones = `txtObs` por `numSolicitud`, respaldo `fecimpresion` |
+| `SCA2_DetalleSolicitud` (interfaz) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055572` | 31 → **32** (ronda 6; esperaba 28 tras la ronda 5, la expresión viva era idéntica a mi snapshot) | Tarjeta de la gestión con `showWhen: not(local!showPopupReasignar)` y `SCA2_PopUpReasignarTarea` como hermano de la tarjeta (como SCA) |
+| `SCA2_colorEstadoSolicitud` (regla) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20063676` | 4 → **5** (ronda 6) | Solo «Caducada» `#734B30` y «Cancelada» `#0D82BD` |
+| `SCA2_liberarTarea` (regla **nueva**) | `_a-0001f076-8f0a-8000-9d26-011c48011c48_5484899` | — → **1** (ronda 6) | `a!writeRecords` sobre `SCA2 Tarea`: `asignadoA`/`propietario` = null (devolver al pool). Creada para restaurar por LCP la tarea 50 de 15787739; reutilizable, borrable si no se quiere |
 
 ### 3.1 Fragmentos relevantes
 
@@ -398,6 +404,33 @@ Procedimiento: GET vivo → backup (`~/sca2work/backup/ER_SCA2_textoEstadoSolici
 `IF_SCA2_BuscadorTabla.v6.*`) → PUT → re-GET (v9/v4/v7, inputs conservados) → `POST /test` de las 13 ramas de estado y de la interfaz. Nota
 de coordinación: `SCA2_DetalleSolicitud` estaba en v28 (última documentada: v27 de S2).
 
+### 3.12 Ronda 6: popup de REASIGNAR, hex de Caducada/Cancelada y fuente del estado
+
+**Popup.** En SCA (`SCA_DetalleAnulacionAutorizacion*`, `SCA_DetalleAccionesAdministrativas*`) la tarjeta de la gestión lleva
+`showWhen: and(local!showPopupReasignar = false, local!visualizar = false)` y el popup se renderiza fuera de ella, de modo que al pulsar
+REASIGNAR solo queda el popup y al cerrarlo vuelve la tarjeta. En `SCA2_DetalleSolicitud` v28-v31 el popup era el último elemento de la
+propia tarjeta, así que el botón y los campos seguían visibles. v32: la tarjeta interna (`showBorder: local!esMec`) pasa a tener
+`showWhen: not(local!showPopupReasignar)` y la tarjeta externa (`showWhen: local!abierta`) tiene como contenido `{ tarjeta, if(popup) }`.
+Cambio de 3 líneas, resto de la expresión idéntico; inputs `idSolicitud/idSel/tipoAccion/idTarea` conservados; test LCP con
+`idSolicitud: 15787739` OK.
+
+Verificación UI (15787739): la Autorización ya estaba finalizada (sin REASIGNAR) y la tarea de Mecanizacion (SCA2 Tarea 50) estaba asignada
+a JJGONZ2 (solo RETOMAR), por lo que el popup no era activable. Para no tocar solicitudes de otras sesiones se devolvió la tarea 50 al pool
+por LCP (`SCA2_liberarTarea`, regla nueva; antes se había probado `SCA2_reasignarTarea` por LCP, que la asignó al usuario de servicio y
+tampoco mostraba el botón porque `SCA2_puedeGestionarTarea` exige pool o propio usuario). Con la tarea en el pool JJGONZ2 vio REASIGNAR,
+al pulsarlo desapareció la tarjeta completa y quedó solo el popup horizontal (captura s4-510), y al cerrar con X volvió la tarjeta con
+RETOMAR (s4-511) → la tarea 50 quedó de nuevo asignada a JJGONZ2 (estado original, confirmado por test LCP del Detalle). En SCA la gestión
+de referencia (15787698) no ofrecía REASIGNAR (tarea propia) y se capturó solo la tarjeta (s4-505/506).
+
+**Hex.** `SCA2_colorEstadoSolicitud` v5: «Caducada» `#734B30`, «Cancelada» `#0D82BD` (los de `SCA_BuscadorTabla`); resto sin cambios. Test LCP de
+todas las ramas OK. No hay filas Caducada/Cancelada en TEST: no verificable en UI.
+
+**Fuente del estado.** SCA calcula el texto desde CORE (`estSolicitud` de `consultarUltimaGestion`); SCA2 desde `estadoSolicitud` del record.
+Coinciden para todas las solicitudes actuales porque los CMD sincronizan el record con CORE (15787728: CORE 3 ↔ `FINALIZADA_POSITIVO`;
+15787732/15787739: CORE 2 ↔ `PDTE_MECANIZAR`). 15787723 (S1): CORE 2 con record `FINALIZADA_POSITIVO` (v5) → artefacto histórico (cerrada
+antes de que S5 añadiera `finalizarSolicitud`, nodos 350-353), no divergencia de regla; no se ha tocado ni se cambia la fuente.
+
+
 ## 4. Estados CORE observados
 
 ### 4.1 Tras el alta (ambas apps)
@@ -509,6 +542,9 @@ con `fecFinGestion = null` (así lo devuelve CORE; no se reinterpreta), `nivelIn
 - Ronda 5: la página `/errores` del site SCA2 sigue sin ser accesible para el usuario funcional («La página no existe o no tiene permiso»); la ausencia de errores se comprobó por LCP (`SCA2_BandejaErrores`, `SCA2_DetalleErrores`).
 - Ronda 5: botón REASIGNAR visible mientras se muestra el popup de confirmación en SCA2 (SCA lo oculta); `SCA2_DetalleSolicitud` (v28, S3 activa) no tocada.
 - Formato de «Fecha solicitud»: SCA `2026-09-30 15:48:31` (CORE) vs SCA2 `30/09/2026 15:48:31` (S1); no tratado en S4.
+- Ronda 6: colores «Caducada»/«Cancelada» (v5) verificados solo por test LCP; sin filas con esos estados en TEST.
+- Ronda 6: `SCA2_liberarTarea` es un objeto nuevo en SCA2 (creado para restaurar la tarea 50); puede borrarse o reutilizarse (devolver tarea al pool).
+- Ronda 6: la ocultación de documentos/observaciones bajo el popup se ejercitó sobre Mecanizacion (sin documentos); la Autorización estaba ya finalizada.
 
 ## 6. Evidencias (no incluidas en el repo)
 
@@ -530,6 +566,7 @@ Grabaciones (`~/screencasts/<nombre>/<nombre>-edited.mp4`, anotadas):
 | `s4-v20` | Ronda 4, ciclo completo 15787732 (2002000025123): alta, Autorización, POSPONER «Prueba S4 posponer v20» → buscadores SCA2/SCA con la observación, REASIGNAR/RETOMAR, 2 documentos, FINALIZAR «Prueba S4 finalizar v20» `CORRECTO`, Detalle F5 Aceptada verde + docs + obs, buscadores con la última observación, contraste SCA | `s4-301` … `s4-311` |
 | `s4-v24` | Ronda 3 (solo lectura): Detalle SCA2 15787725 tras F5 con tag «Aceptada» verde `#008C47` + 2 docs + obs + Mecanizar/Incompleta; Detalle SCA 15787725 y 15787698 (mismo verde); buscadores SCA2/SCA filas 15787725 y 15787698 («Pendiente» naranja; Observaciones `-` en SCA2 vs `txtObs` en SCA; 15787722/15787719 de S1 con observación en SCA2) | `s4-201` … `s4-207` |
 | `s4-v21` | Ronda 5, ciclo completo 15787739 (2002000062813): alta, Autorización, POSPONER «Prueba S4 posponer v21» → buscadores SCA2/SCA («Pendiente» + observación, filas «Finalizada positivamente»), REASIGNAR (popup a lo ancho), RETOMAR, 2 documentos, FINALIZAR «Prueba S4 finalizar v21», Detalle F5 Aceptada, buscadores v7 con la traza CORE de 15787736 en ambas apps, `/errores` inaccesible | `s4-401` … `s4-414` (`~/sca2work/s4-v21-capturas.zip`; grabación `~/screencasts/s4-v21/s4-v21-edited.mp4`) |
+| `s4-v22` | Ronda 6 (solo lectura + un REASIGNAR): buscadores SCA2/SCA («Pendiente» 15787739, «Finalizada positivamente» 15787728, observaciones), Detalle 15787739 Aceptada, referencia SCA sin REASIGNAR, bloqueo inicial (tarea asignada), tarea 50 al pool → REASIGNAR → popup con tarjeta oculta → X → tarjeta con RETOMAR | `s4-501` … `s4-511` (`~/sca2work/s4-v22-capturas.zip`; grabación `~/screencasts/s4-v22/s4-v22-popup-edited.mp4`) |
 
 Capturas: `~/sca2work/capturas/s4-NN-<app>-<pantalla>.png` (también en `~/sca2work/s4-faseN-capturas.zip` y
 `~/sca2work/s4-vNN-capturas.zip`).
@@ -544,4 +581,4 @@ Estados de procesos: `~/sca2work/proceso_<id>.json` y `procesos_completaraccion.
 - Buscador SCA2, columna Observaciones: resuelto de forma genérica en los CMD (§3.10). Queda por decidir si las
   solicitudes anteriores al fix (p. ej. 15787720 de S3) deben rellenarse desde CORE o se dejan hasta su próximo ciclo.
 - Ronda 5: Observaciones del buscador se leen ahora de CORE con una llamada por carga (misma fuente y regla que SCA, §3.11). Si se prefiere no depender de CORE en el buscador, la alternativa es mantener `fecimpresion` y aceptar la divergencia de la traza técnica en AccAdm/CA negativa.
-- Ronda 5: ¿alinear también los hex de «Cancelada»/«Caducada» de `SCA2_colorEstadoSolicitud` con `SCA_BuscadorTabla` (`#0D82BD`/`#734B30`)? Y ¿ocultar el botón REASIGNAR mientras se muestra el popup, como SCA?
+- Ronda 6: ¿se conserva `SCA2_liberarTarea` (devolver tarea al pool, equivalente SCA) o se borra?
