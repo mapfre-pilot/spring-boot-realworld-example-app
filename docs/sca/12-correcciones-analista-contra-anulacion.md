@@ -57,3 +57,47 @@ Todos los objetos escritos se han releído (GET) y probado con `/test` (HTTP 200
 `SCA2_AnulacionFueraNormaPrincipal`, `SCA2_subirDocumentosGD`; PMs `CMD CrearAccion` (27 nodos) y
 `CMD CompletarAccion` (31 nodos) releídos con la topología esperada. Pendiente: prueba UI real (2ª alta, Cancelar,
 salto directo a Contra Anular, POSITIVO/NEGATIVO/FINALIZAR y subida real de documentos).
+
+## 12.4 Prueba UI comparativa SCA vs SCA2 (TEST, 30/09/2026)
+
+### Correcciones validadas
+
+| Área | Resultado en SCA2 |
+|---|---|
+| Alta | `SCA2_AltaSolicitudPage`: estilos de texto enriquecido `ERROR`/`SUCCESS` sustituidos por `STRONG` y colores `NEGATIVE`/`POSITIVE`. `SCA2_construirContextoAlta` recibe `descCausa` y `SCA2 CMD Alta` persiste `desccausa`. |
+| Solicitud | `SCA2_SolicitudAnulacion`: fecha de impresión desde `fecImpresion` de cabecera CORE; compañía contraria vía `SCA2_catalogFilteredIntegracion` (`3247` → `ALLIANZ DIRECT`). |
+| Argumentarios | `SCA2_ContraAnulacionOpciones`: `lineaNegocio` numérico. Con `"wAutemis"`, el servicio de argumentos responde `409`/`ORA-00936`; con `"1"`, responde HTTP 200 y devuelve 8 argumentos para `15787692`. |
+| Antigüedad | SCA y SCA2 muestran 14 años para la póliza `164300869`. |
+
+### Tarjeta Contra Anulación
+
+`SCA2_DetalleSolicitud` queda alineada con `SCA_DetalleAnulacionContraAnulacion`: argumentos históricos de
+`SCA2_consultaDetalleGestion(...).MSSConsultaDetalleGestion.listadoContraAnul`; estado de argumento
+`codTpEstArgumento=2` (Negativo, rojo), `1` (Positivo, verde) y otros (Pendiente, gris), igual que en SCA.
+El estado y las fechas de la tarjeta proceden de la gestión CORE (`accionRealizada=2`), no de la tarea SCA2.
+También muestra el título «Contra Anulacion», nivel/perfil/grupo/nuuma de `infoUsuario` CORE, paginación de 10,
+columna «Detalle suplemento» (ojo solo para `txtApliArgumento=WAUTEMIS`), documentos presentados por el cliente
+con visor GD y observaciones de la gestión. RETOMAR/REASIGNAR/Completar siguen ligados a la tarea SCA2.
+
+| Solicitud | Origen | Argumentos | Gestión CORE | Usuario CORE | Comparación |
+|---|---|---:|---|---|---|
+| `15787692` | Autemis | 12, todos Pendiente | Incompleta; inicio `30/09/2026 10:07:56`; fin `-` | `1` / `RED MAPFRE` / `OFICINA` / `JJGONZ2` | Igual a SCA |
+| `15787672` | NSE | 11, todos Pendiente | Incompleta; inicio `30/09/2026 09:00:29`; fin `-` | `1` / `RED MAPFRE` / `OFICINA` / `JJGONZ2` | Igual a SCA |
+
+### Observaciones y pendientes
+
+1. En `15787672`, la tarea CA SCA2 está COMPLETADA y la solicitud está en `PDTE_MECANIZAR`, mientras la gestión
+   CORE `43704742` sigue INCOMPLETA desde `30/09 09:00:29`. **Hipótesis pendiente de verificar:** la gestión se
+   reabrió por una llamada directa de prueba a `IContraAnularPCA` el 30/09; el nodo 301 «Finalizar CA PCA» de
+   `CMD CompletarAccion` solo cierra CORE cuando `resultado.finalizadoCA=true`. Falta comprobarlo con un FINALIZAR real.
+2. El ojo «Detalle suplemento» no muestra contenido ni en SCA ni en SCA2: SCA solo guarda `local!showPopup`, que
+   no se renderiza; SCA2 replica únicamente el control visual.
+3. El orden de los argumentos puede variar entre cargas en ambas aplicaciones.
+4. RETOMAR aparece en SCA2 para `15787692` porque hay una tarea pendiente.
+5. `consultarDocumentos` devuelve `MSSConsultarDocumentos=null` para `15787672` y `15787673` tanto en SCA como en
+   SCA2; la subida real a Documentum no está verificada punta a punta.
+6. Sin probar: POSITIVO/NEGATIVO/FINALIZAR reales, REASIGNAR, alta nueva tras los fixes (las pólizas de prueba ya
+   tienen solicitud abierta), Mecanización, VERTI/Vida y caducidad.
+
+Grabaciones conservadas como artefactos locales (no versionadas): `sca-comparison`, `sca-delta-retest`,
+`sca-detalle-arguments`, `sca-core-card-retest`, `sca-v14-card-comparison`.
