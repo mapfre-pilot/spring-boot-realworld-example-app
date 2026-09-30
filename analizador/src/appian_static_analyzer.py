@@ -532,6 +532,24 @@ UNSUPPORTED_FUNCS = {
 CREDENTIAL_NAME_RE = re.compile(
     r"(PASSWORD|PASSWD|PWD|SECRET|TOKEN|API[_-]?KEY|CREDENTIAL|CONTRASE|CLAVE|PRIVATE[_-]?KEY)", re.I)
 
+
+def _identifier_like(val: str) -> bool:
+    """Valores con forma de identificador/etiqueta (camelCase, snake_case, slug,
+    palabras, rutas o claves con ':'), no de secreto."""
+    if re.fullmatch(r"[A-Za-z][A-Za-z_]*\d{0,3}:?", val):
+        return True
+    if re.fullmatch(r"#+[A-Za-z0-9_ÁÉÍÓÚÑ]+#+|\$\{[^}]+\}|\{\{[^}]+\}\}", val):
+        return True
+    if re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)+", val):
+        return True
+    if re.fullmatch(r"[a-z0-9_]+", val) and (len(val) < 16 or "_" in val):
+        return True
+    if re.fullmatch(r"[A-Z0-9_]+", val):
+        return True
+    if val.startswith("/") or " " in val.strip():
+        return True
+    return False
+
 DEFAULT_THRESHOLDS = dict(
     max_expression_lines=2000,
     max_expression_chars=150000,
@@ -1614,6 +1632,7 @@ class Analyzer:
         self.min_coverage = float(cfg.get("minCoverage", DEFAULT_MIN_COVERAGE))
         self.hc_max_age_days = int(cfg.get("hcMaxAgeDays", DEFAULT_HC_MAX_AGE_DAYS))
         self.group_names: Dict[str, str] = {}
+        self.group_constants: Dict[str, Tuple[str, str]] = {}
         self.properties_files: Dict[str, str] = {}
         self.hc_info: Dict = {}
         self.appian_version: str = ""
@@ -1674,6 +1693,17 @@ class Analyzer:
         self.dominant_prefix = self.prefix or infer_dominant_prefix(objects)
         self.group_names = {o.uuid: o.name for o in objects
                             if o.objectType == "group" and o.uuid}
+        self.group_constants = {}
+        for o in objects:
+            if o.objectType != "constant" or o.xml is None:
+                continue
+            tv = next((el for el in o.xml.iter()
+                       if local_tag(el.tag) == "typedvalue"), None)
+            if tv is not None and first_text(tv, "name").lower() == "group":
+                val = (o.constantValue or "").strip()
+                if o.uuid:
+                    self.group_constants[o.uuid] = (o.name, val)
+                self.group_constants[o.name.lower()] = (o.name, val)
         for obj in objects:
             self.check_description(obj)
             self.check_naming(obj, self.dominant_prefix)
@@ -1887,7 +1917,9 @@ class Analyzer:
                      f"Usuario hardcodeado en '{obj.name}'.",
                      line=line_of(expr, m.start()), snippet=snippet_at(expr, m.start()))
 
-        for m in finditer(r'\b(password|passwd|pwd|secret|apikey|api_key|clientsecret|client_secret|authtoken|auth_token|contrasena|contraseña|clave)\s*[:=]\s*"[^"]{4,}"'):
+        for m in finditer(r'\b(password|passwd|pwd|secret|apikey|api_key|clientsecret|client_secret|authtoken|auth_token|contrasena|contraseña|clave)\s*[:=]\s*"([^"]{4,})"'):
+            if _identifier_like(m.group(2)):
+                continue
             self.add("SEC-003", obj,
                      f"Posible credencial hardcodeada en '{obj.name}' (clave '{m.group(1)}').",
                      line=line_of(expr, m.start()), snippet=snippet_at(expr, m.start()))
@@ -1950,11 +1982,7 @@ class Analyzer:
                          or re.match(r"^https?://", val, re.I)
                          or re.match(r"^(_?[a-z]-)?[0-9a-fA-F]{8}-[0-9a-fA-F-]{15,}$", val))
         if CREDENTIAL_NAME_RE.search(obj.name) and is_text and val and not looks_ref:
-            slug_like = bool(
-                re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)+", val)
-                or (re.fullmatch(r"[a-z0-9_]+", val)
-                    and (len(val) < 16 or "_" in val)))
-            if slug_like:
+            if _identifier_like(val):
                 self.add("SEC-006", obj,
                          f"La constante '{obj.name}' tiene nombre de credencial pero "
                          f"su valor ('{val[:60]}') parece un identificador, no un "
@@ -2134,6 +2162,17 @@ class Analyzer:
 
         groups = [pid for t, pid in people if t == "4096"]
         users = [pid for t, pid in people if t and t != "4096"]
+        via_constant = ""
+        if recipients_expr and not groups:
+            cm = re.fullmatch(r'=?\s*(?:#"([^"]+)"|cons!([A-Za-z0-9_]+))\s*',
+                              recipients_expr)
+            if cm:
+                key = cm.group(1) or cm.group(2).lower()
+                hit = self.group_constants.get(key)
+                if hit and hit[1]:
+                    via_constant = hit[0]
+                    groups = [hit[1]]
+                    recipients_expr = ""
         if not groups:
             if users:
                 self.add("PM-007", obj,
@@ -2163,6 +2202,8 @@ class Analyzer:
             if resolved:
                 extra = (f" Grupos resueltos: "
                          f"{', '.join(n for _, n in resolved)}.")
+            if via_constant:
+                extra += f" (referenciado vía constante '{via_constant}')"
             self.add("PM-007", obj,
                      f"El grupo de alertas '{unresolved[0]}' del modelo '{obj.name}' "
                      f"no está en el paquete ni en la configuración: no se puede "

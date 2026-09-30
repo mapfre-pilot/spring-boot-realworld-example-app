@@ -301,6 +301,30 @@ class TestAlertGroup(unittest.TestCase):
                 people='<people><type>4</type><stringId>user1</stringId></people>')})
             self.assertEqual(gates(r)["G03"], "FAIL")
 
+    def test_group_constant_resolved_pass(self):
+        with tempfile.TemporaryDirectory() as t:
+            files = {"processModel/p.xml": pm_xml(
+                people="", recipients_exp='=#"CONST-PKG_GRP_ALERTA"'),
+                "content/c.xml": constant_xml("PKG_GRP_ALERTA", "G-ALERTAS", "Group"),
+                "group/g.xml": group_xml("PKG Alertas", "G-ALERTAS")}
+            _, r = self._run(t, files)
+            self.assertEqual(gates(r)["G03"], "PASS")
+
+    def test_group_constant_to_admins_fail(self):
+        with tempfile.TemporaryDirectory() as t:
+            files = {"processModel/p.xml": pm_xml(
+                people="", recipients_exp="=cons!PKG_GRP_ALERTA"),
+                "content/c.xml": constant_xml("PKG_GRP_ALERTA", "G1", "Group"),
+                "group/g.xml": group_xml("Administrators", "G1")}
+            _, r = self._run(t, files)
+            self.assertEqual(gates(r)["G03"], "FAIL")
+
+    def test_group_constant_not_in_package_review(self):
+        with tempfile.TemporaryDirectory() as t:
+            _, r = self._run(t, {"processModel/p.xml": pm_xml(
+                people="", recipients_exp='=#"_a-otro-paquete"')})
+            self.assertEqual(gates(r)["G03"], "REVIEW")
+
 
 class TestUserTasks(unittest.TestCase):
     def _task(self, extra=""):
@@ -394,6 +418,29 @@ class TestConstantsSecurity(unittest.TestCase):
             self.assertTrue(sec6)
             self.assertEqual(sec6[0]["severity"], "MEDIUM")
             self.assertEqual(gates(r)["G09"], "PASS")
+
+    def test_clave_identifier_values_not_secret(self):
+        with tempfile.TemporaryDirectory() as t:
+            _, r = run({
+                "content/c1.xml": constant_xml("PKG_VAL_CLAVECOLUMNA_CANAL", "idCanal"),
+                "content/c2.xml": constant_xml("PKG_VAL_PATH_WITH_TOKEN", "/api/v1/doc?token="),
+                "rule/r.xml": rule_xml(
+                    "PKG_mapa",
+                    '{a!map(clave: "identificadorCaso", valor: 1), '
+                    'a!map(clave: "##DIA_ACTUAL##", valor: 2), '
+                    'a!map(clave: "opTxt1", valor: 3)}'),
+            }, t)
+            self.assertEqual(findings(r, "SEC-004"), [])
+            self.assertEqual(findings(r, "SEC-003"), [])
+            self.assertEqual(len(findings(r, "SEC-006")), 2)
+            self.assertEqual(gates(r)["G09"], "PASS")
+
+    def test_clave_random_value_still_sec003(self):
+        with tempfile.TemporaryDirectory() as t:
+            _, r = run({"rule/r.xml": rule_xml(
+                "PKG_login", 'a!map(password: "pvcsbkugaVd53Mz")')}, t)
+            self.assertTrue(findings(r, "SEC-003"))
+            self.assertEqual(gates(r)["G09"], "FAIL")
 
 
 HC_CSV_HEADER = "ID,Category,Description,Risk,Details\n"
