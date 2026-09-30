@@ -208,3 +208,92 @@ Datos alterados a mano (solo 15787717, para poder reintentar): `SCA2 Transicion`
 ### 8.8 Evidencias ronda 2 (fuera del repo)
 
 Grabaciones: `s2-v26-reintento-edited.mp4`, `s2-idempotencia-reintento-edited.mp4`, `s2-pm21-ultimo-edited.mp4`, `s2-tarea27-reabierta-edited.mp4`, `s2-transicion-actualizada-edited.mp4`, `s2-v27-finalizar-edited.mp4` (en `~/screencasts/`). Capturas SCA/SCA2 consecutivas (gestiones, tarjeta CA/NEGATIVO, documento, buscador, errores literales) adjuntas al mensaje final de la sesión.
+
+## 9. Ronda 3 (30/09/2026, 14:28–16:30 CEST) — ciclo limpio en SCA2 con `2002000047913` y tarjeta «Mecanizacion»
+
+Objetivo: verificar en un ciclo limpio (alta → Contra Anular → NEGATIVO + Carta firmada por fila + carta → FINALIZAR) que SCA2 se comporta como SCA tras las correcciones de la ronda 2 (nodo 200 `contains`, nodo 330, GD/CORE), parando antes de ANULAR PÓLIZA, y comparar la pantalla/tarjeta de mecanización con SCA. Objetos de S5 conservados en todo momento: nodo 301 (CDT tipado), nodos 350-353 (`finalizarSolicitud` solo POSITIVO) y la rama de relanzamiento; `SCA2_subirDocumentosGD` no se ha tocado.
+
+### 9.1 Solicitud creada
+
+| App | Póliza | idSolicitud | Estado final |
+|---|---|---|---|
+| SCA2 | `2002000047913` | **15787726** | CORE `codEstSolic=2` (pendiente, mecanización incompleta), `fecResolucion=null`; record `PDTE_MECANIZAR` / tarea `MECANIZAR` PENDIENTE |
+
+La reserva `2002000066861` **no se ha usado**; la referencia SCA se ha tomado en lectura de la misma solicitud 15787726 (mismo CORE) y de 15787705.
+
+### 9.2 Verificación backend (todo igual que SCA)
+
+| Comprobación | Resultado SCA2 (15787726) | Veredicto |
+|---|---|---|
+| Gestiones CORE (`SCA2_consultaGestion`) | 8 Alta `FINALIZADA` (43704886); **2 Contra Anulación `FINALIZADA NEGATIVA`** (43704887, 14:28:41 → 14:33:29); **5 Mecanización `INCOMPLETA`** (43704891, 14:33:39, sin fin) | igual que SCA (gestión de acción 5 creada por CORE al cerrar la CA negativa) |
+| Solicitud (`SCA2_consultarSolicitudes`) | `codEstSolic="2"`, `fecResolucion=null` | igual (no 4/5) |
+| Detalle gestión 5 (`SCA2_consultaDetalleGestion`) | `tpGestion="5"`, `resulMecanizacion="3"` (MECANIZACIÓN INCOMPLETA), `centroEmisor`/`numSituacion` nulos | igual |
+| Documento (`SCA2_consultarDocumentos(codSolicitud)`) | `idDocumento=0900ab4481a04e6`, `tipoDocumento="6"` (Carta firmada), `fechaDocumento=2026-09-30`; alta Documentum `idDoc=555840`, plantilla `DOCS_SCA_SOAN_0001`, `idReferencia=893641a0f24e2ea2` | igual; **sin `DOC_GD_FAIL`** a la primera |
+| `SCA2 CMD CompletarAccion` | instancia 13144743 **COMPLETED**; `docsResult.success=true` (1/1 subidos), `caSuccess=true`, `finalizarContraAnulPcaResponse.respuesta=true` | — |
+| `SCA2 Transicion` | 179 Alta ALTA · 180 Decidir DECIDIDA · 181 CrearAccion EN_ACCION · 185 CompletarAccion DECIDIR · 186 Decidir MECANIZAR · **187 CrearAccion PDTE_MECANIZAR**, todas `OK` | ruta NEGATIVO → Decidir → mecanizar correcta (nodo 200) |
+| `SCA2 Solicitud` (id 50) | `estadoSolicitud=PDTE_MECANIZAR`, `interfazActiva=CONTRA_ANULAR`, `procesoActivo=MECANIZAR`, `estadoTarea=PENDIENTE`, `version=6` — fuera de `PDTE_FINALIZAR` y coherente con CORE | — |
+| `SCA2 Tarea` | 38 CONTRAANULAR COMPLETADA (12:33:21Z); 40 MECANIZAR PENDIENTE (`SCA2 CMD CrearAccion`) | — |
+| `SCA2 Error` | sin filas para 15787726 | — |
+
+Nota: `SCA2_consultarDocumentos` espera `codSolicitud` (con `idSolicitud` devuelve `null`).
+
+### 9.3 UI: FINALIZAR negativo → redirección a mecanización
+
+| Paso | SCA (15787705, lectura) | SCA2 (15787726) | Veredicto |
+|---|---|---|---|
+| NEGATIVO + Carta firmada por fila + carta | argumento rojo, fila con `idDocumento`, visor | igual (fichero consolidado con `a!submitUploadedFiles`, ronda 2) | igual |
+| FINALIZAR | mensaje «Se va a redirigir a la anulación.» y pantalla de mecanización | mismo mensaje en `SCA2_DetalleTareas`; tarea MECANIZAR pendiente y `SCA2_MecanizacionPrincipal` (botón ANULAR PÓLIZA rojo, **no pulsado**) | igual |
+| Tras ACEPTAR | — | el Detalle mostraba datos obsoletos hasta recargar (F5); tras recargar aparece la tarea MECANIZAR y RETOMAR | divergencia menor de refresco, exclusiva SCA2, **pendiente** (no reproducible de forma estable; sin corrección) |
+| Buscador | Pendiente | Pendiente | igual |
+| Pantalla operativa «Mecanizar» SCA vs SCA2 | en SCA la solicitud 15787705 mostraba REASIGNAR (tarea de otro usuario) y no se ejecutó ninguna acción para no alterarla; la pantalla operativa de anulación de SCA **no se ha podido abrir** en las mismas condiciones | `SCA2_MecanizacionPrincipal` abierta hasta el botón | **no comparable** en esta ronda (solo tarjetas del Detalle) |
+
+### 9.4 Tarjeta «Mecanizacion» del Detalle (divergencia exclusiva SCA2, corregida en 3 iteraciones)
+
+Antes (v24): la tarjeta se construía solo con la tarea local (`SCA2 Tarea`) — mostraba `CE_RM`, el correo completo del usuario y ninguno de los bloques que SCA pinta en `SCA_DetalleAnulacionMecanizacionEstrategicas` (Datos de la gestión, hitos, TRAZAR ANULACIÓN).
+
+| Versión | Cambio en `SCA2_DetalleSolicitud` (`_a-0000f069-4f37-8000-9cc8-011c48011c48_20055572`) |
+|---|---|
+| 24 → **25** | `local!esMec` / `local!codCore="5"`: la tarjeta se alimenta de la gestión CORE `accionRealizada=5` (fechas, perfil, grupo, nuuma como la tarjeta CA) + `SCA2_consultaDetalleGestion`; título «Mecanizacion»; bloque «Datos de la gestión» (Sistema Anulación, Centro emisor, Resultado de la mecanización, Núm. Situación Autemis); hitos Mecaniza/[Suscripción]/Anulación con `a!stampField`; botón TRAZAR/OCULTAR ANULACIÓN |
+| 25 → **26** | Igual que SCA: catalogación y fecha de anulación de `SCA2_consultarCabeceraSolicitud`; observaciones de BBDD SCA (`SCA2_consultaBBDDSCA(devolverObservaciones)`) filtradas por `numGestionPca` y ordenadas por `fecObsPca`; hitos/`pasosOk` con los mismos textos que SCA («Inicia Subproceso Appian», «RESPUESTA SUSCRIPCION NSE», «RESPUESTA ANULACION NSE», «ANULAR NEW», SGO/STCAT para wAutemis); la traza muestra `fecObsPca` + texto + línea en blanco por observación; bolitas solo si hay observaciones |
+| 26 → **27** | La fecha bajo un hito solo se pinta en hitos completados o en el hito en curso (`fv!index <= pasosCompletados + 1`), como las ramas de SCA; desaparece el `01/06/2027` bajo «Anulación» |
+
+Fragmento (v26):
+
+```sail
+local!obsMecOrdenadas: index(todatasubset(arrayToPage: local!obsMecGestion,
+  pagingConfiguration: a!pagingInfo(startIndex: 1, batchSize: -1,
+    sort: a!sortInfo(field: "fecObsPca", ascending: true))), "data", null),
+...
+value: joinarray(a!forEach(items: local!obsMecOrdenadas, expression: {
+  tostring(index(fv!item, "fecObsPca", "")),
+  reject(fn!isnull, split(tostring(index(fv!item, "txtObsPca", "")), {"<p>", "</p>"})),
+  char(10)}), char(10))
+```
+
+Procedimiento por PUT: GET vivo (v24/v25/v26) → backup en `~/sca2work/backups/` → edición → PUT completo (inputs conservados) → re-GET (v25/v26/v27, expresión idéntica) → `POST /interfaces/{uuid}/test` con 15787726/15787705/15787717 (HTTP 200, `diagnostics.error=null`; en v27 el render de 15787726 ya no contiene `01/06/2027`) → UI en lectura (§9.6). Comprobación de la referencia: `POST /interfaces/{SCA_DetalleAnulacionMecanizacionEstrategicas}/test` con 15787726 tampoco contiene `2027`.
+
+Resultado UI v27 vs SCA (misma solicitud 15787726, ambas en lectura): título, tag naranja «Incompleta», fechas, nivel, perfil, grupo, nuuma, «Datos de la gestión» (NSE-Autos / MECANIZACIÓN INCOMPLETA / — / —), hitos e iconos, TRAZAR/OCULTAR y las 8 observaciones (fecha, texto, orden 14:40:29 … 14:43:21 y separación) **iguales**.
+
+### 9.5 Divergencias visuales restantes (no corregidas)
+
+| Aspecto | SCA | SCA2 | Clasificación |
+|---|---|---|---|
+| Botón RETOMAR | no aparece para 15787726 (SCA no tiene tarea Appian propia de una solicitud creada en SCA2; en solicitudes SCA sale abajo a la derecha) | RETOMAR rojo a la derecha de Grupo/Nuuma (misma posición que en la tarjeta CA de SCA2, ya validada) | dependiente de datos/posición común a todas las tarjetas SCA2 — no se corrige |
+| Marco interior | contenido dentro de un recuadro gris con márgenes | sin recuadro, más ancho | estilo común a todas las tarjetas del Detalle SCA2 (también la CA validada en §12.4) — no se corrige en S2 |
+| Bolitas sin observaciones | no se pintan | no se pintan (v26) | no probado en UI (15787726 tiene observaciones) |
+
+### 9.6 Evidencias ronda 3 (fuera del repo)
+
+Grabaciones (`~/screencasts/`): `s2-ronda3-limpia-edited.mp4` (ciclo completo hasta la pantalla de mecanización), `s2-ronda3-consulta-mecanizar-edited.mp4` (comparación SCA/SCA2), `s2-tarjeta-v25-lectura-edited.mp4`, `s2-tarjeta-v26-lectura-edited.mp4`, `s2-tarjeta-v27-fecha-edited.mp4`. Capturas SCA2/SCA consecutivas (buscador, estado + CA negativa, NEGATIVO + Carta, tarjeta Mecanizacion completa, traza abierta/oculta) adjuntas al mensaje final de la sesión.
+
+### 9.7 Estado final de las divergencias S2
+
+| Paso | Veredicto |
+|---|---|
+| Alta, argumentario, NEGATIVO, plantilla, documentos por motivo (`null` común) | igual |
+| Documento → GD/CORE → «Documentos presentados» | igual (verificado en 15787717 y 15787726) |
+| FINALIZAR negativo → CA `FINALIZADA NEGATIVA`, `codEstSolic=2`, gestión acción 5, tarea/record de mecanización, redirección «Se va a redirigir a la anulación.» | **igual, verificado** (15787726) |
+| Tarjeta Mecanizacion del Detalle | **corregida (v25→v27)**; quedan RETOMAR/marco (§9.5) |
+| Refresco del Detalle tras ACEPTAR | pendiente (menor) |
+| Pantalla operativa de anulación SCA vs `SCA2_MecanizacionPrincipal` | no comparada (no se puede abrir en SCA sin alterar una solicitud ajena; ANULAR PÓLIZA no ejecutado) |
+| Etiqueta buscador `codEstSolic=4`, `/errores`, buscador SCA2 con solicitudes de SCA | fuera de alcance / propietario S5-S1 |
