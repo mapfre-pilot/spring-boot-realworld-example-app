@@ -261,8 +261,8 @@ SCA (`SCA_ContraAnulacionOpciones` l. 3281) renderiza un único `SCA_ContraAnula
 ### 8.7 Preguntas / pendientes nuevos para el analista
 
 1. **Relanzar `CompletarAccion` desde `/errores`**: `SCA2_CMD_MarcarErrorRelanzado` no pasa `resultado` y `¿Ya ejecutado?` corta por la transición de `Write PDTE_FINALIZAR`. Propuesta (no aplicada): guardar `payload` (ya se persiste en §8.1) y que el relanzamiento arranque `CompletarAccion` con `resultado: a!fromJson(payload)` y una marca `relanzado` que salte `¿Ya ejecutado?` hasta `Subir documentos GD`/`Finalizar CA PCA`. ¿Se aprueba?
-2. **Excepciones de nodo** (caso 8.5): ¿debe cada nodo de integración/regla de los CMD capturar la excepción (p. ej. validando `document()` antes o con flujo de excepción del nodo) para escribir `SCA2 Error` en vez de quedar pausado? Hoy SCA2 se comporta como SCA (proceso pausado + Monitoring).
-3. **15787716**: queda `PDTE_FINALIZAR` con la instancia 11036933 pausada como evidencia. ¿Reanudar tras la corrección de S2, o cancelar y cerrar con `SCA2 CMD Finalizar` como 15787699?
+2. ~~Excepciones de nodo (caso 8.5)~~ → resuelto para «Subir documentos GD» con guard no lanzante (§8.10). Queda como criterio general para el resto de nodos de regla de los CMD.
+3. **15787716**: la instancia 11036933 ya se reanudó y terminó por la rama controlada (§8.10); el record sigue `PDTE_FINALIZAR` con fila `SCA2 Error DOC_GD_FAIL`. Para cerrarlo hace falta repetir NEGATIVO + carta + FINALIZAR con la consolidación de ficheros de S2 (el Relanzar actual es no-op, punto 1) o cerrarlo con `SCA2 CMD Finalizar` como 15787699.
 4. Buscador SCA2: observación y fecha de la fila salen del record (`-`, hora de alta del record) y en SCA de CORE (observación del alta, `fecSolicitud`). Divergencia menor no corregida en esta fase.
 5. `codEstSolic "14"` tras `finalizarSolicitud` de `SCA2 CMD Finalizar` sobre una gestión `FINALIZADA CANCELADA` (15787699): confirmar significado funcional (S2 documentó `"5"` para el cierre tras `FINALIZADA`).
 
@@ -279,5 +279,36 @@ SCA (`SCA_ContraAnulacionOpciones` l. 3281) renderiza un único `SCA_ContraAnula
 
 - Grabación `~/screencasts/sca-sca2-fase5/sca-sca2-fase5-edited.mp4` (alta, NEGATIVO, plantilla, carta, FINALIZAR, detalle/F5, buscador y filtro en SCA2; lectura en SCA).
 - Capturas `~/sca2work/shots/f5_01_alta_*_sca2`, `f5_02_opciones_sca2`, `f5_03_negativo_sca2`, `f5_04_plantilla_sca2`, `f5_05_carta_entregada_sca2`, `f5_06_confirmacion_sca2`, `f5_07_resultado_sca2` (modal duplicado), `f5_08_detalle_sca|sca2`, `f5_09_documentos_sca|sca2`, `f5_10_buscador_sca|sca2`, `f5_11_filtro_negativo_sca2`, y las capturas de Monitoring de la instancia 11036933: `f5d_01_procesos`, `f5d_02_diagrama`, `f5d_03_variables_resultado`, `f5d_04_variables_wr`, `f5d_05_error_completo`, `f5d_06_historial_inicio`, `f5d_07_historial_final`, `f5d_08_nodo_estado`.
-- Grabación del diagnóstico `~/screencasts/sca-sca2-fase5-diagnostico/sca-sca2-fase5-diagnostico-edited.mp4` (Designer → Monitoring, solo lectura).
+- Grabación del diagnóstico `~/screencasts/sca-sca2-fase5-diagnostico/sca-sca2-fase5-diagnostico-edited.mp4` (Designer → Monitoring, solo lectura) y de la reanudación `~/screencasts/sca-sca2-fase5-reanudar/sca-sca2-fase5-reanudar-edited.mp4` (capturas `f5r_01`…`f5r_12`).
 - Backups LCP en `~/sca2work/backup/` y scripts de edición en `~/sca2work/edits/` (`edit_completar.py`, `edit_opciones.py`, `edit_opciones_dup.py`, `edit_finalizar.py`).
+
+### 8.10 Resiliencia de «Subir documentos GD» (petición del analista a raíz del hallazgo de S4) — `SCA2_documentoAccesible` (nueva) + `SCA2_subirDocumentosGD` v2→v3
+
+Hallazgo compartido por S4: varias instancias de `SCA2 CMD CompletarAccion` (17325135 de 15787714, 12088128 de 15787717 y la 11036933 de 15787716) estaban pausadas por excepción en «Subir documentos GD» porque el fichero de `a!fileUploadField` en una página de site es temporal si no se consolida con `a!submitUploadedFiles` antes del `a!startProcess`. Verificado por LCP (`GET /process-models/{uuid}/processes` y `GET /processes/{id}`, que sí funcionan y devuelven `status`, `error` y `variables`): las tres siguen `ACTIVE` con el mismo `error`.
+
+Causa raíz exacta (reproducida con `POST /expression-rules/SCA2_subirDocumentosGD/test`, inputs de la instancia 11036933): `CMP_existeObjeto("Document", 555711)` devuelve **true** (usa `getcontentobjectdetailsbyid`, que sí ve el objeto), pero `document(555711, "name")` en `SCA2_altaDocumento` l.27 lanza «Document Does Not Exist or has been Deleted». El detalle del objeto lo explica: `Parent: Centro de conocimiento de documentos temporales, Parent Id: 7, State: Invactive Published, Created by: JJGONZ2 11:06:41 UTC` — es un fichero temporal no consolidado. Como SAIL no tiene try/catch, la única forma de no pausar el PM es que el guard sea no lanzante y se evalúe antes de `document()`/`todocument()`.
+
+Cambios (solo SCA2; GET vivo → backup → PUT → re-GET → `/test`):
+
+| Objeto | uuid | Versión | Cambio |
+|---|---|---|---|
+| `SCA2_documentoAccesible` (nueva, `POST /expression-rules` con `appUuid` SCA2) | `_a-0001f076-8f0a-8000-9d26-011c48011c48_5483484` | 1 → 2 | `a!map(idDoc, existe, temporal, inactivo, accesible, motivo, detalle)`: `existe` = `CMP_existeObjeto`; `temporal` = `find("Parent Id: 7,"|"documentos temporales", detalle)`; `inactivo` = `find("State: Inactive")`; `accesible = existe ∧ ¬temporal ∧ ¬inactivo`. No lanza excepción con id nulo, inexistente o temporal |
+| `SCA2_subirDocumentosGD` | `_a-0001f076-8f0a-8000-9d26-011c48011c48_5481351` | 2 → 3 (la v2 es de otra sesión, conservada) | `existe` pasa a ser `SCA2_documentoAccesible(idDoc).accesible`; un documento no accesible ya **no** se omite en silencio (`success:true, omitido:true`) sino que devuelve `success:false, omitido:true, mensaje: "Documento 555711 (tipo 6) no accesible: Documento temporal no consolidado (a!submitUploadedFiles) en Appian"` → `success` global false |
+
+Flujo resultante en `SCA2 CMD CompletarAccion` (sin tocar el PM: los nodos 311 `¿Docs GD ok?` → 312 `Capturar error documentos` (`wrNodo "Subir documentos GD"`, `wrCodigo "DOC_GD_FAIL"`, `wrErrMsg = docsResult.mensaje`) → 199 `Write Error` → End ya existían): el record queda en `PDTE_FINALIZAR`, se persiste la fila `SCA2 Error` (relanzable en `/errores`), **no** se llama a `Finalizar CA PCA` (la gestión CORE no se cierra sin la carta, coherente con SCA) y el PM termina en vez de pausarse; la UI (v22/v24) recibe `pv!wrErr=true` por `onSuccess` y muestra el aviso de error en lugar de «CORRECTO».
+
+Tests LCP tras el PUT:
+
+```text
+SCA2_documentoAccesible(555711)     → existe true, temporal true, accesible false, motivo "Documento temporal no consolidado…"
+SCA2_documentoAccesible(null)       → existe false, accesible false, motivo "Documento inexistente en Appian"   (sin excepción)
+SCA2_documentoAccesible(999999999)  → ídem
+SCA2_subirDocumentosGD(15787716, {"555711_6_15787716"}, CA, JJGONZ2) → success false, numSubidos 0, mensaje "Error subiendo documentos: Documento 555711 (tipo 6) no accesible: …"  (antes: excepción)
+SCA2_subirDocumentosGD(15787716, {}, CA, JJGONZ2)                    → success true, "OK"
+```
+
+Nota: `SCA2_subirDocumentosGD` evalúa `SCA2_documentoAccesible` dos veces por documento (`acceso` y `existe` dentro del mismo `a!map`); coste de dos `getcontentobjectdetailsbyid` por fichero, aceptable para 1-3 documentos.
+
+Verificación en la instancia real (Monitoring, usuario técnico; grabación `sca-sca2-fase5-reanudar`): se reanudó **solo** el nodo «Subir documentos GD» de la instancia 11036933 (15787716) con «Iniciar» (Appian cancela la ejecución fallida y reevalúa el nodo con la regla v3). Resultado: `¿Docs GD ok?` → `Capturar error documentos` → `Write Error` → End, proceso **COMPLETED** a las 13:30 CEST (confirmado por `GET /processes/11036933`: `status COMPLETED`, `completedTaskCount 7`). Variables finales: `wrErr true`, `wrNodo "Subir documentos GD"`, `wrCodigo "DOC_GD_FAIL"`, `docsResult.success false`, `docsResult.mensaje "Error subiendo documentos: Documento 555711 (tipo 6) no accesible: Documento temporal no consolidado (a!submitUploadedFiles) en Appian"`. Fila `SCA2 Error` creada (leída con `POST /interfaces/SCA2_BandejaErrores/test`, ya que `/errores` sigue devolviendo «La página no existe o no tiene permiso para verla» a JJGONZ2): `Solicitud 15787716 · Comando "SCA2 CMD CompletarAccion - 30/09/2026 13:07 CEST" · Código DOC_GD_FAIL · Mensaje "Error subiendo documentos" · Intentos 1 · Fecha 30/09/2026 13:30 CEST`. Record 15787716 sigue en `PDTE_FINALIZAR` (fuera del buscador) y el detalle SCA2 muestra la gestión CA `Incompleta` sin documentos, igual que SCA.
+
+Pendiente menor detectado: `wrErrMsg` del nodo 312 queda con el texto por defecto («Error subiendo documentos») aunque `docsResult.mensaje` está informado — `index(pv!docsResult, "mensaje", default)` sobre el Dictionary del PV devuelve el default. Propuesta (no aplicada, requiere una instancia nueva para validarla): `a!defaultValue(tostring(property(pv!docsResult, "mensaje", null)), "Error subiendo documentos")`. Las instancias 12088128 (15787717) y 17325135 (15787714) de otras sesiones siguen pausadas: al reanudarlas con la regla v3 terminarán por la misma rama controlada (SCA2 Error `DOC_GD_FAIL`); no se han tocado.
