@@ -14,6 +14,7 @@ referencia funcional; solo se corrigen objetos de SCA2.
 | SCA2 (`sca2`), ronda 2 (POSPONER SGC + FINALIZAR v15…v18) | `2002000045500` | **15787721** | Idéntica | Alta `43704873` (8), Autorización `43704876` (7), Mecanización `43704882` (5) |
 | SCA2 (`sca2`), ronda final (FINALIZAR v19 punta a punta) | `2002000040119` (reserva 2) | **15787725** | Idéntica | Alta `43704884` (8), Autorización `43704885` (7), Mecanización `43704888` (5) |
 | SCA2 (`sca2`), ronda 4 (CMD genéricos, §3.10) | `2002000025123` | **15787732** | Idéntica | Alta `43704912` (8), Autorización `43704913` (7), Mecanización `43704914` (5) |
+| SCA2 (`sca2`), ronda 5 (etiquetas, Observaciones, popup, §3.11) | `2002000062813` | **15787739** | Idéntica | Alta `43704933` (8), Autorización `43704935` (7), Mecanización `43704937` (5) |
 
 La primera reserva se usó para repetir FINALIZAR en SCA2 tras la primera corrección del PM (§3.4); las dos
 pólizas de la segunda asignación para la ronda 2 (§3.5-§3.7). No se ha tocado ninguna otra solicitud.
@@ -49,6 +50,11 @@ llevó directamente a la pantalla «Revisión autorización de fecha de anulaci�
 | 21 | Subida de adjuntos por el usuario funcional | Permitida | Antes (v17): «No tiene privilegios suficientes para cargar un archivo en la carpeta designada» → **corregido** (seguridad de la carpeta `SCA2 Autorizacion`: `SCA2 Users` Editor, §3.5) | divergencia_corregida |
 | 22 | Columna Observaciones del buscador | `txtObs` de la última gestión CORE (`Prueba S4 posponer v20` tras POSPONER, `Prueba S4 finalizar v20` tras FINALIZAR en 15787732) | `SCA2_BuscadorTabla` v6 (S1) lee `SCA2 Datos Solicitud.fecimpresion`; antes solo la escribía `CMD Alta` (S4 sin observación en el alta → `-`). **Corregido en los CMD** (ronda 4, §3.10): `SCA2 CMD Posponer` nodo 5 y `SCA2 CMD CompletarAccion` nodo 5 persisten la última observación de forma genérica (CA/ACCADM/AUT). UI 15787732: tras POSPONER ambos buscadores `Prueba S4 posponer v20`; tras FINALIZAR ambos `Prueba S4 finalizar v20`. 15787725/15787721 (anteriores) siguen en `-` | divergencia_corregida |
 | 23 | Color del tag «Aceptada» en la tarjeta Autorización del Detalle | Verde `#008C47` (`SCA_D_ColorEstadoGestion`) | Antes naranja (`local!estadoCard = "ACEPTADA"` no estaba en el `a!match` → `default: "#E46B15"`) → **corregido** (`SCA2_DetalleSolicitud` v24): tag «Aceptada» verde `#008C47` en 15787725 tras F5, verificado en píxeles y comparado con SCA 15787698/15787725 (`s4-203`, `s4-205`, `s4-206`) | divergencia_corregida |
+| 23 | Etiqueta de estado del buscador («Últimas solicitudes gestionadas») tras POSPONER y tras FINALIZAR | «Pendiente» naranja: `SCA_BuscadorTabla` muestra `rule!SCA_D_EstadosSolicitud(estSolicitud)` sobre el `codEstSolic` CORE (2) | Mostraba «Solicitud Pendiente» (mapeo S3/S5 tomado de `SCA_calcularEstadoSolicitud`, que es el texto de la pestaña **Póliza**/`*Estrategicas`, no el de esta tabla) → `SCA2_textoEstadoSolicitud` v9: «Pendiente» naranja; verificado en 15787739 tras POSPONER y tras FINALIZAR (capturas s4-404/405/411/412) | ≠SCA2 ✔ |
+| 24 | Resto de etiquetas del buscador | Textos de `SCA_D_EstadosSolicitud` («Finalizada positivamente» verde `#008C47`, «Finalizado negativo con contraanulación» / «Finalizada no requerida contraanulación» `#BE0F0F`, «Caducada», «Cancelada», «Pendiente de Autorizar»…) | v9 mapea **todos** los estados internos a esos textos (tabla en §3.11); `SCA2_colorEstadoSolicitud` v4 solo añade los hex de los textos nuevos. 15787728 «Finalizada positivamente» verde en ambas apps | ≠SCA2 ✔ |
+| 25 | Popup «La tarea se ha reasignado correctamente» (REASIGNAR) | Tarjeta INFO centrada (`a!columnsLayout` NARROW / auto / NARROW) a ~2/3 del ancho de la tarjeta de la gestión | En v17-v24 la llamada a `SCA2_PopUpReasignarTarea` estaba dentro de la 9ª columna del layout de botones (popup estrecho con el texto en vertical). En la v28 viva (ediciones de S2/S3 posteriores a la ronda 4) la llamada está al nivel de la tarjeta y el popup se ve igual que en SCA (captura s4-407). Sin cambios de S4 | = (corregido en v28) |
+| 26 | Columna Observaciones del buscador: regla exacta de SCA | `fv!row.txtObs` de `SCA_consultarUltimaGestionREST(nuuma)` (una llamada por carga): **última observación registrada en CORE para la solicitud (máx `codObs`)**, sea de la gestión que sea — incluida la traza técnica «Consulta NEW: …» que CORE escribe como observación de la gestión de mecanización (acción 5) al crearla en FINALIZAR de AccAdm/CA negativa | `fecimpresion` del record (observación del usuario en el CMD): coincidía con SCA solo cuando la última observación es la del usuario (Autorización sí; AccAdm 15787736/15787730 y CA negativa 15787726 no) → `SCA2_BuscadorTabla` v7 usa la misma llamada CORE con join por `numSolicitud` y `fecimpresion` como respaldo; 15787736 muestra la misma traza en ambas apps (capturas s4-411/412/413) | ≠SCA2 ✔ |
+| 27 | Ciclo completo 15787739 (alta → POSPONER → REASIGNAR → RETOMAR → 2 documentos → FINALIZAR) | referencia | CORE autorización `codEstado=2` / `mcaAutorizada=S` / `codGestion=43704935`; gestión 7 FINALIZADA 15:54:54 (obs. «Prueba S4 posponer v21,Prueba S4 finalizar v21»), gestión 5 INCOMPLETA; documentos `893801a0f298b67b` (tipo 7) y `0900ab4481a0484f` (tipo 8); record `PDTE_MECANIZAR` / `MECANIZAR` / `PENDIENTE` v6 con `fecimpresion="Prueba S4 finalizar v21"`; Detalle F5 «Aceptada» verde + 2 docs + observaciones + Mecanizacion/Incompleta; `SCA2_BandejaErrores` sin filas de 15787739; PM Posponer v7.0 (`522219`) y CompletarAccion v32.0 (`14190911`) COMPLETED | = |
 
 ## 3. Divergencias y correcciones en SCA2
 
@@ -67,6 +73,9 @@ re-GET → `POST .../test` → repetición UI. SAIL antes/después guardado en l
 | `SCA2 CMD Posponer` (PM) | `0000f06f-8a47-8000-6751-7f0000014e7a` | v4 (S3) → v5 → v7 (instancia 15787732) | **Ronda 4 (§3.10)**: nodo 5 «Write Posponer» añade a la misma transacción `SCA2 Datos Solicitud`(`id`, `fecimpresion` = `tostring(pv!motivo)`) cuando hay motivo, genérico para CA/ACCADM/AUT; 12 nodos y 23 pv conservados, resto de nodos idéntico (comparado tras el re-GET). Ronda 2: nodo 6 «Alta gestión SGC»: el `or()` de omisión incluye `local!esAutorizacion` (`pv!tipoAccion = "AUT"`) con comentario `[S4]` explicando la paridad con el XOR 19 de SCA (§3.8). Payload AUT de `SCA2_posponerGestionSGC` (S3) verificado igual al de `SCA_posponerAutorizacion` (`codPca "N"`, `codEstado "1"`, `numSgo`, `tipoAutorizacion`, `ID_AGENTE_CLAVE`/`NIF_CIF_PRODUCTOR`): sin cambios en la regla. |
 | Carpeta `SCA2 Autorizacion` (seguridad) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20050263` | — | `PUT /objects/{uuid}/security`: se añade `SCA2 Users` como **Editor** (antes solo Viewer; `SCA2 Administrators` Administrator se conserva). Backup `~/sca2work/backup/folder_SCA2_Autorizacion.security.*.json`. S3 hizo lo mismo en las carpetas de AccAdm/CA. |
 | `SCA2_selectorOficinas` (interfaz) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20053256` | 1 → 2 → 3 → 4 | v2: input `validationGroup` (descartado: fuera de un formulario Appian no evalúa `required` y ocultaba el asterisco). v3: **versión rota durante ~3 min** (`if` con 4 parámetros; detectada por el test LCP y corregida de inmediato). v4: input `mensajeError` (Text) mostrado en rojo bajo el desplegable y limpiado al seleccionar oficina; se elimina `validationGroup`. |
+| `SCA2_textoEstadoSolicitud` (regla) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20063670` | 8 → **9** (ronda 5) | Mapeo completo estado interno → texto `SCA_D_EstadosSolicitud` (§3.11); antes solo `PDTE_MECANIZAR` → «Pendiente» y el resto «Solicitud Pendiente» |
+| `SCA2_colorEstadoSolicitud` (regla) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20063676` | 3 → **4** (ronda 5) | Solo **añade** «Finalizada positivamente» `#008C47`, «Finalizado negativo con contraanulación` y «Finalizada no requerida contraanulación» `#BE0F0F` (hex de `SCA_BuscadorTabla`); las entradas existentes no se tocan |
+| `SCA2_BuscadorTabla` (interfaz) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056379` | 6 → **7** (ronda 5) | Envuelta en `a!localVariables` con `local!ultimas: SCA2_consultarUltimaGestionREST(nuuma)` (una llamada por carga, como SCA); columna Observaciones = `txtObs` por `numSolicitud`, respaldo `fecimpresion` |
 
 ### 3.1 Fragmentos relevantes
 
@@ -325,6 +334,70 @@ Solicitudes de otras sesiones (solo lectura, LCP): **15787728** (CA, S5): `fecim
 solo se informará con un ciclo nuevo (POSPONER/FINALIZAR) que pase por los CMD corregidos; no se ha ejecutado ninguna
 acción sobre ella.
 
+### 3.11 Ronda 5: etiquetas del buscador, regla de Observaciones y popup de REASIGNAR
+
+**Etiquetas de estado.** SCA tiene dos tablas con textos distintos: «Últimas solicitudes gestionadas» (`SCA_BuscadorTabla`,
+también `SCA_TablaOtrasSolAnulación`) muestra `rule!SCA_D_EstadosSolicitud(codEstSolic)`; la pestaña Póliza
+(`SCA_BuscadorTablaEstrategicas`) muestra `SCA_calcularEstadoSolicitud` («Solicitud Pendiente», «Finalizada positivo»…).
+`SCA2_BuscadorTabla` y `SCA2_TablaOtrasSolAnulacion` son el port de la primera, pero `SCA2_textoEstadoSolicitud` (S3/S5) usaba los
+textos de la segunda. `SCA_D_EstadosSolicitud` no está en ninguna aplicación LCP (73 revisadas); sus textos se obtuvieron por
+`SCA2_calcularEstadoSolicitud` (rama por defecto) y por las evidencias de S1-S5: 1/2/7-10/13 → «Pendiente», 3 → «Finalizada
+positivamente», 4/15 → «Finalizado negativo con contraanulación», 5 → «Finalizada no requerida contraanulación», 6/12 → «Caducada»,
+14 → «Cancelada», 16/17 → «Pendiente de Autorizar», 18 → «Finalizado autorizado (sí anulada)», 19 → «Finalizada no autorizado (no
+anulada)», 20 → «Caducada (poliza anulada)». Estados internos que escriben los PM de SCA2 (revisados los 13 PM): `ALTA` (CMD Alta),
+`DECIDIDA`/`EN_DECISION`/`ERROR_DECISION` (Decidir), `EN_ACCION`/`PDTE_MECANIZAR`/`FIN`/`ERROR` (CrearAccion), `PDTE_FINALIZAR`/
+`FINALIZADA_POSITIVO` (CompletarAccion), `FINALIZADA` (Finalizar), `MECANIZADA`/`CADUCADA` (Mecanizar/Caducar). `FIN` salía en crudo.
+
+| Estado interno SCA2 | `codEstSolic` CORE equivalente (observado) | Texto v9 (= `SCA_D_EstadosSolicitud`) | Color |
+|---|---|---|---|
+| `ALTA`, `DECIDIDA`, `EN_DECISION`, `EN_ACCION`, `PENDIENTE`, `EN_PROCESO`, `PDTE`, `PDTE_FINALIZAR`, `PDTE_MECANIZAR`, `MECANIZADA` | 1/2 (S1-S5) | «Pendiente» | `#E46B15` |
+| `PENDIENTE_AUTORIZACION`, `PENDIENTE_AUTORIZACION_ANULACION` | 16/17 (no observado; ningún PM los escribe) | «Pendiente de Autorizar» | gris (como SCA) |
+| `FINALIZADA_POSITIVO` | 3 (15787728, 15787723) | «Finalizada positivamente» | `#008C47` (nuevo en v4) |
+| `FINALIZADA`, `FIN`, `FINALIZADA_SIN_ANULAR` | 5 (15787702) | «Finalizada no requerida contraanulación» | `#BE0F0F` (nuevo en v4) |
+| `RECHAZADA` | 4/15 (no observado) | «Finalizado negativo con contraanulación» | `#BE0F0F` (nuevo en v4) |
+| `CANCELADA` / `CADUCADA` / `CADUCADA_NEGATIVA` | 14 / 6-12 | «Cancelada» / «Caducada» / «Caducada negativa» | sin cambios (`#9F9F9F`; SCA usa `#0D82BD`/`#734B30` en esta tabla — no tocado por indicación) |
+| `ERROR`, `ERROR_DECISION` | sin equivalente SCA | sin cambios («Finalizada. Rechazada anulación», «Error en el servicio de decisión») | sin cambios |
+
+Verificación UI (15787739): «Pendiente» naranja en SCA2 y SCA tras POSPONER y tras FINALIZAR; 15787728 «Finalizada positivamente» verde en
+ambas. Divergencia conocida no tocada: 15787723 (S1) es «Finalizada positivamente» en SCA2 y «Pendiente» en SCA porque su record dice
+`FINALIZADA_POSITIVO` y CORE `codEstSolic=2` (§35 del informe S1).
+
+**Observaciones (regla exacta de SCA).** `SCA_BuscadorTabla` hace una única llamada `SCA_consultarUltimaGestionREST(nuuma)` (CORE
+`consultarUltimaGestion/PCARAGE`) que devuelve una fila por solicitud con `numGestion`, `codObs`, `txtObs`, `estSolicitud`, `fechaResolucion`,
+y la columna es `fv!row.txtObs`. Contrastando 10 solicitudes de S1-S5 con `consultaGestion`/`consultaDetalleGestion`: `txtObs` es la última
+observación registrada en CORE (máx `codObs`) de cualquier gestión de la solicitud. Casos: 15787732 → gestión 7, «Prueba S4 finalizar v20»
+(la de `guardarAutorizacion` es la última); 15787736 (AccAdm S3) → gestión 5 `43704927`, cuya observación es la traza «Consulta NEW: codMotivo:
+0001 …» que CORE escribe al crear la mecanización en FINALIZAR (posterior a la observación del usuario de la gestión 3); 15787726 (CA negativa)
+idem; 15787728/15787702 (CA positiva/cerrada, sin gestión 5) → observación del alta. Como la traza la genera CORE, no puede reproducirse desde
+el record: `SCA2_BuscadorTabla` v7 replica la fuente de SCA (una llamada por carga, no por fila) y deja `fecimpresion` como respaldo.
+
+```sail
+/* SCA2_BuscadorTabla v7 (cabecera) */
+a!localVariables(
+  local!usuario: rule!SCA2_obtenerInformacionUsuario(),
+  local!ultimas: a!defaultValue(rule!SCA2_consultarUltimaGestionREST(nuuma: reduce(index(_,_,null), local!usuario, {"infoUsuarioDTO", "nuuma"})), {}),
+  local!ultimasIds: a!forEach(items: local!ultimas, expression: tostring(index(fv!item, "numSolicitud", null))),
+  a!gridField_25r3( ...
+    a!gridColumn(label: "Observaciones",
+      value: a!localVariables(
+        local!pos: wherecontains(tostring(<idSolicitud del record>), local!ultimasIds),
+        local!txtObs: if(length(local!pos) > 0, index(index(local!ultimas, index(local!pos, 1, 0), null), "txtObs", null), null),
+        if(a!isNotNullOrEmpty(local!txtObs), tostring(local!txtObs), <fecimpresion del record o "-">)))
+```
+
+Verificación UI: 15787739 «Prueba S4 posponer v21» / «Prueba S4 finalizar v21» en ambas; 15787736 muestra la misma traza «Consulta NEW …» en
+SCA2 y SCA; ninguna de las 10 filas comparadas muestra `-` en SCA2 con texto en SCA.
+
+**Popup de REASIGNAR.** `SCA_PopUpReasignarTarea` y `SCA2_PopUpReasignarTarea` son idénticos (NARROW / auto / NARROW). La diferencia estaba en
+`SCA2_DetalleSolicitud`: hasta v24 la llamada estaba dentro de la 9ª columna del `a!columnsLayout` de botones; en la v28 viva (S2/S3) está al
+nivel de la tarjeta de la gestión y el popup ocupa ~2/3 del ancho como en SCA (captura s4-407). No se ha tocado la interfaz. Diferencia menor
+que queda: en SCA la tarjeta de botones se oculta mientras se muestra el popup (`showWhen: local!showPopupReasignar = false`); en SCA2 el botón
+REASIGNAR sigue visible.
+
+Procedimiento: GET vivo → backup (`~/sca2work/backup/ER_SCA2_textoEstadoSolicitud.v8.*.before.json`, `ER_SCA2_colorEstadoSolicitud.v3.*`,
+`IF_SCA2_BuscadorTabla.v6.*`) → PUT → re-GET (v9/v4/v7, inputs conservados) → `POST /test` de las 13 ramas de estado y de la interfaz. Nota
+de coordinación: `SCA2_DetalleSolicitud` estaba en v28 (última documentada: v27 de S2).
+
 ## 4. Estados CORE observados
 
 ### 4.1 Tras el alta (ambas apps)
@@ -378,6 +451,13 @@ con `fecFinGestion = null` (así lo devuelve CORE; no se reinterpreta), `nivelIn
 | Detalle SCA (misma solicitud) | — | ACEPTADA, mismos docs/observación, Mecanizacion/Incompleta | ACEPTADA, mismos docs/observación, Mecanizacion/Incompleta |
 | Buscador SCA2 / SCA | Pendiente / Pendiente | Pendiente (naranja) / Pendiente | Pendiente (naranja) / Pendiente |
 
+### 4.5 Ronda 5: 15787739 (2002000062813)
+
+- Alta 15:48:31 → `codEstSolic=2`; gestión 8 `43704933` FINALIZADA; gestión 7 `43704935` (autorización) abierta, nivel 1.
+- Tras POSPONER (CMD Posponer v7.0, instancia `522219`, COMPLETED): observación «Prueba S4 posponer v21» en la gestión 7 y en `fecimpresion`; buscadores SCA2/SCA «Pendiente» + observación.
+- Tras FINALIZAR (CMD CompletarAccion v32.0, instancia `14190911`, COMPLETED 15:54:44→15:54:55): autorización `codEstado=2`, `mcaAutorizada=S`, `fecAnulAutorizada=30/09/2026`, `codGestion=43704935`; gestión 7 FINALIZADA 15:54:54 con «Prueba S4 posponer v21,Prueba S4 finalizar v21»; gestión 5 `43704937` INCOMPLETA; `consultarDocumentos` → `893801a0f298b67b` (7) y `0900ab4481a0484f` (8); `consultarUltimaGestion` → `numGestion=43704935`, `codObs=41323178`, `txtObs="Prueba S4 finalizar v21"`; record `PDTE_MECANIZAR` / `AUTORIZACION` / `MECANIZAR` / `PENDIENTE` / nivel 1 / `CE_RM` / v6; `SCA2_BandejaErrores` y `SCA2_DetalleErrores(15787739)` sin filas.
+
+
 ## 5. Limitaciones y pendientes
 
 - LCP: `GET /process-models/{uuid}/processes`, `GET /processes/{id}` y `GET /processes/{id}/variables`
@@ -424,6 +504,11 @@ con `fecFinGestion = null` (así lo devuelve CORE; no se reinterpreta), `nivelIn
 - La versión 3 de `SCA2_selectorOficinas` estuvo rota unos minutos en TEST (afecta también a las pantallas
   de Acciones Administrativas y Contra Anulación de SCA2 que la reutilizan); se corrigió con la v4 y los
   cuatro casos de test (2 oficinas con/sin mensaje, 1 oficina, 0 oficinas) devuelven 200 sin error.
+- Ronda 5: `SCA2_colorEstadoSolicitud` conserva `#9F9F9F` para «Cancelada»/«Caducada» (SCA usa `#0D82BD`/`#734B30` en `SCA_BuscadorTabla`); no se ha cambiado por indicación de no tocar la regla de color salvo lo imprescindible.
+- Ronda 5: mapeos no observados en pruebas (`PENDIENTE_AUTORIZACION*`, `RECHAZADA`, `FINALIZADA_SIN_ANULAR`, `CADUCADA_NEGATIVA`) se han asignado por equivalencia de `codEstSolic` documentada, no por ciclo real.
+- Ronda 5: la página `/errores` del site SCA2 sigue sin ser accesible para el usuario funcional («La página no existe o no tiene permiso»); la ausencia de errores se comprobó por LCP (`SCA2_BandejaErrores`, `SCA2_DetalleErrores`).
+- Ronda 5: botón REASIGNAR visible mientras se muestra el popup de confirmación en SCA2 (SCA lo oculta); `SCA2_DetalleSolicitud` (v28, S3 activa) no tocada.
+- Formato de «Fecha solicitud»: SCA `2026-09-30 15:48:31` (CORE) vs SCA2 `30/09/2026 15:48:31` (S1); no tratado en S4.
 
 ## 6. Evidencias (no incluidas en el repo)
 
@@ -444,6 +529,7 @@ Grabaciones (`~/screencasts/<nombre>/<nombre>-edited.mp4`, anotadas):
 | `s4-v19` | 15787721 Aceptada tras la reparación (SCA2 F5 y SCA), alta 15787725 (2002000040119), 2 documentos, FINALIZAR v19 `CORRECTO`, Detalle F5 Aceptada + docs + obs + Mecanizar/Incompleta, buscadores, contraste SCA | `s4-151` … `s4-166` |
 | `s4-v20` | Ronda 4, ciclo completo 15787732 (2002000025123): alta, Autorización, POSPONER «Prueba S4 posponer v20» → buscadores SCA2/SCA con la observación, REASIGNAR/RETOMAR, 2 documentos, FINALIZAR «Prueba S4 finalizar v20» `CORRECTO`, Detalle F5 Aceptada verde + docs + obs, buscadores con la última observación, contraste SCA | `s4-301` … `s4-311` |
 | `s4-v24` | Ronda 3 (solo lectura): Detalle SCA2 15787725 tras F5 con tag «Aceptada» verde `#008C47` + 2 docs + obs + Mecanizar/Incompleta; Detalle SCA 15787725 y 15787698 (mismo verde); buscadores SCA2/SCA filas 15787725 y 15787698 («Pendiente» naranja; Observaciones `-` en SCA2 vs `txtObs` en SCA; 15787722/15787719 de S1 con observación en SCA2) | `s4-201` … `s4-207` |
+| `s4-v21` | Ronda 5, ciclo completo 15787739 (2002000062813): alta, Autorización, POSPONER «Prueba S4 posponer v21» → buscadores SCA2/SCA («Pendiente» + observación, filas «Finalizada positivamente»), REASIGNAR (popup a lo ancho), RETOMAR, 2 documentos, FINALIZAR «Prueba S4 finalizar v21», Detalle F5 Aceptada, buscadores v7 con la traza CORE de 15787736 en ambas apps, `/errores` inaccesible | `s4-401` … `s4-414` (`~/sca2work/s4-v21-capturas.zip`; grabación `~/screencasts/s4-v21/s4-v21-edited.mp4`) |
 
 Capturas: `~/sca2work/capturas/s4-NN-<app>-<pantalla>.png` (también en `~/sca2work/s4-faseN-capturas.zip` y
 `~/sca2work/s4-vNN-capturas.zip`).
@@ -457,5 +543,5 @@ Estados de procesos: `~/sca2work/proceso_<id>.json` y `procesos_completaraccion.
   `local!esAutorizacion` del `or()` del nodo 6 de `SCA2 CMD Posponer`; el payload AUT ya está preparado.
 - Buscador SCA2, columna Observaciones: resuelto de forma genérica en los CMD (§3.10). Queda por decidir si las
   solicitudes anteriores al fix (p. ej. 15787720 de S3) deben rellenarse desde CORE o se dejan hasta su próximo ciclo.
-- Texto «Solicitud Pendiente» vs «Pendiente» tras POSPONER (objeto compartido S3/S5): ¿se alinea con SCA?
-- Buscador SCA2: resto de estados internos muestran «Solicitud Pendiente» (S3/S5) donde SCA muestra «Pendiente».
+- Ronda 5: Observaciones del buscador se leen ahora de CORE con una llamada por carga (misma fuente y regla que SCA, §3.11). Si se prefiere no depender de CORE en el buscador, la alternativa es mantener `fecimpresion` y aceptar la divergencia de la traza técnica en AccAdm/CA negativa.
+- Ronda 5: ¿alinear también los hex de «Cancelada»/«Caducada» de `SCA2_colorEstadoSolicitud` con `SCA_BuscadorTabla` (`#0D82BD`/`#734B30`)? Y ¿ocultar el botón REASIGNAR mientras se muestra el popup, como SCA?
