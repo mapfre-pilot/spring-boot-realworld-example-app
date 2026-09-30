@@ -10,7 +10,6 @@ referencia funcional; solo se corrigen objetos de SCA2.
 |---|---|---|---|---|
 | SCA (`sca-site`) | `2001900033136` | **15787698** | Motivo 4 `DECISIÓN DE LA ENTIDAD` → Detalle 9 `DECISIÓN DE LA ENTIDAD` → Causa 28 `ANULACIÓN FUERA DE NORMA`, catalogación 4 `A FECHA`, fecha anulación 30/09/2026 | Alta `43704809` (acción 8), Autorización `43704813` (acción 7) |
 | SCA2 (`sca2`) | `2002000066389` | **15787703** | Idéntica | Alta `43704818` (acción 8), Autorización `43704820` (acción 7) |
-
 | SCA2 (`sca2`), repetición tras corregir | `2002000024237` (reserva) | **15787714** | Idéntica | Alta `43704858` (acción 8), Autorización `43704859` (acción 7) |
 
 La póliza de reserva se usó para repetir FINALIZAR en SCA2 tras la primera corrección del PM (§3.4). No se ha
