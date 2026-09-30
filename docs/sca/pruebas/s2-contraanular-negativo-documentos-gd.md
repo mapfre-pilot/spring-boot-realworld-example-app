@@ -461,3 +461,100 @@ Grabaciones (`~/screencasts/`): `s2-ronda5-ciclo-edited.mp4` (alta → CA → NE
 | Fila Impresion, RETOMAR/REASIGNAR en tarjetas | igual (v35/v36); REASIGNAR no verificable con tarea asignada al usuario |
 | Popup CORRECTO doble | corregido en v12, sin verificar en UI |
 | Traza «Inicia Subproceso Appian» / asignación al grupo | pendiente (CMD CrearAccion, S5) |
+
+## 12. Ronda 6 (30/09/2026, 17:00–18:10 CEST) — asignación de la tarea, traza «Inicia Subproceso Appian», color CA y ciclo limpio `2002000085510`
+
+### 12.1 Solicitud creada
+
+| App | Póliza | Solicitud CORE | Acción 8 | Acción 2 | Acción 4 | Acción 5 | `codEstSolic` |
+|---|---|---|---|---|---|---|---|
+| SCA2 | `2002000085510` | **15787743** | 43704946 `FINALIZADA` (17:21:14) | 43704947 `FINALIZADA NEGATIVA` (17:21:36 → 17:24:10) | 43704948 `FINALIZADA` (17:24:11) | 43704949 `INCOMPLETA` (17:24:24) | **2** |
+
+Referencia SCA en lectura: 15787734 (`2002000062827`). No se pulsó ANULAR PÓLIZA, RETOMAR ni REASIGNAR en ninguna de las dos apps.
+
+### 12.2 Asignación de la tarea MECANIZAR (decisión 1) — SCA no asigna al grupo
+
+Lectura del código SCA (dump `dump/sca/process-models/`):
+
+- `SCA_Contra_Anulaci_n`, nodo «CONTRA ANULACIÓN»: `assignTo = if(pv!pasoANivel2, pv!cambioAsignacion, if(and(nivelIntervencion<>1, codSubPerfil="CE_MF_SI24_EXPERTO"), cons!SCA_GRP_CE_RM_OFICINA, pp!initiator))`.
+- `SCA_Mecanizacion`, nodo «Detalle Anulacion»: `assignTo = pp!initiator`.
+- El REASIGNAR que muestra SCA 15787734 se debe a que `SCA_queryProcessReport` devuelve `asignadoA = propietario = deployment.user` (el proceso `SCA_Mecanizacion` lo arranca el proceso padre iniciado por el usuario técnico de TEST), no a una asignación a grupo.
+
+`SCA2 CMD CrearAccion` ya escribe `asignadoA` con la misma regla (`null` → grupo `codperfil` solo si `nivelIntervencion<>1` y `codsubperfil="CE_MF_SI24_EXPERTO"`; en caso contrario el usuario) y `grupo = datosPerfilesPca.codperfil`; `SCA2_puedeGestionarTarea` permite gestionar si asignado = usuario o (sin asignado, nivel≠1 y perfil = grupo), equivalente a `SCA_comprobarUserTareaActiva`. **No se ha cambiado la asignación**: hacerlo global al grupo divergiría del código SCA. En el ciclo limpio la tarea queda `asignadoA=JJGONZ2`, `grupoAsignacion=CE_RM`, y las tarjetas CA y Mecanización muestran RETOMAR (SCA 15787734 muestra REASIGNAR por el propietario técnico). REASIGNAR sigue sin ser verificable con datos propios.
+
+### 12.3 Traza «Inicia Subproceso Appian» (decisión 2) — corregido en `SCA2 CMD CrearAccion`
+
+SCA la escribe al arrancar `SCA_Mecanizacion` (`ANL_INT_InsertarObservaciones`, tipo 05, texto `Inicia Subproceso Appian <idSolicitud> - <numPoliza>`). En SCA2 se añade el nodo **19 «Inicia Subproceso (obs CORE)»** entre la decisión del nodo 18 (acción calculada = MECANIZAR) y el nodo 9 (creación de la tarea), con PV nuevo `obsRes`:
+
+```
+rule!SCA2_insertarObservacionesInfoUsuario(
+  nuuma: pv!sol.datosPerfilesPca.nuuma, codSolicitud: tostring(pv!idSolicitud),
+  txtObservaciones: "Inicia Subproceso Appian " & pv!idSolicitud & " - " & pv!sol.estado.numPoliza,
+  tipoGestion: "5", codCiaUsuario/codPerfil/codSubPerfil: pv!sol.datosPerfilesPca.*)
+```
+
+PM 27 → **28 nodos**; PUT completo sobre GET vivo, re-GET verificado (backups `~/sca2work/backups/CrearAccion.live.*.json` / `CrearAccion.after19.*.json`). Verificado en CORE (`SCA2_consultaBBDDSCA`): observación `codObsPca=41323203`, tipo 05, gestión 43704949, `Inicia Subproceso Appian 15787743 - 2002000085510` (17:24:26), visible en trazabilidad y como última observación. Instancias `CrearAccion` 537394224 (alta) y 8942364 (mecanización) `COMPLETED` (v13). Igual que SCA 15787734.
+
+### 12.4 Instancia 9994107 (decisión 3) — no cancelable con el usuario disponible
+
+`SCA2 CMD CompletarAccion` **9994107**, PM v33, `ACTIVE` desde 30/09/2026 16:41 CEST, pausada por excepción en «Guardar impresion CA» (error de tipos corregido en v34). LCP `/processes/{id}/cancel|resume` → HTTP 501 (no implementado); Designer → Monitor → Process Activity con JJGONZ2 → HTTP 403 (`ss_b44288c9.png`). Queda documentada para cancelación por un administrador; no afecta al ciclo limpio (la instancia de 15787743 es otra).
+
+### 12.5 Color de «Finalizada Negativa» (exclusivo SCA2, corregido)
+
+Medido sobre las capturas (`convert … histogram`): SCA pinta `Finalizada Negativa` en **#BE0F0F** (`SCA_D_ColorEstadoGestion`) e `Impresion/Finalizada` en #DF0027; SCA2 v36 usaba `cons!SCA2_VAL_COLOR_ROJO` (#DF0027) para ambas. `SCA2_DetalleSolicitud` v36 → **v37**: `equals: "FINALIZADA NEGATIVA", then: "#BE0F0F"` (resto sin cambios; conserva colores de S5 y `refreshOnVarChange` de S3). `/test` OK; verificado en UI tras recarga completa: tonos iguales a SCA (`ss_f4964330.png` SCA2 vs `ss_37e23168.png` SCA).
+
+### 12.6 Ciclo limpio 15787743 (decisión 4) — paso a paso
+
+| Paso | SCA 15787734 | SCA2 15787743 | Paridad |
+|---|---|---|---|
+| Alta NSE | ok | ok (alta 17:21:14, CrearAccion 537394224) | igual |
+| Contra Anular → argumento NEGATIVO («INCREMENTO PRIMA PLATINO») | ok | ok (`ss_8e64c11b.png`) | igual |
+| Carta firmada: subida individual de PDF | ok | ok (`ss_2756d351.png`) | igual |
+| FINALIZAR **a la primera** | ok | ok, una sola pulsación, sin `SCA2 Error` (`ss_74ba4819.png`) | igual |
+| Popup CORRECTO único con «Se va a redirigir a la anulación.» | ok | ok, **una sola vez** (`DetalleTareas` v12; `ss_040ba267.png`) | igual (corregido ronda 5, verificado) |
+| CORE: CA `FINALIZADA NEGATIVA`, acciones 4 `FINALIZADA` / 5 `INCOMPLETA`, `codEstSolic=2` | ok | ok (43704947/48/49) | igual |
+| Documento GD/CORE (`SCA2_consultarDocumentos`) | ok | `0900ab4481a0486c`, tipo 6 | igual |
+| Record SCA2 | n/a | `PDTE_MECANIZAR` / `CONTRA_ANULAR` / `MECANIZAR` / tarea `PENDIENTE`, `grupoAsignacion=CE_RM` | coherente con CORE |
+| CMD CompletarAccion | n/a | 14191223 `COMPLETED` (v34, 17:24:03–17:24:15) | ok |
+| Redirección → pantalla operativa NSE-Autos (sin ANULAR PÓLIZA) | ok | ok (`ss_6bb89f17.png`) | igual |
+| VOLVER AL DETALLE con traza refrescada sin F5 | (navegación) | ok | igual |
+| Fila Impresion roja, franja vacía; CA rojo oscuro | ok | ok (v36/v37) | igual |
+| Observación «Inicia Subproceso Appian …» en trazabilidad y última observación | ok | ok (`ss_36f83143.png` vs `ss_7292532e.png`) | igual (corregido) |
+| RETOMAR/REASIGNAR | REASIGNAR (propietario `deployment.user`) | RETOMAR (asignado al usuario) | divergencia de datos de la referencia, misma regla (§12.2) |
+| Buscador: una fila, estado Pendiente | ok | ok (`ss_029b2893.png` vs `ss_3b66eb1b.png`) | igual |
+| `SCA2 Error` | n/a | sin filas (`SCA2_contarErroresPendientes` = 0) | ok |
+
+Incidencia ajena a SCA2: la flecha de retorno del Detalle SCA 15787734 lanza «Error de evaluación de expresión … in rule 'sca_datoscabecera' … a!submitLink [line 23]» (`ss_55757980.png`); es un defecto de SCA TEST, no se toca.
+
+### 12.7 Divergencias que permanecen
+
+| Divergencia | Ámbito | Estado |
+|---|---|---|
+| SCA2 registra dos «Consulta NEW …» (17:24:48) al abrir la pantalla operativa; en SCA 15787734 no aparecen | código común (ambas llaman 2× a guardar observaciones) / datos SCA | no exclusivo SCA2, no corregido |
+| REASIGNAR no verificado con datos propios | asignación por `pp!initiator` en ambas apps | requiere una solicitud iniciada por otro usuario |
+| Instancia 9994107 `ACTIVE` | permisos Monitoring | pendiente de administrador |
+| `/errores` no accesible a JJGONZ2 | seguridad del site | decisión de diseño ya elevada |
+
+### 12.8 Objetos SCA2 modificados en la ronda 6
+
+| Objeto | uuid | Antes → después | Cambio |
+|---|---|---|---|
+| `SCA2 CMD CrearAccion` | `0000f06f-0eaa-8000-6594-7f0000014e7a` | 27 → **28 nodos** (instancias v13) | nodo 19 «Inicia Subproceso (obs CORE)» + PV `obsRes`; ruta nodo 18 → 19 → 9 para MECANIZAR |
+| `SCA2_DetalleSolicitud` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055572` | v36 → **v37** | `FINALIZADA NEGATIVA` → `#BE0F0F` |
+
+No se han tocado `SCA2 CMD CompletarAccion` (sigue v34, 49 nodos), `SCA2 CMD Decidir`, `SCA2_subirDocumentosGD`, `SCA2_DetalleTareas` (v12) ni objetos de SCA/SCAC/CORE/GAIA/PRE/Documentum. Del PM no existe `/test` en LCP; la validación fue el ciclo completo en UI + CORE.
+
+### 12.9 Evidencias ronda 6 (fuera del repo)
+
+Grabaciones (`~/screencasts/`): `s2-ronda6-ciclo-limpio/s2-ronda6-ciclo-limpio-edited.mp4`, `s2-v37-color/s2-v37-color-edited.mp4`. Capturas (`~/screenshots/`): `ss_6bb89f17.png` (pantalla operativa), `ss_8e64c11b.png` (NEGATIVO), `ss_2756d351.png` (carta), `ss_74ba4819.png` (FINALIZAR), `ss_040ba267.png` (popup único), `ss_681eb260.png` (CA + documento), `ss_6662a26c.png`/`ss_7ff048d8.png` (acordeón SCA/SCA2), `ss_f3b1c8fd.png`/`ss_bd2d0f55.png` (Impresion), `ss_83c8164a.png`/`ss_97e107d6.png` (Mecanización REASIGNAR/RETOMAR), `ss_7292532e.png`/`ss_36f83143.png` (traza), `ss_3b66eb1b.png`/`ss_029b2893.png` (buscador), `ss_37e23168.png`/`ss_f4964330.png` (color v37), `ss_b44288c9.png` (Designer 403), `ss_55757980.png` (error retorno SCA).
+
+### 12.10 Estado final S2 (cierre)
+
+| Aspecto | Veredicto |
+|---|---|
+| FINALIZAR negativo a la primera con PM v34 + DetalleTareas v12 | **igual que SCA** (ciclo limpio 15787743, popup único) |
+| Gestiones 8/2/4/5, `codEstSolic=2`, documento GD/CORE, record, CMD COMPLETED, sin `SCA2 Error` | igual |
+| Traza «Inicia Subproceso Appian» | igual (CrearAccion 28 nodos) |
+| Color CA / fila Impresion | igual (v37) |
+| Asignación de la tarea | misma regla que el código SCA (`pp!initiator` salvo nivel≠1 + `CE_MF_SI24_EXPERTO`); no se asigna al grupo |
+| Pendientes | 9994107 ACTIVE (administrador); REASIGNAR sin verificar con datos propios; doble «Consulta NEW» (común) |
