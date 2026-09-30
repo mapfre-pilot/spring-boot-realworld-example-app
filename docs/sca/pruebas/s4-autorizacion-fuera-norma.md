@@ -46,8 +46,8 @@ llevó directamente a la pantalla «Revisión autorización de fecha de anulaci�
 | 19 | POSPONER y gestión SGC | El XOR 19 «Posponer?» de `SCA Autorización` no llega a `SCA_posponerAutorizacion` cuando `codEstado="1"` (instancias 16282489/521404: `cargaGestionPCA0=[]`, `idGestionSGC` sigue `"0"`) → **no** se da de alta gestión SGC al posponer una autorización pendiente | `SCA2 CMD Posponer` recibe `tipoAccion="AUT"` y el nodo «Alta gestión SGC» omite el alta para AUT (`omitido=true`, §3.8); la observación sí se inserta en CORE (`Prueba S4 posponer v15,Prueba S4 posponer v16` en la gestión 7 de 15787721) | igual |
 | 20 | Texto/color del estado en el buscador tras aceptar | «Pendiente» (tag naranja) | Antes «PDTE_MECANIZAR» → **corregido** (`SCA2_textoEstadoSolicitud` v8, `SCA2_colorEstadoSolicitud` v3): «Pendiente» naranja para 15787721 y 15787725 | divergencia_corregida |
 | 21 | Subida de adjuntos por el usuario funcional | Permitida | Antes (v17): «No tiene privilegios suficientes para cargar un archivo en la carpeta designada» → **corregido** (seguridad de la carpeta `SCA2 Autorizacion`: `SCA2 Users` Editor, §3.5) | divergencia_corregida |
-| 22 | Columna Observaciones del buscador | `txtObs` de CORE (`Prueba S4 finalizar v19`) | `-` fijo (`SCA2_BuscadorTabla` sobre el record `SCA2 Solicitud`, sin llamada a CORE) | divergencia_pendiente (compartida con S5; no se toca el buscador) |
-| 23 | Color del tag «Aceptada» en la tarjeta Autorización del Detalle | Verde (`SCA_D_ColorEstadoGestion`) | Naranja (`SCA2_DetalleSolicitud`: `local!estadoCard = upper(local!estadoAut)` = `ACEPTADA`, que no está en el `a!match` de colores → `default: "#E46B15"`) | divergencia_pendiente (presentación; ver §5) |
+| 22 | Columna Observaciones del buscador | `txtObs` de la última gestión CORE (`Prueba S4 finalizar v19` en 15787725; `Inicia Subproceso Appian 15787698 - 2001900033136` en 15787698) | `SCA2_BuscadorTabla` v6 (S1) lee `SCA2 Datos Solicitud.fecimpresion` del record (ya no es `-` fijo): 15787722/15787719 de S1 muestran su observación, pero 15787725 sigue en `-` porque la observación de FINALIZAR se escribía solo en CORE → **corregido** (`SCA2_AnulacionFueraNormaPrincipal` v19: POSPONER y FINALIZAR persisten la observación en el record, §3.9). 15787725/15787721 quedan en `-` (anteriores al fix); sin póliza nueva para repetir el flujo | divergencia_corregida (ronda 3; pendiente repetir UI con alta nueva) |
+| 23 | Color del tag «Aceptada» en la tarjeta Autorización del Detalle | Verde `#008C47` (`SCA_D_ColorEstadoGestion`) | Antes naranja (`local!estadoCard = "ACEPTADA"` no estaba en el `a!match` → `default: "#E46B15"`) → **corregido** (`SCA2_DetalleSolicitud` v24): tag «Aceptada» verde `#008C47` en 15787725 tras F5, verificado en píxeles y comparado con SCA 15787698/15787725 (`s4-203`, `s4-205`, `s4-206`) | divergencia_corregida |
 
 ## 3. Divergencias y correcciones en SCA2
 
@@ -57,9 +57,9 @@ re-GET → `POST .../test` → repetición UI. SAIL antes/después guardado en l
 
 | Objeto | UUID | Versión | Cambio |
 |---|---|---|---|
-| `SCA2_AnulacionFueraNormaPrincipal` (interfaz) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056423` | 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 | v16: FINALIZAR con `submit: false` (la doc. oficial indica que `submit: true` + `a!submitUploadedFiles` no funciona). v17: `documents:` explícito con los ficheros de los 8 huecos. v18 (**final**): se elimina `a!submitUploadedFiles` de FINALIZAR porque `SCA2_AccionesAdministrativasDocumentacion` v3 ya consolida cada fichero en AÑADIR/MODIFICAR; FINALIZAR inserta observaciones y arranca `SCA2 CMD CompletarAccion` directamente (§3.5). v14: FINALIZAR inserta las observaciones en CORE (`tipoGestion "7"`) antes de lanzar el PM, como SCA. v15: FINALIZAR envuelve la acción en `a!submitUploadedFiles(onSuccess: …)` cuando hay adjuntos (§3.4). v11: documentación desplegada por defecto (`collapse1: true`, `horizontalLine(showWhen: not(collapse1))`) y tooltip/`disabled` de FINALIZAR con `documentosEntregados`. v12: POSPONER inserta observaciones en CORE (`SCA2_insertarObservaciones(..., tipoGestion: "7")`) antes de lanzar `SCA2 CMD Posponer`. v13: validación manual de oficina en POSPONER y FINALIZAR (`local!faltaOficina` → mensaje «Se requiere un valor»). |
+| `SCA2_AnulacionFueraNormaPrincipal` (interfaz) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056423` | 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 → 19 | v19 (ronda 3, §3.9): nuevo `local!idDatosSolicitud`; POSPONER y FINALIZAR añaden `a!writeRecords` sobre `SCA2 Datos Solicitud` (`id` + `fecimpresion` = observación) para que la columna Observaciones del buscador (S1) muestre la última observación como SCA. v16: FINALIZAR con `submit: false` (la doc. oficial indica que `submit: true` + `a!submitUploadedFiles` no funciona). v17: `documents:` explícito con los ficheros de los 8 huecos. v18 (**final**): se elimina `a!submitUploadedFiles` de FINALIZAR porque `SCA2_AccionesAdministrativasDocumentacion` v3 ya consolida cada fichero en AÑADIR/MODIFICAR; FINALIZAR inserta observaciones y arranca `SCA2 CMD CompletarAccion` directamente (§3.5). v14: FINALIZAR inserta las observaciones en CORE (`tipoGestion "7"`) antes de lanzar el PM, como SCA. v15: FINALIZAR envuelve la acción en `a!submitUploadedFiles(onSuccess: …)` cuando hay adjuntos (§3.4). v11: documentación desplegada por defecto (`collapse1: true`, `horizontalLine(showWhen: not(collapse1))`) y tooltip/`disabled` de FINALIZAR con `documentosEntregados`. v12: POSPONER inserta observaciones en CORE (`SCA2_insertarObservaciones(..., tipoGestion: "7")`) antes de lanzar `SCA2 CMD Posponer`. v13: validación manual de oficina en POSPONER y FINALIZAR (`local!faltaOficina` → mensaje «Se requiere un valor»). |
 | `SCA2_SolicitudAnulacion` (interfaz) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20064988` | 4 → 5 | Fechas (`fecSolicitudAnul`, `fecEstado`), origen y estado de la solicitud tomados de la cabecera CORE (`left(tostring(...),10)`, `SCA_D_EstadosSolicitud`) con fallback a la fila SCA2. |
-| `SCA2_DetalleSolicitud` (interfaz) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055572` | 17 → 18 | Encabezado «Gestiones realizadas»; la tarjeta de la acción Autorización se asocia a la gestión CORE `accionRealizada = "7"` y muestra estado (`SCA2_consultarAutorizacion.codEstado` → `SCA2_TXT_ESTADOS_AUTORIZACION`), fechas, nivel, perfil/grupo/nuuma, centro emisor, nº situación, resultado, documentos y observaciones (`SCA2_consultaDetalleGestion`). |
+| `SCA2_DetalleSolicitud` (interfaz) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055572` | 17 → 18; 23 → 24 (ronda 3) | v24: `a!match` de `backgroundColor` del tag de la tarjeta añade `equals: "ACEPTADA", then: "#008C47"` (verde como `SCA_D_ColorEstadoGestion`); resto de la interfaz (ediciones de S2/S3/S5 hasta v23) intacto, GET vivo inmediatamente antes del PUT y re-GET. v18: Encabezado «Gestiones realizadas»; la tarjeta de la acción Autorización se asocia a la gestión CORE `accionRealizada = "7"` y muestra estado (`SCA2_consultarAutorizacion.codEstado` → `SCA2_TXT_ESTADOS_AUTORIZACION`), fechas, nivel, perfil/grupo/nuuma, centro emisor, nº situación, resultado, documentos y observaciones (`SCA2_consultaDetalleGestion`). |
 | `SCA2 CMD CompletarAccion` (PM) | `0000f06f-1307-8000-65b1-7f0000014e7a` | 12.0 → 15.0 → (26.0 → 27.0 en la 2ª edición; 30.0 ya en la instancia v19 por ediciones de S2/S3/S5) | **2ª edición (§3.6)**: nodo 302 «Aceptar Autorizacion» → nuevo 303 «Actualizar Autorizacion» (`rule!SCA2_guardarAutorizacion`, `codEstado 2`/`mcaAutorizada S`, como el nodo «Actualizar Autorización» de `SCA Autorización`) → 304 «¿Autorizacion ok?» (`autRes.success`) → 330 Write Transicion OK; rama KO → 305 «Capturar error autorizacion» (`AUT_GUARDAR_FAIL`) → 199 Write Error. Nueva `pv!autRes`. 37 → 40 nodos, 13 → 14 variables; re-GET: rama GD de S5 (310-312), fix `consulta` de S1 (301) y nodos 350-353 conservados. **1ª edición**: XOR 6 «Cancel?»: nueva condición `operacion="Autorizacion" and codEstado="2"` → nodo 310 «Subir documentos GD» (antes iba por el `defaultPath` a «Write Decidir» sin aceptar la autorización en CORE ni subir documentos). XOR 200 «¿Write fail?»: misma condición → nodo 11 «Write Decidir» tras «Aceptar Autorizacion». Backups en `~/sca2work/backup/pm/`. |
 | `SCA2_textoEstadoSolicitud` (regla) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20063670` | 7 → 8 | `PDTE_MECANIZAR` → «Pendiente» (texto exacto del tag de `SCA_BuscadorTabla`/`SCA_D_EstadosSolicitud`); el resto del mapeo de S3/S5 («Solicitud Pendiente», etc.) intacto. |
 | `SCA2_colorEstadoSolicitud` (regla) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20063676` | 2 → 3 | «Pendiente» → `#E46B15` (naranja, como SCA). |
@@ -248,6 +248,38 @@ activarlo si el analista decide lo contrario). La observación del POSPONER sí 
 `tipoGestion "7"`): instancia v16 de 15787721 → `sgcRes.omitido=true`, `obsRes.success=true`, gestión 7
 `observaciones="Prueba S4 posponer v15,Prueba S4 posponer v16"`.
 
+### 3.9 Buscador: columna Observaciones (ronda 3)
+
+Tras `git pull`, §9 del informe S1 documenta que `SCA2_BuscadorTabla` pasó a v6: «Fecha solicitud» =
+`SCA2 Datos Solicitud.fecsolicitudanul` y «Observaciones» = `SCA2 Datos Solicitud.fecimpresion` (columna reutilizada, sin
+columna propia), leídas por la relación `datosSolicitud` del record, y `SCA2 CMD Alta` (nodo 8 *Write Datos*) las
+persiste en el alta. Verificado en la versión viva (v6, sin `-` fijo) y en UI: las filas 15787722/15787719 (S1) muestran
+`Prueba S1 Devin ciclo3` / `Prueba S1 Devin ciclo2`. Sin embargo 15787725 y 15787721 seguían en `-`: el alta S4 no lleva
+observación y la observación real (`Prueba S4 finalizar v19`) se insertó en CORE (`SCA2_insertarObservaciones`,
+tipoGestion 7) pero no en el record; en SCA la columna es `txtObs` de `consultarUltimaGestion` (última observación de la
+última gestión), por lo que sí la muestra. `SCA2_cargarSolicitud(15787725)` → `datosSolicitud.fecimpresion = null`.
+
+Corrección (solo Autorización, sin tocar el buscador ni `CMD Alta`): `SCA2_AnulacionFueraNormaPrincipal` v18 → v19.
+POSPONER y FINALIZAR persisten la observación en el record antes de arrancar el PM (`a!writeRecords` con `id` +
+`fecimpresion`; según la documentación oficial del Write Records solo se escriben los campos informados):
+
+```
+local!idDatosSolicitud: index(index(local!sol, "datos", {}), "id", null),
+...
+if(or(a!isNullOrEmpty(local!observaciones), a!isNullOrEmpty(local!idDatosSolicitud)), {},
+  a!writeRecords(
+    records: 'recordType!{9a9209c7-…}SCA2 Datos Solicitud'(
+      'recordType!{9a9209c7-…}SCA2 Datos Solicitud.fields.{2d7b6a31-…}id': local!idDatosSolicitud,
+      'recordType!{9a9209c7-…}SCA2 Datos Solicitud.fields.{ef1b0aa7-…}fecimpresion': local!observaciones),
+    onSuccess: {}, onError: {})),
+a!startProcess(processModel: cons!SCA2_PM_CMD_POSPONER | cons!SCA2_PM_CMD_COMPLETAR_ACCION, ...)
+```
+
+Re-GET: v19, 3 inputs, 2 `a!writeRecords`; `POST .../test` con 15787725/15787721 → 200, `diagnostics.error=null`.
+**No verificado en UI**: no queda póliza NSE cía 41 sin solicitud para un alta nueva y no se repite FINALIZAR sobre
+solicitudes ya consumidas; 15787725/15787721 seguirán mostrando `-` en SCA2 (anteriores al fix). Pendiente de una
+próxima ronda con póliza nueva.
+
 ## 4. Estados CORE observados
 
 ### 4.1 Tras el alta (ambas apps)
@@ -314,14 +346,15 @@ con `fecFinGestion = null` (así lo devuelve CORE; no se reinterpreta), `nivelIn
   instancia `17325135` pausada: `POST .../processes` → 501, cancelar/reanudar requiere Designer).
 - `a!submitUploadedFiles` en Contra Anulación / AccAdm: lo trasladan S1/S2/S3 (indicación del lead); la
   robustez de «Subir documentos GD» la asumió S5 (`SCA2_subirDocumentosGD` v3). No se han tocado.
-- Buscador SCA2: la columna Observaciones es `value: "-"` en `SCA2_BuscadorTabla` (grid sobre el record
-  `SCA2 Solicitud`), mientras `SCA_BuscadorTabla` muestra `fv!row.txtObs` de CORE. Divergencia real pero de un
-  objeto compartido (S5): no se corrige aquí; requiere decidir si el grid llama a CORE por fila o se replica la
-  observación en el record.
-- Color del tag «Aceptada» en la tarjeta Autorización del Detalle SCA2: naranja (default del `a!match` de
-  `local!estadoCard`) frente a verde en SCA (`SCA_D_ColorEstadoGestion`). Presentación; propuesta: añadir
-  `equals: "ACEPTADA", then: "#008C47"` (y Rechazada rojo) en `SCA2_DetalleSolicitud`, objeto compartido con S5,
-  no tocado en esta ronda.
+- Buscador SCA2, columna Observaciones: **corregido en la ronda 3** para POSPONER/FINALIZAR de Autorización
+  (`SCA2_AnulacionFueraNormaPrincipal` v19, §3.9) sobre la columna de S1; pendiente repetir el flujo con un alta nueva
+  para verlo en UI. 15787725/15787721 (anteriores al fix) siguen en `-` frente a `Prueba S4 finalizar v19` en SCA.
+- Color del tag «Aceptada» en la tarjeta Autorización del Detalle SCA2: **corregido en la ronda 3**
+  (`SCA2_DetalleSolicitud` v24, verde `#008C47` verificado en UI sobre 15787725 vs SCA 15787698). «Rechazada» sigue
+  con el color por defecto (no probado en este escenario).
+- Rama de error 305 → `SCA2 Error` (`AUT_GUARDAR_FAIL`) del `CMD CompletarAccion`: no provocada (aceptado por el lead).
+- POSPONER/SGC en Autorización: decisión confirmada por el lead — SCA no da de alta SGC para autorización pendiente
+  y SCA2 lo omite para `AUT` (§3.8); no se cambia.
 - Estados distintos de `PDTE_MECANIZAR` siguen mostrando «Solicitud Pendiente» en el buscador SCA2 (S3/S5)
   donde SCA muestra «Pendiente»; no se ha modificado.
 - No hay endpoint LCP de datos de record types (`/record-types/{uuid}/records` → 501): `SCA2 Tarea`
@@ -361,6 +394,7 @@ Grabaciones (`~/screencasts/<nombre>/<nombre>-edited.mp4`, anotadas):
 | `s4-v17` | AÑADIR documento con v17: error de privilegios de carpeta | … `s4-140` |
 | `s4-v18` | 2 documentos OK tras permisos, FINALIZAR v18 `CORRECTO`, Detalle (docs+obs, autorización aún Pendiente), buscador «Pendiente» SCA2 y SCA | `s4-141` … `s4-150` |
 | `s4-v19` | 15787721 Aceptada tras la reparación (SCA2 F5 y SCA), alta 15787725 (2002000040119), 2 documentos, FINALIZAR v19 `CORRECTO`, Detalle F5 Aceptada + docs + obs + Mecanizar/Incompleta, buscadores, contraste SCA | `s4-151` … `s4-166` |
+| `s4-v24` | Ronda 3 (solo lectura): Detalle SCA2 15787725 tras F5 con tag «Aceptada» verde `#008C47` + 2 docs + obs + Mecanizar/Incompleta; Detalle SCA 15787725 y 15787698 (mismo verde); buscadores SCA2/SCA filas 15787725 y 15787698 («Pendiente» naranja; Observaciones `-` en SCA2 vs `txtObs` en SCA; 15787722/15787719 de S1 con observación en SCA2) | `s4-201` … `s4-207` |
 
 Capturas: `~/sca2work/capturas/s4-NN-<app>-<pantalla>.png` (también en `~/sca2work/s4-faseN-capturas.zip` y
 `~/sca2work/s4-vNN-capturas.zip`).
@@ -372,6 +406,8 @@ Estados de procesos: `~/sca2work/proceso_<id>.json` y `procesos_completaraccion.
 - POSPONER/SGC: SCA **no** da de alta SGC al posponer una autorización pendiente (§3.8) y así se ha dejado SCA2
   (omisión para `AUT`). Si el analista quiere que SCA2 sí lo haga (a diferencia de SCA), basta quitar
   `local!esAutorizacion` del `or()` del nodo 6 de `SCA2 CMD Posponer`; el payload AUT ya está preparado.
-- Buscador SCA2, columna Observaciones `-` vs `txtObs` de SCA: ¿se corrige en `SCA2_BuscadorTabla` (S5)?
-- Color del tag «Aceptada» (naranja SCA2 / verde SCA) en la tarjeta del Detalle: ¿se alinea en `SCA2_DetalleSolicitud`?
+- Buscador SCA2, columna Observaciones: SCA muestra la **última** observación de la última gestión (`txtObs`); SCA2
+  (S1) muestra la del alta y, con v19, la del último POSPONER/FINALIZAR de Autorización. Contra Anulación y AccAdm
+  (S1/S2/S3) deberían persistir igual sus observaciones en `fecimpresion` si se quiere paridad completa. ¿Se asigna una
+  póliza NSE cía 41 nueva para verificar v19 en UI?
 - Buscador SCA2: resto de estados internos muestran «Solicitud Pendiente» (S3/S5) donde SCA muestra «Pendiente».
