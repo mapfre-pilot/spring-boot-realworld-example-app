@@ -348,3 +348,88 @@ Comportamiento: si `datosBasicosSolicitud.idgestionsgc` ya existe y ≠ "0" no v
 - Grabaciones: `s3-ronda2-edited.mp4`, `s3-ronda2-v17-edited.mp4`, `s3-ronda2-v18-edited.mp4`, `s3-documentacion-v3-diagnostico-edited.mp4`, `s3-documentacion-v3-apnx-edited.mp4`, `s3-ronda2-editor-finalizar-edited.mp4` (ciclo completo con reserva), `s3-ronda3-documentos-lectura-edited.mp4` (documentos y tarjetas de mecanización SCA/SCA2).
 - Capturas `~/sca2work/shots/ronda2/35…45` (DNI/compra añadidos, FINALIZAR, CORRECTO, destino, tarjeta Mecanizar, NSE-Autos, SCA solo REASIGNAR, buscador Pendiente) y `ronda3/01…04` (documentos SCA2/SCA, tarjetas de mecanización).
 - Backups SAIL/JSON antes/después en `~/sca2work/fix/` y `~/sca2work/live/`.
+
+## 9. Ronda 3 — re-prueba UI completa con la póliza nueva 2001900003516 (SCA2 15787730)
+
+Objetivo (analista): ejecutar **desde la UI y a la primera** alta → AccAdm → 2 documentos → POSPONER (SGC) → RETOMAR → FINALIZAR con las versiones vivas (sin reponer nada por LCP) y verificar CMD `COMPLETED` sin `SCA2 Error`, documentos en `SCA2_consultarDocumentos`/Detalle, gestión 3 FINALIZADA + 5 INCOMPLETA, `codEstSolic=2`, ACEPTAR → mecanización NSE-Autos sin pulsar ANULAR; además comprobar el refresco del Detalle al cerrar la acción. Coordinación respetada: GET vivo antes de cada PUT; `SCA2_DetalleSolicitud` (S2, v25→v27) y los CMD (S4) no se han vuelto a tocar tras el aviso del analista (ver §9.4).
+
+### 9.1 Pólizas y solicitudes de la ronda 3
+
+| App | Póliza | Solicitud | Uso |
+|---|---|---|---|
+| SCA2 | `2001900003516` (comprobada por LCP antes del alta: NSE-Autos vigente, `SCA2_consultarSolicitudes` sin solicitud previa) | **15787730** | alta y ciclo completo por UI |
+| SCA | `2002000000291` | 15787700 | solo lectura (referencia de pantallas) |
+
+Reserva `2002000087840` (15787720, ronda 2) no reutilizada. Códigos: motivo 1 «DECISION DE CLIENTE» / detalle 5 «VENTA DEL VEHICULO» / causa 14 «NO VOY A COMPRARME OTRO COCHE». Usuario `JJGONZ2`.
+
+### 9.2 Cronología UTC del ciclo (log `ciclo-clicks-utc.txt` del testing agent)
+
+| Hora UTC | Acción UI (SCA2) | Resultado en pantalla | Verificación LCP |
+|---|---|---|---|
+| 12:42:00 | ALTA SOLICITUD ANULACIÓN (buscador → póliza) | formulario de alta | — |
+| 12:43:00 | GUARDAR (1/5/14) | el motor decide **Acción Administrativa** y abre la pantalla directamente | `SCA2 Solicitud` 15787730 `DECIDIDA` → `ACC_ADM`; CORE 43704904 (acción 8) FINALIZADA 14:43:04, 43704906 (acción 3) INCOMPLETA 14:43:20 |
+| 12:44:50 / 12:45:32 | Documentación → CARGAR + AÑADIR DNI y justificante compra | ambos «Entregado» ✔ (v3 de `SCA2_AccionesAdministrativasDocumentacion`) | — (todavía solo en la interfaz) |
+| 12:45:49 → 12:45:59 | POSPONER → ACEPTAR (observación «Prueba S3 ronda3 posponer SCA2») | popup CORRECTO → 12:46:22 ACEPTAR → Detalle | `SCA2 CMD Posponer` v5 instancia **12088505** COMPLETED (12:46:00 → 12:46:04); **`idgestionsgc = 233844109`** persistido en el record (`SCA2_cargarSolicitud`), tarea en pool `CE_RM`, contadorPosponer=1 |
+| 12:46:30 | Detalle inmediato tras POSPONER | tarjeta AccAdm Incompleta, **sin la observación** | CORE `observaciones` ya escrita (12:46:03) pero `SCA2_consultaGestion` no la devolvía aún (la devuelve a las 12:55) → retraso del propio CORE, no de SCA2 |
+| 12:55:23 | F5 | observación visible; botón REASIGNAR | — |
+| 12:55:52 / 12:56:27 | REASIGNAR (pool → JJGONZ2) → F5 → RETOMAR | pantalla AccAdm; pestaña Documentación: **DNI y compra «No entregado» y FINALIZAR deshabilitado** | `SCA2_consultarDocumentos("15787730")` vacío → **bloqueo documental** (§9.3) |
+| 13:01–13:02 | corrección `SCA2 CMD Posponer` v6 + `SCA2_AccionesAdministrativasPrincipal` v19 (§9.4) | — | test LCP de la interfaz sin errores |
+| 13:04:35 | RETOMAR (misma tarea) | pantalla AccAdm con la oficina/observación recuperadas | — |
+| 13:05:09 / 13:05:27 | CARGAR + AÑADIR DNI y compra (nueva subida por UI, sin reposición LCP) | «Entregado» ✔ ✔, FINALIZAR habilitado | — |
+| 13:05:55 → 13:06:06 | FINALIZAR → ACEPTAR («Se va a finalizar la revisión de acciones administrativas») | popup **CORRECTO** («Los datos se han guardado correctamente») a las 13:06:25; a las ~13:06:55 aparece «Se va a redirigir a la anulación.» (el `a!refreshVariable` de la tarea MECANIZAR) | `SCA2 CMD CompletarAccion` v31 instancia **16283229** `COMPLETED` (13:06:07.2 → 13:06:16.7, 6 nodos), sin `pv!wrErr`; `SCA2_guardarAccAdm(mcaFinalizar:"S")` síncrono cerró CORE 43704906 **FINALIZADA** 15:06:06 con observaciones «Prueba S3 ronda3 posponer SCA2,Prueba S3 ronda3 finalizar SCA2»; CORE **43704911 acción 5 INCOMPLETA** 15:06:25; `SCA2_consultarSolicitudes` → **`codEstSolic=2`**; record `PDTE_MECANIZAR` / `procesoActivo=MECANIZAR` / `estadoTarea=PENDIENTE` / `grupoAsignacion=CE_RM` / `caducidadTarea=2026-10-07`; `SCA2 Tarea` id 43 «MECANIZAR» PENDIENTE (CrearAccion); `SCA2_consultarDocumentos` → `0900ab4481a04e65` (tipo 1) y `0900ab4481a04e63` (tipo 7) |
+| 13:07:04 | ACEPTAR del popup CORRECTO | **volvió al Detalle** (URL del site cambiada) en vez de abrir la mecanización → divergencia exclusiva SCA2 (§9.4, `SCA2_DetalleTareas` v10) | backend correcto (ver fila anterior) |
+| 13:07:15 | Detalle tras ACEPTAR, sin F5 | tarjeta **Mecanizacion** ya presente (tareas refrescadas) pero tarjeta AccAdm todavía «Incompleta»/sin fecha fin y con una sola observación | CORE ya FINALIZADA desde 13:06:06 → mismo retraso de `SCA2_consultaGestion` observado tras POSPONER (documentado para S2, dueño del Detalle) |
+
+`SCA2 Error`: `/errores` es solo para administradores (decisión de diseño, doc 11); la ausencia de error se ha comprobado por LCP: instancia 16283229 `COMPLETED` sin nodo de error recorrido, ninguna instancia pausada de `CompletarAccion`/`Posponer` para 15787730 y record sin `error`/`nodoRelanzar`.
+
+### 9.3 Bloqueo documental tras POSPONER → RETOMAR (exclusivo SCA2, corregido)
+
+Síntoma: los 2 documentos añadidos antes de POSPONER se mostraban «Entregado», pero al RETOMAR aparecían «No entregado» y FINALIZAR quedaba deshabilitado. Causa: en SCA, `SCA_posponerAccAdm` sube los adjuntos a GD/CORE (`SCA_altaDocumento` + registro BBDD) al posponer; en SCA2 el CMD Posponer v4/v5 solo daba de alta la gestión SGC y la observación, y `SCA2_AccionesAdministrativasPrincipal` no le pasaba `listaNombreDocs`. Al reabrir la tarea la pestaña Documentación se alimenta de `SCA2_consultarDocumentos` (CORE) → vacío. Corrección (dos objetos, §9.4): nodo «Subir documentos GD» en el CMD Posponer (reutiliza `SCA2_subirDocumentosGD` v5 de S5, con sus 3+3 reintentos) y paso de `listaNombreDocs`/`nuuma` desde la interfaz. Los ficheros subidos antes de la corrección ya no existían en la interfaz (temporales de `a!fileUploadField`), por lo que se volvieron a adjuntar **por UI** (13:05) — no se repuso nada por LCP. Resultado: tras FINALIZAR, SCA2 muestra los 2 documentos en el Detalle con las mismas referencias que devuelve CORE.
+
+### 9.4 Objetos SCA2 modificados en la ronda 3 (GET vivo → backup → PUT completo → re-GET → test)
+
+| Objeto | uuid | Versión | Cambio |
+|---|---|---|---|
+| `SCA2_DetalleSolicitud` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055572` | 22 → **23** (12:39 UTC; después S4 v24 y S2 v25→**v27** conservan el cambio, comprobado por diff) | `a!refreshVariable(refreshOnVarChange: ri!tipoAccion)` en `local!sol`, `local!estructuraCabecera`, `local!gestionesCore` y `local!tareasQ`: al abrir/cerrar la acción (RETOMAR, VOLVER AL DETALLE, ACEPTAR) el Detalle recarga solicitud, cabecera, gestiones CORE y tareas sin F5. Desde el aviso del analista la interfaz es de S2: **no se vuelve a tocar** |
+| `SCA2 CMD Posponer` | `0000f06f-8a47-8000-6751-7f0000014e7a` | 5 → **6** (13:01 UTC, antes del aviso de S4) | PVs nuevas `listaNombreDocs` (Text[]), `nuuma`, `docsRes`, `docsErr`; nodo 8 «Subir documentos GD» entre «Observación CORE» y «Write Posponer»; el nodo 202 «¿Error SGC/Obs/Docs?» incluye `pv!docsErr`. Todo lo previo (Cargar → ¿Ya ejecutado? → Alta gestión SGC → Observación CORE → Write → ¿Write fail? → SCA2 Error) conservado. S4 debe partir de v6 |
+| `SCA2_AccionesAdministrativasPrincipal` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056429` | 18 → **19** | `processParameters` de POSPONER: `listaNombreDocs: if(a!defaultValue(local!noEntregaDoc,false), {}, local!listaNombreDocs)`, `nuuma: local!nuuma` |
+| `SCA2_DetalleTareas` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055554` | 9 → **10** (13:15 UTC, tras el ciclo) | ACEPTAR del popup CORRECTO con tarea MECANIZAR: en vez de `a!save(ri!tipoAccion/ri!idTareaAccion/ri!accionAbierta)` (parámetros de URL del site vía `SCA2_Buscador` → `SCA2_DetalleSolicitud`, que en este ciclo dejaron el Detalle sin acción), guarda `local!pantallaTras:"MECANIZACION"` y `local!idTareaTras` y renderiza `SCA2_MecanizacionPrincipal(idTarea: a!defaultValue(local!idTareaTras, ri!idTareaAccion))` en la misma cadena, como SCA. VOLVER AL DETALLE limpia ambos locales. Test LCP: `tipoAccion:"MECANIZAR", idTareaAccion:43` → pantalla con ANULAR PÓLIZA; `ACCIONES ADMINISTRATIVAS, 42` → AccAdm sin cambios |
+
+Sin cambios en esta ronda: `SCA2_AccionesAdministrativasDocumentacion` v3, `SCA2 CMD CompletarAccion` (v26 mío en ronda 2; hoy v31 de S5), `SCA2_posponerGestionSGC` v1, `SCA2_subirDocumentosGD` v5 (S5), `SCA2_puedeGestionarTarea` v3, `SCA2_Buscador` v13.
+
+Fragmento del nodo 8 del CMD Posponer (`a!localVariables(local!docs: reject(fn!isnull, a!defaultValue(pv!listaNombreDocs,{})), if(a!isNullOrEmpty(local!docs), a!map(success:true, omitido:true, numDocumentos:0), rule!SCA2_subirDocumentosGD(codSolicitud: pv!idSolicitud, listaNombreDocs: local!docs, tipoGestion: a!defaultValue(pv!tipoAccion,"ACCADM"), nuuma: a!defaultValue(pv!nuuma, index(index(pv!sol,"datosPerfilesPca",null),"nuuma",null)))))`; salidas `docsRes`, `docsErr = not(success)`, y `wrNodo/wrCodigo = "Subir documentos GD"/"DOC_GD_FAIL"` si falla (para `SCA2 Error`). Es reutilizable por S4 igual que `SCA2_posponerGestionSGC` (§8.5): basta pasar `listaNombreDocs` (`<idDocAppian>_<tipoDocumento>`) y `tipoAccion` (`ACCADM`/`AUT`/`CA`).
+
+Sobre la no-redirección: en el ciclo CA de S2 (15787726, misma `SCA2_DetalleTareas` v9) la redirección sí funcionó; en AccAdm el mismo ACEPTAR cambió la URL del site pero el Detalle se abrió sin acción (`tipoAccion` vacío). No se ha podido aislar la causa (posible interacción entre el `submit: true` del FINALIZAR de AccAdm envuelto en `a!submitUploadedFiles` y la persistencia de parámetros de URL); v10 elimina la dependencia de la URL para este paso. **Pendiente de re-prueba UI** (requiere un FINALIZAR nuevo → póliza nueva).
+
+### 9.5 Lectura final SCA2 vs SCA (13:16–13:25 UTC, sin repetir ninguna acción)
+
+| Paso | SCA (15787730 leído desde sca-site, solo lectura) | SCA2 (15787730) | Veredicto |
+|---|---|---|---|
+| Detalle inmediato tras ACEPTAR (13:07 → 13:17, sin F5; captura 21 y 22 tras 40 s) | SCA no vuelve al Detalle tras FINALIZAR (encadena la mecanización); al abrir el Detalle desde el buscador carga fresco | Cabecera PENDIENTE / NIVEL 1 / A FECHA; tarjeta **Mecanizacion** ya presente (tareas refrescadas por `refreshOnVarChange`), pero tarjeta AccAdm **Incompleta**, fecha fin «-» y una sola observación **hasta F5 (13:18:14)**, 10 min después de que CORE tuviera la gestión FINALIZADA | **≠ exclusiva SCA2 — no corregida aquí**: `local!gestionesCore` (`SCA2_consultaGestion`) se recalculó al cambiar `ri!tipoAccion` en el momento del ACEPTAR (CORE aún devolvía el estado anterior; retraso de CORE de hasta ~1 min visto también tras POSPONER) y ya no se vuelve a consultar. Propuesta para S2 (dueño de `SCA2_DetalleSolicitud` v27): `refreshInterval: 0.5` o `refreshAlways` en `local!gestionesCore` mientras haya tarea PENDIENTE / gestión INCOMPLETA, o recarga de la página del site al cerrar la acción |
+| Detalle tras F5 (captura 23) | AccAdm **Finalizada** verde, inicio 30/09/2026 14:43:20, fin 15:06:06, observaciones «Prueba S3 ronda3 posponer SCA2,Prueba S3 ronda3 finalizar SCA2», documentos Justificante compra `0900ab4481a04e65` y Dni `0900ab4481a04e63` (30/09/2026), RED MAPFRE / OFICINA / JJGONZ2 | idéntico | = |
+| Tarjeta Mecanizacion (captura 23b vs 27) | Incompleta naranja, inicio 15:06:25 / fin «-», «Datos de la gestión» NSE-Autos / MECANIZACIÓN INCOMPLETA, centro emisor y situación Autemis «-»; botones: solo TRAZAR ANULACIÓN (gris) | mismos datos (tarjeta de S2, v27); botones RETOMAR + TRAZAR ANULACIÓN (gris) | = datos; RETOMAR visible en SCA2 porque `SCA2_puedeGestionarTarea` v3 permite al nivel 1 coger la tarea del pool (SCA exige asignación previa; ya documentado en §8.6) |
+| RETOMAR Mecanizacion → pantalla NSE-Autos (13:18:57, captura 24) | pantalla de mecanización de SCA (ronda 1/2, 15787700) | «Detalle consulta NSE-Autos»: póliza 2001900003516, causa NO VOY A COMPRARME OTRO COCHE, fecha 30/09/2026, importe 683.94, reserva prima Sí, nivel PENDIENTE DE AUTORIZAR, avisos «El cálculo de esta solicitud de anulación es provisional…» / «Las condiciones de anulación de la póliza se han modificado…», botones VOLVER AL DETALLE / CANCELAR / **ANULAR PÓLIZA (no pulsado)** | = (misma pantalla que en §8.2; ANULAR/TRAZAR no pulsados) |
+| VOLVER AL DETALLE (13:19:26, captura 25) | — | Detalle con AccAdm Finalizada, ambas observaciones y documentos conservados | = |
+| Buscador SCA2 (captura 26) | Pendiente | 15787730 **Pendiente** naranja, fecha 30/09/2026 14:43:04, causa «No Coche Nuevo», resolución «-» | = |
+| Botón «ver documento» | icono ojo **rojo** | icono ojo **gris** | ≠ menor exclusiva SCA2 (estilo de tarjeta → S2) |
+| Observación técnica en el Detalle SCA | SCA muestra además una observación técnica «Consulta NEW: codMotivo: 0001 codDetalle: 0004 codCausa: 0012…» | no aparece | ≠ menor; procede de la traza del alta en CORE; el Detalle es de S2 — documentado, sin corregir |
+
+### 9.6 Divergencias ronda 3 — clasificación
+
+1. **Corregidas (exclusivas de SCA2)**: documentos perdidos tras POSPONER → RETOMAR (CMD Posponer v6 + Principal v19, verificado por UI: FINALIZAR habilitado y 2 documentos en CORE/Detalle); ACEPTAR del popup CORRECTO que no abría la mecanización en AccAdm (`SCA2_DetalleTareas` v10, **pendiente de re-prueba UI**).
+2. **Verificadas iguales a la primera desde la UI**: alta → AccAdm directa; POSPONER con gestión SGC (233844109) persistida en el record; RETOMAR; FINALIZAR (CMD 16283229 COMPLETED sin error, CORE 3 FINALIZADA + 5 INCOMPLETA, `codEstSolic=2`, `PDTE_MECANIZAR`, tarea MECANIZAR); documentos iguales que SCA en Detalle y `SCA2_consultarDocumentos` sin reposición LCP; pantalla NSE-Autos; buscador Pendiente.
+3. **Exclusivas de SCA2, no corregidas en esta ronda (propiedad de S2 — `SCA2_DetalleSolicitud`)**: Detalle con gestiones CORE obsoletas tras ACEPTAR hasta F5; icono ojo gris; observación técnica del alta ausente.
+4. **Comunes / externas**: retraso de `SCA2_consultaGestion` (CORE) de hasta ~1 min tras escribir observación/estado (mismo servicio que SCA).
+
+### 9.7 Limitaciones / pendientes ronda 3
+
+- `SCA2_DetalleTareas` v10 (redirección ACEPTAR → mecanización) validada solo por re-GET y `/test`; requiere un FINALIZAR nuevo (póliza nueva) para la re-prueba UI.
+- No se ha pulsado ANULAR PÓLIZA, CANCELAR, TRAZAR ANULACIÓN ni ninguna acción en SCA; FINALIZAR ejecutado una sola vez.
+- Refresco del Detalle tras ACEPTAR: documentado, corrección delegada a S2 por indicación del analista.
+- `/errores` sin acceso para JJGONZ2 (diseño); ausencia de `SCA2 Error` comprobada por LCP.
+
+### 9.8 Evidencias ronda 3 (fuera del repo)
+
+- Grabaciones: `s3-ronda3-ciclo-edited.mp4` (alta → documentos → POSPONER → Detalle), `s3-ronda3-continuacion-edited.mp4` (F5, REASIGNAR, RETOMAR, bloqueo documental), `s3-ronda3-finalizar-ui-edited.mp4` (RETOMAR → 2 documentos → FINALIZAR → CORRECTO → ACEPTAR), `s3-ronda3-lectura-final-edited.mp4` (refresco 0 s/40 s/F5, NSE-Autos, buscador, SCA lectura).
+- Capturas `~/sca2work/shots/ronda3/05…27` (18 dos documentos + FINALIZAR activo, 19/19b CORRECTO y redirección, 20 destino Detalle, 21/22/23 refresco, 24 NSE-Autos, 25 vuelta, 26 buscador, 27 Detalle SCA completo) y log `ciclo-clicks-utc.txt`.
+- Backups SAIL/JSON antes/después: `~/sca2work/fix/` (`put_posponer_v6.py`, `put_principal_v19.py`, `put_detalle_refresh_v23.py`, `put_detalletareas_v10.py`) y `~/sca2work/live/` (`pm_posponer_before6_*/after6_*`, `proc_12088505.json`, `proc_16283229.json`).
