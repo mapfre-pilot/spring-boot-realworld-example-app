@@ -259,3 +259,63 @@ No se modificó `SCA2 CMD CompletarAccion` (S5) ni ningún objeto de SCA/SCAC/CO
 ### 9.6 Decisión técnica a revisar
 
 Devin Bot pidió persistir `fecSolicitud`/`observaciones` en `SCA2 Solicitud`. Se ha hecho **sin cambiar el esquema**: `CMD Alta` ya escribía el record relacionado `SCA2 Datos Solicitud` (1:N), cuyos campos `fecsolicitudanul` y `fecimpresion` contienen la fecha CORE y las observaciones del Alta, y el buscador los lee por la relación `datosSolicitud`. Si se prefiere un campo propio en `SCA2 Solicitud` (y que los CMD que modifican observaciones lo actualicen), hay que añadirlo al record type/tabla: no se ha hecho para no alterar el modelo compartido con S2/S3/S5.
+
+## 10. Ronda 3 — cierre POSITIVO con éxito en SCA2 (póliza 2002000032929 → 15787723) y causa del «Pendiente» del buscador SCA
+
+Encargo de Devin Bot: (1) Alta + Contra Anular + POSITIVO + ACEPTAR en SCA2 con `2002000032929`; (2) solo si `IContraAnularPCA` volvía a fallar, repetir la secuencia en SCA con `2002000021967` y comparar la integración SCA2 con la de SCA/SCAC. **El caso (2) no se activó**: `IContraAnularPCA` respondió y la contra anulación quedó FINALIZADA POSITIVA en CORE; la póliza `2002000021967` queda sin usar (sin solicitud). No se relanzaron 15787719/15787722 ni se tocó `SCA2 CMD CompletarAccion` (5.7, S5).
+
+### 10.1 Solicitud creada y estados finales (LCP, 30/09/2026)
+
+| Póliza | App | idSolicitud | Alta (gestión CORE) | Contra Anular (gestión CORE) | `consultarSolicitudes` | Record `SCA2 Solicitud` | Instancia `SCA2 CMD CompletarAccion` |
+|---|---|---|---|---|---|---|---|
+| 2002000032929 | SCA2 | **15787723** | 43704877, acción 8, FINALIZADA, 13:55:35 | 43704878, acción 2, **FINALIZADA POSITIVA**, inicio 13:55:57, fin **13:57:55** | `codEstSolic=2`, `fecResolucion=30/09/2026 13:57:55` | `FINALIZADA_POSITIVO`, `interfazActiva=FIN`, `procesoActivo=null`, `estadoTarea=PENDIENTE`, version 5 | processId 17325327, PM **v24.0**, COMPLETED (11:57:49.890Z → 11:57:58.410Z), `idTarea=32`; `wrErr=false`, `caSuccess=true`, `caBody` con `<respuesta>true</respuesta>`, `estadoFinalizar=3`, `mcaEstadoFinal=3`, `finalizadoCA=true`, `docsResult={success:true, numDocumentos:0, numSubidos:0}`; `SCA2_contarErroresPendientes=0` |
+
+Único ACEPTAR de la confirmación «¡Enhorabuena en la retención de la póliza!…»: `2026-09-30T11:57:49.393Z`; la instancia del CMD arranca 0,5 s después y CORE cierra la gestión a las 13:57:55 (hora local). Payload enviado por la integración SCA2 (`resultado.finalizarCAPca`): `MSEFinalizarContraAnulPca{mcaEstadoFinal:"3", nivelIntervencion:1, codSolicitud:"15787723", infoUsuario{codCiaUsuario:"41", nuuma:"JJGONZ2", codPerfil:"CE_RM", codSubPerfil:"CE_RM_OFICINA"}}`.
+
+### 10.2 Tabla paso a paso ronda 3 (SCA2 con 2002000032929; SCA en lectura sobre la misma solicitud)
+
+| Paso | SCA (referencia) | SCA2 | Veredicto |
+|---|---|---|---|
+| Buscador por póliza nueva | «Sin resultados» + Alta | Igual (captura 100) | igual |
+| Alta (DECISION DE CLIENTE / PRECIO / ME HA SUBIDO MUCHO LA PRIMA, PRESENCIAL, 03/04/2027, obs. «Prueba S1 Devin ciclo4») → Guardar | Aviso y navegación directa a Contra Anular | «Determinando la acción…» → OK → Contra Anular directamente (101–104) | igual |
+| Argumentarios GAIA | 8 argumentos, obligatorio según póliza | 8 argumentos; obligatorio INCREMENTO PRIMA PLATINO (105) | igual |
+| POSITIVO → confirmación | Un bloque «¡Enhorabuena…! Se van a finalizar las acciones de contra anulación en SCA. ¿Desea continuar?» | Un solo bloque, formulario oculto (106) | igual |
+| ACEPTAR → retorno | Vuelve **directo** al buscador (un solo ACEPTAR) | Vuelve directo al buscador; sin «Los datos se han guardado…», sin «CORRECTO», sin error (107) | **igual — 5.4 verificada en la rama de éxito** |
+| Buscador tras el cierre | **Pendiente**, resolución «-» (110), también tras F5 a las 12:01:51Z (112, 115) | «Finalizada positivo», resolución `30/09/2026 13:57:57` (108) | divergencia — ver 10.3 |
+| Detalle de la gestión | Contra Anulación **Finalizada Positiva**, fin 13:57:55, JJGONZ2 RED MAPFRE/OFICINA nivel 1, argumento PLATINO Positivo verde (113) | Primera carga «Incompleta» (109, estado transitorio: la pantalla se abrió ~1 s antes de que CORE cerrara la gestión); tras F5 **Finalizada Positiva**, fin 13:57:55, mismos datos (111, 114) | igual (tarjeta CORE) |
+| F5 sobre la URL de la acción (`…/page/buscador?$sp=…`) | «La tarea solicitada no está disponible» | Detalle con la tarjeta WARN «La tarea solicitada no está disponible», no reabre el formulario (116) | igual (5.5) |
+| Instancia CMD | n/a | COMPLETED, no pausada, sin `SCA2 Error` | ok |
+
+Diferencia menor de 2 s en la «resolución» del buscador SCA2 (`13:57:57` = `modifiedAt` del record escrito por el nodo `Write PDTE_FINALIZAR`) frente a la `fecResolucion` CORE (`13:57:55`): SCA la lee de CORE. Pendiente de decidir si se persiste `fecResolucion` CORE en el record (CMD de S5) o se acepta la diferencia.
+
+### 10.3 Causa del «Pendiente» en el buscador SCA para las solicitudes cerradas desde SCA2 (divergencia exclusiva de SCA2, **no corregida**: objeto de S5)
+
+Comparando por LCP la solicitud cerrada desde **SCA** (15787701) con las cerradas desde **SCA2** (15787713 por LCP, 15787723 por UI), con gestiones CORE idénticas (alta FINALIZADA + CA FINALIZADA POSITIVA):
+
+| Solicitud | Cerrada por | `codEstSolic` ahora | Buscador SCA |
+|---|---|---|---|
+| 15787701 | SCA UI (12:22:52) | **3** | «Finalizada positivamente» |
+| 15787713 | SCA2 (LCP, 12:58:45) | 2 | Pendiente |
+| 15787723 | SCA2 UI (13:57:55) | 2 | Pendiente |
+
+- En SCA el POSITIVO arranca el PM **`SCA Finalizar Contra Anulacion`** (uuid `0003ee68-fcf2-8000-0e6e-7f0000014e7a`, v8; instancia 268956175, 10:22:52Z → 10:22:54Z, `completedTaskCount=10`): `92 Finalizar Contra Anulacion` (integración `finalizarContraAnulPca`) → `17 Success? SI` → `5 Guardar Trazabilidad` → `19 Resultado Contra Anulación = POSITIVO` → `24 Mapeo Poliza` → `25 Argumento RP?` → `15 Record a CDT` → **`7 SCA Finalizar Solicitud` (subproceso)** → `10 Delete TM` → `1 Borrar BBDD`.
+- El subproceso **`SCA Finalizar Solicitud`** (v46; instancia 268956176, 10:22:53Z → **10:25:02Z**, 2 min por el evento «2 minutos» del ramo Vida/SGC) llama a la integración **`finalizarSolicitud`** de CORE con `mseFinalizarSolicitud = {codSolicitud:"15787701", infoUsuarios{41, JJGONZ2, CE_RM, CE_RM_OFICINA}, datosAnulacion{fecVencimiento:2027-05-05, codCia:41, claveProduccion:5212067, numDocumento:01453487W, idClaseClaveProd:01}}` y CORE devuelve `mssFinalizarSolicitud.codEstado = "3"` → `codEstSolic` pasa de 2 a **3**; la `fecResolucion` no cambia (sigue 12:22:52).
+- Esto explica la lectura de la fase 2 (§3.1, paso 18): a las 12:22:52 vimos `codEstSolic=2` en SCA porque el subproceso aún no había terminado (lo hizo a las 12:25:02). **La conclusión «SCA no llama a `finalizarSolicitud` tras el cierre positivo» de la corrección 4.7 era incorrecta**: SCA sí lo hace, pero **después** de que CORE haya dejado la gestión FINALIZADA POSITIVA y con `datosAnulacion` completos. El cierre erróneo de 15787702 (`codEstSolic=5`, gestión INCOMPLETA) se produjo porque entonces `finalizarSolicitud` se llamaba **sin** que la CA hubiera quedado finalizada (payload vacío de `Finalizar CA PCA`, §3.1), no por llamarlo.
+- En SCA2, `SCA2 CMD CompletarAccion` (v24) termina en `End` tras `¿CA ok?` (rama «CA positiva» del XOR 200 añadida en 4.7) y **no** arranca `SCA2 CMD Finalizar` (uuid `0000f06f-1309-8000-65b3-7f0000014e7a`), por lo que la solicitud queda en CORE con `codEstSolic=2` («Pendiente» para el buscador de SCA, que mapea `codEstSolic`), aunque la gestión esté FINALIZADA POSITIVA y el record SCA2 en `FINALIZADA_POSITIVO`.
+- **Corrección propuesta (no aplicada; `SCA2 CMD CompletarAccion` y `CMD Finalizar` los está modificando S5 — 5.7)**: tras `320 ¿CA ok?` = éxito real de CORE (`respuesta=true`), arrancar `SCA2 CMD Finalizar` (o llamar a `finalizarSolicitud` en el mismo CMD) **antes** de escribir `FINALIZADA_POSITIVO`, con un payload equivalente al de SCA: hoy el nodo `5 Finalizar Solicitud` de `SCA2 CMD Finalizar` envía `codCiaUsuario:""` y **sin `datosAnulacion`** (`fecVencimiento`, `codCia`, `claveProduccion`, `idClaseClaveProd`, `numDocumento`), que SCA sí rellena desde los datos de póliza. Si se aplica, verificar con una póliza nueva que `codEstSolic` acaba en 3 y que el buscador SCA muestra «Finalizada positivamente».
+- Nota de orden: `finalizarSolicitud` solo debe invocarse cuando la CA haya quedado FINALIZADA POSITIVA; en caso contrario CORE deja `codEstSolic=5` con la gestión INCOMPLETA (caso 15787702).
+
+### 10.4 Comparación de integraciones (SCA2 vs SCAC), hecha antes de concluir
+
+`SCA2_finalizarContraAnulPcaIntegracion` (uuid `38e21b61-4811-4bfe-a514-65a5b55ec3b0`, v1) y `SCAC_finalizarContraAnulPcaIntegracion` (v1) usan el **mismo connected system** `_a-0000eb73-e3da-8000-9c41-011c48011c48_11566224` («SCAC SCA Core7», `https://core7.pre.mapfre.net:26007/`, HTTP Basic con usuario técnico), mismo `POST`, `relativePath = ri!endpoint`, `requestTimeout=30`, `Content-Type text/xml`, cuerpo SOAP y `RETURN_RAW`. Única diferencia: el input `consulta` es `Map` en SCA2 y el CDT `finalizarContraAnulPca` en SCAC. No hay diferencia de URL/connected system/timeout que corrija; los fallos de la ronda 2 fueron caídas de `IContraAnularPCA` (11:31 y 11:42 UTC), y en esta ronda el mismo objeto v1 cerró la gestión correctamente. **No se modificó ningún objeto en esta ronda.**
+
+### 10.5 Otras observaciones
+
+- 15787719 y 15787722 aparecen ahora en CORE con la CA **FINALIZADA POSITIVA** (fecFin 13:55:54 y 13:56:12) y `codEstSolic=2`: relanzadas desde `SCA2 Error` por otra sesión (S5), no por S1. Sirven como evidencia adicional de 10.3 (también «Pendiente» en el buscador SCA).
+- Objetos SCA2 de S1 al cierre (versiones vivas): `SCA2_Buscador` v13, `SCA2_BuscadorTabla` v6, `SCA2_AltaSolicitudPage` v4, `SCA2_ContraAnulacionModalRecuperacionPoliza` v4, `SCA2_ContraAnulacionOpciones` v25 (hoy v26 por S2), `SCA2_ContraAnulacionPrincipal` v4, `SCA2_DetalleTareas` v8, `SCA2_DetalleSolicitud` v21 (hoy v22 por otra sesión), `SCA2 CMD Alta` (nodo `Write Datos`, sin versión LCP). `SCA2 CMD CompletarAccion` en v24 (S5).
+
+### 10.6 Evidencias ronda 3 (fuera del repo)
+
+- Grabación `sca2_s1_ciclo4` (`~/screencasts/sca2_s1_ciclo4/sca2_s1_ciclo4-edited.mp4`).
+- Capturas (`~/sca2work/shots/`): `100_sca2_ciclo4_sin_resultados`, `101_sca2_alta_ciclo4_rellena`, `102_sca2_alta_generada_esperando`, `103_sca2_alta_ok`, `104_sca2_solicitud_15787723`, `105_sca2_argumentos_platino`, `106_sca2_confirmacion_positivo`, `107_sca2_aceptar_retorno_directo`, `108_sca2_buscador_finalizada`, `109_sca2_detalle_incompleta` (transitorio), `110_sca_buscador_pendiente`, `111_sca2_f5_finalizada_positiva`, `112_sca_buscador_tras_f5`, `113_sca_detalle_finalizada_positiva`, `114_sca2_detalle_comparativa`, `115_sca_buscador_final_tras_f5`, `116_sca2_f5_tarea_no_disponible`.
+- Volcados LCP usados en 10.3: `~/sca2work/live/pm_SCA_Finalizar_Contra_Anulacion.json`, `pm_SCA_Finalizar_Solicitud.json`, `pm_SCA_Contra_Anulación.json`, `pm_SCA2_CMD_Finalizar.json`.
