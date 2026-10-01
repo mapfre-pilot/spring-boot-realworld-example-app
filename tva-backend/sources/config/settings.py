@@ -140,12 +140,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # SECURITY AUTHENTICATION CONFIG
 # -------------------------------------------------------------
 # Stub de arch-ram-lib-django-auth (apps/core/auth.py):
-#   - ENVIRONMENT=local     → simplejwt HS256 con SECRET_KEY (crear_token_local)
-#   - resto de entornos     → RS256 contra el JWKS OIDC configurado abajo.
-if LOCAL_ENVIRONMENT:
-    _AUTH_CLASSES = ("apps.core.auth.LocalJWTAuthentication",)
-else:
-    _AUTH_CLASSES = ("apps.core.auth.OIDCJWTAuthentication",)
+#   JWTAuthentication despacha por `alg`: HS256 solo en LOCAL_ENVIRONMENT
+#   (crear_token_local), RS256 contra el JWKS OIDC configurado abajo.
+_AUTH_CLASSES = ("apps.core.auth.JWTAuthentication",)
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
@@ -164,9 +161,15 @@ SIMPLE_JWT = {
 
 # JWT OIDC (resto de entornos): token RS256 verificado contra el JWKS del IdP.
 OAUTH_JWKS_URI = os.environ.get("OAUTH_JWKS_URI", "")
-OAUTH_AUDIENCE = os.environ.get("OAUTH_AUDIENCE", "")
+# Audiencias admitidas separadas por comas (EntraID emite aud=client_id en v2
+# o aud=api://<client_id> en v1).
+OAUTH_AUDIENCE = [s.strip() for s in os.environ.get("OAUTH_AUDIENCE", "").split(",") if s.strip()]
 OAUTH_ISSUER = os.environ.get("OAUTH_ISSUER", "")
 OAUTH_JWKS_CACHE_TTL = int(os.environ.get("OAUTH_JWKS_CACHE_TTL", "3600"))
+# Roles aplicados cuando el token OIDC no trae claim `roles`.
+OAUTH_DEFAULT_ROLES = [
+    s.strip() for s in os.environ.get("OAUTH_DEFAULT_ROLES", "").split(",") if s.strip()
+]
 
 # DATABASE CONFIGURATION
 # -------------------------------------------------------------

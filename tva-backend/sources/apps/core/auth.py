@@ -5,18 +5,23 @@ JWT emitido por el IdP corporativo (OIDC) y exponer usuario + roles.
 
 Implementación local:
 
-- ``ENVIRONMENT=local`` → ``LocalJWTAuthentication`` valida tokens HS256
-  firmados con ``SECRET_KEY`` (se generan con ``manage.py crear_token_local``).
-- Resto de entornos → ``OIDCJWTAuthentication`` valida tokens RS256
-  contra el JWKS del IdP (``OAUTH_JWKS_URI``, ``OAUTH_AUDIENCE``,
-  ``OAUTH_ISSUER``) usando PyJWT[crypto].
+- ``JWTAuthentication`` despacha por el ``alg`` del token:
+  - ``HS256`` → firma local con ``SECRET_KEY``; solo permitido si
+    ``settings.LOCAL_ENVIRONMENT`` (tokens de ``crear_token_local``).
+  - ``RS256`` → JWKS del IdP OIDC (``OAUTH_JWKS_URI``,
+    ``OAUTH_AUDIENCE`` — lista separada por comas —, ``OAUTH_ISSUER``).
 
 Roles esperados en el claim ``roles`` (lista): ``TVA_USUARIO``,
-``TVA_ADMIN_PORTAL``, ``TVA_DEBUG``.
+``TVA_ADMIN_PORTAL``, ``TVA_DEBUG``. Si el token no trae roles se aplican
+``OAUTH_DEFAULT_ROLES``.
 
-Swap: sustituir ambas clases por la clase de autenticación de
-``arch-ram-lib-django-auth`` y eliminar ``LocalJWTAuthentication`` de
-``REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES']`` en settings.
+El ``sub`` del usuario es ``preferred_username`` → ``upn`` → ``sub`` →
+``oid`` (en EntraID ``sub`` es opaco; las sesiones se asocian por ese
+valor, igual que hace el frontend).
+
+Swap: sustituir esta clase por la autenticación de
+``arch-ram-lib-django-auth`` manteniendo ``LOCAL_ENVIRONMENT`` para los
+tokens locales de desarrollo.
 """
 
 import logging
@@ -63,23 +68,42 @@ def _decode_rs256(token: str) -> dict:
     if _jwks_client is None:
         if not settings.OAUTH_JWKS_URI:
             raise exceptions.AuthenticationFailed("OAUTH_JWKS_URI no configurado")
-        _jwks_client = PyJWKClient(settings.OAUTH_JWKS_URI, cache_keys=True)
+        _jwks_client = PyJWKClient(
+            settings.OAUTH_JWKS_URI,
+            cache_keys=True,
+            lifespan=settings.OAUTH_JWKS_CACHE_TTL,
+        )
     signing_key = _jwks_client.get_signing_key_from_jwt(token)
+    audience = settings.OAUTH_AUDIENCE or None
     return jwt.decode(
         token,
         signing_key.key,
         algorithms=["RS256"],
-        audience=settings.OAUTH_AUDIENCE or None,
+        audience=audience,
         issuer=settings.OAUTH_ISSUER or None,
-        options={"verify_aud": bool(settings.OAUTH_AUDIENCE), "verify_iss": bool(settings.OAUTH_ISSUER)},
+        options={"verify_aud": bool(audience), "verify_iss": bool(settings.OAUTH_ISSUER)},
     )
 
 
-class _BaseJWTAuthentication(authentication.BaseAuthentication):
-    """Extrae y valida el bearer token, devolviendo un TokenUser."""
+def _sub_de(claims: dict) -> str:
+    return str(
+        claims.get("preferred_username")
+        or claims.get("upn")
+        or claims.get("sub")
+        or claims.get("oid")
+        or ""
+    )
 
-    def decode(self, token: str) -> dict:  # pragma: no cover - interface
-        raise NotImplementedError
+
+def _roles_de(claims: dict) -> list[str]:
+    roles = claims.get("roles") or claims.get("role") or settings.OAUTH_DEFAULT_ROLES
+    if isinstance(roles, str):
+        roles = [roles]
+    return list(roles)
+
+
+class JWTAuthentication(authentication.BaseAuthentication):
+    """Autenticación unificada: despacha por ``alg`` del JWT (HS256 local / RS256 OIDC)."""
 
     def authenticate(self, request):
         header = authentication.get_authorization_header(request).decode()
@@ -87,28 +111,30 @@ class _BaseJWTAuthentication(authentication.BaseAuthentication):
             return None
         token = header.removeprefix("Bearer ").strip()
         try:
-            claims = self.decode(token)
+            alg = (jwt.get_unverified_header(token).get("alg") or "").upper()
+            if alg == "HS256":
+                if not settings.LOCAL_ENVIRONMENT:
+                    raise exceptions.AuthenticationFailed(
+                        "Tokens HS256 locales solo en ENVIRONMENT=local"
+                    )
+                claims = _decode_hs256(token)
+            elif alg == "RS256":
+                claims = _decode_rs256(token)
+            else:
+                raise exceptions.AuthenticationFailed(f"Algoritmo JWT no soportado: {alg or 'desconocido'}")
         except exceptions.AuthenticationFailed:
             raise
         except Exception as exc:
             logger.warning("JWT inválido: %s", exc)
             raise exceptions.AuthenticationFailed("Token inválido o expirado") from exc
-        roles = claims.get("roles") or claims.get("role") or []
-        if isinstance(roles, str):
-            roles = [roles]
-        user = TokenUser(sub=str(claims.get("sub") or claims.get("oid") or ""), roles=list(roles), claims=claims)
+        user = TokenUser(sub=_sub_de(claims), roles=_roles_de(claims), claims=claims)
         return (user, token)
 
 
-class LocalJWTAuthentication(_BaseJWTAuthentication):
+# Alias finos por compatibilidad con imports existentes.
+class LocalJWTAuthentication(JWTAuthentication):
     """HS256 con SECRET_KEY — solo para ENVIRONMENT=local."""
 
-    def decode(self, token: str) -> dict:
-        return _decode_hs256(token)
 
-
-class OIDCJWTAuthentication(_BaseJWTAuthentication):
+class OIDCJWTAuthentication(JWTAuthentication):
     """RS256 contra el JWKS OIDC corporativo."""
-
-    def decode(self, token: str) -> dict:
-        return _decode_rs256(token)

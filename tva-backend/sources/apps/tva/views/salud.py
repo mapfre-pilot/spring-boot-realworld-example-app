@@ -22,6 +22,13 @@ class SaludView(APIView):
                 "properties": {
                     "status": {"type": "string"},
                     "version": {"type": "string"},
+                    "auth": {
+                        "type": "object",
+                        "properties": {
+                            "local": {"type": "boolean"},
+                            "oidc": {"type": "boolean"},
+                        },
+                    },
                     "integraciones": {
                         "type": "object",
                         "properties": {
@@ -41,6 +48,10 @@ class SaludView(APIView):
             {
                 "status": "ok",
                 "version": "1.0.0",
+                "auth": {
+                    "local": settings.LOCAL_ENVIRONMENT,
+                    "oidc": bool(settings.OAUTH_JWKS_URI),
+                },
                 "integraciones": {
                     "apilife": settings.APILIFE_MODE,
                     "misv": settings.MISV_MODE,
