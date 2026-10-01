@@ -5,7 +5,12 @@ import { AuthService } from '@tva/core';
 import { LoginPage } from './login.page';
 
 describe('LoginPage', () => {
-  const auth = { login: jest.fn() };
+  const auth = {
+    login: jest.fn(),
+    authMode: 'local',
+    autenticado: () => false,
+    loginOidc: jest.fn(),
+  };
   const router = { navigate: jest.fn() };
   const create = createComponentFactory({
     component: LoginPage,
@@ -24,5 +29,25 @@ describe('LoginPage', () => {
     s.component['entrar']();
     expect(spy).toHaveBeenCalledWith('tok123');
     expect(router.navigate).toHaveBeenCalledWith(['/']);
+  });
+});
+
+describe('LoginPage (oidc)', () => {
+  const router = { navigate: jest.fn() };
+  const createO = createComponentFactory({
+    component: LoginPage,
+    providers: [
+      {
+        provide: AuthService,
+        useValue: { login: jest.fn(), authMode: 'oidc', autenticado: () => true },
+      },
+      { provide: Router, useValue: router },
+    ],
+  });
+
+  it('redirige a / si ya está autenticado', () => {
+    const s = createO();
+    expect(router.navigate).toHaveBeenCalledWith(['/']);
+    void s;
   });
 });

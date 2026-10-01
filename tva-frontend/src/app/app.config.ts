@@ -4,7 +4,9 @@ import {
   ApplicationConfig,
   DEFAULT_CURRENCY_CODE,
   LOCALE_ID,
+  provideAppInitializer,
   provideZonelessChangeDetection,
+  inject,
 } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
@@ -12,7 +14,7 @@ import { provideAuth } from 'angular-auth-oidc-client';
 
 import { EnvironmentConfig, provideEnvironment } from '@mapfre-tech/ngx-multienvironment/core';
 
-import { provideTvaCore } from '@tva/core';
+import { AuthService, provideTvaCore } from '@tva/core';
 
 import { routes } from './app.routes';
 
@@ -29,9 +31,16 @@ export function appConfig(env: string, envConfig: EnvironmentConfig): Applicatio
               clientId: auth['clientId'],
               scope: auth['scope'],
               redirectUrl: auth['redirectUrl'],
+              postLogoutRedirectUri: auth['postLogoutRedirectUri'],
               responseType: 'code',
+              silentRenew: true,
+              useRefreshToken: true,
+              renewTimeBeforeTokenExpiresInSeconds: 60,
+              autoUserInfo: false,
+              ignoreNonceAfterRefresh: true,
             },
           }),
+          provideAppInitializer(() => inject(AuthService).inicializarOidc()),
         ]
       : [];
 

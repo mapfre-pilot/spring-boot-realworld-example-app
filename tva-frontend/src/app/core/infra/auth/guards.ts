@@ -6,6 +6,11 @@ import { AuthService } from './auth.service';
 export const authGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   if (auth.autenticado()) return true;
+  // En OIDC la redirección va al IdP, no a /login.
+  if (auth.authMode === 'oidc') {
+    auth.loginOidc();
+    return false;
+  }
   return inject(Router).createUrlTree(['/login']);
 };
 

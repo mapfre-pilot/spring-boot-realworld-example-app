@@ -16,6 +16,8 @@ export interface TvaEnvironmentConfig extends EnvironmentConfig {
     clientId?: string;
     scope?: string;
     redirectUrl?: string;
+    postLogoutRedirectUri?: string;
+    defaultRoles?: string[];
   };
   appianEmbed?: {
     baseUrl?: string;
