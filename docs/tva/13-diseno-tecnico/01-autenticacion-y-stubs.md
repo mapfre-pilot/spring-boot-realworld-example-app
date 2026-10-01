@@ -19,17 +19,17 @@ RS256 contra el JWKS del IdP corporativo (OIDC). En Angular, `AuthService` manti
 | # | Decision | Choice | Alternatives Rejected | Rationale |
 |---|----------|--------|------------------------|-----------|
 | 1 | Forma de las libs corporativas | Paquete real `@mapfre-tech/ngx-multienvironment` 4.0.0 (frontend) + stubs locales `arch-ram-lib-*` (backend, feed Python fuera de alcance) | Vendored forks, reescritura total | El feed npm está disponible con `~/.npmrc` + PAT; el frontend usa los tokens del paquete vía `EnvironmentService` propio |
-| 2 | Doble backend JWT | `LocalJWTAuthentication` (HS256) + `OIDCJWTAuthentication` (RS256/JWKS) elegidos por `ENVIRONMENT` | Solo OIDC, solo mock header | Desarrollo offline sin IdP; producción con el mismo claim `roles` |
+| 2 | Backend JWT unificado | Una única `JWTAuthentication` (apps/core/auth.py) que despacha por `alg` del header: `HS256` → secreto local (solo si `LOCAL_ENVIRONMENT`); `RS256` → JWKS OIDC (`OAUTH_JWKS_URI`) | Una clase por modo, mock header | Mismo middleware para todos los entornos; el algoritmo decide, no la config |
 | 3 | Usuario autenticado | `TokenUser` dataclass (`sub`, `roles`, `claims`), sin modelo User de Django | `django.contrib.auth` | La app no gestiona usuarios; el JWT corporativo es la fuente de verdad |
 | 4 | Token en frontend | `localStorage` + signals (`token`, `roles`, `autenticado`) | Cookies, sessionStorage | Mismo esquema que el portal; almacenable por clave configurable `tokenStorageKey` |
 | 5 | Multi-entorno | `initMultiEnvironmentApp` (paquete real); el artefacto SPA se empaqueta con `assets/environments.json` de una sola clave → el paquete no muestra selector (patrón documentado) | Selector interactivo del paquete, build-time fileReplacements | Un solo build para todos los entornos sin selector en UI |
-| 6 | OIDC en frontend | `angular-auth-oidc-client` inicializado solo si `auth.mode==='oidc'`; login documentado como TODO | Implementar flujo completo sin IdP | Sin IdP accesible no se puede probar end-to-end; se deja el punto de conexión |
+| 6 | OIDC en frontend | `angular-auth-oidc-client` inicializado solo si `auth.mode==='oidc'` (entorno `local-sso`/`pre`/`pro`); flujo code+PKCE completo contra EntraID; si el token no trae `roles` se aplican `auth.defaultRoles` | MSAL, selector de entorno siempre visible | Misma app registration para SPA+API (scope `tva.access`); roles por defecto configurables por entorno |
 
 ## Data Flow
 
 ```text
 HTTP Bearer token
-  → LocalJWTAuthentication | OIDCJWTAuthentication (apps/core/auth.py)
+  → JWTAuthentication (apps/core/auth.py): HS256 → decode local (solo LOCAL_ENVIRONMENT); RS256 → JWKS (OAUTH_JWKS_URI)
   → TokenUser(sub, roles) en request.user
   → views/_auth.py (es_admin / puede_ver_sesion) o IsTvaAdmin
   → respuesta 401/403 o recurso
@@ -43,7 +43,7 @@ Frontend: login page → token pegado en localStorage
 
 | File | Action | Description |
 |------|--------|-------------|
-| `tva-backend/sources/apps/core/auth.py` | Create | `TokenUser`, `_decode_hs256`, `_decode_rs256` (PyJWKClient), `LocalJWTAuthentication`, `OIDCJWTAuthentication` |
+| `tva-backend/sources/apps/core/auth.py` | Create | `TokenUser`, `JWTAuthentication` (despacha por `alg`: HS256 local / RS256 JWKS), aliases `LocalJWTAuthentication`/`OIDCJWTAuthentication` |
 | `tva-backend/sources/apps/tva/views/_auth.py` | Create | `es_admin`, `puede_ver_sesion`, roles `ROLE_USUARIO`/`ROLE_ADMIN_PORTAL`/`ROLE_DEBUG` |
 | `tva-backend/sources/apps/tva/management/commands/crear_token_local.py` | Create | Genera JWT HS256 con `sub` y `roles` para desarrollo |
 | `tva-frontend/src/app/core/infra/auth/auth.service.ts` | Create | `AuthService` signals `token`, `roles`, `autenticado`; `login`/`logout` |
@@ -61,11 +61,15 @@ class TokenUser:
     claims: dict = field(default_factory=dict)
     def has_role(self, role: str) -> bool: ...
 
-class LocalJWTAuthentication(authentication.BaseAuthentication): ...
-class OIDCJWTAuthentication(authentication.BaseAuthentication): ...
+class JWTAuthentication(authentication.BaseAuthentication): ...  # despacha por alg
+# Aliases finos conservados: LocalJWTAuthentication, OIDCJWTAuthentication
 
 # JWT payload esperado (local)
 { "sub": "ggalv10", "roles": ["TVA_USUARIO", "TVA_ADMIN_PORTAL"], "iat": ..., "exp": ... }
+
+# JWT payload esperado (EntraID, accessTokenAcceptedVersion: 2)
+{ "sub": "<opaco>", "preferred_username": "op@mapfre.net", "roles": [...], "aud": "<client_id>", "iss": "https://login.microsoftonline.com/<tenant>/v2.0" }
+# TokenUser.sub = preferred_username ?? upn ?? sub ?? oid; si no hay claim roles → OAUTH_DEFAULT_ROLES
 ```
 
 ```typescript

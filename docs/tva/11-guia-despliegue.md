@@ -219,6 +219,67 @@ arranque si falta alguna variable obligatoria. Comprobar con
 | RIC | `RIC_MODE`, `RIC_BASE_URL`, `RIC_PATH`, `RIC_USERNAME`, `RIC_PASSWORD` | Regla cross-app `MU_ObtenerClienteRIC` (Appian DEV usa mock bajo `TVA_FLAG_SIMULAR_BUSQUEDA_CLIENTE_RIC`) | `GET {RIC_BASE_URL}/{RIC_PATH}?documento=<nif>` | `smoke_integraciones --solo ric --nif <nif>` | Implementado; **contrato por confirmar con los dueños de MU** |
 | Appian Embedded (pop-ups) | `APPIAN_EMBED_MODE`, `APPIAN_EMBED_BASE_URL`, `APPIAN_EMBED_API_KEY` | Web APIs `cmp-firma-rgpd`, `cmp-captura-dni`, `testIdoneidad`, `cmp-respuesta-componente` | `POST {base}/webapi/…` | `smoke_integraciones --solo appian` (solo config) | Real verificado contra TEST |
 
+## Login SSO con EntraID
+
+El frontend soporta Authorization Code + PKCE contra EntraID con
+`angular-auth-oidc-client` (sin MSAL). Se activa seleccionando un entorno con
+`auth.mode: "oidc"` en `public/assets/environments.json`.
+
+### Configuración de la app registration (Azure portal)
+
+1. Una única app registration sirve para SPA y API.
+   - `tenant`: `93ad25dd-8cdc-4066-9727-31a8a3024f80`
+   - `client_id`: `86cc156f-a83e-4c72-bd33-bcaca9ef9545`
+2. **Autenticación → Plataformas**: añadir plataforma **SPA** con redirect URI
+   `http://localhost:4200` (en pre/pro, la URL HTTPS del portal). No marcar
+   Implicit grant; usar "Authorization code with PKCE".
+3. **Exponer una API**: scope `tva.access` bajo
+   `api://86cc156f-a83e-4c72-bd33-bcaca9ef9545` y autorizar el propio
+   `client_id` como aplicación cliente.
+4. **Manifiesto**: `"accessTokenAcceptedVersion": 2` (el access token llega con
+   `iss` = `https://login.microsoftonline.com/<tenant>/v2.0` y `aud` = client_id).
+5. **Roles de aplicación (opcional)**: definir `TVA_USUARIO`, `TVA_ADMIN_PORTAL`
+   y `TVA_DEBUG` en el manifiesto y asignarlos a usuarios/grupos. Si el token no
+   trae `roles`, se aplican `OAUTH_DEFAULT_ROLES` (backend) y `auth.defaultRoles`
+   (frontend), ambos por defecto `TVA_USUARIO,TVA_ADMIN_PORTAL` en `local-sso`.
+
+### Backend
+
+```bash
+OAUTH_JWKS_URI=https://login.microsoftonline.com/93ad25dd-8cdc-4066-9727-31a8a3024f80/discovery/v2.0/keys
+OAUTH_ISSUER=https://login.microsoftonline.com/93ad25dd-8cdc-4066-9727-31a8a3024f80/v2.0
+OAUTH_AUDIENCE=86cc156f-a83e-4c72-bd33-bcaca9ef9545,api://86cc156f-a83e-4c72-bd33-bcaca9ef9545
+OAUTH_DEFAULT_ROLES=TVA_USUARIO,TVA_ADMIN_PORTAL
+# OAUTH_JWKS_CACHE_TTL=3600 (opcional)
+```
+
+`apps/core/auth.py` (clase `JWTAuthentication`) despacha por el `alg` del header
+JWT: `HS256` → decode local (solo si `ENVIRONMENT=local`); `RS256` → validación
+JWKS contra `OAUTH_JWKS_URI` con `issuer` y `audience` de las variables
+(`OAUTH_AUDIENCE` acepta lista separada por comas). `TokenUser.sub` =
+`preferred_username` ?? `upn` ?? `sub` ?? `oid`. `GET /salud/` informa
+`auth: {local, oidc}` según la configuración. En local conviven ambos modos
+(el `.env` puede tener los `OAUTH_*` activos sin afectar al login HS256).
+
+### Frontend
+
+El entorno `local-sso` de `environments.json` ya lleva authority/clientId/scope
+reales y `defaultRoles`. En desarrollo:
+
+```bash
+pnpm exec nx serve tva
+# abrir http://localhost:4200 → selector de entorno → elegir "local-sso"
+```
+
+Para cambiar entre `dev` y `local-sso`: en la consola del navegador
+`localStorage.removeItem('OKCD_APPLICATION_ENVIRONMENT')` y recargar → vuelve a
+aparecer el selector (o `localStorage.setItem('OKCD_APPLICATION_ENVIRONMENT',
+'local-sso')` + recargar para fijarlo). Al entrar, cualquier ruta protegida
+redirige a EntraID (authorize + PKCE); al volver, `AuthService.inicializarOidc()`
+(App initializer) completa el `checkAuth()` y fija el access token en la señal
+(no se guarda en localStorage; silent renew con refresh token activo). `/login`
+redirige a `/` si ya hay sesión; `Salir` llama a `logoffAndRevokeTokens()`.
+
 ## Estado de la implementación
 
 **Cubierto**: contrato real de `inicio` (indFunctionMode/companyId/distributionChannel/

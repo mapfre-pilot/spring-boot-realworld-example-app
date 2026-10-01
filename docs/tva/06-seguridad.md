@@ -78,3 +78,17 @@ miembros de `TVA WebApi Inicio`.
    de una regla).
 6. Los grupos de usuarios incluyen cuentas externas (tenant no productivo)
    junto a cuentas corporativas; conviene revisar su vigencia.
+
+## SSO con EntraID (implementación)
+
+- Backend: `JWTAuthentication` única (`apps/core/auth.py`) que despacha por `alg`
+  del JWT: `HS256` → secreto local (solo `ENVIRONMENT=local`); `RS256` → JWKS
+  (`OAUTH_JWKS_URI`, issuer y audience v2; `OAUTH_AUDIENCE` acepta lista por
+  comas). `TokenUser.sub` = `preferred_username` ?? `upn` ?? `sub` ?? `oid`;
+  si el token no trae `roles` se aplican `OAUTH_DEFAULT_ROLES`.
+- Frontend: `angular-auth-oidc-client` (code + PKCE, sin MSAL) solo cuando el
+  entorno tiene `auth.mode: "oidc"` (`local-sso`/`pre`/`pro`); el access token
+  no se persiste en localStorage (lo gestiona la librería) y `auth.defaultRoles`
+  cubre tokens sin claim `roles`.
+- Detalle de configuración (app registration, variables, prueba): § "Login SSO
+  con EntraID" de `11-guia-despliegue.md`.
