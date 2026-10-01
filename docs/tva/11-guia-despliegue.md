@@ -236,8 +236,12 @@ El frontend soporta Authorization Code + PKCE contra EntraID con
 3. **Exponer una API**: scope `tva.access` bajo
    `api://86cc156f-a83e-4c72-bd33-bcaca9ef9545` y autorizar el propio
    `client_id` como aplicación cliente.
-4. **Manifiesto**: `"accessTokenAcceptedVersion": 2` (el access token llega con
-   `iss` = `https://login.microsoftonline.com/<tenant>/v2.0` y `aud` = client_id).
+4. **Manifiesto**: `"requestedAccessTokenVersion": 2` (en el manifiesto antiguo
+   `"accessTokenAcceptedVersion": 2`). Sin esto EntraID emite un access token v1
+   (`iss` = `https://sts.windows.net/<tenant>/`) y el backend responde 403
+   «Token inválido o expirado». Con v2 llega `iss` =
+   `https://login.microsoftonline.com/<tenant>/v2.0` y `aud` = client_id.
+   Tras cambiarlo hay que cerrar sesión y volver a entrar para obtener un token nuevo.
 5. **Roles de aplicación (opcional)**: definir `TVA_USUARIO`, `TVA_ADMIN_PORTAL`
    y `TVA_DEBUG` en el manifiesto y asignarlos a usuarios/grupos. Si el token no
    trae `roles`, se aplican `OAUTH_DEFAULT_ROLES` (backend) y `auth.defaultRoles`
@@ -278,7 +282,14 @@ aparecer el selector (o `localStorage.setItem('OKCD_APPLICATION_ENVIRONMENT',
 redirige a EntraID (authorize + PKCE); al volver, `AuthService.inicializarOidc()`
 (App initializer) completa el `checkAuth()` y fija el access token en la señal
 (no se guarda en localStorage; silent renew con refresh token activo). `/login`
-redirige a `/` si ya hay sesión; `Salir` llama a `logoffAndRevokeTokens()`.
+redirige a `/` si ya hay sesión; `Salir` llama a `logoff()`.
+`maxIdTokenIatOffsetAllowedInSeconds: 600` tolera el desfase de reloj entre el
+puesto y EntraID (el id_token se rechazaba por `iat` con el valor por defecto).
+
+Verificado end-to-end el 2026-10-01 con `arqappian@mapfrenopro.onmicrosoft.com`:
+login → callback → `POST /inicio/ahorro/` 200 con token RS256 v2. Nota: el
+`username` del formulario de Inicio debe acabar en `@mapfre.net` (regla de
+negocio heredada de Appian); con el usuario de prueba hay que teclearlo a mano.
 
 ## Estado de la implementación
 
