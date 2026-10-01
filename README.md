@@ -15,3 +15,5 @@ Estructura:
 
 Arranque rápido: `docker compose up --build -d` → backend en http://localhost:8888; el SPA se sirve en desarrollo con `pnpm exec nx serve tva` (http://localhost:4200).
 Guía completa: [docs/tva/11-guia-despliegue.md](docs/tva/11-guia-despliegue.md).
+
+Opción recomendada para desarrollo local: [Dev Container TVA](.devcontainer/README.md).

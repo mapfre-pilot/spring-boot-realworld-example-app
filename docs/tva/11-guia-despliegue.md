@@ -5,6 +5,13 @@ Redis) desde un clon limpio de la rama `feature/tva`. El backend usa solo depend
 públicas; el frontend además necesita acceso al feed corporativo de Azure Artifacts
 (PAT, ver requisitos).
 
+## Opción recomendada: Dev Container
+
+Con VS Code, la extensión Dev Containers y Docker Desktop, clona `feature/tva` y ejecuta
+**Dev Containers: Reopen in Container**. El entorno instala e inicia el backend Django
+y el frontend Angular; consulta la [guía del Dev Container](../../.devcontainer/README.md)
+para configurar el PAT de Azure Artifacts y completar el primer inicio de sesión.
+
 ## Requisitos
 
 | Herramienta | Versión |

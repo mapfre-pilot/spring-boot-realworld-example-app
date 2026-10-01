@@ -1,0 +1,41 @@
+{
+  "name": "TVA (Angular + Django)",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "dev",
+  "workspaceFolder": "/workspaces/tva",
+  "shutdownAction": "stopCompose",
+  "forwardPorts": [4200, 8888],
+  "portsAttributes": {
+    "4200": {
+      "label": "TVA frontend",
+      "onAutoForward": "openBrowser"
+    },
+    "8888": {
+      "label": "TVA backend API",
+      "onAutoForward": "silent"
+    }
+  },
+  "otherPortsAttributes": {
+    "onAutoForward": "ignore"
+  },
+  "remoteEnv": {
+    "AZURE_ARTIFACTS_NPM_PAT_B64": "${localEnv:AZURE_ARTIFACTS_NPM_PAT_B64}",
+    "TVA_NPM_EMAIL": "${localEnv:TVA_NPM_EMAIL}"
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "bash .devcontainer/start-tva.sh",
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "angular.ng-template",
+        "nrwl.angular-console",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff"
+      ]
+    }
+  }
+}
