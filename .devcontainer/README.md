@@ -23,6 +23,19 @@
 En la primera carga, elige `dev` en el selector de entorno. Para entrar, copia el token
 de `.devcontainer/.tva-token` y pégalo en `/login`.
 
+## Login SSO con EntraID (opcional)
+
+No requiere secretos adicionales (la SPA usa PKCE y el backend solo valida el JWKS
+público del tenant). Edita `tva-backend/.env` dentro del contenedor y descomenta el
+bloque "EntraID" (`OAUTH_JWKS_URI`, `OAUTH_ISSUER`, `OAUTH_AUDIENCE`,
+`OAUTH_DEFAULT_ROLES`) manteniendo `ENVIRONMENT=local`; reinicia el backend con
+`bash .devcontainer/tva.sh stop && bash .devcontainer/tva.sh start` y comprueba que
+`http://localhost:8888/api/tva/v1/salud/` devuelve `"oidc": true`. En el navegador
+elige `local-sso` en el selector de entorno (o
+`localStorage.setItem('OKCD_APPLICATION_ENVIRONMENT','local-sso')` y recarga) y entra
+con un usuario del tenant. El contenedor necesita salida a `login.microsoftonline.com`.
+Detalle en [docs/tva/11-guia-despliegue.md](../docs/tva/11-guia-despliegue.md).
+
 ## Comandos auxiliares
 
 Desde la raíz del repositorio, ejecuta `bash .devcontainer/tva.sh` con uno de estos
