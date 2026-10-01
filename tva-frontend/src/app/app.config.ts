@@ -38,6 +38,7 @@ export function appConfig(env: string, envConfig: EnvironmentConfig): Applicatio
               renewTimeBeforeTokenExpiresInSeconds: 60,
               autoUserInfo: false,
               ignoreNonceAfterRefresh: true,
+              maxIdTokenIatOffsetAllowedInSeconds: 600,
             },
           }),
           provideAppInitializer(() => inject(AuthService).inicializarOidc()),
