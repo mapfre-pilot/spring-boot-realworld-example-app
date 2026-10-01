@@ -12,7 +12,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
-import { combineLatest } from 'rxjs';
+import { combineLatest, firstValueFrom } from 'rxjs';
 
 import { EnvironmentService } from '../config/environment.service';
 
@@ -72,18 +72,20 @@ export class AuthService {
   }
 
   /** Arranque OIDC (app initializer, solo modo `oidc`): completa el code flow
-   *  tras el redirect del IdP y mantiene la señal tras silent renew. */
-  inicializarOidc(): void {
-    if (this.authMode !== 'oidc' || !this.oidc) return;
-    this.oidc.checkAuth().subscribe(({ isAuthenticated, accessToken }) => {
-      if (isAuthenticated) this.token.set(accessToken);
-    });
+   *  tras el redirect del IdP y mantiene la señal tras silent renew.
+   *  Resuelve tras el primer `checkAuth()` para que los guards no disparen
+   *  un `authorize()` antes de procesar el `code` del callback. */
+  inicializarOidc(): Promise<void> {
+    if (this.authMode !== 'oidc' || !this.oidc) return Promise.resolve();
     // Tras silent renew, refrescar la señal con el nuevo access token.
     combineLatest([this.oidc.isAuthenticated$, this.oidc.getAccessToken()]).subscribe(
       ([isAuth, accessToken]) => {
         if (isAuth && accessToken) this.token.set(accessToken);
       }
     );
+    return firstValueFrom(this.oidc.checkAuth()).then(({ isAuthenticated, accessToken }) => {
+      if (isAuthenticated) this.token.set(accessToken);
+    });
   }
 
   login(token: string): void {
@@ -99,7 +101,8 @@ export class AuthService {
   logout(): void {
     if (this.authMode === 'oidc' && this.oidc) {
       this.token.set(null);
-      this.oidc.logoffAndRevokeTokens().subscribe();
+      // EntraID no publica `revocation_endpoint` → logoff sin revocación.
+      this.oidc.logoff().subscribe();
       return;
     }
     this.token.set(null);

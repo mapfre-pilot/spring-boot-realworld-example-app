@@ -72,19 +72,18 @@ describe('AuthService (modo oidc)', () => {
   function setup(configAuth: Record<string, unknown>) {
     localStorage.clear();
     const oidc = {
-      checkAuth: jest
-        .fn()
-        .mockReturnValue(
-          of({
-            isAuthenticated: true,
-            accessToken: tokOidc({ preferred_username: 'op@mapfre.net' }),
-          })
-        ),
+      checkAuth: jest.fn().mockReturnValue(
+        of({
+          isAuthenticated: true,
+          accessToken: tokOidc({ preferred_username: 'op@mapfre.net' }),
+        })
+      ),
       isAuthenticated$: of({ isAuthenticated: true }),
       getAccessToken: jest
         .fn()
         .mockReturnValue(of(tokOidc({ preferred_username: 'op@mapfre.net' }))),
       authorize: jest.fn(),
+      logoff: jest.fn().mockReturnValue(of({})),
       logoffAndRevokeTokens: jest.fn().mockReturnValue(of({})),
     };
     TestBed.resetTestingModule();
@@ -99,35 +98,36 @@ describe('AuthService (modo oidc)', () => {
     return { auth: TestBed.inject(AuthService), oidc };
   }
 
-  it('checkAuth autenticado fija el token y el usuario (preferred_username)', () => {
+  it('checkAuth autenticado fija el token y el usuario (preferred_username)', async () => {
     const { auth } = setup({});
     expect(auth.authMode).toBe('oidc');
-    auth.inicializarOidc();
+    await auth.inicializarOidc();
     expect(auth.token()).not.toBeNull();
     expect(auth.usuario()).toBe('op@mapfre.net');
   });
 
-  it('aplica defaultRoles si el token no trae roles y los del claim tienen prioridad', () => {
+  it('aplica defaultRoles si el token no trae roles y los del claim tienen prioridad', async () => {
     const { auth } = setup({ defaultRoles: ['TVA_USUARIO', 'TVA_ADMIN_PORTAL'] });
-    auth.inicializarOidc();
+    await auth.inicializarOidc();
     expect(auth.roles()).toEqual(['TVA_USUARIO', 'TVA_ADMIN_PORTAL']);
     auth.token.set(tokOidc({ roles: ['TVA_DEBUG'] }));
     expect(auth.roles()).toEqual(['TVA_DEBUG']);
   });
 
-  it('no guarda el access token OIDC en localStorage y logout llama a logoff', () => {
+  it('no guarda el access token OIDC en localStorage y logout llama a logoff', async () => {
     const { auth, oidc } = setup({ tokenStorageKey: 'tva_token' });
-    auth.inicializarOidc();
+    await auth.inicializarOidc();
     expect(localStorage.getItem('tva_token')).toBeNull();
     auth.logout();
-    expect(oidc.logoffAndRevokeTokens).toHaveBeenCalled();
+    expect(oidc.logoff).toHaveBeenCalled();
+    expect(oidc.logoffAndRevokeTokens).not.toHaveBeenCalled();
     expect(auth.token()).toBeNull();
   });
 
-  it('inicializarOidc no hace nada en modo local', () => {
+  it('inicializarOidc no hace nada en modo local', async () => {
     const { oidc } = setup({ mode: 'local' });
     const auth = TestBed.inject(AuthService);
-    auth.inicializarOidc();
+    await auth.inicializarOidc();
     expect(oidc.checkAuth).not.toHaveBeenCalled();
   });
 });
