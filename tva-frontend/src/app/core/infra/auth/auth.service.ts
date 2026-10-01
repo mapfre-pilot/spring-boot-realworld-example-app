@@ -42,7 +42,8 @@ function usuarioDe(claims: JwtClaims): string {
 export class AuthService {
   private readonly env = inject(EnvironmentService);
   private readonly router = inject(Router);
-  private readonly oidc = inject(OidcSecurityService, { optional: true });
+  private readonly oidc: OidcSecurityService | null =
+    this.env.config['auth']?.['mode'] === 'oidc' ? inject(OidcSecurityService) : null;
 
   private readonly storageKey: string;
   readonly token = signal<string | null>(null);
