@@ -19,12 +19,18 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--fichero", default=str(FIXTURE), help="JSON de parámetros")
+        parser.add_argument(
+            "--solo-nuevos",
+            action="store_true",
+            help="Solo crea los parámetros que no existen (conserva los valores editados en Administración)",
+        )
 
     def handle(self, *args, **options):
         datos = json.loads(Path(options["fichero"]).read_text(encoding="utf8"))
         creados = actualizados = 0
+        guardar = Parametro.objects.get_or_create if options["solo_nuevos"] else Parametro.objects.update_or_create
         for item in datos:
-            _, created = Parametro.objects.update_or_create(
+            _, created = guardar(
                 clave=item["clave"],
                 defaults={
                     "valor": item.get("valor", ""),
@@ -35,4 +41,5 @@ class Command(BaseCommand):
             )
             creados += created
             actualizados += not created
-        self.stdout.write(self.style.SUCCESS(f"{creados} parámetros creados, {actualizados} actualizados"))
+        accion = "conservados" if options["solo_nuevos"] else "actualizados"
+        self.stdout.write(self.style.SUCCESS(f"{creados} parámetros creados, {actualizados} {accion}"))

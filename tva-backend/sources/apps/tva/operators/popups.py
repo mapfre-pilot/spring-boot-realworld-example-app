@@ -3,7 +3,8 @@
 import logging
 from datetime import date, datetime
 
-from django.conf import settings
+
+from apps.tva.services import configuracion
 
 from apps.tva.models import Sesion
 from apps.tva.schemas.errors import AvisosClase
@@ -60,7 +61,7 @@ def construir_body(sesion: Sesion, popup: str, idx_tomador: int, user) -> dict:
     doc = str(dp.get("documentId")).upper()
     email, telefono, tel_completo = _contacto(t)
     client_id = str((t.get("datosGestionParticipante") or {}).get("datosRIC", {}).get("clientId") or "")
-    avisos_email = settings.APPIAN_EMBED_EMAIL_AVISOS or f"{sub}@mapfre.com"
+    avisos_email = configuracion.obtener("APPIAN_EMBED_EMAIL_AVISOS") or f"{sub}@mapfre.com"
 
     if popup == "rgpd":
         return {
@@ -129,7 +130,7 @@ def lanzar_popup(sesion: Sesion, popup: str, idx_tomador: int, user) -> dict:
         "idxTomador": idx_tomador,
         "taskId": res["taskId"],
         "taskUrl": res["taskUrl"],
-        "modo": settings.APPIAN_EMBED_MODE,
+        "modo": configuracion.obtener("APPIAN_EMBED_MODE"),
     }
 
 

@@ -13,7 +13,8 @@ import logging
 from pathlib import Path
 
 import requests
-from django.conf import settings
+
+from apps.tva.services import configuracion
 
 from apps.core.httpclient import BaseHttpClient
 
@@ -46,12 +47,12 @@ class RealRicClient(RicClient):
 
     def __init__(self) -> None:
         self.http = BaseHttpClient(
-            base_url=settings.RIC_BASE_URL,
-            timeout=getattr(settings, "RIC_TIMEOUT", 30),
-            username=getattr(settings, "RIC_USERNAME", "") or "",
-            password=getattr(settings, "RIC_PASSWORD", "") or "",
+            base_url=configuracion.obtener("RIC_BASE_URL"),
+            timeout=configuracion.obtener("RIC_TIMEOUT"),
+            username=configuracion.obtener("RIC_USERNAME") or "",
+            password=configuracion.obtener("RIC_PASSWORD") or "",
         )
-        self.path = getattr(settings, "RIC_PATH", "personas") or "personas"
+        self.path = configuracion.obtener("RIC_PATH") or "personas"
 
     def buscar_cliente(self, documento: str) -> dict:
         try:
@@ -69,12 +70,15 @@ class RealRicClient(RicClient):
 
 
 _client: RicClient | None = None
+_huella: tuple | None = None
 
 
 def get_ric_client() -> RicClient:
-    global _client
-    if _client is None:
-        _client = RealRicClient() if settings.RIC_MODE == "real" else MockRicClient()
+    global _client, _huella
+    huella = configuracion.huella("ric")
+    if _client is None or huella != _huella:
+        _client = RealRicClient() if configuracion.obtener("RIC_MODE") == "real" else MockRicClient()
+        _huella = huella
     return _client
 
 

@@ -256,6 +256,37 @@ app-admin-panel .tabla {
   margin-bottom: 24px;
 }
 
+/* Configuración de conectores. */
+app-configuracion-admin .aviso {
+  margin: 0 0 16px;
+  color: var(--tva-text-muted, #666);
+}
+app-configuracion-admin .campos-configuracion {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+app-configuracion-admin .toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+app-configuracion-admin .resultado-prueba {
+  margin: 16px 0 0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  background: #ececec;
+}
+app-configuracion-admin .resultado-prueba.ok {
+  background: #e8f5e9;
+}
+app-configuracion-admin .resultado-prueba.error {
+  background: #fdecea;
+}
+
 /* Parámetros. */
 app-parametros-admin table {
   table-layout: fixed;

@@ -34,3 +34,15 @@ def api_client(db):
     from rest_framework.test import APIClient
 
     return APIClient()
+
+
+@pytest.fixture(autouse=True)
+def _configuracion_sin_cache(request, monkeypatch):
+    from apps.tva.services import configuracion
+
+    con_bd = {"db", "transactional_db"} & set(request.fixturenames) or request.node.get_closest_marker("django_db")
+    if not con_bd:
+        monkeypatch.setattr(configuracion, "_valores_bd", dict)
+    configuracion.invalidar()
+    yield
+    configuracion.invalidar()

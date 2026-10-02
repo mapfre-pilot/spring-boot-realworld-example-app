@@ -2,7 +2,13 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { Parametro, Traza } from '../../domain';
+import {
+  CambioConfiguracion,
+  CampoConfiguracion,
+  Parametro,
+  ResultadoPruebaConfiguracion,
+  Traza,
+} from '../../domain';
 import { EnvironmentService } from '../../infra/config/environment.service';
 import { AdminRepository } from '../../ports';
 
@@ -35,5 +41,23 @@ export class AdminHttpRepository implements AdminRepository {
     let params = new HttpParams();
     if (clave) params = params.set('clave', clave);
     return this.http.get<Traza[]>(`${this.base}/admin/trazas/`, { params });
+  }
+
+  configuracion(): Observable<CampoConfiguracion[]> {
+    return this.http.get<CampoConfiguracion[]>(`${this.base}/admin/configuracion/`);
+  }
+
+  guardarConfiguracion(cambio: CambioConfiguracion): Observable<CampoConfiguracion[]> {
+    return this.http.put<CampoConfiguracion[]>(`${this.base}/admin/configuracion/`, cambio);
+  }
+
+  probarConfiguracion(grupo: string, nif?: string): Observable<ResultadoPruebaConfiguracion> {
+    return this.http.post<ResultadoPruebaConfiguracion>(
+      `${this.base}/admin/configuracion/probar/`,
+      {
+        grupo,
+        nif: nif ?? '',
+      }
+    );
   }
 }

@@ -131,3 +131,23 @@ class Parametro(models.Model):
             return cls.objects.get(clave=clave).get_valor()
         except cls.DoesNotExist:
             return default
+
+
+class ConfiguracionIntegracion(models.Model):
+    """Valor de configuración de un conector editado desde Administración.
+
+    Sobrescribe la variable de entorno homónima; si ``secreto`` el valor
+    se guarda cifrado (ver ``apps.tva.services.configuracion``).
+    """
+
+    nombre = models.CharField(max_length=64, unique=True)
+    valor = models.TextField(blank=True, default="")
+    secreto = models.BooleanField(default=False)
+    actualizado = models.DateTimeField(auto_now=True)
+    actualizado_por = models.CharField(max_length=128, blank=True, default="")
+
+    class Meta:
+        db_table = "tva_configuracion"
+
+    def __str__(self) -> str:
+        return self.nombre

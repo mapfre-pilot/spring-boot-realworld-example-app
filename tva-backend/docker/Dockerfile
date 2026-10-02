@@ -29,5 +29,12 @@ COPY --chown=appuser:appgroup sources/ /local/
 # Add Poetry-installed executables (e.g. celery) to the PATH
 ENV PATH=/home/appuser/.local/bin:$PATH
 
+# Despliegue autónomo: al arrancar el WSGI se aplican migraciones y se crean los
+# parámetros TVA que falten (apps/tva/bootstrap.py). ENVIRONMENT != local activa
+# OIDC EntraID con los valores por defecto de config/settings.py. El manifiesto
+# puede sobrescribir cualquiera de estas variables.
+ENV TVA_AUTO_MIGRATE=true \
+    ENVIRONMENT=dev
+
 # Switch to non-root user
 USER appuser

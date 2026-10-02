@@ -5,7 +5,7 @@ de solo lectura e imprime OK/KO con la clase de error (sin credenciales).
 Exit code 1 si algún conector queda KO.
 """
 
-from django.conf import settings
+from apps.tva.services import configuracion
 from django.core.management.base import BaseCommand, CommandError
 
 from apps.tva.services.connectors import apilife, misv, perfil_usuario, ric
@@ -51,14 +51,14 @@ class Command(BaseCommand):
             return False
 
     def _apilife(self):
-        self.stdout.write(f"apilife  mode={settings.APILIFE_MODE}")
-        if settings.APILIFE_MODE == "real":
+        self.stdout.write(f"apilife  mode={configuracion.obtener('APILIFE_MODE')}")
+        if configuracion.obtener("APILIFE_MODE") == "real":
             apilife.reset_apilife_client()
             apilife.get_apilife_client().general_table("productos")
 
     def _misv(self, nif: str):
-        self.stdout.write(f"misv     mode={settings.MISV_MODE}")
-        if settings.MISV_MODE == "real":
+        self.stdout.write(f"misv     mode={configuracion.obtener('MISV_MODE')}")
+        if configuracion.obtener("MISV_MODE") == "real":
             if not nif:
                 self.stdout.write("misv     skip (sin --nif)")
                 return
@@ -66,23 +66,23 @@ class Command(BaseCommand):
             misv.get_misv_client().perfilar({"nif": nif})
 
     def _perfil(self, usuario: str):
-        self.stdout.write(f"perfil   mode={settings.PERFIL_USUARIO_MODE}")
-        if settings.PERFIL_USUARIO_MODE == "real":
+        self.stdout.write(f"perfil   mode={configuracion.obtener('PERFIL_USUARIO_MODE')}")
+        if configuracion.obtener("PERFIL_USUARIO_MODE") == "real":
             if not usuario:
                 raise CommandError("perfil-usuario real requiere --usuario")
             perfil_usuario.reset_perfil_usuario_client()
             perfil_usuario.get_perfil_usuario_client().obtener_perfil(usuario)
 
     def _ric(self, nif: str):
-        self.stdout.write(f"ric      mode={settings.RIC_MODE}")
-        if settings.RIC_MODE == "real":
+        self.stdout.write(f"ric      mode={configuracion.obtener('RIC_MODE')}")
+        if configuracion.obtener("RIC_MODE") == "real":
             if not nif:
                 raise CommandError("ric real requiere --nif")
             ric.reset_ric_client()
             ric.get_ric_client().buscar_cliente(nif)
 
     def _appian(self):
-        modo = settings.APPIAN_EMBED_MODE
+        modo = configuracion.obtener("APPIAN_EMBED_MODE")
         self.stdout.write(f"appian   mode={modo} (solo config, no se llama nada mutante)")
-        if modo == "real" and (not settings.APPIAN_EMBED_BASE_URL or not settings.APPIAN_EMBED_API_KEY):
+        if modo == "real" and (not configuracion.obtener("APPIAN_EMBED_BASE_URL") or not configuracion.obtener("APPIAN_EMBED_API_KEY")):
             raise CommandError("appian-embed real sin APPIAN_EMBED_BASE_URL/API_KEY")

@@ -121,7 +121,7 @@ Servicios (raíz `docker-compose.yml`):
 
 | Servicio | Puerto | Qué hace |
 |---|---|---|
-| `tva-backend` | 8888 | Dockerfile.public + `docker/entrypoint.sh` (migrate → cargar_parametros → gunicorn) |
+| `tva-backend` | 8888 | Dockerfile.public + `docker/entrypoint.sh` (migrate → cargar_parametros --solo-nuevos → gunicorn) |
 | `postgres` | 5432 | PostgreSQL 16 (volumen `postgres-data`) |
 | `redis` | 6379 | Redis 7 (cache/broker Celery) |
 
@@ -131,6 +131,52 @@ Verificación:
 curl http://localhost:8888/api/tva/v1/salud/     # backend
 docker compose down -v                          # parar y limpiar volúmenes
 ```
+
+## Despliegue AWS (arquetipo + ArgoCD)
+
+El workflow `tva-backend/.github/workflows/deploy.yml` delega en ArgoCD
+(`argocd-deploy.yml` + `MANIFEST_REPOSITORY`): **no crea infraestructura**. La base
+de datos PostgreSQL (RDS o la del arquetipo) y los secretos se declaran en el
+repositorio de manifiestos/infra. Lo que el backend hace solo al arrancar:
+
+| Qué | Cómo |
+|---|---|
+| Migraciones + parámetros | `docker/Dockerfile` fija `TVA_AUTO_MIGRATE=true`: cada worker ejecuta `migrate --fake-initial` y `cargar_parametros --solo-nuevos` al cargar el WSGI, serializado con `pg_advisory_lock` (`apps/tva/bootstrap.py`). Si Liquibase ya creó las tablas, las migraciones se marcan como aplicadas. Los valores editados en Administración no se pisan. |
+| Entorno no local | la imagen fija `ENVIRONMENT=dev` (el manifiesto puede poner `pre`/`pro`). `salud/` debe devolver `auth.local:false`. |
+| OIDC EntraID | con `ENVIRONMENT != local` y sin `OAUTH_*` se usan JWKS/issuer/audience de la App Registration TVA. |
+| CORS | además de `CORS_ALLOWED_ORIGINS`, se admite cualquier `https://*.plataforma.aws.mapfre.net` (`CORS_ALLOWED_ORIGIN_REGEXES`). |
+| Integraciones | Administración → **Configuración**: modo mock/real, URLs, usuarios y secretos por conector. |
+
+Contrato mínimo del manifiesto (variables del contenedor):
+
+| Variable | Tipo | Notas |
+|---|---|---|
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` | config | sin `DB_HOST` el backend usa SQLite **efímero** dentro del contenedor (avisa en el log; solo vale para pruebas con 1 réplica) |
+| `DB_PASSWORD` | secreto (Secrets Manager/SSM) | |
+| `SECRET_KEY` | secreto | estable entre despliegues: deriva la clave que cifra los secretos de Configuración |
+| `TVA_CONFIG_KEY` | secreto opcional | clave de cifrado independiente de `SECRET_KEY` |
+| `ENVIRONMENT` | config | `dev`/`pre`/`pro` |
+| `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS` | config | host backend / host frontend |
+
+El usuario de BD necesita permisos de DDL sobre su esquema (crea `tva_*` y
+`django_migrations`). Si la política del entorno exige DDL solo por Liquibase,
+aplica `tva-backend/db/liquibase/changelog/changelog.xml` antes y deja
+`TVA_AUTO_MIGRATE=true`: solo registrará las migraciones como aplicadas y cargará
+los parámetros.
+
+### Configuración de integraciones desde Administración
+
+Pestaña **Administración → Configuración** (rol `TVA_ADMIN_PORTAL`), API
+`GET/PUT /api/tva/v1/admin/configuracion/` y `POST .../probar/`:
+
+- Valor guardado en BD (`tva_configuracion`) > variable de entorno. "Volver a
+  valores del entorno" borra el valor de BD.
+- Los secretos se cifran (Fernet) y la API nunca los devuelve: solo `configurado`.
+  Un secreto vacío en el formulario conserva el actual.
+- Los cambios llegan a todos los workers/réplicas en ≤ 30 s, sin reiniciar; los
+  clientes de cada conector se recrean al cambiar su configuración.
+- "Probar conexión" ejecuta `smoke_integraciones --solo <grupo>` (lecturas).
+- La conexión a la base de datos no es configurable desde aquí (la pantalla la necesita).
 
 ### Entorno del frontend
 
@@ -151,7 +197,9 @@ artefacto se empaqueta con la clave correspondiente.
 | `DB_HOST`/`DB_NAME`/`DB_USER`/`DB_PASSWORD`/`DB_PORT` | — | Postgres; vacío → sqlite |
 | `REDIS_HOST` | localhost | Cache (django-redis) |
 | `CELERY_BROKER_URL`/`CELERY_RESULT_BACKEND` | redis://localhost:6379/1 | Celery |
-| `OAUTH_JWKS_URI`/`OAUTH_AUDIENCE`/`OAUTH_ISSUER` | CHANGEME | OIDC RS256 (no-local) |
+| `OAUTH_JWKS_URI`/`OAUTH_AUDIENCE`/`OAUTH_ISSUER` | EntraID TVA (no-local) | OIDC RS256 (no-local) |
+| `TVA_AUTO_MIGRATE` | `False` (`true` en `docker/Dockerfile`) | migrate + parámetros al arrancar el WSGI |
+| `TVA_CONFIG_KEY` | `SECRET_KEY` | cifrado de los secretos de Administración → Configuración |
 | `CORS_ALLOWED_ORIGINS` | http://localhost:4200 | Orígenes del SPA (coma-separados) |
 | `SQL_DEBUG` | — | `True` para loguear SQL (por defecto WARNING) |
 | `APILIFE_MODE`/`MISV_MODE`/`RIC_MODE`/`PERFIL_USUARIO_MODE` | `mock` | `real` usa los conectores HTTP — variables por conector en § "Integraciones: mock vs real" (`APILIFE_*`, `MISV_*`, `RIC_*`, `SOA_*`) |

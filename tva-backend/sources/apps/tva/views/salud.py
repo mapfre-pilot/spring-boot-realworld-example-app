@@ -1,4 +1,6 @@
 from django.conf import settings
+
+from apps.tva.services import configuracion
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -53,11 +55,11 @@ class SaludView(APIView):
                     "oidc": bool(settings.OAUTH_JWKS_URI),
                 },
                 "integraciones": {
-                    "apilife": settings.APILIFE_MODE,
-                    "misv": settings.MISV_MODE,
-                    "perfilUsuario": settings.PERFIL_USUARIO_MODE,
-                    "ric": settings.RIC_MODE,
-                    "appianEmbed": settings.APPIAN_EMBED_MODE,
+                    "apilife": configuracion.obtener("APILIFE_MODE"),
+                    "misv": configuracion.obtener("MISV_MODE"),
+                    "perfilUsuario": configuracion.obtener("PERFIL_USUARIO_MODE"),
+                    "ric": configuracion.obtener("RIC_MODE"),
+                    "appianEmbed": configuracion.obtener("APPIAN_EMBED_MODE"),
                 },
             }
         )

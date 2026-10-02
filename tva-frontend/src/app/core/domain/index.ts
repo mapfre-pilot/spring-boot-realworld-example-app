@@ -6,3 +6,4 @@ export * from './producto.model';
 export * from './popup.model';
 export * from './validaciones/documentos';
 export * from './nuuma';
+export * from './configuracion.model';
