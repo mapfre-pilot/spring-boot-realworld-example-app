@@ -1,0 +1,36 @@
+<app-encabezado-pantalla titulo="Administración" />
+<mat-tab-group>
+  <mat-tab label="Parámetros">
+    <ng-template matTabContent>
+      <mat-card class="panel-admin" appearance="outlined">
+        <mat-card-content>
+          <app-parametros-admin
+            [parametros]="parametros()"
+            (guardarValor)="guardar($event.p, $event.valor)" />
+        </mat-card-content>
+      </mat-card>
+    </ng-template>
+  </mat-tab>
+  <mat-tab label="Operaciones">
+    <ng-template matTabContent>
+      <mat-card class="panel-admin" appearance="outlined">
+        <mat-card-content>
+          <app-operaciones-admin
+            [estadoApertura]="estadoApertura()"
+            (apertura)="apertura()"
+            (fijarCierre)="fijarCierre($event)"
+            (limpiarCaches)="limpiar()" />
+        </mat-card-content>
+      </mat-card>
+    </ng-template>
+  </mat-tab>
+  <mat-tab label="Trazas">
+    <ng-template matTabContent>
+      <mat-card class="panel-admin" appearance="outlined">
+        <mat-card-content>
+          <app-trazas-admin [trazas]="trazas()" (buscar)="buscarTrazas($event)" />
+        </mat-card-content>
+      </mat-card>
+    </ng-template>
+  </mat-tab>
+</mat-tab-group>

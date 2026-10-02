@@ -1,0 +1,15 @@
+{
+ "response": {
+  "table": "productos",
+  "rows": [
+   {
+    "code": "00595",
+    "desc": "Vida Ahorro"
+   },
+   {
+    "code": "00457",
+    "desc": "Rentas"
+   }
+  ]
+ }
+}

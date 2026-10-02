@@ -1,0 +1,20 @@
+{
+  "valores": [
+    {
+      "codigo": "M",
+      "descripcion": "Mensual"
+    },
+    {
+      "codigo": "T",
+      "descripcion": "Trimestral"
+    },
+    {
+      "codigo": "S",
+      "descripcion": "Semestral"
+    },
+    {
+      "codigo": "A",
+      "descripcion": "Anual"
+    }
+  ]
+}

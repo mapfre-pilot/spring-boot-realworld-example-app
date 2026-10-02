@@ -1,0 +1,17 @@
+<app-seccion
+  titulo="Domiciliaciones"
+  [valida]="valida()"
+  [expandida]="expandida()"
+  [avisos]="avisos()"
+  seccion="DATOS_DEL_SEGURO/domiciliaciones"
+  (continuar)="continuar.emit()">
+  <form [formGroup]="form()" class="formulario">
+    <app-campo-texto [control]="form().controls.ibanRecibos" etiqueta="IBAN recibos" />
+    @if (requierePrestaciones()) {
+      <app-campo-texto [control]="form().controls.ibanPrestaciones" etiqueta="IBAN prestaciones" />
+    }
+    <mat-slide-toggle formControlName="requierePrestaciones"
+      >Requiere prestaciones</mat-slide-toggle
+    >
+  </form>
+</app-seccion>

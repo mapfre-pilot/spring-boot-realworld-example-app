@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "angular.ng-template",
+    "nrwl.angular-console",
+    "dbaeumer.vscode-eslint",
+    "sonarsource.sonarlint-vscode",
+    "esbenp.prettier-vscode",
+    "shardulm94.trailing-spaces",
+    "exodiusstudios.comment-anchors",
+    "orta.vscode-jest",
+    "unifiedjs.vscode-mdx",
+    "firsttris.vscode-jest-runner"
+  ]
+}

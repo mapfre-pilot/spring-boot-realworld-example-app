@@ -1,0 +1,485 @@
+@use 'tokens' as t;
+
+/* Página de login. */
+app-login-page .contenedor {
+  display: flex;
+  justify-content: center;
+  padding-top: 12vh;
+}
+app-login-page .login-card {
+  max-width: 480px;
+  width: 100%;
+}
+app-login-page .login-card mat-card-content {
+  padding: 32px 28px 28px;
+}
+app-login-page .marca {
+  color: var(--tva-primary);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 3px;
+}
+app-login-page .subtitulo {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--tva-text-muted);
+  margin: 2px 0 20px;
+}
+app-login-page .ayuda {
+  font-size: 13px;
+  color: var(--tva-text-muted);
+}
+app-login-page .campo {
+  width: 100%;
+}
+app-login-page .entrar {
+  width: 100%;
+}
+
+/* Página de inicio. */
+app-inicio-page {
+  display: block;
+}
+app-inicio-page .pagina {
+  box-sizing: border-box;
+  min-width: 0;
+}
+app-inicio-page mat-card,
+app-inicio-page form {
+  min-width: 0;
+}
+app-inicio-page .cabecera-pagina {
+  padding: 24px 16px 0;
+}
+app-inicio-page .introduccion {
+  min-width: 0;
+}
+app-inicio-page .overline {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--tva-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+app-inicio-page .titulo-pagina {
+  margin: 0;
+  font-size: 20px !important;
+  font-weight: 600 !important;
+}
+app-inicio-page .descripcion {
+  margin: 6px 0 0;
+  color: var(--tva-text-muted);
+  line-height: 1.5;
+}
+app-inicio-page mat-card-content {
+  padding-top: 28px;
+}
+app-inicio-page .bloque {
+  margin-bottom: 20px;
+}
+app-inicio-page .titulo-bloque {
+  margin: 0 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--tva-border);
+  font-size: 14px;
+  font-weight: 600;
+}
+app-inicio-page .formulario,
+app-inicio-page .opcion-grid {
+  min-width: 0;
+}
+app-inicio-page .grid-modo,
+app-inicio-page .grid-usuario {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+app-inicio-page .formulario.formulario-corto {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+app-inicio-page .formulario app-campo-texto,
+app-inicio-page .formulario app-campo-select,
+app-inicio-page .opcion-grid app-campo-texto,
+app-inicio-page .opcion-grid app-campo-select {
+  min-width: 0;
+}
+app-inicio-page .panel-simulacion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  padding: 8px 16px;
+  border: 1px solid var(--tva-border);
+  border-radius: 8px;
+  background: #fafafa;
+}
+app-inicio-page .cabecera-opciones {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--tva-border);
+}
+app-inicio-page .titulo-conteo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+app-inicio-page .titulo-conteo .titulo-bloque {
+  margin: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+app-inicio-page .cabecera-opciones > button {
+  flex: 0 0 auto;
+}
+app-inicio-page .estado-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  border: 1px dashed #bdbdbd;
+  border-radius: 8px;
+  color: var(--tva-text-muted);
+  text-align: center;
+}
+app-inicio-page .estado-vacio mat-icon {
+  width: 28px;
+  height: 28px;
+  font-size: 28px;
+}
+app-inicio-page .estado-vacio p {
+  margin: 0;
+  line-height: 1.5;
+}
+app-inicio-page .opcion {
+  margin-bottom: 12px;
+  padding: 12px 16px 16px;
+  border: 1px solid var(--tva-border);
+  border-radius: 8px;
+  background: #fff;
+}
+app-inicio-page .cabecera-opcion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+app-inicio-page .titulo-opcion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+app-inicio-page .titulo-opcion strong {
+  font-weight: 600;
+}
+app-inicio-page .titulo-opcion span {
+  color: var(--tva-text-muted);
+}
+app-inicio-page .opcion-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+app-inicio-page .campo-span-2 {
+  grid-column: span 2;
+}
+app-inicio-page .acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--tva-border);
+}
+app-inicio-page .acciones button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+app-inicio-page .acciones mat-spinner {
+  display: inline-block;
+}
+@media (max-width: 1100px) {
+  app-inicio-page .opcion-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@include t.md {
+  app-inicio-page .formulario.formulario-corto,
+  app-inicio-page .grid-modo,
+  app-inicio-page .grid-usuario {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@include t.sm {
+  app-inicio-page .cabecera-pagina {
+    padding: 20px 16px 0;
+  }
+  app-inicio-page .formulario.formulario-corto,
+  app-inicio-page .grid-modo,
+  app-inicio-page .grid-usuario,
+  app-inicio-page .opcion-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  app-inicio-page .campo-span-2 {
+    grid-column: auto;
+  }
+  app-inicio-page .cabecera-opciones {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  app-inicio-page .titulo-conteo {
+    width: 100%;
+  }
+}
+
+/* Administración (página y panel dentro de la sesión). */
+app-admin-page .panel-admin,
+app-admin-panel .panel-admin {
+  margin: 16px 0;
+}
+app-admin-page .mat-mdc-tab-body-content,
+app-admin-panel .mat-mdc-tab-body-content {
+  padding: 16px;
+}
+app-admin-page .tabla,
+app-admin-panel .tabla {
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+/* Configuración de conectores. */
+app-configuracion-admin .aviso {
+  margin: 0 0 16px;
+  color: var(--tva-text-muted, #666);
+}
+app-configuracion-admin .campos-configuracion {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+app-configuracion-admin .toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+app-configuracion-admin .resultado-prueba {
+  margin: 16px 0 0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  background: #ececec;
+}
+app-configuracion-admin .resultado-prueba.ok {
+  background: #e8f5e9;
+}
+app-configuracion-admin .resultado-prueba.error {
+  background: #fdecea;
+}
+
+/* Parámetros. */
+app-parametros-admin table {
+  table-layout: fixed;
+  width: 100%;
+}
+app-parametros-admin .campo-valor {
+  width: 100%;
+  min-width: 0;
+  max-width: 200px;
+}
+app-parametros-admin .col-clave {
+  word-break: break-all;
+}
+app-parametros-admin .col-valor {
+  width: 34%;
+}
+app-parametros-admin .col-tipo {
+  width: 64px;
+}
+
+/* Operaciones. */
+app-operaciones-admin .toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+app-operaciones-admin .estado {
+  margin: 12px 0 0;
+}
+
+/* Trazas. */
+app-trazas-admin .filtro {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+app-trazas-admin .campo-clave {
+  flex: 0 1 360px;
+  width: 360px;
+  max-width: 360px;
+}
+
+/* Página de bienvenida (sin sesión). */
+app-bienvenida-page {
+  display: block;
+  min-height: 100vh;
+}
+app-bienvenida-page .bienvenida {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--tva-surface);
+  @include t.md {
+    grid-template-columns: 1fr;
+  }
+}
+app-bienvenida-page .hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 40px 56px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.18), transparent 45%),
+    radial-gradient(circle at 10% 90%, rgba(0, 0, 0, 0.18), transparent 50%),
+    linear-gradient(135deg, #e5321a 0%, var(--tva-primary) 45%, #9e1507 100%);
+  overflow: hidden;
+  @include t.md {
+    padding: 32px 24px;
+    min-height: 0;
+  }
+}
+app-bienvenida-page .hero::after {
+  content: '';
+  position: absolute;
+  right: -120px;
+  bottom: -160px;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  border: 48px solid rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+app-bienvenida-page .hero-marca {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 6px;
+}
+app-bienvenida-page .hero-contenido {
+  max-width: 520px;
+  margin: 48px 0;
+  @include t.md {
+    margin: 28px 0;
+  }
+}
+app-bienvenida-page .hero-chip {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+app-bienvenida-page .hero-titulo {
+  margin: 16px 0 12px;
+  font-size: clamp(32px, 4.5vw, 52px);
+  font-weight: 700;
+  line-height: 1.1;
+}
+app-bienvenida-page .hero-texto {
+  margin: 0 0 24px;
+  font-size: 17px;
+  line-height: 1.55;
+  opacity: 0.92;
+}
+app-bienvenida-page .hero-puntos {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+app-bienvenida-page .hero-puntos li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+}
+app-bienvenida-page .hero-puntos mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+app-bienvenida-page .hero-pie {
+  font-size: 12px;
+  opacity: 0.8;
+}
+app-bienvenida-page .acceso {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+app-bienvenida-page .acceso-card {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+}
+app-bienvenida-page .acceso-card mat-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 36px 32px 28px;
+}
+app-bienvenida-page .acceso-logo {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(216, 30, 5, 0.1);
+  color: var(--tva-primary);
+  margin-bottom: 16px;
+}
+app-bienvenida-page .acceso-logo mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+}
+app-bienvenida-page .acceso-titulo {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--tva-text);
+}
+app-bienvenida-page .acceso-texto {
+  margin: 0 0 24px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--tva-text-muted);
+}
+app-bienvenida-page .acceso-boton {
+  width: 100%;
+  height: 48px;
+  font-size: 15px;
+}
+app-bienvenida-page .acceso-ayuda {
+  margin: 16px 0 0;
+  font-size: 12px;
+  color: var(--tva-text-muted);
+}

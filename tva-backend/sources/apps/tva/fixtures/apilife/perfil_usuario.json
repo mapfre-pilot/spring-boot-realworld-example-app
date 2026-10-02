@@ -1,0 +1,17 @@
+{
+ "response": {
+  "conPerfil": true,
+  "codOficina": "9275",
+  "codProductor": "P0001",
+  "funcionalidades": [
+   4016,
+   4017,
+   4018,
+   4041,
+   4042,
+   4043,
+   4045,
+   4047
+  ]
+ }
+}

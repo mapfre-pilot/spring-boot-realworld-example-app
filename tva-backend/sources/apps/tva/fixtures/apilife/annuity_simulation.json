@@ -1,0 +1,13 @@
+{
+ "response": {
+  "operationResult": {
+   "operationStatusCode": "01",
+   "operationStatusDesc": "Accepted"
+  },
+  "projectData": {
+   "premiumAmn": 50000.0,
+   "incomeAmn": 1415.89,
+   "expectedReturnPerc": 2.3
+  }
+ }
+}

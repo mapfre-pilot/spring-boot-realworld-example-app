@@ -1,0 +1,212 @@
+{
+  "valores": [
+    {
+      "codigo": "01",
+      "descripcion": "Álava"
+    },
+    {
+      "codigo": "02",
+      "descripcion": "Albacete"
+    },
+    {
+      "codigo": "03",
+      "descripcion": "Alicante"
+    },
+    {
+      "codigo": "04",
+      "descripcion": "Almería"
+    },
+    {
+      "codigo": "05",
+      "descripcion": "Asturias"
+    },
+    {
+      "codigo": "06",
+      "descripcion": "Ávila"
+    },
+    {
+      "codigo": "07",
+      "descripcion": "Badajoz"
+    },
+    {
+      "codigo": "08",
+      "descripcion": "Barcelona"
+    },
+    {
+      "codigo": "09",
+      "descripcion": "Burgos"
+    },
+    {
+      "codigo": "10",
+      "descripcion": "Cáceres"
+    },
+    {
+      "codigo": "11",
+      "descripcion": "Cádiz"
+    },
+    {
+      "codigo": "12",
+      "descripcion": "Cantabria"
+    },
+    {
+      "codigo": "13",
+      "descripcion": "Castellón"
+    },
+    {
+      "codigo": "14",
+      "descripcion": "Ciudad Real"
+    },
+    {
+      "codigo": "15",
+      "descripcion": "Córdoba"
+    },
+    {
+      "codigo": "16",
+      "descripcion": "A Coruña"
+    },
+    {
+      "codigo": "17",
+      "descripcion": "Cuenca"
+    },
+    {
+      "codigo": "18",
+      "descripcion": "Girona"
+    },
+    {
+      "codigo": "19",
+      "descripcion": "Granada"
+    },
+    {
+      "codigo": "20",
+      "descripcion": "Guadalajara"
+    },
+    {
+      "codigo": "21",
+      "descripcion": "Guipúzcoa"
+    },
+    {
+      "codigo": "22",
+      "descripcion": "Huelva"
+    },
+    {
+      "codigo": "23",
+      "descripcion": "Huesca"
+    },
+    {
+      "codigo": "24",
+      "descripcion": "Illes Balears"
+    },
+    {
+      "codigo": "25",
+      "descripcion": "Jaén"
+    },
+    {
+      "codigo": "26",
+      "descripcion": "León"
+    },
+    {
+      "codigo": "27",
+      "descripcion": "Lleida"
+    },
+    {
+      "codigo": "28",
+      "descripcion": "Lugo"
+    },
+    {
+      "codigo": "29",
+      "descripcion": "Madrid"
+    },
+    {
+      "codigo": "30",
+      "descripcion": "Málaga"
+    },
+    {
+      "codigo": "31",
+      "descripcion": "Murcia"
+    },
+    {
+      "codigo": "32",
+      "descripcion": "Navarra"
+    },
+    {
+      "codigo": "33",
+      "descripcion": "Ourense"
+    },
+    {
+      "codigo": "34",
+      "descripcion": "Palencia"
+    },
+    {
+      "codigo": "35",
+      "descripcion": "Las Palmas"
+    },
+    {
+      "codigo": "36",
+      "descripcion": "Pontevedra"
+    },
+    {
+      "codigo": "37",
+      "descripcion": "La Rioja"
+    },
+    {
+      "codigo": "38",
+      "descripcion": "Salamanca"
+    },
+    {
+      "codigo": "39",
+      "descripcion": "Segovia"
+    },
+    {
+      "codigo": "40",
+      "descripcion": "Sevilla"
+    },
+    {
+      "codigo": "41",
+      "descripcion": "Soria"
+    },
+    {
+      "codigo": "42",
+      "descripcion": "Tarragona"
+    },
+    {
+      "codigo": "43",
+      "descripcion": "Santa Cruz de Tenerife"
+    },
+    {
+      "codigo": "44",
+      "descripcion": "Teruel"
+    },
+    {
+      "codigo": "45",
+      "descripcion": "Toledo"
+    },
+    {
+      "codigo": "46",
+      "descripcion": "Valencia"
+    },
+    {
+      "codigo": "47",
+      "descripcion": "Valladolid"
+    },
+    {
+      "codigo": "48",
+      "descripcion": "Vizcaya"
+    },
+    {
+      "codigo": "49",
+      "descripcion": "Zamora"
+    },
+    {
+      "codigo": "50",
+      "descripcion": "Zaragoza"
+    },
+    {
+      "codigo": "51",
+      "descripcion": "Ceuta"
+    },
+    {
+      "codigo": "52",
+      "descripcion": "Melilla"
+    }
+  ]
+}

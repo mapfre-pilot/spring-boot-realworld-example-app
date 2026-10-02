@@ -1,0 +1,14 @@
+{
+ "response": {
+  "printingTypes": [
+   {
+    "code": "ELEC",
+    "desc": "Firma electrónica"
+   },
+   {
+    "code": "MAN",
+    "desc": "Firma manuscrita"
+   }
+  ]
+ }
+}

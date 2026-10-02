@@ -1,0 +1,33 @@
+networks:
+  arch-ram-network:
+    name: arch-ram-network
+    external: true
+
+secrets:
+  AZURE_ARTIFACTS_PW:
+    environment: AZURE_ARTIFACTS_PW
+
+services:
+    esp-appianesad-tva:
+        container_name: esp-appianesad-tva
+        build:
+            dockerfile: docker/Dockerfile
+            context: ../
+            secrets:
+                - AZURE_ARTIFACTS_PW
+        environment:
+            - VIRTUAL_HOST=esp-appianesad-tva.localhost
+            - VIRTUAL_PORT=8888
+        env_file:
+            - ../.env
+        expose:
+            - "8888"
+        volumes:
+            - ../sources:/local
+        command: >
+            bash -c "
+                gunicorn config.wsgi:application --workers 3 --threads 100 --max-requests 1000 --max-requests-jitter 15 -b 0.0.0.0:8888 --log-level 'INFO'
+            "
+        networks:
+            - arch-ram-network
+

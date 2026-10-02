@@ -1,0 +1,17 @@
+<header class="cabecera">
+  <span class="marca">MAPFRE</span>
+  <span class="divider" aria-hidden="true"></span>
+  <span class="titulo">Tarificador Vida Ahorro</span>
+  @if (modalidad(); as m) {
+    <span class="chip-modalidad">{{ m }}</span>
+  }
+  <span class="spacer"></span>
+  <span class="usuario">{{ auth.usuario() }}</span>
+  <button
+    mat-icon-button
+    (click)="auth.logout()"
+    aria-label="Cerrar sesión"
+    matTooltip="Cerrar sesión">
+    <mat-icon>logout</mat-icon>
+  </button>
+</header>

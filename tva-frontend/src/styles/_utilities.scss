@@ -1,0 +1,78 @@
+/* Utilidades transversales. */
+
+/* Caja de errores de validación. */
+.errores {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-radius: 4px;
+  border-left: 4px solid var(--tva-primary);
+  background: #fdecea;
+  color: #7f1d12;
+}
+.errores mat-icon {
+  flex-shrink: 0;
+}
+.errores ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+.ok {
+  color: var(--tva-ok);
+  font-weight: 500;
+}
+
+/* Grid de tarjetas seleccionables. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.tarjeta a {
+  color: var(--tva-primary);
+}
+
+/* Checks/checkboxes en línea. */
+.checks {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  margin: 12px 0;
+  padding: 8px 0;
+}
+
+/* Texto multilínea en diálogos. */
+.mensaje {
+  white-space: pre-line;
+}
+
+/* Chips de estado pequeños (ok / pendiente / error). */
+.chip-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.chip-estado mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+.chip-estado.ok {
+  background: #e8f5e9;
+  color: var(--tva-ok, #2e7d32);
+}
+.chip-estado.pendiente {
+  background: #ececec;
+  color: var(--tva-text-muted, #666);
+}
+.chip-estado.error {
+  background: #fdecea;
+  color: #c62828;
+}

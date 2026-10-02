@@ -1,0 +1,57 @@
+<app-encabezado-pantalla titulo="Seguros de ahorro" [subtitulo]="subtitulo()" />
+
+<app-caja titulo="Propuesta">
+  @if (applications().length) {
+    <div class="tabla-scroll">
+      <table class="tva-tabla">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th class="num">Aportación única</th>
+            <th class="num">Aportación periódica</th>
+            <th>Estado</th>
+            <th class="col-accion"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ap of applications(); track $index) {
+            <tr>
+              <td>{{ ap.commercialProductCode }} - {{ ap.commercialProductName }}</td>
+              <td class="num">
+                {{
+                  ap.investmentOptions?.[0]?.uniqueContributionAmn ?? null
+                    | currency: 'EUR' : 'symbol' : '1.2-2' : 'es'
+                }}
+              </td>
+              <td class="num">
+                {{
+                  ap.investmentOptions?.[0]?.periodicContributionAmn ?? null
+                    | currency: 'EUR' : 'symbol' : '1.2-2' : 'es'
+                }}
+              </td>
+              <td>
+                @if (ap.statusDesc) {
+                  <span class="chip-estado pendiente">{{ ap.statusDesc }}</span>
+                } @else {
+                  —
+                }
+              </td>
+              <td class="col-accion">
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  type="button"
+                  [disabled]="capturaDeshabilitada()"
+                  (click)="capturar(ap)">
+                  Captura datos
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <app-estado-vacio mensaje="No hay seguros de ahorro en la propuesta." icono="inventory_2" />
+  }
+</app-caja>

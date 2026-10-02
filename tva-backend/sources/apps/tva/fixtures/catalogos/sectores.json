@@ -1,0 +1,24 @@
+{
+  "valores": [
+    {
+      "codigo": "AG",
+      "descripcion": "Agrario"
+    },
+    {
+      "codigo": "IN",
+      "descripcion": "Industria"
+    },
+    {
+      "codigo": "CO",
+      "descripcion": "Construcción"
+    },
+    {
+      "codigo": "SE",
+      "descripcion": "Servicios"
+    },
+    {
+      "codigo": "PU",
+      "descripcion": "Sector público"
+    }
+  ]
+}

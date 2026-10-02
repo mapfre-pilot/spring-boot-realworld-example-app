@@ -1,0 +1,28 @@
+{
+  "valores": [
+    {
+      "codigo": "AS",
+      "descripcion": "Asalariado"
+    },
+    {
+      "codigo": "AU",
+      "descripcion": "Autónomo"
+    },
+    {
+      "codigo": "PA",
+      "descripcion": "Parado"
+    },
+    {
+      "codigo": "JU",
+      "descripcion": "Jubilado"
+    },
+    {
+      "codigo": "ES",
+      "descripcion": "Estudiante"
+    },
+    {
+      "codigo": "OT",
+      "descripcion": "Otros"
+    }
+  ]
+}

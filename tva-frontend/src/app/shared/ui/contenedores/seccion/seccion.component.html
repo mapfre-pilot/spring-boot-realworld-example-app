@@ -1,0 +1,19 @@
+<mat-expansion-panel class="seccion" [expanded]="expandida()">
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      {{ titulo() }}
+      @if (valida()) {
+        <mat-icon class="icono-ok">check_circle</mat-icon>
+      } @else if (tocada()) {
+        <mat-icon class="icono-error">error</mat-icon>
+      } @else {
+        <span class="punto" aria-hidden="true"></span>
+      }
+    </mat-panel-title>
+  </mat-expansion-panel-header>
+  <app-avisos [avisos]="avisosSeccion()" mostrarEn="SECCION" />
+  <ng-content />
+  <div class="acciones">
+    <button mat-flat-button color="primary" (click)="continuar.emit()">Continuar</button>
+  </div>
+</mat-expansion-panel>

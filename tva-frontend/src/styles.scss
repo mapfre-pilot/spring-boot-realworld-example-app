@@ -1,0 +1,25 @@
+/* Tema MAPFRE para TVA — Material M3, primario rojo #D81E05. */
+@use './styles/tokens';
+@use './styles/layout';
+@use './styles/forms';
+@use './styles/tables';
+@use './styles/shell';
+@use './styles/ui';
+@use './styles/pages';
+@use './styles/sesion';
+@use './styles/utilities';
+@use '@angular/material' as mat;
+
+html {
+  @include mat.theme(
+    (
+      color: (
+        theme-type: light,
+        primary: mat.$red-palette,
+        tertiary: mat.$azure-palette,
+      ),
+      typography: Roboto,
+      density: -1,
+    )
+  );
+}

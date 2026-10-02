@@ -1,0 +1,77 @@
+<app-encabezado-pantalla titulo="Resumen de la contratación" />
+
+<div class="layout-resumen">
+  <div class="col-izq">
+    <app-caja titulo="Resumen de la contratación">
+      <div class="resumen-cuerpo">
+        <p class="producto">
+          <strong>{{ producto().codigo }}</strong>
+          @if (producto().desc) {
+            — {{ producto().desc }}
+          }
+        </p>
+        @if (primaUnica()) {
+          <h3 class="titulo-seccion">Prima única</h3>
+          <app-lista-datos [items]="itemsPrimaUnica()" [columnas]="4" />
+        }
+        @if (aportacionPeriodica()) {
+          <h3 class="titulo-seccion">Prima periódica</h3>
+          <app-lista-datos [items]="itemsPrimaPeriodica()" [columnas]="4" />
+        }
+        @if (esRenta() && renta()) {
+          <h3 class="titulo-seccion">Renta</h3>
+          <app-lista-datos [items]="itemsRenta()" [columnas]="4" />
+        }
+      </div>
+    </app-caja>
+
+    <app-caja titulo="Tomador(es)">
+      <div class="resumen-cuerpo">
+        @for (t of tomadores(); track $index; let i = $index) {
+          <div class="tomador">
+            <p class="nombre">{{ nombreTomador(t) }}</p>
+            <app-lista-datos [items]="itemsTomador(t)" [columnas]="4" />
+            <div class="requisitos">
+              @for (r of requisitosTomador(t); track r.etiqueta) {
+                <span class="chip-estado" [class.ok]="r.hecho" [class.pendiente]="!r.hecho">
+                  <mat-icon>{{ r.hecho ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+                  {{ r.etiqueta }}
+                </span>
+              }
+            </div>
+          </div>
+        }
+        @if (!tomadores().length) {
+          <app-estado-vacio mensaje="Sin tomadores en la sesión" icono="person_off" />
+        }
+      </div>
+    </app-caja>
+
+    <app-caja titulo="Tipo de firma">
+      <form [formGroup]="form" class="resumen-cuerpo">
+        <mat-radio-group formControlName="tipoFirma" class="radios-inline">
+          <mat-radio-button value="DIGITAL">Firma digital</mat-radio-button>
+          <mat-radio-button value="MANUSCRITA">Firma manuscrita</mat-radio-button>
+        </mat-radio-group>
+      </form>
+    </app-caja>
+  </div>
+
+  <div class="col-der">
+    <app-caja titulo="Documentación precontractual" class="sticky">
+      <div class="resumen-cuerpo">
+        @for (d of documentos(); track $index) {
+          <div class="doc">
+            <mat-icon [class.enviado]="d['enviado']">{{
+              d['enviado'] ? 'check_circle' : 'schedule'
+            }}</mat-icon>
+            <span>{{ d['tipo'] ?? d['descripcion'] ?? 'Documento' }}</span>
+          </div>
+        }
+        @if (!documentos().length) {
+          <app-estado-vacio mensaje="Sin documentos" icono="description" />
+        }
+      </div>
+    </app-caja>
+  </div>
+</div>

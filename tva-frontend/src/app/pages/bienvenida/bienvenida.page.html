@@ -1,0 +1,57 @@
+<div class="bienvenida">
+  <section class="hero">
+    <div class="hero-marca">MAPFRE</div>
+    <div class="hero-contenido">
+      <span class="hero-chip">Vida Ahorro</span>
+      <h1 class="hero-titulo">Bienvenido a TVA</h1>
+      <p class="hero-texto">
+        Tarificador Vida Ahorro: simula, tarifica y contrata productos de Vida Inversión
+        Ahorro, Venta Asesorada y Rentas desde un único lugar.
+      </p>
+      <ul class="hero-puntos">
+        <li><mat-icon>verified_user</mat-icon> Acceso corporativo seguro</li>
+        <li><mat-icon>speed</mat-icon> Tarificación en tiempo real</li>
+        <li><mat-icon>draw</mat-icon> Firma y contratación digital</li>
+      </ul>
+    </div>
+    <div class="hero-pie">© {{ anio }} MAPFRE</div>
+  </section>
+
+  <section class="acceso">
+    <mat-card class="acceso-card" appearance="outlined">
+      <mat-card-content>
+        <div class="acceso-logo">
+          <mat-icon>account_balance</mat-icon>
+        </div>
+        <h2 class="acceso-titulo">Iniciar sesión</h2>
+        <p class="acceso-texto">
+          @if (auth.authMode === 'oidc') {
+            Accede con tu cuenta corporativa MAPFRE a través del inicio de sesión único.
+          } @else {
+            Entorno de desarrollo: accede con el token local generado por el backend.
+          }
+        </p>
+        <button
+          mat-flat-button
+          color="primary"
+          class="acceso-boton"
+          type="button"
+          (click)="iniciarSesion()">
+          <mat-icon>login</mat-icon>
+          @if (auth.authMode === 'oidc') {
+            Iniciar sesión con SSO
+          } @else {
+            Iniciar sesión
+          }
+        </button>
+        <p class="acceso-ayuda">
+          @if (auth.authMode === 'oidc') {
+            Se abrirá la página de autenticación de Microsoft Entra ID.
+          } @else {
+            Modo local sin SSO (entorno <code>dev</code>).
+          }
+        </p>
+      </mat-card-content>
+    </mat-card>
+  </section>
+</div>

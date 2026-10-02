@@ -1,0 +1,24 @@
+{
+  "valores": [
+    {
+      "codigo": "EM",
+      "descripcion": "Empleado/a"
+    },
+    {
+      "codigo": "DI",
+      "descripcion": "Directivo/a"
+    },
+    {
+      "codigo": "PR",
+      "descripcion": "Profesional liberal"
+    },
+    {
+      "codigo": "OB",
+      "descripcion": "Operario/a"
+    },
+    {
+      "codigo": "OT",
+      "descripcion": "Otras"
+    }
+  ]
+}

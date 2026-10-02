@@ -1,0 +1,29 @@
+<form [formGroup]="trazaForm" (ngSubmit)="buscarTrazas()" class="filtro">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="campo-clave">
+    <mat-label>Clave de sesión (opcional)</mat-label>
+    <input matInput formControlName="clave" />
+  </mat-form-field>
+  <button mat-stroked-button type="submit">Buscar</button>
+</form>
+@if (trazas().length) {
+  <div class="tabla-scroll">
+    <table mat-table [dataSource]="trazas()" class="tabla">
+      <ng-container matColumnDef="creado">
+        <th mat-header-cell *matHeaderCellDef>Creado</th>
+        <td mat-cell *matCellDef="let t">{{ t.creado }}</td>
+      </ng-container>
+      <ng-container matColumnDef="clase">
+        <th mat-header-cell *matHeaderCellDef>Clase</th>
+        <td mat-cell *matCellDef="let t">{{ t.clase }}</td>
+      </ng-container>
+      <ng-container matColumnDef="mensaje">
+        <th mat-header-cell *matHeaderCellDef>Mensaje</th>
+        <td mat-cell *matCellDef="let t">{{ t.mensaje }}</td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="columnasTrazas"></tr>
+      <tr mat-row *matRowDef="let row; columns: columnasTrazas"></tr>
+    </table>
+  </div>
+} @else {
+  <app-estado-vacio mensaje="Sin trazas" icono="receipt_long" />
+}

@@ -1,0 +1,12 @@
+<app-encabezado-pantalla titulo="Datos del tomador 2" />
+<app-tomador-form
+  [grupos]="formularios"
+  [(hayRepresentante)]="hayRepresentante"
+  [catalogos]="catalogos()"
+  [validez]="validez()"
+  [expandidaId]="expandida()"
+  [avisos]="avisos()"
+  [cajaId]="cajaId"
+  [requisitos]="requisitos()"
+  (continuar)="onContinuar($event)"
+  (requisito)="onRequisito($event)" />

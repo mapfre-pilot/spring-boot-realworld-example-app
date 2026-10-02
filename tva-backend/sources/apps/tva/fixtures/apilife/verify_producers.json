@@ -1,0 +1,10 @@
+{
+ "response": {
+  "productoresVerificados": [
+   {
+    "producerCode": "P0001"
+   }
+  ],
+  "productoresNoVerificados": []
+ }
+}

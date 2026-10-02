@@ -1,0 +1,14 @@
+{
+ "response": {
+  "clientId": "2808677",
+  "personTypeCode": "F",
+  "naturalPerson": {
+   "personName": {
+    "name": "ANON",
+    "firstSurname": "CLIENTE",
+    "secondSurname": "PRUEBA"
+   }
+  },
+  "perfilClientesOK": true
+ }
+}

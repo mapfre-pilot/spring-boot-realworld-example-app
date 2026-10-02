@@ -1,0 +1,20 @@
+name: Create Release on PR merged
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+      - develop
+      - support/*
+  workflow_dispatch:
+
+jobs:
+  release:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    uses: mapfre-tech/esp-aeme-reusable-workflows-front/.github/workflows/create-release.yml@4
+    secrets:
+      AZURE_ARTIFACTS_PW: ${{ secrets.AZURE_ARTIFACTS_PW }}
+      GH_TOKEN_ENCRYPTION_PASSPHRASE: ${{ secrets.GH_TOKEN_ENCRYPTION_PASSPHRASE }}
+      SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}

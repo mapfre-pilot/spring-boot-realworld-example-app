@@ -1,0 +1,40 @@
+name: Merge Commit
+run-name: >-
+  ${{
+    startsWith(github.head_ref, 'release/branch--') && format('Delete version branch: {0}', github.head_ref) ||
+    format('Generate {0} Artifact #{1}', (github.base_ref == 'main' || github.base_ref == 'master') && 'Release' || 'Snapshot',github.run_number)
+  }}
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+      - master
+      - develop
+
+jobs:
+  merge:
+    uses: mapfre-tech/esp-pfdevops-reusable-workflows/.github/workflows/container.django.merge-commit.yml@v1
+    with:
+      source-folder: 'sources'
+      poetry-version: "${{ vars.POETRY_VERSION != '' && vars.POETRY_VERSION || '2.1.1' }}"
+      python-version: "${{ vars.PYTHON_VERSION != '' && vars.PYTHON_VERSION || '3.11' }}"
+      component: "${{ vars.COMPONENT != '' && vars.COMPONENT || github.event.repository.name }}"
+      tenant: "${{ vars.TENANT != '' && vars.TENANT || 'tenant1' }}"
+      manifest-repository: "${{ vars.MANIFEST_REPOSITORY }}"
+      deploy-on-develop: true
+      delete-version-branches: true
+      sonar-project-key: ${{ vars.SONAR_PROJECT_KEY }}
+      sonar-project-name: ${{ vars.SONAR_PROJECT_NAME }}
+      runs-on-sonar: '["runner-devopsgh-ci-s"]'
+    secrets:
+      ACR_TOKEN_USER: ${{ secrets.ACR_TOKEN_USER }}
+      ACR_TOKEN_PW: ${{ secrets.ACR_TOKEN_PW }}
+      # RAM_GITHUB_GIT_TOKEN: ${{secrets.RAM_GITHUB_GIT_TOKEN}}
+      GH_TOKEN_ENCRYPTION_PASSPHRASE: ${{ secrets.GH_TOKEN_ENCRYPTION_PASSPHRASE }}
+      AZURE_ARTIFACTS_USER: ${{secrets.AZURE_ARTIFACTS_USER}}
+      AZURE_ARTIFACTS_PW: ${{secrets.AZURE_ARTIFACTS_PW}}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_ROOT_CERT: ${{ secrets.SONAR_ROOT_CERT }}

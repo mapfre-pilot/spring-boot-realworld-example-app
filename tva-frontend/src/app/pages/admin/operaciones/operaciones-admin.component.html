@@ -1,0 +1,24 @@
+<div class="toolbar">
+  <button mat-stroked-button type="button" (click)="apertura.emit()">
+    <mat-icon>play_arrow</mat-icon> Ejecutar batch apertura/cierre
+  </button>
+  <button mat-stroked-button type="button" (click)="fijarCierre.emit('0')">
+    <mat-icon>lock_open</mat-icon> Abrir aplicación
+  </button>
+  <button mat-stroked-button type="button" (click)="fijarCierre.emit('1')">
+    <mat-icon>lock</mat-icon> Cerrar aplicación
+  </button>
+  <button mat-stroked-button type="button" (click)="limpiarCaches.emit()">
+    <mat-icon>cleaning_services</mat-icon> Limpiar cachés
+  </button>
+</div>
+<p class="estado">
+  Estado aplicación:
+  <span
+    class="chip-estado"
+    [class.ok]="estadoApertura() === 'abierta'"
+    [class.error]="estadoApertura() === 'cerrada'"
+    [class.pendiente]="!estadoApertura()">
+    {{ estadoApertura() || '—' }}
+  </span>
+</p>

@@ -1,0 +1,44 @@
+<app-encabezado-pantalla titulo="Selecciona un producto" />
+
+<mat-form-field class="filtro" appearance="outline" subscriptSizing="dynamic">
+  <mat-label>Buscar producto</mat-label>
+  <input matInput [formControl]="filtro" />
+  <mat-icon matIconPrefix aria-hidden="true">search</mat-icon>
+</mat-form-field>
+@if (productos().length) {
+  <p class="resultados">{{ productosFiltrados().length }} productos</p>
+}
+
+@if (productos().length === 0) {
+  <app-estado-vacio [mensaje]="MSG" icono="inventory_2" />
+} @else {
+  <div class="grid">
+    @for (p of productosFiltrados(); track p.commercialProductCode) {
+      <mat-card class="tarjeta" appearance="outlined" (click)="contratar(p)">
+        <mat-card-header class="cabecera">
+          <span class="badge" aria-hidden="true"><mat-icon>savings</mat-icon></span>
+          <div class="titulos">
+            <mat-card-title class="nombre">{{ p.commercialProductDesc }}</mat-card-title>
+            <span class="chip-codigo">Código {{ p.commercialProductCode }}</span>
+          </div>
+        </mat-card-header>
+        <mat-card-content class="relleno"></mat-card-content>
+        <mat-card-actions>
+          <button
+            mat-flat-button
+            color="primary"
+            type="button"
+            class="contratar"
+            (click)="contratar(p); $event.stopPropagation()">
+            Contratar <mat-icon iconPositionEnd aria-hidden="true">arrow_forward</mat-icon>
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    }
+    @if (!productosFiltrados().length) {
+      <app-estado-vacio
+        mensaje="No hay productos que coincidan con la búsqueda"
+        icono="search_off" />
+    }
+  </div>
+}
