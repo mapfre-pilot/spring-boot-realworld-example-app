@@ -3,6 +3,11 @@ import { Routes } from '@angular/router';
 import { authGuard, roleGuard } from '@tva/core';
 
 export const routes: Routes = [
+  {
+    path: 'bienvenida',
+    loadComponent: () =>
+      import('./pages/bienvenida/bienvenida.page').then(m => m.BienvenidaPage),
+  },
   { path: 'login', loadComponent: () => import('./pages/login/login.page').then(m => m.LoginPage) },
   {
     path: '',

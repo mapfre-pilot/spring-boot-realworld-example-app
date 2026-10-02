@@ -297,3 +297,158 @@ app-trazas-admin .campo-clave {
   width: 360px;
   max-width: 360px;
 }
+
+/* Página de bienvenida (sin sesión). */
+app-bienvenida-page {
+  display: block;
+  min-height: 100vh;
+}
+app-bienvenida-page .bienvenida {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--tva-surface);
+  @include t.md {
+    grid-template-columns: 1fr;
+  }
+}
+app-bienvenida-page .hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 40px 56px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.18), transparent 45%),
+    radial-gradient(circle at 10% 90%, rgba(0, 0, 0, 0.18), transparent 50%),
+    linear-gradient(135deg, #e5321a 0%, var(--tva-primary) 45%, #9e1507 100%);
+  overflow: hidden;
+  @include t.md {
+    padding: 32px 24px;
+    min-height: 0;
+  }
+}
+app-bienvenida-page .hero::after {
+  content: '';
+  position: absolute;
+  right: -120px;
+  bottom: -160px;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  border: 48px solid rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+app-bienvenida-page .hero-marca {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 6px;
+}
+app-bienvenida-page .hero-contenido {
+  max-width: 520px;
+  margin: 48px 0;
+  @include t.md {
+    margin: 28px 0;
+  }
+}
+app-bienvenida-page .hero-chip {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+app-bienvenida-page .hero-titulo {
+  margin: 16px 0 12px;
+  font-size: clamp(32px, 4.5vw, 52px);
+  font-weight: 700;
+  line-height: 1.1;
+}
+app-bienvenida-page .hero-texto {
+  margin: 0 0 24px;
+  font-size: 17px;
+  line-height: 1.55;
+  opacity: 0.92;
+}
+app-bienvenida-page .hero-puntos {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+app-bienvenida-page .hero-puntos li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+}
+app-bienvenida-page .hero-puntos mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+app-bienvenida-page .hero-pie {
+  font-size: 12px;
+  opacity: 0.8;
+}
+app-bienvenida-page .acceso {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+app-bienvenida-page .acceso-card {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+}
+app-bienvenida-page .acceso-card mat-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 36px 32px 28px;
+}
+app-bienvenida-page .acceso-logo {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(216, 30, 5, 0.1);
+  color: var(--tva-primary);
+  margin-bottom: 16px;
+}
+app-bienvenida-page .acceso-logo mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+}
+app-bienvenida-page .acceso-titulo {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--tva-text);
+}
+app-bienvenida-page .acceso-texto {
+  margin: 0 0 24px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--tva-text-muted);
+}
+app-bienvenida-page .acceso-boton {
+  width: 100%;
+  height: 48px;
+  font-size: 15px;
+}
+app-bienvenida-page .acceso-ayuda {
+  margin: 16px 0 0;
+  font-size: 12px;
+  color: var(--tva-text-muted);
+}

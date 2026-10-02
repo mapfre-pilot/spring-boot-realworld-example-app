@@ -43,7 +43,7 @@ describe('roleGuard', () => {
 });
 
 describe('authGuard', () => {
-  it('en modo local redirige a /login sin token', () => {
+  it('en modo local redirige a /bienvenida sin token', () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
@@ -52,10 +52,10 @@ describe('authGuard', () => {
       ],
     });
     const res = TestBed.runInInjectionContext(() => authGuard(null as never, null as never));
-    expect(res).not.toBe(true);
+    expect(String(res)).toBe('/bienvenida');
   });
 
-  it('en modo oidc dispara authorize() y devuelve false', () => {
+  it('en modo oidc redirige a /bienvenida sin disparar authorize()', () => {
     const oidc = { authorize: jest.fn() };
     TestBed.configureTestingModule({
       providers: [
@@ -69,7 +69,7 @@ describe('authGuard', () => {
       ],
     });
     const res = TestBed.runInInjectionContext(() => authGuard(null as never, null as never));
-    expect(res).toBe(false);
-    expect(oidc.authorize).toHaveBeenCalled();
+    expect(String(res)).toBe('/bienvenida');
+    expect(oidc.authorize).not.toHaveBeenCalled();
   });
 });
