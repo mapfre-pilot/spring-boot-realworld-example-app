@@ -6,6 +6,7 @@ antes de atender peticiones. Un bloqueo serializa workers y réplicas.
 """
 
 import logging
+import os
 from contextlib import contextmanager
 
 from django.conf import settings
@@ -44,10 +45,11 @@ def _bloqueo():
 
 
 def preparar_base_datos() -> None:
-    if connection.vendor == "sqlite" and not settings.LOCAL_ENVIRONMENT:
+    if connection.vendor == "sqlite" and not settings.LOCAL_ENVIRONMENT and not os.environ.get("DB_SQLITE_PATH"):
         logger.warning(
-            "Sin DB_HOST: se usa SQLite dentro del contenedor (%s). Los datos se pierden al "
-            "redesplegar y no se comparten entre réplicas: usar 1 réplica o configurar DB_*.",
+            "Sin DB_HOST ni DB_SQLITE_PATH: se usa SQLite dentro del contenedor (%s). Los datos "
+            "se pierden al redesplegar: montar un volumen persistente y apuntar DB_SQLITE_PATH "
+            "a él, o configurar DB_*.",
             connection.settings_dict["NAME"],
         )
     with _bloqueo():

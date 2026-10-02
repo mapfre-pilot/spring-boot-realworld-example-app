@@ -152,6 +152,7 @@ Contrato mínimo del manifiesto (variables del contenedor):
 | Variable | Tipo | Notas |
 |---|---|---|
 | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` | config | sin `DB_HOST` el backend usa SQLite **efímero** dentro del contenedor (avisa en el log; solo vale para pruebas con 1 réplica) |
+| `DB_SQLITE_PATH` | config | sin `DB_HOST`: ruta del fichero SQLite, p. ej. `/data/tva.sqlite3` sobre un volumen persistente (ver abajo) |
 | `DB_PASSWORD` | secreto (Secrets Manager/SSM) | |
 | `SECRET_KEY` | secreto | estable entre despliegues: deriva la clave que cifra los secretos de Configuración |
 | `TVA_CONFIG_KEY` | secreto opcional | clave de cifrado independiente de `SECRET_KEY` |
@@ -163,6 +164,25 @@ El usuario de BD necesita permisos de DDL sobre su esquema (crea `tva_*` y
 aplica `tva-backend/db/liquibase/changelog/changelog.xml` antes y deja
 `TVA_AUTO_MIGRATE=true`: solo registrará las migraciones como aplicadas y cargará
 los parámetros.
+
+### Sin base de datos externa: SQLite persistente
+
+Para no desplegar PostgreSQL se puede dejar SQLite si el fichero vive en un
+volumen persistente. El fichero del contenedor se pierde en cada despliegue.
+En el repositorio de manifiestos:
+
+- `PersistentVolumeClaim` `ReadWriteOnce` sobre EBS (gp3, 1 GiB sobra) montado
+  en `/data`. **No usar EFS/NFS**: el bloqueo de ficheros de SQLite no es fiable
+  en sistemas de ficheros de red.
+- `DB_SQLITE_PATH=/data/tva.sqlite3` y sin `DB_HOST`.
+- `replicas: 1` y estrategia `Recreate` (un volumen RWO no se monta en dos pods a
+  la vez; con `RollingUpdate` el pod nuevo se queda en `ContainerCreating`).
+- `securityContext.fsGroup: 1000` (la imagen corre como `appuser` 1000:1000) para
+  que pueda escribir en `/data`.
+
+El resto (migraciones, parámetros, configuración y secretos de Administración)
+funciona igual. Limitaciones: una única réplica y sin backups automáticos (usar
+snapshots del volumen EBS).
 
 ### Configuración de integraciones desde Administración
 
