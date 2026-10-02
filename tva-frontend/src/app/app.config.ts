@@ -10,7 +10,11 @@ import {
 } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
-import { provideAuth } from 'angular-auth-oidc-client';
+import {
+  AbstractSecurityStorage,
+  DefaultLocalStorageService,
+  provideAuth,
+} from 'angular-auth-oidc-client';
 
 import { EnvironmentConfig, provideEnvironment } from '@mapfre-tech/ngx-multienvironment/core';
 
@@ -41,6 +45,8 @@ export function appConfig(env: string, envConfig: EnvironmentConfig): Applicatio
               maxIdTokenIatOffsetAllowedInSeconds: 600,
             },
           }),
+          // Sesión OIDC compartida entre pestañas (por defecto es sessionStorage).
+          { provide: AbstractSecurityStorage, useClass: DefaultLocalStorageService },
           provideAppInitializer(() => inject(AuthService).inicializarOidc()),
         ]
       : [];
