@@ -16,3 +16,7 @@ from dotenv import load_dotenv
 load_dotenv()  # tva-backend/.env junto a sources/ (ver .env.sample)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 application = get_wsgi_application()
+
+from apps.tva.bootstrap import preparar_si_procede  # noqa: E402 — requiere Django inicializado
+
+preparar_si_procede()

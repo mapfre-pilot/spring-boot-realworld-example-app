@@ -10,7 +10,8 @@ import uuid
 from typing import Protocol
 
 import requests
-from django.conf import settings
+
+from apps.tva.services import configuracion
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +68,8 @@ class RealAppianEmbedClient:
     """POST directo con ``Appian-API-Key``; sin reintentos (inicia procesos)."""
 
     def __init__(self) -> None:
-        self.base_url = settings.APPIAN_EMBED_BASE_URL.rstrip("/")
-        self.timeout = settings.APPIAN_EMBED_TIMEOUT
+        self.base_url = configuracion.obtener("APPIAN_EMBED_BASE_URL").rstrip("/")
+        self.timeout = configuracion.obtener("APPIAN_EMBED_TIMEOUT")
         self.session = requests.Session()
 
     def lanzar(self, popup: str, body: dict) -> dict:
@@ -77,7 +78,7 @@ class RealAppianEmbedClient:
             r = self.session.post(
                 url,
                 json=body,
-                headers={"Appian-API-Key": settings.APPIAN_EMBED_API_KEY},
+                headers={"Appian-API-Key": configuracion.obtener("APPIAN_EMBED_API_KEY")},
                 timeout=self.timeout,
             )
         except requests.RequestException as e:
@@ -104,7 +105,7 @@ class RealAppianEmbedClient:
             r = self.session.post(
                 url,
                 json={"usuarioAppian": usuario_appian, "idTarea": task_id},
-                headers={"Appian-API-Key": settings.APPIAN_EMBED_API_KEY},
+                headers={"Appian-API-Key": configuracion.obtener("APPIAN_EMBED_API_KEY")},
                 timeout=self.timeout,
             )
         except requests.RequestException as e:
@@ -130,10 +131,13 @@ class RealAppianEmbedClient:
 
 
 _client: AppianEmbedClient | None = None
+_huella: tuple | None = None
 
 
 def get_appian_embed_client() -> AppianEmbedClient:
-    global _client
-    if _client is None:
-        _client = RealAppianEmbedClient() if settings.APPIAN_EMBED_MODE == "real" else MockAppianEmbedClient()
+    global _client, _huella
+    huella = configuracion.huella("appian")
+    if _client is None or huella != _huella:
+        _client = RealAppianEmbedClient() if configuracion.obtener("APPIAN_EMBED_MODE") == "real" else MockAppianEmbedClient()
+        _huella = huella
     return _client

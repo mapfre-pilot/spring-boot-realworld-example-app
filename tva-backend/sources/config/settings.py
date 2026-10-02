@@ -160,15 +160,28 @@ SIMPLE_JWT = {
 }
 
 # JWT OIDC (resto de entornos): token RS256 verificado contra el JWKS del IdP.
-OAUTH_JWKS_URI = os.environ.get("OAUTH_JWKS_URI", "")
+# Fuera de local, sin variables se usa la App Registration EntraID de TVA.
+_ENTRAID_TENANT = "93ad25dd-8cdc-4066-9727-31a8a3024f80"
+_ENTRAID_CLIENT_ID = "86cc156f-a83e-4c72-bd33-bcaca9ef9545"
+_OAUTH_DEFAULTS = (
+    {}
+    if LOCAL_ENVIRONMENT
+    else {
+        "OAUTH_JWKS_URI": f"https://login.microsoftonline.com/{_ENTRAID_TENANT}/discovery/v2.0/keys",
+        "OAUTH_AUDIENCE": f"{_ENTRAID_CLIENT_ID},api://{_ENTRAID_CLIENT_ID}",
+        "OAUTH_ISSUER": f"https://login.microsoftonline.com/{_ENTRAID_TENANT}/v2.0",
+        "OAUTH_DEFAULT_ROLES": "TVA_USUARIO",
+    }
+)
+OAUTH_JWKS_URI = os.environ.get("OAUTH_JWKS_URI", _OAUTH_DEFAULTS.get("OAUTH_JWKS_URI", ""))
 # Audiencias admitidas separadas por comas (EntraID emite aud=client_id en v2
 # o aud=api://<client_id> en v1).
-OAUTH_AUDIENCE = [s.strip() for s in os.environ.get("OAUTH_AUDIENCE", "").split(",") if s.strip()]
-OAUTH_ISSUER = os.environ.get("OAUTH_ISSUER", "")
+OAUTH_AUDIENCE = [s.strip() for s in os.environ.get("OAUTH_AUDIENCE", _OAUTH_DEFAULTS.get("OAUTH_AUDIENCE", "")).split(",") if s.strip()]
+OAUTH_ISSUER = os.environ.get("OAUTH_ISSUER", _OAUTH_DEFAULTS.get("OAUTH_ISSUER", ""))
 OAUTH_JWKS_CACHE_TTL = int(os.environ.get("OAUTH_JWKS_CACHE_TTL", "3600"))
 # Roles aplicados cuando el token OIDC no trae claim `roles`.
 OAUTH_DEFAULT_ROLES = [
-    s.strip() for s in os.environ.get("OAUTH_DEFAULT_ROLES", "").split(",") if s.strip()
+    s.strip() for s in os.environ.get("OAUTH_DEFAULT_ROLES", _OAUTH_DEFAULTS.get("OAUTH_DEFAULT_ROLES", "")).split(",") if s.strip()
 ]
 
 # DATABASE CONFIGURATION
@@ -191,6 +204,7 @@ else:
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": os.environ.get("DB_SQLITE_PATH", str(BASE_DIR / "db.sqlite3")),
+            "OPTIONS": {"timeout": 20},
         }
     }
 
@@ -228,7 +242,13 @@ CELERY_BROKER_URL = os.environ.get(
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", CELERY_BROKER_URL)
 CELERY_TASK_ALWAYS_EAGER = evaluate_bool("CELERY_TASK_ALWAYS_EAGER")
 
-# TVA — conectores externos (valores solo por entorno, ver .env.sample)
+# TVA — arranque: migraciones + parámetros al cargar el WSGI (apps/tva/bootstrap.py)
+TVA_AUTO_MIGRATE = evaluate_bool("TVA_AUTO_MIGRATE")
+
+# TVA — conectores externos. Valores por entorno (ver .env.sample); Administración
+# → Configuración puede sobrescribirlos en BD (apps/tva/services/configuracion.py).
+# Clave de cifrado de los secretos guardados en BD (por defecto deriva de SECRET_KEY).
+TVA_CONFIG_KEY = os.environ.get("TVA_CONFIG_KEY", "")
 # -------------------------------------------------------------
 APILIFE_MODE = os.environ.get("APILIFE_MODE", "mock")  # mock | real
 APILIFE_BASE_URL = os.environ.get("APILIFE_BASE_URL", "")
@@ -341,3 +361,7 @@ LOGGING = {
 
 # CORS — orígenes permitidos para el frontend Angular (coma-separados).
 CORS_ALLOWED_ORIGINS = [o.strip() for o in os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:4200").split(",") if o.strip()]
+# Regex de orígenes adicionales (por defecto, cualquier host https de la plataforma AWS MAPFRE).
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r.strip() for r in os.getenv("CORS_ALLOWED_ORIGIN_REGEXES", r"^https://[\w.-]+\.plataforma\.aws\.mapfre\.net$").split(",") if r.strip()
+]

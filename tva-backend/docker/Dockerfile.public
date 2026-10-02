@@ -18,4 +18,4 @@ COPY sources/ .
 
 EXPOSE 8888
 
-CMD ["sh", "-c", "python manage.py migrate && gunicorn config.wsgi:application --bind 0.0.0.0:8888"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py cargar_parametros --solo-nuevos && gunicorn config.wsgi:application --bind 0.0.0.0:8888"]

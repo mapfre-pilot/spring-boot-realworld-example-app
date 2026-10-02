@@ -25,7 +25,8 @@ from pathlib import Path
 from typing import Any
 
 import requests
-from django.conf import settings
+
+from apps.tva.services import configuracion
 
 from apps.core.httpclient import BaseHttpClient
 
@@ -41,11 +42,11 @@ CHANNEL_CODE_PERSONAS = "01"  # a!defaultValue(ri!channelCode, "01")
 
 def _idioma() -> str:
     """cons!CMP_VAL_TRADUCCION_ES (cross-app): env-overridable."""
-    return getattr(settings, "APILIFE_ACCEPT_LANGUAGE", "es") or "es"
+    return configuracion.obtener("APILIFE_ACCEPT_LANGUAGE") or "es"
 
 
 def _aplicacion() -> str:
-    return getattr(settings, "APILIFE_APPLICATION_ID", ACRONIMO_APLICACION) or ACRONIMO_APLICACION
+    return configuracion.obtener("APILIFE_APPLICATION_ID") or ACRONIMO_APLICACION
 
 
 FIXTURES_DIR = Path(__file__).resolve().parent.parent.parent / "fixtures" / "apilife"
@@ -527,10 +528,10 @@ class RealApiLifeClient(ApiLifeClient):
 
     def __init__(self) -> None:
         self.http = BaseHttpClient(
-            base_url=settings.APILIFE_BASE_URL,
-            timeout=settings.APILIFE_TIMEOUT,
-            username=settings.APILIFE_USERNAME,
-            password=settings.APILIFE_PASSWORD,
+            base_url=configuracion.obtener("APILIFE_BASE_URL"),
+            timeout=configuracion.obtener("APILIFE_TIMEOUT"),
+            username=configuracion.obtener("APILIFE_USERNAME"),
+            password=configuracion.obtener("APILIFE_PASSWORD"),
         )
         self._http_appinve: BaseHttpClient | None = None
 
@@ -539,10 +540,10 @@ class RealApiLifeClient(ApiLifeClient):
             return self.http
         if self._http_appinve is None:
             self._http_appinve = BaseHttpClient(
-                base_url=settings.APILIFE_BASE_URL,
-                timeout=settings.APILIFE_TIMEOUT,
-                username=getattr(settings, "APILIFE_APPINVE_USERNAME", "") or settings.APILIFE_USERNAME,
-                password=getattr(settings, "APILIFE_APPINVE_PASSWORD", "") or settings.APILIFE_PASSWORD,
+                base_url=configuracion.obtener("APILIFE_BASE_URL"),
+                timeout=configuracion.obtener("APILIFE_TIMEOUT"),
+                username=configuracion.obtener("APILIFE_APPINVE_USERNAME") or configuracion.obtener("APILIFE_USERNAME"),
+                password=configuracion.obtener("APILIFE_APPINVE_PASSWORD") or configuracion.obtener("APILIFE_PASSWORD"),
             )
         return self._http_appinve
 
@@ -602,13 +603,16 @@ def _marcadores(path: str) -> list[str]:
 
 
 _client: ApiLifeClient | None = None
+_huella: tuple | None = None
 
 
 def get_apilife_client() -> ApiLifeClient:
     """Factory: devuelve el cliente según APILIFE_MODE."""
-    global _client
-    if _client is None:
-        _client = RealApiLifeClient() if settings.APILIFE_MODE == "real" else MockApiLifeClient()
+    global _client, _huella
+    huella = configuracion.huella("apilife")
+    if _client is None or huella != _huella:
+        _client = RealApiLifeClient() if configuracion.obtener("APILIFE_MODE") == "real" else MockApiLifeClient()
+        _huella = huella
     return _client
 
 

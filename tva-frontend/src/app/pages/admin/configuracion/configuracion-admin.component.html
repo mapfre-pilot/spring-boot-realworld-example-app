@@ -1,0 +1,82 @@
+<p class="aviso">
+  Los valores guardados aquí sustituyen a las variables de entorno del despliegue. Los secretos se
+  guardan cifrados y nunca se muestran: deja el campo vacío para conservar el actual.
+</p>
+<mat-accordion multi>
+  @for (g of grupos(); track g.grupo) {
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>{{ g.etiqueta }}</mat-panel-title>
+        <mat-panel-description>
+          <span
+            class="chip-estado"
+            [class.ok]="modo(g) === 'real'"
+            [class.pendiente]="modo(g) !== 'real'">
+            {{ modo(g) }}
+          </span>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="campos-configuracion">
+        @for (c of g.campos; track c.nombre) {
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>{{ c.etiqueta }}</mat-label>
+            @switch (c.tipo) {
+              @case ('modo') {
+                <mat-select [value]="valor(c)" (selectionChange)="cambiar(c.nombre, $event.value)">
+                  <mat-option value="mock">mock</mat-option>
+                  <mat-option value="real">real</mat-option>
+                </mat-select>
+              }
+              @case ('secreto') {
+                <input
+                  matInput
+                  type="password"
+                  autocomplete="new-password"
+                  [value]="valor(c)"
+                  [placeholder]="c.configurado ? '•••••• (configurado)' : 'Sin configurar'"
+                  (input)="cambiar(c.nombre, $any($event.target).value)" />
+              }
+              @default {
+                <input
+                  matInput
+                  [type]="c.tipo === 'entero' ? 'number' : 'text'"
+                  [value]="valor(c)"
+                  (input)="cambiar(c.nombre, $any($event.target).value)" />
+              }
+            }
+            <mat-hint
+              >{{ c.nombre }} · {{ c.origen === 'bd' ? 'Administración' : 'entorno' }}</mat-hint
+            >
+          </mat-form-field>
+        }
+      </div>
+
+      <div class="toolbar">
+        <button
+          mat-flat-button
+          type="button"
+          [disabled]="!pendientes(g).length"
+          (click)="guardar(g)">
+          <mat-icon>save</mat-icon> Guardar
+        </button>
+        <button mat-stroked-button type="button" (click)="restablecer(g)">
+          <mat-icon>restart_alt</mat-icon> Volver a valores del entorno
+        </button>
+        @if (gruposConNif.includes(g.grupo)) {
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>NIF de prueba</mat-label>
+            <input matInput (input)="cambiarNif(g.grupo, $any($event.target).value)" />
+          </mat-form-field>
+        }
+        <button mat-stroked-button type="button" (click)="probar(g.grupo)">
+          <mat-icon>network_check</mat-icon> Probar conexión
+        </button>
+      </div>
+
+      @if (resultados()[g.grupo]; as r) {
+        <pre class="resultado-prueba" [class.ok]="r.ok" [class.error]="!r.ok">{{ r.salida }}</pre>
+      }
+    </mat-expansion-panel>
+  }
+</mat-accordion>

@@ -1,6 +1,13 @@
 from django.urls import path
 
-from apps.tva.views.admin import AperturaCierreView, CachesView, ParametrosView, TrazasView
+from apps.tva.views.admin import (
+    AperturaCierreView,
+    CachesView,
+    ConfiguracionView,
+    ParametrosView,
+    ProbarConfiguracionView,
+    TrazasView,
+)
 from apps.tva.views.catalogos import CatalogosView
 from apps.tva.views.clientes import ClientesView
 from apps.tva.views.documentos import DocumentosView
@@ -27,4 +34,6 @@ urlpatterns = [
     path("admin/apertura-cierre/", AperturaCierreView.as_view(), name="tva-admin-apertura-cierre"),
     path("admin/caches/limpiar/", CachesView.as_view(), name="tva-admin-caches"),
     path("admin/trazas/", TrazasView.as_view(), name="tva-admin-trazas"),
+    path("admin/configuracion/", ConfiguracionView.as_view(), name="tva-admin-configuracion"),
+    path("admin/configuracion/probar/", ProbarConfiguracionView.as_view(), name="tva-admin-configuracion-probar"),
 ]

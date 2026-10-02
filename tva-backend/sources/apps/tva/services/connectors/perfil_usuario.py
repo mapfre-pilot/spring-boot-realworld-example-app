@@ -18,7 +18,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import requests
-from django.conf import settings
+
+from apps.tva.services import configuracion
 
 logger = logging.getLogger(__name__)
 FIXTURES_DIR = Path(__file__).resolve().parent.parent.parent / "fixtures" / "apilife"
@@ -87,8 +88,8 @@ def parsear_perfil_soap(xml_text: str) -> dict:
 def _envelope(nuuma: str) -> str:
     return _SOAP_TEMPLATE.format(
         token_id=os.urandom(16).hex().upper(),
-        username=settings.SOA_USERNAME,
-        password=settings.SOA_PASSWORD,
+        username=configuracion.obtener("SOA_USERNAME"),
+        password=configuracion.obtener("SOA_PASSWORD"),
         nonce=base64.b64encode(os.urandom(16)).decode("ascii"),
         created=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         nuuma=nuuma,
@@ -111,8 +112,8 @@ class MockPerfilUsuarioClient(PerfilUsuarioClient):
 
 class RealPerfilUsuarioClient(PerfilUsuarioClient):
     def __init__(self) -> None:
-        self.timeout = getattr(settings, "SOA_TIMEOUT", 10)
-        self.url = f"{settings.SOA_BASE_URL.rstrip('/')}/{SOAP_PATH}"
+        self.timeout = configuracion.obtener("SOA_TIMEOUT")
+        self.url = f"{configuracion.obtener('SOA_BASE_URL').rstrip('/')}/{SOAP_PATH}"
 
     def obtener_perfil(self, usuario: str) -> dict:
         nuuma = usuario.split("@")[0].upper() if "@" in usuario else usuario
@@ -135,12 +136,15 @@ class RealPerfilUsuarioClient(PerfilUsuarioClient):
 
 
 _client: PerfilUsuarioClient | None = None
+_huella: tuple | None = None
 
 
 def get_perfil_usuario_client() -> PerfilUsuarioClient:
-    global _client
-    if _client is None:
-        _client = RealPerfilUsuarioClient() if settings.PERFIL_USUARIO_MODE == "real" else MockPerfilUsuarioClient()
+    global _client, _huella
+    huella = configuracion.huella("perfil-usuario")
+    if _client is None or huella != _huella:
+        _client = RealPerfilUsuarioClient() if configuracion.obtener("PERFIL_USUARIO_MODE") == "real" else MockPerfilUsuarioClient()
+        _huella = huella
     return _client
 
 

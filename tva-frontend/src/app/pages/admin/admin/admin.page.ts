@@ -1,4 +1,4 @@
-/** Administración TVA (rol TVA_ADMIN_PORTAL): parámetros, apertura/cierre, cachés, trazas. */
+/** Administración TVA (rol TVA_ADMIN_PORTAL): parámetros, apertura/cierre, cachés, configuración, trazas. */
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -14,6 +14,7 @@ import {
 } from '@tva/core';
 import { CabeceraComponent } from '../../../shared/ui/layout/cabecera/cabecera.component';
 import { EncabezadoPantallaComponent } from '../../../shared/ui/layout/encabezado-pantalla/encabezado-pantalla.component';
+import { ConfiguracionAdminComponent } from '../configuracion/configuracion-admin.component';
 import { OperacionesAdminComponent } from '../operaciones/operaciones-admin.component';
 import { ParametrosAdminComponent } from '../parametros/parametros-admin.component';
 import { TrazasAdminComponent } from '../trazas/trazas-admin.component';
@@ -27,6 +28,7 @@ import { TrazasAdminComponent } from '../trazas/trazas-admin.component';
     EncabezadoPantallaComponent,
     ParametrosAdminComponent,
     OperacionesAdminComponent,
+    ConfiguracionAdminComponent,
     TrazasAdminComponent,
   ],
 

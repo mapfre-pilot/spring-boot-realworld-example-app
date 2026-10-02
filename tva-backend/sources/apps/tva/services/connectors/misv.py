@@ -12,7 +12,8 @@ import logging
 from pathlib import Path
 
 import requests
-from django.conf import settings
+
+from apps.tva.services import configuracion
 
 from apps.core.httpclient import BaseHttpClient
 
@@ -47,9 +48,9 @@ def _misv_params(payload: dict) -> dict:
     )
     return {
         "USUARIO": nuuma,
-        "APLICACION": getattr(settings, "MISV_APLICACION", "VIDA") or "VIDA",
+        "APLICACION": configuracion.obtener("MISV_APLICACION") or "VIDA",
         "NIF": arreglo_nif_pfm(nif),
-        "TIPO_PERSONA": getattr(settings, "MISV_TIPO_PERSONA", "F") or "F",
+        "TIPO_PERSONA": configuracion.obtener("MISV_TIPO_PERSONA") or "F",
     }
 
 
@@ -69,10 +70,10 @@ class MockMisvClient(MisvClient):
 class RealMisvClient(MisvClient):
     def __init__(self) -> None:
         self.http = BaseHttpClient(
-            base_url=settings.MISV_BASE_URL,
-            timeout=getattr(settings, "MISV_TIMEOUT", 20),
-            username=settings.MISV_USERNAME,
-            password=settings.MISV_PASSWORD,
+            base_url=configuracion.obtener("MISV_BASE_URL"),
+            timeout=configuracion.obtener("MISV_TIMEOUT"),
+            username=configuracion.obtener("MISV_USERNAME"),
+            password=configuracion.obtener("MISV_PASSWORD"),
         )
 
     def perfilar(self, payload: dict) -> dict:
@@ -81,7 +82,7 @@ class RealMisvClient(MisvClient):
             resp = self.http.session.get(
                 f"{self.http.base_url}{PERFILADO_PATH}",
                 params=params,
-                timeout=getattr(settings, "MISV_TIMEOUT", 20),
+                timeout=configuracion.obtener("MISV_TIMEOUT"),
             )
         except requests.RequestException as exc:
             logger.error("MISV perfilado no disponible: %s", type(exc).__name__)
@@ -92,12 +93,15 @@ class RealMisvClient(MisvClient):
 
 
 _client: MisvClient | None = None
+_huella: tuple | None = None
 
 
 def get_misv_client() -> MisvClient:
-    global _client
-    if _client is None:
-        _client = RealMisvClient() if settings.MISV_MODE == "real" else MockMisvClient()
+    global _client, _huella
+    huella = configuracion.huella("misv")
+    if _client is None or huella != _huella:
+        _client = RealMisvClient() if configuracion.obtener("MISV_MODE") == "real" else MockMisvClient()
+        _huella = huella
     return _client
 
 
