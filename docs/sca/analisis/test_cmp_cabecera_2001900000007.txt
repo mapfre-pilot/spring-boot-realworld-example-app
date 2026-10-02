@@ -1,0 +1,6 @@
+SCA  #1 [3.2s] {"rsvPrima": "0", "dtoIntegralidadNuevaProduccion": null, "treboles": "0,00", "activoClubMapfre": "Sí", "perfilClubMapfre": null, "tipoClienteDesc": null, "idCliente": null, "carterizado": "No"}
+SCA2 #1 [2.9s] {"rsvPrima": "0", "dtoIntegralidadNuevaProduccion": null, "treboles": "0,00", "activoClubMapfre": "Sí", "perfilClubMapfre": null, "tipoClienteDesc": null, "idCliente": null, "carterizado": "No"}
+SCA  #2 [2.6s] {"rsvPrima": "0", "dtoIntegralidadNuevaProduccion": null, "treboles": "0,00", "activoClubMapfre": "Sí", "perfilClubMapfre": null, "tipoClienteDesc": null, "idCliente": null, "carterizado": "No"}
+SCA2 #2 [2.9s] {"rsvPrima": "0", "dtoIntegralidadNuevaProduccion": null, "treboles": "0,00", "activoClubMapfre": "Sí", "perfilClubMapfre": null, "tipoClienteDesc": null, "idCliente": null, "carterizado": "No"}
+SCA  #3 [2.6s] {"rsvPrima": "0", "dtoIntegralidadNuevaProduccion": null, "treboles": "0,00", "activoClubMapfre": "Sí", "perfilClubMapfre": null, "tipoClienteDesc": null, "idCliente": null, "carterizado": "No"}
+SCA2 #3 [2.9s] {"rsvPrima": "0", "dtoIntegralidadNuevaProduccion": null, "treboles": "0,00", "activoClubMapfre": "Sí", "perfilClubMapfre": null, "tipoClienteDesc": null, "idCliente": null, "carterizado": "No"}
