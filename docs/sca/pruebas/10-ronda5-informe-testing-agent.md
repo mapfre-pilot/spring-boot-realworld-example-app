@@ -308,3 +308,49 @@ La referencia, fecha y número de filas documentales coinciden, pero el nombre d
 - Plan: `plan-v44-ui.md`.
 
 **Veredicto del delta v44:** pasan las tres comprobaciones documentales solicitadas. La diferencia Autorización/Justificante compra detectada en v43 queda corregida en D, sin alterar los tipos de AA ni CA observados. Esta verificación no amplía cobertura a otros tipos documentales/casos, ni reejecuta S4, mecanización, SGC, correo o ANL; siguen aplicando las limitaciones históricas que no corresponden a este delta.
+
+## 11. Verificación posterior — Detalle v45, parseo explícito de Anulación
+
+**Entorno y alcance:** Appian TEST, sesión JJGONZ2; comprobación UI sólo lectura. Desde el buscador SCA2 se abrió cada solicitud y se desplegó Mecanizacion; se abrió la misma solicitud en SCA y se comparó literalmente la fecha del hito **Anulación**. No se pulsaron acciones de tarea, RETOMAR, TRAZAR ANULACIÓN ni ANULAR; tampoco se modificaron preferencias.
+
+El error comunicado antes de v45 era `Error in a!forEach() during iteration 2 ... at function 'todate' [line 596]: Could not cast from Time to Date with Timezone`. **No apareció este error ni otro error visible de renderizado en las siete aperturas SCA2 verificadas.**
+
+### 11.1 Configuración de la sesión
+
+JG → Configuración mostró los siguientes valores, sin guardar cambios:
+
+- Configuración regional: **Usar valor predeterminado del sistema: Español (España)**.
+- Zona horaria: **Usar valor predeterminado del sistema: (UTC+01:00) hora de Europa central (Europe/Madrid)**.
+- Calendario: **Usar valor predeterminado del sistema: Gregoriano**.
+- Evidencia: `ss_47062af6.png`.
+
+### 11.2 Comparación de fechas visibles
+
+| Solicitud | Póliza | Anulación SCA2 v45 | Anulación SCA | Resultado | Capturas SCA2 / SCA |
+|---|---|---|---|---|---|
+| 15787794 (D) | 2002000062822 | 05/10/2026 | 05/10/2026 | **PASA**, sin error | `ss_caae6b2e.png` / `ss_dd712dcb.png` |
+| 15787792 (B) | 2001900006477 | 02/08/2027 | 02/08/2027 | **PASA**, sin error | `ss_4987158a.png` / `ss_430cf6d2.png` |
+| 15787761 | 2002000026784 | 06/03/2027 | 06/03/2027 | **PASA**, sin error | `ss_f876613f.png` / `ss_1a08e75e.png` |
+| 15787764 | 2002000042310 | 01/05/2027 | 01/05/2027 | **PASA**, sin error | `ss_37b1be30.png` / `ss_5d20839b.png` |
+| 15787765 | 2002000068248 | 05/06/2027 | 05/06/2027 | **PASA**, sin error | `ss_3bd87481.png` / `ss_a3666029.png` |
+| 15787783, adicional reciente (05/10/2026) | 2002200588051 | 03/01/2027 | 03/01/2027 | **PASA**, sin error | `ss_d861223a.png` / `ss_abf1b297.png` |
+| 15787751, adicional con **día >12** | 2002200566753 | **15/11/2025** | **15/11/2025** | **PASA**, sin error | `ss_52dfc98d.png` / `ss_bca0d297.png` |
+
+Los seis primeros casos tienen días de anulación ≤12. Se añadió 15787751 para cubrir expresamente un día >12, sin alterar datos. La comparación usa el hito Anulación de Mecanizacion, no la fecha de inicio/fin de gestión ni la fecha del buscador.
+
+### 11.3 Evidencia visual
+
+| 15787751 — SCA, referencia día >12 | 15787751 — SCA2 v45, día >12 |
+|---|---|
+| ![SCA Anulación 15/11/2025](https://mapfre.devinenterprise.com/attachments/0a171e05-4e87-41ba-b31f-70432c8f6831/ss_bca0d297.png) | ![SCA2 Anulación 15/11/2025](https://mapfre.devinenterprise.com/attachments/aaffc260-2c4f-4f95-9508-75f3ae94c203/ss_52dfc98d.png) |
+
+| 15787783 — SCA, adicional reciente | 15787783 — SCA2 v45, adicional reciente |
+|---|---|
+| ![SCA Anulación 03/01/2027](https://mapfre.devinenterprise.com/attachments/8f6cbb53-379c-44f9-ad76-0eeacc3f8fa3/ss_abf1b297.png) | ![SCA2 Anulación 03/01/2027](https://mapfre.devinenterprise.com/attachments/1d780f22-8411-44b2-8525-e94c94458be2/ss_d861223a.png) |
+
+![Configuración regional de JJGONZ2](https://mapfre.devinenterprise.com/attachments/af12c402-db70-47d1-b4c6-763e712c8779/ss_47062af6.png)
+
+- Grabación: `sca-detalle-v45-fechas-edited.mp4`.
+- Plan: `plan-v45-ui.md`.
+
+**Veredicto del delta v45:** pasan las siete comprobaciones UI: Detalle y Mecanizacion se renderizan sin el error comunicado y las fechas de Anulación coinciden con SCA, incluidas fechas ambiguas día/mes y el caso 15/11/2025. Cobertura solicitada completada en la sesión indicada. No se demuestra funcionamiento en otros locales, formatos CORE nulos/incorrectos o todos los registros posibles; no se cambió el locale para esta verificación sólo lectura. Tampoco se reejecutan procesos ni se amplía la cobertura histórica de SGC, correo o ANL.
