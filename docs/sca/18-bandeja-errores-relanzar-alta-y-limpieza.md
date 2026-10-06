@@ -70,6 +70,20 @@ Ningún error pendiente corresponde al código actual.
 - Las MECANIZADA de D1 (15787759, 761, 764, 765, 766, 770, 772, 783) siguen en Mecanizar sin desbloqueo ANL. 15787759 lleva más de 24 h y no ha registrado `ANL_TIMEOUT`: pendiente de revisar si el corte a 24 h funciona.
 - Backups CSV previos a cualquier borrado: `r9/v10/errores_all.json`, `data_sol.json`, `data_tar.json`, `data_tra.json` (workspace, no versionados por contener datos de pólizas).
 
-## 5. Estado
+## 5. Limpieza ejecutada (06/10/2026, alcance elegido por el usuario: «Solo errores y las 15 solicitudes que nunca llegaron a CORE o fallaron al decidir»)
 
-Corrección del relanzamiento aplicada y probada. Limpieza de datos **pendiente de confirmación** del alcance (B+C+errores, + D1, + D2).
+Copia previa (CSV completos) en el workspace: `r9/v10/cleanup_backup/pre_{err,sol,tar,tra,traz}.csv` (no versionada: contiene datos de pólizas). Borrado con `deleteRecordData` por clave primaria:
+
+| Record | Antes | Borradas | Después |
+|---|---|---|---|
+| `SCA2 Error` | 56 | 56 (ids 1–66, todas) | 0 |
+| `SCA2 Solicitud` | 90 | 15 (grupos B y C de §4.2: 12 `PDTE-*`, fila vacía id 98, 15787510, 15787514) | 75 |
+| `SCA2 Transicion` | 437 | 2 (de 15787510 y 15787514) | 435 |
+| `SCA2 Tarea` | 104 | 0 (esas solicitudes no tenían tareas) | 104 |
+
+No se ha tocado CORE ni las 75 solicitudes con número CORE (D1/D2). `testInterface` posterior: bandeja vacía con el mensaje de lista vacía y Detalle sin errores.
+
+## 6. Pendiente
+
+- `ANL_TIMEOUT` de 15787759: la consulta ANL (`ANL_getAnulacionByFilter_qr`) sigue sin fila para esa solicitud y su instancia (526741, versión del 01/10 con sondeo 288 × 5 min → nodo 312 → Write Error) debería haber escrito `ANL_TIMEOUT` el 02/10. No llegó a `SCA2 Error`. Sin acceso a Monitoring no se puede ver si la instancia está pausada por excepción o sigue esperando; lo tiene que mirar un administrador. La versión viva del PM ya no espera a ANL en pólizas NSE (nodo 324 → 325).
+- 15787761 y 15787783 sí tienen fila ANL (2081 / 2087) en estado MECANIZAR, sin desbloqueo.
