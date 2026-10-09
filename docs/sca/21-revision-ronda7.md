@@ -81,3 +81,21 @@ Informe UI completo: `pruebas/13-ronda7-informe-testing-agent.md` (sección «Ro
 - **Cabecera «Origen IMPAGO»** en 15787868 con fecha de recibo «-»: proviene de CORE/estado de recibos de la póliza; confirmar con el analista si es el origen esperado para esa póliza.
 - **SCA muestra el popup de simulación antes del error de fecha** (su `showPopupSimular` evalúa `erroresGuardar` sin refrescar). SCA2 muestra el error directamente. Se considera comportamiento más correcto en SCA2; confirmar.
 - 15787868 queda en Acciones Administrativas **Incompleta**, disponible para la prueba de RETOMAR/AA con SISANS.
+
+## Ronda 7c — RETOMAR, CA y Acción Administrativa con SISANS (SI24 Experto)
+
+- **CA propia en SCA2** (0001047017037 → 15787869): POSPONER → RETOMAR → FINALIZAR POSITIVO conservando observación, modalidad A VENCIMIENTO y fecha 02/03/2027; buscador «Finalizada positivamente», CA «Finalizada Positiva». Igual que SCA.
+- **Retomar tareas ajenas**: SISANS no puede retomar la AA 15787868 (asignada a JJGONZ2) ni la CA2 15787867 (tarea del grupo CE_MF_BK, no SI24). Es la regla de permisos acordada (asignado, o sin asignar y mismo grupo/nivel 1); SCA se comporta igual. **Duda**: ¿debe SI24 Experto poder retomar CA2 de otro grupo tras un salto de nivel? Si sí, hay que confirmar el grupo destino del salto RCI (hoy CE_MF_BK).
+- **SCA equivalente** (0001047017038 → 15787870): quedó «Aún procesando» > 90 s (latencia TEST); comparación paso a paso no completada.
+- **Oficina al retomar**: no se pudo comprobar porque el NUUMA de SISANS tiene una sola oficina (el selector sólo aparece con más de una). Ver pendiente abajo.
+
+## Ronda 7d — buscador SCA2 con solicitudes históricas y creadas en SCA (decisión Excel)
+
+- **Cambio** en `SCA2_Buscador` (backup `r11/buscador_live.json`, readback idéntico, UUID conservado): además de la tabla de solicitudes SCA2, se consulta CORE (`SCA2_consultarSolicitudes`, `tpBusqueda` 0 por póliza; por cliente se reutiliza la consulta ya existente) y se muestra una segunda tabla «Otras solicitudes de la póliza / cliente (SCA e históricas en CORE, sin gestión en SCA2)» con las solicitudes que no existen como record SCA2, con las mismas columnas que `SCA_BuscadorTabla` y el estado traducido con la misma tabla que `SCA_D_EstadosSolicitud` (1,2,7–10,13 Pendiente; 3 positiva; 4/15 negativa con CA; 5 no requerida; 6/11/12 caducada; 14 cancelada; 16/17 pendiente de autorizar; 18/19 finalizada con/sin anular).
+- **Probado en UI (JJGONZ2)**: 0000253500329 (solicitud SCA 15787864) → principal vacía y 15787864 Pendiente en la tabla CORE, igual que SCA; 0001047017036 → sólo 15787868 en la principal, sin duplicado; búsqueda por documento del cliente → 15787864 en la tabla CORE. Tras la prueba se alinearon fecha completa (con hora), causa en mayúsculas y texto blanco del tag como SCA.
+- **Límite**: las filas sólo-CORE no abren Detalle (no hay record SCA2 ni tareas). **Duda**: ¿debe abrirse un Detalle de sólo lectura con los datos de CORE (cabecera + gestiones) para esas solicitudes, como hace SCA?
+- No probado: paginación de la tabla CORE, otros estados CORE y filtros Estado/Línea sobre ella (los filtros sólo aplican a la tabla SCA2).
+
+## Pendiente: conservar la Oficina al RETOMAR una CA (decisión Excel)
+
+`SCA2_ContraAnulacionOpciones` ya pasa `detalleOficina` al CMD Posponer, pero ningún record la guarda: `SCA2 Datos Solicitud` no tiene campo de oficina (sólo `idcompania`, `catalogacion`, `fecanulacion`…) y `SCA2 Tarea` tampoco. Para implementarlo hace falta una **columna nueva** (`oficinadirecta`, Text) en la tabla de `SCA2 Datos Solicitud` (cambio de BBDD/Data Design, no realizable desde la API de diseño), escribirla en el nodo «Write Posponer» del CMD y restaurarla en la interfaz (`local!detalleOficina` por `OFICINA_DIRECTA`). SCA hoy tampoco la conserva. Pendiente de que se cree la columna.

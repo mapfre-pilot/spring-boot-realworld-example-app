@@ -286,3 +286,135 @@ Se dejó la gestión sin finalizar. No se pulsó ANULAR PÓLIZA, FINALIZAR, POSP
 - Comentario PR sugerido: ninguno; no se indicó PR.
 - SKILL.md adicional: ninguno. Blueprint previamente consultado; no se instalaron dependencias ni iniciaron servicios en esta repetición.
 - Necesario del usuario: ninguno para entregar; sólo confirmación funcional si se quiere cerrar la discrepancia del destino.
+
+## Ronda 7c — SISANS
+
+Prueba por UI real en Appian TEST, con SISANS (SI24 Experto, avatar SS) en sesión Chrome aislada. **Ejecución con cobertura parcial:** CA propia SCA2 completada; comparación equivalente SCA bloqueada por latencia tras GUARDAR. Ningún ANULAR PÓLIZA, ningún segundo GUARDAR de alta, ninguna modificación de objetos Appian.
+
+### Resultado y límites
+
+- **PASA:** SCA2 `0001047017037 → 15787869`: alta única, apertura CA, POSPONER → RETOMAR → finalización positiva. Buscador **Finalizada positivamente**, verde; Detalle **Alta Finalizada / Contra Anulacion Finalizada Positiva**, verde.
+- **FALLA / limitación SCA:** `0001047017038 → 15787870`: tras único GUARDAR permaneció **Aún procesando más de 90 segundos** (captura a ~100 s). Reabrir buscador mostró CORE 15787870, **Pendiente**, fecha 09/10/2026 14:52:57; Detalle sólo **Alta Solicitud Finalizada**. No hubo CA disponible para comparar Oficina, argumentos, POSPONER, RETOMAR y FINALIZAR. No se repitió alta.
+- **NO PROBADO por ausencia de acciones:** AA SCA2 `15787868`, grupo OFICINA / perfil RED MAPFRE / Nuuma JJGONZ2, no muestra RETOMAR ni REASIGNAR a SISANS. No se adjuntaron DNI ni otro documento ni se probó persistencia documental, FINALIZAR o destino Decidir Acción.
+- **PASA control esperado:** CA2 SCA2 `15787867` **Incompleta**, nivel 2, perfil GGE, grupo GGE EXPERTOS SI24, Nuuma JJGONZ2, sin RETOMAR/REASIGNAR. El Nuuma mostrado no demuestra asignación de tarea; el lead confirmó previamente grupo interno CE_MF_BK y asignadoA=null. No se considera fallo de SCA2.
+- **Comparación de permisos SCA inconclusa:** `15787862`, `15787866` y `15787859` mostraron únicamente Alta Finalizada, sin RETOMAR/REASIGNAR. La precondición «15787859 en CA» no se cumplió visualmente. No es evidencia de denegación SI24 sobre una tarea CE_RM abierta, porque no hubo tarjeta de gestión pendiente.
+- **Duda de datos de la muestra:** aunque la petición agrupaba las tres solicitudes SCA como creadas por JJGONZ2, `15787866` muestra Nuuma **SISANS**, perfil SI24 y grupo SI24 EXPERTOS; coincide con el alta realizada con SISANS en ronda 7. No usarla como prueba de autor distinto.
+
+### Tabla comparativa
+
+| Paso / pólizas / CORE | SCA | SCA2 | Igual / diferente | Evidencia |
+|---|---|---|---|---|
+| AA ajena, 0001047017036 / 15787868 | No se ejecuta gestión equivalente, al no poder completarla en SCA2 | AA Incompleta, nivel 1, RED MAPFRE / OFICINA / JJGONZ2; sin RETOMAR/REASIGNAR; sin documentos | Sin comparación válida de gestión | C1 |
+| Acceso SISANS a 0005726674052 / 15787862 | Alta Finalizada; 09/10/2026 13:26:25 inicio y fin; nivel 1; RED MAPFRE / OFICINA / JJGONZ2. Sin CA ni acciones | Control nivel 2 15787867 descrito abajo | Diferente estado de proceso; permisos no comparables | C2 |
+| Acceso SISANS a 0000253500332 / 15787866 | Sólo Alta Finalizada; SI24 / SI24 EXPERTOS / SISANS; sin RETOMAR/REASIGNAR | AA 15787868 sigue Incompleta sin acciones para SISANS | No equivalentes ni mismo creador | C3, C1 |
+| Acceso SISANS a 0000253500285 / 15787859 | Sólo Alta Finalizada, inicio/fin 09/10/2026 13:12:31, RED MAPFRE / OFICINA / JJGONZ2. Cabecera PENDIENTE, nivel 1, A VENCIMIENTO 12/01/2027 | No nueva acción equivalente | Precondición CA no cumplida; no se puede pulsar RETOMAR | C4 |
+| Alta propia, SCA 0001047017038 / SCA2 0001047017037 | DECISION DE CLIENTE / PRECIO / ME HA SUBIDO MUCHO LA PRIMA; Canal vacío inicialmente, SI24 seleccionado; Medio vacío/deshabilitado; A VENCIMIENTO 02/03/2027 | Misma combinación, Canal SI24 seleccionado, Medio vacío/deshabilitado, misma fecha/catalogación | Igual preparación | C5, C10 |
+| GUARDAR propio una vez | 15787870 creada, pero formulario procesando >90 s y sólo Alta en Detalle | 15787869 creada y CA abierta | Diferente continuación | C5, C6, C7 |
+| Oficina / compañía contraria | CA no disponible | Sin selector Oficina disponible; compañía contraria vacía. No se seleccionó compañía ni se comprobó persistencia de un valor no vacío | No comparable; Oficina seleccionada no verificable | C8, C10 |
+| Argumentos CA | No disponible | 7 filas principales: INCREMENTO PRIMA (obligatorio SI), SERVICIOS MAPFRE, GESTION COMPETENCIA, SUPLEMENTO EN GENERAL, CLUB MAPFRE PLATA, CAMBIO DE FORMA DE PAGO y REDUCCION DE COBERTURAS. Estado inicial Pendiente | No comparable | C8 |
+| POSPONER → Detalle → RETOMAR | No probado, sin CA | Confirmación y banner CORRECTO; conserva observación «Ronda7c SISANS posponer y retomar CA propia», A VENCIMIENTO y 02/03/2027. RETOMAR visible y apertura de CA. Oficina no disponible antes/después | Pasa SCA2 con límite Oficina; SCA sin cobertura | C9 |
+| Argumentos y documentos en Detalle tras POSPONER | No probado | Detalle lista 11 argumentos (10 en primera página), incluyendo subargumentos, inicialmente Pendiente; no documentos. La pantalla de CA tenía 7 filas principales. No se interpreta esa diferencia como duplicado sin especificación | Observación interna SCA2; SCA no comparable | C8, C9 |
+| FINALIZAR POSITIVO | No probado; no se completó ninguna tarea SCA | Confirmación de finalización positiva; buscador Finalizada positivamente y CA Finalizada Positiva en verde. Fecha resolución visible SCA2 09/10/2026 14:48:21 | Pasa SCA2; SCA bloqueado | C11, C12 |
+| Control nivel 2, 0005726678405 / 15787867 | 15787862 sólo Alta, sin referencia CA2 disponible | CA2 Incompleta; inicio 09/10/2026 13:52:42; fin «-»; nivel 2; GGE / GGE EXPERTOS SI24 / JJGONZ2; «No hay argumentos para esta gestión», «No hay documentos a mostrar», observaciones «-»; sin acciones | Pasa restricción esperada SCA2; comparación SCA inconclusa | C13 |
+
+No se probó ejecución individual de todos los argumentos ni aplicaciones externas. En CA propia SCA2 Carta firmada y Dni figuraban sin entregar; no se adjuntaron documentos. La prueba documental solicitada correspondía a AA y quedó bloqueada por permiso. El estado final positivo prueba el cierre visible, no la recepción de correos ni efectos externos.
+
+### Evidencia visual
+
+| C1 — SCA2 AA ajena sin acciones | C13 — SCA2 CA2 sin acciones |
+|---|---|
+| ![C1 AA SISANS](https://mapfre.devinenterprise.com/attachments/15b7ede9-3d77-4ade-bcaa-e73e1095f5d4/ss_d87f5502.png) | ![C13 CA2 SISANS](https://mapfre.devinenterprise.com/attachments/842c1762-0d3a-4426-b868-69e58d40f726/ss_009ff8bd.png) |
+
+| C2 — SCA 15787862 sólo Alta | C3 — SCA 15787866 sólo Alta / SISANS |
+|---|---|
+| ![C2 RCI SCA](https://mapfre.devinenterprise.com/attachments/73f90a1c-4ad2-4ca6-aff4-7f8d8e30e654/ss_bfbde5ba.png) | ![C3 Alta SISANS](https://mapfre.devinenterprise.com/attachments/b48f4cab-6d21-4d1c-acb3-b6f2aa7e7dba/ss_d7e5f992.png) |
+
+| C4 — SCA 15787859 sin CA | C5 — SCA alta propia procesando >90 s |
+|---|---|
+| ![C4 Sin CA](https://mapfre.devinenterprise.com/attachments/55b2d0b9-55bd-483b-8c27-1c0777a1bbc1/ss_7e3666e1.png) | ![C5 Latencia SCA](https://mapfre.devinenterprise.com/attachments/193ee8c1-d815-4f39-8fa7-d4d368708f73/ss_c0384787.png) |
+
+| C6 — SCA 15787870 Pendiente | C7 — SCA 15787870 sólo Alta |
+|---|---|
+| ![C6 CORE creado](https://mapfre.devinenterprise.com/attachments/9ec613ba-aed8-4c65-82cf-620b4c69c2d5/ss_3671ed5f.png) | ![C7 Sin continuación CA](https://mapfre.devinenterprise.com/attachments/eeaf0365-53e1-4d79-a41d-8f62cafe1095/ss_d67a12f8.png) |
+
+| C8 — SCA2 argumentos / documentos | C9 — SCA2 observación guardada y RETOMAR |
+|---|---|
+| ![C8 CA propia](https://mapfre.devinenterprise.com/attachments/8a365456-fd0c-4e6e-900e-01386261e811/ss_4328f352.png) | ![C9 Retomar](https://mapfre.devinenterprise.com/attachments/c832bf5b-25bf-4a06-98be-3e65d8746cc7/ss_f3e77105.png) |
+
+| C11 — SCA2 15787869 finalizada positiva | C12 — SCA2 Detalle final positivo |
+|---|---|
+| ![C11 Buscador](https://mapfre.devinenterprise.com/attachments/715b347c-1b5b-44f3-9c75-feb26d889bad/ss_849893fd.png) | ![C12 Detalle](https://mapfre.devinenterprise.com/attachments/61a2e08c-f2af-4e63-b997-348b34c92a73/ss_9d34ffd2.png) |
+
+### Paths y seguimiento
+
+- Informe: `/home/ubuntu/sca2work/r11/informe-testing-agent.md`.
+- Grabación única de esta ronda: `/home/ubuntu/screencasts/sca-ronda7c-sisans/sca-ronda7c-sisans-edited.mp4`.
+- Capturas C1/C2/C3/C4/C5/C6/C7/C8/C9/C11/C12/C13: `/home/ubuntu/screenshots/ss_d87f5502.png`, `/home/ubuntu/screenshots/ss_bfbde5ba.png`, `/home/ubuntu/screenshots/ss_d7e5f992.png`, `/home/ubuntu/screenshots/ss_7e3666e1.png`, `/home/ubuntu/screenshots/ss_c0384787.png`, `/home/ubuntu/screenshots/ss_3671ed5f.png`, `/home/ubuntu/screenshots/ss_d67a12f8.png`, `/home/ubuntu/screenshots/ss_4328f352.png`, `/home/ubuntu/screenshots/ss_f3e77105.png`, `/home/ubuntu/screenshots/ss_849893fd.png`, `/home/ubuntu/screenshots/ss_9d34ffd2.png`, `/home/ubuntu/screenshots/ss_009ff8bd.png`.
+- C10, pantalla CA SCA2 sin Oficina y compañía vacía: `/home/ubuntu/screenshots/ss_32cc4a2b.png`. Alta inicial SCA2: `/home/ubuntu/screenshots/ss_88e87d19.png`.
+- No confundir la pestaña antigua de SCA `0000253500332`, todavía con 403 de la ronda anterior, con el alta 7c `0001047017038`: el fallo observado en esta última fue latencia, no un nuevo 403.
+- Comentario PR sugerido: ninguno; no hay PR indicado.
+- SKILL.md adicional: ninguno.
+- Blueprint organizacional consultado. Sin instalaciones ni servicios nuevos. Sugerencia: documentar aislamiento de sesiones Chrome y SSO NOPRO para pruebas multiusuario, no cubiertos por el launcher MCP.
+- Necesario del usuario para entregar: ninguno. Para ampliar cobertura: confirmar permiso esperado de SISANS sobre AA de OFICINA/CE_RM y Oficina disponible para SI24; resolver continuación SCA de 15787870 antes de autorizar más pruebas. **No repetir GUARDAR ni crear otra solicitud de estas pólizas.**
+
+## Ronda 7d — buscador CORE
+
+Prueba UI de sólo lectura con **JJGONZ2**, sesión confirmada como Juan Gonzalez, en Appian TEST. Ejecutadas las tres comprobaciones obligatorias y la opcional por cliente. **Sin altas, GUARDAR, RETOMAR, FINALIZAR ni ANULAR PÓLIZA.** No se modificaron objetos Appian.
+
+**Observación de acceso:** la URL solicitada `/suite/sites/sca` redirigió a SCA2; la comparación histórica se realizó en `/suite/sites/sca-site`, que sí cargó SCA. No se observaron 403 ni errores de expresión en estas búsquedas.
+
+### Resultado paso a paso
+
+| Paso / póliza / solicitud | SCA histórico | SCA2 | Igual-diferente / resultado | Evidencia |
+|---|---|---|---|---|
+| 1. Póliza 0000253500329 → BUSCAR SOLICITUD | Referencia del paso 3 | Principal vacía: «No hay resultados para dicha búsqueda». Debajo aparece «Otras solicitudes de la póliza / cliente (SCA e históricas en CORE, sin gestión en SCA2)», una fila 15787864 | **PASA** visibilidad y separación | D1 |
+| Estado y datos de 15787864 | Pendiente, tag naranja; Automóviles | Pendiente, tag naranja; fecha solicitud 09/10/2026; póliza 0000253500329; Automóviles; causa «Me Ha Subido Mucho La Prima» | **PASA** número, estado y columnas requeridas | D1, D3 |
+| Fila CORE sin gestión SCA2 | En SCA el número sí es enlace | 15787864 es texto, sin enlace en DOM; clic no navega | **PASA** diferencia intencionada | D1, grabación |
+| 2. Póliza 0001047017036 → BUSCAR SOLICITUD | No requerido | Principal contiene 15787868 Pendiente. BUSCAR abre automáticamente Detalle, con Alta Finalizada y AA Incompleta. Flecha vuelve sin error y reinicia filtros; se reintroduce póliza y se captura principal filtrada. No sección «Otras solicitudes…» | **PASA**, sin duplicado en la secundaria para este caso | D2 |
+| 3. Póliza 0000253500329 → BUSCAR en SCA | Abre Detalle automáticamente. «Solicitud Anulación» indica PENDIENTE; «Otras sol. Anulación» contiene una fila 15787864, Pendiente naranja, misma póliza y Automóviles | La misma 15787864 Pendiente en tabla secundaria del buscador | **PASA** identidad y estado. Pantallas distintas por autonavegación de SCA | D3, D4 |
+| 4. Opcional Cliente → N.I.F. + documento leído de cabecera SCA → BUSCAR en SCA2 | Documento tomado de la cabecera de la póliza 0000253500329 | Principal vacía; secundaria contiene una fila 15787864, misma póliza, Pendiente naranja, causa y fechas del paso 1 | **PASA** búsqueda por cliente | D5 |
+
+### Diferencias observadas para 15787864
+
+| Campo | SCA, «Otras sol. Anulación» del Detalle | SCA2, tabla secundaria CORE |
+|---|---|---|
+| Número / estado | 15787864 / Pendiente | 15787864 / Pendiente: iguales |
+| Tag | Fondo naranja, texto blanco | Fondo naranja, texto negro: diferencia visual |
+| Fecha solicitud | 09/10/2026 **13:37:42** | 09/10/2026: sin hora |
+| Fecha resolución | 09/10/2026 **13:37:42** | 09/10/2026: sin hora |
+| Causa | ME HA SUBIDO MUCHO LA PRIMA | Me Ha Subido Mucho La Prima: sólo cambia capitalización |
+| Número póliza / línea | 0000253500329 / Automóviles | Iguales |
+| Navegación | Número enlazado a Detalle | Texto sin enlace, conforme al cambio |
+| Observaciones | No hay columna en esa tabla del Detalle SCA | Columna con «-» |
+
+SCA muestra «MÁS PRIMA» en la pestaña **Solicitud Anulación** y la descripción larga en **Otras sol. Anulación**; no son estados distintos. También muestra Alta Finalizada como estado de gestión, mientras la solicitud sigue PENDIENTE. Ambos listados muestran fecha de resolución pese a Pendiente: no es una discrepancia introducida por la nueva tabla; no se validó aquí la semántica de esa fecha CORE.
+
+**Cobertura delimitada:** comprobados un resultado CORE-only y un resultado ya existente SCA2, además de cliente con una solicitud. No se probaron paginación/múltiples páginas, otros estados CORE, filtros Estado/Línea sobre la secundaria ni todos los históricos. Ningún error de pantalla durante los flujos comprobados. La vuelta de SCA2 limpia el filtro, por lo que D2 se capturó tras reintroducirlo sin volver a activar la autonavegación.
+
+### Evidencia visual
+
+| D3 — SCA: misma solicitud, Pendiente | D1 — SCA2: principal vacía y tabla CORE |
+|---|---|
+| ![D3 SCA 15787864](https://mapfre.devinenterprise.com/attachments/fab1c00d-c626-44ca-be73-373aefce3764/ss_e449ffb6.png) | ![D1 SCA2 15787864 CORE](https://mapfre.devinenterprise.com/attachments/f4155c44-4fb4-4c98-a363-41aa5414ed6b/ss_59810a5e.png) |
+
+| D2 — SCA2: 15787868 sólo principal | D5 — SCA2: búsqueda por cliente |
+|---|---|
+| ![D2 Sin duplicado](https://mapfre.devinenterprise.com/attachments/e914d2ae-1efb-4887-9a3d-27afa67e2a12/ss_034f9a6b.png) | ![D5 Cliente con solicitud CORE](https://mapfre.devinenterprise.com/attachments/07da3857-7c6b-4d76-a606-d0d936a7ca40/ss_7f07ccf2.png) |
+
+| D4 — SCA: estado de solicitud | Observación |
+|---|---|
+| ![D4 SCA PENDIENTE](https://mapfre.devinenterprise.com/attachments/3768c766-e18d-484c-ba21-6c26c7ee6d5c/ss_f12cbb89.png) | PENDIENTE corresponde a la solicitud; Finalizada corresponde sólo a Alta. |
+
+### Paths y seguimiento
+
+- Informe: `/home/ubuntu/sca2work/r11/informe-testing-agent.md`.
+- Grabación única: `/home/ubuntu/screencasts/sca-ronda7d-buscador-core/sca-ronda7d-buscador-core-edited.mp4`.
+- D1: `/home/ubuntu/screenshots/ss_59810a5e.png`.
+- D2: `/home/ubuntu/screenshots/ss_034f9a6b.png`.
+- D3: `/home/ubuntu/screenshots/ss_e449ffb6.png`.
+- D4: `/home/ubuntu/screenshots/ss_f12cbb89.png`.
+- D5: `/home/ubuntu/screenshots/ss_7f07ccf2.png`.
+- Comentario PR sugerido: ninguno, no hay PR indicado.
+- SKILL.md adicional: ninguno.
+- Blueprint organizacional consultado: no hubo instalaciones, configuración de herramientas ni servicios nuevos. Sugerencia de documentación UI no cubierta por el launcher MCP: confirmar identidad en menú usuario, usar sesiones Chrome aisladas, maximizar con wmctrl y verificar `/sca-site` si `/sca` redirige a SCA2.
+- Necesario del usuario: ninguno para completar esta ronda. Las diferencias de precisión de fechas, capitalización y color de texto quedan documentadas, no bloquean los criterios explícitos de visibilidad.
