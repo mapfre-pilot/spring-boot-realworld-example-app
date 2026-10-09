@@ -56,3 +56,28 @@ modo `soloPayload`. Los puntos 6, 7 y 8 **no están probados en pantalla** todav
 - Modal «403 Acceso denegado» tras el alta con SISANS (15787864).
 - Flecha «volver» del Detalle: `sca_datoscabecera/a!submitLink línea 23` («The save target must be a local variable… 0000253500332»).
 - Altas de SCA que se quedan en estado Alta por latencia del entorno TEST (15787862, 15787866).
+
+## Ronda 7b — validaciones de fecha al GUARDAR, PRRA y alta válida (JJGONZ2, 0001047017036)
+
+Informe UI completo: `pruebas/13-ronda7-informe-testing-agent.md` (sección «Ronda 7b»).
+
+| Paso | SCA | SCA2 | Resultado |
+|---|---|---|---|
+| Fecha 01/01/2024 (A FECHA) | Popup de simulación NEW; tras VOLVER, error «…más antigua de los 18 meses…» | Error rojo con el mismo texto, sin alta | Igual (texto); SCA muestra antes el popup de simulación |
+| Fecha 03/03/2027 (vencimiento 02/03/2027) | No probado | Error «…superior a la fecha de vencimiento…», sin alta | Validación SCA2 correcta |
+| Alta válida (fecha propuesta 09/10/2026), 1.er intento | — | **403 Acceso denegado**; sin solicitud ni error en bandeja | Fallo SCA2 |
+| Alta válida, 2.º intento (PRRA desactivado) | — | **ALTA_ERROR CORE 4005** `generarStudAnul` «Los datos pasados como parametro no son los esperados» (PDTE-14230000) | Fallo SCA2 |
+| Alta válida, 3.er intento (fecImpagoPCA null) | — | Solicitud **15787868** creada; navega a Acciones Administrativas; cabecera «Origen IMPAGO» | Alta OK |
+
+### Correcciones aplicadas en SCA2 TEST
+
+1. **`SCA2_AltaSolicitudPage` — validaciones al GUARDAR.** GUARDAR evalúa `rule!SCA2_erroresGuardarSolicitud` con los mismos datos que SCA (fechas anulación/efecto/vencimiento/último siniestro, catalogación, perfil, códigos) y, si hay errores, los muestra en la zona de mensaje y **no lanza** `SCA2_PM_CMD_ALTA`. Probado en UI (18 meses y vencimiento).
+2. **`SCA2_AltaSolicitudPage` — PRRA desactivado (pendiente).** La primera versión detectaba PRRA llamando a `rule!SCA2_simularAnulacionAltaNse` desde la interfaz (código 4022 → motivo 3 / detalle 8 / causa 19 e `isPolizaPRRA`, como SCA). Con JJGONZ2 el GUARDAR devolvió **403 Acceso denegado** sin llegar al proceso (sin solicitud ni error). Tras quitar esa llamada el 403 no reapareció. Hipótesis (no confirmada): privilegios del usuario final sobre la cadena `SCA2_simularAnulacionPoliza → SCA2_simularAnulacionPolizaIntegracion` (connected system `…11566210`) / `SCA2_obtenerUserPassSimularPoliza → rule!SCA_rolesUsuarioSimular`. El proceso sigue recibiendo `isPolizaPRRA` y los códigos reales, así que la detección puede hacerse en el PM (credenciales de diseño) o tras revisar la seguridad de esos objetos. El 403 de SCA con SISANS (15787864) es el mismo síntoma en la misma fase.
+3. **`SCA2_construirContextoAlta` — `fecImpagoPCA: null`.** SCA2 enviaba a CORE la fecha del recibo cruda (`"02-03-2026"`) y CORE respondía 4005. SCA envía siempre `null` (`SCA_AltaSolicitudAnulacion` l.1890, «mapeo en AltaProcesoSolicitudCmd.java»). Solo afectaba a pólizas con recibo en `ESTADO_RECIBOS`; por eso las altas anteriores no fallaban.
+
+### Observaciones / dudas nuevas
+
+- **Destino Acciones Administrativas** con DECISION CLIENTE / VENTA VEHICULO / NO VOY A COMPRARME OTRO COCHE: lo decide CORE (`Decidir Acción`), igual que en SCA; no se ha hecho el alta espejo en SCA para confirmarlo (no repetir altas en esta ronda).
+- **Cabecera «Origen IMPAGO»** en 15787868 con fecha de recibo «-»: proviene de CORE/estado de recibos de la póliza; confirmar con el analista si es el origen esperado para esa póliza.
+- **SCA muestra el popup de simulación antes del error de fecha** (su `showPopupSimular` evalúa `erroresGuardar` sin refrescar). SCA2 muestra el error directamente. Se considera comportamiento más correcto en SCA2; confirmar.
+- 15787868 queda en Acciones Administrativas **Incompleta**, disponible para la prueba de RETOMAR/AA con SISANS.

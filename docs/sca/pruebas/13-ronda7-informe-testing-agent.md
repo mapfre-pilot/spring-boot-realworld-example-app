@@ -165,3 +165,124 @@ Se recuperó navegando a la URL de SCA y buscando por póliza. Sin cambios de da
 - SKILL.md adicional: ninguno en esta continuación.
 - Blueprint consultado: no se instalaron dependencias ni se iniciaron servicios. Sugerencia de configuración/documentación para futuras rondas: incluir dos sesiones Chrome aisladas, SSO NOPRO y comprobación del avatar JG/SS; la configuración MCP existente no documenta este requisito UI.
 - Necesario del usuario para ampliar cobertura: decisiones funcionales de grupos y AA anteriores. No se necesitan credenciales nuevas para entregar el informe.
+
+## Ronda 7b — validaciones de fecha al GUARDAR
+
+Prueba UI en Appian TEST con JJGONZ2, póliza **0001047017036**, el 09/10/2026. No se modificaron objetos ni código. Se completó el procedimiento con **fallo del alta válida por 403**; no queda demostrado el recorrido completo hasta Contra Anulación.
+
+### Datos y combinación
+
+- Fecha efecto visible: **02/03/2026**; vencimiento: **02/03/2027**; último siniestro: `-`.
+- DECISION DE CLIENTE / PRECIO / ME HA SUBIDO MUCHO LA PRIMA ofrecía A EFECTO con fecha bloqueada. No se guardó con esa combinación.
+- Con autorización del lead se usó en ambas aplicaciones **DECISION DE CLIENTE / VENTA DEL VEHICULO / NO VOY A COMPRARME OTRO COCHE**, canal **PRESENCIAL**, catalogación **A FECHA**. Fecha propuesta: **09/10/2026**.
+
+### Comparación paso a paso
+
+| Póliza | Usuario | App | Paso | Resultado SCA | Resultado SCA2 | Igual/diferente | Evidencia |
+|---|---|---|---|---|---|---|---|
+| 0001047017036 | JJGONZ2 | SCA / SCA2 | GUARDAR con 01/01/2024 | Tras VOLVER del popup de simulación, conserva la fecha antigua y muestra el error de 18 meses | Error rojo de 18 meses, permanece en Alta sin navegación ni número CORE | Mismo texto de validación; recorrido SCA distinto por popup | F1/F2 |
+| 0001047017036 | JJGONZ2 | SCA2 | GUARDAR con 03/03/2027 | No probado | Error rojo por superar vencimiento 02/03/2027; permanece en Alta | Sin comparación | F3 |
+| 0001047017036 | JJGONZ2 | SCA2 | Buscar póliza tras los dos rechazos | No comprobado en buscador SCA | «No hay resultados para dicha búsqueda» | Confirma ausencia visible en UI; no es consulta independiente a CORE | F4 |
+| 0001047017036 | JJGONZ2 | SCA2 | Restaurar 09/10/2026 y GUARDAR una vez | No se creó alta válida en SCA | **403 Acceso denegado — No tiene permiso para ver esta página**, alrededor de 14:23 TEST; no abrió CA | **FALLA** el recorrido esperado | F5 |
+| 0001047017036 | JJGONZ2 | SCA2 | Buscar póliza tras 403 | No probado | Sigue «No hay resultados para dicha búsqueda» | Sin número CORE confirmado; no se repitió GUARDAR | F6 |
+
+### Textos exactos y observaciones
+
+1. SCA2, fecha antigua: **«Se han detectado los siguientes errores: La fecha de anulación no puede ser más antigua de los 18 meses anteriores a la fecha de hoy.»**
+2. SCA2, fecha posterior: **«Se han detectado los siguientes errores: La fecha de anulación no puede ser superior a la fecha de vencimiento de la póliza.»**
+3. SCA mostró inicialmente un popup: **«NEW nos indica un error al realizar la simulación de la póliza. Se continúa con el proceso de anulación, si finalmente va a anular, por favor compruebe la situación de la póliza antes de finalizar para evitar posibles errores.»** Se pulsó **VOLVER**, no ACEPTAR. La captura posterior confirma **01/01/2024** y el error de 18 meses. El texto final coincide, pero no se declara equivalencia completa del flujo de GUARDAR.
+4. El error anterior SCA2 permanece al editar la fecha hasta volver a GUARDAR; al guardar 03/03/2027 sí cambió al error correcto. Tras el 403 permanecía detrás del modal el error anterior de vencimiento; no se interpreta como una nueva validación de 09/10/2026.
+5. No se pulsó **ANULAR PÓLIZA**, no se finalizaron gestiones y no se repitió el intento de alta válida. No hay solicitud nueva confirmada en esta subronda.
+
+### Evidencia visual
+
+| F1 — SCA: fecha antigua tras VOLVER | F2 — SCA2: fecha antigua rechazada |
+|---|---|
+| ![F1 SCA 18 meses](https://mapfre.devinenterprise.com/attachments/0eec7c1e-4401-4bfb-bd24-412b42370a76/ss_168ee0a4.png) | ![F2 SCA2 18 meses](https://mapfre.devinenterprise.com/attachments/12db03e5-1b0c-432c-8862-aa94c3a6b2d0/ss_32a214a9.png) |
+
+| F3 — SCA2: posterior al vencimiento | F4 — SCA2: sin solicitud tras fechas inválidas |
+|---|---|
+| ![F3 Vencimiento](https://mapfre.devinenterprise.com/attachments/32126402-992a-4358-911d-d40b8692daa6/ss_0cee056f.png) | ![F4 Búsqueda antes de alta válida](https://mapfre.devinenterprise.com/attachments/464b4a15-0f69-4f24-8776-560f418d0359/ss_722a2f16.png) |
+
+| F5 — SCA2: 403 con fecha válida | F6 — SCA2: búsqueda después del 403 |
+|---|---|
+| ![F5 403 alta válida](https://mapfre.devinenterprise.com/attachments/80153012-ae5d-4fef-820a-6f21501236fc/ss_751f9174.png) | ![F6 Búsqueda tras 403](https://mapfre.devinenterprise.com/attachments/a6e6f260-994c-4151-9ff8-4ccfb99d7b22/ss_3261f831.png) |
+
+| F7 — SCA: popup previo | Alcance |
+|---|---|
+| ![F7 Simulación SCA](https://mapfre.devinenterprise.com/attachments/fc5cc9da-f2f5-4219-be24-98d5aece72b3/ss_637ea623.png) | Se canceló mediante VOLVER; no se autorizó una creación SCA. |
+
+### Cobertura pendiente y entrega
+
+- **PASA:** validaciones visibles de 18 meses y vencimiento en SCA2; ausencia de solicitud en buscador tras ambos rechazos; texto final de 18 meses comparable a SCA.
+- **FALLA:** alta válida y navegación a CA por 403. Requiere diagnóstico de permisos/proceso y confirmar ledger antes de cualquier nuevo GUARDAR.
+- **NO PROBADO:** PRRA 4022 y envío 3/8/19, aviso de impago, validación aislada anterior al efecto y anterior al último siniestro. Esta póliza no permitió comprobar esas ramas; no se infiere su funcionamiento.
+- Grabación de esta subronda: `sca-ronda7b-fechas-guardar-edited.mp4`, con anotaciones de ambos rechazos, comparación SCA y fallo 403.
+- Comentario PR sugerido: ninguno; no se indicó PR.
+- SKILL.md adicional: ninguno.
+- Blueprint organizacional consultado. Sin instalaciones ni servicios nuevos; se reutilizó Chrome autenticado. Continúa siendo útil documentar sesiones SSO NOPRO aisladas, no descritas en el blueprint MCP.
+- Necesario del usuario: ninguno para entregar; para completar el paso válido se necesita resolver el 403 y autorizar la continuación sin duplicar una posible alta en curso.
+
+### Repetición autorizada del paso 3 — simulación PRRA retirada
+
+El lead comunicó la retirada de la detección PRRA desde `SCA2_AltaSolicitudPage`, manteniendo las validaciones de fecha. Se reabrió el alta desde el buscador para cargar la versión publicada. Se repitió **sólo el paso 3**, con JJGONZ2; no se repitieron fechas inválidas ni comparación SCA.
+
+| Póliza | Usuario | App | Paso | Resultado SCA | Resultado SCA2 | Evidencia |
+|---|---|---|---|---|---|---|
+| 0001047017036 | JJGONZ2 | SCA2 | Misma combinación DECISION DE CLIENTE / VENTA DEL VEHICULO / NO VOY A COMPRARME OTRO COCHE | No repetido | Canal PRESENCIAL; A FECHA propone **09/10/2026**, sin editar la fecha | R1 |
+| 0001047017036 | JJGONZ2 | SCA2 | GUARDAR una sola vez, ~14:30 TEST del 09/10/2026 | No repetido | **FALLA:** no aparece 403, pero devuelve **ALTA_ERROR** en `generarStudAnul`, referencia **PDTE-14230000**; permanece en alta, GUARDAR deshabilitado, sin navegar a CA | R2 |
+| 0001047017036 | JJGONZ2 | SCA2 | Nueva pestaña de buscador, búsqueda por póliza | No repetido | **«No hay resultados para dicha búsqueda»**; sin número CORE confirmado por UI | R3 |
+
+Mensaje exacto:
+
+> Los datos no se han podido guardar correctamente. La solicitud no se ha podido crear. Error: ALTA_ERROR - Los datos pasados como parametro no son los esperados (paso: generarStudAnul). Póliza: 0001047017036. Referencia: PDTE-14230000. Reporte este error a mantenimiento SCA.
+
+El 403 **no se reprodujo en este intento**, pero el flujo válido continúa bloqueado por un error distinto. No se demuestra creación ni navegación a Contra Anulación. No se pulsó de nuevo GUARDAR, ANULAR PÓLIZA ni FINALIZAR. No se investigó ni corrigió el backend desde esta sesión de pruebas.
+
+| R1 — Fecha propuesta antes de GUARDAR | R2 — Error tras el único GUARDAR |
+|---|---|
+| ![R1 Preparación válida](https://mapfre.devinenterprise.com/attachments/5016f148-a403-4574-a8ae-b94f0894fdf3/ss_311cae6f.png) | ![R2 ALTA_ERROR](https://mapfre.devinenterprise.com/attachments/4520120e-c963-4983-9196-2f32f0babf87/ss_79c144d4.png) |
+
+| R3 — Buscador después del error | Resultado |
+|---|---|
+| ![R3 Sin resultados](https://mapfre.devinenterprise.com/attachments/fa2b2e7f-6e72-4a08-8a31-7f4966d0e4e2/ss_3403e82b.png) | Sin número CORE visible; comprobar ledger antes de otro intento. |
+
+- Grabación actual de la repetición: `sca-ronda7b-alta-sin-prra-edited.mp4`. La grabación anterior sólo documenta la versión anterior, no este cambio.
+- Pendiente: diagnóstico de `ALTA_ERROR / generarStudAnul`, referencia `PDTE-14230000`, y autorización de continuación. No se necesita una nueva credencial para entregar.
+- Comentario PR sugerido y SKILL.md adicional: ninguno.
+- Blueprint ya consultado; sin instalaciones, configuración persistente ni servicios nuevos en esta repetición.
+
+### Repetición autorizada del paso 3 — fecImpagoPCA=null
+
+Tras la corrección comunicada en `SCA2_construirContextoAlta`, se reabrió el alta SCA2 con JJGONZ2 y la misma póliza. Sólo se ejecutó el paso 3: **un único GUARDAR**, sin repetir validaciones inválidas ni SCA. Se añadió la observación de trazabilidad `Ronda7b TEST alta fecImpagoPCA null`.
+
+**Resultado parcial: solicitud CORE 15787868 creada, pero la navegación fue a Acciones administrativas, no a Contra Anulación.** No reaparecieron 403 ni ALTA_ERROR. La combinación VENTA DEL VEHICULO podía decidir AA (advertido en el ajuste del plan); no se atribuye esta decisión a un defecto sin confirmación funcional. El criterio literal de navegación a CA no quedó cumplido.
+
+| Póliza | Usuario | App | Paso | Resultado SCA | Resultado SCA2 | Igual/diferente | Evidencia |
+|---|---|---|---|---|---|---|---|
+| 0001047017036 | JJGONZ2 | SCA2 | Preparación | No repetido | DECISION DE CLIENTE / VENTA DEL VEHICULO / NO VOY A COMPRARME OTRO COCHE; PRESENCIAL, A FECHA, propuesta **09/10/2026** sin editar | Misma combinación que repetición anterior | N1 |
+| 0001047017036 | JJGONZ2 | SCA2 | GUARDAR una vez | No repetido | **PASA creación:** número **15787868**, fecha visible en buscador **09/10/2026 14:35:48**. Sin 403 ni ALTA_ERROR; navegación observada aproximadamente dentro de un minuto | Diferente al error anterior | N2, N5 |
+| 0001047017036 | JJGONZ2 | SCA2 | Destino automático | No repetido | **No cumple destino CA esperado:** abre **Acciones administrativas**, sin ejecutar acción en ella | Decisión AA pendiente de confirmar; no comparación nueva con SCA | N2 |
+| 0001047017036 | JJGONZ2 | SCA2 | Consulta de solicitud y Detalle | No repetido | Solicitud **PENDIENTE**, nivel 1, A FECHA 09/10/2026; Alta **Finalizada**, AA **Incompleta**. Cabecera muestra **Origen IMPAGO** y fecha efecto recibo impago **-** | Origen IMPAGO observado, no se infiere el payload | N3, N4 |
+| 0001047017036 | JJGONZ2 | SCA2 | Volver al buscador sin finalizar | No repetido | **15787868 Pendiente**, naranja, póliza correcta y observación de esta prueba | Creación visible confirmada | N5 |
+
+Se dejó la gestión sin finalizar. No se pulsó ANULAR PÓLIZA, FINALIZAR, POSPONER ni un segundo GUARDAR. Se consultó únicamente Solicitud Anulación, VOLVER AL DETALLE y vuelta al buscador para obtener número y estado. No se verificó el payload interno `fecImpagoPCA`; se prueba el resultado visible tras la publicación comunicada.
+
+| N1 — Fecha propuesta antes del único GUARDAR | N2 — Destino automático: Acciones administrativas |
+|---|---|
+| ![N1 Preparación](https://mapfre.devinenterprise.com/attachments/e428398f-fdeb-4323-b774-737964060b50/ss_12b49d1e.png) | ![N2 AA](https://mapfre.devinenterprise.com/attachments/3c430945-55b9-47ce-8525-d286d39bac2a/ss_48d2ad4a.png) |
+
+| N3 — Solicitud pendiente, origen IMPAGO | N4 — Alta Finalizada y AA Incompleta |
+|---|---|
+| ![N3 Cabecera](https://mapfre.devinenterprise.com/attachments/4bcfd461-acb7-4db4-a711-9b0cfc5b5983/ss_36192d55.png) | ![N4 Detalle](https://mapfre.devinenterprise.com/attachments/fd1265b0-3a41-4a7c-8ef4-ce7701d556f5/ss_27a97de7.png) |
+
+| N5 — CORE 15787868 visible en buscador | Alcance |
+|---|---|
+| ![N5 Creación confirmada](https://mapfre.devinenterprise.com/attachments/0792b29e-cca8-4a95-92e2-907f4dee29e8/ss_364380cf.png) | Un único GUARDAR; sin finalizar ni anular. |
+
+- Grabación de esta repetición: `sca-ronda7b-alta-impago-null-edited.mp4`.
+- Pendiente funcional: confirmar AA como decisión correcta para la combinación elegida y el origen IMPAGO mostrado. No realizar otra alta en esta póliza.
+- Validaciones inválidas, SCA, PRRA y finalización no repetidos, conforme al alcance.
+- Comentario PR sugerido: ninguno; no se indicó PR.
+- SKILL.md adicional: ninguno. Blueprint previamente consultado; no se instalaron dependencias ni iniciaron servicios en esta repetición.
+- Necesario del usuario: ninguno para entregar; sólo confirmación funcional si se quiere cerrar la discrepancia del destino.
