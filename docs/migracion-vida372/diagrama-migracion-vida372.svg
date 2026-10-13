@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="940" viewBox="0 0 1400 940" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker>
+  </defs>
+  <rect width="1400" height="940" fill="#ffffff"/>
+  <text x="40" y="48" font-size="28" font-weight="700" fill="#b30000">Migración ES_VIDA_372 Vencimientos Manuales</text>
+  <text x="40" y="78" font-size="16" fill="#444">Fase 1: del framework Vida (Struts/WebSphere) a la arquitectura de referencia MAPFRE con el harness KDD</text>
+
+  <!-- Leyenda -->
+  <g font-size="14" fill="#333">
+    <rect x="980" y="30" width="22" height="16" rx="3" fill="#d9f2dd" stroke="#2e7d32"/><text x="1010" y="43">Hecho</text>
+    <rect x="1080" y="30" width="22" height="16" rx="3" fill="#fff4d6" stroke="#c98a00"/><text x="1110" y="43">Pendiente</text>
+    <rect x="1210" y="30" width="22" height="16" rx="3" fill="#e8ecf4" stroke="#5a6b8c"/><text x="1240" y="43">Se mantiene</text>
+  </g>
+
+  <!-- Pasos realizados -->
+  <text x="40" y="128" font-size="19" font-weight="700" fill="#222">1. Pasos realizados</text>
+  <g font-size="14" fill="#1b3d1f" text-anchor="middle">
+    <rect x="40" y="145" width="200" height="90" rx="10" fill="#d9f2dd" stroke="#2e7d32" stroke-width="1.5"/>
+    <text x="140" y="175" font-weight="700">Recuperar el código</text><text x="140" y="197">ZIP de Plastic vía</text><text x="140" y="217">Appian TEST (y borrado)</text>
+    <rect x="265" y="145" width="200" height="90" rx="10" fill="#d9f2dd" stroke="#2e7d32" stroke-width="1.5"/>
+    <text x="365" y="175" font-weight="700">Rama nueva</text><text x="365" y="197">feature/vida-372-</text><text x="365" y="217">vencimientos</text>
+    <rect x="490" y="145" width="200" height="90" rx="10" fill="#d9f2dd" stroke="#2e7d32" stroke-width="1.5"/>
+    <text x="590" y="175" font-weight="700">Inventario</text><text x="590" y="197">10 funcionalidades</text><text x="590" y="217">13 servicios host</text>
+    <rect x="715" y="145" width="200" height="90" rx="10" fill="#d9f2dd" stroke="#2e7d32" stroke-width="1.5"/>
+    <text x="815" y="175" font-weight="700">Harness KDD</text><text x="815" y="197">Arquitectura recomendada</text><text x="815" y="217">y 2 WRK-SPEC</text>
+    <rect x="940" y="145" width="200" height="90" rx="10" fill="#d9f2dd" stroke="#2e7d32" stroke-width="1.5"/>
+    <text x="1040" y="175" font-weight="700">Construcción</text><text x="1040" y="197">Backend BFF y</text><text x="1040" y="217">pantallas Angular</text>
+    <rect x="1165" y="145" width="195" height="90" rx="10" fill="#d9f2dd" stroke="#2e7d32" stroke-width="1.5"/>
+    <text x="1262" y="175" font-weight="700">Pruebas</text><text x="1262" y="197">Automáticas y</text><text x="1262" y="217">revisión de pantallas</text>
+  </g>
+  <g stroke="#555" stroke-width="2" marker-end="url(#a)">
+    <line x1="240" y1="190" x2="263" y2="190"/><line x1="465" y1="190" x2="488" y2="190"/><line x1="690" y1="190" x2="713" y2="190"/>
+    <line x1="915" y1="190" x2="938" y2="190"/><line x1="1140" y1="190" x2="1163" y2="190"/>
+  </g>
+
+  <!-- Antes / después -->
+  <text x="40" y="290" font-size="19" font-weight="700" fill="#222">2. Antes y después</text>
+  <rect x="40" y="305" width="300" height="400" rx="12" fill="#f5f5f5" stroke="#999" stroke-dasharray="6 4"/>
+  <text x="190" y="335" font-size="16" font-weight="700" fill="#555" text-anchor="middle">ANTES (legacy)</text>
+  <g font-size="14" fill="#444" text-anchor="middle">
+    <rect x="70" y="355" width="240" height="70" rx="8" fill="#eee" stroke="#999"/><text x="190" y="385" font-weight="700">Pantallas JSP + JavaScript</text><text x="190" y="407">con cálculos en el navegador</text>
+    <rect x="70" y="450" width="240" height="70" rx="8" fill="#eee" stroke="#999"/><text x="190" y="480" font-weight="700">Struts 1.2 / framework Vida</text><text x="190" y="502">en WebSphere (EAR)</text>
+    <rect x="70" y="545" width="240" height="70" rx="8" fill="#e8ecf4" stroke="#5a6b8c"/><text x="190" y="575" font-weight="700">Host: COBOL/CICS</text><text x="190" y="597">DB2, JCL, FormsPath</text>
+    <text x="190" y="650" font-size="13" fill="#777">Tecnologías sin soporte</text><text x="190" y="670" font-size="13" fill="#777">(Struts 1, Log4j 1, librerías Vida)</text>
+  </g>
+  <g stroke="#999" stroke-width="2" marker-end="url(#a)"><line x1="190" y1="425" x2="190" y2="448"/><line x1="190" y1="520" x2="190" y2="543"/></g>
+
+  <line x1="355" y1="505" x2="410" y2="505" stroke="#b30000" stroke-width="4" marker-end="url(#a)"/>
+
+  <rect x="420" y="305" width="560" height="400" rx="12" fill="#fbfbfb" stroke="#b30000"/>
+  <text x="700" y="335" font-size="16" font-weight="700" fill="#b30000" text-anchor="middle">DESPUÉS (arquitectura de referencia)</text>
+  <g font-size="14" text-anchor="middle">
+    <rect x="450" y="355" width="300" height="70" rx="8" fill="#d9f2dd" stroke="#2e7d32" stroke-width="1.5"/><text x="600" y="385" font-weight="700" fill="#1b3d1f">Pantallas Angular (SPA)</text><text x="600" y="407" fill="#1b3d1f">10 funcionalidades</text>
+    <rect x="450" y="450" width="300" height="70" rx="8" fill="#d9f2dd" stroke="#2e7d32" stroke-width="1.5"/><text x="600" y="480" font-weight="700" fill="#1b3d1f">Backend del canal (BFF)</text><text x="600" y="502" fill="#1b3d1f">Spring Boot: reglas, cálculos, seguridad</text>
+    <rect x="450" y="545" width="300" height="55" rx="8" fill="#fff4d6" stroke="#c98a00" stroke-width="1.5"/><text x="600" y="569" font-weight="700" fill="#6b4a00">Conector al host (CTG/CICS)</text><text x="600" y="589" fill="#6b4a00">preparado, sin conexión real</text>
+    <rect x="450" y="625" width="300" height="60" rx="8" fill="#e8ecf4" stroke="#5a6b8c"/><text x="600" y="651" font-weight="700" fill="#2b3a55">Host: COBOL/CICS, DB2, JCL</text><text x="600" y="671" fill="#2b3a55">sin cambios en esta fase</text>
+    <rect x="780" y="355" width="180" height="70" rx="8" fill="#fff4d6" stroke="#c98a00" stroke-width="1.5"/><text x="870" y="383" font-weight="700" fill="#6b4a00">Login Entra ID</text><text x="870" y="405" fill="#6b4a00">configurable, falta alta</text>
+    <rect x="780" y="545" width="180" height="55" rx="8" fill="#fff4d6" stroke="#c98a00" stroke-width="1.5"/><text x="870" y="569" font-weight="700" fill="#6b4a00">Impresión FormsPath</text><text x="870" y="589" fill="#6b4a00">simulada</text>
+  </g>
+  <g stroke="#555" stroke-width="2" marker-end="url(#a)"><line x1="600" y1="425" x2="600" y2="448"/><line x1="600" y1="520" x2="600" y2="543"/><line x1="600" y1="600" x2="600" y2="623"/>
+    <line x1="750" y1="390" x2="778" y2="390"/><line x1="750" y1="505" x2="868" y2="543"/></g>
+
+  <!-- Pendiente -->
+  <rect x="1010" y="305" width="350" height="400" rx="12" fill="#fffaf0" stroke="#c98a00"/>
+  <text x="1185" y="335" font-size="16" font-weight="700" fill="#6b4a00" text-anchor="middle">QUÉ QUEDA PENDIENTE</text>
+  <g font-size="14" fill="#333">
+    <text x="1030" y="370">• Conectar el BFF al host real (CTG/CICS</text><text x="1042" y="390">o z/OS Connect)</text>
+    <text x="1030" y="420">• Confirmar contratos: cartera (VT03/VT05),</text><text x="1042" y="440">personas, coaseguro, consulta/anulación</text>
+    <text x="1030" y="470">• Matriz de perfiles y permisos</text>
+    <text x="1030" y="500">• Impresión FormsPath y envío del fichero</text><text x="1042" y="520">en la carga de fichero</text>
+    <text x="1030" y="550">• Alta en Zeus, Backstage, Entra ID y</text><text x="1042" y="570">librerías corporativas; repo github.mapfre.com</text>
+    <text x="1030" y="600">• Pruebas con usuarios y datos reales</text>
+    <text x="1030" y="630">• Llevar lo aprendido al harness KDD</text><text x="1042" y="650">(PR de consolidación)</text>
+    <text x="1030" y="680">• Fase 2: sacar lógica, datos y batch del host</text>
+  </g>
+
+  <!-- Resultado -->
+  <text x="40" y="755" font-size="19" font-weight="700" fill="#222">3. Resultado obtenido</text>
+  <g font-size="14" text-anchor="middle">
+    <rect x="40" y="770" width="250" height="130" rx="10" fill="#d9f2dd" stroke="#2e7d32"/>
+    <text x="165" y="805" font-size="30" font-weight="700" fill="#2e7d32">10</text><text x="165" y="835" fill="#1b3d1f">funcionalidades con</text><text x="165" y="855" fill="#1b3d1f">pantalla nueva</text>
+    <rect x="310" y="770" width="250" height="130" rx="10" fill="#d9f2dd" stroke="#2e7d32"/>
+    <text x="435" y="805" font-size="30" font-weight="700" fill="#2e7d32">13</text><text x="435" y="835" fill="#1b3d1f">servicios del host</text><text x="435" y="855" fill="#1b3d1f">ofrecidos por el BFF</text>
+    <rect x="580" y="770" width="250" height="130" rx="10" fill="#d9f2dd" stroke="#2e7d32"/>
+    <text x="705" y="805" font-size="30" font-weight="700" fill="#2e7d32">41</text><text x="705" y="835" fill="#1b3d1f">pruebas automáticas</text><text x="705" y="855" fill="#1b3d1f">en verde (19 BFF + 22 SPA)</text>
+    <rect x="850" y="770" width="250" height="130" rx="10" fill="#d9f2dd" stroke="#2e7d32"/>
+    <text x="975" y="805" font-size="30" font-weight="700" fill="#2e7d32">12</text><text x="975" y="835" fill="#1b3d1f">rutas revisadas</text><text x="975" y="855" fill="#1b3d1f">en el navegador, sin errores</text>
+    <rect x="1120" y="770" width="240" height="130" rx="10" fill="#fff4d6" stroke="#c98a00"/>
+    <text x="1240" y="805" font-size="22" font-weight="700" fill="#6b4a00">Datos de ejemplo</text><text x="1240" y="835" fill="#6b4a00">funciona en modo local;</text><text x="1240" y="855" fill="#6b4a00">falta conexión al host</text>
+  </g>
+</svg>
