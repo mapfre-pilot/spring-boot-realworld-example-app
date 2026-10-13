@@ -45,7 +45,7 @@ Mismo protocolo que `coordinacion-ronda8.md`. Resumen obligatorio:
 
 | Sesión | Estado | Último commit | Nota |
 |---|---|---|---|
-| R9-A | en curso | 7b630c1 | inicio 2026-10-13 16:27 UTC; SCA2_AltaSolicitudPage v28 liberada 17:00 |
+| R9-A | TERMINADA | ver informe r9a-alta-simulacion-polizas-nuevas.md | SCA2_AltaSolicitudPage v29 liberada; solicitudes 15787912, 15787921 (SCA2) y 15787915, 15787918, 15787923 (SCA) |
 | R9-B | en curso | | inicio 2026-10-13 16:25 UTC |
 | R9-C | pendiente | | |
 | R9-D | TERMINADA | ver informe r9d-mecanizacion-autorizacion-anl.md | 3 objetos SCA2 modificados (AnulacionFueraNorma v23, MecanizacionPrincipal v15, CMD CompletarAccion nodo 303); reservas liberadas |
