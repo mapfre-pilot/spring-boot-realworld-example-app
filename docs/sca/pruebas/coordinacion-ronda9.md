@@ -29,13 +29,19 @@ Mismo protocolo que `coordinacion-ronda8.md`. Resumen obligatorio:
 | SCA2_Buscador | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055660` | R9-E | F1 apertura detalle filas sólo-CORE; F3 fecha resolución en «Otras solicitudes» | 2026-10-13 16:55 | | |
 | SCA2_BuscadorTabla | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056379` | R9-E | F3 fecha resolución vacía mientras pendiente | 2026-10-13 16:55 | | |
 | SCA2 CMD Decidir (nodo DUE SI24) y regla del cuerpo DUE (SCA2_notificarNivel, UUID pendiente de localizar) | `0000f06f-0eab-8000-6595-7f0000014e7a` | R9-E | E1 teléfono/correo de contacto en el correo DUE | 2026-10-13 16:55 | | |
+| SCA2_puedeGestionarTarea | `_a-0000f06b-141a-8000-9d23-011c48011c48_5454993` | R9-B | B7-SI24 / Decisión 2 / B3: CE_RM no gestiona tareas SI24; SI24 no retoma AA nivel 1 pospuesta | 2026-10-13 16:55 | | |
+| SCA2_DetalleSolicitud (máx. 60 min) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055572` | R9-B | B7-SI24 mensaje «gestionando SI24»; Decisión 2 ocultar RETOMAR/REASIGNAR | 2026-10-13 16:55 | | |
+| SCA2_DetalleTareas (máx. 60 min) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055554` | R9-B | B5/B7: enlace Completar sólo si puedeGestionarTarea y solicitud no finalizada | 2026-10-13 16:55 | | |
+| SCA2 CMD Posponer | `0000f06f-8a47-8000-6751-7f0000014e7a` | R9-B | B1: guardar oficina elegida al POSPONER | 2026-10-13 16:55 | | |
+| SCA2_ContraAnulacionOpciones (EN ESPERA, reservada por R9-C) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056435` | R9-B | B1: preseleccionar oficina guardada al RETOMAR — R9-B espera a que R9-C libere | 2026-10-13 16:55 (en cola) | | |
+| SCA2_AccionesAdministrativasPrincipal (EN ESPERA, reservada por R9-C) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056429` | R9-B | B1: preseleccionar oficina guardada al RETOMAR — R9-B espera a que R9-C libere | 2026-10-13 16:55 (en cola) | | |
 
 ## Estado por sesión
 
 | Sesión | Estado | Último commit | Nota |
 |---|---|---|---|
 | R9-A | en curso | | inicio 2026-10-13 16:27 UTC |
-| R9-B | pendiente | | |
+| R9-B | en curso | | inicio 2026-10-13 16:25 UTC |
 | R9-C | pendiente | | |
 | R9-D | en curso | | inicio 2026-10-13 16:26 UTC |
 | R9-E | en curso | | inicio 2026-10-13 16:55 UTC |
