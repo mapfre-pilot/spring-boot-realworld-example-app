@@ -33,7 +33,7 @@ Mismo protocolo que `coordinacion-ronda8.md`. Resumen obligatorio:
 | SCA2_BuscadorTabla | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056379` | R9-E | F3 fecha resolución vacía mientras pendiente | 2026-10-13 16:55 | 2026-10-13 19:50 | sin cambios (v11): ya iba vacía en pendientes |
 | SCA2 CMD Decidir (nodo DUE SI24) y regla del cuerpo DUE (SCA2_notificarNivel, UUID pendiente de localizar) | `0000f06f-0eab-8000-6595-7f0000014e7a` | R9-E | E1 teléfono/correo de contacto en el correo DUE | 2026-10-13 16:55 | 2026-10-13 19:50 | sin cambios en el PM; la corrección está en SCA2_notificarNivel |
 | SCA2_notificarNivel (regla, fuera del listado de la app) | `_a-0000f07f-6ec5-8000-9d2c-011c48011c48_5505875` | R9-E | E1: teléfono de contacto (tlfexperto) en el cuerpo del DUE como SCA | 2026-10-13 17:25 | 2026-10-13 19:50 | v3 → v5: Tomador/DNI/Email contacto/Teléfono contacto (tlfexperto + datos de contacto en vivo) en el DUE |
-| SCA2_TablaOtrasSolAnulacion | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20065000` | R9-E | F1/F3: «Otras solicitudes» del Detalle con filas CORE y fecha resolución vacía si pendiente | 2026-10-13 17:25 | 2026-10-13 19:50 | v2 → v5: filas CORE/SCA + fecha resolución «-» salvo estado final |
+| SCA2_TablaOtrasSolAnulacion | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20065000` | R9-E | F1/F3: «Otras solicitudes» del Detalle con filas CORE y fecha resolución vacía si pendiente | 2026-10-13 17:25 | 2026-10-13 19:50 | v2 → v6: filas CORE/SCA + fecha resolución «-» salvo estado final + fecha solicitud de CORE |
 | SCA2_puedeGestionarTarea | `_a-0000f06b-141a-8000-9d23-011c48011c48_5454993` | R9-B | B7-SI24 / Decisión 2 / B3: CE_RM no gestiona tareas SI24; SI24 no retoma AA nivel 1 pospuesta | 2026-10-13 16:55 | | |
 | SCA2_DetalleSolicitud (máx. 60 min) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055572` | R9-B | B7-SI24 mensaje «gestionando SI24»; Decisión 2 ocultar RETOMAR/REASIGNAR | 2026-10-13 16:55 | | |
 | SCA2_DetalleTareas (máx. 60 min) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055554` | R9-B | B5/B7: enlace Completar sólo si puedeGestionarTarea y solicitud no finalizada | 2026-10-13 16:55 | | |
@@ -49,7 +49,7 @@ Mismo protocolo que `coordinacion-ronda8.md`. Resumen obligatorio:
 | R9-B | en curso | | inicio 2026-10-13 16:25 UTC |
 | R9-C | pendiente | | |
 | R9-D | TERMINADA | ver informe r9d-mecanizacion-autorizacion-anl.md | 3 objetos SCA2 modificados (AnulacionFueraNorma v23, MecanizacionPrincipal v15, CMD CompletarAccion nodo 303); reservas liberadas |
-| R9-E | pruebas UI en curso; objetos liberados | | informe docs/sca/pruebas/r9e-buscador-detalle-due.md; solicitud propia 15787911 (RCI 0005726698173) pendiente |
+| R9-E | terminada | | informe docs/sca/pruebas/r9e-buscador-detalle-due.md; solicitud propia 15787911 (RCI 0005726698173) pendiente |
 
 ## Incidencias compartidas
 
