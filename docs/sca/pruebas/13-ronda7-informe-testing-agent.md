@@ -462,3 +462,15 @@ No se observó 403 ni error de expresión. La corrección permite completar este
 - SKILL.md adicional: ninguno.
 - Blueprint organizacional consultado: sin instalaciones ni servicios nuevos. Añadir documentación UI de SSO NOPRO, comprobación de identidad SISANS y maximización con wmctrl; el launcher MCP no cubre ese acceso por navegador.
 - Necesario del usuario: ninguno para esta verificación; no repetir el alta de la póliza. Observación para seguimiento: tarjeta temporalmente desactualizada tras finalizar.
+
+## Ronda 7f — SISANS retoma CA2 de otro grupo y POSPONER (grabaciones `sca-sisans-ca2-retomar-v4`, `sca-sisans-posponer-v23`)
+
+| Paso | Resultado |
+|---|---|
+| Detalle 15787867 (CA2 grupo CE_MF_BK, sin asignar) con SISANS | RETOMAR visible (v4 de `SCA2_puedeGestionarTarea`); abre Contra Anulación nivel 2 sin 403 |
+| Control negativo 15787844 (CA2 asignada a otro usuario) | Sin RETOMAR ni REASIGNAR para SISANS |
+| POSPONER con `SCA2_DetalleTareas` v21 | CORRECTO pero «Procesando la decisión…» con ACEPTAR deshabilitado > 90 s → salida con VOLVER AL DETALLE |
+| POSPONER con v23 | ACEPTAR habilitado a los 5,75 s (mensaje «Procesando…» visible de 3,2 s a 5,75 s), vuelve al buscador |
+| Tras posponer | Buscador 15787867 Pendiente; Detalle CA2 Incompleta nivel 2 con RETOMAR disponible; la oficina MADRID CORREDORES NORTE II aparece ya seleccionada al retomar (NUUMA de SISANS con una sola oficina) |
+
+No probado: FINALIZAR/CANCELAR de la CA2 retomada por SI24 (se dejó la tarea disponible).
