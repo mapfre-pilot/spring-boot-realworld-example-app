@@ -15,10 +15,10 @@ Mismo protocolo que `coordinacion-ronda8.md`. Resumen obligatorio:
 | Objeto | UUID | Sesión | Motivo | Reservado (UTC) | Liberado (UTC) | Versión ant. → nueva / resultado |
 |---|---|---|---|---|---|---|
 | SCA2_AnulacionFueraNormaPrincipal | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056423` | R9-D | Decisión 4: CANCELAR muestra resultado real de guardarAutorizacion | 2026-10-13 16:36| 2026-10-13 16:39 | v22 → v23: CANCELAR graba guardarAutorizacion codEstado 5 síncrono y muestra el resultado real (popup ERROR si CORE falla) |
-| SCA2_AltaSolicitudPage | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055716` | R9-A | restaurar simulación al GUARDAR (A1/A3), servicio caído (A5) | 2026-10-13 16:27 | | |
-| SCA2_simularAnulacionPolizaIntegracion (seguridad) | `a980b325-e149-4217-834e-234456d2c2df` | R9-A | seguridad para usuarios finales (A1) | 2026-10-13 16:27 | | |
-| SCA2_simularAnulacion* (reglas simularAnulacion, simularAnulacionPoliza, simularAnulacionAltaNse, consultarNewAlta, obtenerUserPassSimularPoliza) | `20051692 / 20051194 / 20051650 / 20051608 / 20051704` | R9-A | seguridad / paridad con SCA (A1) | 2026-10-13 16:27 | | |
-| SCA2 CMD CrearSolicitud | `(pendiente de localizar UUID)` | R9-A | simulación/PRRA tras guardar si persiste el 403 (A3) | 2026-10-13 16:27 | | |
+| SCA2_AltaSolicitudPage | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055716` | R9-A | restaurar simulación al GUARDAR (A1/A3), servicio caído (A5) | 2026-10-13 16:27 | 2026-10-13 17:00 | v27 → v28: simulación restaurada (popup inline + PRRA en GUARDAR). LIBERADA para R9-C: haced GET vivo de v28. Si las pruebas UI de R9-A exigen retoques, R9-A volverá a reservar |
+| SCA2_simularAnulacionPolizaIntegracion (seguridad) | `a980b325-e149-4217-834e-234456d2c2df` | R9-A | seguridad para usuarios finales (A1) | 2026-10-13 16:27 | 2026-10-13 17:00 | Sin cambios: JJGONZ2/SISANS ya son Viewer (SCA2 Users + SCAC Usuarios en el CS compartido) |
+| SCA2_simularAnulacion* (reglas simularAnulacion, simularAnulacionPoliza, simularAnulacionAltaNse, consultarNewAlta, obtenerUserPassSimularPoliza) | `20051692 / 20051194 / 20051650 / 20051608 / 20051704` | R9-A | seguridad / paridad con SCA (A1) | 2026-10-13 16:27 | 2026-10-13 17:00 | Sin cambios (misma expresión que SCA salvo guard null / errorHttp; seguridad heredada equivalente) |
+| SCA2 CMD CrearSolicitud (= SCA2 CMD Alta) | `0000f06f-28fc-8000-6693-7f0000014e7a` | R9-A | simulación/PRRA tras guardar si persiste el 403 (A3) | 2026-10-13 16:27 | 2026-10-13 17:00 | Sin cambios de momento (la simulación/PRRA se ejecuta en la interfaz); se volverá a reservar si hace falta |
 | SCA2_MecanizacionPrincipal | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20060481` | R9-D | C1 patrón NSE / botones | 2026-10-13 16:26| 2026-10-13 16:39 | v14 → v15: aviso NSE pendiente de autorizar (observaciones 00000005) como SCA; la anulación se lanza al ACEPTAR |
 | SCA2 CMD Mecanizar | `0000f06f-4cfc-8000-66d3-7f0000014e7a` | R9-D | C1 patrón NSE / ANL (C3) | 2026-10-13 16:26| 2026-10-13 16:39 | sin cambios (la espera ANL 24 h vs. espera indefinida de SCA se documenta, depende de ANL) |
 | SCA2_ContraAnulacionModalSiNo | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052807` | R9-C | B7-insiste: pregunta «¿insiste?» solo CCC/CCR; B7-acuerdos mensaje | 2026-10-13 16:40 | | |
@@ -43,7 +43,7 @@ Mismo protocolo que `coordinacion-ronda8.md`. Resumen obligatorio:
 
 | Sesión | Estado | Último commit | Nota |
 |---|---|---|---|
-| R9-A | en curso | | inicio 2026-10-13 16:27 UTC |
+| R9-A | en curso | 7b630c1 | inicio 2026-10-13 16:27 UTC; SCA2_AltaSolicitudPage v28 liberada 17:00 |
 | R9-B | en curso | | inicio 2026-10-13 16:25 UTC |
 | R9-C | pendiente | | |
 | R9-D | en curso | | inicio 2026-10-13 16:26 UTC |
@@ -53,3 +53,4 @@ Mismo protocolo que `coordinacion-ronda8.md`. Resumen obligatorio:
 
 | Hora (UTC) | Sesión | Incidencia | Afecta a | Resolución |
 |---|---|---|---|---|
+| 2026-10-13 17:00 | R9-A | SCA2_AltaSolicitudPage pasa a v28 (GUARDAR con simulación + popup; nuevas locals showPopupSimular/isPolizaPRRA/codProducto/datosTomador). Liberada para R9-C. Pendiente prueba UI de R9-A: si falla, R9-A reservará de nuevo | R9-C | GET vivo de v28 antes de editar |
