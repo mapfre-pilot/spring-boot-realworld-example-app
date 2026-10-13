@@ -48,7 +48,7 @@ Mismo protocolo que `coordinacion-ronda8.md`. Resumen obligatorio:
 | R9-A | en curso | 7b630c1 | inicio 2026-10-13 16:27 UTC; SCA2_AltaSolicitudPage v28 liberada 17:00 |
 | R9-B | en curso | | inicio 2026-10-13 16:25 UTC |
 | R9-C | pendiente | | |
-| R9-D | en curso | | inicio 2026-10-13 16:26 UTC |
+| R9-D | TERMINADA | ver informe r9d-mecanizacion-autorizacion-anl.md | 3 objetos SCA2 modificados (AnulacionFueraNorma v23, MecanizacionPrincipal v15, CMD CompletarAccion nodo 303); reservas liberadas |
 | R9-E | pruebas UI en curso; objetos liberados | | informe docs/sca/pruebas/r9e-buscador-detalle-due.md; solicitud propia 15787911 (RCI 0005726698173) pendiente |
 
 ## Incidencias compartidas

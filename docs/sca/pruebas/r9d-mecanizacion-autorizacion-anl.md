@@ -41,7 +41,7 @@ No hay botones ACEPTAR/RECHAZAR en ninguna de las dos aplicaciones; el estado de
 - **SCA:** CANCELAR envía el formulario; el proceso `SCA Autorización` llama a `guardarAutorizacion` con `codEstado 5` (hasta 3 intentos) y después muestra siempre el popup «CORRECTO — Los datos se han guardado correctamente» (nodo «Copy of PopUpMensajeAutorizacion», texto fijo), incluso si los 3 intentos fallan. Es decir, SCA tampoco enseña el error de CORE al usuario; sólo POSPONER muestra CORRECTO/ERROR según el resultado.
 - **SCA2 antes:** CANCELAR lanzaba `SCA2 CMD CompletarAccion` y mostraba CORRECTO; el comando no grababa la cancelación en CORE (sólo finalizaba la solicitud).
 - **SCA2 ahora:** `SCA2_AnulacionFueraNormaPrincipal` v22 → v23 (uuid `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056423`). CANCELAR llama a `rule!SCA2_guardarAutorizacion` (codEstado 5, mcaAutorizada N, fecha de anulación de la pantalla, codGestion/tipoAutorizacion de CORE) de forma síncrona. Si la respuesta es correcta (sin `faultcode`/`faultstring`), lanza `SCA2 CMD CompletarAccion` (con `autorizacionGuardada: true`) y sigue el flujo normal; si no, muestra el popup `SCA2_PopUpMensajeAutorizacion` con título **ERROR** y el texto «No se ha podido cancelar la autorización en CORE (guardarAutorizacion): <msg de CORE> (texto provisional, pendiente del analista)», y la tarea queda abierta para reintentar. Relectura idéntica; `testInterface` sin errores.
-- **Resultado en TEST** (§4, escenario A): PENDIENTE_UI_A
+- **Resultado en TEST** (§4, escenario A): con la póliza RCI 0005726689605 (solicitud **15787909**, alta directa causa 28 «Anulación fuera de norma») CORE **aceptó** la cancelación (`guardarAutorizacion` codEstado 5 → autorización codEstado 5, gestión 7 «FINALIZADA CANCELADA» 18:53:42): el popup mostró «CORRECTO» y la tarjeta quedó «Autorización: Cancelada» — es el resultado real, no un CORRECTO ciego. No se ha podido reproducir el 4007 de la ronda 8 (CORE ya no falla con esta póliza), así que la rama ERROR queda validada sólo por código. Hallazgo adicional: tras cancelar, `SCA2 CMD CompletarAccion` volvía a llamar a `guardarAutorizacion` (nodo «Actualizar Autorizacion») sobre una autorización ya cancelada y la solicitud 15787909 se quedó en `PDTE_FINALIZAR` (buscador «Pendiente», CORE codEstSolic 2, sin error en la bandeja); se ha corregido el nodo para que no repita la llamada cuando la pantalla ya la grabó (`autorizacionGuardada`) — aplica a solicitudes nuevas; 15787909 sigue pendiente de finalizar (ver §7). En SCA el alta con RCI 0005726694905 (15787914) tardó >5 min y la tarjeta Autorización no llegó a aparecer durante la prueba (sólo gestión 8 en CORE): «SCA no comparable por latencia».
 
 ### 2.4 D2 — Documento en Documentum sin gestión/registro en CORE
 
@@ -74,7 +74,15 @@ En SCA la espera a ANL empieza justo después de lanzar la anulación de una pó
 
 ## 4. Pruebas UI (agente de pruebas, SCA vs SCA2)
 
-PENDIENTE_UI_SECCION
+Agente de pruebas con JJGONZ2; grabación `sca-r9-comparacion-edited.mp4`; capturas `ss_*.png` adjuntas al mensaje final.
+
+| Esc. | SCA2 | SCA | Resultado |
+|---|---|---|---|
+| A/C Revisión autorización (botones) | 15787909: tarjeta Autorización con RETOMAR; pantalla con CANCELAR, POSPONER, FINALIZAR (ss_1e970524) | 15787914: la tarjeta Autorización no apareció en el tiempo de la prueba (ss_543a06ed) | OK en SCA2 (mismos botones que el código de SCA); SCA no comparable |
+| A CANCELAR | Popup CORRECTO «Los datos se han guardado correctamente» (ss_24eebb03); tarjeta «Autorización: Cancelada» (ss_90b325f2); buscador «Pendiente» (ss_9314a49e) por el nodo del comando corregido después | No alcanzado | OK (CORE aceptó la cancelación); rama ERROR no reproducible |
+| B Bloqueo por Emisión (15787759) | Buscador «Mecanización Enviada» (ss_d9506217); tarjeta «Mecanización Incompleta / MECANIZACIÓN INCOMPLETA» sin RETOMAR ni REASIGNAR (ss_379d2bc4) | Misma tarjeta sin RETOMAR/REASIGNAR (ss_af4a191f) | OK, igual en ambas |
+| Mecanización wAutemis (opcional) | 0001047017093 → 15787919: Contra Anulación POSITIVO → «¡Enhorabuena en la retención…!» → Finalizada positivamente (ss_62bbbf9f, ss_f82ee743); no abre mecanización (la mecanización sale del resultado NEGATIVO con decisión «mecanizar») | No ejecutado | No probado (ruta equivocada del agente; la mecanización se validó en la ronda 8) |
+| C1 aviso NSE | No hay pólizas NSE con control técnico 3 en TEST | — | No probado en UI (paridad SAIL + testInterface) |
 
 ## 5. Objetos modificados (SCA2)
 
@@ -82,12 +90,20 @@ PENDIENTE_UI_SECCION
 |---|---|---|---|
 | `SCA2_AnulacionFueraNormaPrincipal` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056423` | 22 → 23 | CANCELAR graba `guardarAutorizacion` codEstado 5 síncrono; popup ERROR/CORRECTO con el resultado real; sin comando si CORE falla |
 | `SCA2_MecanizacionPrincipal` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20060481` | 14 → 15 | Aviso NSE pendiente de autorizar (`00000005`) como SCA; la anulación se lanza al ACEPTAR del aviso |
+| `SCA2 CMD CompletarAccion` (nodo «Actualizar Autorizacion», id 303) | `0000f06f-1307-8000-65b1-7f0000014e7a` | — (PM) | El customOutput `autRes` no repite `guardarAutorizacion` cuando `resultado.autorizacionGuardada = true` (la pantalla ya grabó la cancelación); resto del modelo idéntico (comparado tras la relectura) |
 
-Reservados y liberados sin cambios: `SCA2 CMD Mecanizar`. No se han tocado `SCA2_DetalleSolicitud` ni `SCA2_DetalleTareas` (reservadas por R9-B/R9-E; C2 y C4 no requerían cambios).
+Reservados y liberados sin cambios: `SCA2 CMD Mecanizar`. Todas las reservas están liberadas en `coordinacion-ronda9.md`. No se han tocado `SCA2_DetalleSolicitud` ni `SCA2_DetalleTareas` (reservadas por R9-B/R9-E; C2 y C4 no requerían cambios).
 
 ## 6. Solicitudes creadas en esta sesión
 
-PENDIENTE_SOLICITUDES
+| Póliza | Solicitud CORE | App | Estado al cierre |
+|---|---|---|---|
+| 0005726697510 (RCI) | 15787906 | SCA2 | Pendiente (contra anulación nivel 1 abierta; la ruta por CA se abandonó porque la pantalla mostraba el nuevo aviso de «acuerdos SI24» que estaba desplegando R9-C). Usada para la prueba D2 (documentos). |
+| 0005726689605 (RCI) | 15787909 | SCA2 | Autorización cancelada en CORE; SCA2 `PDTE_FINALIZAR` (buscador «Pendiente») |
+| 0005726694905 (RCI) | 15787914 | SCA | Pendiente (sólo gestión 8; autorización no creada durante la prueba) |
+| 0001047017093 (wAutemis) | 15787919 | SCA2 | Finalizada positivamente (CA POSITIVO) |
+
+Consultadas sin modificar: 15787759.
 
 ## 7. Pendientes / preguntas para el analista (lenguaje de negocio)
 
@@ -95,10 +111,13 @@ PENDIENTE_SOLICITUDES
 2. **Documento duplicado en Documentum** (D2): ¿se acepta el duplicado invisible o SCA2 debe guardar la referencia de Documentum para reutilizarla al relanzar? (§2.4)
 3. **Espera a ANL** (C3/G1/G2): plazo, aviso y quién cierra (§3.4).
 4. **Texto del error al cancelar la autorización** (Decisión 4): texto provisional «No se ha podido cancelar la autorización en CORE…»; falta el definitivo. Nota: SCA muestra «CORRECTO» aunque CORE falle; SCA2 ahora muestra el error real como se pidió.
-5. **CORE 4007 al cancelar autorizaciones en TEST**: PENDIENTE_4007
+5. **CORE 4007 al cancelar autorizaciones en TEST**: en esta ronda CORE **no** ha devuelto el 4007 al cancelar (15787909 cancelada correctamente). Si vuelve a aparecer, SCA2 lo mostrará ahora como ERROR al usuario; SCA seguiría mostrando CORRECTO. ¿Se quiere que SCA también lo muestre (cambio en SCA, fuera de alcance)?
+6. **Solicitud 15787909** (SCA2): autorización cancelada en CORE pero la solicitud se quedó en `PDTE_FINALIZAR` por la doble llamada a `guardarAutorizacion` (corregida para nuevas). ¿Se finaliza a mano en CORE/SCA2 (como las del punto G4) o se deja como evidencia?
 
 ## 8. Limitaciones
 - No existen en TEST pólizas NSE que devuelvan control técnico 3: el aviso NSE se valida por paridad de código y `testInterface`.
 - ANL nunca desbloquea en TEST; no se puede provocar el fin de la espera ni la caducidad.
 - El MCP `appian-dev-mcp-c90b` no arrancó en esta sesión (falta `USERNAME/PASSWORD` en su entorno); todo el trabajo se ha hecho por la API LCP (lectura, PUT, `test`).
-- PENDIENTE_LIMITACIONES_UI
+- - SCA TEST: el alta RCI tardó >5 min y la autorización no se generó en el tiempo de la prueba; la comparación UI de CANCELAR en SCA no se pudo hacer (se compara con el código del proceso `SCA Autorización`).
+- CORE no devolvió 4007 en esta ronda: la rama ERROR del nuevo CANCELAR se valida por código (`testInterface` sin errores), no en UI.
+- Las pestañas de tareas/errores de SCA2 son sólo de administradores; el enlace «Completar» no se verificó con JJGONZ2 (el código lo oculta con `procesoActivo = ANL`).
