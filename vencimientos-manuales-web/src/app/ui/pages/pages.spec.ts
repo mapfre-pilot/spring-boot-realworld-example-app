@@ -1,8 +1,10 @@
 import { Type } from '@angular/core';
 import { FormGroup } from '@angular/forms';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { createComponentFactory } from '@ngneat/spectator/jest';
 import { of } from 'rxjs';
 import { VencimientosUseCases } from '../../application/use-cases/vencimientos.use-cases';
+import { PeticionBdgi } from '../../domain/models/api.models';
 import { ExpedientesSearchPageComponent } from './expedientes-search-page.component';
 import { ExpedienteManagementPageComponent } from './expediente-management-page.component';
 import { VariablesPageComponent } from './variables-page.component';
@@ -20,6 +22,15 @@ function mocks() {
   return {
     searchExpedientes: jest.fn(() =>
       of({ content: [], page: 0, size: 20, totalElements: 0 })
+    ),
+    getExpediente: jest.fn(() =>
+      of({
+        anio: '2024',
+        numero: '123456',
+        ramo: '001',
+        importeCapital: 12500,
+        coaseguradoras: [{ codigo: 'COA001', porcentaje: 100 }],
+      })
     ),
     createExpediente: jest.fn(() =>
       of({ anio: '2024', numero: '1', coaseguradoras: [] })
@@ -50,7 +61,13 @@ function pageTest(
     const useCases = mocks();
     const createComponent = createComponentFactory({
       component,
-      providers: [{ provide: VencimientosUseCases, useValue: useCases }],
+      providers: [
+        { provide: VencimientosUseCases, useValue: useCases },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { paramMap: convertToParamMap({}) } },
+        },
+      ],
     });
 
     beforeEach(() => jest.clearAllMocks());
@@ -78,11 +95,49 @@ pageTest(ExpedienteManagementPageComponent, 'createExpediente', (page) => {
   page.form.controls['numero'].setValue('123');
 });
 
+describe('ExpedienteManagementPageComponent detalle', () => {
+  const useCases = mocks();
+  const createComponent = createComponentFactory({
+    component: ExpedienteManagementPageComponent,
+    providers: [
+      { provide: VencimientosUseCases, useValue: useCases },
+      {
+        provide: ActivatedRoute,
+        useValue: {
+          snapshot: {
+            paramMap: convertToParamMap({ anio: '2024', numero: '123456' }),
+          },
+        },
+      },
+    ],
+  });
+
+  beforeEach(() => jest.clearAllMocks());
+
+  it('carga automáticamente el expediente de la ruta', () => {
+    const page = createComponent().component;
+
+    expect(useCases.getExpediente).toHaveBeenCalledWith('2024', '123456');
+    expect(page.form.controls['ramo'].value).toBe('001');
+    expect(page.form.controls['importeCapital'].value).toBe(12500);
+    expect(page.coaseguradoras.at(0).value).toEqual({
+      codigo: 'COA001',
+      porcentaje: 100,
+    });
+  });
+});
+
 describe('ExpedienteManagementPageComponent coaseguro', () => {
   const useCases = mocks();
   const createComponent = createComponentFactory({
     component: ExpedienteManagementPageComponent,
-    providers: [{ provide: VencimientosUseCases, useValue: useCases }],
+    providers: [
+      { provide: VencimientosUseCases, useValue: useCases },
+      {
+        provide: ActivatedRoute,
+        useValue: { snapshot: { paramMap: convertToParamMap({}) } },
+      },
+    ],
   });
 
   beforeEach(() => jest.clearAllMocks());
@@ -131,6 +186,36 @@ pageTest(BdgiPageComponent, 'requestBdgi', (page) => {
   page.form.controls['mesEjercicio'].setValue(10);
   page.form.controls['fechaInicial'].setValue('2024-10-01');
   page.form.controls['fechaFinal'].setValue('2024-10-31');
+});
+
+describe('BdgiPageComponent', () => {
+  const useCases = mocks();
+  const createComponent = createComponentFactory({
+    component: BdgiPageComponent,
+    providers: [{ provide: VencimientosUseCases, useValue: useCases }],
+  });
+
+  beforeEach(() => jest.clearAllMocks());
+
+  it('valida y envía el payload del contrato PeticionBdgi', () => {
+    const page = createComponent().component;
+    page.submit();
+    expect(useCases.requestBdgi).not.toHaveBeenCalled();
+
+    const request: PeticionBdgi = {
+      anioEjercicio: 2024,
+      mesEjercicio: 10,
+      fechaInicial: '2024-10-01',
+      fechaFinal: '2024-10-31',
+    };
+    page.form.controls['anioEjercicio'].setValue(request.anioEjercicio);
+    page.form.controls['mesEjercicio'].setValue(request.mesEjercicio);
+    page.form.controls['fechaInicial'].setValue(request.fechaInicial);
+    page.form.controls['fechaFinal'].setValue(request.fechaFinal);
+    page.submit();
+
+    expect(useCases.requestBdgi).toHaveBeenCalledWith(request);
+  });
 });
 
 pageTest(ReaseguroPageComponent, 'requestReaseguro', (page) => {

@@ -7,6 +7,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { ExpedienteMutation } from '../../domain/models/api.models';
 import { VencimientosUseCases } from '../../application/use-cases/vencimientos.use-cases';
 import { PersonaLookupComponent } from '../components/persona-lookup.component';
@@ -149,7 +150,17 @@ export class ExpedienteManagementPageComponent {
   });
   mensaje = '';
 
-  constructor(private readonly useCases: VencimientosUseCases) {}
+  constructor(
+    private readonly useCases: VencimientosUseCases,
+    route: ActivatedRoute
+  ) {
+    const anio = route.snapshot.paramMap.get('anio');
+    const numero = route.snapshot.paramMap.get('numero');
+    if (anio && numero) {
+      this.form.patchValue({ anio, numero });
+      this.consultar();
+    }
+  }
 
   submit(): void {
     this.form.markAllAsTouched();
