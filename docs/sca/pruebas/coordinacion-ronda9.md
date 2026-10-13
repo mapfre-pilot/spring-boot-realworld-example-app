@@ -14,6 +14,10 @@ Mismo protocolo que `coordinacion-ronda8.md`. Resumen obligatorio:
 
 | Objeto | UUID | Sesión | Motivo | Reservado (UTC) | Liberado (UTC) | Versión ant. → nueva / resultado |
 |---|---|---|---|---|---|---|
+| SCA2_AltaSolicitudPage | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055716` | R9-A | restaurar simulación al GUARDAR (A1/A3), servicio caído (A5) | 2026-10-13 16:27 | | |
+| SCA2_simularAnulacionPolizaIntegracion (seguridad) | `a980b325-e149-4217-834e-234456d2c2df` | R9-A | seguridad para usuarios finales (A1) | 2026-10-13 16:27 | | |
+| SCA2_simularAnulacion* (reglas simularAnulacion, simularAnulacionPoliza, simularAnulacionAltaNse, consultarNewAlta, obtenerUserPassSimularPoliza) | `20051692 / 20051194 / 20051650 / 20051608 / 20051704` | R9-A | seguridad / paridad con SCA (A1) | 2026-10-13 16:27 | | |
+| SCA2 CMD CrearSolicitud | `(pendiente de localizar UUID)` | R9-A | simulación/PRRA tras guardar si persiste el 403 (A3) | 2026-10-13 16:27 | | |
 | SCA2_MecanizacionPrincipal | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20060481` | R9-D | C1 patrón NSE / botones | 2026-10-13 16:26 | | |
 | SCA2 CMD Mecanizar | `0000f06f-4cfc-8000-66d3-7f0000014e7a` | R9-D | C1 patrón NSE / ANL (C3) | 2026-10-13 16:26 | | |
 
@@ -21,7 +25,7 @@ Mismo protocolo que `coordinacion-ronda8.md`. Resumen obligatorio:
 
 | Sesión | Estado | Último commit | Nota |
 |---|---|---|---|
-| R9-A | pendiente | | |
+| R9-A | en curso | | inicio 2026-10-13 16:27 UTC |
 | R9-B | pendiente | | |
 | R9-C | pendiente | | |
 | R9-D | en curso | | inicio 2026-10-13 16:26 UTC |
