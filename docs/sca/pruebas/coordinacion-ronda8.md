@@ -45,6 +45,8 @@ Reserva RCI (pedir a la sesión padre antes de usar): 0005726681805 000572668171
 | H3 | `SCA2_cargarSolicitud` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20054954` | Devolver `estado.contadorPosponer` (CMD Posponer escribía siempre 1) | 2026-10-13 10:40 (publicado antes de existir este protocolo) | liberado (v4 → v6): campo `contadorPosponer` añadido a `fields` y al mapa `estado`; readback OK |
 | H3 | `SCA2_ContraAnulacionOpciones` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056435` | RECARGAR ARGUMENTO vacía la tabla: pasar `body` de argumentos al hijo vía `local!data` | 2026-10-13 11:45 | liberado (v39 → v40) 12:05: `local!data` incluye `body: local!body`; readback y testInterface OK |
 | H3 | `SCA2_ContraAnulacionCompaniaCatalogacion` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20060061` | RECARGAR ARGUMENTO: usar el body del padre y guardar `listadoArgumentos` (no la respuesta completa) | 2026-10-13 11:45 | liberado (v3 → v4) 12:05: el botón recarga con `ri!data.body` (+ cía/catalogación/fecha actuales) y guarda `index(…, "listadoArgumentos", {})`; readback OK |
+| H5 | `SCA2_AccionesAdministrativasPrincipal` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056429` | FINALIZAR sin documentación / causa sin contrato: catalogación a vencimiento (paridad SCA) y observaciones al CANCELAR | 2026-10-13 11:05 | reservado |
+| H5 | `SCA2_subirDocumentosGD` · `_a-0001f076-8f0a-8000-9d26-011c48011c48_5481351` | Subida de documentos AccAdm: tipo 9 (contrato sin traspaso) no se registra en CORE y deja CMD Posponer/CompletarAccion en error; paridad con SCA_calcularDocumentosASubir (tipos permitidos por acción) | 2026-10-13 11:20 | reservado |
 
 ## Incidencias
 
