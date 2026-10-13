@@ -28,7 +28,7 @@ Reserva RCI (pedir a la sesión padre antes de usar): 0005726681805 000572668171
 | Sesión | Estado (EN CURSO / TERMINADA) | Hora UTC | Nota |
 |---|---|---|---|
 | H1 | EN CURSO | | |
-| H2 | EN CURSO | | |
+| H2 | TERMINADA | 2026-10-13 13:40 | 34 casos: 10 OK igual, 0 divergencias, 24 NO PROBADO; sin objetos SCA2 modificados; solicitudes 15787880, 15787885, 15787894, 15787897. Informe h2-plan-alta-formulario-navegacion.md |
 | H3 | EN CURSO | | |
 | H4 | EN CURSO | | |
 | H5 | TERMINADA | 2026-10-13 13:25 | Informe h5-plan-acciones-administrativas.md; objetos liberados (Principal v21, subirDocumentosGD v6) |
