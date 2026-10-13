@@ -14,6 +14,7 @@ Mismo protocolo que `coordinacion-ronda8.md`. Resumen obligatorio:
 
 | Objeto | UUID | Sesión | Motivo | Reservado (UTC) | Liberado (UTC) | Versión ant. → nueva / resultado |
 |---|---|---|---|---|---|---|
+| SCA2_AltaSolicitudPage (2ª reserva, ≤15 min) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055716` | R9-A | A6: pasar canalProductor/isSi24/codInt/polizaVencida a SCA2_erroresGuardarSolicitud como SCA (aviso misma anualidad) | 2026-10-13 17:15 | | |
 | SCA2_AnulacionFueraNormaPrincipal | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056423` | R9-D | Decisión 4: CANCELAR muestra resultado real de guardarAutorizacion | 2026-10-13 16:36| 2026-10-13 16:39 | v22 → v23: CANCELAR graba guardarAutorizacion codEstado 5 síncrono y muestra el resultado real (popup ERROR si CORE falla) |
 | SCA2_AltaSolicitudPage | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055716` | R9-A | restaurar simulación al GUARDAR (A1/A3), servicio caído (A5) | 2026-10-13 16:27 | 2026-10-13 17:00 | v27 → v28: simulación restaurada (popup inline + PRRA en GUARDAR). LIBERADA para R9-C: haced GET vivo de v28. Si las pruebas UI de R9-A exigen retoques, R9-A volverá a reservar |
 | SCA2_simularAnulacionPolizaIntegracion (seguridad) | `a980b325-e149-4217-834e-234456d2c2df` | R9-A | seguridad para usuarios finales (A1) | 2026-10-13 16:27 | 2026-10-13 17:00 | Sin cambios: JJGONZ2/SISANS ya son Viewer (SCA2 Users + SCAC Usuarios en el CS compartido) |
