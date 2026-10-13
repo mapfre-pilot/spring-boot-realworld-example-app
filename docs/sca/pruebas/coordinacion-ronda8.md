@@ -39,6 +39,9 @@ Reserva RCI (pedir a la sesión padre antes de usar): 0005726681805 000572668171
 | Sesión | Objeto (nombre · uuid) | Motivo | Reservado (UTC) | Estado |
 |---|---|---|---|---|
 | H1 | SCA2_AltaSolicitudPage · _a-0000f069-4f37-8000-9cc8-011c48011c48_20055716 | Validación residual de fax al cambiar canal (caso manual_test-5); se comprobó después que SCA hace lo mismo | 2026-10-13 10:40 (antes de recibir el protocolo) | liberado (v25 → v27): cambio aplicado en v26 y REVERTIDO en v27 (expresión idéntica a v25); sin cambio neto |
+| H6 | `SCA2_GestionMantenimientoMenu` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20060073` | Gestión de conceptos: el menú pasaba literales (null/false) a `SCA2_GestionConceptosYClases`, los `a!save(ri!…)` fallaban | 2026-10-13 11:05 (publicado antes del protocolo) | liberado (v1 → v2): locals del menú pasados como en `SCA_GestionMantenimientoMenu` |
+| H6 | `SCA2_BuscadorTabla` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056379` | Paginación de «Últimas solicitudes» (sólo 10 filas, sin «siguiente») | 2026-10-13 12:40 (publicado antes del protocolo) | liberado (v8 → v10): input nuevo `totalCount`; con él construye un DataSubset para que el grid pagine en servidor |
+| H6 | `SCA2_Buscador` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055660` | Paginación de «Últimas solicitudes» | 2026-10-13 12:40 (publicado antes del protocolo) | liberado (v23 → v26): pasa `totalCount` del DataSubset a `SCA2_BuscadorTabla` (v24 descartada y revertida en v25) |
 
 ## Incidencias
 
