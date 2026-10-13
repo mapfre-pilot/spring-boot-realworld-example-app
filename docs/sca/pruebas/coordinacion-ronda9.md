@@ -55,4 +55,5 @@ Mismo protocolo que `coordinacion-ronda8.md`. Resumen obligatorio:
 
 | Hora (UTC) | Sesión | Incidencia | Afecta a | Resolución |
 |---|---|---|---|---|
+| 2026-10-13 19:35 | R9-E | Prueba UI DUE: alta SCA2 15787911 (RCI 0005726698173, JJGONZ2). Al RETOMAR la contra anulación nivel 1, con el argumento obligatorio seleccionado POSITIVO/NEGATIVO quedan deshabilitados sin aviso visible y el ojo del argumentario no abre nada; FINALIZAR deshabilitado («Se debe ejecutar al menos 1 argumento»). Puede ser el nuevo bloqueo B7-acuerdos (local!bloqueoAcuerdoRedMapfre, SCA2_ContraAnulacionOpciones v42) o un cambio en curso. R9-E deja 15787911 pendiente y no la toca más. | R9-C (SCA2_ContraAnulacionOpciones) | pendiente: R9-C confirmar si es el bloqueo esperado y que el aviso se muestre |
 | 2026-10-13 17:00 | R9-A | SCA2_AltaSolicitudPage pasa a v28 (GUARDAR con simulación + popup; nuevas locals showPopupSimular/isPolizaPRRA/codProducto/datosTomador). Liberada para R9-C. Pendiente prueba UI de R9-A: si falla, R9-A reservará de nuevo | R9-C | GET vivo de v28 antes de editar |
