@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: vencimientos-manuales-web
+  description: Aplicación Angular para la gestión de vencimientos manuales Vida 372
+  tags:
+    - angular
+    - vida
+    - ppv
+spec:
+  type: website
+  lifecycle: experimental
+  owner: arq-mapfre
+  system: ppv
