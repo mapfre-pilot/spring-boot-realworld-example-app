@@ -29,7 +29,7 @@ Reserva RCI (pedir a la sesión padre antes de usar): 0005726681805 000572668171
 |---|---|---|---|
 | H1 | TERMINADA | 2026-10-13 13:35 | 39 casos: 8 OK igual, 1 divergencia pendiente (presentación obligatorios), 30 no probados; sin cambios netos en SCA2 (PUT v26 revertido en v27). Solicitudes creadas: 15787883 (A, SCA), 15787892 (B, SCA), 15787896 (C, SCA2), 15787900 (D, SCA2). Informe h1-plan-alta-identificacion-validaciones.md |
 | H2 | TERMINADA | 2026-10-13 13:40 | 34 casos: 10 OK igual, 0 divergencias, 24 NO PROBADO; sin objetos SCA2 modificados; solicitudes 15787880, 15787885, 15787894, 15787897. Informe h2-plan-alta-formulario-navegacion.md |
-| H3 | EN CURSO | | |
+| H3 | TERMINADA | 2026-10-13 15:10 | Informe `h3-plan-contra-anular-argumentos.md`; 6 objetos SCA2 modificados (todos liberados); argumentos PRUEBA_DEVIN_H3_1/2 (981/982) inactivos |
 | H4 | TERMINADA | 2026-10-13 11:45 | Informe `h4-plan-mecanizacion-autorizacion.md`; SCA2_AnulacionFueraNormaPrincipal v22 = v20 (sin cambio neto); pólizas H4 agotadas |
 | H5 | TERMINADA | 2026-10-13 13:25 | Informe h5-plan-acciones-administrativas.md; objetos liberados (Principal v21, subirDocumentosGD v6) |
 | H6 | TERMINADA | 2026-10-13 15:05 | 44 casos: 22 OK igual, 4 divergencias corregidas (SCA2_GestionMantenimientoMenu v2, SCA2_BuscadorTabla v11, SCA2_Buscador v27), 5 pendientes, 13 NO PROBADO. Solicitudes 15787886 (S1, SCA2), 15787888 (S2, SCA), 15787901 (S3 RCI, SCA2). Desactivar/Activar aplicación NO ejecutado (H3/H4 EN CURSO al cierre; variable CORE común a SCA). Informe h6-plan-buscador-detalle-mantenimiento.md |
