@@ -32,7 +32,7 @@ Reserva RCI (pedir a la sesión padre antes de usar): 0005726681805 000572668171
 | H3 | EN CURSO | | |
 | H4 | EN CURSO | | |
 | H5 | TERMINADA | 2026-10-13 13:25 | Informe h5-plan-acciones-administrativas.md; objetos liberados (Principal v21, subirDocumentosGD v6) |
-| H6 | EN CURSO | | |
+| H6 | TERMINADA | 2026-10-13 15:05 | 44 casos: 22 OK igual, 4 divergencias corregidas (SCA2_GestionMantenimientoMenu v2, SCA2_BuscadorTabla v11, SCA2_Buscador v27), 5 pendientes, 13 NO PROBADO. Solicitudes 15787886 (S1, SCA2), 15787888 (S2, SCA), 15787901 (S3 RCI, SCA2). Desactivar/Activar aplicación NO ejecutado (H3/H4 EN CURSO al cierre; variable CORE común a SCA). Informe h6-plan-buscador-detalle-mantenimiento.md |
 
 ## Objetos en edición
 
