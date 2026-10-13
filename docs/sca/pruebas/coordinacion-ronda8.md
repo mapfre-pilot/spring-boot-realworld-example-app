@@ -51,6 +51,8 @@ Reserva RCI (pedir a la sesión padre antes de usar): 0005726681805 000572668171
 | H6 | `SCA2_Buscador` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055660` | Validación de póliza inexistente al BUSCAR (SCA avisa «La póliza no es una póliza válida…» y conserva la tabla; SCA2 «No hay resultados») | 2026-10-13 13:35 | liberado (v26 → v27): validación de póliza al BUSCAR como SCA (`SCA2_pObtenerPolizaFecha` + tipo/ramo → mensaje y sin filtrar la tabla) |
 | H6 | `SCA2_BuscadorTabla` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056379` | Fila del buscador: causa / fecha solicitud / fecha resolución salen del record SCA2 y en SCA de CORE (`consultarUltimaGestion`), ya cargado en la tabla para Observaciones | 2026-10-13 14:30 | liberado (v10 → v11): Causa / Fecha solicitud / Fecha resolución de la fila salen de la fila CORE (`consultarUltimaGestion`, misma fuente que SCA); record SCA2 como respaldo |
 | H4 | `SCA2_AnulacionFueraNormaPrincipal` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056423` | FINALIZAR autorización: la fecha autorizada no se propaga al record `SCA2 Datos Solicitud` (mecanización muestra la fecha original; CORE sí la actualiza, SCA la lee de CORE) | 2026-10-13 11:20 | reservado |
+| H3 | `SCA2_GestionArgumentos` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20053041` | GA-5/6/12: tras modificar un argumento, BUSCAR devuelve el resultado cacheado (SCA pasa `random: rand()` a la consulta) | 2026-10-13 13:50 | reservado |
+| H3 | `SCA2_consultarTipoArg` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052550` | Añadir input `random` (paridad `SCA_consultarTipoArg`) para romper la caché | 2026-10-13 13:50 | reservado |
 
 ## Incidencias
 
