@@ -27,7 +27,7 @@ Reserva RCI (pedir a la sesión padre antes de usar): 0005726681805 000572668171
 
 | Sesión | Estado (EN CURSO / TERMINADA) | Hora UTC | Nota |
 |---|---|---|---|
-| H1 | EN CURSO | | |
+| H1 | TERMINADA | 2026-10-13 13:35 | 39 casos: 8 OK igual, 1 divergencia pendiente (presentación obligatorios), 30 no probados; sin cambios netos en SCA2 (PUT v26 revertido en v27). Solicitudes creadas: 15787883 (A, SCA), 15787892 (B, SCA), 15787896 (C, SCA2), 15787900 (D, SCA2). Informe h1-plan-alta-identificacion-validaciones.md |
 | H2 | TERMINADA | 2026-10-13 13:40 | 34 casos: 10 OK igual, 0 divergencias, 24 NO PROBADO; sin objetos SCA2 modificados; solicitudes 15787880, 15787885, 15787894, 15787897. Informe h2-plan-alta-formulario-navegacion.md |
 | H3 | EN CURSO | | |
 | H4 | EN CURSO | | |
