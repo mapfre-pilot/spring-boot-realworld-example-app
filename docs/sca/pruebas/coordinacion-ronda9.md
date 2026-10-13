@@ -14,6 +14,8 @@ Mismo protocolo que `coordinacion-ronda8.md`. Resumen obligatorio:
 
 | Objeto | UUID | Sesión | Motivo | Reservado (UTC) | Liberado (UTC) | Versión ant. → nueva / resultado |
 |---|---|---|---|---|---|---|
+| SCA2_MecanizacionPrincipal | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20060481` | R9-D | C1 patrón NSE / botones | 2026-10-13 16:26 | | |
+| SCA2 CMD Mecanizar | `0000f06f-4cfc-8000-66d3-7f0000014e7a` | R9-D | C1 patrón NSE / ANL (C3) | 2026-10-13 16:26 | | |
 
 ## Estado por sesión
 
@@ -22,7 +24,7 @@ Mismo protocolo que `coordinacion-ronda8.md`. Resumen obligatorio:
 | R9-A | pendiente | | |
 | R9-B | pendiente | | |
 | R9-C | pendiente | | |
-| R9-D | pendiente | | |
+| R9-D | en curso | | inicio 2026-10-13 16:26 UTC |
 | R9-E | pendiente | | |
 
 ## Incidencias compartidas
