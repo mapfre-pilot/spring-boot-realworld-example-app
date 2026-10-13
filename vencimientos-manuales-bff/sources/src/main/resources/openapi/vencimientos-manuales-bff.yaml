@@ -1,0 +1,638 @@
+openapi: 3.0.3
+info:
+  title: Vencimientos manuales BFF
+  version: 1.0.0
+  description: API de migración de ES_VIDA_372VENCIMIENTOSMANUALES.
+servers:
+  - url: /api/v1
+security:
+  - EntraID: []
+tags:
+  - name: Expedientes
+  - name: Variables
+  - name: Coaseguro
+  - name: Carteras
+  - name: Personas
+  - name: Emision
+  - name: Fiscalidad
+  - name: Calculos
+paths:
+  /expedientes:
+    get:
+      operationId: buscarExpedientes
+      tags: [Expedientes]
+      summary: Buscar expedientes por identificador, póliza o NIF
+      parameters:
+        - $ref: '#/components/parameters/AnioQuery'
+        - $ref: '#/components/parameters/NumeroQuery'
+        - name: ramo
+          in: query
+          schema: { type: string, maxLength: 3 }
+        - name: anioPoliza
+          in: query
+          schema: { type: string, pattern: '^\d{4}$' }
+        - name: numeroPoliza
+          in: query
+          schema: { type: string, maxLength: 10 }
+        - name: subpoliza
+          in: query
+          schema: { type: string, maxLength: 4 }
+        - name: certificado
+          in: query
+          schema: { type: string, maxLength: 6 }
+        - name: nif
+          in: query
+          schema: { type: string, minLength: 8, maxLength: 10 }
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 0, default: 0 }
+        - name: size
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Página de expedientes.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginaExpedientes' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+    post:
+      operationId: altaExpediente
+      tags: [Expedientes]
+      summary: Dar de alta un expediente (VT01/A1)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExpedienteMutation' }
+      responses:
+        '201':
+          description: Expediente dado de alta.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Expediente' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /expedientes/{anio}/{numero}:
+    parameters:
+      - $ref: '#/components/parameters/AnioPath'
+      - $ref: '#/components/parameters/NumeroPath'
+    get:
+      operationId: obtenerExpediente
+      tags: [Expedientes]
+      summary: Consultar un expediente (VT01)
+      responses:
+        '200':
+          description: Expediente.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Expediente' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+    put:
+      operationId: modificarExpediente
+      tags: [Expedientes]
+      summary: Modificar un expediente (VT01/M1)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExpedienteMutation' }
+      responses:
+        '200':
+          description: Expediente actualizado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Expediente' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /expedientes/{anio}/{numero}/anulacion:
+    post:
+      operationId: anularExpediente
+      tags: [Expedientes]
+      summary: Anular un expediente (VT01)
+      parameters:
+        - $ref: '#/components/parameters/AnioPath'
+        - $ref: '#/components/parameters/NumeroPath'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200': { description: Anulación solicitada. }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /expedientes/{anio}/{numero}/reaseguro:
+    post:
+      operationId: gestionarReaseguro
+      tags: [Expedientes]
+      summary: Gestionar reaseguro mediante VT01/M3
+      parameters:
+        - $ref: '#/components/parameters/AnioPath'
+        - $ref: '#/components/parameters/NumeroPath'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200': { description: Operación de reaseguro procesada. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /expedientes/{anio}/{numero}/variables:
+    parameters:
+      - $ref: '#/components/parameters/AnioPath'
+      - $ref: '#/components/parameters/NumeroPath'
+    get:
+      operationId: consultarVariables
+      tags: [Variables]
+      summary: Consultar variables del expediente (VT02)
+      responses:
+        '200':
+          description: Variables del expediente.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Variables' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+    put:
+      operationId: modificarVariables
+      tags: [Variables]
+      summary: Actualizar variables del expediente (VT02/M1)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Variables' }
+      responses:
+        '200': { description: Variables actualizadas. }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /expedientes/{anio}/{numero}/coaseguro:
+    parameters:
+      - $ref: '#/components/parameters/AnioPath'
+      - $ref: '#/components/parameters/NumeroPath'
+    get:
+      operationId: consultarCoaseguro
+      tags: [Coaseguro]
+      summary: Consultar cuadro de coaseguro (VT12)
+      responses:
+        '200':
+          description: Cuadro de coaseguro.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Coaseguro' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+    put:
+      operationId: modificarCoaseguro
+      tags: [Coaseguro]
+      summary: Actualizar cuadro de coaseguro (VT12)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Coaseguro' }
+      responses:
+        '200': { description: Coaseguro actualizado. }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /expedientes/{anio}/{numero}/fiscalidad:
+    get:
+      operationId: consultarFiscalidad
+      tags: [Fiscalidad]
+      summary: Consultar datos fiscales del expediente
+      parameters:
+        - $ref: '#/components/parameters/AnioPath'
+        - $ref: '#/components/parameters/NumeroPath'
+      responses:
+        '200':
+          description: Datos fiscales.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DatosFiscales' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /personas:
+    get:
+      operationId: buscarPersona
+      tags: [Personas]
+      summary: Consultar datos de persona por NIF (VT11)
+      parameters:
+        - name: nif
+          in: query
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 10 }
+      responses:
+        '200':
+          description: Datos de persona.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Persona' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /polizas/{ramo}/{anio}/{numero}/cartera:
+    get:
+      operationId: consultarCarteraPoliza
+      tags: [Carteras]
+      summary: Consultar cartera asociada a póliza (VT19)
+      parameters:
+        - name: ramo
+          in: path
+          required: true
+          schema: { type: string, maxLength: 3 }
+        - name: anio
+          in: path
+          required: true
+          schema: { type: string, pattern: '^\d{4}$' }
+        - name: numero
+          in: path
+          required: true
+          schema: { type: string, maxLength: 10 }
+        - name: subpoliza
+          in: query
+          schema: { type: string, maxLength: 4 }
+        - name: certificado
+          in: query
+          schema: { type: string, maxLength: 6 }
+      responses:
+        '200':
+          description: Cartera de póliza.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cartera' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /carteras:
+    get:
+      operationId: consultarCarteras
+      tags: [Carteras]
+      summary: Consultar contratos de cartera (VT03, provisional)
+      x-provisional: true
+      responses:
+        '200':
+          description: Carteras disponibles.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Cartera' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /carteras/listado:
+    get:
+      operationId: listarCarteras
+      tags: [Carteras]
+      summary: Listar contratos de cartera (VT05, provisional)
+      x-provisional: true
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 0, default: 0 }
+        - name: size
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Página de carteras.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginaCarteras' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /finiquitos/emisiones:
+    post:
+      operationId: emitirFiniquitos
+      tags: [Emision]
+      summary: Solicitar emisión de finiquitos (VT09 e impresión)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EmisionRequest' }
+      responses:
+        '202':
+          description: Emisión aceptada para procesamiento.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PrintJob' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /informes:
+    post:
+      operationId: generarInforme
+      tags: [Emision]
+      summary: Solicitar informe (VT10 e impresión)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InformeRequest' }
+      responses:
+        '202':
+          description: Informe aceptado para procesamiento.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PrintJob' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /peticiones-bdgi:
+    post:
+      operationId: solicitarBdgi
+      tags: [Emision]
+      summary: Solicitar proceso BDGI (VT06)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PeticionBdgi' }
+      responses:
+        '202': { description: Petición BDGI aceptada. }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /cargas-fichero:
+    post:
+      operationId: cargarFichero
+      tags: [Emision]
+      summary: Solicitar carga de fichero (VT07)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CargaFichero' }
+      responses:
+        '202': { description: Carga aceptada. }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /calculos/liquidacion:
+    post:
+      operationId: calcularLiquidacion
+      tags: [Calculos]
+      summary: Calcular importes y reparto de coaseguro
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LiquidationRequest' }
+      responses:
+        '200':
+          description: Importes de liquidación.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LiquidationResult' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+components:
+  securitySchemes:
+    EntraID:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    AnioQuery:
+      name: anio
+      in: query
+      schema: { type: string, pattern: '^\d{4}$' }
+    NumeroQuery:
+      name: numero
+      in: query
+      schema: { type: string, maxLength: 10 }
+    AnioPath:
+      name: anio
+      in: path
+      required: true
+      schema: { type: string, pattern: '^\d{4}$' }
+    NumeroPath:
+      name: numero
+      in: path
+      required: true
+      schema: { type: string, maxLength: 10 }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 1, maxLength: 128 }
+  responses:
+    BadRequest:
+      description: Solicitud inválida.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unauthorized:
+      description: Autenticación requerida.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: Recurso no encontrado.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unavailable:
+      description: Integración host no disponible.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    Problem:
+      type: object
+      properties:
+        type: { type: string, format: uri-reference }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string, format: uri-reference }
+    Expediente:
+      type: object
+      properties:
+        anio: { type: string }
+        numero: { type: string }
+        ramo: { type: string }
+        numeroPoliza: { type: string }
+        subpoliza: { type: string }
+        certificado: { type: string }
+        nif: { type: string }
+        situacion: { type: string }
+        importeCapital: { type: number }
+    ExpedienteMutation:
+      allOf:
+        - $ref: '#/components/schemas/Expediente'
+        - type: object
+          properties:
+            anioPoliza: { type: string }
+            modalidad: { type: string }
+            fechaEfecto: { type: string, format: date }
+            beneficios: { type: number }
+            anticipo: { type: number }
+            interesesPendientes: { type: number }
+            observacion: { type: string, maxLength: 100 }
+    PaginaExpedientes:
+      type: object
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/Expediente' }
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer, format: int64 }
+    Variables:
+      type: object
+      properties:
+        tabla: { type: string }
+        valores:
+          type: object
+          additionalProperties: { type: string }
+    Coaseguradora:
+      type: object
+      required: [codigo, porcentaje]
+      properties:
+        codigo: { type: string, maxLength: 7 }
+        porcentaje: { type: number, minimum: 0, maximum: 100 }
+    Coaseguro:
+      type: object
+      required: [coaseguradoras]
+      properties:
+        coaseguradoras:
+          type: array
+          minItems: 1
+          maxItems: 6
+          items: { $ref: '#/components/schemas/Coaseguradora' }
+    DatosFiscales:
+      type: object
+      properties:
+        tipoImpuesto: { type: string }
+        porcentajeRetencion: { type: number }
+        nif: { type: string }
+        codigoPostal: { type: string }
+    Persona:
+      type: object
+      properties:
+        nombre: { type: string }
+        apellidos: { type: string }
+        nif: { type: string }
+        domicilio: { type: string }
+        codigoPostal: { type: string }
+        poblacion: { type: string }
+    Cartera:
+      type: object
+      properties:
+        ramo: { type: string }
+        anioPoliza: { type: string }
+        numeroPoliza: { type: string }
+        subpoliza: { type: string }
+        modalidad: { type: string }
+        situacion: { type: string }
+    PaginaCarteras:
+      type: object
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/Cartera' }
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer, format: int64 }
+    EmisionRequest:
+      type: object
+      required: [anio, expedienteDesde, expedienteHasta]
+      properties:
+        anio: { type: string, pattern: '^\d{4}$' }
+        expedienteDesde: { type: string, maxLength: 10 }
+        expedienteHasta: { type: string, maxLength: 10 }
+        fechaEmision: { type: string, format: date }
+        tipoEmision: { type: string, maxLength: 2 }
+        lugarEnvio: { type: string, maxLength: 2 }
+    InformeRequest:
+      type: object
+      properties:
+        tipoEmision: { type: string, maxLength: 2 }
+        anioDesde: { type: string, pattern: '^\d{4}$' }
+        anioHasta: { type: string, pattern: '^\d{4}$' }
+        expedienteDesde: { type: string, maxLength: 10 }
+        expedienteHasta: { type: string, maxLength: 10 }
+        fechaEmisionDesde: { type: string, format: date }
+        fechaEmisionHasta: { type: string, format: date }
+        fechaPagoDesde: { type: string, format: date }
+        fechaPagoHasta: { type: string, format: date }
+    PeticionBdgi:
+      type: object
+      required: [anioEjercicio, mesEjercicio, fechaInicial, fechaFinal]
+      properties:
+        anioEjercicio: { type: integer, minimum: 1900, maximum: 2200 }
+        mesEjercicio: { type: integer, minimum: 1, maximum: 12 }
+        fechaInicial: { type: string, format: date }
+        fechaFinal: { type: string, format: date }
+    CargaFichero:
+      type: object
+      required: [tipoEmision]
+      properties:
+        tipoEmision: { type: string, minLength: 1, maxLength: 2 }
+    PrintJob:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        estado: { type: string, enum: [ACEPTADO] }
+    LiquidationRequest:
+      type: object
+      properties:
+        capital:
+          $ref: '#/components/schemas/ImporteFiscal'
+        complementario:
+          $ref: '#/components/schemas/ImporteFiscal'
+        prima:
+          $ref: '#/components/schemas/ImporteFiscal'
+        importeCapital: { type: number }
+        beneficios: { type: number }
+        anticipo: { type: number }
+        interesesPendientes: { type: number }
+        coaseguradoras:
+          type: array
+          maxItems: 6
+          items: { $ref: '#/components/schemas/Coaseguradora' }
+    ImporteFiscal:
+      type: object
+      properties:
+        importe: { type: number }
+        rtoIntegro: { type: number }
+        reduccionPrimas: { type: number }
+        reduccionTransitoria: { type: number }
+        porcentajeRetencion: { type: number }
+        tipoImpuesto: { type: string }
+        codigoPostal: { type: string }
+    LiquidationResult:
+      type: object
+      properties:
+        capital: { $ref: '#/components/schemas/ImporteCalculado' }
+        complementario: { $ref: '#/components/schemas/ImporteCalculado' }
+        prima: { $ref: '#/components/schemas/ImporteCalculado' }
+        liquidoCapital: { type: number }
+        importesCoasegurados:
+          type: array
+          items: { type: number }
+    ImporteCalculado:
+      type: object
+      properties:
+        rtoNeto: { type: number }
+        retencion: { type: number }
+        liquido: { type: number }

@@ -1,0 +1,20 @@
+<configuration>
+    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp/>
+                <logLevel/>
+                <loggerName/>
+                <provider class="com.mapfre.vida.vencimientosmanuales.infrastructure.observability.PiiMaskingMessageJsonProvider"/>
+                <mdc/>
+                <pattern>
+                    <pattern>{"service.name":"${spring.application.name:-vencimientos-manuales-bff}"}</pattern>
+                </pattern>
+                <stackTrace/>
+            </providers>
+        </encoder>
+    </appender>
+    <root level="INFO">
+        <appender-ref ref="JSON"/>
+    </root>
+</configuration>

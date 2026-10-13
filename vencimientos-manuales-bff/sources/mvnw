@@ -1,0 +1,17 @@
+#!/bin/sh
+set -eu
+
+BASE_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+MAVEN_VERSION=3.9.9
+MAVEN_HOME=${MAVEN_HOME:-"$HOME/.m2/wrapper/dists/apache-maven-$MAVEN_VERSION"}
+MAVEN_URL=${MAVEN_DISTRIBUTION_URL:-"https://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz"}
+
+if [ ! -x "$MAVEN_HOME/bin/mvn" ]; then
+    mkdir -p "$MAVEN_HOME"
+    archive="$MAVEN_HOME/apache-maven-$MAVEN_VERSION-bin.tar.gz"
+    curl --fail --location --silent --show-error "$MAVEN_URL" --output "$archive"
+    tar -xzf "$archive" --strip-components=1 -C "$MAVEN_HOME"
+    rm -f "$archive"
+fi
+
+exec "$MAVEN_HOME/bin/mvn" -f "$BASE_DIR/pom.xml" "$@"

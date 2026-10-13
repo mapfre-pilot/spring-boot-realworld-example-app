@@ -1,0 +1,23 @@
+name: vencimientos-manuales-bff / Pull request
+
+on:
+  pull_request:
+    paths:
+      - "vencimientos-manuales-bff/**"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vencimientos-manuales-bff/sources
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+          cache-dependency-path: vencimientos-manuales-bff/sources/pom.xml
+      - run: chmod +x mvnw
+      - run: ./mvnw -B clean verify

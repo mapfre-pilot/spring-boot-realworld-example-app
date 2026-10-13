@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: vencimientos-manuales-bff
+  profiles:
+    default: local
+  jackson:
+    default-property-inclusion: non_null
+server:
+  port: ${SERVER_PORT:8080}
+management:
+  endpoints:
+    web:
+      base-path: /monitoring
+      exposure:
+        include: [health, metrics, prometheus]
+  endpoint:
+    health:
+      show-details: never
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: 0.1
+  otlp:
+    tracing:
+      export:
+        enabled: ${OTEL_TRACING_ENABLED:false}
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
+app:
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:4200}
+security:
+  entraid:
+    tenant-id: ${ENTRAID_TENANT_ID:}
+    audience: ${ENTRAID_AUDIENCE:}
+    issuer: ${ENTRAID_ISSUER:https://sts.windows.net/${ENTRAID_TENANT_ID:}/}
+    jwk-set-uri: ${ENTRAID_JWKS_URI:https://login.microsoftonline.com/${ENTRAID_TENANT_ID:}/discovery/keys}
+    scope-consulta: ${ENTRAID_SCOPE_CONSULTA:vida.vencimientos.consulta}
+    scope-gestion: ${ENTRAID_SCOPE_GESTION:vida.vencimientos.gestion}
+    role-consulta: ${ENTRAID_ROLE_CONSULTA:VIDA_VENCIMIENTOS_CONSULTA}
+    role-gestion: ${ENTRAID_ROLE_GESTION:VIDA_VENCIMIENTOS_GESTION}

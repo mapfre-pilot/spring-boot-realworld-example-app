@@ -1,0 +1,14 @@
+services:
+  vencimientos-manuales-bff:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        BASE_IMAGE: ${JAVA_BASE_IMAGE:-acrmapfredevops.azurecr.io/mapfre/arch/ram/mapfre-java-base:21-jre-alpine}
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
+      ENTRAID_TENANT_ID: ${ENTRAID_TENANT_ID:-}
+      ENTRAID_AUDIENCE: ${ENTRAID_AUDIENCE:-}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
