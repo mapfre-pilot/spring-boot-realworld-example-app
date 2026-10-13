@@ -31,7 +31,7 @@ Reserva RCI (pedir a la sesión padre antes de usar): 0005726681805 000572668171
 | H2 | EN CURSO | | |
 | H3 | EN CURSO | | |
 | H4 | EN CURSO | | |
-| H5 | EN CURSO | | |
+| H5 | TERMINADA | 2026-10-13 13:25 | Informe h5-plan-acciones-administrativas.md; objetos liberados (Principal v21, subirDocumentosGD v6) |
 | H6 | EN CURSO | | |
 
 ## Objetos en edición
@@ -54,3 +54,5 @@ Reserva RCI (pedir a la sesión padre antes de usar): 0005726681805 000572668171
 
 | Hora UTC | Sesión | Qué ha pasado | Afecta a |
 |---|---|---|---|
+| 2026-10-13 13:20 | H5 | `SCA2_MecanizacionPrincipal` muestra «Fecha anulación póliza» = fecha del alta (copia local `datosSolicitud.fecanulacion`), no la vigente en CORE (cabecera `fecAnulacion`) tras una Acción Administrativa que cambia la catalogación a vencimiento (15787884: 13/10/2026 vs 19/05/2027; 15787898: 13/10/2026 vs 24/01/2028). No tocado por H5 | H4 (Mecanización) |
+| 2026-10-13 13:20 | H5 | Bandeja `/errores`: 15787868 tiene 2 errores DOC_GD_FAIL (CMD Posponer 12:18, CMD CompletarAccion 12:22) por el documento tipo 9; causa corregida en `SCA2_subirDocumentosGD` v6. Falta relanzar «SCA2 CMD CompletarAccion» desde la bandeja (sólo administradores) | Administrador / sesión padre |
