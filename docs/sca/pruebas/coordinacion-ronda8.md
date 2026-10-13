@@ -55,6 +55,9 @@ Reserva RCI (pedir a la sesión padre antes de usar): 0005726681805 000572668171
 | H3 | `SCA2_consultarTipoArg` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052550` | Añadir input `random` (paridad `SCA_consultarTipoArg`) para romper la caché | 2026-10-13 13:50 | liberado (v1 → v2) 14:00: input `random` (Number Decimal) añadido, expresión sin cambios |
 | H3 | `SCA2_consultarTipoArg` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052550` y `SCA2_consultarTipoArgIntegracion` | Propagar `random` a la integración (paridad SCAC) para que BUSCAR no devuelva el resultado cacheado | 2026-10-13 14:20 | liberado 14:30: integración `SCA2_consultarTipoArgIntegracion` v1 → v2 (input `random`, como SCAC) y regla `SCA2_consultarTipoArg` v2 → v3 (`random: ri!random` a la integración); readback y testRule OK |
 | H4 | `SCA2 CMD CompletarAccion` · `0000f06f-1307-8000-65b1-7f0000014e7a` | Autorización aceptada: escribir `SCA2 Datos Solicitud.fecanulacion` = fecha autorizada en el nodo «Write Decidir» (paridad SCA: CORE actualiza fecAnulacion y SCA la relee; SCA2 lee su record) | 2026-10-13 11:35 | liberado SIN CAMBIOS 11:45: no publicado (sin póliza para re-probar; nodo compartido con CA negativa). Propuesta en `h4-plan-mecanizacion-autorizacion.md` §4.1 |
+| P (padre) | `SCA2_MecanizacionPrincipal` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20060481` | Fecha de anulación vigente en CORE (cabecera `fecAnulacion`) en lugar de la copia del alta (H4 §4.1 / incidencia H5) | 2026-10-13 15:40 | reservado |
+| P (padre) | `SCA2 CMD Mecanizar` · `0000f06f-4cfc-8000-66d3-7f0000014e7a` | Input `fechaAnulacion` del nodo Mecanizar: fecha vigente en CORE | 2026-10-13 15:40 | reservado |
+| P (padre) | `SCA2_DetalleSolicitud` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055572` | CA-30: observaciones de la tarjeta Contra Anulación desde `consultaDetalleGestion` (como SCA) | 2026-10-13 15:40 | reservado |
 
 ## Incidencias
 
