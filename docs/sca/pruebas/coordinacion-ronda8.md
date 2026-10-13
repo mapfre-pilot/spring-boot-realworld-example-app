@@ -30,7 +30,7 @@ Reserva RCI (pedir a la sesión padre antes de usar): 0005726681805 000572668171
 | H1 | TERMINADA | 2026-10-13 13:35 | 39 casos: 8 OK igual, 1 divergencia pendiente (presentación obligatorios), 30 no probados; sin cambios netos en SCA2 (PUT v26 revertido en v27). Solicitudes creadas: 15787883 (A, SCA), 15787892 (B, SCA), 15787896 (C, SCA2), 15787900 (D, SCA2). Informe h1-plan-alta-identificacion-validaciones.md |
 | H2 | TERMINADA | 2026-10-13 13:40 | 34 casos: 10 OK igual, 0 divergencias, 24 NO PROBADO; sin objetos SCA2 modificados; solicitudes 15787880, 15787885, 15787894, 15787897. Informe h2-plan-alta-formulario-navegacion.md |
 | H3 | EN CURSO | | |
-| H4 | EN CURSO | | |
+| H4 | TERMINADA | 2026-10-13 11:45 | Informe `h4-plan-mecanizacion-autorizacion.md`; SCA2_AnulacionFueraNormaPrincipal v22 = v20 (sin cambio neto); pólizas H4 agotadas |
 | H5 | TERMINADA | 2026-10-13 13:25 | Informe h5-plan-acciones-administrativas.md; objetos liberados (Principal v21, subirDocumentosGD v6) |
 | H6 | TERMINADA | 2026-10-13 15:05 | 44 casos: 22 OK igual, 4 divergencias corregidas (SCA2_GestionMantenimientoMenu v2, SCA2_BuscadorTabla v11, SCA2_Buscador v27), 5 pendientes, 13 NO PROBADO. Solicitudes 15787886 (S1, SCA2), 15787888 (S2, SCA), 15787901 (S3 RCI, SCA2). Desactivar/Activar aplicación NO ejecutado (H3/H4 EN CURSO al cierre; variable CORE común a SCA). Informe h6-plan-buscador-detalle-mantenimiento.md |
 
@@ -54,7 +54,7 @@ Reserva RCI (pedir a la sesión padre antes de usar): 0005726681805 000572668171
 | H3 | `SCA2_GestionArgumentos` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20053041` | GA-5/6/12: tras modificar un argumento, BUSCAR devuelve el resultado cacheado (SCA pasa `random: rand()` a la consulta) | 2026-10-13 13:50 | liberado (v1 → v2) 14:00: las 3 llamadas a `SCA2_consultarTipoArg` pasan `random: rand()`; readback y testInterface OK |
 | H3 | `SCA2_consultarTipoArg` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052550` | Añadir input `random` (paridad `SCA_consultarTipoArg`) para romper la caché | 2026-10-13 13:50 | liberado (v1 → v2) 14:00: input `random` (Number Decimal) añadido, expresión sin cambios |
 | H3 | `SCA2_consultarTipoArg` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052550` y `SCA2_consultarTipoArgIntegracion` | Propagar `random` a la integración (paridad SCAC) para que BUSCAR no devuelva el resultado cacheado | 2026-10-13 14:20 | liberado 14:30: integración `SCA2_consultarTipoArgIntegracion` v1 → v2 (input `random`, como SCAC) y regla `SCA2_consultarTipoArg` v2 → v3 (`random: ri!random` a la integración); readback y testRule OK |
-| H4 | `SCA2 CMD CompletarAccion` · `0000f06f-1307-8000-65b1-7f0000014e7a` | Autorización aceptada: escribir `SCA2 Datos Solicitud.fecanulacion` = fecha autorizada en el nodo «Write Decidir» (paridad SCA: CORE actualiza fecAnulacion y SCA la relee; SCA2 lee su record) | 2026-10-13 11:35 | reservado |
+| H4 | `SCA2 CMD CompletarAccion` · `0000f06f-1307-8000-65b1-7f0000014e7a` | Autorización aceptada: escribir `SCA2 Datos Solicitud.fecanulacion` = fecha autorizada en el nodo «Write Decidir» (paridad SCA: CORE actualiza fecAnulacion y SCA la relee; SCA2 lee su record) | 2026-10-13 11:35 | liberado SIN CAMBIOS 11:45: no publicado (sin póliza para re-probar; nodo compartido con CA negativa). Propuesta en `h4-plan-mecanizacion-autorizacion.md` §4.1 |
 
 ## Incidencias
 
