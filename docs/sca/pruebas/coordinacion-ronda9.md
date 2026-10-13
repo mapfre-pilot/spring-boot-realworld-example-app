@@ -40,6 +40,10 @@ Mismo protocolo que `coordinacion-ronda8.md`. Resumen obligatorio:
 | SCA2 CMD Posponer | `0000f06f-8a47-8000-6751-7f0000014e7a` | R9-B | B1: guardar oficina elegida al POSPONER | 2026-10-13 16:55 | 2026-10-13 17:35 | nodo Write Posponer: guarda oficina en SCA2 Tarea.tokenTarea OK |
 | SCA2_ContraAnulacionOpciones (EN ESPERA, reservada por R9-C) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056435` | R9-B | B1: preseleccionar oficina guardada al RETOMAR — R9-B espera a que R9-C libere | 2026-10-13 16:55 (en cola) | 2026-10-13 19:05 | no modificado por R9-B (R9-C no liberó); relectura de oficina pendiente, ver r9b-*.md §4 |
 | SCA2_AccionesAdministrativasPrincipal (EN ESPERA, reservada por R9-C) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056429` | R9-B | B1: preseleccionar oficina guardada al RETOMAR — R9-B espera a que R9-C libere | 2026-10-13 16:55 (en cola) | 2026-10-13 19:05 | no modificado por R9-B (R9-C no liberó); relectura de oficina pendiente |
+| SCA2_ContraAnulacionOpciones | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056435` | PADRE (consolidación R9) | B1: preseleccionar oficina guardada en SCA2 Tarea.tokenTarea al RETOMAR | 2026-10-13 17:37 |  | en curso |
+| SCA2_AccionesAdministrativasPrincipal | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056429` | PADRE (consolidación R9) | B1: preseleccionar oficina guardada al RETOMAR | 2026-10-13 17:37 |  | en curso |
+| SCA2_VertiVencimientoPrincipal | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20063389` | PADRE (consolidación R9) | Verti: fechaAnulacion a determinarContacto en yyyy-MM-dd como SCA (hoy 400 del servicio) | 2026-10-13 17:37 |  | en curso |
+| SCA2 CMD Mecanizar | `0000f06f-4cfc-8000-66d3-7f0000014e7a` | PADRE (consolidación R9) | Verti: nodo Cargar pasa a determinarContacto los mismos datos que SCA Mecanizacion (hoy canalEntrada nulo → 400) | 2026-10-13 17:37 |  | en curso |
 
 ## Estado por sesión
 
