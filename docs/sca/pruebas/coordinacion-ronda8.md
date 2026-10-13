@@ -43,8 +43,8 @@ Reserva RCI (pedir a la sesión padre antes de usar): 0005726681805 000572668171
 | H6 | `SCA2_BuscadorTabla` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056379` | Paginación de «Últimas solicitudes» (sólo 10 filas, sin «siguiente») | 2026-10-13 12:40 (publicado antes del protocolo) | liberado (v8 → v10): input nuevo `totalCount`; con él construye un DataSubset para que el grid pagine en servidor |
 | H6 | `SCA2_Buscador` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055660` | Paginación de «Últimas solicitudes» | 2026-10-13 12:40 (publicado antes del protocolo) | liberado (v23 → v26): pasa `totalCount` del DataSubset a `SCA2_BuscadorTabla` (v24 descartada y revertida en v25) |
 | H3 | `SCA2_cargarSolicitud` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20054954` | Devolver `estado.contadorPosponer` (CMD Posponer escribía siempre 1) | 2026-10-13 10:40 (publicado antes de existir este protocolo) | liberado (v4 → v6): campo `contadorPosponer` añadido a `fields` y al mapa `estado`; readback OK |
-| H3 | `SCA2_ContraAnulacionOpciones` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056435` | RECARGAR ARGUMENTO vacía la tabla: pasar `body` de argumentos al hijo vía `local!data` | 2026-10-13 11:45 | reservado |
-| H3 | `SCA2_ContraAnulacionCompaniaCatalogacion` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20060061` | RECARGAR ARGUMENTO: usar el body del padre y guardar `listadoArgumentos` (no la respuesta completa) | 2026-10-13 11:45 | reservado |
+| H3 | `SCA2_ContraAnulacionOpciones` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056435` | RECARGAR ARGUMENTO vacía la tabla: pasar `body` de argumentos al hijo vía `local!data` | 2026-10-13 11:45 | liberado (v39 → v40) 12:05: `local!data` incluye `body: local!body`; readback y testInterface OK |
+| H3 | `SCA2_ContraAnulacionCompaniaCatalogacion` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20060061` | RECARGAR ARGUMENTO: usar el body del padre y guardar `listadoArgumentos` (no la respuesta completa) | 2026-10-13 11:45 | liberado (v3 → v4) 12:05: el botón recarga con `ri!data.body` (+ cía/catalogación/fecha actuales) y guarda `index(…, "listadoArgumentos", {})`; readback OK |
 
 ## Incidencias
 
