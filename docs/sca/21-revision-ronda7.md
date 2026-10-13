@@ -116,3 +116,23 @@ Informe UI completo: `pruebas/13-ronda7-informe-testing-agent.md` (sección «Ro
 **Prueba UI (testing agent, SISANS, grabación `sca-sisans-nse-reserva-prima`):** alta de 2002500167489 con los mismos datos de la captura → sin 403, abre Contra Anulación; argumento INCREMENTO PRIMA SINIESTROS → POSITIVO → ACEPTAR → **solicitud CORE 15787872 Finalizada positivamente**. Observación: el primer Detalle tras finalizar mostraba la CA «Incompleta» hasta recargar (refresco del record, sin inconsistencia persistente).
 
 **Pendiente derivado:** la simulación previa ya se ejecuta sin error, pero el alta sigue sin mostrar sus avisos/errores (`erroresSimular`, PRRA) ni el paso a Expertos en retención; se abordará con la decisión funcional «simulación obligatoria».
+
+## Ronda 7f — SI24 retoma cualquier CA nivel 2 (decisión funcional) y bloqueo tras POSPONER
+
+**Decisión del analista:** «el SI24 debe poder retomar cualquier gestión CA2 independientemente de si es para su grupo o no».
+
+**Cambio 1 — `SCA2_puedeGestionarTarea` v4** (backup/readback en `sca2work/r12`, UUID conservado): además de administrador, asignado explícito y «sin asignar + nivel 1 o perfil = grupo de la tarea», se permite **usuario con subperfil SI24** sobre cualquier tarea **sin asignar** de tipo `CONTRA ANULAR NIVEL 2`, sin comparar el grupo. El resto de perfiles sigue igual (JJGONZ2/CE_RM no ve RETOMAR en una CA2 de CE_MF_BK).
+
+**Prueba UI (SISANS, grabación `sca-sisans-ca2-retomar-v4`):**
+- 15787867 (CA2 grupo CE_MF_BK, sin asignar): **RETOMAR visible** y abre la Contra Anulación nivel 2 sin 403. Control negativo 15787844 (CA2 asignada a otro usuario): sin RETOMAR ni REASIGNAR. Correcto.
+- **Fallo detectado al POSPONER**: tras «Los datos se han guardado correctamente» la pantalla quedaba en «Procesando la decisión de la solicitud…» con ACEPTAR deshabilitado hasta agotar la espera (90 s) y después mostraba «No se ha podido abrir la pantalla de anulación». Causa: `SCA2_DetalleTareas` decidía «CA negativa → esperar la decisión/MECANIZAR» mirando en CORE si **alguna** gestión CA estaba FINALIZADA NEGATIVA; en una solicitud con salto de nivel la CA de nivel 1 lo está siempre, así que cualquier POSPONER/CANCELAR de nivel 2 entraba en la espera. Además el campo `contadorPosponer` del record no se incrementa (el CMD Posponer suma 1 sobre un valor que no carga → siempre 1), por lo que no sirve para detectar la posposición.
+
+**Cambio 2 — `SCA2_DetalleTareas` v23** (backups `r12/det22_before.sail`, `r12/det23_before.sail`; readback idéntico):
+- Sondea el **estado real de la tarea gestionada** (`SCA2 Tarea.estado`) y la **última transición** de la solicitud (`SCA2 Transicion`).
+- `COMPLETADA` → decisión en curso: se mantiene la lógica anterior (CA negativa → esperar MECANIZAR / nivel / fin).
+- Última transición «SCA2 CMD Posponer» posterior al clic → **pospuesta**: ACEPTAR habilitado de inmediato y vuelve al buscador (como SCA). `CANCELADA` → sin espera.
+- Mientras la tarea sigue PENDIENTE y no hay transición de posponer (CompletarAccion ejecutándose) ACEPTAR queda deshabilitado con «Procesando…», con el mismo tope de 90 s.
+
+**Observación (no corregida):** en 15787867 la tarjeta CA2 Incompleta muestra Grupo OFICINA / RED MAPFRE / PCARAGE y fecha fin 13/10/2026 (datos de la gestión que devuelve CORE) y la cabecera «FINALIZADO NEGATIVO CON CONTRAANULACIÓN» mientras el buscador dice Pendiente; es el mismo origen de datos que SCA (CORE), pendiente de confirmar con el analista si en SCA se ve igual tras un salto de nivel.
+
+**Pendiente derivado:** `contadorPosponer` siempre 1 (cargar el valor actual en el CMD Posponer); conservar la Oficina al retomar sigue a la espera de contexto del analista.
