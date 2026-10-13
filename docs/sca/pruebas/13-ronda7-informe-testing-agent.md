@@ -418,3 +418,47 @@ SCA muestra «MÁS PRIMA» en la pestaña **Solicitud Anulación** y la descripc
 - SKILL.md adicional: ninguno.
 - Blueprint organizacional consultado: no hubo instalaciones, configuración de herramientas ni servicios nuevos. Sugerencia de documentación UI no cubierta por el launcher MCP: confirmar identidad en menú usuario, usar sesiones Chrome aisladas, maximizar con wmctrl y verificar `/sca-site` si `/sca` redirige a SCA2.
 - Necesario del usuario: ninguno para completar esta ronda. Las diferencias de precisión de fechas, capitalización y color de texto quedan documentadas, no bloquean los criterios explícitos de visibilidad.
+## Verificación SISANS NSE — corrección reserva prima (13/10/2026)
+
+Ejecutado por UI en SCA2 TEST como **SISANS / Sonia Sans**, sobre la póliza **2002500167489**. No se modificaron objetos Appian. Solicitud creada: **15787872**.
+
+| Paso | Resultado | Evidencia |
+|---|---|---|
+| 1. Comprobar disponibilidad | **PASA**: búsqueda inicial sin resultados; no se necesitó alternativa ni se duplicó el alta | N1 |
+| 1. Formulario solicitado | **PASA**: DECISION DE CLIENTE / PRECIO / ME HA SUBIDO MUCHO LA PRIMA; TELEFONICO; A VENCIMIENTO; fecha propuesta no editable 03/04/2027; observación «Si24 Prueba Red». Medio comunicación vacío/deshabilitado | N2 |
+| 1. GUARDAR una sola vez | **PASA**: abrió Contra anulación, sin modal 403 ni otro error. Procesó aproximadamente un minuto, dentro del límite de 90 s | N3 |
+| 2. Tramitar CA como SISANS | **PASA**: seleccionó argumento obligatorio INCREMENTO PRIMA SINIESTROS → POSITIVO → confirmación de retención → ACEPTAR. Esta ruta finaliza directamente; no hubo botón FINALIZAR adicional ni error | N4, N6 |
+| 2. Persistencia y estado | **PASA con observación**: buscador y cabecera Finalizada positivamente. El primer Detalle aún mostró CA Incompleta y fecha fin «-»; tras una recarga mostró Finalizada Positiva y fecha fin 13/10/2026 08:47:11, SISANS, SI24 EXPERTOS. Estado transitorio desactualizado, no fallo persistente | N4–N6 |
+| 1–2. Número CORE en buscador | **PASA**: 15787872, póliza 2002500167489, fecha solicitud 13/10/2026 08:45:47, resolución 08:47:16, observaciones «Si24 Prueba Red» | N4 |
+| Restricciones | **PASA**: no se repitió GUARDAR ni se pulsó ANULAR PÓLIZA. No se tocaron otras solicitudes | Grabación |
+
+No se observó 403 ni error de expresión. La corrección permite completar este flujo NSE concreto. No se probaron Acción Administrativa (no fue el destino), ruta negativa, otros argumentos, documentos ni otra póliza NSE; no se infiere cobertura de todas las acciones. La recarga fue necesaria para verificar la actualización de la tarjeta CA.
+
+### Evidencia visual
+
+| N1 — Disponibilidad inicial | N2 — Formulario exacto |
+|---|---|
+| ![N1 Sin solicitud](https://mapfre.devinenterprise.com/attachments/fabd6a4e-f3e9-42bd-827d-1558092b8e2a/ss_0b8f54e5.png) | ![N2 Antes de guardar](https://mapfre.devinenterprise.com/attachments/babd1b75-314b-4187-83d8-e9a3a08be88a/ss_be1c18e9.png) |
+
+| N3 — Destino Contra anulación | N4 — CORE creado y finalizado |
+|---|---|
+| ![N3 Sin 403](https://mapfre.devinenterprise.com/attachments/4ae1cdac-6abf-4b44-9bc5-276eec287958/ss_5b219536.png) | ![N4 15787872](https://mapfre.devinenterprise.com/attachments/5be69956-4829-4851-9419-12453e72d0b5/ss_8149d978.png) |
+
+| N5 — 🔴 Antes de refrescar: tarjeta Incompleta | N6 — 🟢 Después: Finalizada Positiva |
+|---|---|
+| ![N5 Estado transitorio](https://mapfre.devinenterprise.com/attachments/b18b6b4f-4ce6-46dc-8901-a74c63008dff/ss_de5be914.png) | ![N6 CA finalizada SISANS](https://mapfre.devinenterprise.com/attachments/fbf0f2bf-2a8e-4052-aa35-9b96b500062e/ss_9ec8208b.png) |
+
+### Paths y seguimiento
+
+- Grabación: `/home/ubuntu/screencasts/sca-sisans-nse-reserva-prima/sca-sisans-nse-reserva-prima-edited.mp4`.
+- Plan: `/home/ubuntu/sca2work/r12/plan-sisans-nse.md`.
+- N1: `/home/ubuntu/screenshots/ss_0b8f54e5.png`.
+- N2: `/home/ubuntu/screenshots/ss_be1c18e9.png`.
+- N3: `/home/ubuntu/screenshots/ss_5b219536.png`.
+- N4: `/home/ubuntu/screenshots/ss_8149d978.png`.
+- N5: `/home/ubuntu/screenshots/ss_de5be914.png`.
+- N6: `/home/ubuntu/screenshots/ss_9ec8208b.png`.
+- Comentario PR sugerido: ninguno; no se indicó PR.
+- SKILL.md adicional: ninguno.
+- Blueprint organizacional consultado: sin instalaciones ni servicios nuevos. Añadir documentación UI de SSO NOPRO, comprobación de identidad SISANS y maximización con wmctrl; el launcher MCP no cubre ese acceso por navegador.
+- Necesario del usuario: ninguno para esta verificación; no repetir el alta de la póliza. Observación para seguimiento: tarjeta temporalmente desactualizada tras finalizar.

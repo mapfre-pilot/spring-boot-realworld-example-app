@@ -99,3 +99,20 @@ Informe UI completo: `pruebas/13-ronda7-informe-testing-agent.md` (sección «Ro
 ## Pendiente: conservar la Oficina al RETOMAR una CA (decisión Excel)
 
 `SCA2_ContraAnulacionOpciones` ya pasa `detalleOficina` al CMD Posponer, pero ningún record la guarda: `SCA2 Datos Solicitud` no tiene campo de oficina (sólo `idcompania`, `catalogacion`, `fecanulacion`…) y `SCA2 Tarea` tampoco. Para implementarlo hace falta una **columna nueva** (`oficinadirecta`, Text) en la tabla de `SCA2 Datos Solicitud` (cambio de BBDD/Data Design, no realizable desde la API de diseño), escribirla en el nodo «Write Posponer» del CMD y restaurarla en la interfaz (`local!detalleOficina` por `OFICINA_DIRECTA`). SCA hoy tampoco la conserva. Pendiente de que se cree la columna.
+
+## Ronda 7e — 403 de SISANS al GUARDAR el alta (póliza NSE-Autos 2002500167489)
+
+**Síntoma reportado:** modal «403 Acceso denegado – No tiene permiso para ver esta página» al pulsar GUARDAR en el alta de SCA2 con SISANS. No se creaba record ni error en la bandeja.
+
+**Diagnóstico (no es de permisos):**
+- SISANS y JJGONZ2 tienen los mismos grupos de aplicación (`SCA2 Users`, `SCA Usuarios`, `SCAC Usuarios`); la seguridad de la cadena del alta (PM `SCA2 CMD Alta`, reglas, integraciones y sistemas conectados) incluye a esos grupos. Según la documentación de Appian, la seguridad de reglas/integraciones sólo afecta a diseñadores.
+- La póliza es **NSE-Autos**, por lo que al GUARDAR `SCA2_erroresGuardarSolicitud` → `SCA2_simularAnulacion` → `SCA2_simularAnulacionAltaNse` → **`SCA2_posibilidadReservaPrima`**, y esta regla **se llamaba a sí misma** (recursión infinita: al copiarla de SCA se renombró también la llamada interna a `SCAC_posibilidadReservaPrima`). Appian aborta la evaluación y el site lo muestra como el modal 403. Las pólizas wAutemis no pasan por esta rama, por eso las altas anteriores (JJGONZ2 y SISANS) funcionaban; el 403 de la ronda 7b con JJGONZ2 (detección PRRA, que usa la misma regla) tenía la misma causa.
+
+**Corrección (TEST, PUT + relectura, backups en `sca2work/r12`):**
+- `SCA2_posibilidadReservaPrima` v3: expresión idéntica a `SCA_posibilidadReservaPrima` (llama a la integración `SCAC_posibilidadReservaPrima` con el body `infoGeneral`).
+- Barrido de todas las reglas de SCA2 con el mismo defecto de copia (auto-llamada): corregidas también **`SCA2_borrarDocumentoSCA`** (→ `SCAC_borrarDocumentoSCA`), **`SCA2_obtenerOficinas`** (→ `SCAC_obtenerOficinas`, host `CMP_VAL_HOST_SOA7`) y **`SCA2_modificarMarcaEconomica`** (→ `SCAC_modificarMarcaEconomica`), todas v3 con la expresión de su equivalente SCA. Afectan a borrar documento en Acción Administrativa, al selector de oficinas y a la marca económica de argumentos.
+- Pruebas de diseño: `SCA2_simularAnulacionAltaNse` sobre 2002500167489 ya responde del servicio NSE (fault de negocio 4030 con credenciales vacías del diseñador); `SCA2_obtenerOficinas("JJGONZ2")` devuelve su estructura comercial (SISANS no tiene estructura en CARGAGESTION: lista vacía).
+
+**Prueba UI (testing agent, SISANS, grabación `sca-sisans-nse-reserva-prima`):** alta de 2002500167489 con los mismos datos de la captura → sin 403, abre Contra Anulación; argumento INCREMENTO PRIMA SINIESTROS → POSITIVO → ACEPTAR → **solicitud CORE 15787872 Finalizada positivamente**. Observación: el primer Detalle tras finalizar mostraba la CA «Incompleta» hasta recargar (refresco del record, sin inconsistencia persistente).
+
+**Pendiente derivado:** la simulación previa ya se ejecuta sin error, pero el alta sigue sin mostrar sus avisos/errores (`erroresSimular`, PRRA) ni el paso a Expertos en retención; se abordará con la decisión funcional «simulación obligatoria».
