@@ -14,13 +14,13 @@ Mismo protocolo que `coordinacion-ronda8.md`. Resumen obligatorio:
 
 | Objeto | UUID | Sesión | Motivo | Reservado (UTC) | Liberado (UTC) | Versión ant. → nueva / resultado |
 |---|---|---|---|---|---|---|
-| SCA2_AnulacionFueraNormaPrincipal | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056423` | R9-D | Decisión 4: CANCELAR muestra resultado real de guardarAutorizacion | 2026-10-13 16:36 | | |
+| SCA2_AnulacionFueraNormaPrincipal | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056423` | R9-D | Decisión 4: CANCELAR muestra resultado real de guardarAutorizacion | 2026-10-13 16:36| 2026-10-13 16:39 | v22 → v23: CANCELAR graba guardarAutorizacion codEstado 5 síncrono y muestra el resultado real (popup ERROR si CORE falla) |
 | SCA2_AltaSolicitudPage | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055716` | R9-A | restaurar simulación al GUARDAR (A1/A3), servicio caído (A5) | 2026-10-13 16:27 | | |
 | SCA2_simularAnulacionPolizaIntegracion (seguridad) | `a980b325-e149-4217-834e-234456d2c2df` | R9-A | seguridad para usuarios finales (A1) | 2026-10-13 16:27 | | |
 | SCA2_simularAnulacion* (reglas simularAnulacion, simularAnulacionPoliza, simularAnulacionAltaNse, consultarNewAlta, obtenerUserPassSimularPoliza) | `20051692 / 20051194 / 20051650 / 20051608 / 20051704` | R9-A | seguridad / paridad con SCA (A1) | 2026-10-13 16:27 | | |
 | SCA2 CMD CrearSolicitud | `(pendiente de localizar UUID)` | R9-A | simulación/PRRA tras guardar si persiste el 403 (A3) | 2026-10-13 16:27 | | |
-| SCA2_MecanizacionPrincipal | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20060481` | R9-D | C1 patrón NSE / botones | 2026-10-13 16:26 | | |
-| SCA2 CMD Mecanizar | `0000f06f-4cfc-8000-66d3-7f0000014e7a` | R9-D | C1 patrón NSE / ANL (C3) | 2026-10-13 16:26 | | |
+| SCA2_MecanizacionPrincipal | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20060481` | R9-D | C1 patrón NSE / botones | 2026-10-13 16:26| 2026-10-13 16:39 | v14 → v15: aviso NSE pendiente de autorizar (observaciones 00000005) como SCA; la anulación se lanza al ACEPTAR |
+| SCA2 CMD Mecanizar | `0000f06f-4cfc-8000-66d3-7f0000014e7a` | R9-D | C1 patrón NSE / ANL (C3) | 2026-10-13 16:26| 2026-10-13 16:39 | sin cambios (la espera ANL 24 h vs. espera indefinida de SCA se documenta, depende de ANL) |
 | SCA2_ContraAnulacionModalSiNo | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052807` | R9-C | B7-insiste: pregunta «¿insiste?» solo CCC/CCR; B7-acuerdos mensaje | 2026-10-13 16:40 | | |
 | SCA2_ContraAnulacionOpciones | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056435` | R9-C | B7-insiste: anulaTecnico/anulaExperto vacío salvo CCC; B7-acuerdos aviso/bloqueo Red Mapfre | 2026-10-13 16:40 | | |
 | SCA2_AccionesAdministrativasPrincipal | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056429` | R9-C | B7-causas / B7-acuerdos en AA | 2026-10-13 16:40 | | |
