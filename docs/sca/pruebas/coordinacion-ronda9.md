@@ -34,19 +34,19 @@ Mismo protocolo que `coordinacion-ronda8.md`. Resumen obligatorio:
 | SCA2 CMD Decidir (nodo DUE SI24) y regla del cuerpo DUE (SCA2_notificarNivel, UUID pendiente de localizar) | `0000f06f-0eab-8000-6595-7f0000014e7a` | R9-E | E1 teléfono/correo de contacto en el correo DUE | 2026-10-13 16:55 | 2026-10-13 19:50 | sin cambios en el PM; la corrección está en SCA2_notificarNivel |
 | SCA2_notificarNivel (regla, fuera del listado de la app) | `_a-0000f07f-6ec5-8000-9d2c-011c48011c48_5505875` | R9-E | E1: teléfono de contacto (tlfexperto) en el cuerpo del DUE como SCA | 2026-10-13 17:25 | 2026-10-13 19:50 | v3 → v5: Tomador/DNI/Email contacto/Teléfono contacto (tlfexperto + datos de contacto en vivo) en el DUE |
 | SCA2_TablaOtrasSolAnulacion | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20065000` | R9-E | F1/F3: «Otras solicitudes» del Detalle con filas CORE y fecha resolución vacía si pendiente | 2026-10-13 17:25 | 2026-10-13 19:50 | v2 → v6: filas CORE/SCA + fecha resolución «-» salvo estado final + fecha solicitud de CORE |
-| SCA2_puedeGestionarTarea | `_a-0000f06b-141a-8000-9d23-011c48011c48_5454993` | R9-B | B7-SI24 / Decisión 2 / B3: CE_RM no gestiona tareas SI24; SI24 no retoma AA nivel 1 pospuesta | 2026-10-13 16:55 | | |
-| SCA2_DetalleSolicitud (máx. 60 min) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055572` | R9-B | B7-SI24 mensaje «gestionando SI24»; Decisión 2 ocultar RETOMAR/REASIGNAR | 2026-10-13 16:55 | | |
-| SCA2_DetalleTareas (máx. 60 min) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055554` | R9-B | B5/B7: enlace Completar sólo si puedeGestionarTarea y solicitud no finalizada | 2026-10-13 16:55 | | |
-| SCA2 CMD Posponer | `0000f06f-8a47-8000-6751-7f0000014e7a` | R9-B | B1: guardar oficina elegida al POSPONER | 2026-10-13 16:55 | | |
-| SCA2_ContraAnulacionOpciones (EN ESPERA, reservada por R9-C) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056435` | R9-B | B1: preseleccionar oficina guardada al RETOMAR — R9-B espera a que R9-C libere | 2026-10-13 16:55 (en cola) | | |
-| SCA2_AccionesAdministrativasPrincipal (EN ESPERA, reservada por R9-C) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056429` | R9-B | B1: preseleccionar oficina guardada al RETOMAR — R9-B espera a que R9-C libere | 2026-10-13 16:55 (en cola) | | |
+| SCA2_puedeGestionarTarea | `_a-0000f06b-141a-8000-9d23-011c48011c48_5454993` | R9-B | B7-SI24 / Decisión 2 / B3: CE_RM no gestiona tareas SI24; SI24 no retoma AA nivel 1 pospuesta | 2026-10-13 16:55 | 2026-10-13 19:05 | v4 → v6 OK (codSubPerfil; tareas SI24 sólo SI24; SI24 sólo consulta nivel 1) |
+| SCA2_DetalleSolicitud (máx. 60 min) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055572` | R9-B | B7-SI24 mensaje «gestionando SI24»; Decisión 2 ocultar RETOMAR/REASIGNAR | 2026-10-13 16:55 | 2026-10-13 17:25 | v51 → v52 OK (aviso SI24, codSubPerfil) |
+| SCA2_DetalleTareas (máx. 60 min) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055554` | R9-B | B5/B7: enlace Completar sólo si puedeGestionarTarea y solicitud no finalizada | 2026-10-13 16:55 | 2026-10-13 17:25 | v23 → v24 OK (Completar sólo si puedeGestionarTarea y no finalizada) |
+| SCA2 CMD Posponer | `0000f06f-8a47-8000-6751-7f0000014e7a` | R9-B | B1: guardar oficina elegida al POSPONER | 2026-10-13 16:55 | 2026-10-13 17:35 | nodo Write Posponer: guarda oficina en SCA2 Tarea.tokenTarea OK |
+| SCA2_ContraAnulacionOpciones (EN ESPERA, reservada por R9-C) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056435` | R9-B | B1: preseleccionar oficina guardada al RETOMAR — R9-B espera a que R9-C libere | 2026-10-13 16:55 (en cola) | 2026-10-13 19:05 | no modificado por R9-B (R9-C no liberó); relectura de oficina pendiente, ver r9b-*.md §4 |
+| SCA2_AccionesAdministrativasPrincipal (EN ESPERA, reservada por R9-C) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056429` | R9-B | B1: preseleccionar oficina guardada al RETOMAR — R9-B espera a que R9-C libere | 2026-10-13 16:55 (en cola) | 2026-10-13 19:05 | no modificado por R9-B (R9-C no liberó); relectura de oficina pendiente |
 
 ## Estado por sesión
 
 | Sesión | Estado | Último commit | Nota |
 |---|---|---|---|
-| R9-A | TERMINADA | ver informe r9a-alta-simulacion-polizas-nuevas.md | SCA2_AltaSolicitudPage v29 liberada; solicitudes 15787912, 15787921 (SCA2) y 15787915, 15787918, 15787923 (SCA) |
-| R9-B | en curso | | inicio 2026-10-13 16:25 UTC |
+| R9-A | TERMINADA | ver informe r9a-alta-simulacion-polizas-nuevas.md | SCA2_AltaSolicitudPage v29 liberada; solicitudes 15787912, 15787921 |
+| R9-B | terminada | ver r9b-tareas-permisos-oficina-si24.md | inicio 16:25, fin 19:05 UTC; reservas liberadas |
 | R9-C | pendiente | | |
 | R9-D | TERMINADA | ver informe r9d-mecanizacion-autorizacion-anl.md | 3 objetos SCA2 modificados (AnulacionFueraNorma v23, MecanizacionPrincipal v15, CMD CompletarAccion nodo 303); reservas liberadas |
 | R9-E | terminada | | informe docs/sca/pruebas/r9e-buscador-detalle-due.md; solicitud propia 15787911 (RCI 0005726698173) pendiente |
