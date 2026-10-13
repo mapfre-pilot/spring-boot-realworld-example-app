@@ -53,6 +53,7 @@ Reserva RCI (pedir a la sesión padre antes de usar): 0005726681805 000572668171
 | H4 | `SCA2_AnulacionFueraNormaPrincipal` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056423` | FINALIZAR autorización: la fecha autorizada no se propaga al record `SCA2 Datos Solicitud` (mecanización muestra la fecha original; CORE sí la actualiza, SCA la lee de CORE) | 2026-10-13 11:20 | liberado (v20 → v21) 11:27: FINALIZAR añade `a!writeRecords` de `SCA2 Datos Solicitud.fecanulacion` = fecha autorizada (dd/mm/yyyy); readback y testInterface OK |
 | H3 | `SCA2_GestionArgumentos` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20053041` | GA-5/6/12: tras modificar un argumento, BUSCAR devuelve el resultado cacheado (SCA pasa `random: rand()` a la consulta) | 2026-10-13 13:50 | liberado (v1 → v2) 14:00: las 3 llamadas a `SCA2_consultarTipoArg` pasan `random: rand()`; readback y testInterface OK |
 | H3 | `SCA2_consultarTipoArg` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052550` | Añadir input `random` (paridad `SCA_consultarTipoArg`) para romper la caché | 2026-10-13 13:50 | liberado (v1 → v2) 14:00: input `random` (Number Decimal) añadido, expresión sin cambios |
+| H3 | `SCA2_consultarTipoArg` · `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052550` y `SCA2_consultarTipoArgIntegracion` | Propagar `random` a la integración (paridad SCAC) para que BUSCAR no devuelva el resultado cacheado | 2026-10-13 14:20 | reservado |
 
 ## Incidencias
 
