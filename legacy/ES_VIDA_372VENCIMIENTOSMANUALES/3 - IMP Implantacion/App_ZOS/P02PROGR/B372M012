@@ -1,0 +1,448 @@
+      ******************************************************************
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. B372M012.
+      ******************************************************************
+      **INV: A372VENM
+      ******************************************************************
+      * APLICACIÓN.....: VENCIMIENTOS MANUALES                         *
+      * ANALISTA.......: INDRA                                         *
+      * PROGRAMADOR....: INDRA                                         *
+      * FECHA DE REALIZACIÓN: MAYO 2026                                *
+      *                                                                *
+      * DESCRIPCIÓN:                                                   *
+      *   ------------------------------------------------------------ *
+      *  | MANTENIMIENTO DE DATOS ADICIONALES DE MIGRACION DE LA      |*
+      *  | TABLA DE EXPEDIENTES DE IMPRESION DE INFORMES VENCIMIENTOS |*
+      *   ------------------------------------------------------------ *
+      *                                                                *
+      * REALIZA LAS MODIFICACIONES SOBRE LA TABLA TB372MIG0            *
+      *                                                                *
+      * MODOS DE ENTRADA SEGÚN EL VALOR DE X372M012-COPERACION-E       *
+      *  'A1' INSERCIóN DE UN REGISTRO EN LA TABLA                     *
+      *  'M1' MODIFICACION DE UN REGISTRO DE LA TABLA                  *
+      *  'M2' ANULACION DE UN REGISTRO DE LA TABLA (BORRADO LOGICO)    *
+      *  'B1' BORRADO FISICO DE UN REGISTRO DE LA TABLA                *
+      *  'M3' DESMARCA EL CAMPO REASEGURO EN TODOS LOS REGISTROS       *
+      *       QUE ESTE INFORMADO                                       *
+      *  'M4' MODIFICACION DE LAS FECHAS DE EMISION DE FINIQUITOS      *
+      *  'M5' MODIFICACION DE LAS FECHAS DE IMPRESION DE FINIQUITOS    *
+      *  'M6' MODIFICACION DE LAS FECHAS DE BDGI Y SWTICH CAPITAL      *
+      *  'M7' MODIFICACION DE LAS FECHAS DE BDGI Y SWTICH COMPLEME.    *
+      *                                                                *
+      ******************************************************************
+      * TABLA DE TRABAJO
+      ******************************************************************
+      *
+      * TB372MIG0    TABLA DE VENCIMIENTOS MANUALES
+      *
+      ******************************************************************
+      * CODIGO DE ERRORES
+      ******************************************************************
+      *
+      * X372M012-CRETORNO-S
+      *         '00' OPERACION CORRECTA
+      *
+      *         '01' ERROR GENERICO
+      *
+      *         '02' ERROR INSERT DUPLICADO
+      *
+      *         '03' ERROR REGISTRO NO ENCONTRADO
+      *
+      *         '04' ERROR SELECT DUPLICADO
+      *
+      *         '99' ERROR EN ACCESO A BASE DE DATOS
+      *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+
+
+       CONFIGURATION SECTION.
+          SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+
+       DATA DIVISION.
+
+       FILE SECTION.
+
+       WORKING-STORAGE SECTION.
+       01 FILLER.
+          03 FILLER PIC X(40) VALUE 'INICIO WORKING-STORAGE SECTION'.
+
+          03 SW-SWITCH.
+             05 SW-ERROR-DB2   PIC S9(3)  VALUE  0.
+                88 DB2-OK                 VALUE  0.
+                88 DB2-NOTFND             VALUE +100.
+                88 DB2-DUPLICADO          VALUE -803.
+                88 DB2-SELECTDUP          VALUE -811.
+
+          03 LT-LITERALES.
+             05 LT-PGM                  PIC X(8)   VALUE 'B372M012'.
+      **
+      ** MODOS DE ENTRADA
+      **
+             05 LT-MODO-ALTA            PIC X(2)   VALUE 'A1'.
+             05 LT-MODO-BAJA            PIC X(2)   VALUE 'B1'.
+             05 LT-MODO-MODIF1          PIC X(2)   VALUE 'M1'.
+      *
+             05 LT-ERRORES-RETORNO.
+      *         LITERAL NO HAY ERRORES
+                07 LT-RETURN-OK             PIC X(5) VALUE '00'.
+      *         ERROR GENERICO
+                07 LT-ERROR-GENERICO        PIC X(5) VALUE '01'.
+      *         ERROR SELECT DUPLICADO
+                07 LT-SELECT-DUPLICADO      PIC X(5) VALUE '04'.
+      *         ERROR REGISTRO NO ENCONTRADO
+                07 LT-RETURN-ERR-NOTFND     PIC X(5) VALUE '03'.
+      *         ERROR INSERT DUPLICADO
+                07 LT-INSERT-DUPLICADO      PIC X(5) VALUE '02'.
+      *         ERROR EN ACCESO A BASE DE DATOS
+                07 LT-RETURN-ERR-OTHER      PIC X(5) VALUE '99'.
+
+      *   CONTROL DE ERRORES DEL PROGRAMA
+             05 SW-ERRORES                PIC XX VALUE '00'.
+                88 NO-ERROR                      VALUE '00'.
+                88 ERROR-GRAVE                   VALUE '01'.
+      **
+      ** CONTADORES Y CONSTANTES
+      **
+          03 XN-CONTADORES.
+             05 XN-J                  PIC 9(4).
+
+          03 CN-CONSTANTES.
+             05 CN-RES-MAX            PIC 9(4) VALUE 1200.
+
+          03 XN-SQLCODE               PIC X(2).
+
+      **
+      ** FECHA DEL SISTEMA
+      **
+          03 WS-FECHA-ACTUAL.
+             05 WS-FECHA.
+                07 WS-ANO                   PIC 9(04).
+                07 WS-MES                   PIC 9(02).
+                07 WS-DIA                   PIC 9(02).
+             05 WS-TIEMPO.
+                07 WS-HORA                  PIC 9(02).
+                07 WS-MINUTOS               PIC 9(02).
+                07 WS-SEGUNDOS              PIC 9(02).
+                07 WS-CENTESIMAS            PIC 9(02).
+             05 FILLER                      PIC 9(05).
+
+      **
+      ** MODULOS
+      **
+
+      **
+      ** COPYS
+      **
+
+      **
+      ** AREA DE COMUNICACION CON DB2
+      **
+            EXEC SQL INCLUDE SQLCA     END-EXEC.
+            EXEC SQL INCLUDE T372MIG0  END-EXEC.
+
+          03 FILLER PIC X(40) VALUE 'FINAL WORKING-STORAGE SECTION'.
+
+      *************************************************************
+      * LINKAGE SECTION                                           *
+      *************************************************************
+      *
+       LINKAGE SECTION.
+       01 DFHCOMMAREA.
+             COPY X372M012.
+
+      *************************************************************
+      * PROCEDURE DIVISION                                        *
+      *************************************************************
+      *
+       PROCEDURE DIVISION USING DFHCOMMAREA.
+
+           PERFORM 1000-INICIO.
+           IF NOT ERROR-GRAVE
+              PERFORM 2000-PROCESO
+           END-IF.
+           PERFORM 9000-FINAL.
+
+      ********************************************************
+      * 1000-INICIO                                          *
+      ********************************************************
+      *
+       1000-INICIO.
+           SET  NO-ERROR              TO TRUE.
+           MOVE LT-RETURN-OK          TO X372M012-CRETORNO-S.
+           MOVE FUNCTION CURRENT-DATE TO WS-FECHA-ACTUAL.
+
+           INITIALIZE DCLTB372MIG0
+           PERFORM 1100-MOVER-REGISTRO-ENT.
+
+      ******************************************************************
+      * 1100-MOVER-REGISTRO-ENT.                                       *
+      ******************************************************************
+      *
+       1100-MOVER-REGISTRO-ENT.
+
+
+           MOVE X372M012-ANIO-E              TO MIG0-ANIO
+           MOVE X372M012-KEXPEDIENTE-E       TO MIG0-KEXPEDIENTE
+           MOVE X372M012-VEN-MIGR-E          TO MIG0-VEN-MIGR
+           MOVE X372M012-USUARIO-PAGO-E      TO MIG0-USUARIO-PAGO
+           MOVE X372M012-FCAPTURA-E          TO MIG0-FCAPTURA
+           MOVE X372M012-CUSUARIO-CAPT-E     TO MIG0-CUSUARIO-CAPT
+           MOVE X372M012-FORMAPAGO-E         TO MIG0-FORMAPAGO
+           MOVE X372M012-NUM-CHEQUE-E        TO MIG0-NUM-CHEQUE
+           MOVE X372M012-NUM-CUENTA-E        TO MIG0-NUM-CUENTA
+           MOVE X372M012-REF-REINVERSION-E   TO MIG0-REF-REINVERSION
+           MOVE X372M012-CUSU-PAGO-COMP1-E   TO MIG0-CUSU-PAGO-COMP1
+           MOVE X372M012-FCAPTURA-COMP1-E    TO MIG0-FCAPTURA-COMP1
+           MOVE X372M012-CUSU-CAPT-COMP1-E   TO MIG0-CUSU-CAPT-COMP1
+           MOVE X372M012-FORMAPAGO-COMP1-E   TO MIG0-FORMAPAGO-COMP1
+           MOVE X372M012-NCHEQUE-COMP1-E     TO MIG0-NCHEQUE-COMP1
+           MOVE X372M012-NCUENTA-COMP1-E     TO MIG0-NCUENTA-COMP1
+           MOVE X372M012-CUSU-PAGO-COMP2-E   TO MIG0-CUSU-PAGO-COMP2
+           MOVE X372M012-FCAPTURA-COMP2-E    TO MIG0-FCAPTURA-COMP2
+           MOVE X372M012-CUSU-CAPT-COMP2-E   TO MIG0-CUSU-CAPT-COMP2
+           MOVE X372M012-FORMAPAGO-COMP2-E   TO MIG0-FORMAPAGO-COMP2
+           MOVE X372M012-NCHEQUE-COMP2-E     TO MIG0-NCHEQUE-COMP2
+           MOVE X372M012-NCUENTA-COMP2-E     TO MIG0-NCUENTA-COMP2
+           MOVE X372M012-GRADO-DISCAP-E      TO MIG0-GRADO-DISCAP
+           MOVE X372M012-PREST-VIVIENDA-E    TO MIG0-PREST-VIVIENDA
+           MOVE X372M012-SITU-FAMILIAR-E     TO MIG0-SITU-FAMILIAR
+           MOVE X372M012-NIF-CONYUGUE-E      TO MIG0-NIF-CONYUGUE
+           MOVE X372M012-ICOMPENSATORIA-E    TO MIG0-ICOMPENSATORIA
+           MOVE X372M012-IMPALIMENHIJOS-E    TO MIG0-IMPALIMENHIJOS
+           .
+      ******************************************************************
+      * 2000-PROCESO.                                                  *
+      ******************************************************************
+       2000-PROCESO.
+      *D*
+      *    DISPLAY ' OPERACION-E ' X372M012-OPERACION-E
+      *F*
+           EVALUATE X372M012-OPERACION-E
+             WHEN LT-MODO-ALTA          PERFORM 2100-ALTA
+             WHEN LT-MODO-MODIF1        PERFORM 2200-MODIF1
+             WHEN LT-MODO-BAJA          PERFORM 2300-BAJA
+             WHEN OTHER
+                  SET ERROR-GRAVE          TO TRUE
+                  MOVE LT-RETURN-ERR-OTHER   TO X372M012-CRETORNO-S
+                  MOVE 'B372M012'            TO X372M012-GNOMPROG-S
+                  MOVE 'EL CAMPO OPERACION ES INCORRECTO'
+                                             TO X372M012-GERROR-S
+           END-EVALUATE.
+
+
+      ******************************************************************
+      * 2100-ALTA.                                                     *
+      ******************************************************************
+      *
+       2100-ALTA.
+           EXEC SQL
+              INSERT INTO TB372MIG0
+              (
+               MIG0_ANIO,
+               MIG0_KEXPEDIENTE,
+               MIG0_VEN_MIGR,
+               MIG0_USUARIO_PAGO,
+               MIG0_FCAPTURA,
+               MIG0_CUSUARIO_CAPT,
+               MIG0_FORMAPAGO,
+               MIG0_NUM_CHEQUE,
+               MIG0_NUM_CUENTA,
+               MIG0_REF_REINVERSION,
+               MIG0_CUSU_PAGO_COMP1,
+               MIG0_FCAPTURA_COMP1,
+               MIG0_CUSU_CAPT_COMP1,
+               MIG0_FORMAPAGO_COMP1,
+               MIG0_NCHEQUE_COMP1,
+               MIG0_NCUENTA_COMP1,
+               MIG0_CUSU_PAGO_COMP2,
+               MIG0_FCAPTURA_COMP2,
+               MIG0_CUSU_CAPT_COMP2,
+               MIG0_FORMAPAGO_COMP2,
+               MIG0_NCHEQUE_COMP2,
+               MIG0_NCUENTA_COMP2,
+               MIG0_GRADO_DISCAP,
+               MIG0_PREST_VIVIENDA,
+               MIG0_SITU_FAMILIAR,
+               MIG0_NIF_CONYUGUE,
+               MIG0_ICOMPENSATORIA,
+               MIG0_IMPALIMENHIJOS
+              )
+              VALUES
+              (
+               :MIG0-ANIO,
+               :MIG0-KEXPEDIENTE,
+               :MIG0-VEN-MIGR,
+               :MIG0-USUARIO-PAGO,
+               :MIG0-FCAPTURA,
+               :MIG0-CUSUARIO-CAPT,
+               :MIG0-FORMAPAGO,
+               :MIG0-NUM-CHEQUE,
+               :MIG0-NUM-CUENTA,
+               :MIG0-REF-REINVERSION,
+               :MIG0-CUSU-PAGO-COMP1,
+               :MIG0-FCAPTURA-COMP1,
+               :MIG0-CUSU-CAPT-COMP1,
+               :MIG0-FORMAPAGO-COMP1,
+               :MIG0-NCHEQUE-COMP1,
+               :MIG0-NCUENTA-COMP1,
+               :MIG0-CUSU-PAGO-COMP2,
+               :MIG0-FCAPTURA-COMP2,
+               :MIG0-CUSU-CAPT-COMP2,
+               :MIG0-FORMAPAGO-COMP2,
+               :MIG0-NCHEQUE-COMP2,
+               :MIG0-NCUENTA-COMP2,
+               :MIG0-GRADO-DISCAP,
+               :MIG0-PREST-VIVIENDA,
+               :MIG0-SITU-FAMILIAR,
+               :MIG0-NIF-CONYUGUE,
+               :MIG0-ICOMPENSATORIA,
+               :MIG0-IMPALIMENHIJOS
+              )
+           END-EXEC.
+
+           MOVE SQLCODE TO SW-ERROR-DB2.
+      *D*
+      *    DISPLAY 'SQLCODE ' SQLCODE
+      *F*
+           IF NOT DB2-OK
+
+              SET  ERROR-GRAVE TO TRUE
+              IF DB2-DUPLICADO
+                 MOVE LT-INSERT-DUPLICADO         TO X372M012-CRETORNO-S
+                 MOVE 'YA EXISTE UN EXPEDIENTE CON ESTE AÑO/EXPEDIENTE'
+                                                  TO X372M012-GERROR-S
+              ELSE
+                 MOVE LT-RETURN-ERR-OTHER    TO X372M012-CRETORNO-S
+                 MOVE SQLCODE                TO XN-SQLCODE
+
+                 STRING
+                   'Error '                       DELIMITED BY SIZE
+                    XN-SQLCODE                    DELIMITED BY SIZE
+                   ' al insertar en TB372MIG0'    DELIMITED BY SIZE
+                 INTO X372M012-GERROR-S
+                 END-STRING
+
+              END-IF
+           ELSE
+              STRING
+      *       'EL NUMERO DE EXPEDIENTE ES: '  DELIMITED BY SIZE
+              'El num de EXPT.es: '           DELIMITED BY SIZE
+               X372M012-ANIO-E                DELIMITED BY SIZE
+              '/'                             DELIMITED BY SIZE
+               X372M012-KEXPEDIENTE-E         DELIMITED BY SIZE
+              INTO X372M012-GERROR-S
+              END-STRING
+           END-IF
+           .
+      ******************************************************************
+      * 2200-MODIF1.
+      ******************************************************************
+       2200-MODIF1.
+
+             EXEC SQL
+               UPDATE TB372MIG0
+                SET MIG0_VEN_MIGR          =:MIG0-VEN-MIGR        ,
+                    MIG0_USUARIO_PAGO      =:MIG0-USUARIO-PAGO    ,
+                    MIG0_FCAPTURA          =:MIG0-FCAPTURA        ,
+                    MIG0_CUSUARIO_CAPT     =:MIG0-CUSUARIO-CAPT   ,
+                    MIG0_FORMAPAGO         =:MIG0-FORMAPAGO       ,
+                    MIG0_NUM_CHEQUE        =:MIG0-NUM-CHEQUE      ,
+                    MIG0_NUM_CUENTA        =:MIG0-NUM-CUENTA      ,
+                    MIG0_REF_REINVERSION   =:MIG0-REF-REINVERSION ,
+                    MIG0_CUSU_PAGO_COMP1   =:MIG0-CUSU-PAGO-COMP1 ,
+                    MIG0_FCAPTURA_COMP1    =:MIG0-FCAPTURA-COMP1  ,
+                    MIG0_CUSU_CAPT_COMP1   =:MIG0-CUSU-CAPT-COMP1 ,
+                    MIG0_FORMAPAGO_COMP1   =:MIG0-FORMAPAGO-COMP1 ,
+                    MIG0_NCHEQUE_COMP1     =:MIG0-NCHEQUE-COMP1   ,
+                    MIG0_NCUENTA_COMP1     =:MIG0-NCUENTA-COMP1   ,
+                    MIG0_CUSU_PAGO_COMP2   =:MIG0-CUSU-PAGO-COMP2 ,
+                    MIG0_FCAPTURA_COMP2    =:MIG0-FCAPTURA-COMP2  ,
+                    MIG0_CUSU_CAPT_COMP2   =:MIG0-CUSU-CAPT-COMP2 ,
+                    MIG0_FORMAPAGO_COMP2   =:MIG0-FORMAPAGO-COMP2 ,
+                    MIG0_NCHEQUE_COMP2     =:MIG0-NCHEQUE-COMP2   ,
+                    MIG0_NCUENTA_COMP2     =:MIG0-NCUENTA-COMP2   ,
+                    MIG0_GRADO_DISCAP      =:MIG0-GRADO-DISCAP    ,
+                    MIG0_PREST_VIVIENDA    =:MIG0-PREST-VIVIENDA  ,
+                    MIG0_SITU_FAMILIAR     =:MIG0-SITU-FAMILIAR   ,
+                    MIG0_NIF_CONYUGUE      =:MIG0-NIF-CONYUGUE    ,
+                    MIG0_ICOMPENSATORIA    =:MIG0-ICOMPENSATORIA  ,
+                    MIG0_IMPALIMENHIJOS    =:MIG0-IMPALIMENHIJOS
+               WHERE MIG0_ANIO        = :MIG0-ANIO
+                 AND MIG0_KEXPEDIENTE = :MIG0-KEXPEDIENTE
+             END-EXEC
+
+           MOVE SQLCODE TO SW-ERROR-DB2.
+           IF NOT DB2-OK
+              SET ERROR-GRAVE TO TRUE
+              IF DB2-NOTFND
+                 MOVE LT-RETURN-ERR-NOTFND TO X372M012-CRETORNO-S
+                 MOVE 'B372M012'           TO X372M012-GNOMPROG-S
+                 MOVE 'NO HAY EXPEDIENTES QUE CUMPLAN CON LOS PARAMETROS
+      -               ' INFORMADOS'
+                                           TO X372M012-GERROR-S
+              ELSE
+                 MOVE LT-RETURN-ERR-OTHER  TO X372M012-CRETORNO-S
+                 MOVE 'B372M012'           TO X372M012-GNOMPROG-S
+                 MOVE SQLCODE              TO XN-SQLCODE
+                 STRING
+                   'ErroR '                       DELIMITED BY SIZE
+                    XN-SQLCODE                    DELIMITED BY SIZE
+                   ' al actualizar en TB372MIG0'  DELIMITED BY SIZE
+                 INTO X372M012-GERROR-S
+                 END-STRING
+              END-IF
+           ELSE
+              MOVE 'Expediente modificado correctamente'
+                TO X372M012-GERROR-S
+      *
+           END-IF
+           .
+      ******************************************************************
+      * 2300-BAJA.                                                    *
+      ******************************************************************
+       2300-BAJA.
+
+           EXEC SQL
+              DELETE
+                 FROM TB372MIG0
+                 WHERE MIG0_ANIO        = :MIG0-ANIO
+                   AND MIG0_KEXPEDIENTE = :MIG0-KEXPEDIENTE
+           END-EXEC.
+
+           MOVE SQLCODE TO SW-ERROR-DB2.
+           IF NOT DB2-OK
+              SET ERROR-GRAVE TO TRUE
+              IF DB2-NOTFND
+                 MOVE LT-RETURN-ERR-NOTFND TO X372M012-CRETORNO-S
+                 MOVE 'B372M012'           TO X372M012-GNOMPROG-S
+                 MOVE 'No hay expedientes que cumplan con los parametros
+      -               ' informados'
+                                           TO X372M012-GERROR-S
+              ELSE
+                 MOVE LT-RETURN-ERR-OTHER  TO X372M012-CRETORNO-S
+                 MOVE 'B372M012'           TO X372M012-GNOMPROG-S
+                 MOVE SQLCODE              TO XN-SQLCODE
+                 STRING
+                   'Error '                            DELIMITED BY SIZE
+                    XN-SQLCODE                         DELIMITED BY SIZE
+                   ' al borrar registro en TB372MIG0'  DELIMITED BY SIZE
+                 INTO X372M012-GERROR-S
+                 END-STRING
+              END-IF
+           ELSE
+              MOVE 'Se ha eliminado correctamente el expediente'
+                TO X372M012-GERROR-S
+           END-IF.
+
+      **************************************************************
+      * 9000-FINAL.                                                *
+      **************************************************************
+      *
+       9000-FINAL.
+
+           GOBACK.

@@ -1,0 +1,456 @@
+      *RETRIEVAL
+      ******************************************************************
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.
+
+                 B372J025.
+      ******************************************************************
+      **INV: A372VENM
+      ******************************************************************
+      *    AUTOR      : INDRA                                          *
+      *    FECHA      : MAYO 2026                                      *
+      *    DESCRIPCION: PROGRAMA QUE RECOGE LAS LIQUIDACIONES          *
+      *                 PAGADAS QUE TENGAN ALGUNA LIQUIDACION DE       *
+      *                 VENCIMIENTOS MANUALES PENDIENTE DE PAGO        *
+      ******************************************************************
+      /
+       ENVIRONMENT DIVISION.
+      *---------------------
+       CONFIGURATION SECTION.
+      *----------------------
+       SPECIAL-NAMES.
+            DECIMAL-POINT IS COMMA.
+
+       INPUT-OUTPUT SECTION.
+      *---------------------
+       FILE-CONTROL.
+      ***  FICHERO LIQUIDACIONES PAGADAS DE VENCIMIENTOS MANUALES
+            SELECT FICH-PAG ASSIGN TO SYS001.
+
+      ***  FICHERO LIQUIDACIONES PENDIENTES DE VENCIMIENTOS MANUALES
+            SELECT FICH-PEND ASSIGN TO SYS002.
+
+      ***  FICHERO DE LIQUIDACIONES PAGADAS QUE TIENEN LIQUIDACIONES
+      ***  PENDIENTES DE VENCIMIENTOS MANUALES
+            SELECT FICH-SAL1 ASSIGN TO SYS003.
+
+       DATA DIVISION.
+      *--------------
+       FILE SECTION.
+       FD  FICH-PAG
+           LABEL RECORDS OMITTED
+           RECORDING MODE IS F.
+       01  RLIQ-VM-PAG      PIC X(800).
+
+       FD  FICH-PEND
+           LABEL RECORDS OMITTED
+           RECORDING MODE IS F.
+       01  RLIQ-VM-PEND     PIC X(800).
+
+       FD  FICH-SAL1
+           LABEL RECORDS OMITTED
+           RECORDING MODE IS F.
+       01  RLIQ-PAG-PEND    PIC X(800).
+
+       WORKING-STORAGE SECTION.
+      *-----------------------
+       01  P-FILLER.
+           03  FILLER   PIC X(17)  VALUE 'INICIO-WORKING'.
+
+      **** SWICTH.
+          03 SW-FIN-FICH-PAG             PIC X VALUE SPACES.
+             88 SI-FIN-FICH-PAG            VALUE 'S'.
+             88 NO-FIN-FICH-PAG            VALUE 'N'.
+
+          03 SW-FIN-FICH-PEND            PIC X VALUE SPACES.
+             88 SI-FIN-FICH-PEND           VALUE 'S'.
+             88 NO-FIN-FICH-PEND           VALUE 'N'.
+
+      **** CONTADORES.
+          03 CT-LEIDOS-PAG                 PIC 9(6) VALUE ZEROS.
+          03 CT-LEIDOS-PEND                PIC 9(6) VALUE ZEROS.
+          03 CT-GRABADOS                   PIC 9(6) VALUE ZEROS.
+
+      **** VARIABLES DE TRABAJO
+      *
+      *
+      * COPY LIQUIDACIONES PAGADAS
+       01  RE1-ENTRADA1.
+           03 RE1-KRAMO           PIC X(3).
+           03 RE1-KPOLIZA         PIC X(10).
+           03 RE1-KMODALIDAD      PIC X(3).
+           03 RE1-FULTVTO.
+              05 RE1-FAULTVTO     PIC 9(4).
+              05 RE1-FMULTVTO     PIC 9(2).
+              05 RE1-FDULTVTO     PIC 9(2).
+           03 RE1-FPROCESO        PIC 9(8).
+           03 RE1-CCANALCAMP      PIC X(02).
+           03 RE1-CEMPRESA        PIC X(02).
+           03 RE1-KOFICINA        PIC X(4).
+           03 RE1-FEFECINI.
+              05 RE1-FAEFECINI    PIC 9(4).
+              05 RE1-FMEFECINI    PIC 9(2).
+              05 RE1-FDEFECINI    PIC 9(2).
+           03 RE1-CTIPOVTO        PIC X.
+           03 RE1-TMOTIVOESP      OCCURS 10.
+              05 RE1-KUSUARIO     PIC X(8).
+              05 RE1-FAUTORIZA.
+                 07 RE1-FAAUTORIZA PIC 9(04).
+                 07 RE1-FMAUTORIZA PIC 9(02).
+                 07 RE1-FDAUTORIZA PIC 9(02).
+           03 RE1-CSITUVTO        PIC XX.
+           03 RE1-CINCLUVTOP      PIC X.
+           03 RE1-CINCLUVTOC      PIC X.
+           03 RE1-CAUTORIZAP      PIC X.
+           03 RE1-CAUTORIZAC      PIC X.
+           03 RE1-KPRODUCTOR      PIC 9(7).
+           03 RE1-NUMCOMP         PIC 9.
+           03 RE1-CMODFLEX        PIC X.
+           03 RE1-KOFICINAPROD    PIC XXXX.
+           03 RE1-CGARANTICIPA    PIC X(01).
+           03 RE1-CTIPOLIQ        PIC X(1).
+           03 RE1-CSITULIQ        PIC X(2).
+           03 RE1-FSITUPE.
+              05 RE1-FASITUPE     PIC 9(4).
+              05 RE1-FMSITUPE     PIC 9(2).
+              05 RE1-FDSITUPE     PIC 9(2).
+           03 RE1-KDIRECREGPE     PIC X(2).
+           03 RE1-KOFICINAPE      PIC X(4).
+           03 RE1-FLIQUIDA.
+              05 RE1-FALIQUIDA    PIC 9(4).
+              05 RE1-FMLIQUIDA    PIC 9(2).
+              05 RE1-FDLIQUIDA    PIC 9(2).
+           03 RE1-KDIRECREGEM     PIC X(2).
+           03 RE1-KOFIGES         PIC X(4).
+           03 RE1-GUSERCAPT       PIC X(8).
+           03 RE1-GTERMCAPT       PIC X(8).
+           03 RE1-GBENNOM         PIC X(12).
+           03 RE1-GBENEMP.
+              05 RE1-GBENAPE1     PIC X(17).
+              05 RE1-GBENAPE2     PIC X(17).
+           03 RE1-GBENDNI         PIC X(10).
+           03 RE1-CBENTIPO        PIC X(1).
+           03 RE1-GTELEFONO.
+              05 RE1-GPRETEFPAR   PIC X(03).
+              05 RE1-GTFNOPAR     PIC X(07).
+           03 RE1-GDOMICILIO      PIC X(35).
+           03 RE1-GLOCALIDAD      PIC X(25).
+           03 RE1-CPOSTAL.
+              05 RE1-CPROVINCIA   PIC 9(2).
+              05 RE1-CLOCAL       PIC 9(3).
+           03 RE1-CPAIS           PIC X(3).
+           03 RE1-CHACIENDA       PIC X(1).
+           03 RE1-ILIQUIDAC       PIC S9(12).
+           03 RE1-ELIQUIDAC       REDEFINES RE1-ILIQUIDAC
+                                  PIC S9(10)V99.
+           03 RE1-IVALVTO         PIC 9(12).
+           03 RE1-EVALVTO         REDEFINES RE1-IVALVTO
+                                  PIC 9(10)V99.
+           03 RE1-IVALVTOPB       PIC S9(12).
+           03 RE1-EVALVTOPB       REDEFINES RE1-IVALVTOPB
+                                  PIC S9(10)V99.
+           03 RE1-IRECIBPTE       PIC S9(12).
+           03 RE1-ERECIBPTE       REDEFINES RE1-IRECIBPTE
+                                  PIC S9(10)V99.
+           03 RE1-IOTROSREC       PIC S9(12).
+           03 RE1-EOTROSREC       REDEFINES RE1-IOTROSREC
+                                  PIC S9(10)V99.
+           03 RE1-IANTICPTE       PIC S9(12).
+           03 RE1-EANTICPTE       REDEFINES RE1-IANTICPTE
+                                  PIC S9(10)V99.
+           03 RE1-IRECIBANT       PIC S9(12).
+           03 RE1-ERECIBANT       REDEFINES RE1-IRECIBANT
+                                  PIC S9(10)V99.
+           03 RE1-IVALREIN        PIC S9(12).
+           03 RE1-EVALREIN        REDEFINES RE1-IVALREIN
+                                  PIC S9(10)V99.
+           03 RE1-PVALVTO         PIC 999V99.
+           03 RE1-CFORMPAGO       PIC X.
+           03 RE1-KBANCO77.
+              05 RE1-CBANCO77     PIC 9(4).
+              05 RE1-CSUCUR77     PIC 9(4).
+           03 RE1-GDCCCC          PIC X(02).
+           03 RE1-NCUENTACCC      PIC 9(10).
+           03 RE1-FPAGOLIQ.
+              05 RE1-FAPAGOLIQ    PIC 9(4).
+              05 RE1-FMPAGOLIQ    PIC 9(2).
+              05 RE1-FDPAGOLIQ    PIC 9(2).
+           03 RE1-FORDENPAG.
+              05 RE1-FAORDENPAG   PIC 9(4).
+              05 RE1-FMORDENPAG   PIC 9(2).
+              05 RE1-FDORDENPAG   PIC 9(2).
+           03 RE1-KDIRECREGPA     PIC X(2).
+           03 RE1-KOFICINAPA      PIC X(4).
+           03 RE1-GUSERPAGO       PIC X(8).
+           03 RE1-GTERMPAGO       PIC X(8).
+           03 RE1-KORDENPG        PIC 9(15).
+           03 RE1-CCONFIPAGO      PIC X.
+           03 RE1-NCARTAREC       PIC 9.
+           03 RE1-IRETENIDO       PIC S9(12).
+           03 RE1-ERETENIDO       REDEFINES RE1-IRETENIDO
+                                  PIC S9(10)V99.
+           03 RE1-ANOFISCAL       PIC 9(4).
+           03 RE1-CORDENLIQ       PIC X(1).
+           03 RE1-GNOTA50         PIC X(50).
+           03 RE1-CMONEDA         PIC X.
+           03 RE1-EVALVTO-EXT     PIC 9(10)V99.
+           03 RE1-EVALVTOPB-EXT   PIC 9(10)V99.
+           03 RE1-FNACBENE.
+              05 RE1-FANACBENE    PIC 9(4).
+              05 RE1-FMNACBENE    PIC 9(2).
+              05 RE1-FDNACBENE    PIC 9(2).
+           03 FILLER              PIC X(111).
+
+      *
+      * COPY LIQUIDACIONES PENDIENTES
+       01  RE2-ENTRADA2.
+           03 RE2-KRAMO           PIC X(3).
+           03 RE2-KPOLIZA         PIC X(10).
+           03 RE2-KMODALIDAD      PIC X(3).
+           03 RE2-FULTVTO.
+              05 RE2-FAULTVTO     PIC 9(4).
+              05 RE2-FMULTVTO     PIC 9(2).
+              05 RE2-FDULTVTO     PIC 9(2).
+           03 RE2-FPROCESO        PIC 9(8).
+           03 RE2-CCANALCAMP      PIC X(02).
+           03 RE2-CEMPRESA        PIC X(02).
+           03 RE2-KOFICINA        PIC X(4).
+           03 RE2-FEFECINI.
+              05 RE2-FAEFECINI    PIC 9(4).
+              05 RE2-FMEFECINI    PIC 9(2).
+              05 RE2-FDEFECINI    PIC 9(2).
+           03 RE2-CTIPOVTO        PIC X.
+           03 RE2-TMOTIVOESP      OCCURS 10.
+              05 RE2-KUSUARIO     PIC X(8).
+              05 RE2-FAUTORIZA.
+                 07 RE2-FAAUTORIZA PIC 9(04).
+                 07 RE2-FMAUTORIZA PIC 9(02).
+                 07 RE2-FDAUTORIZA PIC 9(02).
+           03 RE2-CSITUVTO        PIC XX.
+           03 RE2-CINCLUVTOP      PIC X.
+           03 RE2-CINCLUVTOC      PIC X.
+           03 RE2-CAUTORIZAP      PIC X.
+           03 RE2-CAUTORIZAC      PIC X.
+           03 RE2-KPRODUCTOR      PIC 9(7).
+           03 RE2-NUMCOMP         PIC 9.
+           03 RE2-CMODFLEX        PIC X.
+           03 RE2-KOFICINAPROD    PIC XXXX.
+           03 RE2-CGARANTICIPA    PIC X(01).
+           03 RE2-CTIPOLIQ        PIC X(1).
+           03 RE2-CSITULIQ        PIC X(2).
+           03 RE2-FSITUPE.
+              05 RE2-FASITUPE     PIC 9(4).
+              05 RE2-FMSITUPE     PIC 9(2).
+              05 RE2-FDSITUPE     PIC 9(2).
+           03 RE2-KDIRECREGPE     PIC X(2).
+           03 RE2-KOFICINAPE      PIC X(4).
+           03 RE2-FLIQUIDA.
+              05 RE2-FALIQUIDA    PIC 9(4).
+              05 RE2-FMLIQUIDA    PIC 9(2).
+              05 RE2-FDLIQUIDA    PIC 9(2).
+           03 RE2-KDIRECREGEM     PIC X(2).
+           03 RE2-KOFIGES         PIC X(4).
+           03 RE2-GUSERCAPT       PIC X(8).
+           03 RE2-GTERMCAPT       PIC X(8).
+           03 RE2-GBENNOM         PIC X(12).
+           03 RE2-GBENEMP.
+              05 RE2-GBENAPE1     PIC X(17).
+              05 RE2-GBENAPE2     PIC X(17).
+           03 RE2-GBENDNI         PIC X(10).
+           03 RE2-CBENTIPO        PIC X(1).
+           03 RE2-GTELEFONO.
+              05 RE2-GPRETEFPAR   PIC X(03).
+              05 RE2-GTFNOPAR     PIC X(07).
+           03 RE2-GDOMICILIO      PIC X(35).
+           03 RE2-GLOCALIDAD      PIC X(25).
+           03 RE2-CPOSTAL.
+              05 RE2-CPROVINCIA   PIC 9(2).
+              05 RE2-CLOCAL       PIC 9(3).
+           03 RE2-CPAIS           PIC X(3).
+           03 RE2-CHACIENDA       PIC X(1).
+           03 RE2-ILIQUIDAC       PIC S9(12).
+           03 RE2-ELIQUIDAC       REDEFINES RE2-ILIQUIDAC
+                                  PIC S9(10)V99.
+           03 RE2-IVALVTO         PIC 9(12).
+           03 RE2-EVALVTO         REDEFINES RE2-IVALVTO
+                                  PIC 9(10)V99.
+           03 RE2-IVALVTOPB       PIC S9(12).
+           03 RE2-EVALVTOPB       REDEFINES RE2-IVALVTOPB
+                                  PIC S9(10)V99.
+           03 RE2-IRECIBPTE       PIC S9(12).
+           03 RE2-ERECIBPTE       REDEFINES RE2-IRECIBPTE
+                                  PIC S9(10)V99.
+           03 RE2-IOTROSREC       PIC S9(12).
+           03 RE2-EOTROSREC       REDEFINES RE2-IOTROSREC
+                                  PIC S9(10)V99.
+           03 RE2-IANTICPTE       PIC S9(12).
+           03 RE2-EANTICPTE       REDEFINES RE2-IANTICPTE
+                                  PIC S9(10)V99.
+           03 RE2-IRECIBANT       PIC S9(12).
+           03 RE2-ERECIBANT       REDEFINES RE2-IRECIBANT
+                                  PIC S9(10)V99.
+           03 RE2-IVALREIN        PIC S9(12).
+           03 RE2-EVALREIN        REDEFINES RE2-IVALREIN
+                                  PIC S9(10)V99.
+           03 RE2-PVALVTO         PIC 999V99.
+           03 RE2-CFORMPAGO       PIC X.
+           03 RE2-KBANCO77.
+              05 RE2-CBANCO77     PIC 9(4).
+              05 RE2-CSUCUR77     PIC 9(4).
+           03 RE2-GDCCCC          PIC X(02).
+           03 RE2-NCUENTACCC      PIC 9(10).
+           03 RE2-FPAGOLIQ.
+              05 RE2-FAPAGOLIQ    PIC 9(4).
+              05 RE2-FMPAGOLIQ    PIC 9(2).
+              05 RE2-FDPAGOLIQ    PIC 9(2).
+           03 RE2-FORDENPAG.
+              05 RE2-FAORDENPAG   PIC 9(4).
+              05 RE2-FMORDENPAG   PIC 9(2).
+              05 RE2-FDORDENPAG   PIC 9(2).
+           03 RE2-KDIRECREGPA     PIC X(2).
+           03 RE2-KOFICINAPA      PIC X(4).
+           03 RE2-GUSERPAGO       PIC X(8).
+           03 RE2-GTERMPAGO       PIC X(8).
+           03 RE2-KORDENPG        PIC 9(15).
+           03 RE2-CCONFIPAGO      PIC X.
+           03 RE2-NCARTAREC       PIC 9.
+           03 RE2-IRETENIDO       PIC S9(12).
+           03 RE2-ERETENIDO       REDEFINES RE2-IRETENIDO
+                                  PIC S9(10)V99.
+           03 RE2-ANOFISCAL       PIC 9(4).
+           03 RE2-CORDENLIQ       PIC X(1).
+           03 RE2-GNOTA50         PIC X(50).
+           03 RE2-CMONEDA         PIC X.
+           03 RE2-EVALVTO-EXT     PIC 9(10)V99.
+           03 RE2-EVALVTOPB-EXT   PIC 9(10)V99.
+           03 RE2-FNACBENE.
+              05 RE2-FANACBENE    PIC 9(4).
+              05 RE2-FMNACBENE    PIC 9(2).
+              05 RE2-FDNACBENE    PIC 9(2).
+           03 FILLER              PIC X(111).
+      *
+      **
+      ** COPYS MÓDULOS
+      **
+
+      ****
+       01   FILLER            PIC X(13)  VALUE 'FINAL-WORKING'.
+
+       PROCEDURE DIVISION.
+      *===================
+      *
+      ******************************************************************
+      *                                                                *
+      *               N I V E L               0                        *
+      *                                                                *
+      ******************************************************************
+
+       INICIO SECTION.
+
+           PERFORM 1000-P-PROGRAMA.
+
+           PERFORM 2000-PROCESO.
+
+           PERFORM 3000-F-PROGRAMA.
+
+           PERFORM 10000-FIN.
+      /
+      *****************************************************************
+      *                                                               *
+      *                T R A T A M I E N T O S                        *
+      *                                                               *
+      *****************************************************************
+
+       1000-P-PROGRAMA.
+      *
+      *****  ABRIMOS LOS FICHEROS.
+      *
+           OPEN INPUT  FICH-PEND FICH-PAG
+           OPEN OUTPUT FICH-SAL1.
+
+       3000-F-PROGRAMA.
+      *************
+      *
+      ****   CERRAMOS LOS FICHEROS.
+      *
+           CLOSE FICH-PEND FICH-PAG
+                 FICH-SAL1.
+
+      *****************************************************************
+      *                                                               *
+      *                R U T I N A S    A U X I L I A R E S           *
+      *                                                               *
+      *****************************************************************
+      *
+       2000-PROCESO.
+      ****************
+
+           MOVE 'N' TO SW-FIN-FICH-PEND.
+           MOVE 'N' TO SW-FIN-FICH-PAG.
+           PERFORM 2005-LEER-PAG.
+           PERFORM 2010-LEER-PEND.
+
+           PERFORM 2015-ESCRIBIR-SALIDA UNTIL SI-FIN-FICH-PAG OR
+                                              SI-FIN-FICH-PEND.
+
+      *---------------------*
+       2015-ESCRIBIR-SALIDA.
+      *---------------------*
+
+           IF RE1-KPOLIZA = RE2-KPOLIZA
+              WRITE RLIQ-PAG-PEND FROM RE1-ENTRADA1
+              ADD 1 TO CT-GRABADOS
+              PERFORM 2005-LEER-PAG
+           ELSE
+              IF RE1-KPOLIZA < RE2-KPOLIZA
+                 PERFORM 2005-LEER-PAG
+              ELSE
+                 IF RE1-KPOLIZA > RE2-KPOLIZA
+                    PERFORM 2010-LEER-PEND
+                 END-IF
+              END-IF
+           END-IF.
+
+      *---------------*
+       2005-LEER-PAG.
+      *---------------*
+
+           READ FICH-PAG INTO RE1-ENTRADA1
+                AT END MOVE 'S' TO SW-FIN-FICH-PAG
+           END-READ.
+
+           IF NO-FIN-FICH-PAG
+              ADD 1 TO CT-LEIDOS-PAG
+           END-IF.
+
+      *---------------*
+       2010-LEER-PEND.
+      *---------------*
+
+           READ FICH-PEND INTO RE2-ENTRADA2
+                AT END MOVE 'S' TO SW-FIN-FICH-PEND
+           END-READ.
+
+           IF NO-FIN-FICH-PEND
+              ADD 1 TO CT-LEIDOS-PEND
+           END-IF.
+
+      ***************************************************************
+       10000-FIN.
+      ***************************************************************
+
+      *D*
+           DISPLAY '************************************************'
+           DISPLAY '*      RESUMEN EJECUCION PROGRAMA B372J025     *'
+           DISPLAY '************************************************'
+           DISPLAY '* REG. LEIDOS VENCIMIENTOS PRINCIPALES      : '
+                                                CT-LEIDOS-PAG
+           DISPLAY '* REG. LEIDOS VENCIMIENTOS COMPLEMENTARIOS  : '
+                                                CT-LEIDOS-PEND
+           DISPLAY '* REG. GRABADOS VENCIMIENTOS COMPLEMENTARIOS: '
+                                                CT-GRABADOS
+           DISPLAY '*********************************************'
+      *F*
+
+           GOBACK.
+

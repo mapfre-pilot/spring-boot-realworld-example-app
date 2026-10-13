@@ -1,0 +1,1590 @@
+      ******************************************************************
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. B372J026.
+      ******************************************************************
+      **INV: A372VENM
+      ******************************************************************
+      *BREVE DESCRIPCION DEL PROGRAMA :                                *
+      *     A PARTIR DE UN FICHERO DE ENTRADA, REALIZAR LLAMADAS A     *
+      *     MODULOS DE PERSONAS PARA RECOGER EL KPERSONA Y DARLO DE    *
+      *     ALTA EN EL CASO QUE NO EXISTIERA.                          *
+      *     SI EXISTE PROBLEMAS PORQUE NO SE HAYA DADO DE ALTA EN LA   *
+      *     MIGRACION A CARTERA DEL KPERSONA, SE LEVANTA INCIDENCIA    *
+      *                                                                *
+      *     COPIA DEL B362J023, ADAPTADA PARA LA MIGRACION VENCIMIENTOS*
+      *     IDMS HASTA VENCIMIENTOS DB2.                               *
+      *****************************************************************
+      *ENVIRONMENT DIVISION                                            *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.
+           IBM-PC.
+       OBJECT-COMPUTER.
+           IBM-PC.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+      * DECLARACION FICHERO ENTRADA (DATOS DE IDMS)
+           SELECT SYS001
+           ASSIGN TO SYS001
+           ORGANIZATION IS SEQUENTIAL
+           ACCESS MODE IS SEQUENTIAL.
+      * DECLARACION FICHERO SALIDA (INCIDENCIAS)
+           SELECT SYS002
+           ASSIGN TO SYS002
+           ORGANIZATION IS SEQUENTIAL
+           ACCESS MODE IS SEQUENTIAL.
+      * DECLARACION FICHERO SALIDA  (DATOS DE IDMS CON EL KPERSONA)
+           SELECT SYS003
+           ASSIGN TO SYS003
+           ORGANIZATION IS SEQUENTIAL
+           ACCESS MODE IS SEQUENTIAL.
+
+      ******************************************************************
+       DATA DIVISION.
+      ******************************************************************
+       FILE SECTION.
+
+      * DECLARACION ESTRUCTURA FICHEROS
+       FD SYS001
+             BLOCK CONTAINS 0 RECORDS
+             RECORDING MODE IS F
+             LABEL RECORDS ARE STANDARD.
+       01 REG001           PIC X(800).
+      *
+       FD SYS002
+             BLOCK CONTAINS 0 RECORDS
+             RECORDING MODE IS F
+             LABEL RECORDS ARE STANDARD.
+       01 REG002           PIC X(284).
+      *
+      * DECLARACION ESTRUCTURA FICHEROS
+       FD SYS003
+             BLOCK CONTAINS 0 RECORDS
+             RECORDING MODE IS F
+             LABEL RECORDS ARE STANDARD.
+       01 REG003           PIC X(810).
+      *
+      ******************************************************************
+      *                  WORKING-STORAGE SECTION                       *
+      ******************************************************************
+       WORKING-STORAGE SECTION.
+       01 INDICES.
+          03 IND-A   PIC 99 VALUE 00.
+          03 IND-D   PIC 99 VALUE 00.
+
+       01 SW-SWITCH.
+        05 SW-FIN-SYS001                PIC X VALUE SPACES.
+          88 SI-FIN-SYS001              VALUE 'S'.
+          88 NO-FIN-SYS001              VALUE 'N'.
+        05 SW-CORRECTO                  PIC X VALUE SPACES.
+          88 SI-OK                      VALUE 'S'.
+          88 NO-OK                      VALUE 'N'.
+          88 BL-OK                      VALUE ' '.
+        05 SW-DNI                       PIC X VALUE SPACES.
+          88 DNI-OK                     VALUE 'S'.
+          88 DNI-NO-OK                  VALUE 'N'.
+
+       01 WS-BANCO.
+          07 WS-BAN                PIC X(4)   VALUE SPACES.
+          07 WS-SUC                PIC X(4)   VALUE SPACES.
+
+       01 WS-TFNO-IDMS PIC X(10) VALUE SPACES.
+       01 WS-TFNO-DB2  PIC X(11) VALUE SPACES.
+       01 WS-FSYSTEMA.
+          07 WS-FASYSTEMA          PIC X(4)   VALUE SPACES.
+          07 WS-FMSYSTEMA          PIC X(2)   VALUE SPACES.
+          07 WS-FDSYSTEMA          PIC X(2)   VALUE SPACES.
+
+       01 CT-ACUMULADORES.
+          05 CT-INCIDENCIA              PIC 9(09)  VALUE ZEROS.
+          05 CT-LEIDOS                  PIC 9(09)  VALUE ZEROS.
+          05 CT-GRABADOS                PIC 9(09)  VALUE ZEROS.
+
+      * CONTADORES DE GRABADOS X MODO Y ESTADO
+          05 CT-A1-AN                   PIC 9(09)  VALUE ZEROS.
+          05 CT-A1-RT                   PIC 9(09)  VALUE ZEROS.
+          05 CT-A1-VI                   PIC 9(09)  VALUE ZEROS.
+
+       01 WS-ACUMULADORES-ED.
+
+          05 WS-LEIDOS                   PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.
+          05 WS-GRABADOS                 PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.
+          05 WS-INCIDENCIA               PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.
+          05 WS-A1                       PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.
+          05 WS-B0                       PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.
+          05 WS-B1                       PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.
+          05 WS-B2                       PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.
+          05 WS-M0                       PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.
+          05 WS-M1                       PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.
+          05 WS-MX                       PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.
+
+          05 WS-A1-AN                   PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.
+          05 WS-A1-RT                   PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.
+          05 WS-A1-VI                   PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.
+
+       01 WS-VARIABLES-AUX.
+          05 WS-KPERSONA                PIC 9(9)        VALUE ZEROES.
+          05 WS-KDOMICILIO              PIC 9(09)       VALUE ZEROES.
+          05 WS-SBANCARIO               PIC X(01)       VALUE SPACES.
+          05 WS-CFORMAPAGO              PIC X(01)       VALUE SPACES.
+          05 WS-CTIPODOM-PR             PIC X(01)       VALUE SPACES.
+
+      * FICHERO DE ENTRADA
+      *****************************************************
+       01 WE-REG001.
+      * COPY LIQUIDACIONES PENDIENTES CON SUS PAGADAS
+           03 WE-KRAMO            PIC X(3).
+           03 WE-KPOLIZA          PIC X(10).
+           03 WE-KMODALIDAD       PIC X(3).
+           03 WE-FULTVTO.
+              05 WE-FAULTVTO      PIC 9(4).
+              05 WE-FMULTVTO      PIC 9(2).
+              05 WE-FDULTVTO      PIC 9(2).
+           03 WE-FPROCESO         PIC 9(8).
+           03 WE-CCANALCAMP       PIC X(02).
+           03 WE-CEMPRESA         PIC X(02).
+           03 WE-KOFICINA         PIC X(4).
+           03 WE-FEFECINI.
+              05 WE-FAEFECINI     PIC 9(4).
+              05 WE-FMEFECINI     PIC 9(2).
+              05 WE-FDEFECINI     PIC 9(2).
+           03 WE-CTIPOVTO         PIC X.
+           03 WE-TMOTIVOESP       OCCURS 10.
+              05 WE-KUSUARIO      PIC X(8).
+              05 WE-FAUTORIZA.
+                 07 WE-FAAUTORIZA PIC 9(04).
+                 07 WE-FMAUTORIZA PIC 9(02).
+                 07 WE-FDAUTORIZA PIC 9(02).
+           03 WE-CSITUVTO         PIC XX.
+           03 WE-CINCLUVTOP       PIC X.
+           03 WE-CINCLUVTOC       PIC X.
+           03 WE-CAUTORIZAP       PIC X.
+           03 WE-CAUTORIZAC       PIC X.
+           03 WE-KPRODUCTOR       PIC 9(7).
+           03 WE-NUMCOMP          PIC 9.
+           03 WE-CMODFLEX         PIC X.
+           03 WE-KOFICINAPROD     PIC XXXX.
+           03 WE-CGARANTICIPA     PIC X(01).
+           03 WE-CTIPOLIQ         PIC X(1).
+           03 WE-CSITULIQ         PIC X(2).
+           03 WE-FSITUPE.
+              05 WE-FASITUPE      PIC 9(4).
+              05 WE-FMSITUPE      PIC 9(2).
+              05 WE-FDSITUPE      PIC 9(2).
+           03 WE-KDIRECREGPE      PIC X(2).
+           03 WE-KOFICINAPE       PIC X(4).
+           03 WE-FLIQUIDA.
+              05 WE-FALIQUIDA     PIC 9(4).
+              05 WE-FMLIQUIDA     PIC 9(2).
+              05 WE-FDLIQUIDA     PIC 9(2).
+           03 WE-KDIRECREGEM      PIC X(2).
+           03 WE-KOFIGES          PIC X(4).
+           03 WE-GUSERCAPT        PIC X(8).
+           03 WE-GTERMCAPT        PIC X(8).
+           03 WE-GBENNOM          PIC X(12).
+           03 WE-GBENEMP.
+              05 WE-GBENAPE1      PIC X(17).
+              05 WE-GBENAPE2      PIC X(17).
+           03 WE-GBENDNI          PIC X(10).
+           03 WE-CBENTIPO         PIC X(1).
+           03 WE-GTELEFONO.
+              05 WE-GPRETEFPAR    PIC X(03).
+              05 WE-GTFNOPAR      PIC X(07).
+           03 WE-GDOMICILIO       PIC X(35).
+           03 WE-GLOCALIDAD       PIC X(25).
+           03 WE-CPOSTAL.
+              05 WE-CPROVINCIA    PIC 9(2).
+              05 WE-CLOCAL        PIC 9(3).
+           03 WE-CPAIS            PIC X(3).
+           03 WE-CHACIENDA        PIC X(1).
+           03 WE-ILIQUIDAC        PIC S9(12).
+           03 WE-ELIQUIDAC        REDEFINES WE-ILIQUIDAC
+                                  PIC S9(10)V99.
+           03 WE-IVALVTO          PIC 9(12).
+           03 WE-EVALVTO          REDEFINES WE-IVALVTO
+                                  PIC 9(10)V99.
+           03 WE-IVALVTOPB        PIC S9(12).
+           03 WE-EVALVTOPB        REDEFINES WE-IVALVTOPB
+                                  PIC S9(10)V99.
+           03 WE-IRECIBPTE        PIC S9(12).
+           03 WE-ERECIBPTE        REDEFINES WE-IRECIBPTE
+                                  PIC S9(10)V99.
+           03 WE-IOTROSREC        PIC S9(12).
+           03 WE-EOTROSREC        REDEFINES WE-IOTROSREC
+                                  PIC S9(10)V99.
+           03 WE-IANTICPTE        PIC S9(12).
+           03 WE-EANTICPTE        REDEFINES WE-IANTICPTE
+                                  PIC S9(10)V99.
+           03 WE-IRECIBANT        PIC S9(12).
+           03 WE-ERECIBANT        REDEFINES WE-IRECIBANT
+                                  PIC S9(10)V99.
+           03 WE-IVALREIN         PIC S9(12).
+           03 WE-EVALREIN         REDEFINES WE-IVALREIN
+                                  PIC S9(10)V99.
+           03 WE-PVALVTO          PIC 999V99.
+           03 WE-CFORMPAGO        PIC X.
+           03 WE-KBANCO77.
+              05 WE-CBANCO77      PIC 9(4).
+              05 WE-CSUCUR77      PIC 9(4).
+           03 WE-GDCCCC           PIC X(02).
+           03 WE-NCUENTACCC       PIC 9(10).
+           03 WE-FPAGOLIQ.
+              05 WE-FAPAGOLIQ     PIC 9(4).
+              05 WE-FMPAGOLIQ     PIC 9(2).
+              05 WE-FDPAGOLIQ     PIC 9(2).
+           03 WE-FORDENPAG.
+              05 WE-FAORDENPAG    PIC 9(4).
+              05 WE-FMORDENPAG    PIC 9(2).
+              05 WE-FDORDENPAG    PIC 9(2).
+           03 WE-KDIRECREGPA      PIC X(2).
+           03 WE-KOFICINAPA       PIC X(4).
+           03 WE-GUSERPAGO        PIC X(8).
+           03 WE-GTERMPAGO        PIC X(8).
+           03 WE-KORDENPG         PIC 9(15).
+           03 WE-CCONFIPAGO       PIC X.
+           03 WE-NCARTAREC        PIC 9.
+           03 WE-IRETENIDO        PIC S9(12).
+           03 WE-ERETENIDO        REDEFINES WE-IRETENIDO
+                                  PIC S9(10)V99.
+           03 WE-ANOFISCAL        PIC 9(4).
+           03 WE-CORDENLIQ        PIC X(1).
+           03 WE-GNOTA50          PIC X(50).
+           03 WE-CMONEDA          PIC X.
+           03 WE-EVALVTO-EXT      PIC 9(10)V99.
+           03 WE-EVALVTOPB-EXT    PIC 9(10)V99.
+           03 WE-FNACBENE.
+              05 WE-FANACBENE     PIC 9(4).
+              05 WE-FMNACBENE     PIC 9(2).
+              05 WE-FDNACBENE     PIC 9(2).
+           03 FILLER              PIC X(111).
+      *
+       01 WS-R001-TIPODOC          PIC X(10)   VALUE SPACES.
+       01 WS-R001-CTIPOPERS        PIC X(01)   VALUE SPACES.
+
+
+
+      * FICHERO DE SALIDA
+      *************************************************
+      **                                             **
+      **   COPY DEL FORMATO DEL FICHERO DE           **
+      **        INDICENCIAS                          **
+      **                                             **
+      *************************************************
+       01 WS-REG002.
+          09 R002-DAT-INCIDENCIA.
+      *     PROGRAMA QUE FINALMENTE ESCRIBE LA INCIDENCIA EN EL FICHERO
+            11 R002-CPROBATCH              PIC X(08).
+      *     PROGRAMA QUE DETECTA LA INCIDENCIA
+            11 R002-CPROGSERV           PIC X(08).
+      *     CODIGO DE ERROR DEL SERVICIO
+            11 R002-CRETORNO            PIC X(05).
+      *     TIPO DE RETORNO: I - INCIDENCIA CONTROLADA
+      *                      E - ERROR DESCONTROLADO
+            11 R002-CTIPORETORNO        PIC X(01).
+      *     NUMERO DE PáRRAFO DONDE SE PRODUCE LA INCIDENCIA
+            11 R002-NPARRAFO            PIC X(10).
+      *     SQLCODE
+            11 R002-SQLCODE             PIC 9(05).
+      *     CODIGO DE INCIDENCIA (PROPIO DEL SERVICIO)
+            11 R002-CINCIDENCIA         PIC X(05).
+      *     DESCRIPCIóN DE LA INCIDENCIA
+            11 R002-GINCIDENCIA         PIC X(80).
+      *     ALMACENAR RESTO DE INFORMACIóN
+            11 R002-GDATOS              PIC X(100).
+      *   CLAVE DE COMUNICACIóN:
+          09 R002-CLAVE.
+      *     Nº POLIZA
+            11 R002-KPOLIZA             PIC X(10).
+      *     Nº SUBPOLIZA
+            11 R002-KSUBPOLIZA          PIC X(04).
+      *     Nº CERTIFICADO
+            11 R002-KCERTIFICADO        PIC 9(06).
+      *     RESTO FILLER
+            11 R002-RESTO               PIC X(42).
+
+      * FICHERO DE SALIDA
+      *****************************************************
+      **                                                 **
+      **   COPY DEL FORMATO DEL FICHERO DE               **
+      **        CARGA DE VENCIMIENTOS IDMS INDIVIDUALES  **
+      **        LONGITUD = 810                           **
+      **                                                 **
+      *****************************************************
+       01 WS-SALIDA.
+        03 WS-REG003.
+      * COPY LIQUIDACIONES PENDIENTES CON SUS PAGADAS Y KPERSONA
+           05 WS-KRAMO            PIC X(3).
+           05 WS-KPOLIZA          PIC X(10).
+           05 WS-KMODALIDAD       PIC X(3).
+           05 WS-FULTVTO.
+              07 WS-FAULTVTO      PIC 9(4).
+              07 WS-FMULTVTO      PIC 9(2).
+              07 WS-FDULTVTO      PIC 9(2).
+           05 WS-FPROCESO         PIC 9(8).
+           05 WS-CCANALCAMP       PIC X(02).
+           05 WS-CEMPRESA         PIC X(02).
+           05 WS-KOFICINA         PIC X(4).
+           05 WS-FEFECINI.
+              07 WS-FAEFECINI     PIC 9(4).
+              07 WS-FMEFECINI     PIC 9(2).
+              07 WS-FDEFECINI     PIC 9(2).
+           05 WS-CTIPOVTO         PIC X.
+           05 WS-TMOTIVOESP       OCCURS 10.
+              07 WS-KUSUARIO      PIC X(8).
+              07 WS-FAUTORIZA.
+                 09 WS-FAAUTORIZA PIC 9(04).
+                 09 WS-FMAUTORIZA PIC 9(02).
+                 09 WS-FDAUTORIZA PIC 9(02).
+           05 WS-CSITUVTO         PIC XX.
+           05 WS-CINCLUVTOP       PIC X.
+           05 WS-CINCLUVTOC       PIC X.
+           05 WS-CAUTORIZAP       PIC X.
+           05 WS-CAUTORIZAC       PIC X.
+           05 WS-KPRODUCTOR       PIC 9(7).
+           05 WS-NUMCOMP          PIC 9.
+           05 WS-CMODFLEX         PIC X.
+           05 WS-KOFICINAPROD     PIC XXXX.
+           05 WS-CGARANTICIPA     PIC X(01).
+           05 WS-CTIPOLIQ         PIC X(1).
+           05 WS-CSITULIQ         PIC X(2).
+           05 WS-FSITUPE.
+              07 WS-FASITUPE      PIC 9(4).
+              07 WS-FMSITUPE      PIC 9(2).
+              07 WS-FDSITUPE      PIC 9(2).
+           05 WS-KDIRECREGPE      PIC X(2).
+           05 WS-KOFICINAPE       PIC X(4).
+           05 WS-FLIQUIDA.
+              07 WS-FALIQUIDA     PIC 9(4).
+              07 WS-FMLIQUIDA     PIC 9(2).
+              07 WS-FDLIQUIDA     PIC 9(2).
+           05 WS-KDIRECREGEM      PIC X(2).
+           05 WS-KOFIGES          PIC X(4).
+           05 WS-GUSERCAPT        PIC X(8).
+           05 WS-GTERMCAPT        PIC X(8).
+           05 WS-GBENNOM          PIC X(12).
+           05 WS-GBENEMP.
+              07 WS-GBENAPE1      PIC X(17).
+              07 WS-GBENAPE2      PIC X(17).
+           05 WS-GBENDNI          PIC X(10).
+           05 WS-CBENTIPO         PIC X(1).
+           05 WS-GTELEFONO.
+              07 WS-GPRETEFPAR    PIC X(03).
+              07 WS-GTFNOPAR      PIC X(07).
+           05 WS-GDOMICILIO       PIC X(35).
+           05 WS-GLOCALIDAD       PIC X(25).
+           05 WS-CPOSTAL.
+              07 WS-CPROVINCIA    PIC 9(2).
+              07 WS-CLOCAL        PIC 9(3).
+           05 WS-CPAIS            PIC X(3).
+           05 WS-CHACIENDA        PIC X(1).
+           05 WS-ILIQUIDAC        PIC S9(12).
+           05 WS-ELIQUIDAC        REDEFINES WS-ILIQUIDAC
+                                  PIC S9(10)V99.
+           05 WS-IVALVTO          PIC 9(12).
+           05 WS-EVALVTO          REDEFINES WS-IVALVTO
+                                  PIC 9(10)V99.
+           05 WS-IVALVTOPB        PIC S9(12).
+           05 WS-EVALVTOPB        REDEFINES WS-IVALVTOPB
+                                  PIC S9(10)V99.
+           05 WS-IRECIBPTE        PIC S9(12).
+           05 WS-ERECIBPTE        REDEFINES WS-IRECIBPTE
+                                  PIC S9(10)V99.
+           05 WS-IOTROSREC        PIC S9(12).
+           05 WS-EOTROSREC        REDEFINES WS-IOTROSREC
+                                  PIC S9(10)V99.
+           05 WS-IANTICPTE        PIC S9(12).
+           05 WS-EANTICPTE        REDEFINES WS-IANTICPTE
+                                  PIC S9(10)V99.
+           05 WS-IRECIBANT        PIC S9(12).
+           05 WS-ERECIBANT        REDEFINES WS-IRECIBANT
+                                  PIC S9(10)V99.
+           05 WS-IVALREIN         PIC S9(12).
+           05 WS-EVALREIN         REDEFINES WS-IVALREIN
+                                  PIC S9(10)V99.
+           05 WS-PVALVTO          PIC 999V99.
+           05 WS-CFORMPAGO        PIC X.
+           05 WS-KBANCO77.
+              07 WS-CBANCO77      PIC 9(4).
+              07 WS-CSUCUR77      PIC 9(4).
+           05 WS-GDCCCC           PIC X(02).
+           05 WS-NCUENTACCC       PIC 9(10).
+           05 WS-FPAGOLIQ.
+              07 WS-FAPAGOLIQ     PIC 9(4).
+              07 WS-FMPAGOLIQ     PIC 9(2).
+              07 WS-FDPAGOLIQ     PIC 9(2).
+           05 WS-FORDENPAG.
+              07 WS-FAORDENPAG    PIC 9(4).
+              07 WS-FMORDENPAG    PIC 9(2).
+              07 WS-FDORDENPAG    PIC 9(2).
+           05 WS-KDIRECREGPA      PIC X(2).
+           05 WS-KOFICINAPA       PIC X(4).
+           05 WS-GUSERPAGO        PIC X(8).
+           05 WS-GTERMPAGO        PIC X(8).
+           05 WS-KORDENPG         PIC 9(15).
+           05 WS-CCONFIPAGO       PIC X.
+           05 WS-NCARTAREC        PIC 9.
+           05 WS-IRETENIDO        PIC S9(12).
+           05 WS-ERETENIDO        REDEFINES WS-IRETENIDO
+                                  PIC S9(10)V99.
+           05 WS-ANOFISCAL        PIC 9(4).
+           05 WS-CORDENLIQ        PIC X(1).
+           05 WS-GNOTA50          PIC X(50).
+           05 WS-CMONEDA          PIC X.
+           05 WS-EVALVTO-EXT      PIC 9(10)V99.
+           05 WS-EVALVTOPB-EXT    PIC 9(10)V99.
+           05 WS-FNACBENE.
+              07 WS-FANACBENE     PIC 9(4).
+              07 WS-FMNACBENE     PIC 9(2).
+              07 WS-FDNACBENE     PIC 9(2).
+           05 FILLER              PIC X(111).
+        03 WS-KPERSONA1           PIC S9(9)V USAGE COMP-3.
+        03 FILLER                 PIC X(5).
+      *
+       01 LT-LITERALES.
+      * CALCULO DE TIPO DNI
+          03 LT-VALIDAR-DNI       PIC X(8) VALUE 'B001N001'.
+      * ALTA PERSONAS
+          03 LT-B620NI50          PIC X(8) VALUE 'B620NI50'.
+      * ALTA DOMICILIOS
+          03 LT-B620ND54          PIC X(8) VALUE 'B620ND54'.
+      * ALTA TELEFONOS
+          03 LT-B620NI62          PIC X(8) VALUE 'B620NI62'.
+      * ALTA CUENTAS
+          03 LT-B620N054          PIC X(8) VALUE 'B620N054'.
+          03 LT-B001N009          PIC X(8) VALUE 'B001N009'.
+      * DESCRIPCION DE INCIDENCIAS
+          03 LT-EP001             PIC X(80)
+             VALUE 'FALTA CIA, NIF, NOMBRE, APELL1 O FECHA NACIMIENTO'.
+          03 LT-EP002             PIC X(80)
+             VALUE 'FALTA DOMICILIO DE PRESTACION       '.
+          03 LT-EP003             PIC X(80)
+             VALUE 'ERROR AL INTENTAR DAR DE ALTA       '.
+          03 LT-EP004             PIC X(80)
+             VALUE 'ERROR AL INTENTAR DAR DE ALTA DOMICILIO'.
+          03 LT-EP005             PIC X(80)
+             VALUE 'ERROR VALIDANDO CIF/NIF ENTRADA     '.
+          03 LT-EP006             PIC X(80)
+             VALUE 'ERROR RECUPERANDO KCUENTA (PRESTAC) '.
+          03 LT-EP999             PIC X(80)
+             VALUE 'ERROR LLAMANDO A SERVICIO           '.
+
+      * NOMBRE DEL PROGRAMA
+       01 LT-B372J026             PIC X(8) VALUE 'B372J026'.
+
+      * COPYS
+       01 WS-B620M001.
+           COPY X620M001.
+           COPY R960T001.
+       01 WS-B620M002.
+           COPY X620M002.
+           COPY R960T001.
+       01 WS-B620M003.
+           COPY X620M003.
+           COPY R960T001.
+
+       01 WS-B620N054.
+           COPY X620M054.
+
+      * COPY CALCULAR FECHA
+       COPY X001N009.
+
+      * COPY VALIDAR DNI (NIVEL 01)
+       COPY X001N001.
+
+        LINKAGE SECTION.
+      *********************************************************
+        01 DFHCOMMAREA PIC X(1).
+      *************************************************************
+       PROCEDURE DIVISION USING DFHCOMMAREA.
+      *************************************************************
+
+      *D*
+           DISPLAY '*------- INICIO B372J026 --------*'
+      *F*
+           PERFORM 1000-INICIO.
+           PERFORM 2000-PROCESO.
+           PERFORM 9000-FIN.
+
+       1000-INICIO.
+      *-----------
+
+      * INICIALIZAR VARIABLES
+           INITIALIZE CT-ACUMULADORES
+           INITIALIZE WE-REG001 WS-SALIDA
+           INITIALIZE WS-REG002.
+
+           SET NO-FIN-SYS001 TO TRUE.
+           MOVE ' ' TO SW-CORRECTO.
+
+      *    CARGAR FECHA DEL DIA
+           MOVE  FUNCTION CURRENT-DATE  TO  WS-FSYSTEMA.
+
+           OPEN INPUT  SYS001.
+           OPEN OUTPUT SYS002.
+           OPEN OUTPUT SYS003.
+
+           PERFORM 9999-LEER-SYS001
+
+           IF SI-FIN-SYS001
+      *D*
+              DISPLAY '**************************************'
+              DISPLAY '**   FICHERO POLIZAS RESCATES VACIO **'
+              DISPLAY '**************************************'
+      *F*
+              CONTINUE
+           END-IF.
+
+      ******************************************************************
+       2000-PROCESO.
+      ******************************************************************
+
+           PERFORM UNTIL SI-FIN-SYS001
+      *      PERFORM 9000-MOVER-001-A-003
+             SET SI-OK TO TRUE
+             PERFORM 3100-COMPROBAR-DATOS-E
+             PERFORM 9000-MOVER-001-A-003
+             MOVE ZEROS TO WS-KPERSONA
+                           WS-KDOMICILIO
+             IF SI-OK
+                PERFORM 3200-BUSCAR-PER-DB2
+             END-IF
+
+             MOVE WS-KPERSONA    TO WS-KPERSONA1
+      *GRABAMOS EN SALIDA
+             PERFORM 9100-GRABA-SYS003
+             PERFORM 9999-LEER-SYS001
+           END-PERFORM.
+
+      *========================*
+       3100-COMPROBAR-DATOS-E.
+      *========================*
+
+      * A)COMPROBAMOS EL TIPO DE PERSONA, POR DEFECTO FISICA
+      *   LA FECHA DE NACIMIENTO, SI VIENE A ZEROS SE INFORMA 19000101
+      *   SI EL CODIGO DE EMPRESA VIENE SIN INFORMAR, POR DEFECTO 10
+      *   SE INICIALIZAN LOS DATOS BANCARIOS SI VIENE VACIOS O LOW-VALUE
+           MOVE 'F'                     TO WS-R001-CTIPOPERS.
+           IF WE-GBENDNI = '0X0683258C'
+              MOVE 'X0683258C ' TO WE-GBENDNI
+           END-IF
+           IF WE-GBENDNI = '0A7831643C'
+              MOVE 'A7831643C ' TO WE-GBENDNI
+           END-IF
+           IF WE-GBENDNI = '0A46127460'
+              MOVE 'A46127460 ' TO WE-GBENDNI
+              MOVE WE-GBENAPE1  TO WE-GBENNOM
+           END-IF
+           IF WE-GBENDNI = '948-860000'
+              MOVE 'SURESH'     TO WE-GBENNOM
+              MOVE 'LACHM'      TO WE-GBENAPE1
+           END-IF
+           IF WE-GBENDNI = '0X0635738M'
+              MOVE 'X0635738M'  TO WE-GBENDNI
+              MOVE 78431        TO WE-CPOSTAL
+           END-IF
+           IF WE-GBENDNI = 'B80546385 '
+              MOVE WE-GBENAPE1  TO WE-GBENNOM
+           END-IF
+           IF WE-GBENDNI(1:1) = 'A' OR 'B' OR 'P' OR 'F' OR 'E' OR
+                                'J' OR 'R' OR 'G' OR 'H' OR 'V' OR
+                                'Q'
+             MOVE 'J'                  TO WS-R001-CTIPOPERS
+           END-IF
+           IF WE-FNACBENE = ZEROS OR SPACES
+              MOVE '19000101' TO WE-FNACBENE
+           END-IF
+           IF WE-CEMPRESA = ZEROS OR WE-CEMPRESA = SPACES
+              MOVE '10'       TO WE-CEMPRESA
+           END-IF
+           IF WE-CBANCO77 = LOW-VALUES OR SPACES
+              MOVE ZEROS TO WE-CBANCO77
+           END-IF
+           IF WE-CSUCUR77 = LOW-VALUES OR SPACES
+              MOVE ZEROS TO WE-CSUCUR77
+           END-IF
+           IF WE-GDCCCC = LOW-VALUES
+              MOVE SPACES TO WE-GDCCCC
+           END-IF
+           IF WE-NCUENTACCC IS NOT NUMERIC
+              MOVE ZEROS  TO WE-NCUENTACCC
+           END-IF
+      * B)COMPROBAMOS DATOS PERSONALES => OBLIGATORIO
+           IF WS-R001-CTIPOPERS = 'F'
+            IF WE-CEMPRESA = ZEROS OR WE-CEMPRESA = SPACES
+            OR WE-GBENDNI            = SPACES
+            OR WE-GBENNOM            = SPACES
+            OR WE-GBENAPE1           = SPACES
+            OR WE-FNACBENE           = ZEROS
+      *      >> ERROR DATOS ENTRADA VACIOS
+             SET NO-OK TO TRUE
+      *      MOVER DATOS GENERALES A REGISTRO DE INCIDENCIAS (R002)
+             PERFORM 70000-MOVER-A-INCIDENCIA
+      *      MOVER DATOS ESPECIFICOS A R002
+             MOVE LT-B372J026 TO   R002-CPROGSERV
+             MOVE '00000'     TO   R002-CRETORNO
+             MOVE 'I'         TO   R002-CTIPORETORNO
+             MOVE '03100'     TO   R002-NPARRAFO
+             MOVE 'EP001'     TO   R002-CINCIDENCIA
+             MOVE LT-EP001    TO   R002-GINCIDENCIA
+      *      ..........................................................
+             MOVE SPACES                TO   R002-GDATOS
+             MOVE WE-CEMPRESA           TO R002-GDATOS(1:2)
+             MOVE WE-GBENDNI            TO R002-GDATOS(4:10)
+             MOVE WE-GBENNOM            TO R002-GDATOS(16:12)
+             MOVE WE-GBENAPE1           TO R002-GDATOS(31:17)
+             MOVE WE-FNACBENE           TO R002-GDATOS(51:8)
+      *      ..........................................................
+      *      ESCRIBIR LA INCIDENCIA EN FICHERO
+             PERFORM 70100-ESCRIBIR-INCIDENCIA
+            ELSE
+      * C)COMPROBAMOS QUE EL DNI SEA CORRECTO Y CALCULAMOS SU TIPO-DOC
+             PERFORM 3110-VALIDAR-DNI
+             IF NOT DNI-OK
+      *        >> ERROR EN VALIDACION DNI
+                SET NO-OK TO TRUE
+      *      MOVER DATOS GENERALES A REGISTRO DE INCIDENCIAS (R002)
+                PERFORM 70000-MOVER-A-INCIDENCIA
+      *      MOVER DATOS ESPECIFICOS A R002
+                MOVE LT-B372J026 TO   R002-CPROGSERV
+                MOVE '00000'     TO   R002-CRETORNO
+                MOVE 'I'         TO   R002-CTIPORETORNO
+                MOVE '03100'     TO   R002-NPARRAFO
+                MOVE 'EP005'     TO   R002-CINCIDENCIA
+                MOVE LT-EP005    TO   R002-GINCIDENCIA
+      *      ..........................................................
+                MOVE SPACES            TO   R002-GDATOS
+                MOVE WE-GBENDNI        TO   R002-GDATOS(1:10)
+      *      ..........................................................
+      *      ESCRIBIR LA INCIDENCIA EN FICHERO
+                PERFORM 70100-ESCRIBIR-INCIDENCIA
+             END-IF
+            END-IF
+           ELSE
+            IF WE-CEMPRESA = ZEROS OR WE-CEMPRESA = SPACES
+            OR WE-GBENDNI            = SPACES
+            OR WE-GBENNOM            = SPACES
+      *      >> ERROR DATOS ENTRADA VACIOS
+             SET NO-OK TO TRUE
+      *      MOVER DATOS GENERALES A REGISTRO DE INCIDENCIAS (R002)
+             PERFORM 70000-MOVER-A-INCIDENCIA
+      *      MOVER DATOS ESPECIFICOS A R002
+             MOVE LT-B372J026 TO   R002-CPROGSERV
+             MOVE '00000'     TO   R002-CRETORNO
+             MOVE 'I'         TO   R002-CTIPORETORNO
+             MOVE '03100'     TO   R002-NPARRAFO
+             MOVE 'EP001'     TO   R002-CINCIDENCIA
+             MOVE LT-EP001    TO   R002-GINCIDENCIA
+      *      ..........................................................
+             MOVE SPACES                TO   R002-GDATOS
+             MOVE WE-CEMPRESA           TO R002-GDATOS(1:2)
+             MOVE WE-GBENDNI            TO R002-GDATOS(4:10)
+             MOVE WE-GBENNOM            TO R002-GDATOS(16:12)
+             MOVE WE-GBENAPE1           TO R002-GDATOS(31:17)
+      *      ..........................................................
+      *      ESCRIBIR LA INCIDENCIA EN FICHERO
+             PERFORM 70100-ESCRIBIR-INCIDENCIA
+            ELSE
+      * D)COMPROBAMOS QUE EL DNI SEA CORRECTO Y CALCULAMOS SU TIPO-DOC
+             PERFORM 3110-VALIDAR-DNI
+             IF NOT DNI-OK
+      *        >> ERROR EN VALIDACION DNI
+                SET NO-OK TO TRUE
+      *      MOVER DATOS GENERALES A REGISTRO DE INCIDENCIAS (R002)
+                PERFORM 70000-MOVER-A-INCIDENCIA
+      *      MOVER DATOS ESPECIFICOS A R002
+                MOVE LT-B372J026 TO   R002-CPROGSERV
+                MOVE '00000'     TO   R002-CRETORNO
+                MOVE 'I'         TO   R002-CTIPORETORNO
+                MOVE '03100'     TO   R002-NPARRAFO
+                MOVE 'EP005'     TO   R002-CINCIDENCIA
+                MOVE LT-EP005    TO   R002-GINCIDENCIA
+      *      ..........................................................
+                MOVE SPACES            TO   R002-GDATOS
+                MOVE WE-GBENDNI        TO   R002-GDATOS(1:10)
+      *      ..........................................................
+      *      ESCRIBIR LA INCIDENCIA EN FICHERO
+                PERFORM 70100-ESCRIBIR-INCIDENCIA
+             END-IF
+            END-IF
+           END-IF.
+
+      *----------------------*
+       3110-VALIDAR-DNI.
+      *----------------------*
+           MOVE ' '    TO SW-DNI.
+           MOVE SPACES TO WS-R001-TIPODOC.
+
+           MOVE FUNCTION UPPER-CASE(WE-GBENDNI) TO COD-DNI-E
+
+           CALL LT-VALIDAR-DNI USING X001N001.
+      *
+           IF ESTADO-DNI-R IN X001N001 NOT EQUAL ZERO
+              SET DNI-NO-OK TO TRUE
+           ELSE
+              SET DNI-OK    TO TRUE
+              MOVE TIPO-DNI-R IN X001N001 TO WS-R001-TIPODOC
+           END-IF.
+      *
+      *========================*
+       3200-BUSCAR-PER-DB2.
+      *========================*
+
+           INITIALIZE WS-B620M001.
+
+      *    LLAMAMOS A PERSONAS PARA VER SI EXISTE ESA PERSONA/CIA
+           MOVE 'C'                TO   X620M001-CLAVE.
+           MOVE WE-GBENDNI         TO   X620M001-CIDENTIFICA-E.
+
+           CALL LT-B620NI50 USING WS-B620M001.
+
+      *D*
+           DISPLAY ' 3200-BUSCAR-PER-DB2, NIF: ' WE-GBENDNI
+           DISPLAY ' R960T001-ERROR OF WS-B620M001(1): '
+                     R960T001-ERROR OF WS-B620M001(1)
+      *F*
+           IF R960T001-ERROR OF WS-B620M001(1)  = '00003'
+      *       SI CONSULTAMOS Y NO EXISTE (00003) SE DA EL ALTA
+              PERFORM 3300-ALTA-PERSONA
+      *D*
+           DISPLAY '*****NO EXISTE EL NIF EN PERSONAS'
+      *F*
+           ELSE
+              IF R960T001-ERROR OF WS-B620M001(1)  = '00000'
+              OR R960T001-ERROR OF WS-B620M001(1)  = SPACES
+              OR X620M001-KPERSONA-S(1) > ZEROS
+                 MOVE X620M001-KPERSONA-S(1) TO WS-KPERSONA
+      *D*
+           DISPLAY '**EXISTE EL NIF EN PERSONAS'
+           DISPLAY '**X620M001-KPERSONA-S: '
+                      X620M001-KPERSONA-S(1)
+           DISPLAY '**X620M001-KCOMPANIA-S: '
+                      X620M001-KCOMPANIA-S(1)
+           DISPLAY '**X620M001-CCOMPANIA-S: '
+                      X620M001-CCOMPANIA-S(1)
+      *F*
+              ELSE
+      *       SI EL ACCESO HA DEVUELTO RETORNO ERRONEO --> INCIDENCIA
+                 SET NO-OK TO TRUE
+      *          MOVER DATOS GENERALES A R002
+                 PERFORM 70000-MOVER-A-INCIDENCIA
+      *          MOVER DATOS ESPECIFICOS A R002
+                 MOVE LT-B620NI50       TO   R002-CPROGSERV
+                 MOVE R960T001-ERROR OF WS-B620M001(1)
+                                        TO   R002-CRETORNO
+                 MOVE 'I'         TO   R002-CTIPORETORNO
+                 MOVE '03200'     TO   R002-NPARRAFO
+                 MOVE 'EP999'     TO   R002-CINCIDENCIA
+                 MOVE LT-EP999    TO   R002-GINCIDENCIA
+                 MOVE SPACES      TO   R002-GDATOS
+      *          ESCRIBIR LA INCIDENCIA EN FICHERO
+                 PERFORM 70100-ESCRIBIR-INCIDENCIA
+              END-IF
+           END-IF.
+
+      *-------------------*
+         3300-ALTA-PERSONA.
+      *-------------------*
+      * RECUPERAR KPERSONA PARA GRABAR EN FICH
+           INITIALIZE WS-B620M001.
+
+           MOVE 'I'                TO X620M001-CLAVE.
+           MOVE WE-CEMPRESA        TO X620M001-CCOMPANIA-E
+           IF WE-GBENDNI = 'A7831643C '
+              MOVE 'TECNOLOGICA  S.A.' TO X620M001-GNOMBRELARGO-E
+              MOVE SPACES              TO X620M001-GAPELLIDO1-E
+                                          X620M001-GAPELLIDO2-E
+           END-IF
+           IF WE-GBENDNI = 'A46127460 '
+              MOVE 'FLETRANS, S.A.'    TO X620M001-GNOMBRELARGO-E
+              MOVE SPACES              TO X620M001-GAPELLIDO1-E
+                                          X620M001-GAPELLIDO2-E
+           END-IF
+           IF WE-GBENDNI = 'B80546385 '
+              MOVE 'MAQUINARIA ROMA S.L.'
+                                       TO X620M001-GNOMBRELARGO-E
+              MOVE SPACES              TO X620M001-GAPELLIDO1-E
+                                          X620M001-GAPELLIDO2-E
+           END-IF
+           IF WE-GBENDNI NOT = 'A7831643C ' AND 'A46127460 ' AND
+                               'B80546385 '
+            MOVE WE-GBENNOM         TO X620M001-GNOMBRELARGO-E
+            MOVE WE-GBENAPE1        TO X620M001-GAPELLIDO1-E
+            MOVE WE-GBENAPE2        TO X620M001-GAPELLIDO2-E
+           END-IF
+           MOVE ' '                TO X620M001-K2IDENTIFICA-E
+           MOVE WE-GBENDNI         TO X620M001-CIDENTIFICA-E
+           MOVE WS-FNACBENE        TO X620M001-FNACIMIENTO-E
+           MOVE LT-B372J026        TO X620M001-KUSUARIO-E
+           MOVE '01002'            TO X620M001-K1TRATAMIENTO-E.
+           MOVE  '1'               TO X620M001-K2TRATAMIENTO-E.
+      * SEXO:  V ó H (TABLA 01001), POR DEFECTO VARON, NO TENEMOS DATO
+           MOVE '01001'            TO X620M001-K1SEXO-E
+           MOVE 'V'                TO X620M001-K2SEXO-E
+      * ESTADO CIVIL: S, C, V, D - POR DEFECTO SOLTERO, NO TENEMOS DATO
+           MOVE '01006'            TO X620M001-K1ESTCIVIL-E
+           MOVE 'S'                TO X620M001-K2ESTCIVIL-E
+      * TIPO PERSONA: F, J
+           MOVE '01003'            TO X620M001-K1TIPOPERS-E
+           MOVE WS-R001-CTIPOPERS  TO X620M001-K2TIPOPERS-E
+      *
+           MOVE WS-FSYSTEMA        TO X620M001-FMODIFICA-E.
+           MOVE WS-FSYSTEMA        TO X620M001-FECHA-E.
+
+           MOVE SPACES                  TO X620M001-CNACIONALIDAD1-E
+           MOVE SPACES                  TO X620M001-CNACIONALIDAD2-E
+           MOVE WE-CPAIS                TO X620M001-CPAISNACIMIENTO-E
+           MOVE SPACES
+                                        TO X620M001-CPAISOBLIGACIONES1-E
+           MOVE SPACES
+                                        TO X620M001-CPAISOBLIGACIONES2-E
+           MOVE SPACES
+                                        TO X620M001-CPAISOBLIGACIONES3-E
+           MOVE SPACES                  TO X620M001-SPAISRESIDENCIA-E
+           MOVE SPACES                  TO X620M001-SPRP-E
+      *
+      ** LOS SIGUIENTES DATOS SE PUEDEN DEJAR A BLANCOS POR QUE POR
+      *  DEFECTO SE CARGAN EN EL ALTA
+      *    SI X620M001-K2IDENTIFICA-E  = ' ' LO CALCULA EN EL ALTA
+      *    X620M001-GMNEMOTEC-E --> LO CALCULA EL ALTA
+      *    X620M001-FANULACION-E --> 99991231
+      *    X620M001-FFALLEC-E    --> 99991231
+      *    X620M001-SEMPLEMAPFRE-E --> 'N'
+      *    X620M001-K2IDIOMA-E     --> 'ES'
+      *    X620M001-SVIP-E         --> 'N'
+      *    X620M001-SIMPUESTOS-E   --> 'N'
+      *    X620M001-SPUBLICIDAD-E  --> 'N'
+      *    X620M001-SDATOS-E       --> 'N'
+      *    X620M001-STRATMEDICO-E  --> 'N'
+      *    X620M001-SROBSPECIAL-E  --> 'N'
+
+      *    LLAMAMOS A PERSONAS PARA DAR EL ALTA
+           CALL LT-B620NI50 USING WS-B620M001.
+
+           IF R960T001-ERROR OF WS-B620M001(1) = SPACES  OR
+              R960T001-ERROR OF WS-B620M001(1) = ZEROES
+      *       ALTA CORRECTA: CUMPLIMENTAMOS KPERSONA
+              SET SI-OK TO TRUE
+              MOVE X620M001-KPERSONA-S(1) TO WS-KPERSONA
+      *       SI LA PERSONA NO EXISTE SUS DATOS TAMPOCO: ALTA
+              PERFORM 3310-ALTA-DOMICIL
+      *       IF SI-OK
+                 PERFORM 3320-ALTA-CTA-TEL
+      *       END-IF
+           ELSE
+      *       SI NO SE DA EL ALTA PERSONAS -> INCIDENCIA
+              SET NO-OK TO TRUE
+      *       MOVER DATOS GENERALES A R002
+              PERFORM 70000-MOVER-A-INCIDENCIA
+      *       MOVER DATOS ESPECIFICOS A R002
+              MOVE LT-B620NI50       TO   R002-CPROGSERV
+              MOVE R960T001-ERROR OF WS-B620M001(1)
+                                     TO   R002-CRETORNO
+              MOVE 'I'               TO   R002-CTIPORETORNO
+              MOVE '03300'           TO   R002-NPARRAFO
+      *             ERROR ALTA
+              MOVE 'EP003'           TO   R002-CINCIDENCIA
+              MOVE LT-EP003          TO   R002-GINCIDENCIA
+      *      ..........................................................
+              MOVE SPACES            TO   R002-GDATOS
+              MOVE 'NIF : '          TO   R002-GDATOS(1:6)
+              MOVE WE-GBENDNI        TO   R002-GDATOS(7:18)
+      *      ..........................................................
+      *       ESCRIBIR LA INCIDENCIA EN FICHERO
+              PERFORM 70100-ESCRIBIR-INCIDENCIA
+           END-IF.
+      *
+      *==================*
+       3310-ALTA-DOMICIL.
+      *==================*
+
+      * ++++  ALTA DE DOMICILIOS NO BANCARIOS
+           MOVE 1 TO IND-D.
+           MOVE SPACES TO WS-CTIPODOM-PR.
+      *D*
+           DISPLAY '3310-ALTA-DOMICIL'
+           DISPLAY 'WE-KPOLIZA = ' WE-KPOLIZA
+      *F*
+
+           PERFORM UNTIL IND-D > 3
+              PERFORM 3311-MOVER-DOM
+              PERFORM 3312-GRABAR-DOM
+              ADD 1 TO IND-D
+           END-PERFORM.
+
+      *---------------*
+       3311-MOVER-DOM.
+      *---------------*
+           INITIALIZE WS-B620M002.
+
+           MOVE WE-CEMPRESA        TO X620M002-COMPANIA.
+           MOVE   'I'              TO X620M002-CLAVE.
+           MOVE ZEROS              TO X620M002-KDOMICILIO-E.
+           MOVE WS-KPERSONA        TO X620M002-KPERSONA-E.
+           MOVE '01011'            TO X620M002-K1TIPO-E.
+           IF IND-D = 1
+              MOVE 'P' TO X620M002-K2TIPO-E
+           ELSE
+           IF IND-D = 2
+              MOVE 'C' TO X620M002-K2TIPO-E
+           ELSE
+           IF IND-D = 3
+              MOVE 'R' TO X620M002-K2TIPO-E
+                          WS-CTIPODOM-PR
+           END-IF.
+      * DESCRIPCION VIA (NOMBRE CALLE)
+      * EN GDOMICILIO NOSOTROS TENEMOS VIA,  LOCALIDAD *
+           MOVE WE-GDOMICILIO         TO  X620M002-GDOMICILIO-E(1:65)
+           IF WE-GDOMICILIO = SPACES OR LOW-VALUES
+              MOVE 'DESCONOCIDO'      TO  X620M002-GDOMICILIO-E(1:65)
+           END-IF
+      *-> SE INFORMA EL WE-GLOCALIDAD SEGUN POBLACION DEL CODIGO
+      *   POSTAL DE LAS 2 PRIMERAS POSICIONES AL NO VENIR INFORMADO DE
+      *   IDMS
+           IF WE-GLOCALIDAD = SPACES OR LOW-VALUES
+             IF WE-CPOSTAL(1:2) = '  '
+                MOVE 'DESCONOCIDO' TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '28'
+                MOVE 'MADRID'     TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '41'
+                MOVE 'SEVILLA'    TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '08'
+                MOVE 'BARCELONA'  TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '25'
+                MOVE 'LLEIDA'     TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '29'
+                MOVE 'MALAGA'     TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '21'
+                MOVE 'HUELVA'     TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '46'
+                MOVE 'VALENCIA'   TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '09'
+                MOVE 'BURGOS'     TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '30'
+                MOVE 'MURCIA'     TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '15'
+                MOVE 'A CORUÑA'   TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '10'
+                MOVE 'CACERES'    TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '04'
+                MOVE 'ALMERIA'    TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '47'
+                MOVE 'VALLADOLID' TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '50'
+                MOVE 'ZARAGOZA'   TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '27'
+                MOVE 'LUGO'       TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '34'
+                MOVE 'PALENCIA'   TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '43'
+                MOVE 'TARRAGONA'  TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '11'
+                MOVE 'CADIZ'      TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '06'
+                MOVE 'BADAJOZ'    TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '18'
+                MOVE 'GRANADA'    TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '03'
+                MOVE 'ALICANTE'   TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '17'
+                MOVE 'GERONA'     TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '30'
+                MOVE 'MURCIA'     TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '32'
+                MOVE 'ORENSE'     TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '22'
+                MOVE 'HUESCA'     TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '14'
+                MOVE 'CORDOBA'    TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '45'
+                MOVE 'TOLEDO'     TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '26'
+                MOVE 'LOGROÑO'    TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '05'
+                MOVE 'AVILA'      TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '35'
+                MOVE 'LAS PALMAS DE GRAN CANARIA'
+                                  TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '49'
+                MOVE 'ZAMORA'     TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '19'
+                MOVE 'GUADALAJARA' TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '40'
+                MOVE 'SEGOVIA'    TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '44'
+                MOVE 'TERUEL'     TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '36'
+                MOVE 'PONTEVEDRA' TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '31'
+                MOVE 'NAVARRA'    TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '39'
+                MOVE 'SANTANDER'  TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '42'
+                MOVE 'SORIA'      TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '23'
+                MOVE 'JAEN'       TO WE-GLOCALIDAD
+             END-IF
+             IF WE-CPOSTAL(1:2) = '24'
+                MOVE 'LEON'       TO WE-GLOCALIDAD
+             END-IF
+           END-IF
+           MOVE WE-GLOCALIDAD         TO  X620M002-GDOMICILIO-E(66:)
+           MOVE '01008'               TO  X620M002-K1VIA-E
+      * VALORES K2VIA... CL, ACQ, AUT....
+      *-> SE INFORMA TIPO VIA COMO 'CL' NO VIENE EL DATO
+      *    IF WE-GDOMICILIO(1:1) = SPACES OR LOW-VALUES
+              MOVE 'CL '               TO  X620M002-K2VIA-E
+      *    ELSE
+      *       MOVE WS-R001-GDOMICILIO1(1:3) TO X620M002-K2VIA-E
+      *    END-IF
+      *     EVALUATE WS-R001-GDOMICILIO1(1:3)
+      *     WHEN 'ALM'
+      *       MOVE 'AL '               TO  X620M002-K2VIA-E
+      *     WHEN 'C/ '
+      *       MOVE 'CL '               TO  X620M002-K2VIA-E
+      *     WHEN 'Pº '
+      *       MOVE 'PSO'               TO  X620M002-K2VIA-E
+      *     WHEN 'AV.'
+      *       MOVE 'AV '               TO  X620M002-K2VIA-E
+      *     WHEN OTHER
+      *       MOVE WS-R001-GDOMICILIO1(1:3) TO X620M002-K2VIA-E
+      *     END-EVALUATE
+      *    IF WS-R001-GDOMICILIO1(1:3) NOT = 'ACC' AND 'ACE' AND 'ACQ'
+      *                                  AND 'AFU' AND 'AGR' AND 'AL '
+      *                                  AND 'ALD' AND 'AP ' AND 'APT'
+      *                                  AND 'AR ' AND 'ARR' AND 'AUT'
+      *                                  AND 'AVD' AND 'BCO' AND 'BDA'
+      *                                  AND 'BL ' AND 'BO ' AND 'CAR'
+      *                                  AND 'CAS' AND 'CH ' AND 'CJN'
+      *                                  AND 'CJO' AND 'CJT' AND 'CL '
+      *                                  AND 'CM ' AND 'CNO' AND 'COL'
+      *                                  AND 'COM' AND 'CON' AND 'COO'
+      *                                  AND 'CRA' AND 'CTJ' AND 'DIS'
+      *                                  AND 'EDF' AND 'ENT' AND 'FCA'
+      *                                  AND 'GPO' AND 'GTA' AND 'GV '
+      *                                  AND 'LUG' AND 'MAS' AND 'ME '
+      *                                  AND 'MLE' AND 'MU ' AND 'MZ '
+      *                                  AND 'NUC' AND 'PAT' AND 'PDA'
+      *      MOVE 'CL '                    TO X620M002-K2VIA-E
+             IF WE-GDOMICILIO(1:3) = 'AVD' OR 'AV.'
+                MOVE 'AVD'                 TO X620M002-K2VIA-E
+             END-IF
+             IF WE-GDOMICILIO(1:3) = 'PA ' OR 'L. '
+                MOVE 'PAT'                 TO X620M002-K2VIA-E
+             END-IF
+             IF WE-GDOMICILIO(1:3) = 'CR ' OR 'CT'
+                MOVE 'CRA'                 TO X620M002-K2VIA-E
+             END-IF
+             IF WE-GDOMICILIO(1:3) = 'ALM'
+                MOVE 'AL '                 TO X620M002-K2VIA-E
+             END-IF
+      *    END-IF
+      * Nº - SE INICIALIZA, NO TENEMOS DATO O VIENE DENTRO DE DOMICILIO
+      *    IF WS-R001-GNUMVIA = SPACES OR LOW-VALUES
+              MOVE '0000'             TO  X620M002-GNUMVIA-E
+      *    ELSE
+      *       MOVE WS-R001-GNUMVIA    TO  X620M002-GNUMVIA-E
+      *    END-IF
+           MOVE SPACES                TO  X620M002-GDOMIRESTO-E
+           MOVE '01164'               TO  X620M002-K1PAIS-E
+      *NUESTRO CPAIS ESTA CODIFICADO (011 DEBE SER ESPAÑA)
+      *-> SE INFORMA CODIGO DE ESPAÑA, CUANDO VENGA SIN INFORMAR
+           IF WE-CPAIS = SPACES OR LOW-VALUES
+             MOVE '011'               TO  X620M002-K2PAIS-E
+           ELSE
+             MOVE WE-CPAIS            TO  X620M002-K2PAIS-E
+           END-IF
+
+           MOVE '01162'               TO  X620M002-K1PROVINCIA-E
+           IF WE-CPROVINCIA = SPACES OR LOW-VALUES
+              MOVE WE-CPOSTAL(1:2) TO         X620M002-K2PROVINCIA-E
+              IF WE-CPOSTAL(1:2) = SPACES OR LOW-VALUES
+                 MOVE '28'                TO  X620M002-K2PROVINCIA-E
+              END-IF
+           ELSE
+              MOVE WE-CPROVINCIA         TO  X620M002-K2PROVINCIA-E
+           END-IF
+           MOVE WE-CPOSTAL            TO  X620M002-CCODPOST-E
+           IF WE-CPOSTAL = SPACES OR LOW-VALUES
+              MOVE '28001'            TO  X620M002-CCODPOST-E
+           END-IF
+
+      *D*
+           DISPLAY 'TIPO-VIA  : ' X620M002-K2VIA-E
+           DISPLAY 'NUM-VIA   : ' X620M002-GNUMVIA-E
+           DISPLAY 'NUM-VIA   : ' X620M002-GNUMVIA-E
+           DISPLAY 'DOMICILIO : ' X620M002-GDOMICILIO-E
+           DISPLAY 'REST-DOM  : ' X620M002-GDOMIRESTO-E
+           DISPLAY 'COD-PAIS  : ' X620M002-K2PAIS-E
+           DISPLAY 'COD-PROV  : ' X620M002-K1PROVINCIA-E
+           DISPLAY 'COD-POST  : ' X620M002-CCODPOST-E
+      *    DISPLAY 'KPERSONA  : ' X620M002-KPERSONA-E
+      *    DISPLAY 'PROVINCIA : ' X620M002-K2PROVINCIA-E
+      *    DISPLAY 'COD.POSTAL: ' X620M002-CCODPOST-E
+      *F*
+           MOVE LT-B372J026        TO  X620M002-KUSUARIO-E.
+           MOVE WS-FSYSTEMA        TO  X620M002-FMODIFICA-E.
+           MOVE WS-FSYSTEMA        TO  X620M002-FECHA-E.
+
+      *---------------*
+       3312-GRABAR-DOM.
+      *---------------*
+      *
+           CALL LT-B620ND54 USING WS-B620M002.
+      *
+      *D*
+           DISPLAY '3312-GRABAR-DOM'
+           DISPLAY 'WE-KPOLIZA = ' WE-KPOLIZA
+           DISPLAY 'RETORNO   : ' R960T001-ERROR OF WS-B620M002(1)
+           DISPLAY 'X620M002-K2TIPO-E : ' X620M002-K2TIPO-E
+      *F*
+           IF R960T001-ERROR OF WS-B620M002(1) = SPACES OR
+              R960T001-ERROR OF WS-B620M002(1) = ZEROES
+              IF X620M002-K2TIPO-E  = 'R'
+                 SET SI-OK TO TRUE
+                 MOVE X620M002-KDOMICILIO-S(1)  TO WS-KDOMICILIO
+                 MOVE ' '                       TO WS-SBANCARIO
+              END-IF
+           ELSE
+      * 00010: YA EXISTE DOMICILIO; 00013: YA EX.DOM.PARTICULAR *
+              IF R960T001-ERROR OF WS-B620M002(1) NOT = '00010'
+             AND R960T001-ERROR OF WS-B620M002(1) NOT = '00013'
+      *          SI EL ALTA HA DEVUELTO RETORNO ERRONEO --> INCIDENCIA
+                 SET NO-OK TO TRUE
+      *          MOVER DATOS GENERALES A R002
+                 PERFORM 70000-MOVER-A-INCIDENCIA
+      *          MOVER DATOS ESPECIFICOS A R002
+                 MOVE LT-B620ND54       TO   R002-CPROGSERV
+                 MOVE R960T001-ERROR OF WS-B620M002(1)
+                                        TO R002-CRETORNO
+                 MOVE 'I'               TO   R002-CTIPORETORNO
+                 MOVE '03312'           TO   R002-NPARRAFO
+      *             ERROR ALTA DOMICILIO
+                 MOVE 'EP004'           TO   R002-CINCIDENCIA
+                 MOVE LT-EP004          TO   R002-GINCIDENCIA
+      *          ......................................................
+                 MOVE SPACES            TO   R002-GDATOS
+                 MOVE 'NIF : '          TO   R002-GDATOS(1:6)
+                 MOVE WE-GBENDNI        TO   R002-GDATOS(7:18)
+      *          ......................................................
+      *          ESCRIBIR LA INCIDENCIA EN FICHERO
+                 PERFORM 70100-ESCRIBIR-INCIDENCIA
+              ELSE
+                 MOVE X620M002-KDOMICILIO-S(1)  TO WS-KDOMICILIO
+                 MOVE ' '                       TO WS-SBANCARIO
+      *D*
+                 DISPLAY '** B372J026 -> YA EXISTE EL TIPO DOMICILIO '
+                         X620M002-K2TIPO-E
+                 DISPLAY '** B372J026 -> DEL NIF: ' WE-GBENDNI
+      *F*
+              END-IF
+           END-IF.
+
+      *=================*
+       3320-ALTA-CTA-TEL.
+      *=================*
+
+      *    IF WE-CFORMPAGO = 'F'
+      * ++++  ALTA DE DOMICILIOS BANCARIOS (CUENTAS)
+            MOVE 1 TO IND-D
+
+            PERFORM UNTIL IND-D > 2
+              PERFORM 3321-MOVER-CTA
+              PERFORM 3322-GRABAR-CTA
+              ADD 1 TO IND-D
+            END-PERFORM
+      *    END-IF.
+
+      *    IF SI-OK
+      * ++++  ALTA DE TELEFONOS (SOLO SI TODO ES OK)
+              PERFORM 3323-GRABA-TEL-PAR
+      *       PERFORM 3324-GRABA-TEL-TRA
+      *    END-IF.
+           .
+
+      *----------------*
+       3321-MOVER-CTA.
+      *----------------*
+
+           INITIALIZE WS-B620N054.
+
+           MOVE 'A'                    TO X620M054-CUENTA-CL.
+           MOVE WS-KPERSONA            TO X620M054-KPERSONA-E.
+           MOVE WS-FSYSTEMA            TO X620M054-FHCAMBIO-E
+                                          X620M054-FECHA-E.
+           IF IND-D = 1
+              MOVE 'C'                 TO X620M054-CTIPODOB-E
+           ELSE
+              MOVE 'R'                 TO X620M054-CTIPODOB-E
+           END-IF.
+      *D*
+           DISPLAY ' **********IMFORMO DATOS BANCARIOS'
+           DISPLAY 'WE-KPOLIZA = ' WE-KPOLIZA
+           DISPLAY ' ****WE-KBANCO77   : ' WE-KBANCO77
+           DISPLAY ' ****WE-GDCCCC     : ' WE-GDCCCC
+           DISPLAY ' ****WE-NCUENTACCC : ' WE-NCUENTACCC
+      *F*
+           MOVE WE-KBANCO77            TO WS-BANCO
+           MOVE WS-BAN                 TO X620M054-KBANCO-E
+           MOVE WS-SUC                 TO X620M054-KSUCURSAL-E
+           MOVE WE-GDCCCC              TO X620M054-DC-E
+           MOVE WE-NCUENTACCC          TO X620M054-NCUENTA-E
+           MOVE '99991231'             TO X620M054-FANULACION-E.
+           MOVE LT-B372J026            TO X620M054-KUSUARIO-E.
+      *D*
+           DISPLAY ' **********IMFORMO DATOS BANCARIOS'
+           DISPLAY ' ****X620M054-KBANCO-E   : ' X620M054-KBANCO-E
+           DISPLAY ' ****X620M054-KSUCURSAL-E: ' X620M054-KSUCURSAL-E
+           DISPLAY ' ****X620M054-DC-E       : ' X620M054-DC-E
+           DISPLAY ' ****X620M054-NCUENTA-E  : ' X620M054-NCUENTA-E.
+      *F*
+
+      *---------------*
+       3322-GRABAR-CTA.
+      *---------------*
+
+           CALL LT-B620N054 USING WS-B620N054.
+      *D*
+           DISPLAY '3520-GRABAR-CTA'
+           DISPLAY 'WE-KPOLIZA = ' WE-KPOLIZA
+           DISPLAY 'RETORNO   : ' X620M054-CRETORNO-S
+      *F*
+
+           IF X620M054-CRETORNO-S = '00'
+              IF WS-CTIPODOM-PR = 'R'
+                 MOVE X620M054-KCUENTA-S(1)  TO WS-KDOMICILIO
+                 MOVE 'S'                    TO WS-SBANCARIO
+              END-IF
+           ELSE
+            IF X620M054-CRETORNO-S = '01' OR
+               X620M054-CRETORNO-S = '03'
+               IF WS-CTIPODOM-PR = 'R'
+      *          SI LA CTA QUE YA EXISTE ES LA DE PRESTACIONES HAY QUE
+      *          RECUPERAR EL KCUENTA
+                 PERFORM 33221-RECUPERA-KCTA
+               END-IF
+            ELSE
+      *       SI EL ALTA HA DEVUELTO RETORNO ERRONEO --> INCIDENCIA
+      *       SOLO SI ES CTA DE PRESTACION
+               IF WS-CTIPODOM-PR = 'R'
+                 SET NO-OK TO TRUE
+      *       MOVER DATOS GENERALES A R002
+                 PERFORM 70000-MOVER-A-INCIDENCIA
+      *       MOVER DATOS ESPECIFICOS A R002
+                 MOVE LT-B620N054 TO   R002-CPROGSERV
+                 MOVE X620M054-CRETORNO-S              TO  R002-CRETORNO
+                 MOVE 'I'         TO   R002-CTIPORETORNO
+                 MOVE '03522'     TO   R002-NPARRAFO
+      *                ERROR ALTA
+                 MOVE 'EP004'           TO   R002-CINCIDENCIA
+                 MOVE LT-EP004          TO   R002-GINCIDENCIA
+      *      ..........................................................
+                 MOVE SPACES            TO   R002-GDATOS
+                 MOVE 'DOM-BANC'              TO R002-GDATOS(1:9)
+                 MOVE IND-D                   TO R002-GDATOS(10:3)
+                 MOVE  X620M054-KBANCO-E      TO R002-GDATOS(15:05)
+                 MOVE  X620M054-KSUCURSAL-E   TO R002-GDATOS(20:05)
+                 MOVE  X620M054-DC-E          TO R002-GDATOS(26:2)
+                 MOVE  X620M054-NCUENTA-E     TO R002-GDATOS(28:10)
+      *      ..........................................................
+
+      *       ESCRIBIR LA INCIDENCIA EN FICHERO
+                 PERFORM 70100-ESCRIBIR-INCIDENCIA
+               END-IF
+            END-IF
+           END-IF.
+
+      *-------------------*
+       33221-RECUPERA-KCTA.
+      *-------------------*
+           MOVE 'C'          TO X620M054-CUENTA-CL.
+           CALL LT-B620N054  USING WS-B620N054.
+
+      *D*
+      *    DISPLAY '33221-RECUPERA-KCTA'
+      *    DISPLAY 'WE-KPOLIZA = ' WE-KPOLIZA
+      *    DISPLAY 'RETORNO   : ' R960T001-ERROR OF WS-B620M009(1)
+      *    DISPLAY 'X620M009-KCUENTA-S(1) = ' X620M009-KCUENTA-S(1)
+      *F*
+           IF X620M054-CRETORNO-S = SPACES OR
+              X620M054-CRETORNO-S = ZEROES
+              MOVE X620M054-KCUENTA-S(1)  TO WS-KDOMICILIO
+              MOVE 'S'                    TO WS-SBANCARIO
+           ELSE
+      *       SI LA CONSULTA ES ERRONEA --> INCIDENCIA
+              SET NO-OK TO TRUE
+              MOVE ZEROES                 TO WS-KDOMICILIO
+              MOVE ' '                    TO WS-SBANCARIO
+      *       MOVER DATOS GENERALES A R002
+              PERFORM 70000-MOVER-A-INCIDENCIA
+      *       MOVER DATOS ESPECIFICOS A R002
+              MOVE LT-B620N054 TO   R002-CPROGSERV
+              MOVE X620M054-CRETORNO-S              TO  R002-CRETORNO
+              MOVE 'I'         TO   R002-CTIPORETORNO
+              MOVE '33221'     TO   R002-NPARRAFO
+      *         ERROR RECUPERANDO KCUENTA
+              MOVE 'EP006'           TO   R002-CINCIDENCIA
+              MOVE LT-EP006          TO   R002-GINCIDENCIA
+      *      ..........................................................
+              MOVE SPACES                  TO R002-GDATOS
+              MOVE 'DOM-BANC'              TO R002-GDATOS(1:9)
+              MOVE IND-D                   TO R002-GDATOS(10:3)
+              MOVE  X620M054-KBANCO-E      TO R002-GDATOS(15:05)
+              MOVE  X620M054-KSUCURSAL-E   TO R002-GDATOS(20:05)
+              MOVE  X620M054-DC-E          TO R002-GDATOS(26:2)
+              MOVE  X620M054-NCUENTA-E     TO R002-GDATOS(28:10)
+      *      ..........................................................
+
+      *       ESCRIBIR LA INCIDENCIA EN FICHERO
+              PERFORM 70100-ESCRIBIR-INCIDENCIA
+             END-IF.
+
+      *------------------*
+       3323-GRABA-TEL-PAR.
+      *------------------*
+      * 01-12-2009: MEJORA: SE DETECTA QUE EL FORMATO DE TFNO DE IDMS NO
+      * ES COMPATIBLE CON LAS ALTAS DE DB2 POR ESO SE SOLUCIONA FORMATE-
+      * ANDO EL Nº ANTES DEL ALTA.
+
+      *D*
+      *    DISPLAY 'GRABA TELEFONO PARTICULAR: ' WE-GTELEFONO
+      *F*
+
+      * MOVER DATOS *
+           IF WE-GTELEFONO NOT = SPACES
+             INITIALIZE WS-B620M003
+             MOVE  'I'                       TO  X620M003-CLAVE
+             MOVE  WS-KPERSONA               TO  X620M003-KPERSONA-E
+             MOVE  '01014'                   TO  X620M003-K1TIPO-E
+             MOVE  'P'                       TO  X620M003-K2TIPO-E
+             MOVE  WE-GTELEFONO              TO WS-TFNO-IDMS
+             PERFORM 8010-FORMATEA-TFNO
+             MOVE  WS-TFNO-DB2               TO  X620M003-GTELEFONO-E
+      *
+             MOVE 'N'                        TO  X620M003-SPREFERENTE-E
+      *D*
+             DISPLAY 'GRABA TELEFONO : ' X620M003-GTELEFONO-E
+      *F*
+      *      SE PONE EL PREFIJO DE ESPAÑA
+             MOVE WE-GPRETEFPAR              TO X620M003-GPREFIJO-E
+             MOVE '011'                      TO X620M003-CPAISPREF-E
+
+             MOVE LT-B372J026                TO X620M003-KUSUARIO-E
+             MOVE WS-FSYSTEMA                TO X620M003-FMODIFICA-E
+             MOVE WS-FSYSTEMA                TO X620M003-FECHA-E
+
+      * GRABAR *
+             CALL LT-B620NI62 USING WS-B620M003
+      *D*
+             DISPLAY '-- RETORNO: ' R960T001-ERROR OF WS-B620M003(1)
+      *F*
+            END-IF.
+
+      *----------------------*
+       3324-GRABA-TEL-TRA.
+      *----------------------*
+      * MOVER DATOS *
+      *D*
+      *    DISPLAY 'GRABA TELEFONO TRABAJO: ' R001-GTELEFTRA
+      *F*
+      *
+      *    IF WS-R001-GTELTRAASE NOT = SPACES
+      *       INITIALIZE WS-B620M003
+      *       MOVE  'I'                       TO  X620M003-CLAVE
+      *       MOVE  WS-KPERSONA               TO  X620M003-KPERSONA-E
+      *       MOVE  '01014'                   TO  X620M003-K1TIPO-E
+      *       MOVE  'T'                       TO  X620M003-K2TIPO-E
+      *       MOVE  WS-R001-GTELTRAASE TO WS-TFNO-IDMS
+      *       PERFORM 8010-FORMATEA-TFNO
+      *       MOVE  WS-TFNO-DB2               TO  X620M003-GTELEFONO-E
+      *
+      *       MOVE 'N'                        TO  X620M003-SPREFERENTE-E
+      *D*
+      *       DISPLAY 'GRABA TELEFONO : '  X620M003-GTELEFONO-E
+      *F*
+      *       SE PONE EL PREFIJO DE ESPAÑA
+      *       MOVE WS-R001-GPREFIJO-TRA       TO  X620M003-GPREFIJO-E
+      *       MOVE '011'                      TO  X620M003-CPAISPREF-E
+      *
+      *       MOVE LT-B372J026                TO X620M003-KUSUARIO-E
+      *       MOVE WS-FSYSTEMA                TO X620M003-FMODIFICA-E
+      *       MOVE WS-FSYSTEMA                TO X620M003-FECHA-E
+      *
+      * GRABAR *
+      *       CALL LT-B620NI62 USING WS-B620M003
+      *
+      *D*
+      *      DISPLAY '-- RETORNO: ' R960T001-ERROR OF WS-B620M003(1)
+      *F*
+      *
+      *    END-IF.
+
+      *=======================*
+       8010-FORMATEA-TFNO.
+      *=======================*
+      * EL TELEFONO PUEDE VENIR DEL SIGUIENTE MODO DESDE IDMS:
+      *  '91 5603060 '
+      *  ' 915603060 '
+      *  '0915603060 '
+      *  '915402030  '
+      * Y A DB2 DEBEN IR 9 DIGITOS NUMERICOS + 2 BLANCOS
+      * --------------------------------------------*
+
+           MOVE SPACES TO WS-TFNO-DB2.
+
+           IF WS-TFNO-IDMS(1:1) = '0'
+           OR WS-TFNO-IDMS(1:1) = ' '
+              MOVE WS-TFNO-IDMS(2:9) TO WS-TFNO-DB2(1:9)
+           ELSE
+              IF WS-TFNO-IDMS(3:1) = ' '
+                 MOVE WS-TFNO-IDMS(1:2) TO WS-TFNO-DB2(1:2)
+                 MOVE WS-TFNO-IDMS(4:7) TO WS-TFNO-DB2(3:7)
+              ELSE
+                 MOVE WS-TFNO-IDMS(1:9) TO WS-TFNO-DB2(1:9)
+           END-IF.
+
+      *=======================*
+       9000-MOVER-001-A-003.
+      *=======================*
+            MOVE WE-REG001  TO  WS-REG003.
+
+      *=======================*
+       9100-GRABA-SYS003.
+      *=======================*
+           WRITE  REG003 FROM WS-SALIDA.
+
+           ADD 1 TO CT-GRABADOS.
+      *    IF WS-R001-SITUACION = 'EN VIGOR'
+      *       ADD 1 TO CT-A1-VI
+      *    ELSE
+      *       IF WS-R001-SITUACION = 'ANULADA'
+      *          ADD 1 TO CT-A1-AN
+      *       ELSE
+      *          IF WS-R001-SITUACION = 'RETENIDA'
+      *             ADD 1 TO CT-A1-RT
+      *          END-IF
+      *       END-IF
+      *    END-IF.
+
+      ******************************************************************
+       70000-MOVER-A-INCIDENCIA.
+      ******************************************************************
+             INITIALIZE WS-REG002.
+
+             MOVE LT-B372J026          TO   R002-CPROBATCH
+             MOVE WE-KPOLIZA           TO   R002-KPOLIZA
+             MOVE ZEROS                TO   R002-KSUBPOLIZA
+                                            R002-KCERTIFICADO
+             MOVE SPACES               TO   R002-RESTO.
+
+      ******************************************************************
+       70100-ESCRIBIR-INCIDENCIA.
+      ******************************************************************
+
+           WRITE REG002  FROM WS-REG002.
+           ADD 1 TO CT-INCIDENCIA.
+
+      *--------------------*
+       9999-LEER-SYS001.
+      *--------------------*
+           MOVE 'N' TO SW-FIN-SYS001.
+
+           READ SYS001 INTO WE-REG001
+                AT END MOVE 'S' TO SW-FIN-SYS001
+           END-READ.
+
+           IF NO-FIN-SYS001
+              ADD 1 TO CT-LEIDOS
+      *       IF WS-R001-CTIPOLIQ = '1'
+      *           MOVE WS-R001-CFORMAPAGO-CAP  TO WS-CFORMAPAGO
+      *       END-IF
+      *       IF WS-R001-CTIPOLIQ = '2'
+      *          MOVE WS-R001-CFORMAPAGO-COMP1 TO WS-CFORMAPAGO
+      *       END-IF
+      *       IF WS-R001-CTIPOLIQ = '3'
+      *          MOVE WS-R001-CFORMAPAGO-COMP2 TO WS-CFORMAPAGO
+      *       END-IF
+           END-IF.
+
+      **************************************************************
+       9000-FIN.
+      **************************************************************
+
+      *D*
+           DISPLAY '*------- FIN B372J026 --------*'
+      *F*
+
+           MOVE CT-LEIDOS            TO    WS-LEIDOS
+           MOVE CT-GRABADOS          TO    WS-GRABADOS
+           MOVE CT-INCIDENCIA        TO    WS-INCIDENCIA
+
+           MOVE CT-A1-AN             TO    WS-A1-AN
+           MOVE CT-A1-RT             TO    WS-A1-RT
+           MOVE CT-A1-VI             TO    WS-A1-VI
+      *D*
+           DISPLAY '*************************************************'
+           DISPLAY '******  ESTADISTICAS  B372J026  *****************'
+           DISPLAY '*************************************************'
+           DISPLAY '* TOTAL REGISTROS LEIDOS (NºMOD)   : ' WS-LEIDOS
+           DISPLAY '* TOTAL REGISTROS GRABADOS         : ' WS-GRABADOS
+
+           DISPLAY '  ALTAS RETENIDAS            : ' WS-A1-RT
+           DISPLAY '  ALTAS ANULADAS             : ' WS-A1-AN
+           DISPLAY '  ALTAS EN VIGOR             : ' WS-A1-VI
+
+           DISPLAY ' * INCIDENCIAS TOTAL GRABADAS   : ' WS-INCIDENCIA.
+           DISPLAY '*************************************************'
+           DISPLAY '> LOS REG. NO PROCESADOS PUEDEN SER POR ERROR EN '
+           DISPLAY '> EL TRATAMIENTO ACTUAL O EN EL TRATAM.ANTERIOR. '
+           DISPLAY '*************************************************'
+           DISPLAY '******  FINAL PROGRAMA B372J026  ****************'
+           DISPLAY '*************************************************'
+      *F*
+
+           CLOSE SYS001.
+           CLOSE SYS002.
+           CLOSE SYS003.
+
+           GOBACK.
+

@@ -1,0 +1,2557 @@
+      ******************************* (]]]) ****************************
+      *                                                                *
+      * IMPORTANTE - PROGRAMA MODIFICADO POR DECOMISADO IDMS           *
+      *                                                                *
+      * AVISAR -> LMAPLVIMA@mapfre.com                                 *
+      *                                                                *
+      ******************************************************************
+      *RETRIEVAL.
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.
+                  B371K003.
+      ******************************************************************
+      *                                                                *
+      *  APLICACION .:   INTERFACES   (93)                             *
+      *                  VENCIMIENTOS (37).  VERSION DB2 DE VB370109   *
+      *                                                                *
+      *  AUTOR.......:   NIEVES R.                                     *
+      *                                                                *
+      *  FECHA DE REALIZACION : 06-10-2004                             *
+      ******************************************************************
+      *                                                               *
+      *  BREVE DESCRIPCION DEL PROGRAMA:                              *
+      *                                                               *
+      *     ESTE PROGRAMA EXTRAE DE CARTERA DE DB2 LOS VENCIMIENTOS   *
+      *     QUE SE VAN A PRODUCIR A UNA FECHA (AñO-MES)               *
+      *                                                               *
+      *-------------------  F I C H E R O S  -------------------------*
+      *                                                               *
+      *     ENTRADA:                                                  *
+      *                                                               *
+      *         - B.D. CARTERA DB2
+      *         - FICHA P37 ==> SYS010                                *
+      *                                                               *
+      *     SALIDA :                                                  *
+      *                                                               *
+      *         - FICHERO CON VENCIMIENTOS ==> SYS001.                *
+      *                                                               *
+      *---------------------------------------------------------------*
+      *  MODIFICACION:                                                *
+      *  -------------                                                *
+      *  AUTOR: INDRA.                                                *
+      *  PETICION: MU-2-2009-041168.                                  *
+      *  FECHA: OCTUBRE 2009.                                         *
+      *  DESCRIPCION: SE AÑADE UN FICHERO DE SALIDA CON LOS DATOS A   *
+      *               ACTUALIZAR.                                     *
+      *---------------------------------------------------------------*
+      *  AUTOR: MARGA FEAL                                            *
+      *  PETICION: MU-2-2010-019916.                                  *
+      *  FECHA: 11/05/2010                                            *
+      *  DESCRIPCION: SE ACCEDIS MAL A LAS OFICINAS                   *
+      *---------------------------------------------------------------*
+      *---------------------------------------------------------------*
+      *  PETICION: 88824028                     BUSCAR <24028>        *
+      *  FECHA: MAYO 2010                                             *
+      *  DESCRIPCION: IMPLANTACION PERSONAS. SUSTITUIR LOS ACCESOS A  *
+      *  LAS TABLAS ANTIGUAS TB004XXX POR ACCESOS A TABLAS NUEVAS.    *
+      *---------------------------------------------------------------*
+      *                                                               *
+      *  PETICION   : MU-2-2011-033873          BUSCAR <<133873>>     *
+      *  FECHA      : 30/09/2011                                      *
+      *  AUTOR      : INDRA                                           *
+      *  DESCRIPCION: INCLUIR LAS CABECERAS EN LISTADO DE ERROR       *
+      *               AUNQUE NO SE HAYAN PRODUCIDO INCIDENCIAS.       *
+      *                                                               *
+      *****************************************************************
+      * MODIFICACION:                                                 *
+      * -------------                             <BUSCAR 000002>     *
+      * AUTOR : INDRA.                                                *
+      * FECHA : NOVIEMBRE 2012.                                       *
+      * FECHA : DP-11-000002                                          *
+      * DESCRIPCION: PRESTACIONES AHORRO INDIVIDUAL.                  *
+      *                                                               *
+      *****************************************************************
+ONEST * AUTOR: INDRA                                                  *
+ONEST * FECHA: MARZO 2021                                             *
+ONEST * DESCRIPCION: DETECTAR SI LA PRESTACION DE LA POLIZA SE GESTIONA
+ONEST *              POR ONESAIT. SI ES ASÍ, NO TRATAMOS EL REGISTRO
+ONEST *              PARA ELLO APLICAREMOS LAS CONDICIONES DE LA TABLA
+ONEST *              003600
+ONEST *
+ONEST *****************************************************************
+ONEST2* - SE INCLUYE UNA NUEVA CONDICION EN LA TABLA 3600
+ONEST2*   (TIPO DE PRESTACION)
+ONEST2******************************************************************
+ONEST3*****************************************************************
+ONEST3* AUTOR: INDRA                                                  *
+ONEST3* FECHA: NOVIEMBRE 2021                                         *
+ONEST3* DESCRIPCION  - NO SE CARGABA BIEN EL ARRAY CON LA TABLA 3600
+ONEST3* CUANDO HABIA MAS DE 50 FILAS Y NO PAGINABA BIEN
+ONJLBG*****************************************************************
+ONJLBG* AUTOR: INDRA                             <ONJLBG>             *
+ONJLBG* FECHA: 16-12-2021                                             *
+ONJLBG* DESCRIPCION: SE DESCARTAN LOS REGISTROS CON MARCA DE ONESAIT  *
+      *================================================================*
+      ******************************************************************
+      *  MODIFICACION:                                                 *
+      *  -------------                       <<USGIBE>>                *
+      *  PROGRAMADOR : NEORIS                                          *
+      *  FECHA       : 03/03/2026                                      *
+      *  DESCRIPCION :                                                 *
+      *             Cambiar VA432091 por B430J991                      *
+      *             Cambiar RA431091 por X4301091                      *
+      ******************************************************************
+
+       ENVIRONMENT DIVISION.
+
+       CONFIGURATION SECTION.
+         SPECIAL-NAMES. DECIMAL-POINT IS COMMA.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+            SELECT FICHA    ASSIGN TO SYS010.
+            SELECT SALIDA   ASSIGN TO SYS001.
+941168      SELECT SALIDA2  ASSIGN TO SYS002.
+            SELECT LISTADO  ASSIGN TO IMPRESO.
+ONEST       SELECT ONESAIT  ASSIGN TO ONESAIT.
+
+       DATA DIVISION.
+       FILE SECTION.
+
+       FD  FICHA   LABEL RECORD STANDARD
+                   RECORDING MODE IS F
+                   BLOCK CONTAINS 0 RECORDS.
+      *                  RECORD 80
+           COPY RC37000.
+
+       FD  SALIDA  LABEL RECORD STANDARD
+                   RECORDING MODE IS F
+                   BLOCK CONTAINS 0 RECORDS.
+      *                  RECORD 125
+           COPY RC37001.
+
+941168 FD  SALIDA2 LABEL RECORD STANDARD
+941168             RECORDING MODE IS F
+941168             BLOCK CONTAINS 0 RECORDS.
+941168*                  RECORD 030
+941168  01  RTO-SALIDA2         PIC X(030).
+941168
+        FD  LISTADO
+            LABEL RECORD IS STANDARD
+            RECORDING MODE IS F
+            BLOCK CONTAINS  0 RECORDS
+            DATA RECORD  IS RTO-LIS.
+        01  RTO-LIS             PIC X(132).
+
+ONEST
+ONEST   FD  ONESAIT
+ONEST       LABEL RECORD IS STANDARD
+ONEST       RECORDING MODE IS F
+ONEST       BLOCK CONTAINS  0 RECORDS
+ONEST       DATA RECORD  IS RTO-LIS.
+ONEST
+ONEST   01  REG-ONESAIT.
+ONEST * CLAVE DE LA T3600 QUE HA PROVOCADO LA SELECCION
+ONEST    02  REGONE-CLAVE   PIC X(30).
+ONEST    02  REGONE-KPOLIZA PIC X(010).
+ONEST    02  REGONE-CARTERA PIC X(2).
+ONEST    02  REGONE-KMODALIDAD PIC X(3).
+ONEST2   02  REGONE-KMODALIDAD-NUM
+ONEST2       REDEFINES REGONE-KMODALIDAD PIC 9(3).
+ONEST    02  REGONE-KOFICINA-PROD PIC X(4).
+ONEST    02  REGONE-DGT           PIC X(2).
+ONEST    02  REGONE-REGIONAL      PIC X(2).
+ONJLBG*ONEST  02  REGONE-FILLER        PIC X(27).
+ONJLBG   02  REGONE-DETALLE       PIC X(27).
+ONEST
+
+       WORKING-STORAGE SECTION.
+
+       01  FILLER-INICIO          PIC X(17) VALUE 'INICIO DE WORKING'.
+
+       01  WS-FECHA-HORA.
+           05  WS-FECHA-SYS.
+               09 WS-FASYS          PIC 9(04)   VALUE ZEROS.
+               09 WS-FMSYS          PIC 9(02)   VALUE ZEROS.
+               09 WS-FDSYS          PIC 9(02)   VALUE ZEROS.
+           05 WS-RESTO-HORA         PIC 9(13)   VALUE 0.
+       01  CT-AUX                 PIC 9(4) VALUE ZEROS.
+       01  CT-ANULADAS            PIC 9(7) VALUE ZEROS.
+       01  CT-ANU-PREST           PIC 9(7) VALUE ZEROS.
+       01  CT-LEIDOS              PIC 9(7) VALUE ZEROS.
+       01  CT-LEIDOS-PAR          PIC 9(7) VALUE ZEROS.
+       01  CT-ESCRITOS            PIC 9(7) VALUE ZEROS.
+       01  CT-EXCLUIDOS           PIC 9(7) VALUE ZEROS.
+       01  CT-EXC-SIPRO           PIC 9(7) VALUE ZEROS.
+       01  CT-EXC-NOPRO           PIC 9(7) VALUE ZEROS.
+       01  CT-CONPRESTA           PIC 9(7) VALUE ZEROS.
+       01  CT-SINPRESTA           PIC 9(7) VALUE ZEROS.
+       01  CT-SISVTOS             PIC 9(7) VALUE ZEROS.
+       01  CT-INCIDENCIAS         PIC 9(7) VALUE ZEROS.
+       01  CT-PAG                 PIC 9(3) VALUE ZEROS.
+       01  CT-LIN                 PIC 9(2) VALUE 99.
+
+      *** 28-10-2008 ADECUACION MULTICANALES ***********
+      *01  X1                     PIC 9(3) VALUE ZEROS.
+       01  X2                     PIC 9(3) VALUE ZEROS.
+       01  X3                     PIC 9(3) VALUE ZEROS.
+      *** 28-10-2008 ADECUACION MULTICANALES ***********
+      *01  I3                     PIC 9(3) VALUE ZEROS.
+       01  I3                     PIC 9(4) VALUE ZEROS.
+
+000002 01 SW-CANAL-MULT    PIC X           VALUE SPACES.
+000002     88 SI-CANAL-MULT                 VALUE 'S'.
+000002     88 NO-CANAL-MULT                 VALUE 'N'.
+
+       01 SW-CANAL-CAJA    PIC X           VALUE SPACES.
+           88 SI-CANAL-CAJA                 VALUE 'S'.
+           88 NO-CANAL-CAJA                 VALUE 'N'.
+
+       01 SW-RES-MANUAL    PIC X           VALUE SPACES.
+           88 SI-RES-MANUAL                 VALUE 'S'.
+           88 NO-RES-MANUAL                 VALUE 'N'.
+
+       01 SW-ANULAR        PIC X           VALUE SPACES.
+           88 SI-ANULAR                     VALUE 'S'.
+           88 NO-ANULAR                     VALUE 'N'.
+
+       01 SW-MARCA-006     PIC X           VALUE SPACES.
+           88 SI-MARCA-006                  VALUE 'S'.
+           88 NO-MARCA-006                  VALUE 'N'.
+
+       01 SW-MARCA-007     PIC X           VALUE SPACES.
+           88 SI-MARCA-007                  VALUE 'S'.
+           88 NO-MARCA-007                  VALUE 'N'.
+
+ONJLBG 01 SW-MARCA-005     PIC X           VALUE SPACES.
+ONJLBG     88 SI-MARCA-005                  VALUE 'S'.
+ONJLBG     88 NO-MARCA-005                  VALUE 'N'.
+ONJLBG
+       01  SW-PRESTACION           PIC X    VALUE SPACES.
+       01  SW-EXCLUIR              PIC X    VALUE SPACES.
+           88  SI-EXCLUIR                   VALUE 'S'.
+           88  NO-EXCLUIR                   VALUE 'N'.
+
+       01  SW-FIN                  PIC X    VALUE SPACES.
+           88  SI-FIN                       VALUE 'S'.
+           88  NO-FIN                       VALUE 'N'.
+
+       01  WS-INDICE               PIC 9    VALUE ZEROS.
+       01  WS-MENSAJE              PIC X(50) VALUE SPACES.
+000002 01  WS-CANALGES             PIC 99   VALUE ZEROS.
+
+       01  WS-FECHA.
+           03 WS-AA                PIC 9(4).
+           03 WS-MM                PIC 9(2).
+           03 WS-DD                PIC 9(2).
+
+       01  WS-FNACCLI.
+           03 WS-FANACCLI          PIC 9(4).
+           03 WS-FMNACCLI          PIC 9(2).
+           03 WS-FDNACCLI          PIC 9(2).
+
+941168 01  R02-SALIDA.
+941168     03 R02-KPOLIZA          PIC X(10).
+941168     03 R02-KSUBPOLIZA       PIC X(04).
+941168     03 R02-KCERTI           PIC X(06).
+941168     03 R02-KCODGEN          PIC X(03).
+941168     03 R02-CTIPCOD          PIC X(03).
+941168     03 R02-CODERROR         PIC X(04).
+941168
+      ***  28-10-2008 ADECUACION MULTICANALES *************
+       01  TAB-MODALIDADES.
+      ***    07 TB-MODALIDADES OCCURS 999.
+             07 TB-MODALIDADES OCCURS 5000 INDEXED BY X1.
+                09 TB-KMODALIDAD   PIC   X(3).
+                09 TB-CTRATVTOS    PIC   X(1).
+                09 TB-GNOMREDMOD   PIC   X(12).
+                09 TB-CMODDURPRO   PIC   X.
+                09 TB-KRAMO        PIC   X(3).
+                09 TB-CTIPRAMO     PIC   X.
+                09 TB-KGARANTIA    PIC   XXX.
+                09 TB-GEDADEXCLU   PIC   999.
+                09 TB-NMODMAXASE   PIC   99.
+                09 TB-CMODAIDA     PIC   X.
+      *
+       01  LC-LINEAS-LISTADO.
+              05 LC-VACIA.
+                 07                    PIC  X(132) VALUE SPACES.
+              05 LC-CAB1.
+                 07                    PIC  X(17) VALUE SPACES.
+                 07                    PIC  X(41) VALUE SPACES.
+                 07                    PIC  X(29) VALUE
+                   '- EXTRACCION VENCIMIENTOS - '.
+                 07                    PIC  X(28) VALUE SPACES.
+                 07                    PIC  X(07) VALUE 'FECHA: '.
+                 07 LC-FSISTEMA.
+                    09 LC-DSIS         PIC  99    VALUE ZEROS.
+                    09                 PIC  X     VALUE '-'.
+                    09 LC-MSIS         PIC  99    VALUE ZEROS.
+                    09                 PIC  X     VALUE '-'.
+                    09 LC-ASIS         PIC  9999  VALUE ZEROS.
+              05 LC-CAB2.
+                 07                    PIC  X(10) VALUE SPACES.
+                 07                    PIC  X(12) VALUE
+                                                  '- VB370001 -'.
+                 07                    PIC  X(09) VALUE SPACES.
+                 07                    PIC  X(30) VALUE
+             'LISTADO DE INCIDENCIAS EN LA E'.
+                 07                    PIC  X(19) VALUE
+             'XTRACCION DEL MES: '.
+                 07 LC-MMFPROC         PIC  99    VALUE ZEROS.
+                 07                    PIC  X     VALUE '/'.
+                 07 LC-AAFPROC         PIC  9999  VALUE ZEROS.
+                 07                    PIC  X(30) VALUE SPACES.
+                 07                    PIC  X(07) VALUE 'PAG..: '.
+                 07 LC-PAG             PIC  Z.ZZ9 VALUE ZEROS.
+                 07                    PIC  X(05) VALUE SPACES.
+              05 LC-CAB3.
+                 07                    PIC  X(31) VALUE SPACES.
+                 07                    PIC  X(56) VALUE ALL '='.
+                 07                    PIC  X(44) VALUE SPACES.
+              05 LC-CAB4.
+                 07                    PIC  X(28) VALUE SPACES.
+                 07                    PIC  X(10) VALUE
+                '  POLIZA  '.
+                 07                    PIC  X(05) VALUE SPACES.
+                 07                    PIC  X(05) VALUE 'MODAL'.
+                 07                    PIC  X(05) VALUE SPACES.
+                 07                    PIC  X(50) VALUE
+                '   D E S C R I P C I O N   D E L   E R R O R    '.
+                 07                    PIC  X(29) VALUE SPACES.
+              05 LC-CAB5.
+                 07                    PIC  X(28) VALUE SPACES.
+                 07                    PIC  X(10) VALUE ALL '-'.
+                 07                    PIC  X(05) VALUE SPACES.
+                 07                    PIC  X(05) VALUE ALL '-'.
+                 07                    PIC  X(05) VALUE SPACES.
+                 07                    PIC  X(50) VALUE ALL '-'.
+133873        03 LC-CAB6.
+133873           07                    PIC  X(50) VALUE SPACES.
+133873           07                    PIC  X(32) VALUE
+133873       'NO SE HAN PRODUCIDO INCIDENCIAS'.
+133873           07                    PIC  X(50) VALUE SPACES.
+              05 LD-DET.
+                 07                    PIC  X(28) VALUE SPACES.
+                 07 LD-KPOLIZA         PIC  X(10) VALUE SPACES.
+                 07                    PIC  X(06) VALUE SPACES.
+                 07 LD-KMODALIDAD      PIC  X(03) VALUE SPACES.
+                 07                    PIC  X(06) VALUE SPACES.
+                 07 LD-GERROR          PIC  X(59) VALUE SPACES.
+                 07                    PIC  X(20) VALUE SPACES.
+              05 LT-TOT1.
+                 07                    PIC  X(39) VALUE SPACES.
+                 07                    PIC  X(30) VALUE
+                'TOTAL DE INCIDENCIAS ........ '.
+                 07 LT-POLERR         PIC  ZZZ.ZZZ.ZZ9 VALUE ZEROS.
+
+       01  TAB-MENSAJES.
+      * ->  1
+              05 FILLER           PIC X(58) VALUE
+           '- MOD. NO INCLUIDA EN TABLA 248. (DURACION NO PRORROGABLE)'.
+      * ->  2
+              05 FILLER           PIC X(58) VALUE
+           '- MOD. NO INCLUIDA EN TABLA 248. (DURACION PRORROGABLE)   '.
+      * ->  3
+              05 FILLER           PIC X(58) VALUE
+           '- ERROR EN FECHA DE VENCIMIENTO                           '.
+      * ->  4
+              05 FILLER           PIC X(58) VALUE
+           '- ERROR AÑO BISIESTO EN FECHA DE VENCIMIENTO              '.
+
+       01  TAB-MENSAJES-2    REDEFINES TAB-MENSAJES.
+              05 TB-MENSA OCCURS 4.
+                 07 TB-MENPOL       PIC X(58).
+
+      * CONTROL Y ACCESO A DB2
+      * =======================
+       01  WS-NUEVAS.
+           03 WS-KDOCUMENTO.
+              05 WS-KPOLIZA        PIC X(10)     VALUE SPACES.
+              05 WS-ZEROS          PIC 9(10)     VALUE ZEROS.
+              05 WS-F              PIC X(10)     VALUE SPACES.
+      *** 28-10-2008 ADECUACION MULTICANALES ***************S.
+      ***  03 WS-KMODALIDAD        PIC 9(03)     VALUE ZEROS.
+           03 WS-KMODALIDAD-NUEVA            PIC 9(05)  VALUE ZEROS.
+           03 WS-KMODALIDAD-VIEJA            REDEFINES
+              WS-KMODALIDAD-NUEVA.
+              05 FILLER                      PIC X(02).
+              05 WS-KMODALIDAD               PIC X(03).
+      *** FIN AM ******************************************
+           03 WS-KDOCUMENTO-DB2    PIC X(30)     VALUE SPACES.
+           03 WS-FDESDE-DB2        PIC X(08)     VALUE SPACES.
+           03 WS-FHASTA-DB2        PIC X(08)     VALUE SPACES.
+           03 WS-CODIGO            PIC -999      VALUE ZEROS.
+
+           03 SW-ERROR             PIC 9(2)      VALUE ZEROS.
+
+      * VARIABLES DE LLAMADA A PROGRAMAS
+      * ================================
+       01  WS-PROGRAMAS.
+           03 CANCELA           PIC X(7)  VALUE 'CANCELA'.
+           03 VR962019          PIC X(8)  VALUE 'VR962019'.
+           03 VA962020          PIC X(8)  VALUE 'VA962020'.
+           03 VR000003          PIC X(8)  VALUE 'VR000003'.
+
+      * REGISTROS IDMS Y COPYS DB2.
+      * ===========================
+       01  RR001003.
+           02  RR001003-FCONSULTA      PIC 9(8).
+           02  RR001003-CODIGO-FEC     PIC X.
+
+ONEST
+ONEST *
+ONEST * TABLA EN LA QUE GUARDAREMOS LAS CONDICIONES QUE CUMPLEN
+ONEST * LOS REGISTROS DE ONESAIT QUE YA HAN SIDO TRATADOS
+ONEST *
+ONEST   01 WS-TB-CONDICIONES-ONESAIT.
+ONEST      07 WS-TB-COND-ONESAIT-OCC          OCCURS 1000.
+ONEST        09 TB-ONESAIT-CLAVE            PIC X(30).
+ONEST        09 TB-ONESAIT-CONTADOR         PIC 9(10).
+ONEST        09 TB-ONESAIT-CARTERA          PIC X(2) JUST RIGHT.
+ONEST        09 TB-ONESAIT-CARTERA-NUM
+ONEST           REDEFINES TB-ONESAIT-CARTERA PIC 9(2).
+ONEST        09 TB-ONESAIT-TERRITORIAL      PIC X(2) JUST RIGHT.
+ONEST        09 TB-ONESAIT-REGIONAL         PIC X(2) JUST RIGHT.
+ONEST        09 TB-ONESAIT-OFI              PIC X(4) JUST RIGHT.
+ONEST        09 TB-ONESAIT-MODALIDAD        PIC X(5) JUST RIGHT.
+ONEST        09 TB-ONESAIT-MODALIDAD-NUM
+ONEST           REDEFINES TB-ONESAIT-MODALIDAD    PIC 9(5).
+ONEST        09 TB-ONESAIT-POLIZA           PIC X(10) JUST RIGHT.
+ONEST        09 TB-ONESAIT-SUBPOLIZA        PIC X(4) JUST RIGHT.
+ONEST        09 TB-ONESAIT-SUBPOLIZA-NUM  REDEFINES
+ONEST           TB-ONESAIT-SUBPOLIZA        PIC 9(4).
+ONEST        09 TB-ONESAIT-CERTIFICADO      PIC X(6) JUST RIGHT.
+ONEST        09 TB-ONESAIT-CERTIFICADO-NUM REDEFINES
+ONEST           TB-ONESAIT-CERTIFICADO      PIC 9(6).
+ONEST2* S -> SINIESTROS
+ONEST2* R -> RESCATES
+ONEST2* V -> VENCIMIENTOS
+ONEST2       09 TB-ONESAIT-TIPO-PRESTACION  PIC X(1) JUST RIGHT.
+
+
+ONEST  01 WS-ONESAIT-CARTERA          PIC X(2).
+ONEST  01 WS-ONESAIT-TERRITORIAL      PIC X(2).
+ONEST  01 WS-ONESAIT-REGIONAL         PIC X(2).
+ONEST  01 WS-ONESAIT-OFI              PIC X(4).
+ONEST  01 WS-ONESAIT-MODALIDAD        PIC X(5).
+ONEST  01 WS-ONESAIT-POLIZA           PIC X(10).
+ONEST  01 WS-ONESAIT-SUBPOLIZA        PIC X(4).
+ONEST  01 WS-ONESAIT-CERTIFICADO      PIC X(6).
+ONEST  01 WS-POS-ORIG PIC 9(3).
+ONEST  01 WS-POS-DEST PIC 9(3).
+ONEST  01 CT-REGLAS              PIC 9(8) VALUE ZEROS.
+ONEST  01 CT-ONESAIT             PIC 9(8) VALUE ZEROS.
+ONEST * NUMERO MAXIMO DE CONDICIONES DE LA TABLA 3600
+ONEST  01 MAX-REGLAS             PIC 9(4)  VALUE 1000.
+ONEST  01  SW-DESCARTAR          PIC X.
+ONEST      88 SI-ONESAIT                   VALUE 'S'.
+ONEST      88 NO-ONESAIT                   VALUE 'N'.
+ONEST  01 SW-PAGINACION          PIC X.
+ONEST      88 SI-PAGINACION                VALUE 'S'.
+ONEST      88 NO-PAGINACION                VALUE 'N'.
+ONEST *
+ONEST * ESTE PROCESO TRATA LA CARTERA DB2 - CARTERA = '03'
+ONEST *
+ONEST  01 WS-CARTERA PIC X(2) VALUE '03'.
+ONEST  01 WS-SUBPOLIZA           PIC 9(4).
+ONEST  01 WS-SUBPOLIZA-ALF REDEFINES WS-SUBPOLIZA PIC X(4).
+ONEST  01 WS-CERTIFICADO         PIC 9(6).
+ONEST  01 WS-CERTIFICADO-ALF REDEFINES WS-CERTIFICADO PIC 9(6).
+ONEST  01 WS-X960M010.
+ONEST      COPY X960M010.
+ONEST      COPY R960T001.
+ONEST3*
+ONEST3* DESACTIVO
+ONEST3*
+      *
+ONEST *01 WS-3600-ANT.
+ONEST *   03 WS-3600-ANT-K1TAB        PIC X(5).
+ONEST *   03 WS-3600-ANT-KCLAVE       PIC X(30).
+ONEST *   03 WS-3600-ANT-KOCURRENCIA  PIC S9(5).
+ONEST *01 WS-TB-3600.
+ONEST *    03 WS-TB-KCLAVE                    OCCURS 50.
+ONEST *      05 WS-TB-KCLAVE-OCC            PIC X(30).
+ONEST3*
+ONEST3* FIN DESACTIVO
+ONEST3*
+ONEST  01 LT-B960M010            PIC X(8)  VALUE 'B960M010'.
+ONEST  01 MAX-OCC-B960M010       PIC 9(2)  VALUE 50.
+ONEST * NUMERO DE CAMPOS PARA CONDICIONES DE LA TABLA 0036
+ONEST  01 MAX-CAMPOS-3600        PIC 9     VALUE 9.
+ONEST  01 WS-MSG-CANCELA         PIC X(40) VALUE SPACES.
+ONEST  01 LT-CANCELA             PIC X(08) VALUE 'CANCELA'.
+ONEST  01 LT-B430J991            PIC X(8)  VALUE 'B430J991'.
+ONEST  01 WS-NVALOR              PIC 9(2).
+ONEST  01 I                      PIC 9(5).
+ONEST  01 X7                     PIC 9(5).
+ONEST  01 X8                     PIC 9(5).
+ONEST  01 X9                     PIC 9(5).
+USGIBE 01 WS-X4301091.
+USGIBE     COPY X4301091.
+ONEST2*
+ONEST2* ESTA CADENA ES DE VENCIMIENTOS. ASI
+ONEST2*
+ONEST2* S -> SINIESTROS
+ONEST2* R -> RESCATES
+ONEST2* V -> VENCIMIENTOS
+ONEST2*
+ONEST2 01 WS-TIPO-PRESTACION     PIC X(1) VALUE 'V'.
+
+       COPY  RW06248.
+       COPY  RR961019.
+       COPY  RA961020.
+
+      *->
+      *---> INCLUSION DE SENTENCIAS SQL.
+      *---> ===========================>
+      *->
+
+           EXEC SQL
+                INCLUDE SQLCA
+           END-EXEC.
+
+      * TABLA GENERAL
+           EXEC SQL
+                INCLUDE T030GNR0
+           END-EXEC.
+
+      * TABLA POLIZAS SUPLEMENTO
+           EXEC SQL
+                INCLUDE T030SPL0
+           END-EXEC.
+
+      * --- I(24-08-2005)-NRL
+      * TABLA NUMERO DE MODIFICACION / TABLA
+           EXEC SQL
+                INCLUDE T030MDF0
+           END-EXEC.
+      * --- F(24-08-2005)-NRL
+
+      * TABLA OFICINAS
+           EXEC SQL
+                INCLUDE T030OFC0
+           END-EXEC.
+
+      * TABLA PRODUCTORES
+           EXEC SQL
+                INCLUDE T030PRD0
+           END-EXEC.
+
+      * TABLA NOTAS DE GESTION
+           EXEC SQL
+                INCLUDE T030NTG0
+           END-EXEC.
+
+000002* TABLA DE POLIZAS
+000002     EXEC SQL
+000002          INCLUDE T030PLZ0
+000002     END-EXEC.
+
+      * TABLA PRIMAS TOTALIZADAS
+           EXEC SQL
+                INCLUDE T030PRM0
+           END-EXEC.
+
+      * TABLA PERSONAS ROLES
+           EXEC SQL
+24028 *         INCLUDE T004PRO0
+24028           INCLUDE T620PRO0
+           END-EXEC.
+
+      * TABLA PERSONAS TELEFONOS
+           EXEC SQL
+24028 *         INCLUDE T004PTF0
+24028           INCLUDE T620PTF0
+           END-EXEC.
+
+      * TABLA PERSONAS
+           EXEC SQL
+24028 *         INCLUDE T004PPE0
+24028           INCLUDE T620PPE0
+           END-EXEC.
+
+      *  FECHAS DE EXTRACCION PREVIAMENTE INFORMADAS
+           EXEC SQL
+                DECLARE CGNRPRM0 CURSOR FOR
+                 SELECT DISTINCT GNR0_KPOLIZA, GNR0_KMODALIDAD,
+                        GNR0_FEFECINI, GNR0_FEFECFIN,
+                        PRM0_K2FORMAPAGO, PRM0_IPRIMAAT
+                   FROM TB030GNR0 X, TB030PRM0 Z
+                  WHERE (X.GNR0_NMODIFICACION =
+                        (SELECT MAX(Y.GNR0_NMODIFICACION)
+                           FROM TB030GNR0 Y
+                           WHERE X.GNR0_KPOLIZA = Y.GNR0_KPOLIZA))
+                    AND (Z.PRM0_NMODIFICACION =
+                        (SELECT MAX(V.PRM0_NMODIFICACION)
+                           FROM TB030PRM0 V
+                           WHERE Z.PRM0_KPOLIZA = V.PRM0_KPOLIZA))
+                    AND X.GNR0_KPOLIZA  = Z.PRM0_KPOLIZA
+                    AND(X.GNR0_FEFECFIN > :WS-FDESDE-DB2
+                    AND X.GNR0_FEFECFIN < :WS-FHASTA-DB2)
+           END-EXEC.
+
+      * TODOS LOS PRODUCTORES POR POLIZA
+           EXEC SQL
+                DECLARE CPRD0 CURSOR FOR
+                 SELECT PRD0_KPOLIZA, PRD0_KPRODUCTOR,
+                        PRD0_NORDEN
+                   FROM TB030PRD0
+                  WHERE PRD0_KPOLIZA  = :GNR0-KPOLIZA
+                  ORDER BY PRD0_NORDEN ASC
+           END-EXEC.
+
+      * TODOS LOS CLIENTES DE LA POLIZA TRATADA
+24028 *    EXEC SQL
+24028 *         DECLARE CPROPPE0 CURSOR FOR
+24028 *          SELECT PRO0_KDOCUMENTO, PRO0_KPERSONA,
+24028 *                 PRO0_K2ROL, PTF0_GTELEFONO, PTF0_K2TIPO,
+24028 *                 PPE0_FNACIMIENTO
+24028 *            FROM TB004PRO0, TB004PTF0, TB004PPE0
+24028 *           WHERE PRO0_KDOCUMENTO = :WS-KDOCUMENTO-DB2
+24028 *             AND ((PRO0_KPERSONA =  PTF0_KPERSONA) AND
+24028 *                  (PRO0_KPERSONA =  PPE0_KPERSONA))
+24028 *           ORDER BY PRO0_K2ROL ASC
+24028 *    END-EXEC.
+24028
+24028 * TODOS LOS CLIENTES DE LA POLIZA TRATADA
+24028      EXEC SQL
+24028           DECLARE CPROPPE0 CURSOR FOR
+24028            SELECT PRO0_KDOCUMENTO, PRO0_KPERSONA,
+24028                   PRO0_CROL, PTF0_GTELEFONO, PTF0_CTIPOTELEF,
+24028                   PPE0_FNACIMIENTO
+24028              FROM TB620PRO0, TB620PTF0, TB620PPE0
+24028             WHERE PRO0_KDOCUMENTO = :WS-KDOCUMENTO-DB2
+24028               AND ((PRO0_KPERSONA =  PTF0_KPERSONA) AND
+24028                    (PRO0_KPERSONA =  PPE0_KPERSONA))
+24028               AND PRO0_FANULACION = '99991231'
+24028               AND PTF0_FANULACION = '99991231'
+24028               AND PPE0_FANULACION = '99991231'
+24028             ORDER BY PRO0_CROL ASC
+24028      END-EXEC.
+
+      * TODAS LAS NOTAS DE GESTION POR POLIZA
+           EXEC SQL
+                DECLARE CNTG0 CURSOR FOR
+                 SELECT NTG0_KPOLIZA,
+                        NTG0_NSUBPOLIZA,
+                        NTG0_NCERTIFICADO,
+                        NTG0_K2CODGEN,
+                        NTG0_K2TIPCOD
+                   FROM TB030NTG0
+                  WHERE NTG0_KPOLIZA  = :GNR0-KPOLIZA
+           END-EXEC.
+
+
+      *****************************************************************
+      ***           P R O C E D U R E    D I V I S I O N            ***
+      *****************************************************************
+
+       PROCEDURE DIVISION.
+
+       PRINCIPAL.
+
+            PERFORM INICIO.
+
+            PERFORM PROCESO UNTIL
+                    GNR0-FEFECFIN > WS-FHASTA-DB2
+                 OR SI-FIN.
+      *          OR SQLCODE NOT = 0.
+
+            PERFORM TERMINAR.
+
+
+      *****************************************************************
+      *
+      *****************************************************************
+       INICIO.
+      *********
+
+      *B*
+           DISPLAY '******************************************'.
+           DISPLAY '******    ===== B371K003 =====   *********'.
+           DISPLAY '******************************************'.
+      *F*
+
+           OPEN INPUT  FICHA
+                OUTPUT SALIDA
+941168                 SALIDA2
+                       LISTADO.
+ONEST      OPEN OUTPUT ONESAIT.
+
+           MOVE FUNCTION CURRENT-DATE TO WS-FECHA-HORA.
+
+           READ FICHA AT END
+      *B*
+              DISPLAY '******************************************'
+              DISPLAY '**  NO EXISTE  REGISTRO EN LA FICHA P37 **'
+              DISPLAY '******************************************'
+      *F*
+              MOVE '******* NO EXISTE LA FICHA P37 **************'
+                    TO WS-MENSAJE
+              CALL  CANCELA  USING WS-MENSAJE.
+           IF RC37000-PROCESO NOT = 'P37'
+      *B*
+              DISPLAY '******************************************'
+              DISPLAY '** FICHA INCORECTA:', RC37000-PROCESO , '**'
+              DISPLAY '******************************************'
+      *F*
+              MOVE '******* PROCESO DE LA FICHA INCORRECTA  *****'
+                    TO WS-MENSAJE
+              CALL  CANCELA  USING WS-MENSAJE.
+
+      *B*
+           DISPLAY '*******************************************'.
+           DISPLAY '*** MES EXTRACCION: ', RC37000-FPROCE , '****'.
+           DISPLAY '*******************************************'.
+      *F*
+
+           INITIALIZE TAB-MODALIDADES.
+ONEST      INITIALIZE WS-TB-CONDICIONES-ONESAIT
+           PERFORM CARGA-TABLA-248.
+      **** PERFORM CARGA-MODALIDADES.
+
+000002****
+000002**** SE ACTIVA CANAL MULTIMCOMPAÑIA CUANDO LA COMPAÑIA NO ES
+000002**** MAPFRE VIDA.
+000002****
+000002*    IF   RC37000-CCANALCAMP = '20'
+000002     IF   RC37000-CCANALCAMP = '20' OR
+000002          RC37000-CCANALCAMP = '60' OR
+000002          RC37000-CCANALCAMP = '72'
+000002*         MOVE 'S' TO SW-CANAL-CAJA
+000002          MOVE 'S' TO SW-CANAL-MULT
+000002     ELSE
+000002*         MOVE 'N' TO SW-CANAL-CAJA
+000002          MOVE 'N' TO SW-CANAL-MULT
+000002     END-IF.
+
+           MOVE RC37000-FPROCE  TO WS-FECHA.
+           MOVE ZEROS           TO WS-DD.
+           MOVE WS-FECHA        TO WS-FDESDE-DB2.
+
+           MOVE RC37000-FPROCE  TO WS-FECHA.
+           MOVE 99              TO WS-DD.
+           MOVE WS-FECHA        TO WS-FHASTA-DB2.
+
+      *****************************************************************
+      *  SE ABRE EL CURSOR Y SE EJECUTA LA SENTENCIA SELECT.
+      *  SELECCION DE POLIZAS
+      *****************************************************************
+
+           EXEC SQL
+                OPEN CGNRPRM0
+           END-EXEC.
+
+           IF SQLCODE NOT = 0
+              MOVE 1 TO SW-ERROR
+              PERFORM CODIGO-ERROR
+           END-IF.
+
+           PERFORM LEER-CURSOR-POLIZAS.
+
+ONEST *
+ONEST * LEEMOS EL CONTENIDO DE LA TABLA 03600
+ONEST * Y LA CARGAMOS EN UN ARRAY
+ONEST * EN ESTA TABLA ESTÁN LAS CONDICIONES PARA DETECTAR SI
+ONEST * LA PRESTACION DE LA POLIZA SE GESTIONARA POR ONESAIT O IDMS
+ONEST *
+ONEST      PERFORM CARGAR-CONDICIONES
+ONEST      .
+
+
+
+      *****************************************************************
+      * CARGA EN LA TABLA DE LA WORKING LAS MODALIDADES DE LA TABLA 248
+      * USANDO COMO INDICE DE LA TABLA LA MODALIDAD.
+      *****************************************************************
+       CARGA-TABLA-248.
+      *****************
+
+           INITIALIZE RR961019.
+
+           MOVE '248'                  TO RR961019-NTABLA.
+           MOVE SPACES                 TO RR961019-NELEMENTO.
+           MOVE '0'                    TO RR961019-NREGISTRO.
+
+           MOVE 'N'                    TO RR961019-TIPO.
+
+           MOVE '00'                   TO RR961019-CRETORNO.
+
+           PERFORM ACCEDER-VR962019.
+
+           IF RR961019-CRETORNO = '00'
+             PERFORM TRATAR-MODALI
+                       UNTIL RR961019-CRETORNO NOT = '00'  OR
+                             RR961019-NTABLA   NOT = '248'
+           END-IF.
+
+       TRATAR-MODALI.
+      *===============
+
+           MOVE RR961019  TO RW06248.
+           IF RW06248-CTRATVTOS = 'O'  OR
+              RW06248-CTRATVTOS = 'P'  OR
+              RW06248-CTRATVTOS = 'S'
+      *** 28-10-2008 ADECUACION MULTICANALES *********
+      ***    MOVE RW06248-KMODALIDAD  TO X1
+             PERFORM CARGAR-MODALI
+             MOVE RW06248-KMODALIDAD  TO TB-KMODALIDAD(X1)
+             MOVE RW06248-CTRATVTOS   TO TB-CTRATVTOS (X1)
+             PERFORM OBT-DATOS-MODALI
+           END-IF.
+
+           PERFORM ACCEDER-VR962019.
+
+
+       ACCEDER-VR962019.
+      *==================
+
+            CALL  VR962019   USING  RR961019.
+
+
+      *** 28-10-2008 ADECUACION MULTICANALES *********
+       CARGAR-MODALI.
+      ******************
+
+           SET X1 TO 1.
+           SEARCH TB-MODALIDADES
+           WHEN TB-KMODALIDAD(X1) = SPACES
+           OR   TB-KMODALIDAD(X1) = RW06248-KMODALIDAD
+              CONTINUE
+           END-SEARCH.
+      *--------------->
+       OBT-DATOS-MODALI.
+      *---------------->
+
+           INITIALIZE RA961020.
+
+           MOVE TB-KMODALIDAD(X1)   TO RA961020-KMODALIDAD.
+
+           CALL  VA962020   USING  RA961020.
+
+           IF RA961020-CRETORNO = '00'
+      ***   28-10-2008 ADECUACION MULTICANALES ***********
+      ***    MOVE RA961020-KMODALIDAD TO I3
+             SET I3 TO X1
+             MOVE RA961020-GNOMREDMOD TO TB-GNOMREDMOD(I3)
+             MOVE RA961020-CMODDURPRO TO TB-CMODDURPRO(I3)
+             MOVE RA961020-NMODMAXASE TO TB-NMODMAXASE(I3)
+             MOVE RA961020-KRAMO      TO TB-KRAMO     (I3)
+             MOVE RA961020-CTIPRAMO   TO TB-CTIPRAMO  (I3)
+             MOVE RA961020-CMODAIDA   TO TB-CMODAIDA  (I3)
+             PERFORM GARANTIAS
+           END-IF.
+
+
+      *--------->
+       GARANTIAS.
+      *--------->
+
+           MOVE 1  TO X3.
+           PERFORM UNTIL X3 >= 9  OR
+                      RA961020-CACTGARAN (X3) = 'P'
+             ADD 1  TO X3
+           END-PERFORM.
+
+           IF X3 <= 9
+             MOVE RA961020-KGARANTIA  (X3)  TO TB-KGARANTIA  (I3)
+             MOVE RA961020-GEDADEXCLU (X3)  TO TB-GEDADEXCLU (I3)
+           END-IF.
+
+      *
+      *------->
+       PROCESO.
+      *------->
+
+           ADD    1  TO CT-LEIDOS.
+           ADD    1  TO CT-LEIDOS-PAR.
+           IF CT-LEIDOS-PAR > 499
+              MOVE ZEROS TO CT-LEIDOS-PAR
+      *B*
+              DISPLAY  'POLIZAS LEIDAS :' , CT-LEIDOS UPON CONSOLE
+      *F*
+           END-IF.
+            MOVE  'N' TO SW-ANULAR.
+            MOVE  'N' TO SW-MARCA-006.
+            MOVE  'N' TO SW-MARCA-007.
+ONJLBG      MOVE  'N' TO SW-MARCA-005.
+
+000002* OBTENEMOS LA COMPANIA DE LA POLIZA
+000002
+000002      PERFORM OBTENER-COMPANIA
+
+      * BUSCA DATOS EN TABLA SUPLEMENTO
+
+            PERFORM ACCESO-TB-SUPLEMENTO.
+
+            PERFORM VALIDA-FEFECFIN.
+            IF RR001003-CODIGO-FEC NOT = SPACES
+              IF WS-MM  = 29 AND
+                 WS-DD  = 02
+                   MOVE 28 TO WS-DD
+                   MOVE 4 TO X2
+                   PERFORM LISTADO-ERRORES
+                   PERFORM TRATAMIENTO
+              ELSE
+                   MOVE 3 TO X2
+                   PERFORM LISTADO-ERRORES
+              END-IF
+            ELSE
+              PERFORM TRATAMIENTO
+            END-IF.
+
+           PERFORM LEER-CURSOR-POLIZAS.
+
+      ***
+      *------------------->
+       LEER-CURSOR-POLIZAS.
+      *------------------->
+
+           EXEC SQL
+                FETCH CGNRPRM0
+                 INTO :GNR0-KPOLIZA, :GNR0-KMODALIDAD,
+                      :GNR0-FEFECINI, :GNR0-FEFECFIN,
+                      :PRM0-K2FORMAPAGO, :PRM0-IPRIMAAT
+           END-EXEC.
+
+           IF SQLCODE NOT = 0
+              MOVE 'S'    TO SW-FIN
+              IF SQLCODE NOT = 100
+                 MOVE 7 TO SW-ERROR
+                 PERFORM CODIGO-ERROR
+              END-IF
+           END-IF.
+      * *
+      *    DISPLAY 'LEE: ' GNR0-KPOLIZA ',' GNR0-KMODALIDAD,
+      *            ',' GNR0-FEFECINI ',' GNR0-FEFECFIN,
+      *            ',' PRM0-K2FORMAPAGO ',' PRM0-IPRIMAAT ':' SQLCODE.
+      * *
+      *
+000002*----------------->
+000002 OBTENER-COMPANIA.
+000002*----------------->
+000002
+000002     EXEC SQL
+000002          SELECT PLZ0_CCANALGES
+000002            INTO :PLZ0-CCANALGES
+000002            FROM TB030PLZ0
+000002           WHERE PLZ0_KPOLIZA = :GNR0-KPOLIZA
+000002     END-EXEC.
+000002
+000002     IF SQLCODE NOT = 0
+000002        MOVE 16 TO SW-ERROR
+000002        PERFORM CODIGO-ERROR
+000002     END-IF.
+000002
+      *-------------------->
+       ACCESO-TB-SUPLEMENTO.
+      *-------------------->
+
+           EXEC SQL
+                SELECT X.SPL0_NMODIFICACION, X.SPL0_K2SITUPOL,
+                       X.SPL0_KPOLIZA
+                  INTO :SPL0-NMODIFICACION, :SPL0-K2SITUPOL,
+                       :SPL0-KPOLIZA
+                  FROM TB030SPL0 X
+                 WHERE (X.SPL0_NMODIFICACION =
+                       (SELECT MAX(Y.SPL0_NMODIFICACION)
+                          FROM TB030SPL0 Y
+                         WHERE Y.SPL0_KPOLIZA =X.SPL0_KPOLIZA))
+                   AND  X.SPL0_KPOLIZA  = :GNR0-KPOLIZA
+           END-EXEC.
+
+           IF SQLCODE NOT = 0  AND
+              SQLCODE NOT = 100
+              MOVE 12 TO SW-ERROR
+              PERFORM CODIGO-ERROR
+           END-IF.
+      * *
+      *    DISPLAY 'SPL0: ' SPL0-NMODIFICACION ' / ' SPL0-K2SITUPOL
+      *             ' / ' SPL0-KPOLIZA.
+      * *
+      *
+      *---------------->
+       VALIDA-FEFECFIN.
+      *---------------->
+
+            MOVE GNR0-FEFECFIN    TO WS-FECHA.
+
+            INITIALIZE RR001003.
+            MOVE   '2'            TO RR001003-CODIGO-FEC.
+            MOVE GNR0-FEFECFIN    TO RR001003-FCONSULTA.
+
+            CALL  VR000003   USING  RR001003.
+
+
+
+      *
+      *----------->
+       TRATAMIENTO.
+      *----------->
+
+           IF (SQLCODE  = 0  AND
+               SPL0-K2SITUPOL = 'VI')
+      *-
+      ***  28-10-2008 ADECUACION MULTICANALES ********
+      ***      MOVE GNR0-KMODALIDAD TO X1
+               MOVE GNR0-KMODALIDAD TO WS-KMODALIDAD-NUEVA
+               PERFORM BUSCAR-CURSORMODALI
+      ***  FIN AM ************************************
+               IF  (TB-CTIPRAMO(X1) NOT = 'E') AND
+000002*           ((TB-CMODAIDA(X1)     = 'S'  AND SI-CANAL-CAJA) OR
+000002*            (TB-CMODAIDA(X1) NOT = 'S'  AND NO-CANAL-CAJA))
+000002            ((TB-CMODAIDA(X1)     = 'S'  AND SI-CANAL-MULT) OR
+000002             (TB-CMODAIDA(X1) NOT = 'S'  AND NO-CANAL-MULT))
+      *-
+                    PERFORM VER-ANULACION
+                    IF SI-ANULAR
+                       IF TB-KMODALIDAD(X1) NOT = SPACES
+                          PERFORM DATOSPOL
+                       ELSE
+                          PERFORM EXCLUIDOS
+                       END-IF
+ONEST *
+ONEST * CONTINUAREMOS CON EL PROCESO SI LA PRESTACION SE TRATA
+ONEST * POR IDMS - DESCARTAREMOS LAS QUE SE TRATAN POR ONESAIT
+ONEST * DE ESTA FORMA, NO CREAREMOS LAS NOTAS DE GESTION
+ONEST *
+ONEST *
+ONJLBG*ONEST           IF SI-ONESAIT
+ONJLBG                 IF SI-ONESAIT OR SI-MARCA-005
+ONEST                    ADD 1 TO CT-ONESAIT
+ONJLBG                  IF SI-ONESAIT
+ONEST *D*
+ONEST                    DISPLAY 'GNR0-KPOLIZA:' GNR0-KPOLIZA
+ONEST                            '-> LA PROCESARA ONESAIT / DESCARTADA'
+ONEST *F*
+ONJLBG                  ELSE
+ONJLBG*D*
+ONJLBG                   DISPLAY 'GNR0-KPOLIZA:' GNR0-KPOLIZA
+ONJLBG                           '-> MARCADA ONESAIT / DESCARTADA'
+ONJLBG*F*
+ONJLBG                  END-IF
+ONEST                    MOVE WS-CARTERA      TO REGONE-CARTERA
+ONEST                    MOVE GNR0-KPOLIZA    TO REGONE-KPOLIZA
+ONEST2                   MOVE GNR0-KMODALIDAD TO REGONE-KMODALIDAD-NUM
+ONEST * VER SI LA OFICINA LA TOMO DE TB030OFC0
+ONEST                    MOVE OFC0-KOFICINA     TO REGONE-KOFICINA-PROD
+USGIBE                   MOVE X4301091-KDIRGETE TO REGONE-DGT
+USGIBE                   MOVE X4301091-KDIRECREG TO REGONE-REGIONAL
+ONJLBG                   MOVE SPACES             TO REGONE-DETALLE
+ONEST *
+ONJLBG
+ONJLBG                   IF SI-ONESAIT
+ONJLBG                      IF SI-MARCA-005
+ONJLBG                         CONTINUE
+ONJLBG                      ELSE
+ONJLBG                         MOVE 'TRATA ONESAIT SIN MARCA'
+ONJLBG                                                TO REGONE-DETALLE
+ONJLBG                      END-IF
+ONJLBG                   ELSE
+ONJLBG                      MOVE SPACES              TO REGONE-CLAVE
+ONJLBG                      MOVE 'CON MARCA ONESAIT' TO REGONE-DETALLE
+ONJLBG                   END-IF
+ONELBG
+ONEST                    WRITE REG-ONESAIT
+ONEST                  ELSE
+                         IF  SI-MARCA-007
+                           PERFORM ALTA-MARCA-007
+                         END-IF
+                         IF  SI-MARCA-006
+                           PERFORM ALTA-MARCA-006
+                         END-IF
+ONEST                  END-IF
+                    END-IF
+               END-IF
+           END-IF.
+
+
+       BUSCAR-CURSORMODALI.
+      ********************
+
+           SET X1 TO 1.
+           SEARCH TB-MODALIDADES
+           WHEN TB-KMODALIDAD(X1) = SPACES
+           OR   TB-KMODALIDAD(X1) = WS-KMODALIDAD
+              CONTINUE
+           END-SEARCH.
+      *--------------->
+      *****************************************************************
+      *
+      *****************************************************************
+       EXCLUIDOS.
+      ***********
+
+           ADD   1  TO  CT-EXCLUIDOS.
+
+           IF TB-CMODDURPRO(X1) = 'S'
+             ADD  1  TO CT-EXC-SIPRO
+             MOVE 2  TO X2
+           ELSE
+             ADD  1  TO CT-EXC-NOPRO
+             MOVE 1  TO X2
+           END-IF.
+
+           PERFORM LISTADO-ERRORES.
+
+
+      *****************************************************************
+      *
+      *****************************************************************
+       DATOSPOL.
+      **********
+
+           INITIALIZE RC37001.
+
+      *--> RECUPERAR PRODUCTORES DE LA POLIZA
+
+           EXEC SQL  OPEN CPRD0  END-EXEC.
+
+           IF SQLCODE NOT = 0
+              MOVE 2 TO SW-ERROR
+              PERFORM CODIGO-ERROR
+           END-IF.
+
+           PERFORM LEER-CURSOR-PRODUCTORES VARYING WS-INDICE FROM 1
+                      BY 1 UNTIL WS-INDICE > 4 OR
+                                   SQLCODE NOT = 0
+
+           EXEC SQL  CLOSE CPRD0  END-EXEC.
+
+      *--> RECUPERAR LA PRIMA NETA ACTUAL.
+
+      *    EN VB370109 SE RECUPERA DESDE EL REGISTRO DE GARANTIAS
+      *    RBC1004 Y SE ACUMULA, PARA EL FIRST RC1-001-003: MAS ACTUAL.
+      *    AHORA SE TOMA LA MAS ACTUAL DEL REGISTRO: PRIMAS TOTALIZADAS.
+
+           MOVE  PRM0-IPRIMAAT         TO RC37001-EPRIMA
+
+
+      *
+      *--> RECUPERAR OFICINA
+      *
+      * --- I(07-02-2006)-NRL
+      *--> EL NUMERO DE MODIFICACION DEBE SER CERO, NO BUSCAR EN TABLA.
+      *
+      * --- I(24-08-2005)-NRL
+      *--> OBTENER NUMERO DE MODIFICACION EN TABLA, PARA BUSCAR OFICINA.
+      *
+      *    EXEC SQL
+      *         SELECT MDF0_KPOLIZA, MDF0_NMODIFICACION, MDF0_NORDEN
+      *           INTO :MDF0-KPOLIZA, :MDF0-NMODIFICACION,
+      *                :MDF0-NORDEN
+      *           FROM TB030MDF0
+      *          WHERE MDF0_KPOLIZA  = :GNR0-KPOLIZA
+      *            AND MDF0_K2TABCAR = 'OFC'
+      *            AND MDF0_NMODIFICACION = :SPL0-NMODIFICACION
+      *    END-EXEC.
+      *
+      *    IF SQLCODE NOT = 0
+      *       MOVE  ZEROS             TO  MDF0-NORDEN
+      *       IF SQLCODE = 100
+      *          MOVE X3 TO SW-ERROR
+      *          PERFORM CODIGO-ERROR
+      *       END-IF
+      *    END-IF.
+      *
+      * --- F(24-08-2005)-NRL
+
+
+           EXEC SQL
+                SELECT OFC0_KPOLIZA, OFC0_KOFICINA
+                  INTO :OFC0-KPOLIZA, :OFC0-KOFICINA
+                  FROM TB030OFC0 X
+                 WHERE OFC0_KPOLIZA  = :GNR0-KPOLIZA
+                   AND OFC0_K2TIPOOFIC = '3'
+                   AND OFC0_NMODIFICACION = 0
+      *            AND OFC0_NMODIFICACION = :MDF0-NORDEN
+      * --- F(07-02-2006)-NRL
+                   AND OFC0_NORDEN =
+                      (SELECT MAX(OFC0_NORDEN)
+                       FROM TB030OFC0 Y
+                         WHERE X.OFC0_KPOLIZA       =
+                               Y.OFC0_KPOLIZA
+                           AND X.OFC0_NMODIFICACION =
+                               Y.OFC0_NMODIFICACION
+                           AND X.OFC0_K2TIPOOFIC =
+                               Y.OFC0_K2TIPOOFIC)
+           END-EXEC.
+
+           MOVE  OFC0-KOFICINA        TO  RC37001-KOFICINA
+
+           IF SQLCODE NOT = 0
+              MOVE  SPACES            TO  RC37001-KOFICINA
+              IF SQLCODE = 100
+                 MOVE 13 TO SW-ERROR
+                 PERFORM CODIGO-ERROR
+              END-IF
+           END-IF.
+
+      *------DATOS DEL TOMADOR
+
+           MOVE  GNR0-KPOLIZA   TO WS-KPOLIZA.
+           MOVE  WS-KDOCUMENTO  TO WS-KDOCUMENTO-DB2.
+           EXEC SQL  OPEN CPROPPE0  END-EXEC.
+
+           IF SQLCODE NOT = 0
+              MOVE 3 TO SW-ERROR
+              PERFORM CODIGO-ERROR
+           END-IF.
+
+           PERFORM LEER-CURSOR-CLIENTES UNTIL
+                                SQLCODE NOT = 0
+
+           EXEC SQL  CLOSE CPROPPE0  END-EXEC.
+
+      * RESTO DE DATOS.
+
+           MOVE TB-KRAMO(X1)         TO RC37001-KRAMO.
+
+           MOVE GNR0-KMODALIDAD      TO WS-KMODALIDAD-NUEVA.
+           MOVE WS-KMODALIDAD        TO RC37001-KMODALIDAD.
+           MOVE GNR0-KPOLIZA         TO RC37001-KPOLIZA.
+           MOVE GNR0-FEFECFIN        TO RC37001-FEFECFIN.
+           MOVE TB-CTRATVTOS(X1)     TO RC37001-CTRATVTOS.
+
+000002*    IF   SI-CANAL-CAJA
+000002*         MOVE '20'            TO RC37001-CCANALCAMP.
+000002     INITIALIZE WS-CANALGES
+000002     MOVE PLZ0-CCANALGES       TO WS-CANALGES.
+000002     MOVE WS-CANALGES          TO RC37001-CCANALCAMP.
+
+
+ONEST *
+ONEST * DETECTAMOS SI SE TRATA DE UNA POLIZA CUYA PRESTACION LA GESTIONA
+ONEST * ONESAIT PARA DESCARTARLA DEL PROCESO Y QUE NO SE GENEREN
+ONEST * LAS MARCAS CON LAS NOTAS DE GESTION EN B371K006
+ONEST * SI ES DE ONESAIT, TAMPOCO GRABAREMOS LOS DATOS EN EL FICHERO
+ONEST *
+ONEST      PERFORM VER-SI-ONESAIT
+ONEST *
+ONEST *    IF TB-CTRATVTOS(X1) = 'S'
+ONEST *        ADD 1 TO CT-SINPRESTA.
+ONEST *    IF TB-CTRATVTOS(X1) = 'P'
+ONEST *        ADD   1  TO CT-CONPRESTA.
+ONEST *    IF TB-CTRATVTOS(X1) = 'O'
+ONEST *        ADD   1  TO CT-SISVTOS.
+ONEST *    WRITE RC37001.
+ONEST *    ADD 1 TO CT-ESCRITOS.
+ONEST *
+ONJLBG*ONEST    IF NO-ONESAIT
+ONJLBG     IF NO-ONESAIT AND NO-MARCA-005
+ONEST        IF TB-CTRATVTOS(X1) = 'S'
+ONEST          ADD 1 TO CT-SINPRESTA
+ONEST        END-IF
+ONEST        IF TB-CTRATVTOS(X1) = 'P'
+ONEST          ADD   1  TO CT-CONPRESTA
+ONEST        END-IF
+ONEST        IF TB-CTRATVTOS(X1) = 'O'
+ONEST          ADD   1  TO CT-SISVTOS
+ONEST        END-IF
+ONEST        WRITE RC37001
+ONEST        ADD 1 TO CT-ESCRITOS
+ONEST      END-IF
+ONEST      .
+
+       VER-ANULACION.
+      ***************
+
+      *-----> MOD. 30-09-96. MARCA DE ANULACION SIST. VTOS.
+      *-----> ---------------------------------------------
+      *-----> TODA POLIZA CUYA ANULACION VAYA A SER TRATADA POR
+      *-----> EL SISTEMA DE VTOS. SE MARCA COMO TAL.
+      *-----> SE INCLUYE OTRA MARCA ADICIONAL SI LA POLIZA TIENE
+      *-----> PRESTACION.
+      *-----> SE ANULARAN DESDE ESTE SISTEMA TODAS AQUELLAS POLIZAS
+      *-----> QUE: (SIEMPRE QUE NO SEAN DE ENFERMEDAD)
+      *-----> . POLS. DE DURACION PRORROGABLE Y CFP = '9';
+      *-----> . POLS. DE DURACION PRORROGABLE, FECHA DE VTO
+      *----->   IGUAL O INFERIOR A LA DE LA FICHA Y GARANTIA
+      *----->   PRINCIPAL EXCLUIDA POR SOBREPASAR LOS LIMITES
+      *----->   DE EDAD DE LA MISMA;
+      *-----> . POLS. DE DURACION NO PRORROGABLE Y FECHA DE VTO
+      *----->   IGUAL O INFERIOR A LA DE LA FICHA.
+      *
+           MOVE  'N'  TO  SW-EXCLUIR.
+           IF (TB-CMODDURPRO(X1) = 'S')
+              PERFORM VER-EXCLUSION-EDAD.
+
+           MOVE  'N'  TO  SW-RES-MANUAL.
+           PERFORM VER-RESCATE-MANUAL.
+
+           IF NO-RES-MANUAL
+              IF (TB-CMODDURPRO(X1) = 'N')      OR
+                 (SI-EXCLUIR)                   OR
+                 (TB-CMODDURPRO(X1) = 'S' AND
+                                      PRM0-K2FORMAPAGO  = '9')
+                  MOVE 'S' TO SW-ANULAR
+                  PERFORM VERIFICACION-MARCA
+              END-IF
+           END-IF.
+
+       VER-EXCLUSION-EDAD.
+      ********************
+
+      *------DATOS DE LOS ASEGURADOS
+
+           MOVE  GNR0-KPOLIZA   TO WS-KPOLIZA.
+           MOVE  WS-KDOCUMENTO  TO WS-KDOCUMENTO-DB2.
+           EXEC SQL  OPEN CPROPPE0  END-EXEC.
+
+           IF SQLCODE NOT = 0
+              MOVE 4 TO SW-ERROR
+              PERFORM CODIGO-ERROR
+           END-IF.
+
+           PERFORM LEER-CURSOR-ASEGURADOS UNTIL
+                                  SQLCODE NOT = 0
+                               OR SI-EXCLUIR
+                               OR SW-ERROR = 99.
+
+           EXEC SQL  CLOSE CPROPPE0  END-EXEC.
+
+
+      *----------------------->
+       LEER-CURSOR-ASEGURADOS.
+      *----------------------->
+      *->
+           EXEC SQL
+                FETCH CPROPPE0
+                 INTO :PRO0-KDOCUMENTO, :PRO0-KPERSONA,
+24028 *               :PRO0-K2ROL, :PTF0-GTELEFONO, :PTF0-K2TIPO,
+24028                 :PRO0-CROL, :PTF0-GTELEFONO, :PTF0-CTIPOTELEF,
+                      :PPE0-FNACIMIENTO
+           END-EXEC.
+      *
+           IF SQLCODE = 0
+24028 *       EVALUATE PRO0-K2ROL
+24028         EVALUATE PRO0-CROL
+      *          WHEN 'TO'
+      *----->
+                 WHEN 'AS'
+                    PERFORM COMPARAR-EDAD
+              END-EVALUATE
+      * CONTROL DE ERRORES
+           ELSE
+              IF SQLCODE NOT = 100
+                 MOVE 8 TO SW-ERROR
+                 PERFORM CODIGO-ERROR
+              END-IF
+           END-IF.
+
+           IF (TB-NMODMAXASE(X1) = 2   AND
+               NO-EXCLUIR)
+               CONTINUE
+           ELSE
+               MOVE  99  TO SW-ERROR
+           END-IF.
+      *    DISPLAY 'ASEGURADOS: ' PRO0-KDOCUMENTO
+      *            ' / ' PRO0-KPERSONA
+      *            ' / ' PRO0-K2ROL
+      *            ' / ' PTF0-GTELEFONO
+      *            ' / ' PTF0-K2TIPO
+      *            ' / ' PPE0-FNACIMIENTO.
+
+
+       COMPARAR-EDAD.
+      ***************
+
+           MOVE  ZEROS  TO  CT-AUX.
+
+           MOVE PPE0-FNACIMIENTO  TO WS-FNACCLI.
+           COMPUTE CT-AUX ROUNDED =
+                   RC37000-AAPROCE - WS-FANACCLI
+
+           IF  WS-FMNACCLI  > RC37000-MMPROCE
+               COMPUTE CT-AUX ROUNDED =
+                            CT-AUX - 1.
+
+           IF  CT-AUX NOT  <  TB-GEDADEXCLU(X1)
+               MOVE 'S' TO SW-EXCLUIR.
+
+
+
+       VERIFICACION-MARCA.
+      ********************
+
+      *-----> MOD. 30-09-96. MARCA DE ANULACION SIST. VTOS.
+      *-----> ---------------------------------------------
+      *-----> TODA POLIZA CUYA ANULACION VAYA A SER TRATADA POR
+      *-----> EL SISTEMA DE VTOS. SE TRATA COMO TAL.
+      *-----> SE INCLUYE OTRA MARCA ADICIONAL SI LA POLIZA TIENE
+      *-----> PRESTACION.
+
+           MOVE 'N' TO SW-PRESTACION.
+           IF TB-CTRATVTOS(X1) = 'P' OR
+              TB-CTRATVTOS(X1) = 'O'
+               MOVE 'S' TO SW-PRESTACION
+           END-IF.
+
+      *-----> SE BUSCA LAS NOTAS DE GESTION.
+      * SE COMPRUEBA SI EXISTEN YA LAS SIGUIENTES:
+      * 1. NTG0-K2CODGEN = '300'  Y  NTG0-K2TIPCOD = '007'
+      * 2. NTG0-K2CODGEN = '300'  Y  NTG0-K2TIPCOD = '006'
+
+           EXEC SQL  OPEN CNTG0  END-EXEC.
+
+           IF SQLCODE NOT = 0
+              MOVE 5 TO SW-ERROR
+              PERFORM CODIGO-ERROR
+           END-IF.
+
+           MOVE 'S' TO SW-MARCA-007
+           MOVE 'S' TO SW-MARCA-006
+           PERFORM LEER-CURSOR-NOTAS UNTIL
+                             SQLCODE NOT = 0.
+
+      * SI EXISTEN ESTAS MARCAS SE PONEN LOS SWITCHES A 'N'.
+
+           EXEC SQL  CLOSE CNTG0  END-EXEC.
+
+
+       VER-RESCATE-MANUAL.
+      ********************
+      *-----> SE BUSCA LAS NOTAS DE GESTION.
+
+           EXEC SQL  OPEN CNTG0  END-EXEC.
+
+           IF SQLCODE NOT = 0
+              MOVE 6 TO SW-ERROR
+              PERFORM CODIGO-ERROR
+           END-IF.
+
+           PERFORM LEER-CURSOR-NOTAS UNTIL
+                             SQLCODE NOT = 0
+                OR (NTG0-K2CODGEN   = '300'  AND
+                    NTG0-K2TIPCOD   = '310')
+                OR (NTG0-K2CODGEN   = '300'  AND
+                    NTG0-K2TIPCOD   = '311').
+
+           IF SQLCODE = 0
+                IF (NTG0-K2CODGEN   = '300'  AND
+                    NTG0-K2TIPCOD   = '310')
+                OR (NTG0-K2CODGEN   = '300'  AND
+                    NTG0-K2TIPCOD   = '311')
+                      MOVE 'S' TO SW-RES-MANUAL
+               END-IF
+           END-IF.
+
+           EXEC SQL  CLOSE CNTG0  END-EXEC.
+
+
+
+      *----------------->
+       LEER-CURSOR-NOTAS.
+      *----------------->
+      *
+      * SE INDICA SI EXISTEN ESTAS MARCAS: 007 Y 006.
+      *
+      *-----> MOD. 30-09-96. MARCA DE ANULACION SIST. VTOS.
+      *-----> ---------------------------------------------
+      *-----> TODA POLIZA CUYA ANULACION VAYA A SER TRATADA POR
+      *-----> EL SISTEMA DE VTOS. SE TRATA COMO TAL.
+      *-----> SE INCLUYE OTRA MARCA ADICIONAL SI LA POLIZA TIENE
+      *-----> PRESTACION.
+
+           EXEC SQL
+                FETCH CNTG0
+                 INTO :NTG0-KPOLIZA,
+                      :NTG0-NSUBPOLIZA,
+                      :NTG0-NCERTIFICADO,
+                      :NTG0-K2CODGEN,
+                      :NTG0-K2TIPCOD
+           END-EXEC.
+
+           IF SQLCODE = 0
+              IF (NTG0-K2CODGEN   = '300'  AND
+                  NTG0-K2TIPCOD   = '007')
+                  MOVE 'N' TO SW-MARCA-007
+              END-IF
+              IF  SW-PRESTACION = 'S'
+                  IF (NTG0-K2CODGEN   = '300'  AND
+                      NTG0-K2TIPCOD   = '006')
+                      MOVE 'N' TO SW-MARCA-006
+                  END-IF
+              END-IF
+ONJLBG        IF (NTG0-K2CODGEN   = '004'  AND
+ONJLBG            NTG0-K2TIPCOD   = '005')
+ONJLBG            MOVE 'S' TO SW-MARCA-005
+ONJLBG        END-IF
+           ELSE
+              IF SQLCODE NOT = 100
+                 MOVE 9 TO SW-ERROR
+                 PERFORM CODIGO-ERROR
+              END-IF
+           END-IF.
+
+      *--------------->
+       ALTA-MARCA-007.
+      *--------------->
+
+941168     ADD    1   TO CT-ANULADAS.
+941168
+941168*    INITIALIZE DCLTB030NTG0.
+941168*    MOVE GNR0-KPOLIZA    TO NTG0-KPOLIZA.
+941168*    MOVE ZEROS           TO NTG0-NSUBPOLIZA.
+941168*    MOVE ZEROS           TO NTG0-NCERTIFICADO.
+941168*    MOVE '300'           TO NTG0-K2CODGEN.
+941168*    MOVE '007'           TO NTG0-K2TIPCOD.
+941168*
+941168     INITIALIZE R02-SALIDA.
+941168
+941168     MOVE GNR0-KPOLIZA    TO R02-KPOLIZA.
+941168     MOVE ZEROS           TO R02-KSUBPOLIZA.
+941168     MOVE ZEROS           TO R02-KCERTI.
+941168     MOVE '300'           TO R02-KCODGEN.
+941168     MOVE '007'           TO R02-CTIPCOD.
+941168     MOVE SPACES          TO R02-CODERROR.
+941168
+941168     WRITE RTO-SALIDA2 FROM R02-SALIDA.
+941168
+941168*    EXEC SQL
+941168*         INSERT INTO TB030NTG0
+941168*                (NTG0_KPOLIZA,
+941168*                 NTG0_NSUBPOLIZA,
+941168*                 NTG0_NCERTIFICADO,
+941168*                 NTG0_K2CODGEN,
+941168*                 NTG0_K2TIPCOD,
+941168*                 NTG0_GRESPMOD,
+941168*                 NTG0_GPROCESO)
+941168*         VALUES (:NTG0-KPOLIZA,
+941168*                 :NTG0-NSUBPOLIZA,
+941168*                 :NTG0-NCERTIFICADO,
+941168*                 :NTG0-K2CODGEN,
+941168*                 :NTG0-K2TIPCOD,
+941168*                 :NTG0-GRESPMOD,
+941168*                 :NTG0-GPROCESO)
+941168*    END-EXEC.
+941168*    DISPLAY 'ALTA NOTA 007. POLIZA: ' GNR0-KPOLIZA
+941168*
+941168*    IF SQLCODE NOT = 0
+941168*       IF SQLCODE  = -803
+941168*
+941168*          DISPLAY 'EXISTE NOTA 007. POLIZA: ' GNR0-KPOLIZA
+941168*
+941168*       ELSE
+941168*          MOVE 14 TO SW-ERROR
+941168*          PERFORM CODIGO-ERROR
+941168*       END-IF
+941168*    END-IF.
+941168*
+
+      *--------------->
+       ALTA-MARCA-006.
+      *--------------->
+
+941168     ADD    1   TO CT-ANU-PREST.
+941168
+941168*    INITIALIZE DCLTB030NTG0.
+941168*    MOVE GNR0-KPOLIZA    TO NTG0-KPOLIZA.
+941168*    MOVE ZEROS           TO NTG0-NSUBPOLIZA.
+941168*    MOVE ZEROS           TO NTG0-NCERTIFICADO.
+941168*    MOVE '300'           TO NTG0-K2CODGEN.
+941168*    MOVE '006'           TO NTG0-K2TIPCOD.
+941168*
+941168     INITIALIZE R02-SALIDA.
+941168
+941168     MOVE GNR0-KPOLIZA    TO R02-KPOLIZA.
+941168     MOVE ZEROS           TO R02-KSUBPOLIZA.
+941168     MOVE ZEROS           TO R02-KCERTI.
+941168     MOVE '300'           TO R02-KCODGEN.
+941168     MOVE '006'           TO R02-CTIPCOD.
+941168     MOVE SPACES          TO R02-CODERROR.
+941168
+941168     WRITE RTO-SALIDA2 FROM R02-SALIDA.
+941168
+941168*    EXEC SQL
+941168*         INSERT INTO TB030NTG0
+941168*                (NTG0_KPOLIZA,
+941168*                 NTG0_NSUBPOLIZA,
+941168*                 NTG0_NCERTIFICADO,
+941168*                 NTG0_K2CODGEN,
+941168*                 NTG0_K2TIPCOD,
+941168*                 NTG0_GRESPMOD,
+941168*                 NTG0_GPROCESO)
+941168*         VALUES (:NTG0-KPOLIZA,
+941168*                 :NTG0-NSUBPOLIZA,
+941168*                 :NTG0-NCERTIFICADO,
+941168*                 :NTG0-K2CODGEN,
+941168*                 :NTG0-K2TIPCOD,
+941168*                 :NTG0-GRESPMOD,
+941168*                 :NTG0-GPROCESO)
+941168*    END-EXEC.
+941168*    DISPLAY 'ALTA NOTA 006. POLIZA: ' GNR0-KPOLIZA
+941168*
+941168*    IF SQLCODE NOT = 0
+941168*       IF SQLCODE  = -803
+941168*
+941168*          DISPLAY 'EXISTE NOTA 006. POLIZA: ' GNR0-KPOLIZA
+941168*
+941168*       ELSE
+941168*          MOVE 15 TO SW-ERROR
+941168*          PERFORM CODIGO-ERROR
+941168*       END-IF
+941168*    END-IF.
+941168*
+      *----------------------->
+       LEER-CURSOR-PRODUCTORES.
+      *----------------------->
+
+           EXEC SQL
+                FETCH CPRD0
+                 INTO :PRD0-KPOLIZA, :PRD0-KPRODUCTOR,
+                      :PRD0-NORDEN
+           END-EXEC.
+
+           IF SQLCODE = 0
+              MOVE  PRD0-KPRODUCTOR TO RC37001-KPRODUCTOR (WS-INDICE)
+           ELSE
+              IF SQLCODE NOT = 100
+                 MOVE ZEROS         TO RC37001-KPRODUCTOR (WS-INDICE)
+                 MOVE 10 TO SW-ERROR
+                 PERFORM CODIGO-ERROR
+              END-IF
+           END-IF.
+
+
+      *--------------------->
+       LEER-CURSOR-CLIENTES.
+      *--------------------->
+      *->
+           EXEC SQL
+                FETCH CPROPPE0
+                 INTO :PRO0-KDOCUMENTO, :PRO0-KPERSONA,
+24028 *               :PRO0-K2ROL, :PTF0-GTELEFONO, :PTF0-K2TIPO,
+24028                 :PRO0-CROL, :PTF0-GTELEFONO, :PTF0-CTIPOTELEF,
+                      :PPE0-FNACIMIENTO
+           END-EXEC.
+      *
+           IF SQLCODE = 0
+24028 *       EVALUATE PRO0-K2ROL
+24028         EVALUATE PRO0-CROL
+                 WHEN 'TO'
+24028 *             IF PTF0-K2TIPO = 'P'
+24028               IF PTF0-CTIPOTELEF = 'P'
+                       MOVE PTF0-GTELEFONO  TO RC37001-GTOMTELEF
+                    END-IF
+24028 *             IF PTF0-K2TIPO = 'T'
+24028               IF PTF0-CTIPOTELEF = 'T'
+                       MOVE PTF0-GTELEFONO  TO RC37001-GTOMTFTRA
+                    END-IF
+      *-----> FECHA NACIMIENTO ASEGURADO
+                 WHEN 'AS'
+                    MOVE PPE0-FNACIMIENTO   TO RC37001-FNACTOM
+              END-EVALUATE
+      * CONTROL DE ERRORES
+           ELSE
+              IF SQLCODE NOT = 100
+                 MOVE 11 TO SW-ERROR
+                 PERFORM CODIGO-ERROR
+              END-IF
+           END-IF.
+
+
+      *--------------->
+       LISTADO-ERRORES.
+      *--------------->
+
+            ADD 1 TO CT-INCIDENCIAS.
+
+            IF CT-LIN > 50
+               PERFORM LISTAR-CABECERAS
+            END-IF.
+
+            MOVE SPACES              TO  LD-DET.
+            MOVE GNR0-KPOLIZA        TO  LD-KPOLIZA.
+            MOVE GNR0-KMODALIDAD     TO  WS-KMODALIDAD-NUEVA.
+            MOVE WS-KMODALIDAD       TO  LD-KMODALIDAD.
+            MOVE TB-MENPOL(X2)       TO  LD-GERROR.
+
+            WRITE RTO-LIS  FROM LD-DET   AFTER ADVANCING 1.
+            ADD      1     TO CT-LIN.
+      *->
+
+
+      *----------------->
+       LISTAR-CABECERAS.
+      *----------------->
+      *->
+            ADD      1      TO  CT-PAG.
+            MOVE  CT-PAG    TO  LC-PAG.
+            MOVE  WS-FDSYS  TO  LC-DSIS.
+            MOVE  WS-FMSYS  TO  LC-MSIS.
+            MOVE  WS-FASYS  TO  LC-ASIS.
+      *
+            MOVE  RC37000-AAPROCE         TO  LC-AAFPROC.
+            MOVE  RC37000-MMPROCE         TO  LC-MMFPROC.
+      *
+            WRITE RTO-LIS  FROM LC-VACIA AFTER ADVANCING 0.
+            WRITE RTO-LIS  FROM LC-VACIA AFTER ADVANCING 2.
+            WRITE RTO-LIS  FROM LC-CAB1  AFTER ADVANCING 1.
+            WRITE RTO-LIS  FROM LC-CAB2  AFTER ADVANCING 1.
+            WRITE RTO-LIS  FROM LC-CAB3  AFTER ADVANCING 1.
+            WRITE RTO-LIS  FROM LC-CAB4  AFTER ADVANCING 2.
+            WRITE RTO-LIS  FROM LC-CAB5  AFTER ADVANCING 1.
+      *
+            MOVE  ZEROS  TO  CT-LIN.
+      *->
+
+
+      *-------------------->
+       TOTAL-INCIDENCIAS.
+      *-------------------->
+      *->
+            IF CT-LIN > 50
+               PERFORM LISTAR-CABECERAS.
+      *
+            MOVE  CT-INCIDENCIAS TO LT-POLERR.
+      *
+            WRITE RTO-LIS  FROM LT-TOT1  AFTER ADVANCING 2.
+      *->
+
+      ***
+       CODIGO-ERROR.
+      *------------>
+      ***
+           MOVE SQLCODE TO WS-CODIGO.
+
+           EVALUATE SW-ERROR
+            WHEN 1
+      *B*
+               DISPLAY '*1* B371K003 OPEN CGNRPRM0 SQLCODE:' WS-CODIGO
+      *F*
+941168         MOVE 'ERROR AL HACER OPEN EN PRM0' TO WS-MENSAJE
+            WHEN 2
+      *B*
+               DISPLAY '*2* B371K003 OPEN CPRD0    SQLCODE:' WS-CODIGO
+      *F*
+941168         MOVE 'ERROR AL HACER OPEN EN PRD0' TO WS-MENSAJE
+            WHEN 3
+      *B*
+               DISPLAY '*3* B371K003 OPEN CPROPPE0 SQLCODE:' WS-CODIGO
+      *F*
+941168         MOVE 'ERROR AL HACER OPEN EN PPE0' TO WS-MENSAJE
+            WHEN 4
+      *B*
+               DISPLAY '*4* B371K003 OPEN CPROPPE0 SQLCODE:' WS-CODIGO
+      *F*
+941168         MOVE 'ERROR AL HACER OPEN EN PPE0' TO WS-MENSAJE
+            WHEN 5
+      *B*
+               DISPLAY '*5* B371K003 OPEN CNTG0    SQLCODE:' WS-CODIGO
+      *F*
+941168         MOVE 'ERROR AL HACER OPEN EN NTG0' TO WS-MENSAJE
+            WHEN 6
+      *B*
+               DISPLAY '*6* B371K003 OPEN CNTG0    SQLCODE:' WS-CODIGO
+      *F*
+941168         MOVE 'ERROR AL HACER OPEN EN NTG0' TO WS-MENSAJE
+            WHEN 7
+      *B*
+               DISPLAY '*7* B371K003 LEER CGNRPRM0 SQLCODE:' WS-CODIGO
+      *F*
+941168         MOVE 'ERROR AL LEER PRM0' TO WS-MENSAJE
+            WHEN 8
+            WHEN 11
+      *B*
+               DISPLAY '*** B371K003 LEER CPROPPE0 SQLCODE:' WS-CODIGO
+                       ' .NUM. ERROR: '  SW-ERROR
+      *F*
+941168         MOVE 'ERROR AL LEER PPE0' TO WS-MENSAJE
+            WHEN 9
+      *B*
+               DISPLAY '*9* B371K003 LEER CNTG0    SQLCODE:' WS-CODIGO
+      *F*
+941168         MOVE 'ERROR AL LEER NTG0' TO WS-MENSAJE
+            WHEN 10
+      *B*
+               DISPLAY '10* B371K003 LEER CPRD0    SQLCODE:' WS-CODIGO
+               DISPLAY '11* B371K003 LEER CPROPPE0 SQLCODE:' WS-CODIGO
+      *F*
+941168         MOVE 'ERROR AL LEER PRD0' TO WS-MENSAJE
+            WHEN 12
+      *B*
+               DISPLAY '12* B371K003 LEER SPL0     SQLCODE:' WS-CODIGO
+      *F*
+941168         MOVE 'ERROR AL LEER SPL0' TO WS-MENSAJE
+            WHEN 13
+      *B*
+               DISPLAY '13* B371K003 LEER OFC0     SQLCODE:' WS-CODIGO
+      *F*
+941168         MOVE 'ERROR AL LEER OFC0' TO WS-MENSAJE
+941168*     WHEN 14
+941168*     WHEN 15
+941168*
+941168*        DISPLAY '*** B371K003 ALTA NTG0     SQLCODE:' WS-CODIGO
+941168*                ' .NUM. ERROR: '  SW-ERROR
+941168*
+000002      WHEN 16
+      *B*
+               DISPLAY '16* ERROR AL ACCEDER A PLZ SQLCODE:' WS-CODIGO
+      *F*
+000002         MOVE 'ERROR AL ACCEDER A PLZ0'   TO WS-MENSAJE
+           END-EVALUATE.
+
+941168     CALL  CANCELA  USING WS-MENSAJE.
+941168
+      *****************************************************************
+      *
+      *****************************************************************
+       TERMINAR.
+      **********
+
+           IF CT-INCIDENCIAS > 0
+             PERFORM TOTAL-INCIDENCIAS
+133873     ELSE
+133873       PERFORM LISTAR-CABECERAS
+133873       WRITE RTO-LIS  FROM LC-CAB6  AFTER ADVANCING 2
+           END-IF.
+
+      *B*
+           DISPLAY '******************************************'.
+           DISPLAY '******      B 3 7 1 K 0 0 3      *********'.
+           DISPLAY '******************************************'.
+           DISPLAY '******************************************'.
+           DISPLAY 'REG. LEIDOS ................: ', CT-LEIDOS.
+           DISPLAY 'POLIZAS GRABADAS  ..........: ', CT-ESCRITOS.
+           DISPLAY '******************************************'.
+           DISPLAY 'POL. SIN PRESTACION ........: ', CT-SINPRESTA.
+           DISPLAY 'POL. PRESTACION F. SISTEMA..: ', CT-CONPRESTA.
+           DISPLAY 'POL. PRESTACION DEL SISTEMA.: ', CT-SISVTOS.
+           DISPLAY '******************************************'.
+           DISPLAY 'INCIDENCIAS.................: ', CT-INCIDENCIAS.
+           DISPLAY 'EXCLUIDOS DUR.PRORROGABLE ..: ', CT-EXC-SIPRO.
+           DISPLAY 'EXCLUIDOS DUR.NO PRORROGABLE: ', CT-EXC-NOPRO.
+           DISPLAY '******************************************'.
+           DISPLAY 'MARCADAS PARA PROX.ANUL. 007: ', CT-ANULADAS.
+           DISPLAY 'MARCADAS NO MODIFICABLES 006: ', CT-ANU-PREST.
+ONEST      DISPLAY 'DESCARTADAS DEL PROCESO (ONESAIT): ', CT-ONESAIT
+           DISPLAY '******************************************'.
+ONEST      DISPLAY 'REGISTROS ONESAIT SEGUN REGLAS'
+ONEST      DISPLAY '------------------------------'
+ONEST *D*
+ONEST *
+ONEST      PERFORM VARYING X9 FROM 1 BY 1 UNTIL X9 > CT-REGLAS OR
+ONEST                                           X9 > MAX-REGLAS
+ONEST *D*
+ONEST              DISPLAY 'REGLA T3600:'
+ONEST                       TB-ONESAIT-CLAVE (X9)
+ONEST                       ' REGS:' TB-ONESAIT-CONTADOR (X9)
+ONEST *F*
+ONEST      END-PERFORM
+      *****IF CT-ESCRITOS = ZEROS
+      *****   MOVE '*ATENCION: NO SE HA EXTRAIDO NINGUNA POLIZA *'
+      *****         TO WS-MENSAJE
+      ******  CALL 'CANCELA' USING WS-MENSAJE.
+
+           EXEC SQL
+                CLOSE CGNRPRM0
+           END-EXEC.
+
+           CLOSE FICHA.
+           CLOSE SALIDA.
+941168     CLOSE SALIDA2.
+           CLOSE LISTADO.
+ONEST      CLOSE ONESAIT
+
+           GOBACK.
+
+ONEST
+ONEST *-------------------
+ONEST  CARGAR-CONDICIONES.
+ONEST *-------------------
+ONEST *
+ONEST * CARGAMOS LA TABLA 03600 QUE CONTIENE LAS CONDICIONES DE FILTRADO
+ONEST * EN UN ARRAY
+ONEST * TENEMOS EN CUENTA LAS CONDICIONES ANULADAS
+ONEST *
+ONEST      INITIALIZE WS-X960M010 REPLACING NUMERIC BY ZEROES
+ONEST                                  ALPHANUMERIC BY SPACES
+ONEST3***  INITIALIZE WS-3600-ANT
+ONEST
+ONEST      SET SI-PAGINACION TO TRUE
+ONEST      MOVE 0            TO CT-REGLAS
+ONEST
+ONEST      MOVE 'C'          TO X960M010-CLAVE-E
+ONEST      MOVE '03600'      TO X960M010-K1TAB-E
+ONEST * LEEMOS LA TABLA HASTA QUE NO HAYA PAGINACION O SE HAYA ALCANZADO
+ONEST * EL NUMERO MAXIMO DE REGLAS PERMITIDAS
+ONEST      PERFORM UNTIL NO-PAGINACION OR CT-REGLAS > MAX-REGLAS
+ONEST
+ONEST          INITIALIZE X960M010-S REPLACING NUMERIC BY ZEROES
+ONEST                                     ALPHANUMERIC BY SPACES
+ONEST3* DESACTIVO
+      *
+ONEST *        INITIALIZE WS-TB-3600
+ONEST *
+ONEST * INFORMAMOS VARIABLES PARA LA PAGINACION
+ONEST *        MOVE WS-3600-ANT-K1TAB       TO X960M010-ANT-K1TAB
+ONEST *        MOVE WS-3600-ANT-KCLAVE      TO X960M010-ANT-KCLAVE
+ONEST *        MOVE WS-3600-ANT-KOCURRENCIA TO X960M010-ANT-KOCURRENCIA
+ONEST *
+ONEST * PARA NO TRATAR LAS BAJAS LOGICAS
+ONEST *
+ONEST          MOVE FUNCTION CURRENT-DATE   TO X960M010-FECHA-E
+ONEST *
+ONEST * LEEMOS CLAVES DE LA TABLA
+ONEST * NOS TRAEMOS 50 OCURRENCIAS
+ONEST *
+ONEST *D*
+               DISPLAY 'B960M010 VA A POR 50 REGLAS'
+               ' CT- REGLAS:' CT-REGLAS '/'
+               ' CLV:' X960M010-CLAVE-E '/'
+               ' TAB:' X960M010-K1TAB-E '/'
+               ' KCLAVE:' X960M010-KCLAVE-E   '/'
+ONEST3         ' K1TAB ANT:'  X960M010-ANT-K1TAB
+ONEST3         ' KCLAVE ANT:' X960M010-ANT-KCLAVE
+               ' OCC ANT:' X960M010-ANT-KOCURRENCIA
+ONEST *
+ONEST          CALL LT-B960M010 USING WS-X960M010
+ONEST *D*
+               DISPLAY 'B960M010 50 REGLAS RC:'
+ONEST             R960T001-KRETORNO OF WS-X960M010
+               DISPLAY 'PROX K1TAB:'
+                X960M010-PROX-K1TAB
+                 ' ULTIMA KCLAVE DEL ARRAY:' X960M010-PROX-KCLAVE
+               DISPLAY
+                ' PROX KOCURRENCIA:' X960M010-PROX-KOCURRENCIA
+ONEST *F*
+ONEST          IF R960T001-KRETORNO OF WS-X960M010 EQUAL ZEROES
+ONEST *
+ONEST * B960M010 DEVUELVE UN OCC DE 50 OCURRENCIAS
+ONEST * RECORREMOS EL ARRAY Y POR CADA UNO, OBTENEMOS SUS PARAMETROS
+ONEST *
+ONEST             PERFORM VARYING X7 FROM 1 BY 1
+ONEST                     UNTIL X7 > MAX-OCC-B960M010
+ONEST3                    OR NO-PAGINACION
+ONEST3*****               OR X960M010-KCLAVE-S(X7) EQUAL SPACES
+ONEST3*****          MOVE X960M010-KCLAVE-S(X7) TO WS-TB-KCLAVE-OCC(X7)
+ONEST *D*
+                   DISPLAY 'FILA:' X7
+                           ' PROCESAMOS ARRAY.CODIGO REGLA:'
+                            X960M010-KCLAVE-S(X7)
+ONEST *F*
+ONEST3*
+ONEST3* CUANDO NO DEVUELVA LA TABLA COMPLETA ES QUE HEMOS TERMINADO
+ONEST3*
+ONEST3             IF X960M010-KCLAVE-S(X7) = SPACES
+ONEST3               SET  NO-PAGINACION TO TRUE
+ONEST *D*
+                     DISPLAY 'PONE PAGINACION A NO'
+                     DISPLAY 'X7:' X7
+ONEST3             ELSE
+ONEST3*              MOVE X960M010-PROX-K1TAB  TO WS-3600-ANT-K1TAB
+ONEST3*              MOVE X960M010-PROX-KCLAVE TO WS-3600-ANT-KCLAVE
+ONEST3*              MOVE X960M010-PROX-KOCURRENCIA TO
+ONEST3*                   WS-3600-ANT-KOCURRENCIA
+ONEST3*
+ONEST3* LOCALIZAMOS EL FORMATO DE CADA REGLA (LAS CONDICIONES)
+ONEST3*
+ONEST3               PERFORM BUSCAR-FORMATO
+ONEST3*
+ONEST3* PARA LEER LOS 50 SIGUIENTES
+ONEST3*
+ONEST3               MOVE X960M010-K1TAB-E TO X960M010-ANT-K1TAB
+ONEST3               MOVE X960M010-KCLAVE-E TO X960M010-ANT-KCLAVE
+ONEST3               INITIALIZE X960M010-KCLAVE-E
+ONEST3               MOVE X960M010-PROX-K1TAB  TO X960M010-ANT-K1TAB
+ONEST3               MOVE X960M010-PROX-KCLAVE TO X960M010-ANT-KCLAVE
+ONEST3               MOVE X960M010-PROX-KOCURRENCIA TO
+ONEST3                    X960M010-ANT-KOCURRENCIA
+ONEST3             END-IF
+ONEST             END-PERFORM
+ONEST *
+ONEST3*
+ONEST3* DESACTIVO ESTE CONTROL DE PAGINACION
+ONEST3*
+      *
+ONEST *           IF X7 < MAX-OCC-B960M010 OR X960M010-KCLAVE-S(X7) = SPACES
+ONEST *              SET  NO-PAGINACION TO TRUE
+ONEST *           ELSE
+ONEST *              MOVE X960M010-PROX-K1TAB  TO WS-3600-ANT-K1TAB
+ONEST *              MOVE X960M010-PROX-KCLAVE TO WS-3600-ANT-KCLAVE
+ONEST *              MOVE X960M010-PROX-KOCURRENCIA TO
+ONEST *                   WS-3600-ANT-KOCURRENCIA
+ONEST *           END-IF
+ONEST *
+ONEST *           PERFORM VARYING X8 FROM 1 BY 1
+ONEST *             UNTIL WS-TB-KCLAVE-OCC(X8) = SPACES
+ONEST *                OR X8 > X7
+ONEST *ACCEDEMOS A LA TABLA POR CADA UNA DE LAS CLAVES QUE TIENE
+ONEST *                MOVE WS-TB-KCLAVE-OCC(X8) TO X960M010-KCLAVE-E
+ONEST *
+ONEST *                CALL LT-B960M010 USING WS-X960M010
+ONEST *
+ONEST *                IF R960T001-KRETORNO OF WS-X960M010 EQUAL ZEROES
+ONEST *
+ONEST *                  ADD  1 TO CT-REGLAS
+ONEST *
+ONEST *                  PERFORM VARYING X9 FROM 1 BY 1
+ONEST *                    UNTIL X960M010-ATO0-KOCURRENCIA-S(X9) = 0
+ONEST *                       OR X9 > MAX-CAMPOS-3600
+ONEST *                          MOVE X9 TO WS-NVALOR
+ONEST *                          PERFORM ALMACENAR-FILTRO
+ONEST *                  END-PERFORM
+ONEST *
+ONEST * DISPLAYAMOS CÓMO SE CARGA LA TABLA DE CONDICIONES
+ONEST *
+ONEST *D*
+ONEST *    DISPLAY 'REGLA :'   CT-REGLAS '**********'
+ONEST *    DISPLAY 'CLAVE:'    TB-ONESAIT-CLAVE (CT-REGLAS)
+ONEST *    DISPLAY 'CONTADOR:' TB-ONESAIT-CONTADOR (CT-REGLAS)
+ONEST *    DISPLAY 'CARTERA:'  TB-ONESAIT-CARTERA (CT-REGLAS)
+ONEST *    DISPLAY 'TERRITORIAL:' TB-ONESAIT-TERRITORIAL (CT-REGLAS)
+ONEST *    DISPLAY 'REGIONAL:'    TB-ONESAIT-REGIONAL (CT-REGLAS)
+ONEST *    DISPLAY 'OFICINA:'     TB-ONESAIT-OFI (CT-REGLAS)
+ONEST *    DISPLAY 'MODALIDAD:'   TB-ONESAIT-MODALIDAD(CT-REGLAS)
+ONEST *    DISPLAY 'POLIZA:'      TB-ONESAIT-POLIZA (CT-REGLAS)
+ONEST *    DISPLAY 'SUBPOLIZA:'   TB-ONESAIT-SUBPOLIZA(CT-REGLAS)
+ONEST *    DISPLAY 'CERTIFICADO:' TB-ONESAIT-CERTIFICADO(CT-REGLAS)
+ONEST2*    DISPLAY 'TIPO PRESTAC.:'
+ONEST2*             TB-ONESAIT-TIPO-PRESTACION (CT-REGLAS)
+      *F*
+ONEST *                ELSE
+ONEST *                   MOVE 'ERROR. CONSULTAR CAMPOS TABLA 03600'
+ONEST *                     TO  WS-MSG-CANCELA
+ONEST *                   CALL  LT-CANCELA USING WS-MSG-CANCELA
+ONEST *                END-IF
+ONEST *
+ONEST *           END-PERFORM
+ONEST
+ONEST          ELSE
+ONEST *D*
+ONEST           DISPLAY 'B960M010 RC:'  R960T001-KRETORNO OF WS-X960M010
+ONEST *F*
+ONEST             MOVE 'ERROR. CONSULTAR KCLAVE TABLA 03600'
+ONEST               TO  WS-MSG-CANCELA
+ONEST             CALL  LT-CANCELA USING WS-MSG-CANCELA
+ONEST          END-IF
+ONEST      END-PERFORM
+ONEST      .
+ONEST *
+ONEST *-----------------
+ONEST  ALMACENAR-FILTRO.
+ONEST *-----------------
+ONEST      MOVE X960M010-KCLAVE-E  TO TB-ONESAIT-CLAVE (CT-REGLAS)
+ONEST      INITIALIZE  WS-ONESAIT-CARTERA
+ONEST      INITIALIZE  WS-ONESAIT-TERRITORIAL
+ONEST      INITIALIZE  WS-ONESAIT-REGIONAL
+ONEST      INITIALIZE  WS-ONESAIT-OFI
+ONEST      INITIALIZE  WS-ONESAIT-MODALIDAD
+ONEST      INITIALIZE  WS-ONESAIT-POLIZA
+ONEST *
+ONEST
+ONEST      EVALUATE WS-NVALOR
+ONEST      WHEN 1
+ONEST *D*
+ONEST *     DISPLAY 'CARTERA :' X960M010-ATO0-NVALOR-S(1)(1:2)
+ONSST *     DISPLAY 'LONG:' LENGTH OF WS-ONESAIT-CARTERA
+ONEST *F*
+ONEST       MOVE X960M010-ATO0-NVALOR-S(1)(1:2) TO
+ONEST            WS-ONESAIT-CARTERA
+ONEST *
+ONEST * MOVEMOS A LA DERECHA Y SUSTITUIMOS LO QUE NO SEA
+ONEST * NI NUMERICO NI ALFABETICO POR CEROS
+ONEST *
+ONEST       MOVE LENGTH OF WS-ONESAIT-CARTERA TO WS-POS-DEST
+ONEST       PERFORM VARYING WS-POS-ORIG
+ONEST                       FROM LENGTH OF WS-ONESAIT-CARTERA
+ONEST                       BY -1
+ONEST                       UNTIL WS-POS-ORIG = 0
+ONEST *D*
+ONEST *     DISPLAY 'POSICION ORIG:' WS-POS-ORIG ':'
+ONEST *                         WS-ONESAIT-CARTERA(WS-POS-ORIG:1)
+ONEST *                         '<-'
+ONEST *     DISPLAY 'POSICION DEST:' WS-POS-DEST
+ONEST *F*
+ONEST       IF WS-ONESAIT-CARTERA(WS-POS-ORIG:1) IS NUMERIC
+ONEST       OR WS-ONESAIT-CARTERA(WS-POS-ORIG:1) IS ALPHABETIC
+ONEST       IF WS-ONESAIT-CARTERA(WS-POS-ORIG:1) NOT = SPACES
+ONEST          MOVE WS-ONESAIT-CARTERA(WS-POS-ORIG:1) TO
+ONEST               TB-ONESAIT-CARTERA(CT-REGLAS)(WS-POS-DEST:1)
+ONEST          COMPUTE WS-POS-DEST = WS-POS-DEST - 1
+ONEST *D*
+ONEST *     DISPLAY 'CARTERA CONV1 :' TB-ONESAIT-CARTERA(CT-REGLAS)
+ONEST *F*
+ONEST       END-IF
+ONEST       END-IF
+ONEST       END-PERFORM
+ONEST *
+ONEST * ESTE CAMPO ESTA AJUSTADO A LA DCHA
+ONEST * RELLENAMOS CON CEROS POR LA IZQUIERDA
+ONEST *
+ONEST       INSPECT TB-ONESAIT-CARTERA(CT-REGLAS)
+ONEST               REPLACING ALL " " BY "0"
+ONEST *
+ONEST *D*
+ONEST *     DISPLAY 'CARTERA TRANSFORMAD:' TB-ONESAIT-CARTERA(CT-REGLAS)
+ONEST *F*
+ONEST      WHEN 2
+ONEST *D*
+ONEST *     DISPLAY 'TERRITORIAL:'
+ONEST *                X960M010-ATO0-NVALOR-S(2)(1:2)
+ONEST *F*
+ONEST       MOVE X960M010-ATO0-NVALOR-S(2)(1:2) TO
+ONEST            WS-ONESAIT-TERRITORIAL
+ONEST *
+ONEST * MOVEMOS A LA DERECHA Y SUSTITUIMOS LO QUE NO SEA
+ONEST * NI NUMERICO NI ALFABETICO POR CEROS
+ONEST *
+ONEST       MOVE LENGTH OF WS-ONESAIT-TERRITORIAL TO WS-POS-DEST
+ONEST       PERFORM VARYING WS-POS-ORIG
+ONEST                       FROM LENGTH OF WS-ONESAIT-TERRITORIAL
+ONEST                       BY -1
+ONEST               UNTIL WS-POS-ORIG = 0
+ONEST       IF WS-ONESAIT-TERRITORIAL(WS-POS-ORIG:1) IS NUMERIC
+ONEST       OR WS-ONESAIT-TERRITORIAL(WS-POS-ORIG:1) IS ALPHABETIC
+ONEST       IF WS-ONESAIT-TERRITORIAL(WS-POS-ORIG:1) NOT = SPACES
+ONEST          MOVE WS-ONESAIT-TERRITORIAL(WS-POS-ORIG:1) TO
+ONEST               TB-ONESAIT-TERRITORIAL(CT-REGLAS)(WS-POS-DEST:1)
+ONEST          COMPUTE WS-POS-DEST = WS-POS-DEST - 1
+ONEST       END-IF
+ONEST       END-IF
+ONEST       END-PERFORM
+ONEST *
+ONEST * ESTE CAMPO ESTA AJUSTADO A LA DCHA
+ONEST * RELLENAMOS CON CEROS POR LA IZQUIERDA
+ONEST *
+ONEST       INSPECT TB-ONESAIT-TERRITORIAL(CT-REGLAS)
+ONEST               REPLACING ALL " " BY "0"
+ONEST *D*
+ONEST *     DISPLAY 'TERRITORAL:' TB-ONESAIT-TERRITORIAL(CT-REGLAS)
+ONEST *F*
+ONEST      WHEN 3
+ONEST *D*
+ONEST *     DISPLAY 'REGIONAL:' X960M010-ATO0-NVALOR-S(3)(1:2)
+ONEST *F*
+ONEST       MOVE X960M010-ATO0-NVALOR-S(3)(1:2) TO
+ONEST            WS-ONESAIT-REGIONAL
+ONEST *
+ONEST * MOVEMOS A LA DERECHA Y SUSTITUIMOS LO QUE NO SEA
+ONEST * NI NUMERICO NI ALFABETICO POR CEROS
+ONEST *
+ONEST       MOVE LENGTH OF WS-ONESAIT-REGIONAL TO WS-POS-DEST
+ONEST       PERFORM VARYING WS-POS-ORIG
+ONEST                       FROM LENGTH OF WS-ONESAIT-REGIONAL
+ONEST                       BY -1
+ONEST               UNTIL WS-POS-ORIG = 0
+ONEST       IF WS-ONESAIT-REGIONAL(WS-POS-ORIG:1) IS NUMERIC
+ONEST       OR WS-ONESAIT-REGIONAL(WS-POS-ORIG:1) IS ALPHABETIC
+ONEST       IF WS-ONESAIT-REGIONAL(WS-POS-ORIG:1) NOT = SPACES
+ONEST          MOVE WS-ONESAIT-REGIONAL(WS-POS-ORIG:1) TO
+ONEST               TB-ONESAIT-REGIONAL(CT-REGLAS)(WS-POS-DEST:1)
+ONEST          COMPUTE WS-POS-DEST = WS-POS-DEST - 1
+ONEST       END-IF
+ONEST       END-IF
+ONEST       END-PERFORM
+ONEST *
+ONEST * ESTE CAMPO ESTA AJUSTADO A LA DCHA
+ONEST * RELLENAMOS CON CEROS POR LA IZQUIERDA
+ONEST *
+ONEST       INSPECT TB-ONESAIT-REGIONAL  (CT-REGLAS)
+ONEST               REPLACING ALL " " BY "0"
+ONEST *D*
+ONEST *     DISPLAY 'REGIONAL:' TB-ONESAIT-REGIONAL(CT-REGLAS)
+ONEST *F*
+ONEST      WHEN 4
+ONEST *D*
+ONEST *     DISPLAY 'OFICINA:' X960M010-ATO0-NVALOR-S(4)(1:4)
+ONEST *F*
+ONEST       MOVE X960M010-ATO0-NVALOR-S(4)(1:4) TO
+ONEST            WS-ONESAIT-OFI
+ONEST *
+ONEST * MOVEMOS A LA DERECHA Y SUSTITUIMOS LO QUE NO SEA
+ONEST * NI NUMERICO NI ALFABETICO POR CEROS
+ONEST *
+ONEST       MOVE LENGTH OF WS-ONESAIT-OFI TO WS-POS-DEST
+ONEST       PERFORM VARYING WS-POS-ORIG
+ONEST                       FROM LENGTH OF WS-ONESAIT-OFI
+ONEST                       BY -1
+ONEST               UNTIL WS-POS-ORIG = 0
+ONEST       IF WS-ONESAIT-OFI(WS-POS-ORIG:1) IS NUMERIC
+ONEST       OR WS-ONESAIT-OFI(WS-POS-ORIG:1) IS ALPHABETIC
+ONEST       IF WS-ONESAIT-OFI(WS-POS-ORIG:1) NOT = SPACES
+ONEST          MOVE WS-ONESAIT-OFI(WS-POS-ORIG:1) TO
+ONEST               TB-ONESAIT-OFI(CT-REGLAS)(WS-POS-DEST:1)
+ONEST          COMPUTE WS-POS-DEST = WS-POS-DEST - 1
+ONEST       END-IF
+ONEST       END-IF
+ONEST       END-PERFORM
+ONEST *
+ONEST * ESTE CAMPO ESTA AJUSTADO A LA DCHA
+ONEST * RELLENAMOS CON CEROS POR LA IZQUIERDA
+ONEST *
+ONEST       INSPECT TB-ONESAIT-OFI       (CT-REGLAS)
+ONEST               REPLACING ALL " " BY "0"
+ONEST *D*
+ONEST *     DISPLAY 'OFICINA:' TB-ONESAIT-OFI(CT-REGLAS)
+ONEST *F*
+ONEST      WHEN 5
+ONEST *D*
+ONEST *     DISPLAY 'MODALIDAD:' X960M010-ATO0-NVALOR-S(5)(1:5)
+ONEST *F*
+ONEST       MOVE X960M010-ATO0-NVALOR-S(5)(1:5) TO
+ONEST            WS-ONESAIT-MODALIDAD
+ONEST *
+ONEST * MOVEMOS A LA DERECHA Y SUSTITUIMOS LO QUE NO SEA
+ONEST * NI NUMERICO NI ALFABETICO POR CEROS
+ONEST *
+ONEST       MOVE LENGTH OF WS-ONESAIT-MODALIDAD TO WS-POS-DEST
+ONEST       PERFORM VARYING WS-POS-ORIG
+ONEST                       FROM LENGTH OF WS-ONESAIT-MODALIDAD
+ONEST                       BY -1
+ONEST               UNTIL WS-POS-ORIG = 0
+ONEST       IF WS-ONESAIT-MODALIDAD(WS-POS-ORIG:1) IS NUMERIC
+ONEST       OR WS-ONESAIT-MODALIDAD(WS-POS-ORIG:1) IS ALPHABETIC
+ONEST       IF WS-ONESAIT-MODALIDAD(WS-POS-ORIG:1) NOT = SPACES
+ONEST          MOVE WS-ONESAIT-MODALIDAD(WS-POS-ORIG:1) TO
+ONEST               TB-ONESAIT-MODALIDAD(CT-REGLAS)(WS-POS-DEST:1)
+ONEST          COMPUTE WS-POS-DEST = WS-POS-DEST - 1
+ONEST       END-IF
+ONEST       END-IF
+ONEST       END-PERFORM
+ONEST *
+ONEST * ESTE CAMPO ESTA AJUSTADO A LA DCHA
+ONEST * RELLENAMOS CON CEROS POR LA IZQUIERDA
+ONEST *
+ONEST       INSPECT TB-ONESAIT-MODALIDAD (CT-REGLAS)
+ONEST               REPLACING ALL " " BY "0"
+ONEST *D*
+ONEST *     DISPLAY 'MODALIDAD:' TB-ONESAIT-MODALIDAD(CT-REGLAS)
+ONEST *F*
+ONEST      WHEN 6
+ONEST       MOVE X960M010-ATO0-NVALOR-S(6)(1:10) TO
+ONEST            WS-ONESAIT-POLIZA
+ONEST *
+ONEST * MOVEMOS A LA DERECHA Y SUSTITUIMOS LO QUE NO SEA
+ONEST * NI NUMERICO NI ALFABETICO POR CEROS
+ONEST *
+ONEST       MOVE LENGTH OF WS-ONESAIT-POLIZA TO WS-POS-DEST
+ONEST       PERFORM VARYING WS-POS-ORIG
+ONEST                       FROM LENGTH OF WS-ONESAIT-POLIZA
+ONEST                       BY -1
+ONEST               UNTIL WS-POS-ORIG = 0
+ONEST       IF WS-ONESAIT-POLIZA(WS-POS-ORIG:1) IS NUMERIC
+ONEST       OR WS-ONESAIT-POLIZA(WS-POS-ORIG:1) IS ALPHABETIC
+ONEST       IF WS-ONESAIT-POLIZA(WS-POS-ORIG:1) NOT = SPACES
+ONEST          MOVE WS-ONESAIT-POLIZA(WS-POS-ORIG:1) TO
+ONEST               TB-ONESAIT-POLIZA(CT-REGLAS)(WS-POS-DEST:1)
+ONEST          COMPUTE WS-POS-DEST = WS-POS-DEST - 1
+ONEST       END-IF
+ONEST       END-IF
+ONEST       END-PERFORM
+ONEST *
+ONEST *
+ONEST * ESTE CAMPO ESTA AJUSTADO A LA DCHA
+ONEST * RELLENAMOS CON CEROS POR LA IZQUIERDA
+ONEST *
+ONEST
+ONEST       INSPECT TB-ONESAIT-POLIZA(CT-REGLAS)
+ONEST               REPLACING ALL " " BY "0"
+ONEST *D*
+ONEST *     DISPLAY 'POLIZA:' TB-ONESAIT-POLIZA(CT-REGLAS)
+ONEST *F*
+ONEST *
+ONEST      WHEN 7
+ONEST *D*
+ONEST *     DISPLAY 'SUBPOLIZA:' X960M010-ATO0-NVALOR-S(7)(1:4)
+ONEST *F*
+ONEST       MOVE X960M010-ATO0-NVALOR-S(7)(1:4) TO
+ONEST            WS-ONESAIT-SUBPOLIZA
+ONEST *
+ONEST * MOVEMOS A LA DERECHA Y SUSTITUIMOS LO QUE NO SEA
+ONEST * NI NUMERICO NI ALFABETICO POR CEROS
+ONEST *
+ONEST       MOVE LENGTH OF WS-ONESAIT-SUBPOLIZA TO WS-POS-DEST
+ONEST       PERFORM VARYING WS-POS-ORIG
+ONEST                       FROM LENGTH OF WS-ONESAIT-SUBPOLIZA
+ONEST                       BY -1
+ONEST               UNTIL WS-POS-ORIG = 0
+ONEST       IF WS-ONESAIT-SUBPOLIZA(WS-POS-ORIG:1) IS NUMERIC
+ONEST       OR WS-ONESAIT-SUBPOLIZA(WS-POS-ORIG:1) IS ALPHABETIC
+ONEST       IF WS-ONESAIT-SUBPOLIZA(WS-POS-ORIG:1) NOT = SPACES
+ONEST          MOVE WS-ONESAIT-SUBPOLIZA(WS-POS-ORIG:1) TO
+ONEST               TB-ONESAIT-SUBPOLIZA(CT-REGLAS)(WS-POS-DEST:1)
+ONEST          COMPUTE WS-POS-DEST = WS-POS-DEST - 1
+ONEST       END-IF
+ONEST       END-IF
+ONEST       END-PERFORM
+ONEST *
+ONEST *
+ONEST * ESTE CAMPO ESTA AJUSTADO A LA DCHA
+ONEST * RELLENAMOS CON CEROS POR LA IZQUIERDA
+ONEST *
+ONEST
+ONEST       INSPECT TB-ONESAIT-SUBPOLIZA(CT-REGLAS)
+ONEST               REPLACING ALL " " BY "0"
+ONEST *D*
+ONEST *     DISPLAY 'SUBPOLIZA:' TB-ONESAIT-SUBPOLIZA(CT-REGLAS)
+ONEST *F*
+ONEST      WHEN 8
+ONEST *D*
+ONEST *     DISPLAY 'CERTIFICADO:' X960M010-ATO0-NVALOR-S(8)(1:6)
+ONEST *F*
+ONEST       MOVE X960M010-ATO0-NVALOR-S(8)(1:6) TO
+ONEST            WS-ONESAIT-CERTIFICADO
+ONEST *
+ONEST * MOVEMOS A LA DERECHA Y SUSTITUIMOS LO QUE NO SEA
+ONEST * NI NUMERICO NI ALFABETICO POR CEROS
+ONEST *
+ONEST       MOVE LENGTH OF WS-ONESAIT-CERTIFICADO TO WS-POS-DEST
+ONEST       PERFORM VARYING WS-POS-ORIG
+ONEST                       FROM LENGTH OF WS-ONESAIT-CERTIFICADO
+ONEST                       BY -1
+ONEST               UNTIL WS-POS-ORIG = 0
+ONEST       IF WS-ONESAIT-CERTIFICADO(WS-POS-ORIG:1) IS NUMERIC
+ONEST       OR WS-ONESAIT-CERTIFICADO(WS-POS-ORIG:1) IS ALPHABETIC
+ONEST       IF WS-ONESAIT-CERTIFICADO(WS-POS-ORIG:1) NOT = SPACES
+ONEST          MOVE WS-ONESAIT-CERTIFICADO(WS-POS-ORIG:1) TO
+ONEST               TB-ONESAIT-CERTIFICADO(CT-REGLAS)(WS-POS-DEST:1)
+ONEST          COMPUTE WS-POS-DEST = WS-POS-DEST - 1
+ONEST       END-IF
+ONEST       END-IF
+ONEST       END-PERFORM
+ONEST *
+ONEST *
+ONEST * ESTE CAMPO ESTA AJUSTADO A LA DCHA
+ONEST * RELLENAMOS CON CEROS POR LA IZQUIERDA
+ONEST *
+ONEST
+ONEST       INSPECT TB-ONESAIT-CERTIFICADO(CT-REGLAS)
+ONEST               REPLACING ALL " " BY "0"
+ONEST *D*
+ONEST *     DISPLAY 'CERTIFICADO:' TB-ONESAIT-CERTIFICADO(CT-REGLAS)
+ONEST *F*
+ONEST2     WHEN 9
+ONEST2*D*
+ONEST2      DISPLAY 'TIP.PRESTAC:' X960M010-ATO0-NVALOR-S(9)(1:1)
+ONEST2*F*
+ONEST2      MOVE X960M010-ATO0-NVALOR-S(9)(1:1) TO
+ONEST2           TB-ONESAIT-TIPO-PRESTACION(CT-REGLAS)
+ONEST      END-EVALUATE
+ONEST *
+ONEST      .
+ONEST
+ONEST
+ONEST
+ONEST *************************
+ONEST  BUSCAR-REGIONAL-DGT.
+ONEST *************************
+ONEST * OBTENEMOS LA OFICINA REGIONAL Y DGT (DIRECC.GENERAL TERRITORIAL)
+ONEST * A PARTIR DE LA
+ONEST * OFICINA DE PRODUCCIÓN OFC0--KOFICINA PARA OFC0-CTIPOOFC=3
+USGIBE     INITIALIZE  X4301091
+ONEST *
+USGIBE     MOVE OFC0-KOFICINA   TO  X4301091-KOFICINA
+ONEST *
+USGIBE     CALL LT-B430J991 USING X4301091
+ONEST *
+ONEST      .
+ONEST *
+ONEST *****************************************************************
+ONEST  VER-SI-ONESAIT.
+ONEST *****************************************************************
+ONEST * PARA PODER APLICAR LAS CONDICIONES DE LA TABLA 003600
+ONEST * TENEMOS QUE OBTENER
+ONEST * LA REGIONAL Y LA DGT A PARTIR DE LA OFICINA DE PRODUCCION
+ONEST *
+ONEST *D*
+ONEST      DISPLAY 'VER SI ONESAIT--------------'
+ONEST      DISPLAY 'GNR0-KPOLIZA:' GNR0-KPOLIZA
+ONEST      DISPLAY 'GNR0-KMODALIDAD:' GNR0-KMODALIDAD
+ONEST      DISPLAY 'OFC0-KOFICINA  :' OFC0-KOFICINA
+ONEST *F*
+ONEST      PERFORM BUSCAR-REGIONAL-DGT
+ONEST *D*
+USGIBE     DISPLAY 'X4301091-KDIRGETE :' X4301091-KDIRGETE
+USGIBE     DISPLAY 'X4301091-KDIRECREG:' X4301091-KDIRECREG
+ONEST *F*
+ONEST      PERFORM COMPROBAR-CONDICIONES
+ONEST      .
+ONEST
+ONEST *------------------*
+ONEST  COMPROBAR-CONDICIONES.
+ONEST *------------------*
+ONEST * LOS CAMPOS DE LA TABLA QUE VENGAN CON X, NO SE TIENEN EN
+ONEST * CUENTA
+ONEST *
+ONEST * SI EN LA TABLA VIENE TODO EL VALOR A <X> INDICA QUE NO TENEMOS
+ONEST * QUE PREGUNTAR POR ESE VALOR
+ONEST *
+ONEST *D*
+ONEST       DISPLAY 'ENTRA EN COMPROBAR CONDICIONES'
+ONEST *F*
+ONEST       SET NO-ONESAIT TO TRUE
+ONEST       PERFORM VARYING I FROM 1 BY 1 UNTIL I > CT-REGLAS
+ONEST               OR SI-ONESAIT
+ONEST *D*
+ONEST        DISPLAY 'COMPARAMOS CON CLAVE :' TB-ONESAIT-CLAVE(I)
+ONEST *F*
+ONEST *
+ONEST * CARTERA (COMO ES CARTERA DB2, HEMOS INICIALIZADO A '03')
+ONEST *
+ONEST        IF WS-CARTERA = TB-ONESAIT-CARTERA(I) OR
+ONEST           TB-ONESAIT-CARTERA(I) = ALL 'X'
+ONEST *D*
+ONEST               DISPLAY 'CARTERA'
+ONEST *F*
+ONEST *
+ONEST * DIRECCION GENERAL TERRITORIAL
+ONEST *
+USGIBE        IF X4301091-KDIRGETE = TB-ONESAIT-TERRITORIAL(I) OR
+ONEST         TB-ONESAIT-TERRITORIAL(I) = ALL 'X'
+ONEST *D*
+ONEST               DISPLAY 'TERRITORIAL'
+ONEST *F*
+ONEST *
+ONEST * DIRECCION REGIONAL
+ONEST *
+USGIBE         IF X4301091-KDIRECREG = TB-ONESAIT-REGIONAL(I) OR
+ONEST             TB-ONESAIT-REGIONAL(I) = ALL 'X'
+ONEST *D*
+ONEST               DISPLAY 'TERRITORIAL'
+ONEST *F*
+ONEST *
+ONEST * OFICINA DE PRODUCCION
+ONEST * EN EL BATCH FILTRAMOS POR OFICINA DE PRODUCCION
+ONEST *
+ONEST           IF OFC0-KOFICINA    = TB-ONESAIT-OFI(I) OR
+ONEST              TB-ONESAIT-OFI(I) = ALL 'X'
+ONEST *D*
+ONEST               DISPLAY 'OFICINA'
+ONEST *F*
+ONEST *
+ONEST * MODALIDAD
+ONEST *
+ONEST            IF GNR0-KMODALIDAD   =
+ONEST               TB-ONESAIT-MODALIDAD-NUM (I)       OR
+ONEST               TB-ONESAIT-MODALIDAD(I) = ALL 'X'
+ONEST *D*
+ONEST               DISPLAY 'MODALIDAD'
+ONEST *F*
+ONEST *
+ONEST * POLIZA
+ONEST *
+ONEST             IF GNR0-KPOLIZA =
+ONEST                TB-ONESAIT-POLIZA(I) OR
+ONEST                TB-ONESAIT-POLIZA(I) = ALL 'X'
+ONEST *D*
+ONEST               DISPLAY 'POLIZA'
+ONEST *F*
+ONEST *
+ONEST * SUBPOLIZA
+ONEST *
+ONEST              MOVE GNR0-NSUBPOLIZA TO WS-SUBPOLIZA
+ONEST              IF WS-SUBPOLIZA-ALF = TB-ONESAIT-SUBPOLIZA-NUM(I) OR
+ONEST                 TB-ONESAIT-SUBPOLIZA(I) = ALL 'X'
+ONEST *D*
+ONEST               DISPLAY 'SUBPOLIZA'
+ONEST *F*
+ONEST *
+ONEST * CERTIFICADO
+ONEST *
+ONEST               MOVE GNR0-NCERTIFICADO TO WS-CERTIFICADO
+ONEST               IF WS-CERTIFICADO-ALF =
+ONEST                  TB-ONESAIT-CERTIFICADO-NUM(I)
+ONEST                  OR TB-ONESAIT-CERTIFICADO(I) = ALL 'X'
+ONEST *D*
+ONEST               DISPLAY 'CERTIFICADO'
+ONEST *F*
+ONEST2*
+ONEST2* TIPO DE PRESTACION
+ONEST2*
+ONEST2              IF WS-TIPO-PRESTACION =
+ONEST2                 TB-ONESAIT-TIPO-PRESTACION(I) OR
+ONEST2                 TB-ONESAIT-TIPO-PRESTACION(I) = 'X'
+ONEST *D*
+ONEST               DISPLAY 'PRESTACION'
+ONEST               DISPLAY 'ESTA POLIZA SE GESTIONA POR ONESAIT'
+ONEST *F*
+ONEST                  SET SI-ONESAIT TO TRUE
+ONEST                  ADD 1 TO TB-ONESAIT-CONTADOR(I)
+ONEST                  MOVE TB-ONESAIT-CLAVE(I) TO REGONE-CLAVE
+ONEST2              END-IF
+ONEST               END-IF
+ONEST *
+ONEST              END-IF
+ONEST *
+ONEST             END-IF
+ONEST *
+ONEST            END-IF
+ONEST *
+ONEST           END-IF
+ONEST *
+ONEST          END-IF
+ONEST *
+ONEST         END-IF
+ONEST *
+ONEST        END-IF
+ONEST *
+ONEST      END-PERFORM
+ONEST *
+ONEST      .
+ONEST3*****************************************************************
+ONEST3 BUSCAR-FORMATO.
+ONEST3*****************************************************************
+ONEST3* ACCEDEMOS A LA TABLA POR CADA UNA DE LAS CLAVES QUE TIENE
+ONEST3*
+ONEST3     MOVE X960M010-KCLAVE-S(X7) TO X960M010-KCLAVE-E
+ONEST3*D*
+ONEST3     DISPLAY 'B960M010 FMT'
+ONEST3         ' CT- REGLAS:' CT-REGLAS '/'
+               ' CLV:' X960M010-CLAVE-E '/'
+               ' TAB:' X960M010-K1TAB-E '/'
+               ' KCLAVE:' X960M010-KCLAVE-E   '/'
+ONEST3         ' K1TAB ANT:'  X960M010-ANT-K1TAB
+ONEST3         ' KCLAVE ANT:' X960M010-ANT-KCLAVE
+               ' OCC ANT:' X960M010-ANT-KOCURRENCIA
+
+ONEST *F*
+ONEST3
+ONEST3     CALL LT-B960M010 USING WS-X960M010
+ONEST3
+ONEST3*D*
+ONEST3     DISPLAY 'B960M010 PARA FMT. RC:'
+ONEST3              R960T001-KRETORNO OF WS-X960M010
+ONEST3*F*
+ONEST3     IF R960T001-KRETORNO OF WS-X960M010 EQUAL ZEROES
+ONEST3
+ONEST3        ADD  1 TO CT-REGLAS
+ONEST3
+ONEST3*D*
+ONEST3        DISPLAY 'ALMACENAR FILTROS'
+ONEST3*F*
+ONEST3        PERFORM VARYING X9 FROM 1 BY 1
+ONEST3             UNTIL X960M010-ATO0-KOCURRENCIA-S(X9) = 0
+ONEST3             OR X9 > MAX-CAMPOS-3600
+ONEST3       MOVE X9 TO WS-NVALOR
+ONEST3       PERFORM ALMACENAR-FILTRO
+ONEST3     END-PERFORM
+ONEST3*
+ONEST3* DISPLAYAMOS COMO SE CARGA LA TABLA DE CONDICIONES
+ONEST3*D*
+ONEST3     DISPLAY 'REGLA :'   CT-REGLAS '**********'
+ONEST3     DISPLAY 'CLAVE:'    TB-ONESAIT-CLAVE (CT-REGLAS)
+ONEST3     DISPLAY 'CONTADOR:' TB-ONESAIT-CONTADOR (CT-REGLAS)
+ONEST3* DATOS DEL FORMATO (CONDICIONES)
+ONEST3     DISPLAY 'CARTERA:'  TB-ONESAIT-CARTERA (CT-REGLAS)
+ONEST3     DISPLAY 'TERRITORIAL:' TB-ONESAIT-TERRITORIAL (CT-REGLAS)
+ONEST3     DISPLAY 'REGIONAL:'    TB-ONESAIT-REGIONAL (CT-REGLAS)
+ONEST3     DISPLAY 'OFICINA:'     TB-ONESAIT-OFI (CT-REGLAS)
+ONEST3     DISPLAY 'MODALIDAD:'   TB-ONESAIT-MODALIDAD(CT-REGLAS)
+ONEST3     DISPLAY 'POLIZA:'      TB-ONESAIT-POLIZA (CT-REGLAS)
+ONEST3     DISPLAY 'SUBPOLIZA:'   TB-ONESAIT-SUBPOLIZA(CT-REGLAS)
+ONEST3     DISPLAY 'CERTIFICADO:' TB-ONESAIT-CERTIFICADO(CT-REGLAS)
+ONEST3     DISPLAY 'TIPO PRESTAC.:'
+ONEST3              TB-ONESAIT-TIPO-PRESTACION (CT-REGLAS)
+      *F*
+ONEST3                 ELSE
+ONEST3                    MOVE 'ERROR. CONSULTAR CAMPOS TABLA 03600'
+ONEST3                      TO  WS-MSG-CANCELA
+ONEST3                    CALL  LT-CANCELA USING WS-MSG-CANCELA
+ONEST3                 END-IF
+ONEST3     .
+
+      *****************************************************************
+      *                                                               *
+      *****************************************************************

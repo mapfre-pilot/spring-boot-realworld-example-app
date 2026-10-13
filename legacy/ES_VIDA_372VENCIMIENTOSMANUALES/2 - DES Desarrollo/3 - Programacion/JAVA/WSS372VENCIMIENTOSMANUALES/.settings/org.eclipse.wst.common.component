@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="372VENCIMIENTOSMANUALES">
+        <wb-resource deploy-path="/" source-path="/Web Content"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/Java Source"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/.apt_generated"/>
+        <property name="context-root" value="372VENCIMIENTOSMANUALES"/>
+        <property name="java-output-path" value="Web Content/WEB-INF/classes"/>
+    </wb-module>
+</project-modules>

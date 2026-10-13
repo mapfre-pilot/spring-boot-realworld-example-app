@@ -1,0 +1,23 @@
+      ******************************************************************00010000
+      *                                                                *00020000
+      * COPY:              X372X101,    PROGRAMA: B362J006             *00030001
+      * APLICACION:        RESCATES MANUALES                           *00040000
+      * DESCRIPCION:       COPY DE LOS DATOS ECONÓMICOS (BDGI)         *00050000
+      * FECHA DE CREACION: 01-06-2012                                  *00060000
+      * AUTOR :            EVERIS                                      *00070000
+      *                                                                *00080000
+      ******************************************************************00090000
+       07 X372X101-DATOS-ECONOMICOS.                                    00100001
+          09 X372X101-DATECO-SIMPUESTO               PIC X(01).         00110001
+          09 X372X101-DATECO-COD-SISTEMA             PIC X(02).         00120001
+          09 X372X101-DATECO-COD-OPERACION           PIC X(02).         00130001
+          09 X372X101-DATECO-COD-SOCIEDAD            PIC X(04).         00140001
+          09 X372X101-DATECO-AEJERCICIO              PIC 9(04).         00150001
+          09 X372X101-DATECO-MEJERCICIO              PIC 9(02).         00160001
+          09 X372X101-DATECO-PROV-FISCAL             PIC 9(02).         00170001
+          09 X372X101-DATECO-NIF-TERCEROS            PIC X(20).         00180001
+          09 X372X101-DATECO-COD-MONEDA              PIC X(03).         00190001
+          09 X372X101-DATECO-FDOCUMENTO              PIC 9(08).         00200001
+          09 X372X101-DATECO-TIPO-DOC                PIC X(02).         00210001
+          09 X372X101-DATECO-REFEREN-DOC             PIC X(24).         00220001
+                                                                        00230000

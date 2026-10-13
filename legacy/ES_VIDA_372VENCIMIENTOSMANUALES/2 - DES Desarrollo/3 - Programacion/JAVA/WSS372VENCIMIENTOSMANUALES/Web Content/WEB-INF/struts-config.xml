@@ -1,0 +1,170 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts-config PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 1.1//EN"
+                               "http://jakarta.apache.org/struts/dtds/struts-config_1_1.dtd">
+
+<struts-config>
+
+	<!-- Orígenes de datos -->
+	<data-sources>
+	</data-sources>
+
+	<!-- Beans de formulario -->
+	<form-beans>
+		<form-bean name="formGestionVariables" type="com.mapfre.mavisa.wss372vencimientosmanuales.forms.J372J004GestionVariablesVenActionForm">
+		</form-bean>
+		<form-bean name="formEmisionFiniquitos" type="com.mapfre.mavisa.wss372vencimientosmanuales.forms.J372J002EmisionFiniquitosVenActionForm">
+		</form-bean>
+		<form-bean name="formGestionCarteras" type="com.mapfre.mavisa.wss372vencimientosmanuales.forms.J372J003GestionCarterasVenActionForm">
+		</form-bean>
+		<form-bean name="formPeticionBDGI" type="com.mapfre.mavisa.wss372vencimientosmanuales.forms.J372J006PeticionBDGIVenActionForm">
+		</form-bean>
+		<form-bean name="formReaseguro" type="com.mapfre.mavisa.wss372vencimientosmanuales.forms.J372J007ReaseguroVenActionForm">
+		</form-bean>
+		<form-bean name="formImpresionInformes" type="com.mapfre.mavisa.wss372vencimientosmanuales.forms.J372J005ImpresionInformesVenActionForm">
+		</form-bean>
+		<form-bean name="formBusquedaExp" type="com.mapfre.mavisa.wss372vencimientosmanuales.forms.J372J001BusquedaExpVenActionForm">
+		</form-bean>
+		<form-bean name="formGestionExped" type="com.mapfre.mavisa.wss372vencimientosmanuales.forms.J372J008GestionExpedientesVenActionForm">
+		</form-bean>
+		<form-bean name="formCargaFichero" type="com.mapfre.mavisa.wss372vencimientosmanuales.forms.J372J010CargaFicheroVenActionForm">
+		</form-bean>
+	</form-beans>
+
+	<!-- Excepciones globales -->
+	<global-exceptions>
+	</global-exceptions>
+
+	<!-- Reenvíos globales -->
+	<global-forwards>
+	</global-forwards>
+
+	<!-- Correlaciones de acción -->
+	<action-mappings>
+		<action path="/gestionVariablesVen" scope="request" name="formGestionVariables" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J007GestionVariablesVenAction" validate="false">
+			<forward name="OK" path="/jsp/gestionVariablesVen.jsp">
+			</forward>
+			
+		</action>
+		<action path="/inicioGestionVariablesVen" scope="request" name="formGestionVariables" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J007GestionVariablesVenAction" validate="false" parameter="inicio">
+			<forward name="OK" path="/jsp/gestionVariablesVen.jsp">
+			</forward>
+		</action>
+		<action path="/emisionFiniquitosVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J003EmisionFiniquitosVenAction" name="formEmisionFiniquitos" validate="false" scope="request">
+			<forward name="OK" path="/jsp/emisionFiniquitosVen.jsp">
+			</forward>
+		</action>
+		<action path="/inicioEmisionFiniquitosVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J003EmisionFiniquitosVenAction" name="formEmisionFiniquitos" validate="false" scope="request" parameter="inicio">
+			<forward name="OK" path="/jsp/emisionFiniquitosVen.jsp">
+			</forward>
+		</action>
+		<action path="/gestionCarterasVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J005GestionCarterasVenAction" name="formGestionCarteras" validate="false" scope="request">
+			<forward name="OK" path="/jsp/gestionCarterasVen.jsp">
+			</forward>
+		</action>
+		<action path="/peticionBDGIVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J009PeticionBDGIVenAction" scope="request" name="formPeticionBDGI">
+			<forward name="OK" path="/jsp/peticionBDGIVen.jsp">
+			</forward>
+		</action>
+		<action path="/inicioPeticionBDGIVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J009PeticionBDGIVenAction" scope="request" name="formPeticionBDGI" validate="false" parameter="inicio">
+			<forward name="OK" path="/jsp/peticionBDGIVen.jsp">
+			</forward>
+		</action>
+		<action path="/listadoGestionCarterasVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J013ForwardSuccessListadoAction" scope="request" name="formGestionCarteras">
+		
+				 <forward name="continuar" path="/jsp/gestionCarterasListadoVen.jsp" />
+ 		</action>
+		<action path="/reaseguroVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J010ReaseguroVenAction" scope="request" name="formReaseguro" validate="false">
+			<forward name="OK" path="/jsp/reaseguroVen.jsp">
+			</forward>
+		</action>
+		<action path="/inicioReaseguroVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J004ForwardSuccessAction" scope="request" name="formReaseguro" validate="false" parameter="inicio">
+			<forward name="OK" path="/jsp/reaseguroVen.jsp">
+			</forward>
+		</action>
+		<action path="/impresionInformesVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J008ImpresionInformesVenAction" name="formImpresionInformes" scope="request">
+			<forward name="OK" path="/jsp/impresionInformesVen.jsp">
+			</forward>
+		</action>
+		<action path="/inicioImpresionInformesVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J008ImpresionInformesVenAction" name="formImpresionInformes" scope="request" parameter="inicio" validate="false">
+			<forward name="OK" path="/jsp/impresionInformesVen.jsp">
+			</forward>
+		</action>
+		<action path="/busquedaExpFormVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J001BusquedaExpVenAction" name="formBusquedaExp" scope="request" validate="false">
+			<forward name="OK" path="/jsp/contenedor.busquedaExpedientesVen.jsp">
+			</forward>
+		</action>
+		<action path="/listadoBusquedaExpVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J013ForwardSuccessListadoAction" scope="request" name="formBusquedaExp">
+			<forward name="continuar" path="/jsp/busquedaExpListadoVen.jsp">
+			</forward>
+		</action>
+		
+		<action path="/inicioModificarExpVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J018InicioModificacionAction" name="formBusquedaExp" scope="request" validate="false" parameter="inicio">
+			<forward name="OK" path="/jsp/contenedor.gestionExpedientesVen.jsp">
+			</forward>
+		</action>
+		
+		<action path="/modificarExpVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J019ModificacionAction" name="formBusquedaExp" scope="request" validate="false" parameter="inicio">
+			<forward name="OK" path="/jsp/gestionExpedientesVen.jsp">
+			</forward>
+		</action>
+		
+		<action path="/inicioBusquedaExpVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J004ForwardSuccessAction" name="formBusquedaExp" scope="request" validate="false" parameter="inicio">
+			<forward name="OK" path="/jsp/contenedor.busquedaExpedientesVen.jsp">
+			</forward>
+		</action>
+		<action name="formGestionExped" path="/gestionExpedientesVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J012GestionExpedientesVenAction" validate="false" scope="request">
+		<forward name="OK" path="/jsp/gestionExpedientesVen.jsp">
+			</forward>
+		</action>
+		<action path="/inicioGestionExpedVen" scope="request" name="formGestionExped" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J004ForwardSuccessAction" validate="false" parameter="inicio">
+			<forward name="OK" path="/jsp/contenedor.altaGestionExpedientesVen.jsp"> 
+			</forward>
+		</action>
+		<action path="/contGestionExpedVen" scope="request" name="formGestionExped" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J012GestionExpedientesVenAction" validate="false" parameter="inicio">
+			<forward name="OK" path="/jsp/gestionExpedientesVen.jsp">
+			</forward>
+		</action>
+		<action path="/consultaCarteraVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J014ConsultaCarteraVenAction" name="formGestionExped" validate="false" scope="request">
+		<forward name="OK" path="/jsp/gestionExpedientesVen.jsp">
+			</forward>
+		</action>
+
+		<!-- R&V Junio 2017 - CU011 - everis(RGL) - INI -->
+		<action path="/cargarCuadroCoasegurosVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J020GestionExpCoaseguroVenAction" name="formGestionExped" validate="false" scope="request">
+			<forward name="OK" path="/jsp/gestionExpedientesVen.jsp">
+			</forward>
+		</action>
+		<!-- R&V Junio 2017 - CU011 - everis(RGL) - FIN -->
+
+
+		<action	path="/lanzarImpresionDirecta"
+			    name="formImpresionInformes" 
+			    scope="request" 
+				type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J015ImpresionDirectaAction">
+				
+				<forward name="enviar" path="/jsp/impresionInformesVen.jsp" />
+        </action>
+			<action path="/obtenerDatosFiscalidad" name="formGestionExped" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J004ForwardSuccessAction" scope="request">
+			   	<forward name="OK" path="/jsp/frameFiscalidad.jsp">
+			   	</forward>
+		    </action>
+		    
+		    <action path="/cargaFicheroVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J011CargaFicheroVenAction" scope="request" name="formCargaFichero" validate="false">
+			<forward name="OK" path="/jsp/cargaFicheroVen.jsp">
+			</forward>
+		</action>
+		<action path="/inicioCargarFicheroVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J004ForwardSuccessAction" scope="request" name="formCargaFichero" validate="false" parameter="inicio">
+			<forward name="OK" path="/jsp/cargaFicheroVen.jsp">
+			</forward>
+		</action>
+		
+		<action path="/modificarExpVen" type="com.mapfre.mavisa.wss372vencimientosmanuales.actions.J372J019ModificacionAction" name="formBusquedaExp" scope="request" validate="false" parameter="inicio">
+			<forward name="OK" path="/jsp/gestionExpedientesVen.jsp">
+			</forward>
+		</action>
+		
+	</action-mappings>
+
+	<!-- Recursos de mensaje -->
+	<message-resources parameter="com.mapfre.mavisa.wss372vencimientosmanuales.resources.ApplicationResources"/>
+</struts-config>

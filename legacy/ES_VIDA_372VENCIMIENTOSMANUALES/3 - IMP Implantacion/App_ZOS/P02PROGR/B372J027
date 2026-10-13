@@ -1,0 +1,402 @@
+      *RETRIEVAL
+      ******************************************************************
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.
+
+                 B372J027.
+      ******************************************************************
+      **INV: A372VENM
+      ******************************************************************
+      *    AUTOR      : INDRA                                          *
+      *    FECHA      : JULIO 2026                                     *
+      *    DESCRIPCION: PROGRAMA QUE FORMATEA LA EXTRACION DE          *
+      *                 LIQUIDACIONES PENDIENTES CON SUS LIQUIDACIONES *
+      *                 PAGADAS PARA SU RECOGIDA POR VERSUSONE         *
+      ******************************************************************
+      /
+       ENVIRONMENT DIVISION.
+      *---------------------
+       CONFIGURATION SECTION.
+      *----------------------
+       SPECIAL-NAMES.
+            DECIMAL-POINT IS COMMA.
+
+       INPUT-OUTPUT SECTION.
+      *---------------------
+       FILE-CONTROL.
+      ***  FICHERO LIQUIDACIONES PENDIENTES DE VENCIMIENTOS MANUALES
+            SELECT FICH-PEND ASSIGN TO SYS001.
+
+      ***  FICHERO CON FORMATO PARA ENVIO DE LIQUIDACIONES PENDIENTES
+      ***  DE VENCIMIENTOS MANUALES PARA VESUSONE
+            SELECT FICH-SAL1 ASSIGN TO SYS002.
+
+       DATA DIVISION.
+      *--------------
+       FILE SECTION.
+       FD  FICH-PEND
+           LABEL RECORDS OMITTED
+           RECORDING MODE IS F.
+       01  RLIQ-VM-PEND     PIC X(810).
+
+       FD  FICH-SAL1
+           LABEL RECORDS OMITTED
+           RECORDING MODE IS F.
+       01  RLIQ-VERSUSONE   PIC X(884).
+
+       WORKING-STORAGE SECTION.
+      *-----------------------
+       01  P-FILLER.
+           03  FILLER   PIC X(17)  VALUE 'INICIO-WORKING'.
+
+      **** SWICTH.
+          03 SW-FIN-FICH-PEND            PIC X VALUE SPACES.
+             88 SI-FIN-FICH-PEND           VALUE 'S'.
+             88 NO-FIN-FICH-PEND           VALUE 'N'.
+
+      **** CONTADORES.
+          03 CT-LEIDOS-PEND                PIC 9(6) VALUE ZEROS.
+          03 CT-GRABADOS                   PIC 9(6) VALUE ZEROS.
+
+      **** INDICES.
+          03 IND                           PIC 9(2) VALUE ZEROS.
+
+      **** VARIABLES DE TRABAJO
+      *
+      * COPY LIQUIDACIONES PENDIENTES CON SUS PAGADAS
+       01 WE-ENTRADA.
+        03 RE-ENTRADA.
+           05 RE-KRAMO            PIC X(3).
+           05 RE-KPOLIZA          PIC X(10).
+           05 RE-KMODALIDAD       PIC X(3).
+           05 RE-FULTVTO.
+              07 RE-FAULTVTO      PIC 9(4).
+              07 RE-FMULTVTO      PIC 9(2).
+              07 RE-FDULTVTO      PIC 9(2).
+           05 RE-FPROCESO         PIC 9(8).
+           05 RE-CCANALCAMP       PIC X(02).
+           05 RE-CEMPRESA         PIC X(02).
+           05 RE-KOFICINA         PIC X(4).
+           05 RE-FEFECINI.
+              07 RE-FAEFECINI     PIC 9(4).
+              07 RE-FMEFECINI     PIC 9(2).
+              07 RE-FDEFECINI     PIC 9(2).
+           05 RE-CTIPOVTO         PIC X.
+           05 RE-TMOTIVOESP       OCCURS 10.
+              07 RE-KUSUARIO      PIC X(8).
+              07 RE-FAUTORIZA.
+                 09 RE-FAAUTORIZA PIC 9(04).
+                 09 RE-FMAUTORIZA PIC 9(02).
+                 09 RE-FDAUTORIZA PIC 9(02).
+           05 RE-CSITUVTO         PIC XX.
+           05 RE-CINCLUVTOP       PIC X.
+           05 RE-CINCLUVTOC       PIC X.
+           05 RE-CAUTORIZAP       PIC X.
+           05 RE-CAUTORIZAC       PIC X.
+           05 RE-KPRODUCTOR       PIC 9(7).
+           05 RE-NUMCOMP          PIC 9.
+           05 RE-CMODFLEX         PIC X.
+           05 RE-KOFICINAPROD     PIC XXXX.
+           05 RE-CGARANTICIPA     PIC X(01).
+           05 RE-CTIPOLIQ         PIC X(1).
+           05 RE-CSITULIQ         PIC X(2).
+           05 RE-FSITUPE.
+              07 RE-FASITUPE      PIC 9(4).
+              07 RE-FMSITUPE      PIC 9(2).
+              07 RE-FDSITUPE      PIC 9(2).
+           05 RE-KDIRECREGPE      PIC X(2).
+           05 RE-KOFICINAPE       PIC X(4).
+           05 RE-FLIQUIDA.
+              07 RE-FALIQUIDA     PIC 9(4).
+              07 RE-FMLIQUIDA     PIC 9(2).
+              07 RE-FDLIQUIDA     PIC 9(2).
+           05 RE-KDIRECREGEM      PIC X(2).
+           05 RE-KOFIGES          PIC X(4).
+           05 RE-GUSERCAPT        PIC X(8).
+           05 RE-GTERMCAPT        PIC X(8).
+           05 RE-GBENNOM          PIC X(12).
+           05 RE-GBENEMP.
+              07 RE-GBENAPE1      PIC X(17).
+              07 RE-GBENAPE2      PIC X(17).
+           05 R7-GBENDNI          PIC X(10).
+           05 RE-CBENTIPO         PIC X(1).
+           05 RE-GTELEFONO.
+              07 RE-GPRETEFPAR    PIC X(03).
+              07 RE-GTFNOPAR      PIC X(07).
+           05 RE-GDOMICILIO       PIC X(35).
+           05 RE-GLOCALIDAD       PIC X(25).
+           05 RE-CPOSTAL.
+              07 RE-CPROVINCIA    PIC 9(2).
+              07 RE-CLOCAL        PIC 9(3).
+           05 RE-CPAIS            PIC X(3).
+           05 RE-CHACIENDA        PIC X(1).
+           05 RE-ILIQUIDAC        PIC S9(12).
+           05 RE-ELIQUIDAC        REDEFINES RE-ILIQUIDAC
+                                  PIC S9(10)V99.
+           05 RE-IVALVTO          PIC 9(12).
+           05 RE-EVALVTO          REDEFINES RE-IVALVTO
+                                  PIC 9(10)V99.
+           05 RE-IVALVTOPB        PIC S9(12).
+           05 RE-EVALVTOPB        REDEFINES RE-IVALVTOPB
+                                  PIC S9(10)V99.
+           05 RE-IRECIBPTE        PIC S9(12).
+           05 RE-ERECIBPTE        REDEFINES RE-IRECIBPTE
+                                  PIC S9(10)V99.
+           05 RE-IOTROSREC        PIC S9(12).
+           05 RE-EOTROSREC        REDEFINES RE-IOTROSREC
+                                  PIC S9(10)V99.
+           05 RE-IANTICPTE        PIC S9(12).
+           05 RE-EANTICPTE        REDEFINES RE-IANTICPTE
+                                  PIC S9(10)V99.
+           05 RE-IRECIBANT        PIC S9(12).
+           05 RE-ERECIBANT        REDEFINES RE-IRECIBANT
+                                  PIC S9(10)V99.
+           05 RE-IVALREIN         PIC S9(12).
+           05 RE-EVALREIN         REDEFINES RE-IVALREIN
+                                  PIC S9(10)V99.
+           05 RE-PVALVTO          PIC 999V99.
+           05 RE-CFORMPAGO        PIC X.
+           05 RE-KBANCO77.
+              07 RE-CBANCO77      PIC 9(4).
+              07 RE-CSUCUR77      PIC 9(4).
+           05 RE-GDCCCC           PIC X(02).
+           05 RE-NCUENTACCC       PIC 9(10).
+           05 RE-FPAGOLIQ.
+              07 RE-FAPAGOLIQ     PIC 9(4).
+              07 RE-FMPAGOLIQ     PIC 9(2).
+              07 RE-FDPAGOLIQ     PIC 9(2).
+           05 RE-FORDENPAG.
+              07 RE-FAORDENPAG    PIC 9(4).
+              07 RE-FMORDENPAG    PIC 9(2).
+              07 RE-FDORDENPAG    PIC 9(2).
+           05 RE-KDIRECREGPA      PIC X(2).
+           05 RE-KOFICINAPA       PIC X(4).
+           05 RE-GUSERPAGO        PIC X(8).
+           05 RE-GTERMPAGO        PIC X(8).
+           05 RE-KORDENPG         PIC 9(15).
+           05 RE-CCONFIPAGO       PIC X.
+           05 RE-NCARTAREC        PIC 9.
+           05 RE-IRETENIDO        PIC S9(12).
+           05 RE-ERETENIDO        REDEFINES RE-IRETENIDO
+                                  PIC S9(10)V99.
+           05 RE-ANOFISCAL        PIC 9(4).
+           05 RE-CORDENLIQ        PIC X(1).
+           05 RE-GNOTA50          PIC X(50).
+           05 RE-CMONEDA          PIC X.
+           05 RE-EVALVTO-EXT      PIC 9(10)V99.
+           05 RE-EVALVTOPB-EXT    PIC 9(10)V99.
+           05 RE-FNACBENE.
+              07 RE-FANACBENE     PIC 9(4).
+              07 RE-FMNACBENE     PIC 9(2).
+              07 RE-FDNACBENE     PIC 9(2).
+           05 FILLER              PIC X(111).
+        03 RE-KPERSONA1           PIC S9(9)V USAGE COMP-3.
+        03 FILLER                 PIC X(5).
+
+      *
+      * COPY LIQUIDACIONES FORMATO VERSUSONE
+       01  RS-SALIDA.
+           03 RS-DATOS-GENERALES.
+             05 RS-TIPO-OPERACION      PIC X(01).
+             05 RS-KPOLIZA             PIC X(10).
+             05 RS-KSUBPOLIZA          PIC 9(04).
+             05 RS-KCERTIFICADO        PIC 9(06).
+             05 RS-FEC-EFEC-PREST      PIC X(10).
+             05 RS-MODALIDAD           PIC X(03).
+             05 RS-KGARANTIA           PIC X(03).
+             05 RS-ACCION-COMERCIAL    PIC X(01).
+             05 RS-IMPORTE-PB          PIC 9(15)V99.
+             05 RS-COD-EXPEDIENTE      PIC X(50).
+             05 FILLER                 PIC X(200).
+           03 RS-LIQUIDACIONES OCCURS 3 TIMES.
+             05 RS-FLIQUIDA.
+                07 RS-FALIQUIDA   PIC 9(4).
+                07 RS-FMLIQUIDA   PIC 9(2).
+                07 RS-FDLIQUIDA   PIC 9(2).
+             05 RS-EVALVTO        PIC 9(10)V99.
+             05 RS-ERECIBPTE      PIC S9(10)V99.
+             05 RS-EANTICPTE      PIC S9(10)V99.
+             05 RS-EDESCREANT     PIC S9(10)V99.
+             05 RS-EDESCRECINTER  PIC S9(10)V99.
+             05 RS-KPERSONA-BENEF PIC X(10).
+             05 RS-KPERSONA-PERCEP PIC X(10).
+             05 RS-KBANCO77.
+                07 RS-CBANCO77    PIC 9(4).
+                07 RS-CSUCUR77    PIC 9(4).
+             05 RS-GDCCCC         PIC X(02).
+             05 RS-NCUENTACCC     PIC 9(10).
+             05 RS-TIPO-LIQ       PIC X(03).
+             05 RS-IND-HEREDEROS  PIC X(01).
+             05 RS-ELIQUIDAC      PIC S9(10)V99.
+             05 RS-FORDENPAG.
+                07 RS-FAORDENPAG  PIC 9(4).
+                07 RS-FMORDENPAG  PIC 9(2).
+                07 RS-FDORDENPAG  PIC 9(2).
+             05 RS-USUARIO        PIC X(08).
+             05 RS-ESTADO         PIC X(03).
+             05 FILLER            PIC X(50).
+      *
+      **
+      ** COPYS MÓDULOS
+      **
+
+      ****
+       01   FILLER            PIC X(13)  VALUE 'FINAL-WORKING'.
+
+       PROCEDURE DIVISION.
+      *===================
+      *
+      ******************************************************************
+      *                                                                *
+      *               N I V E L               0                        *
+      *                                                                *
+      ******************************************************************
+
+       INICIO SECTION.
+
+           PERFORM 1000-P-PROGRAMA.
+
+           PERFORM 2000-PROCESO.
+
+           PERFORM 3000-F-PROGRAMA.
+
+           PERFORM 10000-FIN.
+      /
+      *****************************************************************
+      *                                                               *
+      *                T R A T A M I E N T O S                        *
+      *                                                               *
+      *****************************************************************
+
+       1000-P-PROGRAMA.
+      *
+      *****  ABRIMOS LOS FICHEROS.
+      *
+           OPEN INPUT  FICH-PEND.
+           OPEN OUTPUT FICH-SAL1.
+
+       3000-F-PROGRAMA.
+      *************
+      *
+      ****   CERRAMOS LOS FICHEROS.
+      *
+           CLOSE FICH-PEND
+                 FICH-SAL1.
+
+      *****************************************************************
+      *                                                               *
+      *                R U T I N A S    A U X I L I A R E S           *
+      *                                                               *
+      *****************************************************************
+      *
+       2000-PROCESO.
+      ****************
+
+           MOVE 'N' TO SW-FIN-FICH-PEND.
+           PERFORM 2010-LEER-PEND.
+
+           PERFORM 2015-ESCRIBIR-SALIDA UNTIL SI-FIN-FICH-PEND.
+
+      *---------------------*
+       2015-ESCRIBIR-SALIDA.
+      *---------------------*
+
+           INITIALIZE RS-SALIDA
+           MOVE 1              TO RS-TIPO-OPERACION
+           MOVE RE-KPOLIZA     TO RS-KPOLIZA
+           MOVE ZEROS          TO RS-KSUBPOLIZA
+                                  RS-KCERTIFICADO
+           MOVE RE-FULTVTO     TO RS-FEC-EFEC-PREST
+           MOVE RE-KMODALIDAD  TO RS-MODALIDAD
+           MOVE SPACES         TO RS-KGARANTIA
+                                  RS-ACCION-COMERCIAL
+           MOVE ZEROS          TO RS-IMPORTE-PB
+           MOVE SPACES         TO RS-COD-EXPEDIENTE
+
+           MOVE 1 TO IND
+           PERFORM UNTIL RE-KPOLIZA NOT = RS-KPOLIZA
+                      OR SI-FIN-FICH-PEND
+                      OR IND > 3
+              MOVE RE-FLIQUIDA      TO RS-FLIQUIDA       (IND)
+              MOVE RE-EVALVTO       TO RS-EVALVTO        (IND)
+              MOVE RE-ERECIBPTE     TO RS-ERECIBPTE      (IND)
+              MOVE RE-EANTICPTE     TO RS-EANTICPTE      (IND)
+              MOVE ZEROS            TO RS-EDESCREANT     (IND)
+              MOVE RE-ERECIBANT     TO RS-EDESCRECINTER  (IND)
+              MOVE RE-KPERSONA1     TO RS-KPERSONA-BENEF (IND)
+                                       RS-KPERSONA-PERCEP(IND)
+              MOVE RE-KBANCO77      TO RS-KBANCO77       (IND)
+              MOVE RE-GDCCCC        TO RS-GDCCCC         (IND)
+              MOVE RE-NCUENTACCC    TO RS-NCUENTACCC     (IND)
+              IF RE-CTIPOLIQ = '1'
+                 MOVE 'PO'          TO RS-TIPO-LIQ       (IND)
+              END-IF
+              IF RE-CTIPOLIQ = '2' OR '3'
+                 MOVE 'CPB'         TO RS-TIPO-LIQ       (IND)
+              END-IF
+              MOVE SPACES           TO RS-IND-HEREDEROS  (IND)
+              MOVE RE-ELIQUIDAC     TO RS-ELIQUIDAC      (IND)
+              MOVE RE-FORDENPAG     TO RS-FORDENPAG      (IND)
+              IF RE-CSITULIQ = 'PA'
+                 MOVE RE-GUSERPAGO  TO RS-USUARIO         (IND)
+                 MOVE 'PAG'         TO RS-ESTADO         (IND)
+              ELSE
+                 MOVE RE-GUSERCAPT  TO RS-USUARIO         (IND)
+                 IF RE-CSITULIQ = 'PE'
+                    MOVE 'PEN'      TO RS-ESTADO         (IND)
+                 END-IF
+                 IF RE-CSITULIQ = 'EM'
+                    MOVE 'EMI'      TO RS-ESTADO         (IND)
+                 END-IF
+                 IF RE-CSITULIQ = 'TR'
+                    MOVE 'TRA'      TO RS-ESTADO         (IND)
+                 END-IF
+              END-IF
+
+              PERFORM 2010-LEER-PEND
+              ADD 1 TO IND
+           END-PERFORM
+
+           IF IND > 3
+            IF RE-KPOLIZA = RS-KPOLIZA
+      *D*
+              DISPLAY ' LA POLIZA: ' RE-KPOLIZA 'TIENE MAS DE 3'
+                      ' LIQUIDADIONES'
+                 UPON CONSOLE
+      *F*
+              PERFORM 3000-F-PROGRAMA
+              PERFORM 10000-FIN
+            END-IF
+           END-IF
+           ADD 1 TO CT-GRABADOS
+           WRITE RLIQ-VERSUSONE FROM RS-SALIDA.
+
+      *---------------*
+       2010-LEER-PEND.
+      *---------------*
+
+           READ FICH-PEND INTO WE-ENTRADA
+                AT END MOVE 'S' TO SW-FIN-FICH-PEND
+           END-READ.
+
+           IF NO-FIN-FICH-PEND
+              ADD 1 TO CT-LEIDOS-PEND
+           END-IF.
+
+      ***************************************************************
+       10000-FIN.
+      ***************************************************************
+
+      *D*
+           DISPLAY '************************************************'
+           DISPLAY '*      RESUMEN EJECUCION PROGRAMA B372J027     *'
+           DISPLAY '************************************************'
+           DISPLAY '* REG. LEIDOS VENCIMIENTOS COMPLEMENTARIOS  : '
+                                                CT-LEIDOS-PEND
+           DISPLAY '* REG. GRABADOS VENCIMIENTOS PARA VERSUSONE : '
+                                                CT-GRABADOS
+           DISPLAY '*********************************************'
+      *F*
+
+           GOBACK.
+

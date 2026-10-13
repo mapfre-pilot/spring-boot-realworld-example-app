@@ -1,0 +1,738 @@
+      *RETRIEVAL
+      ******************************************************************
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.
+
+                 B372J021.
+      ******************************************************************
+      **INV: A372VENM
+      ******************************************************************
+      *    AUTOR      : INDRA                                          *
+      *    FECHA      : MAYO 2026                                      *
+      *    DESCRIPCION: PROGRAMA QUE GENERA CON LOS FICHEROS DE        *
+      *                 LIQUIDACIONES DE VENCIMIENTOS MANUALES DE 10   *
+      *                 ULTIMOS AÒOS Y LOS DE MAS DE 10 AÒOS EN OTROS  *
+      *                 2 FICHEROS EN FORMATO TB372VEN0 Y OTROS 2      *
+      *                 FICHEROS EN FORMATO TB372MIG0                  *
+      ******************************************************************
+      /
+       ENVIRONMENT DIVISION.
+      *---------------------
+       CONFIGURATION SECTION.
+      *----------------------
+       SPECIAL-NAMES.
+            DECIMAL-POINT IS COMMA.
+
+       INPUT-OUTPUT SECTION.
+      *---------------------
+       FILE-CONTROL.
+      ***  FICHERO LIQUIDACIONES VENCIMIENTOS MANUALES 10 ULTIMOS A—OS
+            SELECT FICH-ENT1 ASSIGN TO SYS001.
+
+      ***  FICHERO DE LIQUIDACIONES VENCIMIENTOS MANUALES 10 ULTIMOS
+      ***  A—OS EN FORMATO TB372VEN0
+            SELECT FICH-SAL1 ASSIGN TO SYS003.
+
+      ***  FICHERO DE LIQUIDACIONES VENCIMIENTOS MANUALES DE MAS DE 10
+      ***  A—OS EN FORMATO TB372VEN0
+            SELECT FICH-SAL2 ASSIGN TO SYS004.
+
+      ***  FICHERO DE LIQUIDACIONES VENCIMIENTOS MANUALES 10 ULTIMOS
+      ***  A—OS EN FORMATO TB372MIG0
+            SELECT FICH-SAL3 ASSIGN TO SYS005.
+
+      ***  FICHERO DE LIQUIDACIONES VENCIMIENTOS MANUALES DE MAS DE 10
+      ***  A—OS EN FORMATO TB372MIG0
+            SELECT FICH-SAL4 ASSIGN TO SYS006.
+
+       DATA DIVISION.
+      *--------------
+       FILE SECTION.
+       FD  FICH-ENT1
+           LABEL RECORDS OMITTED
+           RECORDING MODE IS F.
+       01  RLIQ-VM-10       PIC X(2103).
+
+       FD  FICH-SAL1
+           LABEL RECORDS OMITTED
+           RECORDING MODE IS F.
+       01  RLIQ-10-VEN      PIC X(695).
+
+       FD  FICH-SAL2
+           LABEL RECORDS OMITTED
+           RECORDING MODE IS F.
+       01  RLIQ-MAS10-VEN   PIC X(695).
+
+       FD  FICH-SAL3
+           LABEL RECORDS OMITTED
+           RECORDING MODE IS F.
+       01  RLIQ-10-MIG      PIC X(220).
+
+       FD  FICH-SAL4
+           LABEL RECORDS OMITTED
+           RECORDING MODE IS F.
+       01  RLIQ-MAS10-MIG   PIC X(220).
+
+       WORKING-STORAGE SECTION.
+      *-----------------------
+       01  P-FILLER.
+           03  FILLER   PIC X(17)  VALUE 'INICIO-WORKING'.
+           03 WS-EXPEDIENTE             PIC S9(10)V     VALUE ZEROES.
+           03 WS-KPOLIZA-ANT            PIC X(10)       VALUE SPACES.
+           03 WS-FECPAGCAPTCAP-ANT      PIC X(8)        VALUE SPACES.
+           03 WS-FECEMISION-ANT         PIC X(8)        VALUE SPACES.
+           03 WS-ANTIGUEDAD-ANT         PIC X(10)       VALUE SPACES.
+
+      **** SWICTH.
+          03 SW-FIN-FICH-ENT1            PIC X VALUE SPACES.
+             88 SI-FIN-FICH-ENT1           VALUE 'S'.
+             88 NO-FIN-FICH-ENT1           VALUE 'N'.
+
+          03 SW-FIN-FICH-ENT2            PIC X VALUE SPACES.
+             88 SI-FIN-FICH-ENT2           VALUE 'S'.
+             88 NO-FIN-FICH-ENT2           VALUE 'N'.
+
+          03 SW-AGRU-PRIN-COMP1-COMP2    PIC X VALUE SPACES.
+             88 SI-AGRU-PRIN-COMP1-COMP2   VALUE 'S'.
+             88 NO-AGRU-PRIN-COMP1-COMP2   VALUE 'N'.
+
+      **** CONTADORES.
+          03 CT-LEIDOS-VEN-10              PIC 9(6) VALUE ZEROS.
+          03 CT-LEIDOS-VEN-MAS10           PIC 9(6) VALUE ZEROS.
+          03 CT-GRABADOS-VEN0-10           PIC 9(6) VALUE ZEROS.
+          03 CT-GRABADOS-VEN0-MAS10        PIC 9(6) VALUE ZEROS.
+          03 CT-GRABADOS-MIG0-10           PIC 9(6) VALUE ZEROS.
+          03 CT-GRABADOS-MIG0-MAS10        PIC 9(6) VALUE ZEROS.
+
+      **** VARIABLES DE TRABAJO
+
+          03 WS-R001-ENTRADA.
+      *     PESTA—A GENERAL
+             05 WS-R001-ANIO              PIC S9(4)V USAGE COMP-3.
+             05 WS-R001-EXPEDIENTE        PIC S9(10)V USAGE COMP-3.
+             05 WS-R001-KRAMO             PIC X(3)   VALUE SPACES.
+             05 WS-R001-KPOLIZA           PIC X(10)  VALUE SPACES.
+             05 WS-R001-KSUBPOLIZA        PIC S9(4)V USAGE COMP-3.
+             05 WS-R001-KCERTIFICADO      PIC S9(6)V USAGE COMP-3.
+             05 WS-R001-CCANALCAMP        PIC X(2)   VALUE SPACES.
+             05 WS-R001-CENTIDAD          PIC X(2)   VALUE SPACES.
+             05 WS-R001-ANIOFISCAL        PIC S9(4)V USAGE COMP-3.
+             05 WS-R001-ANIOPOL           PIC X(4)   VALUE SPACES.
+             05 WS-R001-KMODALIDAD        PIC S9(5)V USAGE COMP-3.
+             05 WS-R001-SITUACION         PIC X(20)  VALUE SPACES.
+      *      05 WS-R001-CCAUSAANUL        PIC X(2)   VALUE SPACES.
+             05 WS-R001-FECEFECTO         PIC X(8)   VALUE SPACES.
+             05 WS-R001-FECANULA          PIC X(8)   VALUE SPACES.
+             05 WS-R001-FECMODIFICA       PIC X(8)   VALUE SPACES.
+             05 WS-R001-FECEMISION        PIC X(8)   VALUE SPACES.
+             05 WS-R001-KDURACION         PIC S9(2)V USAGE COMP-3.
+             05 WS-R001-CCARTERA          PIC X(3)   VALUE SPACES.
+             05 WS-R001-SREASEGURO        PIC X(1)   VALUE SPACES.
+             05 WS-R001-PAGOTOT           PIC X(1)   VALUE SPACES.
+             05 WS-R001-CUSUARIO          PIC X(8)   VALUE SPACES.
+             05 WS-R001-TOMADOR.
+                07 WS-R001-NOMBRE-TOM     PIC X(25)  VALUE SPACES.
+                07 WS-R001-APELL1-TOM     PIC X(25)  VALUE SPACES.
+                07 WS-R001-APELL2-TOM     PIC X(25)  VALUE SPACES.
+                07 WS-R001-CASEGSEXO      PIC X(01)  VALUE SPACES.
+                07 WS-R001-CASEGESTC      PIC X(01)  VALUE SPACES.
+                07 WS-R001-GTELPARASE     PIC X(10)  VALUE SPACES.
+                07 WS-R001-GTELTRAASE     PIC X(10)  VALUE SPACES.
+             05 WS-R001-REGIONAL          PIC X(2)   VALUE SPACES.
+             05 WS-R001-LUGARENVIO        PIC X(2)   VALUE SPACES.
+             05 WS-R001-KOFICINA          PIC X(4)   VALUE SPACES.
+             05 WS-R001-IPENDIENTE        PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-GOBSERVACION      PIC X(255) VALUE SPACES.
+             05 WS-R001-VEN-MIGR          PIC X(1)   VALUE SPACES.
+             05 WS-R001-CTIPOLIQ          PIC X(1)   VALUE SPACES.
+             05 WS-R001-CSITULIQ          PIC X(2)   VALUE SPACES.
+      *     DATOS ECONOMICOS PRINCIPAL
+             05 WS-R001-DESC-PRIN         PIC X(50)  VALUE SPACES.
+             05 WS-R001-IMPCAPITAL        PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-IMPBENEFICIOS     PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-FECPAGOCAPITAL    PIC X(8)   VALUE SPACES.
+             05 WS-R001-IMPANTICIPO       PIC 9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-IMPINTEPEND       PIC 9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-FECVENCIMICAP     PIC X(8)   VALUE SPACES.
+             05 WS-R001-TIPIMPUESTCAP     PIC X(2)   VALUE SPACES.
+             05 WS-R001-EXIMIDO           PIC X(1)   VALUE SPACES.
+             05 WS-R001-FECIMPRECAP       PIC X(8)   VALUE SPACES.
+             05 WS-R001-CUSUARIO-PAGCAP   PIC X(8)   VALUE SPACES.
+             05 WS-R001-FECPAGCAPTCAP     PIC X(8)   VALUE SPACES.
+             05 WS-R001-CUSUARIO-CAPTCAP  PIC X(8)   VALUE SPACES.
+             05 WS-R001-CFORMAPAGO-CAP    PIC X(1)   VALUE SPACES.
+             05 WS-R001-NCHEQUE-CAP       PIC 9(10)  VALUE ZEROES.
+             05 WS-R001-CUENTA-CAP.
+                07 WS-R001-KBANCO-CAP     PIC 9(8)   VALUE ZEROES.
+                07 WS-R001-NDIGCONT-CAP   PIC X(2)   VALUE SPACES.
+                07 WS-R001-NCTABAN-CAP    PIC X(10)  VALUE SPACES.
+             05 WS-R001-REF-REINVERSION   PIC X(15)  VALUE SPACES.
+      *     DATOS ECONOMICOS IRPF PRINCIPAL
+             05 WS-R001-DESC-IRPF-PRIN    PIC X(50)  VALUE SPACES.
+             05 WS-R001-IMPRTOINTEGRCAP   PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-IMPREDPRICAP      PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-IMPREDTRANCAP     PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-IMPRTONETOCAP     PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-PORRETCAP         PIC S9(3)V9(2) USAGE COMP-3.
+             05 WS-R001-IMPRETCAP         PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-FECPAGRET         PIC X(8)   VALUE SPACES.
+             05 WS-R001-IMPCOMPENSATORIA-CAP
+                                          PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-IMPLIQCAP         PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-FECBDGICAP        PIC X(8)   VALUE SPACES.
+             05 WS-R001-SBDGICAP          PIC X(1)   VALUE SPACES.
+      *     DATOS ECONOMICOS COMPLEMENTARIO 1
+             05 WS-R001-DESC-COMP1        PIC X(50)  VALUE SPACES.
+             05 WS-R001-IMPCOMP1          PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-FECPAGCOMP1       PIC X(8)   VALUE SPACES.
+             05 WS-R001-FECEMICOMP1       PIC X(8)   VALUE SPACES.
+             05 WS-R001-TIPIMPUESTCOMP1   PIC X(2)   VALUE SPACES.
+             05 WS-R001-FECIMPRECOMP1     PIC X(8)   VALUE SPACES.
+             05 WS-R001-CUSUARIO-PAGCOMP1 PIC X(8)   VALUE SPACES.
+             05 WS-R001-FECPAGCAPTCOMP1   PIC X(8)   VALUE SPACES.
+             05 WS-R001-CUSUARIO-CAPTCOMP1 PIC X(8)   VALUE SPACES.
+             05 WS-R001-CFORMAPAGO-COMP1  PIC X(1)   VALUE SPACES.
+             05 WS-R001-NCHEQUE-COMP1     PIC 9(10)  VALUE ZEROES.
+             05 WS-R001-CUENTA-COMP1.
+                07 WS-R001-KBANCO-COMP1   PIC 9(8)   VALUE ZEROES.
+                07 WS-R001-NDIGCONT-COMP1 PIC X(2)   VALUE SPACES.
+                07 WS-R001-NCTABAN-COMP1  PIC X(10)  VALUE SPACES.
+      *     DATOS ECONOMICOS IRPF COMPLEMENTARIA
+             05 WS-R001-DESC-IRPF-COMP1  PIC X(50)  VALUE SPACES.
+             05 WS-R001-IMPRTOINTCOMP1   PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-IMPREDPRICOMP1   PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-IREDTRANCOMP1    PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-IRTONETCOMP1     PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-PORRETCOMP1      PIC S9(3)V9(2) USAGE COMP-3.
+             05 WS-R001-IRETCOMP1        PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-FECPAGRETCOM1    PIC X(8)   VALUE SPACES.
+             05 WS-R001-IMPCOMPENSATORIA-COMP1
+                                         PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-ILIQCOMP1        PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-FECBDGICOMP1     PIC X(8)   VALUE SPACES.
+             05 WS-R001-SBDGICOMP1       PIC X(1)   VALUE SPACES.
+      *     DATOS ECONOMICOS COMPLEMENTARIO 2
+             05 WS-R001-DESC-COMP2        PIC X(50)  VALUE SPACES.
+             05 WS-R001-IMPCOMP2          PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-FECPAGCOMP2       PIC X(8)   VALUE SPACES.
+             05 WS-R001-FECEMICOMP2       PIC X(8)   VALUE SPACES.
+             05 WS-R001-TIPIMPUESTCOMP2   PIC X(2)   VALUE SPACES.
+             05 WS-R001-FECIMPRECOMP2     PIC X(8)   VALUE SPACES.
+             05 WS-R001-CUSUARIO-PAGCOMP2 PIC X(8)   VALUE SPACES.
+             05 WS-R001-FECPAGCAPTCOMP2   PIC X(8)   VALUE SPACES.
+             05 WS-R001-CUSUARIO-CAPTCOMP2 PIC X(8)   VALUE SPACES.
+             05 WS-R001-CFORMAPAGO-COMP2  PIC X(1)   VALUE SPACES.
+             05 WS-R001-NCHEQUE-COMP2     PIC 9(10)  VALUE ZEROES.
+             05 WS-R001-CUENTA-COMP2.
+                07 WS-R001-KBANCO-COMP2   PIC 9(8)   VALUE ZEROES.
+                07 WS-R001-NDIGCONT-COMP2 PIC X(2)   VALUE SPACES.
+                07 WS-R001-NCTABAN-COMP2  PIC X(10)  VALUE SPACES.
+      *     DATOS ECONOMICOS IRPF COMPLEMENTARIA
+             05 WS-R001-DESC-IRPF-COMP2  PIC X(50)  VALUE SPACES.
+             05 WS-R001-IMPRTOINTCOMP2   PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-IMPREDPRICOMP2   PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-IREDTRANCOMP2    PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-IRTONETCOMP2     PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-PORRETCOMP2      PIC S9(3)V9(2) USAGE COMP-3.
+             05 WS-R001-IRETCOMP2        PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-FECPAGRETCOM2    PIC X(8)   VALUE SPACES.
+             05 WS-R001-IMPCOMPENSATORIA-COMP2
+                                         PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-ILIQCOMP2        PIC S9(10)V9(2) USAGE COMP-3.
+             05 WS-R001-FECBDGICOMP2     PIC X(8)   VALUE SPACES.
+             05 WS-R001-SBDGICOMP2       PIC X(1)   VALUE SPACES.
+      *     DATOS PRIMER BENEFICIARIO
+             05 WS-R001-NIF1             PIC X(10)  VALUE SPACES.
+             05 WS-R001-KPERSONA1        PIC S9(9)V USAGE COMP-3.
+             05 WS-R001-NOMBRE1          PIC X(150) VALUE SPACES.
+             05 WS-R001-PRIMER-APELL1    PIC X(30)  VALUE SPACES.
+             05 WS-R001-SEGUNDO-APELL1   PIC X(30)  VALUE SPACES.
+             05 WS-R001-CTIPOPERS1       PIC X(1)   VALUE SPACES.
+             05 WS-R001-SRESIDENTE1      PIC X(1)   VALUE SPACES.
+             05 WS-R001-KDOMICILIO1      PIC S9(9)V USAGE COMP-3.
+             05 WS-R001-KDOMCOM1         PIC S9(9)V USAGE COMP-3.
+             05 WS-R001-DOMICILIO1.
+                07 WS-R001-GDOMICILIO1   PIC X(75)  VALUE SPACES.
+                07 WS-R001-GNUMVIA       PIC X(10)  VALUE SPACES.
+                07 WS-R001-GDOMIRESTO    PIC X(150) VALUE SPACES.
+             05 WS-R001-CCODPOST1        PIC X(5)   VALUE SPACES.
+             05 WS-R001-GPOBLACION1      PIC X(60)  VALUE SPACES.
+             05 WS-R001-CPROVINCIA1      PIC X(10)  VALUE SPACES.
+             05 WS-R001-CPAIS1           PIC X(10)  VALUE SPACES.
+             05 WS-R001-FNACIMIENTO1     PIC X(8)   VALUE SPACES.
+             05 WS-R001-NIF-REPLEGAL1    PIC X(10)  VALUE SPACES.
+             05 WS-R001-FATCA.
+                07 WS-R001-CNACIONALIDAD1     PIC X(3) VALUE SPACES.
+                07 WS-R001-CNACIONALIDAD2     PIC X(3) VALUE SPACES.
+                07 WS-R001-CPAISNACIMIENTO    PIC X(3) VALUE SPACES.
+                07 WS-R001-CPAISOBLIGACIONES1 PIC X(3) VALUE SPACES.
+                07 WS-R001-CPAISOBLIGACIONES2 PIC X(3) VALUE SPACES.
+                07 WS-R001-CPAISOBLIGACIONES3 PIC X(3) VALUE SPACES.
+                07 WS-R001-SPAISRESIDENCIA    PIC X(3) VALUE SPACES.
+                07 WS-R001-GPREFIJO-PAR       PIC X(3) VALUE SPACES.
+                07 WS-R001-GPREFIJO-TRA       PIC X(3) VALUE SPACES.
+                07 WS-R001-CPRP               PIC X(1) VALUE SPACES.
+      *     DATOS FISCALES PRIMER BENEFICIARIO
+             05 WS-R001-DISCAPACITADO1   PIC X(1)   VALUE SPACES.
+             05 WS-R001-PREST-VIVIENDA1  PIC X(2)   VALUE SPACES.
+             05 WS-R001-SITUACION-FAMI1  PIC X(20)  VALUE SPACES.
+             05 WS-R001-NIF-CONYUGE1     PIC X(10)  VALUE SPACES.
+             05 WS-R001-IMPCOMPENSATORIA1 PIC S9(07)V9(2) USAGE COMP-3.
+             05 WS-R001-IMPALIMENHIJOS1  PIC S9(07)V9(2) USAGE COMP-3.
+      *
+             05 WS-R001-FILLER           PIC X(165) VALUE SPACES.
+             05 WS-R001-ANTIGUEDAD       PIC X(3)   VALUE SPACES.
+      *
+          03  WS-DCLTB372VEN0.
+              05 WS-VEN0-ANIO            PIC S9(4)V USAGE COMP-3.
+              05 WS-VEN0-KEXPEDIENTE     PIC S9(10)V USAGE COMP-3.
+              05 WS-VEN0-KRAMO           PIC X(3).
+              05 WS-VEN0-ANIOPOL         PIC X(4).
+              05 WS-VEN0-KPOLIZA         PIC X(10).
+              05 WS-VEN0-NSUBPOLIZA      PIC S9(4)V USAGE COMP-3.
+              05 WS-VEN0-KCERTIFICADO    PIC S9(6)V USAGE COMP-3.
+              05 WS-VEN0-KMODALIDAD      PIC S9(5)V USAGE COMP-3.
+              05 WS-VEN0-CCANALCAMP      PIC X(2).
+              05 WS-VEN0-CENTIDAD        PIC X(4).
+              05 WS-VEN0-FECEFECTO       PIC X(8).
+              05 WS-VEN0-KDURACION       PIC S9(2)V USAGE COMP-3.
+              05 WS-VEN0-FECEMISION      PIC X(8).
+              05 WS-VEN0-CCARTERA        PIC X(3).
+              05 WS-VEN0-SREASEGURO      PIC X(1).
+              05 WS-VEN0-REGIONAL        PIC X(2).
+              05 WS-VEN0-LUGARENVIO      PIC X(2).
+              05 WS-VEN0-KOFICINA        PIC X(4).
+              05 WS-VEN0-IPENDIENTE      PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-CTIPOPERS1      PIC X(1).
+              05 WS-VEN0-SRESIDENTE1     PIC X(1).
+              05 WS-VEN0-NIF1            PIC X(10).
+              05 WS-VEN0-KPERSONA1       PIC S9(9)V USAGE COMP-3.
+              05 WS-VEN0-IMPCAPITAL      PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-IMPBENEFICIOS   PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-FECPAGOCAPITAL  PIC X(8).
+              05 WS-VEN0-IMPANTICIPO     PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-IMPINTEPEND     PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-FECVENCIMICAP   PIC X(8).
+              05 WS-VEN0-TIPIMPUESTCAP   PIC X(2).
+              05 WS-VEN0-IMPRTOINTEGRCAP PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-IMPREDPRICAP    PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-IMPREDTRANCAP   PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-IMPCOMPENSATORIA PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-IMPRTONETOCAP   PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-PORRETCAP       PIC S9(3)V9(2) USAGE COMP-3.
+              05 WS-VEN0-IMPRETCAP       PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-IMPLIQCAP       PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-FECIMPRECAP     PIC X(8).
+              05 WS-VEN0-FECPAGRET       PIC X(8).
+              05 WS-VEN0-IMPCOMP1        PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-FECPAGCOMP1     PIC X(8).
+              05 WS-VEN0-FECEMICOMP1     PIC X(8).
+              05 WS-VEN0-TIPIMPUESTCOMP1 PIC X(2).
+              05 WS-VEN0-IMPRTOINTCOMP1  PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-IMPREDPRICOMP1  PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-IREDTRANCOMP1   PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-IRTONETCOMP1    PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-PORRETCOMP1     PIC S9(3)V9(2) USAGE COMP-3.
+              05 WS-VEN0-IRETCOMP1       PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-ILIQCOMP1       PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-FECIMPRECOMP1   PIC X(8).
+              05 WS-VEN0-FECPAGRETCOM1   PIC X(8).
+              05 WS-VEN0-IMPCOMP2        PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-FECPAGCOMP2     PIC X(8).
+              05 WS-VEN0-FECEMICOMP2     PIC X(8).
+              05 WS-VEN0-TIPIMPUESTCOMP2 PIC X(2).
+              05 WS-VEN0-IMPRTOINTCOMP2  PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-IMPREDPRICOMP2  PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-IREDTRANCOMP2   PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-IRTONETCOMP2    PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-PORRETCOMP2     PIC S9(3)V9(2) USAGE COMP-3.
+              05 WS-VEN0-IRETCOMP2       PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-ILIQCOMP2       PIC S9(11)V9(2) USAGE COMP-3.
+              05 WS-VEN0-FECIMPRECOMP2   PIC X(8).
+              05 WS-VEN0-FECPAGRETCOM2   PIC X(8).
+              05 WS-VEN0-PAGOTOT         PIC X(1).
+              05 WS-VEN0-CUSUARIO        PIC X(8).
+              05 WS-VEN0-SBDGICAP        PIC X(1).
+              05 WS-VEN0-FECBDGICAP      PIC X(8).
+              05 WS-VEN0-SBDGICOMP1      PIC X(1).
+              05 WS-VEN0-FECBDGICOMP1    PIC X(8).
+              05 WS-VEN0-SBDGICOMP2      PIC X(1).
+              05 WS-VEN0-FECBDGICOMP2    PIC X(8).
+              05 WS-VEN0-GOBSERVACION    PIC X(255).
+              05 WS-VEN0-ANIOFISCAL      PIC S9(4)V USAGE COMP-3.
+              05 WS-VEN0-KDOMICILIO1     PIC S9(9)V USAGE COMP-3.
+              05 WS-VEN0-FMODIFICACION   PIC X(8).
+              05 WS-VEN0-EXIMIDO         PIC X(1).
+              05 WS-VEN0-KDOMCOM         PIC S9(9)V USAGE COMP-3.
+      *
+           03 WS-DCLTB372MIG0.
+              05 WS-MIG0-ANIO              PIC S9(4)V USAGE COMP-3.
+              05 WS-MIG0-KEXPEDIENTE       PIC S9(10)V USAGE COMP-3.
+              05 WS-MIG0-VEN-MIGR          PIC X(1).
+              05 WS-MIG0-USUARIO-PAGO      PIC X(8).
+              05 WS-MIG0-FCAPTURA          PIC X(8).
+              05 WS-MIG0-CUSUARIO-CAPT     PIC X(8).
+              05 WS-MIG0-FORMAPAGO         PIC X(1).
+              05 WS-MIG0-NUM-CHEQUE        PIC S9(10)V USAGE COMP-3.
+              05 WS-MIG0-NUM-CUENTA        PIC X(20).
+              05 WS-MIG0-REF-REINVERSION   PIC X(15).
+              05 WS-MIG0-CUSU-PAGO-COMP1   PIC X(8).
+              05 WS-MIG0-FCAPTURA-COMP1    PIC X(8).
+              05 WS-MIG0-CUSU-CAPT-COMP1   PIC X(8).
+              05 WS-MIG0-FORMAPAGO-COMP1   PIC X(1).
+              05 WS-MIG0-NCHEQUE-COMP1     PIC S9(10)V USAGE COMP-3.
+              05 WS-MIG0-NCUENTA-COMP1     PIC X(20).
+              05 WS-MIG0-CUSU-PAGO-COMP2   PIC X(8).
+              05 WS-MIG0-FCAPTURA-COMP2    PIC X(8).
+              05 WS-MIG0-CUSU-CAPT-COMP2   PIC X(8).
+              05 WS-MIG0-FORMAPAGO-COMP2   PIC X(1).
+              05 WS-MIG0-NCHEQUE-COMP2     PIC S9(10)V USAGE COMP-3.
+              05 WS-MIG0-NCUENTA-COMP2     PIC X(20).
+              05 WS-MIG0-GRADO-DISCAP      PIC X(1).
+              05 WS-MIG0-PREST-VIVIENDA    PIC X(1).
+              05 WS-MIG0-SITU-FAMILIAR     PIC X(20).
+              05 WS-MIG0-NIF-CONYUGUE      PIC X(10).
+              05 WS-MIG0-ICOMPENSATORIA    PIC S9(7)V9(2) USAGE COMP-3.
+              05 WS-MIG0-IMPALIMENHIJOS    PIC S9(7)V9(2) USAGE COMP-3.
+      **
+      ** COPYS M”DULOS
+      **
+
+      ****
+       01   FILLER            PIC X(13)  VALUE 'FINAL-WORKING'.
+
+       PROCEDURE DIVISION.
+      *===================
+      *
+      ******************************************************************
+      *                                                                *
+      *               N I V E L               0                        *
+      *                                                                *
+      ******************************************************************
+
+       INICIO SECTION.
+
+           PERFORM 1000-P-PROGRAMA.
+
+           PERFORM 2000-PROCESO.
+
+           PERFORM 3000-F-PROGRAMA.
+
+           PERFORM 10000-FIN.
+      /
+      *****************************************************************
+      *                                                               *
+      *                T R A T A M I E N T O S                        *
+      *                                                               *
+      *****************************************************************
+
+       1000-P-PROGRAMA.
+      *
+           MOVE ZEROES TO WS-EXPEDIENTE.
+      *
+      *****  ABRIMOS LOS FICHEROS.
+      *
+           OPEN INPUT  FICH-ENT1
+           OPEN OUTPUT FICH-SAL1 FICH-SAL2 FICH-SAL3 FICH-SAL4.
+
+
+       3000-F-PROGRAMA.
+      *************
+
+      *
+      ****   CERRAMOS LOS FICHEROS.
+      *
+           CLOSE FICH-ENT1
+                 FICH-SAL1 FICH-SAL2 FICH-SAL3 FICH-SAL4.
+
+
+      *****************************************************************
+      *                                                               *
+      *                R U T I N A S    A U X I L I A R E S           *
+      *                                                               *
+      *****************************************************************
+      *
+       2000-PROCESO.
+      ****************
+
+           MOVE 'N' TO SW-FIN-FICH-ENT1.
+           PERFORM 2005-LEER-ENT1.
+           MOVE WS-R001-KPOLIZA TO WS-KPOLIZA-ANT
+           PERFORM 2010-GENERAR-INFO-TABLAS-10 UNTIL SI-FIN-FICH-ENT1
+      *  SE GRABA EL ULTIMO REGISTRO DEL FICHERO DE ENTRADA
+           IF SI-FIN-FICH-ENT1
+             IF SW-AGRU-PRIN-COMP1-COMP2 = 'S'
+      *  SI EL VALOR DEL FINAL DE FICHERO ES ' 10', SE GRABA EN EL
+      *  FICHERO DE LOS 10 ULTIMOS AÒOS, SINO EN EL DE MAS DE 10 AÒOS
+      *  PARA SU CONSULTA
+
+      *D*
+              DISPLAY '* ESCRIBO EN EL FICHERO DE: ' WS-ANTIGUEDAD-ANT
+      *F*
+              IF WS-ANTIGUEDAD-ANT = ' 10'
+                 WRITE RLIQ-10-VEN FROM WS-DCLTB372VEN0
+                 ADD 1 TO CT-GRABADOS-VEN0-10
+                 WRITE RLIQ-10-MIG FROM WS-DCLTB372MIG0
+                 ADD 1 TO CT-GRABADOS-MIG0-10
+              ELSE
+                 WRITE RLIQ-MAS10-VEN FROM WS-DCLTB372VEN0
+                 ADD 1 TO CT-GRABADOS-VEN0-MAS10
+                 WRITE RLIQ-MAS10-MIG FROM WS-DCLTB372MIG0
+                 ADD 1 TO CT-GRABADOS-MIG0-MAS10
+              END-IF
+             END-IF
+           END-IF
+           .
+
+      *---------------------------*
+       2010-GENERAR-INFO-TABLAS-10.
+      *---------------------------*
+
+      *D*
+           DISPLAY '******WS-KPOLIZA-ANT  : ' WS-KPOLIZA-ANT
+      *F*
+           MOVE 'N' TO SW-AGRU-PRIN-COMP1-COMP2
+           PERFORM UNTIL WS-R001-KPOLIZA NOT = WS-KPOLIZA-ANT
+                      OR SI-FIN-FICH-ENT1
+      *D*
+           DISPLAY '*WS-R001-CTIPOLIQ: ' WS-R001-CTIPOLIQ
+           DISPLAY '*WS-R001-KPOLIZA : ' WS-R001-KPOLIZA
+      *F*
+      *->  CUANDO CAMBIE DE POLIZA ES EXPEDIENTE NUEVO,
+      *    PUEDE SER PRINCIPAL, CON SUS COMPLEMENTARIAS
+      *    AGRUPADOS EN UN SOLO NUMERO DE EXPEDIENTE
+             IF NO-AGRU-PRIN-COMP1-COMP2
+      *D*
+                DISPLAY '* ME SITUO EN PRINCIPAL PARA UNIR'
+                DISPLAY '* EXPEDIENTE'
+      *F*
+                ADD  1   TO WS-EXPEDIENTE
+                MOVE 'S' TO SW-AGRU-PRIN-COMP1-COMP2
+                MOVE WS-R001-ANTIGUEDAD TO WS-ANTIGUEDAD-ANT
+                INITIALIZE WS-DCLTB372VEN0
+                INITIALIZE WS-DCLTB372MIG0
+             END-IF
+
+             PERFORM 2011-GENERAR-TB372VEN0
+
+             PERFORM 2012-GENERAR-TB372MIG0
+
+             PERFORM 2005-LEER-ENT1
+           END-PERFORM
+
+           IF WS-R001-KPOLIZA NOT = WS-KPOLIZA-ANT
+             IF SW-AGRU-PRIN-COMP1-COMP2 = 'S'
+      *  SI EL VALOR DEL FINAL DE FICHERO ES ' 10', SE GRABA EN EL
+      *  FICHERO DE LOS 10 ULTIMOS AÒOS, SINO EN EL DE MAS DE 10 AÒOS
+      *  PARA SU CONSULTA
+
+      *D*
+              DISPLAY '* ESCRIBO EN EL FICHERO DE: ' WS-ANTIGUEDAD-ANT
+      *F*
+              IF WS-ANTIGUEDAD-ANT = ' 10'
+                 WRITE RLIQ-10-VEN FROM WS-DCLTB372VEN0
+                 ADD 1 TO CT-GRABADOS-VEN0-10
+                 WRITE RLIQ-10-MIG FROM WS-DCLTB372MIG0
+                 ADD 1 TO CT-GRABADOS-MIG0-10
+              ELSE
+                 WRITE RLIQ-MAS10-VEN FROM WS-DCLTB372VEN0
+                 ADD 1 TO CT-GRABADOS-VEN0-MAS10
+                 WRITE RLIQ-MAS10-MIG FROM WS-DCLTB372MIG0
+                 ADD 1 TO CT-GRABADOS-MIG0-MAS10
+              END-IF
+             END-IF
+           END-IF
+
+           IF NO-FIN-FICH-ENT1
+               MOVE WS-R001-KPOLIZA TO WS-KPOLIZA-ANT
+           END-IF.
+
+      *-------------------------*
+       2011-GENERAR-TB372VEN0.
+      *-------------------------*
+
+      *D*
+           DISPLAY '* INFORMO VEN CON CTIPOLIQ: ' WS-R001-CTIPOLIQ
+           DISPLAY '* Y POLIZA: ' WS-R001-KPOLIZA
+      *F*
+      *    INITIALIZE WS-DCLTB372VEN0
+
+           MOVE WS-R001-ANIO            TO WS-VEN0-ANIO
+           MOVE WS-EXPEDIENTE           TO WS-VEN0-KEXPEDIENTE
+           MOVE WS-R001-KRAMO           TO WS-VEN0-KRAMO
+           MOVE WS-R001-ANIOPOL         TO WS-VEN0-ANIOPOL
+           MOVE WS-R001-KPOLIZA         TO WS-VEN0-KPOLIZA
+           MOVE WS-R001-KSUBPOLIZA      TO WS-VEN0-NSUBPOLIZA
+           MOVE WS-R001-KCERTIFICADO    TO WS-VEN0-KCERTIFICADO
+           MOVE WS-R001-KMODALIDAD      TO WS-VEN0-KMODALIDAD
+           MOVE WS-R001-CCANALCAMP      TO WS-VEN0-CCANALCAMP
+           MOVE WS-R001-CENTIDAD        TO WS-VEN0-CENTIDAD
+           MOVE WS-R001-FECEFECTO       TO WS-VEN0-FECEFECTO
+           MOVE WS-R001-KDURACION       TO WS-VEN0-KDURACION
+           MOVE WS-R001-FECEMISION      TO WS-VEN0-FECEMISION
+           MOVE WS-R001-CCARTERA        TO WS-VEN0-CCARTERA
+           MOVE WS-R001-SREASEGURO      TO WS-VEN0-SREASEGURO
+           MOVE WS-R001-REGIONAL        TO WS-VEN0-REGIONAL
+           MOVE WS-R001-LUGARENVIO      TO WS-VEN0-LUGARENVIO
+           MOVE WS-R001-KOFICINA        TO WS-VEN0-KOFICINA
+           MOVE WS-R001-IPENDIENTE      TO WS-VEN0-IPENDIENTE
+           MOVE WS-R001-CTIPOPERS1      TO WS-VEN0-CTIPOPERS1
+           MOVE WS-R001-SRESIDENTE1     TO WS-VEN0-SRESIDENTE1
+           MOVE WS-R001-NIF1            TO WS-VEN0-NIF1
+           MOVE WS-R001-KPERSONA1       TO WS-VEN0-KPERSONA1
+           IF WS-R001-CTIPOLIQ = '1'
+              MOVE WS-R001-IMPCAPITAL      TO WS-VEN0-IMPCAPITAL
+              MOVE WS-R001-IMPBENEFICIOS   TO WS-VEN0-IMPBENEFICIOS
+              MOVE WS-R001-FECPAGOCAPITAL  TO WS-VEN0-FECPAGOCAPITAL
+              MOVE WS-R001-IMPANTICIPO     TO WS-VEN0-IMPANTICIPO
+              MOVE WS-R001-IMPINTEPEND     TO WS-VEN0-IMPINTEPEND
+              MOVE WS-R001-FECVENCIMICAP   TO WS-VEN0-FECVENCIMICAP
+              MOVE WS-R001-TIPIMPUESTCAP   TO WS-VEN0-TIPIMPUESTCAP
+              MOVE WS-R001-IMPRTOINTEGRCAP TO WS-VEN0-IMPRTOINTEGRCAP
+              MOVE WS-R001-IMPREDPRICAP    TO WS-VEN0-IMPREDPRICAP
+              MOVE WS-R001-IMPREDTRANCAP   TO WS-VEN0-IMPREDTRANCAP
+              MOVE WS-R001-IMPCOMPENSATORIA-CAP
+                                           TO WS-VEN0-IMPCOMPENSATORIA
+              MOVE WS-R001-IMPRTONETOCAP   TO WS-VEN0-IMPRTONETOCAP
+              MOVE WS-R001-PORRETCAP       TO WS-VEN0-PORRETCAP
+              MOVE WS-R001-IMPRETCAP       TO WS-VEN0-IMPRETCAP
+              MOVE WS-R001-IMPLIQCAP       TO WS-VEN0-IMPLIQCAP
+              MOVE WS-R001-FECIMPRECAP     TO WS-VEN0-FECIMPRECAP
+              MOVE WS-R001-FECPAGRET       TO WS-VEN0-FECPAGRET
+              MOVE WS-R001-SBDGICAP        TO WS-VEN0-SBDGICAP
+              MOVE WS-R001-FECBDGICAP      TO WS-VEN0-FECBDGICAP
+           END-IF
+           IF WS-R001-CTIPOLIQ = '2'
+              MOVE WS-R001-IMPCOMP1        TO WS-VEN0-IMPCOMP1
+              MOVE WS-R001-FECPAGCOMP1     TO WS-VEN0-FECPAGCOMP1
+              MOVE WS-R001-FECEMICOMP1     TO WS-VEN0-FECEMICOMP1
+              MOVE WS-R001-TIPIMPUESTCOMP1 TO WS-VEN0-TIPIMPUESTCOMP1
+              MOVE WS-R001-IMPRTOINTCOMP1  TO WS-VEN0-IMPRTOINTCOMP1
+              MOVE WS-R001-IMPREDPRICOMP1  TO WS-VEN0-IMPREDPRICOMP1
+              MOVE WS-R001-IREDTRANCOMP1   TO WS-VEN0-IREDTRANCOMP1
+              MOVE WS-R001-IRTONETCOMP1    TO WS-VEN0-IRTONETCOMP1
+              MOVE WS-R001-PORRETCOMP1     TO WS-VEN0-PORRETCOMP1
+              MOVE WS-R001-IRETCOMP1       TO WS-VEN0-IRETCOMP1
+              MOVE WS-R001-ILIQCOMP1       TO WS-VEN0-ILIQCOMP1
+              MOVE WS-R001-FECIMPRECOMP1   TO WS-VEN0-FECIMPRECOMP1
+              MOVE WS-R001-FECPAGRETCOM1   TO WS-VEN0-FECPAGRETCOM1
+              MOVE WS-R001-SBDGICOMP1      TO WS-VEN0-SBDGICOMP1
+              MOVE WS-R001-FECBDGICOMP1    TO WS-VEN0-FECBDGICOMP1
+           END-IF
+           IF WS-R001-CTIPOLIQ = '3'
+              MOVE WS-R001-IMPCOMP2        TO WS-VEN0-IMPCOMP2
+              MOVE WS-R001-FECPAGCOMP2     TO WS-VEN0-FECPAGCOMP2
+              MOVE WS-R001-FECEMICOMP2     TO WS-VEN0-FECEMICOMP2
+              MOVE WS-R001-TIPIMPUESTCOMP2 TO WS-VEN0-TIPIMPUESTCOMP2
+              MOVE WS-R001-IMPRTOINTCOMP2  TO WS-VEN0-IMPRTOINTCOMP2
+              MOVE WS-R001-IMPREDPRICOMP2  TO WS-VEN0-IMPREDPRICOMP2
+              MOVE WS-R001-IREDTRANCOMP2   TO WS-VEN0-IREDTRANCOMP2
+              MOVE WS-R001-IRTONETCOMP2    TO WS-VEN0-IRTONETCOMP2
+              MOVE WS-R001-PORRETCOMP2     TO WS-VEN0-PORRETCOMP2
+              MOVE WS-R001-IRETCOMP2       TO WS-VEN0-IRETCOMP2
+              MOVE WS-R001-ILIQCOMP2       TO WS-VEN0-ILIQCOMP2
+              MOVE WS-R001-FECIMPRECOMP2   TO WS-VEN0-FECIMPRECOMP2
+              MOVE WS-R001-FECPAGRETCOM2   TO WS-VEN0-FECPAGRETCOM2
+              MOVE WS-R001-SBDGICOMP2      TO WS-VEN0-SBDGICOMP2
+              MOVE WS-R001-FECBDGICOMP2    TO WS-VEN0-FECBDGICOMP2
+           END-IF
+           MOVE WS-R001-PAGOTOT         TO WS-VEN0-PAGOTOT
+           MOVE WS-R001-CUSUARIO        TO WS-VEN0-CUSUARIO
+           MOVE WS-R001-GOBSERVACION    TO WS-VEN0-GOBSERVACION
+           MOVE WS-R001-ANIOFISCAL      TO WS-VEN0-ANIOFISCAL
+           MOVE WS-R001-KDOMICILIO1     TO WS-VEN0-KDOMICILIO1
+           MOVE WS-R001-FECMODIFICA     TO WS-VEN0-FMODIFICACION
+           MOVE WS-R001-EXIMIDO         TO WS-VEN0-EXIMIDO
+           MOVE WS-R001-KDOMCOM1        TO WS-VEN0-KDOMCOM
+           .
+
+      *-------------------------*
+       2012-GENERAR-TB372MIG0.
+      *-------------------------*
+
+      *    INITIALIZE WS-DCLTB372MIG0
+
+      *D*
+           DISPLAY '* INFORMO MIG CON CTIPOLIQ: ' WS-R001-CTIPOLIQ
+      *F*
+           MOVE WS-R001-ANIO                TO WS-MIG0-ANIO
+           MOVE WS-EXPEDIENTE               TO WS-MIG0-KEXPEDIENTE
+           MOVE WS-R001-VEN-MIGR            TO WS-MIG0-VEN-MIGR
+           IF WS-R001-CTIPOLIQ = '1'
+            MOVE WS-R001-CUSUARIO-PAGCAP    TO WS-MIG0-USUARIO-PAGO
+            MOVE WS-R001-FECPAGCAPTCAP      TO WS-MIG0-FCAPTURA
+                                               WS-FECPAGCAPTCAP-ANT
+            MOVE WS-R001-CUSUARIO-CAPTCAP   TO WS-MIG0-CUSUARIO-CAPT
+            MOVE WS-R001-CFORMAPAGO-CAP     TO WS-MIG0-FORMAPAGO
+            MOVE WS-R001-NCHEQUE-CAP        TO WS-MIG0-NUM-CHEQUE
+            MOVE WS-R001-CUENTA-CAP         TO WS-MIG0-NUM-CUENTA
+            MOVE WS-R001-REF-REINVERSION    TO WS-MIG0-REF-REINVERSION
+           END-IF
+           IF WS-R001-CTIPOLIQ = '2'
+            MOVE WS-R001-CUSUARIO-PAGCOMP1  TO WS-MIG0-CUSU-PAGO-COMP1
+            IF WS-R001-KPOLIZA = WS-KPOLIZA-ANT
+             MOVE WS-FECPAGCAPTCAP-ANT      TO WS-MIG0-FCAPTURA-COMP1
+            ELSE
+             MOVE WS-R001-FECPAGCAPTCOMP1   TO WS-MIG0-FCAPTURA-COMP1
+            END-IF
+            MOVE WS-R001-CUSUARIO-CAPTCOMP1 TO WS-MIG0-CUSU-CAPT-COMP1
+            MOVE WS-R001-CFORMAPAGO-COMP1   TO WS-MIG0-FORMAPAGO-COMP1
+            MOVE WS-R001-NCHEQUE-COMP1      TO WS-MIG0-NCHEQUE-COMP1
+            MOVE WS-R001-CUENTA-COMP1       TO WS-MIG0-NCUENTA-COMP1
+           END-IF
+           IF WS-R001-CTIPOLIQ = '3'
+            MOVE WS-R001-CUSUARIO-PAGCOMP2  TO WS-MIG0-CUSU-PAGO-COMP2
+            IF WS-R001-KPOLIZA = WS-KPOLIZA-ANT
+             MOVE WS-FECPAGCAPTCAP-ANT      TO WS-MIG0-FCAPTURA-COMP2
+            ELSE
+             MOVE WS-R001-FECPAGCAPTCOMP2   TO WS-MIG0-FCAPTURA-COMP2
+            END-IF
+            MOVE WS-R001-CUSUARIO-CAPTCOMP2 TO WS-MIG0-CUSU-CAPT-COMP2
+            MOVE WS-R001-CFORMAPAGO-COMP2   TO WS-MIG0-FORMAPAGO-COMP2
+            MOVE WS-R001-NCHEQUE-COMP2      TO WS-MIG0-NCHEQUE-COMP2
+            MOVE WS-R001-CUENTA-COMP2       TO WS-MIG0-NCUENTA-COMP2
+           END-IF
+           MOVE WS-R001-DISCAPACITADO1    TO WS-MIG0-GRADO-DISCAP
+           MOVE WS-R001-PREST-VIVIENDA1   TO WS-MIG0-PREST-VIVIENDA
+           MOVE WS-R001-SITUACION-FAMI1   TO WS-MIG0-SITU-FAMILIAR
+           MOVE WS-R001-NIF-CONYUGE1      TO WS-MIG0-NIF-CONYUGUE
+           MOVE WS-R001-IMPCOMPENSATORIA1 TO WS-MIG0-ICOMPENSATORIA
+           MOVE WS-R001-IMPALIMENHIJOS1   TO WS-MIG0-IMPALIMENHIJOS.
+
+      *---------------*
+       2005-LEER-ENT1.
+      *---------------*
+
+           READ FICH-ENT1 INTO WS-R001-ENTRADA
+                AT END MOVE 'S' TO SW-FIN-FICH-ENT1
+           END-READ.
+
+           IF NO-FIN-FICH-ENT1
+              ADD 1 TO CT-LEIDOS-VEN-10
+           END-IF.
+
+      ***************************************************************
+       10000-FIN.
+      ***************************************************************
+
+      *D*
+           DISPLAY '************************************************'
+           DISPLAY '*      RESUMEN EJECUCION PROGRAMA B372J021     *'
+           DISPLAY '************************************************'
+           DISPLAY '* REG. LEIDOS VENCIMIENTOS 10 ULTIMOS A—OS:   '
+                                                CT-LEIDOS-VEN-10
+           DISPLAY '* REG. GRABADOS VEN0 10 ULTIMOS A—OS:     '
+                                                CT-GRABADOS-VEN0-10
+           DISPLAY '* REG. GRABADOS MIG0 10 ULTIMOS A—OS:     '
+                                                CT-GRABADOS-MIG0-10
+           DISPLAY '* REG. LEIDOS VENCIMIENTOS DE MAS DE 10 A—OS: '
+                                                CT-LEIDOS-VEN-MAS10
+           DISPLAY '* REG. GRABADOS VEN0 DE MAS DE 10 A—OS:   '
+                                                CT-GRABADOS-VEN0-MAS10
+           DISPLAY '* REG. GRABADOS MIG0 DE MAS DE 10 A—OS:   '
+                                                CT-GRABADOS-MIG0-MAS10
+           DISPLAY '*********************************************'
+      *F*
+
+           GOBACK.
+

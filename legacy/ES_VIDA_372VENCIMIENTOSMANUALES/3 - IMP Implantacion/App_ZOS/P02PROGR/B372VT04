@@ -1,0 +1,463 @@
+      *RETRIEVAL                                                                
+      *-----------------------                                                  
+       IDENTIFICATION DIVISION.                                                 
+      *------------------------                                                 
+
+       PROGRAM-ID. B372VT04.                                                    
+
+      ******************************************************************        
+      *  APLICACION   : VENCIMIENTOS MANUALES (FOXPRO)                 *        
+      *  ANALISTA     : EVERIS                                         *        
+      *  PROGRAMADOR  : EVERIS                                         *        
+      *  FECHA        : JUNIO 2012                                              
+      *  TIPO PROGRAMA: COBOL-CICS                                     *        
+      *  DESCRIPCION  : SERVICIO GESTOR DE CONSULTA DE EXPEDIENTES     *        
+      *                 DE VENCIMIENTO (FOXPRO)                        *        
+      ******************************************************************        
+      *PARAMETROS DE ENTRADA:                                                   
+      ******************************************************************        
+      *   -X372VT04-ENTRADA-E: COPY DE ENTRADA DE DATOS                         
+      *                                                                         
+      ******************************************************************        
+      *PARAMETROS DE SALIDA:                                                    
+      ******************************************************************        
+      * -372VT04-SALIDA-S : COPY DE SALIDA DE DATOS                             
+      ******************************************************************        
+
+      ******************************************************************        
+      *MODULOS UTILIZADOS:                                                      
+      ******************************************************************        
+      *                                                                         
+      * B372N004 : MODULO DE NEGOCIO B372VT04                                   
+      *                                                                         
+      ******************************************************************        
+
+      ******************************************************************        
+      * CODIGO DE ERRORES                                                       
+      ******************************************************************        
+      *                                                                         
+      * X372VT04-CRETORNO-S                                                     
+      *                                                                         
+      *                    '00' OPERACION CORRECTA                              
+      *                                                                         
+      *                    '99' ERROR AL DEVOLVER CONTRO                        
+      *                                                                         
+      ******************************************************************        
+
+      *--------------------                                                     
+       ENVIRONMENT DIVISION.                                                    
+      *---------------------                                                    
+
+       CONFIGURATION SECTION.                                                   
+        SPECIAL-NAMES.                                                          
+            DECIMAL-POINT IS COMMA.                                             
+
+       INPUT-OUTPUT SECTION.                                                    
+       FILE-CONTROL.                                                            
+
+      *-------------                                                            
+       DATA DIVISION.                                                           
+      *--------------                                                           
+
+       FILE SECTION.                                                            
+      *-------------                                                            
+
+      *************************                                                 
+       WORKING-STORAGE SECTION.                                                 
+      *************************                                                 
+      *                                                                         
+         01 XN-INDICES.                                                         
+            03 INDICE-L                  PIC 999 VALUE ZEROES.                  
+            03 INDICE-P                  PIC 999 VALUE ZEROES.                  
+
+        01 VARIABLES.                                                   00960000
+           03 FILLER                PIC X(17) VALUE 'INICIO DE WORKING'.00960000
+           03 WS-VA541100           PIC X(08) VALUE 'VA541100'.                 
+           03 WS-VA041527           PIC X(08) VALUE 'VA041527'.                 
+           03 WS-VA431091           PIC X(08) VALUE 'VA431091'.                 
+           03 WS-VR002063           PIC X(08) VALUE 'VR001063'.                 
+           03 WS-VA761030           PIC X(08) VALUE 'VA761030'.                 
+           03 WS-VA541026           PIC X(08) VALUE 'VA541026'.                 
+           03 FILLER                PIC X(17) VALUE 'FINAL  DE WORKING'.00960000
+
+      * VARIABLES AUXILIARES PARA NOMBRE COMPLETO                               
+          03 WS-NOMBRE-COM                  PIC X(50).                          
+
+          03 WS-NOMBRE-COMPLETO.                                                
+             05 WS-APELLIDO1                PIC X(15).                          
+             05 WS-APELLIDO2                PIC X(15).                          
+             05 WS-NOMBRE                   PIC X(30).                          
+
+       01 SW-SWITCH.                                                            
+          03 SW-ERRORES                PIC XX VALUE '00'.                       
+             88 NO-ERROR                      VALUE '00'.                       
+             88 ERROR-GRAVE                   VALUE '01'.                       
+
+        01 VARIABLES.                                                   00960000
+           03 FILLER                PIC X(17) VALUE 'INICIO DE WORKING'.00960000
+           03 LT-B372N004           PIC X(08) VALUE 'B372N004'.                 
+           03 B000Y011              PIC X(08) VALUE 'B000Y011'.                 
+           03 FILLER                PIC X(17) VALUE 'FINAL  DE WORKING'.00960000
+
+          03 WS-PARAMETRO.                                                      
+             COPY R000X000.                                                     
+             COPY R000X001.                                                     
+      *   RR041534.                                                             
+             COPY RR041534.                                                     
+
+      *   RA541100.                                                             
+             COPY RA541100.                                                     
+
+
+      *****************                                                         
+       LINKAGE SECTION.                                                         
+      *****************                                                         
+       01 DFHCOMMAREA.                                                          
+           COPY R000X000.                                                       
+           03 COMMAREA.                                                         
+              COPY X372VT04.                                                    
+
+      **************************************                                    
+       PROCEDURE DIVISION USING DFHCOMMAREA.                                    
+      **************************************                                    
+
+
+           PERFORM 1000-INICIO.                                                 
+
+           PERFORM 2000-PROCESO.                                                
+
+           PERFORM 9000-FIN.                                                    
+
+      ******************************************************************        
+      *1000-INICIO.                                                             
+      ******************************************************************        
+       1000-INICIO.                                                             
+
+           EXEC CICS                                                            
+                IGNORE CONDITION ERROR                                          
+           END-EXEC.                                                            
+
+           MOVE '00'       TO X372VT04-CRETORNO-S.                              
+           MOVE 'B372VT04' TO X372VT04-GNOMPROG-S.                              
+
+
+      ******************************************************************        
+      *2000-PROCESO.                                                            
+      ******************************************************************        
+       2000-PROCESO.                                                            
+
+      *D*                                                                       
+      *     DISPLAY ' YACO.B372VT04 '                                           
+      *     DISPLAY 'OPERACION-E      ' X372VT04-OPERACION-E                    
+      *     DISPLAY 'ANIO-E           ' X372VT04-ANIO-E                         
+      *     DISPLAY 'KEXPEDIENTE-E    ' X372VT04-KEXPEDIENTE-E                  
+      *     DISPLAY 'KPOLIZA-E        ' X372VT04-KPOLIZA-E                      
+      *     DISPLAY 'NIF-E            ' X372VT04-NIF-E                          
+      *     DISPLAY 'LUGARENVIO-E     ' X372VT04-LUGARENVIO-E                   
+      *     DISPLAY 'FECCALCULO-E     ' X372VT04-FECCALCULO-E                   
+      *     DISPLAY 'ANT-KEXPEDIENTE-E' X372VT04-ANT-KEXPEDIENTE-E              
+      *F*                                                                       
+
+           CALL LT-B372N004     USING COMMAREA.                                 
+      *D*                                                                       
+      *     DISPLAY 'CRETORNO ' X372VT04-CRETORNO-S                             
+      *     DISPLAY 'GERROR-S ' X372VT04-GERROR-S                               
+      *     DISPLAY 'GNOMPROG ' X372VT04-GNOMPROG-S                             
+      *     DISPLAY 'PAGINACION ' X372VT04-SPAGINACION-S                        
+      *     DISPLAY ' VT04-ANIO-S        ' X372VT04-ANIO-S (1)                  
+      *     DISPLAY ' VT04-KEXPEDIENTE-S ' X372VT04-KEXPEDIENTE-S (1)           
+      *     DISPLAY ' VT04-KRAMO-S       ' X372VT04-KRAMO-S (1)                 
+      *     DISPLAY ' VT04-ANIOPOL-S     ' X372VT04-ANIOPOL-S (1)               
+      *     DISPLAY ' VT04-KPOLIZA-S     ' X372VT04-KPOLIZA-S (1)               
+      *     DISPLAY ' VT04-NSUBPOLIZA-S  ' X372VT04-NSUBPOLIZA-S (1)            
+      *     DISPLAY ' VT04-KCERTIFICADO-S ' X372VT04-KCERTIFICADO-S(1)          
+      *     DISPLAY ' VT04-KMODALIDAD-S  ' X372VT04-KMODALIDAD-S (1)            
+      *     DISPLAY ' T04-CCANALCAMP-S  ' X372VT04-CCANALCAMP-S (1)             
+      *     DISPLAY ' VT04-CENTIDAD-S    ' X372VT04-CENTIDAD-S (1)              
+      *     DISPLAY ' T04-FECEFECTO-S   ' X372VT04-FECEFECTO-S (1)              
+      *     DISPLAY ' VT04-KDURACION-S   ' X372VT04-KDURACION-S (1)             
+      *     DISPLAY ' VT04-FECEMISION-S  ' X372VT04-FECEMISION-S (1)            
+      *     DISPLAY ' VT04-CCARTERA-S    ' X372VT04-CCARTERA-S (1)              
+      *     DISPLAY ' VT04-SREASEGURO-S  ' X372VT04-SREASEGURO-S (1)            
+      *     DISPLAY ' VT04-REGIONAL-S    ' X372VT04-REGIONAL-S (1)              
+      *     DISPLAY ' VT04-LUGARENVIO-S  ' X372VT04-LUGARENVIO-S (1)            
+      *     DISPLAY ' VT04-KOFICINA-S    ' X372VT04-KOFICINA-S (1)              
+      *     DISPLAY ' VT04-IPENDIENTE-S  ' X372VT04-IPENDIENTE-S (1)            
+      *     DISPLAY ' VT04-CTIPOPERS1-S  ' X372VT04-CTIPOPERS1-S (1)            
+      *     DISPLAY ' 2VT04-SRESIDENTE1-S ' X372VT04-SRESIDENTE1-S(1)           
+      *     DISPLAY ' VT04-NIF1-S        ' X372VT04-NIF1-S (1)                  
+      *     DISPLAY ' VT04-KPERSONA1-S   ' X372VT04-KPERSONA1-S (1)             
+      *     DISPLAY ' 2VT04-IMPCAPITAL-S  ' X372VT04-IMPCAPITAL-S (1)           
+      *     DISPLAY ' VT04-IMPBENEFICIOS-S ' X372VT04-IMPBENEFICIOS-S(1)        
+      *     DISPLAY ' CPAGOCAPITAL-S ' X372VT04-FECPAGOCAPITAL-S (1)            
+      *     DISPLAY ' VT04-IMPANTICIPO-S ' X372VT04-IMPANTICIPO-S (1)           
+      *     DISPLAY ' VT04-IMPINTEPEND-S ' X372VT04-IMPINTEPEND-S (1)           
+      *     DISPLAY ' IPIMPUESTCAP-S '   X372VT04-TIPIMPUESTCAP-S (1)           
+      *     DISPLAY ' PRTOINTEGRCAP-S ' X372VT04-IMPRTOINTEGRCAP-S (1)          
+      *     DISPLAY ' IMPREDPRICAP-S ' X372VT04-IMPREDPRICAP-S (1)              
+      *     DISPLAY ' IMPREDTRANCAP-S ' X372VT04-IMPREDTRANCAP-S (1)            
+      *     DISPLAY ' COMPENSATORIA-S ' X372VT04-IMPCOMPENSATORIA-S  (1)        
+      *     DISPLAY ' -IMPRTONETOCAP-S ' X372VT04-IMPRTONETOCAP-S (1)           
+      *     DISPLAY ' X372VT04-PORRETCAP-S   ' X372VT04-PORRETCAP-S (1)         
+      *     DISPLAY ' X372VT04-IMPRETCAP-S   ' X372VT04-IMPRETCAP-S (1)         
+      *     DISPLAY ' X372VT04-IMPLIQCAP-S   ' X372VT04-IMPLIQCAP-S (1)         
+      *     DISPLAY ' X372VT04-FECIMPRECAP-S ' X372VT04-FECIMPRECAP-S(1)        
+      *     DISPLAY ' X372VT04-FECPAGRET-S   ' X372VT04-FECPAGRET-S (1)         
+      *     DISPLAY ' X372VT04-IMPCOMP1-S    ' X372VT04-IMPCOMP1-S (1)          
+      *     DISPLAY ' X372VT04-FECEMICOMP1-S ' X372VT04-FECEMICOMP1-S(1)        
+      *     DISPLAY ' X372VT04-FECPAGCOMP1-S ' X372VT04-FECPAGCOMP1-S(1)        
+      *     DISPLAY ' -TIPIMPUESTCOMP1-S ' X372VT04-TIPIMPUESTCOMP1-S(1)        
+      *     DISPLAY ' IMPRTOINTCOMP1-S ' X372VT04-IMPRTOINTCOMP1-S (1)          
+      *     DISPLAY ' IMPREDPRICOMP1-S ' X372VT04-IMPREDPRICOMP1-S (1)          
+      *     DISPLAY ' IREDTRANCOMP1-S '  X372VT04-IREDTRANCOMP1-S (1)           
+      *     DISPLAY ' IRTONETCOMP1-S '   X372VT04-IRTONETCOMP1-S (1)            
+      *     DISPLAY ' PORRETCOMP1-S '    X372VT04-PORRETCOMP1-S (1)             
+      *     DISPLAY ' IRETCOMP1-S   '    X372VT04-IRETCOMP1-S (1)               
+      *     DISPLAY ' ILIQCOMP1-S   '    X372VT04-ILIQCOMP1-S (1)               
+      *     DISPLAY ' FECIMPRECOMP1-S '  X372VT04-FECIMPRECOMP1-S (1)           
+      *     DISPLAY ' FECPAGRETCOM1-S '  X372VT04-FECPAGRETCOM1-S (1)           
+      *     DISPLAY ' IMPCOMP2-S    '    X372VT04-IMPCOMP2-S (1)                
+      *     DISPLAY ' FECEMICOMP2-S '    X372VT04-FECEMICOMP2-S (1)             
+      *     DISPLAY ' FECPAGCOMP2-S '    X372VT04-FECPAGCOMP2-S (1)             
+      *     DISPLAY ' TIPIMPUESTCOMP2 ' X372VT04-TIPIMPUESTCOMP2-S (1)          
+      *     DISPLAY ' IMPRTOINTCOMP2-S ' X372VT04-IMPRTOINTCOMP2-S (1)          
+      *     DISPLAY ' IMPREDPRICOMP2-S ' X372VT04-IMPREDPRICOMP2-S (1)          
+      *     DISPLAY ' REDTRANCOMP2-S '   X372VT04-IREDTRANCOMP2-S (1)           
+      *     DISPLAY ' IRTONETCOMP2-S '   X372VT04-IRTONETCOMP2-S (1)            
+      *     DISPLAY ' PORRETCOMP2-S '    X372VT04-PORRETCOMP2-S (1)             
+      *     DISPLAY ' IRETCOMP2-S   '    X372VT04-IRETCOMP2-S (1)               
+      *     DISPLAY ' ILIQCOMP2-S   '    X372VT04-ILIQCOMP2-S (1)               
+      *     DISPLAY ' FECIMPRECOMP2-S '  X372VT04-FECIMPRECOMP2-S (1)           
+      *     DISPLAY ' ECPAGRETCOM2-S '   X372VT04-FECPAGRETCOM2-S (1)           
+      *     DISPLAY ' CODCOA1-S     '    X372VT04-CODCOA1-S (1)                 
+      *     DISPLAY ' PORCOA1-S     '    X372VT04-PORCOA1-S (1)                 
+      *     DISPLAY ' X372VT04-CODCOA2-S     ' X372VT04-CODCOA2-S (1)           
+      *     DISPLAY ' X372VT04-PORCOA2-S     ' X372VT04-PORCOA2-S (1)           
+      *     DISPLAY ' X372VT04-CODCOA3-S     ' X372VT04-CODCOA3-S (1)           
+      *     DISPLAY ' X372VT04-PORCOA3-S     ' X372VT04-PORCOA3-S (1)           
+      *     DISPLAY ' X772VT04-CODCOA4-S     ' X372VT04-CODCOA4-S (1)           
+      *     DISPLAY ' X372VT04-PORCOA4-S     ' X372VT04-PORCOA4-S (1)           
+      *     DISPLAY ' X372VT04-CODCOA5-S     ' X372VT04-CODCOA5-S (1)           
+      *     DISPLAY ' X372VT04-PORCOA5-S     ' X372VT04-PORCOA5-S (1)           
+      *     DISPLAY ' X372VT04-CODCOA6-S     ' X372VT04-CODCOA6-S (1)           
+      *     DISPLAY ' X372VT04-PORCOA6-S     ' X372VT04-PORCOA6-S (1)           
+      *     DISPLAY ' X372VT04-PAGOTOT-S     ' X372VT04-PAGOTOT-S (1)           
+      *     DISPLAY ' CODCALFISCAP-S '   X372VT04-CODCALFISCAP-S (1)            
+      *     DISPLAY ' CODCALFISCOMP1-S ' X372VT04-CODCALFISCOMP1-S (1)          
+      *     DISPLAY ' CODCALFISCOMP2-S ' X372VT04-CODCALFISCOMP2-S (1)          
+      *     DISPLAY ' CUSUARIO-S    '    X372VT04-CUSUARIO-S (1)                
+      *     DISPLAY ' GOBSERVACION-S '   X372VT04-GOBSERVACION-S (1)            
+      *     DISPLAY ' GOBSERVACION-S '   X372VT04-GOBSERVACION-S  (1)           
+      *     DISPLAY ' STIPSITUACION-S'   X372VT04-STIPSITUACION-S (1)           
+      *     DISPLAY ' FANULACION-S   '   X372VT04-FANUALACION-S   (1)           
+      *F*                                                                       
+
+            IF X372VT04-CRETORNO-S EQUAL '00'                                   
+               IF X372VT04-NSUBPOLIZA-S(1) EQUAL ZEROES AND                     
+                  X372VT04-KCERTIFICADO-S(1) EQUAL ZEROES                       
+
+                    PERFORM 3000-BUSCAR-TOMADOR-IND                             
+
+               ELSE                                                             
+
+                    PERFORM 4000-BUSCAR-TOMADOR-COL                             
+
+               END-IF                                                           
+            END-IF.                                                             
+      *D*                                                                       
+      *     DISPLAY '***************  B372VT04 *********'                       
+      *     DISPLAY 'TOMADOR: ' X372VT04-TOMADOR-S.                             
+      *F*                                                                       
+      ******************************************************************        
+      *3000-BUSCAR-TOMADOR-IND.                                                 
+      ******************************************************************        
+       3000-BUSCAR-TOMADOR-IND.                                                 
+      *D*                                                                       
+      *     DISPLAY '3000-BUSCAR-TOMADOR-IND.' X372VT04-KPOLIZA-S(1)            
+      *F*                                                                       
+
+           INITIALIZE RR041534                                                  
+
+           MOVE X372VT04-KPOLIZA-S(1)  TO RR041534-KPOLIZA                      
+           MOVE  ALL '9'               TO RR041534-FPERTECN                     
+
+           MOVE R000X000 OF DFHCOMMAREA                                         
+                                  TO R000X000         OF WS-PARAMETRO           
+           MOVE '00'              TO CAB-RESULTADO    OF WS-PARAMETRO           
+           MOVE 'IDMS'            TO CAB-COD-LIBRERIA OF WS-PARAMETRO           
+           MOVE 'VR041534'        TO CAB-COD-INTERFAZ OF WS-PARAMETRO           
+           MOVE 'N'               TO CAB-ACTUALIZA    OF WS-PARAMETRO           
+           MOVE LENGTH OF RR041534                                              
+                                  TO CAB-LONG-DATOS   OF WS-PARAMETRO           
+           MOVE RR041534          TO R000X001         OF WS-PARAMETRO           
+
+           PERFORM ADAPTADOR-SALIDA                                             
+
+           MOVE R000X001    OF WS-PARAMETRO TO RR041534                         
+
+      *D*                                                                       
+      *     DISPLAY 'RESULTADO ' CAB-RESULTADO OF WS-PARAMETRO                  
+      *F*                                                                       
+      *    IF CAB-RESULTADO OF WS-PARAMETRO NOT = '00'                          
+      *       SET  ERROR-GRAVE TO TRUE                                          
+      *       MOVE '06'                                                         
+      *        TO X372VT04-CRETORNO-S                                           
+      *       MOVE 'ERROR EN LA CONSULTA DE CARTERA DE IDMS'                    
+      *        TO X372VT04-GERROR-S                                             
+      *       MOVE 'VR041534'                                                   
+      *        TO  X372VT04-GNOMPROG-S                                          
+      *                                                                         
+      *    ELSE                                                                 
+           IF CAB-RESULTADO OF WS-PARAMETRO EQUAL '00'                          
+              PERFORM 3100-COMPACTAR-NOMBRE-COMPLETO                            
+      *D*                                                                       
+      *     DISPLAY 'NOMBRE  ' WS-NOMBRE-COM                                    
+      *F*                                                                       
+              MOVE WS-NOMBRE-COM            TO X372VT04-TOMADOR-S               
+           END-IF.                                                              
+
+      ******************************************************************        
+      * 3100-COMPACTAR-NOMBRE-COMPLETO.                                         
+      ******************************************************************        
+        3100-COMPACTAR-NOMBRE-COMPLETO.                                         
+      *D*                                                                       
+      *     DISPLAY '3100-COMPACTAR-NOMBRE-COMPLETO.'                           
+      *     DISPLAY 'NOMBRE ' RR041534-GNAPE1TOM(1)                             
+      *F*                                                                       
+           INITIALIZE WS-NOMBRE-COM                                             
+           INITIALIZE WS-NOMBRE-COMPLETO                                        
+           MOVE 1 TO INDICE-L                                                   
+           MOVE 1 TO INDICE-P                                                   
+
+           MOVE RR041534-GNAPE1TOM(1)               TO WS-APELLIDO1             
+           PERFORM UNTIL INDICE-P > 25                                          
+           IF WS-APELLIDO1(INDICE-P:2) NOT EQUAL SPACES                         
+              MOVE WS-APELLIDO1(INDICE-P:1) TO WS-NOMBRE-COM(INDICE-L:1)        
+              ADD 1 TO INDICE-L                                                 
+           END-IF                                                               
+           ADD 1 TO INDICE-P                                                    
+           END-PERFORM                                                          
+
+           IF INDICE-L NOT EQUAL 1                                              
+              ADD 1 TO INDICE-L                                                 
+           END-IF                                                               
+
+           MOVE 1 TO INDICE-P                                                   
+           MOVE RR041534-GNAPE2TOM(1)               TO WS-APELLIDO2             
+           PERFORM UNTIL INDICE-P > 25                                          
+           IF WS-APELLIDO2(INDICE-P:2) NOT EQUAL SPACES                         
+              MOVE WS-APELLIDO2(INDICE-P:1) TO WS-NOMBRE-COM(INDICE-L:1)        
+              ADD 1 TO INDICE-L                                                 
+           END-IF                                                               
+           ADD 1 TO INDICE-P                                                    
+           END-PERFORM                                                          
+
+           IF INDICE-L NOT EQUAL 1                                              
+              MOVE ', '             TO WS-NOMBRE-COM(INDICE-L:2)                
+              ADD 2 TO INDICE-L                                                 
+           END-IF                                                               
+
+           MOVE 1 TO INDICE-P                                                   
+           MOVE RR041534-GNNOMBRETOM(1)             TO WS-NOMBRE                
+           PERFORM UNTIL INDICE-P > 25                                          
+           IF WS-NOMBRE(INDICE-P:2) NOT EQUAL SPACES                            
+              MOVE WS-NOMBRE(INDICE-P:1) TO WS-NOMBRE-COM(INDICE-L:1)           
+              ADD 1 TO INDICE-L                                                 
+           END-IF                                                               
+           ADD 1 TO INDICE-P                                                    
+           END-PERFORM.                                                         
+
+      ******************************************************************        
+      *4000-BUSCAR-TOMADOR-COL                                                  
+      ******************************************************************        
+       4000-BUSCAR-TOMADOR-COL.                                                 
+      *D*                                                                       
+      *     DISPLAY '4000-BUSCAR-TOMADOR-COL'                                   
+      *F*                                                                       
+
+           INITIALIZE RA541100                                                  
+           MOVE X372VT04-KPOLIZA-S(1)(4:7) TO RA541100-KSG-POLIZA               
+           MOVE X372VT04-NSUBPOLIZA-S(1)   TO RA541100-KSG-SUBPOL               
+
+           MOVE R000X000 OF DFHCOMMAREA                                         
+                                  TO R000X000         OF WS-PARAMETRO           
+           MOVE '00'              TO CAB-RESULTADO    OF WS-PARAMETRO           
+           MOVE 'IDMS'            TO CAB-COD-LIBRERIA OF WS-PARAMETRO           
+           MOVE 'VA541100'        TO CAB-COD-INTERFAZ OF WS-PARAMETRO           
+           MOVE 'N'               TO CAB-ACTUALIZA    OF WS-PARAMETRO           
+           MOVE LENGTH OF RA541100                                              
+                                  TO CAB-LONG-DATOS   OF WS-PARAMETRO           
+           MOVE RA541100          TO R000X001         OF WS-PARAMETRO           
+
+           PERFORM ADAPTADOR-SALIDA                                             
+
+           MOVE R000X001    OF WS-PARAMETRO TO RA541100                         
+
+      *D*                                                                       
+      *     DISPLAY 'RESULTADO ' CAB-RESULTADO OF WS-PARAMETRO                  
+      *F*                                                                       
+      *    IF CAB-RESULTADO OF WS-PARAMETRO NOT = '00'                          
+      *                                                                         
+      *       SET  ERROR-GRAVE TO TRUE                                          
+      *                                                                         
+      *       MOVE '02'                                                         
+      *        TO X372VT04-CRETORNO-S                                           
+      *       MOVE 'ERROR EN LA CONSULTA DE CARTERA DE IDMS/DB2'                
+      *        TO X372VT04-GERROR-S                                             
+      *       MOVE 'B372VT04'                                                   
+      *        TO  X372VT04-GNOMPROG-S                                          
+
+      *    ELSE                                                                 
+      *D*                                                                       
+      *     DISPLAY 'RAZON   ' RA541100-GSG-RAZON                               
+      *F*                                                                       
+           IF CAB-RESULTADO OF WS-PARAMETRO EQUAL '00'                          
+
+
+              MOVE RA541100-GSG-RAZON       TO X372VT04-TOMADOR-S               
+
+           END-IF                                                               
+
+           CONTINUE.                                                            
+
+      ******************************************************************        
+       ADAPTADOR-SALIDA.                                                        
+      *----------------*                                                        
+
+           EXEC CICS                                                    00014500
+              LINK PROGRAM (B000Y011)                                   00014500
+              COMMAREA (WS-PARAMETRO)                                   00014500
+              LENGTH (LENGTH OF WS-PARAMETRO)                           00014500
+           END-EXEC.                                                    00014500
+
+           IF EIBRESP NOT = DFHRESP(NORMAL)                                     
+
+
+              MOVE  'B372VT04'  TO  X372VT04-GNOMPROG-S                         
+              MOVE  '98'        TO  X372VT04-CRETORNO-S                         
+              MOVE  'ERROR EN LLAMADA DEL MODULO DE IDMS'                       
+                                TO  X372VT04-GERROR-S                           
+              PERFORM 9000-FIN                                                  
+
+           END-IF.                                                              
+
+      ******************************************************************        
+      *9000-FIN.                                                                
+      ******************************************************************        
+       9000-FIN.                                                                
+
+           EXEC CICS                                                    00048300
+                RETURN                                                  00048400
+           END-EXEC.                                                    00048500
+
+           IF EIBRESP NOT = DFHRESP(NORMAL)                                     
+
+
+              MOVE  'B372VT04'  TO  X372VT04-GNOMPROG-S                         
+              MOVE  '99'        TO  X372VT04-CRETORNO-S                         
+              MOVE  'ERROR AL DEVOLVER CONTROL'                                 
+                                TO  X372VT04-GERROR-S                           
+
+           END-IF                                                               
+           .                                                                    
+

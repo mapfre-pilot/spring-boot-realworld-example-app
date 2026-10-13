@@ -1,0 +1,887 @@
+      ******************************************************************        
+       IDENTIFICATION DIVISION.                                                 
+       PROGRAM-ID. B372N003.                                                    
+      ******************************************************************        
+      * ---------------------------------------------------------------         
+      * |         CARGA DE FICHEROS: DATOS DEL EXPEDIENTE             |         
+      * ---------------------------------------------------------------         
+      *                                                                         
+      * APLICACION....:VENCIMIENTOS MANUALES (FOXPRO)                           
+      * ANALISTA......:EVERIS                                                   
+      * PROGRAMADOR...:EVERIS                                                   
+      * FECHA DE REALIZACION: 22/06/2011.                                       
+      *                                                                         
+      *DESCRIPCI”N DEL PROGRAMA:                                                
+      * ESTE PROGRAMA RECIBE UN REGISTRO LEIDO DE FICHERO Y LLAMA AL            
+      * PROGRAMA B372M001 PARA GRABARLO EN LA TABLA DE VENCIMIENTOS             
+      *                                                                         
+      ******************************************************************        
+      *PARAMETROS DE ENTRADA:                                                   
+      ******************************************************************        
+      *   -X372N003 : COPY DE ENTRADA DE DATOS                                  
+      *                                                                         
+      ******************************************************************        
+      *PARAMETROS DE SALIDA:                                                    
+      ******************************************************************        
+      *                                                                         
+      ******************************************************************        
+      *MODULOS UTILIZADOS:                                                      
+      ******************************************************************        
+      * B620N050 : SERVICIO DE KPERSONA DE LAS POLIZAS                          
+      *                                                                         
+      * B620N054 : SERVICIO DE DOMICILIOS DE LAS POLIZAS                        
+      *                                                                         
+      * B001N001 : VALIDACION FORMATO DNI                                       
+      *                                                                         
+      * B001N005 : VALIDACION FORMATO DE LA FECHA                               
+      *                                                                         
+      * B001M001 : MODULOS ROLLBACK/COMMIT                                      
+      *                                                                         
+      * B372M001 : MODULO MANTENIMIENTO TABLA DE VENCIMIENTO                    
+      *                                                                         
+      * B362M002 : MODULO MANTENIMIENTI TABLA DE VARIABLES DEL SISTEMA          
+      *                                                                         
+      ******************************************************************        
+      * CODIGO DE ERRORES                                                       
+      ******************************************************************        
+      *                                                                         
+      * X372N003-CRETORNO-S                                                     
+
+      *          '00' OPERACION CORRECTA                                        
+      *                                                                         
+      *          '01' ERROR EN MODO                                             
+      *                                                                         
+      *          '02' ERROR FALTAN DATOS INFORMADOS                             
+      *                                                                         
+      *          '03' ERROR REGISTRO NO ENCONTRADO                              
+      *                                                                         
+      *          '04' ERROR REGISTRO NINGUNA MODIFICACION                       
+      *                                                                         
+      *          '05' ERROR EN LA LLAMADA DEL MODULO                            
+      *                                                                         
+      *          '06' ERROR EN ACCESO A BASE DE DATOS                           
+      *                                                                         
+      *          '10' ERROR B620N050 SERVICIO DE KPERSONA DE LAS POLIZAS        
+      *                                                                         
+      *          '11' ERROR B001N001 VALIDACION FORMATO DNI                     
+      *                                                                         
+      *          '12' ERROR B001N005 VALIDACION FORMATO DE LA FECHA             
+      *                                                                         
+      *          '99' ERROR EN LOS DATOS INFORMADOS                             
+      *                                                                         
+      ******************************************************************        
+      * MODIFICACION:                                                  *        
+      * --------------                                                 *        
+      * AUTOR: EVERIS                                                  *        
+      * FECHA: 22/11/2013                                              *        
+      * DESCRIPCION: SI EL REGISTRO DE ENTRADA ES DE LA MODALIDAD      *        
+      *              20, 32, 50 ” 118 ADEMAS DE DIVIDIR ENTRE DOS      *        
+      *              LOS IMPORTES SE GENERAN DOS EXPEDIENTES.          *        
+      *                                                                *        
+      * BUSCAR: INC1                                                   *        
+      *                                                                *        
+      ******************************************************************        
+      *                  ENVIRONMENT DIVISION                                   
+      ******************************************************************        
+       ENVIRONMENT DIVISION.                                                    
+       CONFIGURATION SECTION.                                                   
+       SPECIAL-NAMES.                                                           
+           DECIMAL-POINT IS COMMA.                                              
+
+      ******************************************************************        
+      *                  DATA DIVISION                                 *        
+      ******************************************************************        
+       DATA DIVISION.                                                           
+      ******************************************************************        
+      *                  WORKING-STORAGE SECTION                       *        
+      ******************************************************************        
+       WORKING-STORAGE SECTION.                                                 
+      *                                                                         
+       01 XN-INDICES.                                                           
+          03 XN-SALIDA                 PIC 9999 VALUE ZEROES.                   
+          03 XN-SALIDA2                PIC 9999 VALUE ZEROES.                   
+          03 XN-I                      PIC 9(2).                                
+
+      *   CONTROL DE ERRORES DEL PROGRAMA                                       
+       01 SW-SWITCH.                                                            
+          03 SW-ERRORES                PIC XX VALUE '00'.                       
+             88 NO-ERROR                      VALUE '00'.                       
+             88 ERROR-GRAVE                   VALUE '01'.                       
+
+          03 SW-CAMBIO                 PIC XX VALUE '00'.                       
+             88 NO-CAMBIO                     VALUE '00'.                       
+             88 SI-CAMBIO                     VALUE '01'.                       
+
+          03 SW-PERSONA                PIC X.                                   
+             88 SI-EXISTE                     VALUE 'S'.                        
+             88 NO-EXISTE                     VALUE 'N'.                        
+
+          03 SW-PERFORM                PIC X  VALUE 'N'.                        
+             88 FIN-PERFORM                   VALUE 'S'.                        
+             88 NO-FIN-PERFORM                VALUE 'N'.                        
+
+          03 SW-BORRA-ROLLBACK             PIC XX VALUE '00'.                   
+             88 SI-ROLLBACK                   VALUE '00'.                       
+             88 NO-ROLLBACK                   VALUE '01'.                       
+
+      *MODULOS                                                                  
+       01 WS-MODULOS.                                                           
+          03 WS-VA042527               PIC X(8)  VALUE 'VA042527'.              
+          03 WS-B372M001               PIC X(8) VALUE 'B372M001'.               
+          03 WS-B362M002               PIC X(8) VALUE 'B362M002'.               
+          03 WS-B001N005               PIC X(8) VALUE 'B001N005'.               
+          03 WS-B001N001               PIC X(8) VALUE 'B001N001'.               
+          03 WS-B001M001               PIC X(8) VALUE 'B001M001'.               
+          03 WS-B620N050               PIC X(8) VALUE 'B620N050'.               
+          03 WS-B620N054               PIC X(8) VALUE 'B620N054'.               
+
+       01 LT-LITERALES.                                                         
+      *                                                                         
+      ** LITERALES DE RETORNO                                                   
+      *                                                                         
+          03 LT-ERRORES-RETORNO.                                                
+      *         LITERAL NO HAY ERRORES                                          
+             05 LT-RETURN-OK             PIC X(5) VALUE '00'.                   
+      *         ERROR EN MODO                                                   
+             05 LT-RETURN-ERR-MODO       PIC X(5) VALUE '01'.                   
+      *         ERROR FALTAN DATOS INFORMADOS                                   
+             05 LT-ERR-DATOS             PIC X(5) VALUE '02'.                   
+      *         ERROR REGISTRO NO ENCONTRADO                                    
+             05 LT-RETURN-ERR-NOTFND     PIC X(5) VALUE '03'.                   
+      *         ERROR REGISTRO CLAVE DUPLICADA                                  
+             05 LT-RETURN-ERR-CLVDUPLI   PIC X(5) VALUE '04'.                   
+      *         ERROR REGISTRO NINGUNA MODIFICACION                             
+             05 LT-RETURN-ERR-NOTMODIF   PIC X(5) VALUE '05'.                   
+      *         ERROR EN LA LLAMADA DEL MODULO                                  
+             05 LT-ERROR-LLAM            PIC X(2) VALUE '06'.                   
+      *         ERROR EN ACCESO A BASE DE DATOS                                 
+             05 LT-RETURN-ERR-OTHER      PIC X(5) VALUE '99'.                   
+
+          03 WS-KEXPEDIENTE              PIC 9(10).                             
+          03 WS-ANIO                     PIC 9(04).                             
+      **                                                                        
+      **  FECHA DEL SISTEMA                                                     
+      **                                                                        
+          03 WS-FECHA-SIS.                                                      
+             05 WS-FECHA.                                                       
+                07 WS-ANO                   PIC 9(04).                          
+                07 WS-MES                   PIC 9(02).                          
+                07 WS-DIA                   PIC 9(02).                          
+             05 WS-TIEMPO.                                                      
+                07 WS-HORA                  PIC 9(02).                          
+                07 WS-MINUTOS               PIC 9(02).                          
+                07 WS-SEGUNDOS              PIC 9(02).                          
+                07 WS-CENTESIMAS            PIC 9(02).                          
+             05 FILLER                      PIC 9(05).                          
+
+          03 WS-POLIZA-AUX.                                                     
+             05 FILLER                      PIC 9(03) VALUE ZEROS.              
+             05 WS-POL-AUX                  PIC 9(07).                          
+
+          03 WS-ANIO-AUX.                                                       
+             05 WS-ANIO-1                   PIC 9(02).                          
+             05 WS-ANIO-2                   PIC 9(02).                          
+      * VARIABLES DE CALCULO                                                    
+          03 WS-VARIABLES.                                                      
+             05 WS-CAPITAL                  PIC S9(7)V9(2).                     
+             05 WS-BENEFICIOS               PIC S9(7)V9(2).                     
+             05 WS-ANTICIPO                 PIC S9(7)V9(2).                     
+             05 WS-INTERESES-PEND           PIC S9(7)V9(2).                     
+             05 WS-PENDIENTE                PIC S9(7)V9(2).                     
+             05 WS-CODIGO-PERSONA           PIC 9(9).                           
+             05 WS-APELLIDO-1               PIC X(25).                          
+             05 WS-APELLIDO-2               PIC X(25).                          
+             05 WS-FECHA-VTO                PIC 9(8).                           
+             05 WS-FECHA-AUX.                                                   
+                07 WS-ANO-AUX               PIC 9(04).                          
+                07 WS-MES-AUX               PIC 9(02).                          
+                07 WS-DIA-AUX               PIC 9(02).                          
+
+      * INDICES                                                                 
+          03 WS-INDICES.                                                        
+             05 I                           PIC 9(3).                           
+
+      *COPYS COBOL                                                              
+       01 WS-COPYS.                                                             
+          03 WS-X372M001.                                                       
+             COPY X372M001.                                                     
+          03 WS-X362M002.                                                       
+             COPY X362M002.                                                     
+          03 WS-X620M050.                                                       
+             COPY X620M050.                                                     
+          03 WS-X620M054.                                                       
+             COPY X620M054.                                                     
+          03 WS-X001M001.                                                       
+             COPY X001M001.                                                     
+          03 WS-SUBSCHEMA-CTRL     PIC X(320)  VALUE SPACES.                    
+
+             COPY X001N005.                                                     
+             COPY X001N001.                                                     
+             COPY X001N009.                                                     
+
+             COPY RA041527.                                                     
+             COPY RA041528.                                                     
+             COPY RA041529.                                                     
+      ******************************************************************        
+       LINKAGE SECTION.                                                         
+      ******************************************************************        
+       01 DFHCOMMAREA.                                                          
+           COPY X372N003.                                                       
+      *************************************************************             
+       PROCEDURE DIVISION USING DFHCOMMAREA.                                    
+      *************************************************************             
+           PERFORM 1000-INICIO.                                                 
+
+           IF NOT ERROR-GRAVE                                                   
+              PERFORM 2000-PROCESO                                              
+           END-IF.                                                              
+
+           PERFORM 10000-FIN.                                                   
+      ********************************************************                  
+       1000-INICIO.                                                             
+      ********************************************************                  
+      * INICIALIZAR VARIABLES                                                   
+      ********************************************************                  
+      ** ABRIR B.D. IDMS EN BATCH                                               
+      *    INITIALIZE  RA041527.                                                
+      *    MOVE 'A'              TO RA041527-COPERACION.                        
+      *    CALL WS-VA042527  USING RA041527 RA041528 RA041529                   
+      *                           WS-SUBSCHEMA-CTRL.                            
+
+           INITIALIZE XN-INDICES.                                               
+           INITIALIZE WS-VARIABLES.                                             
+
+           MOVE FUNCTION CURRENT-DATE TO WS-FECHA-SIS.                          
+
+           SET NO-ERROR     TO TRUE                                             
+           SET NO-ROLLBACK  TO TRUE                                             
+
+           CONTINUE.                                                            
+
+
+      ***************************************************************           
+       2000-PROCESO.                                                            
+      ***************************************************************           
+
+           PERFORM 2100-OBTENER-CAMPOS-TABLA                                    
+
+           IF NOT ERROR-GRAVE                                                   
+              PERFORM 2200-VALIDAR-ENTRADA                                      
+           END-IF                                                               
+
+           IF NOT ERROR-GRAVE                                                   
+              PERFORM 2300-OBTENER-KEXPEDIENTE                                  
+           END-IF                                                               
+
+           IF NOT ERROR-GRAVE                                                   
+              PERFORM 2400-MOVER-CAMPOS-TABLA                                   
+           END-IF                                                               
+
+           IF NOT ERROR-GRAVE                                                   
+              PERFORM 2500-ACTUALIZAR-KEXPEDIENTE                               
+           END-IF                                                               
+
+INC1       EVALUATE X372N003-MODALIDAD                                          
+INC1              WHEN 20                                                       
+INC1              WHEN 32                                                       
+INC1              WHEN 50                                                       
+INC1              WHEN 118                                                      
+INC1                   PERFORM 2300-OBTENER-KEXPEDIENTE                         
+INC1                   IF NOT ERROR-GRAVE                                       
+INC1                      PERFORM 2400-MOVER-CAMPOS-TABLA                       
+INC1                   END-IF                                                   
+INC1                                                                            
+INC1                   IF NOT ERROR-GRAVE                                       
+INC1                      PERFORM 2500-ACTUALIZAR-KEXPEDIENTE                   
+INC1                   END-IF                                                   
+INC1       END-EVALUATE.                                                        
+
+           CONTINUE.                                                            
+
+      ***************************************************************           
+       2100-OBTENER-CAMPOS-TABLA.                                               
+      ***************************************************************           
+
+      * CALCULO FECHA VENCIMIENTO                                               
+              MOVE X372N003-FECEFECTO TO WS-FECHA-AUX                           
+
+              ADD X372N003-DURACION TO WS-ANO-AUX                               
+
+              MOVE WS-FECHA-AUX     TO WS-FECHA-VTO                             
+
+      * CAMPO PENDIENTE                                                         
+              COMPUTE WS-PENDIENTE = (                                          
+                      FUNCTION NUMVAL (X372N003-CAPITAL)     +                  
+                      FUNCTION NUMVAL (X372N003-BENEFICIOS) -                   
+                      FUNCTION NUMVAL (X372N003-ANTICIPO)   -                   
+                      FUNCTION NUMVAL (X372N003-INTERESES-PEND)) / 100          
+
+
+      * VALIDACION MODALIDAD                                                    
+              COMPUTE WS-CAPITAL        =                                       
+                      FUNCTION NUMVAL (X372N003-CAPITAL) / 100                  
+
+              COMPUTE WS-BENEFICIOS     =                                       
+                      FUNCTION NUMVAL (X372N003-BENEFICIOS) / 100               
+              COMPUTE WS-ANTICIPO       =                                       
+                      FUNCTION NUMVAL (X372N003-ANTICIPO)/ 100                  
+              COMPUTE WS-INTERESES-PEND =                                       
+                      FUNCTION NUMVAL (X372N003-INTERESES-PEND) / 100           
+
+              EVALUATE X372N003-MODALIDAD                                       
+
+                  WHEN 20                                                       
+                  WHEN 32                                                       
+                  WHEN 50                                                       
+                  WHEN 118                                                      
+
+                      COMPUTE WS-CAPITAL =                                      
+                              (FUNCTION NUMVAL (X372N003-CAPITAL) / 2)          
+                      COMPUTE WS-CAPITAL = WS-CAPITAL / 100                     
+                      COMPUTE WS-BENEFICIOS =                                   
+                               FUNCTION NUMVAL (X372N003-BENEFICIOS) / 2        
+                      COMPUTE WS-BENEFICIOS = WS-BENEFICIOS / 100               
+                      COMPUTE WS-ANTICIPO =                                     
+                               FUNCTION NUMVAL (X372N003-ANTICIPO) / 2          
+                      COMPUTE WS-ANTICIPO = WS-ANTICIPO / 100                   
+                      COMPUTE WS-INTERESES-PEND =                               
+                           FUNCTION NUMVAL (X372N003-INTERESES-PEND) / 2        
+                     COMPUTE WS-INTERESES-PEND = WS-INTERESES-PEND / 100        
+
+              END-EVALUATE                                                      
+
+      * DATOS PERSONA                                                           
+              PERFORM 2110-VALIDAR-PERSONA                                      
+
+              IF X620M050-CRETORNO-S NOT = '00'                                 
+      * SI NO EXISTE SE DA DE ALTA                                              
+                 SET NO-EXISTE TO TRUE                                          
+
+                 PERFORM 2120-ALTA-PERSONA                                      
+
+                 IF X620M050-CRETORNO-S EQUAL '00'                              
+                    MOVE X620M050-KPERSONA-S(1) TO WS-CODIGO-PERSONA            
+                    MOVE '99'                   TO X372N003-CRETORNO-S          
+                 ELSE                                                           
+                    SET  ERROR-GRAVE TO TRUE                                    
+                    MOVE '10'            TO X372N003-CRETORNO-S                 
+                    MOVE 'ERROR AL DAR DE ALTA AL BENEFICIARIO '                
+                      TO X372N003-GERROR-S                                      
+                    MOVE 'B372N003'      TO X372N003-GNOMPROG-S                 
+                 END-IF                                                         
+
+              ELSE                                                              
+      * SI EXISTE SE UTILIZAN SUS DATOS                                         
+                 SET SI-EXISTE TO TRUE                                          
+
+                 MOVE X620M050-KPERSONA-S(1) TO WS-CODIGO-PERSONA               
+
+              END-IF                                                            
+
+           CONTINUE.                                                            
+
+      ***************************************************************           
+       2110-VALIDAR-PERSONA.                                                    
+      ***************************************************************           
+
+           INITIALIZE WS-X620M050                                               
+               REPLACING ALPHANUMERIC DATA BY SPACES                            
+                              NUMERIC DATA BY ZEROS                             
+
+           MOVE 'C'                    TO X620M050-CLAVE                        
+           MOVE X372N003-DNI           TO X620M050-CIDENTIFICA-E                
+           MOVE 'F'                    TO X620M050-CTIPOPERS-E                  
+
+           CALL WS-B620N050 USING WS-X620M050.                                  
+
+      ***************************************************************           
+       2120-ALTA-PERSONA.                                                       
+      ***************************************************************           
+
+           INITIALIZE WS-X620M050                                               
+               REPLACING ALPHANUMERIC DATA BY SPACES                            
+                              NUMERIC DATA BY ZEROS                             
+
+           MOVE 'A'                    TO X620M050-CLAVE                        
+           MOVE X372N003-DNI           TO X620M050-CIDENTIFICA-E                
+           MOVE 'F'                    TO X620M050-CTIPOPERS-E                  
+           MOVE X372N003-NOMBRE-BEN    TO X620M050-GNOMBRELARGO-E               
+
+           PERFORM 2125-SEPARAR-APELLIDOS                                       
+
+           MOVE WS-APELLIDO-1          TO X620M050-GAPELLIDO1-E                 
+           MOVE WS-APELLIDO-2          TO X620M050-GAPELLIDO2-E                 
+           MOVE '10'                   TO X620M050-CCOMPANIA-E                  
+           MOVE X372N003-FNACIMIENTO   TO X620M050-FNACIMIENTO-E                
+           MOVE WS-FECHA-SIS           TO X620M050-FALTA-E                      
+
+           CALL WS-B620N050 USING WS-X620M050.                                  
+
+           CONTINUE.                                                            
+
+      ***************************************************************           
+       2125-SEPARAR-APELLIDOS.                                                  
+      ***************************************************************           
+
+           SET NO-FIN-PERFORM TO TRUE.                                          
+           PERFORM VARYING I FROM 1 BY 1 UNTIL I GREATER 25                     
+                               OR FIN-PERFORM                                   
+
+               IF X372N003-APELLIDOS-BEN(I:1) EQUAL SPACES                      
+
+                  SET FIN-PERFORM TO TRUE                                       
+
+                  MOVE X372N003-APELLIDOS-BEN(1:I) TO WS-APELLIDO-1             
+                  MOVE X372N003-APELLIDOS-BEN(I:)  TO WS-APELLIDO-2             
+
+               END-IF                                                           
+
+           END-PERFORM                                                          
+
+           CONTINUE.                                                            
+
+      *****************************************************************         
+      * 2130-ALTA-DOMICILIO.                                                    
+      *****************************************************************         
+      *                                                                         
+       2130-ALTA-DOMICILIO.                                                     
+
+           INITIALIZE WS-X620M054.                                              
+
+           MOVE 'A'                         TO X620M054-DOMICILIO-CL            
+      *    MOVE                             TO X620M054-CUENTA-CL               
+
+           MOVE WS-CODIGO-PERSONA           TO X620M054-KPERSONA-E.             
+           MOVE 'CFICHERO'                  TO X620M054-KUSUARIO-E.             
+      *    MOVE                             TO X620M054-FECHA-E.                
+      *    MOVE                             TO X620M054-FDESDE-E.               
+      *    MOVE                             TO X620M054-FHASTA-E.               
+
+      *    MOVE                             TO X620M054-KDOMICILIO-E            
+      *    MOVE                             TO X620M054-SPREFERENTE-E           
+      *    MOVE                             TO X620M054-SFISCAL-E               
+           MOVE 'P'                         TO X620M054-CTIPODOM-E              
+      *    MOVE                             TO X620M054-CTIPOVIA-E              
+           MOVE X372N003-DOMICILIO          TO X620M054-GDOMICILIO-E            
+      *    MOVE                             TO X620M054-GNUMVIA-E               
+      *    MOVE                             TO X620M054-GDOMIRESTO-E            
+           MOVE X372N003-CODPOSTAL          TO X620M054-CCODPOST-E              
+      *    MOVE                             TO X620M054-CCODPOST-EXT-E          
+           MOVE X372N003-LOCALIDAD          TO X620M054-GPOBLACION-E            
+      *    MOVE                             TO X620M054-CPROVINCIA-E            
+      *    MOVE                             TO X620M054-CPAIS-E                 
+      *    MOVE                             TO X620M054-KCUENTA-E               
+      *    MOVE                             TO X620M054-CTIPODOB-E              
+      *    MOVE                             TO X620M054-KBANCO-E                
+      *    MOVE                             TO X620M054-KSUCURSAL-E             
+      *    MOVE                             TO X620M054-DC-E                    
+      *    MOVE                             TO X620M054-NCUENTA-E               
+
+           CALL WS-B620N054  USING WS-X620M054.                                 
+      *T*                                                                       
+      *    DISPLAY 'RETORNO CONSULTA B620N054 '                                 
+      *             X620M054-CRETORNO-S OF WS-X620N054                          
+      *F*                                                                       
+           IF X620M054-CRETORNO-S OF WS-X620M054 = '00'                         
+
+              CONTINUE                                                          
+           ELSE                                                                 
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE '10'            TO X372N003-CRETORNO-S                       
+              MOVE 'ERROR AL DAR DE ALTA AL DOMICILIO'                          
+                TO X372N003-GERROR-S                                            
+              MOVE 'B372N003'      TO X372N003-GNOMPROG-S                       
+           END-IF.                                                              
+
+      ***************************************************************           
+       2200-VALIDAR-ENTRADA.                                                    
+      ***************************************************************           
+
+      * VALIDACION DE POLIZA COLECTIVA                                          
+      *                                                                         
+      *    IF X372N003-CERTIFICADO   EQUAL ZEROES AND                           
+      *       X372N003-SUBPOLIZA     NOT EQUAL ZEROES                           
+      *                                                                         
+      *       SET  ERROR-GRAVE TO TRUE                                          
+      *       MOVE LT-ERR-DATOS             TO X372N003-CRETORNO-S              
+      *       MOVE 'EL CERTIFICADO DEBE SER DISTINTO DE CERO'                   
+      *                                     TO X372N003-GERROR-S                
+      *       MOVE 'B372N003'               TO X372N003-GNOMPROG-S              
+      *                                                                         
+      *    END-IF                                                               
+
+      * VALIDACION DEL NUMERO DE POLIZA DEL EXPEDIENTE                          
+
+           IF X372N003-POLIZA         = SPACES                                  
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE LT-ERR-DATOS             TO X372N003-CRETORNO-S              
+              MOVE 'EL CAMPO POLIZA ES OBLIGATORIO'                             
+                                            TO X372N003-GERROR-S                
+              MOVE 'B372N003'               TO X372N003-GNOMPROG-S              
+           END-IF                                                               
+
+      * VALIDACION DE RAMO                                                      
+
+           IF X372N003-RAMO   EQUAL  SPACES                                     
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE LT-ERR-DATOS             TO X372N003-CRETORNO-S              
+              MOVE 'EL CAMPO RAMO ES OBLIGATORIO'                               
+                                            TO X372N003-GERROR-S                
+              MOVE 'B372N003'               TO X372N003-GNOMPROG-S              
+           END-IF                                                               
+
+      * VALIDACION DE A—O DE POLIZA                                             
+
+           IF X372N003-ANIOPOLIZA EQUAL SPACES                                  
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE LT-ERR-DATOS             TO X372N003-CRETORNO-S              
+              MOVE 'EL CAMPO  A—O DE POLIAZ ES OBLIGATORIO'                     
+                                            TO X372N003-GERROR-S                
+              MOVE 'B372N003'               TO X372N003-GNOMPROG-S              
+           END-IF                                                               
+
+      * VALIDACION DE MODALIDAD                                                 
+
+           IF X372N003-MODALIDAD  EQUAL ZEROES                                  
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE LT-ERR-DATOS             TO X372N003-CRETORNO-S              
+              MOVE 'EL CAMPO DE MODALIDAD ES OBLIGATORIO'                       
+                                            TO X372N003-GERROR-S                
+              MOVE 'B372N003'               TO X372N003-GNOMPROG-S              
+           END-IF                                                               
+
+      * VALIDACION DE FECHA DE EFECTO                                           
+
+           IF X372N003-FECEFECTO  EQUAL SPACES                                  
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE LT-ERR-DATOS             TO X372N003-CRETORNO-S              
+              MOVE 'EL CAMPO FECHA DE EFECTO ES OBLIGATORIA'                    
+                                            TO X372N003-GERROR-S                
+              MOVE 'B372N003'               TO X372N003-GNOMPROG-S              
+           ELSE                                                                 
+
+              INITIALIZE X001N005                                               
+
+              MOVE X372N003-FECEFECTO    TO X001N005-FPARAMVAL                  
+              MOVE 2                     TO X001N005-CODRETORN                  
+
+             IF NO-ERROR                                                        
+                 PERFORM 2220-VALIDAR-FECHA                                     
+
+                   IF X001N005-CODRETORN NOT = SPACES                           
+                      SET  ERROR-GRAVE      TO TRUE                             
+                      MOVE '12'             TO X372N003-CRETORNO-S              
+                      MOVE 'LA FECHA DE EFECTO NO ES VALIDA'                    
+                                            TO X372N003-GERROR-S                
+                      MOVE 'B372N003'       TO X372N003-GNOMPROG-S              
+                   END-IF                                                       
+
+              END-IF                                                            
+
+           END-IF                                                               
+
+      * VALIDACION DEL CAMPO DURACION                                           
+
+           IF X372N003-DURACION      EQUAL ZEROES                               
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE LT-ERR-DATOS             TO X372N003-CRETORNO-S              
+              MOVE 'EL CAMPO DURACION ES OBLIGATORIO'                           
+                                            TO X372N003-GERROR-S                
+              MOVE 'B372N003'               TO X372N003-GNOMPROG-S              
+           END-IF                                                               
+
+
+      * VALIDAMOS LOS DATOS DE KPERSONAS                                        
+
+           IF WS-CODIGO-PERSONA    EQUAL ZEROES OR SPACES                       
+              SET  ERROR-GRAVE     TO TRUE                                      
+              MOVE LT-ERR-DATOS    TO X372N003-CRETORNO-S                       
+              MOVE 'DEBE INFORMARSE DEL BENEFICIARIO'                           
+                                   TO X372N003-GERROR-S                         
+              MOVE 'B372N003'      TO X372N003-GNOMPROG-S                       
+           END-IF                                                               
+
+      * VALIDAMOS DEL IMPORTE CAPITAL                                           
+
+           IF X372N003-CAPITAL      EQUAL ZEROES                                
+              SET  ERROR-GRAVE     TO TRUE                                      
+              MOVE LT-ERR-DATOS    TO X372N003-CRETORNO-S                       
+              MOVE 'DEBE INFORMARSE DEL IMPORTE CAPITAL'                        
+                                   TO X372N003-GERROR-S                         
+              MOVE 'B372N003'      TO X372N003-GNOMPROG-S                       
+           END-IF                                                               
+
+      * VALIDACION DE TIPO DE REGIONAL DE POLIZA                                
+
+           IF X372N003-REGIONAL         = SPACES                                
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE LT-ERR-DATOS             TO X372N003-CRETORNO-S              
+              MOVE 'EL CAMPO DE REGIONAL DE POLIZA ES OBLIGATORIO'              
+                                            TO X372N003-GERROR-S                
+              MOVE 'B372N003'               TO X372N003-GNOMPROG-S              
+           END-IF                                                               
+
+      * VALIDACION DE LA OFICINA                                                
+
+           IF X372N003-OFICINA       = SPACES                                   
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE LT-ERR-DATOS                TO X372N003-CRETORNO-S           
+              MOVE 'EL CAMPO OFICINA ES OBLIGATORIA'                            
+                                               TO X372N003-GERROR-S             
+              MOVE 'B372N003'                  TO X372N003-GNOMPROG-S           
+           END-IF                                                               
+
+      * VALIDACION DEL NIF-1                                                    
+
+           IF X372N003-DNI       EQUAL SPACES                                   
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE LT-ERR-DATOS                TO X372N003-CRETORNO-S           
+              MOVE 'EL NIF DEL PRIMER BENEFICIARIO ES OBLIGATORIO'              
+                                               TO X372N003-GERROR-S             
+              MOVE 'B372N003'                  TO X372N003-GNOMPROG-S           
+           END-IF                                                               
+
+      * VALIDACION DEL FORMATO DEL NIF                                          
+
+           INITIALIZE X001N001                                                  
+
+           MOVE X372N003-DNI           TO COD-DNI-E                             
+
+           PERFORM 2210-VALIDAR-FORMATO-DNI                                     
+
+           IF  ESTADO-DNI-R NOT EQUAL ZEROES                                    
+              SET ERROR-GRAVE TO TRUE                                           
+              MOVE '11'                        TO X372N003-CRETORNO-S           
+              MOVE 'EL FORMATO DEL NIF DEL PRIMER BENEFICIARIO ES INCORR        
+      -            'ECTO'                                                       
+                                               TO X372N003-GERROR-S             
+              MOVE 'B372N003'                  TO X372N003-GNOMPROG-S           
+           END-IF                                                               
+
+
+           .                                                                    
+      ***************************************************************           
+       2210-VALIDAR-FORMATO-DNI.                                                
+      ***************************************************************           
+
+           CALL WS-B001N001 USING X001N001                                      
+           .                                                                    
+      ***************************************************************           
+       2220-VALIDAR-FECHA.                                                      
+      ***************************************************************           
+
+           CALL WS-B001N005 USING X001N005.                                     
+
+      ***************************************************************           
+       2300-OBTENER-KEXPEDIENTE.                                                
+      ***************************************************************           
+      * INICIALIZAMOS TAMBIEN LA COPY DEL MODULO B372M001 PUESTO QUE            
+      * LA UTILIZAREMOS EN ESTE MODULO                                          
+           INITIALIZE WS-X362M002                                               
+           INITIALIZE WS-X372M001                                               
+
+           MOVE 'S1'                     TO X362M002-OPERACION-E                
+           MOVE 'VE'                     TO X362M002-TABLA-E                    
+
+           CALL WS-B362M002 USING WS-X362M002                                   
+           IF X362M002-CRETORNO-S = LT-RETURN-OK                                
+
+              MOVE X362M002-ANIO-S         TO X372M001-ANIO-E                   
+              MOVE X362M002-ANIO-S         TO WS-ANIO                           
+              MOVE X362M002-EXPEDIENTE-S   TO X372M001-KEXPEDIENTE-E            
+              MOVE X362M002-EXPEDIENTE-S   TO WS-KEXPEDIENTE                    
+      *       MOVE X362M002-CRETORNO-S     TO X372N003-CRETORNO-S               
+
+           ELSE                                                                 
+
+               SET  ERROR-GRAVE TO TRUE                                         
+
+           END-IF                                                               
+           IF X362M002-CRETORNO-S NOT EQUAL '00'                                
+              MOVE X362M002-CRETORNO-S     TO X372N003-CRETORNO-S               
+              MOVE X362M002-GNOMPROG-S     TO X372N003-GNOMPROG-S               
+              MOVE X362M002-GERROR-S       TO X372N003-GERROR-S                 
+           END-IF.                                                              
+
+      *    PERFORM 2310-BUSQUEDA-COMPANIA.                                      
+
+      ***************************************************************           
+       2400-MOVER-CAMPOS-TABLA.                                                 
+      ***************************************************************           
+
+      * TIPO DE OPERACION 'A1', PARA ALTA DE EXPEDIENTE EN LA TABLA             
+           MOVE 'A1'                       TO X372M001-OPERACION-E              
+
+      * CAMPOS POLIZA                                                           
+           MOVE X372N003-RAMO              TO X372M001-KRAMO-E                  
+           INITIALIZE WS-POLIZA-AUX                                             
+           MOVE X372N003-POLIZA            TO WS-POL-AUX.                       
+           MOVE WS-POLIZA-AUX              TO X372M001-KPOLIZA-E                
+           MOVE '0000'                     TO X372M001-NSUBPOLIZA-E             
+           MOVE 0                          TO X372M001-KCERTIFICADO-E           
+      * EVALUAMOS DE QUE AÒO ES LA POLIZA                                       
+
+      *D*                                                                       
+      *    DISPLAY ' ANIO   ' X372N003-ANIOPOLIZA                               
+      *F*                                                                       
+           IF X372N003-ANIOPOLIZA > '50'                                        
+                MOVE 19                    TO WS-ANIO-1                         
+           ELSE                                                                 
+                MOVE 20                    TO WS-ANIO-1                         
+           END-IF                                                               
+           MOVE X372N003-ANIOPOLIZA        TO WS-ANIO-2                         
+           MOVE WS-ANIO-AUX                TO X372M001-ANIOPOL-E                
+
+      * COMPAÒIA Y CANAL. HARDCODE                                              
+           MOVE '10'                    TO X372M001-CCANALCAMP-E                
+           MOVE '10'                    TO X372M001-CENTIDAD-E                  
+
+      *D*                                                                       
+      *    DISPLAY ' ANIO M ' X372M001-ANIOPOL-E                                
+      *F*                                                                       
+           MOVE X372N003-MODALIDAD         TO X372M001-KMODALIDAD-E             
+      * CAMPO REGIONAL                                                          
+      * A PARTIR DE X372N003-REGIONAL SE INFORMAN                               
+      * X372M003-REGIONAL-E Y X372M003-LUGARENVIO-E                             
+           MOVE X372N003-REGIONAL          TO X372M001-REGIONAL-E               
+           MOVE X372N003-REGIONAL          TO X372M001-LUGARENVIO-E             
+
+           MOVE X372N003-OFICINA           TO X372M001-KOFICINA-E               
+           MOVE X372N003-DURACION          TO X372M001-KDURACION-E              
+           MOVE X372N003-FECEFECTO         TO X372M001-FECEFECTO-E              
+           MOVE WS-FECHA-VTO               TO X372M001-FECEMISION-E             
+           MOVE WS-FECHA-VTO               TO X372M001-FECVENCIMICAP-E          
+      *    MOVE WS-FECHA-VTO               TO X372M001-FECPAGOCAPITAL-E         
+      * EL TIPO DE IMPUESTO SIEPRE SERA MOBILIARIO                              
+           MOVE '12'                       TO X372M001-TIPIMPUESTCAP-E          
+
+      * CAMPOS PERSONA, SIEMPRE SERA FISICA                                     
+           MOVE 'F'                        TO X372M001-CTIPOPERS1-E             
+           MOVE X372N003-DNI               TO X372M001-NIF1-E                   
+           MOVE WS-CODIGO-PERSONA          TO X372M001-KPERSONA1-E              
+
+      * CAMPOS ECONOMICOS                                                       
+           COMPUTE X372M001-IMPCAPITAL-E    = WS-CAPITAL                        
+           COMPUTE X372M001-IMPBENEFICIOS-E = WS-BENEFICIOS                     
+           COMPUTE X372M001-IMPANTICIPO-E   = WS-ANTICIPO                       
+           COMPUTE X372M001-IMPINTEPEND-E   = WS-INTERESES-PEND                 
+           COMPUTE X372M001-IPENDIENTE-E = WS-PENDIENTE                         
+
+           COMPUTE X372M001-IMPLIQCAP-E = WS-CAPITAL +                          
+                                          WS-BENEFICIOS -                       
+                                          WS-ANTICIPO -                         
+                                          WS-INTERESES-PEND                     
+
+           COMPUTE X372M001-IMPCOMP1-E                                          
+                   = (FUNCTION NUMVAL(X372N003-COMPLEMENTARIO1)) / 100          
+
+           COMPUTE X372M001-IMPCOMP2-E                                          
+                   = (FUNCTION NUMVAL(X372N003-COMPLEMENTARIO2)) / 100          
+
+
+
+      * INDICAMOS QUE EL USUARIO QUE HA MODIFICADO EL EXPEDIENTE ES             
+      * UN FICHERO                                                              
+           MOVE 'CFICHERO'                 TO X372M001-CUSUARIO-E               
+
+           CALL WS-B372M001 USING WS-X372M001                                   
+
+           IF X372M001-CRETORNO-S NOT = LT-RETURN-OK                            
+              SET ERROR-GRAVE      TO TRUE                                      
+              SET SI-ROLLBACK      TO TRUE                                      
+           END-IF                                                               
+
+           IF X372M001-CRETORNO-S NOT EQUAL '00'                                
+              MOVE X372M001-CRETORNO-S     TO X372N003-CRETORNO-S               
+              MOVE X372M001-GNOMPROG-S     TO X372N003-GNOMPROG-S               
+              MOVE X372M001-GERROR-S       TO X372N003-GERROR-S                 
+           END-IF.                                                              
+
+           CONTINUE.                                                            
+
+      ***************************************************************           
+       2310-BUSQUEDA-COMPANIA.                                                  
+      ***************************************************************           
+
+           INITIALIZE RA041527.                                                 
+           INITIALIZE RA041528.                                                 
+           INITIALIZE RA041529.                                                 
+
+           MOVE SPACES                 TO  RA041527-COPERACION.                 
+           MOVE SPACES                 TO  RA041527-COPCION.                    
+           MOVE X372N003-POLIZA        TO  RA041527-KPOLIZA.                    
+           MOVE WS-FECHA-SIS           TO  RA041527-FPERTECN.                   
+           MOVE 'E'                    TO  RA041527-CMONEDA.                    
+
+           CALL WS-VA042527 USING RA041527 RA041528 RA041529                    
+                                    WS-SUBSCHEMA-CTRL.                          
+
+           IF RA041527-CRETORNO(1) = ZEROS                                      
+              MOVE RA041527-CCANALCAMP     TO X372M001-CCANALCAMP-E             
+              MOVE RA041527-CEMPRESA       TO X372M001-CENTIDAD-E               
+           END-IF.                                                              
+
+      ***************************************************************           
+       2500-ACTUALIZAR-KEXPEDIENTE.                                             
+      ***************************************************************           
+            INITIALIZE WS-X362M002                                              
+            ADD 1                        TO WS-KEXPEDIENTE                      
+
+           MOVE 'M1'                     TO X362M002-OPERACION-E                
+           MOVE 'VE'                     TO X362M002-TABLA-E                    
+           MOVE WS-ANIO                  TO X362M002-ANIO-E                     
+           MOVE WS-KEXPEDIENTE           TO X362M002-EXPEDIENTE-E               
+           MOVE WS-FECHA-SIS             TO X362M002-FMODIFICACION-E            
+           MOVE WS-B362M002              TO X362M002-USUARIO-E                  
+
+           CALL WS-B362M002 USING WS-X362M002                                   
+
+           IF X362M002-CRETORNO-S NOT EQUAL LT-RETURN-OK                        
+
+               SET ERROR-GRAVE     TO TRUE                                      
+               SET NO-ROLLBACK     TO TRUE                                      
+           END-IF                                                               
+
+           IF X362M002-CRETORNO-S NOT EQUAL '00'                                
+              MOVE X362M002-CRETORNO-S     TO X372N003-CRETORNO-S               
+              MOVE X362M002-GNOMPROG-S     TO X372N003-GNOMPROG-S               
+              MOVE X362M002-GERROR-S       TO X372N003-GERROR-S                 
+           END-IF.                                                              
+
+      ******************************************************************        
+        8888-ROLLBACK.                                                          
+      ******************************************************************        
+
+           INITIALIZE WS-X001M001                                               
+           MOVE 'R'   TO X001M001-CACCION                                       
+
+           CALL WS-B001M001 USING WS-X001M001.                                  
+
+      *****************************************************************         
+        8889-COMMIT.                                                            
+      *****************************************************************         
+           INITIALIZE WS-X001M001                                               
+           MOVE 'C' TO X001M001-CACCION                                         
+
+           CALL WS-B001M001 USING WS-X001M001.                                  
+
+      ***************************************************************           
+       10000-FIN.                                                               
+      ***************************************************************           
+
+      ** CERRAR B.D. IDMS EN BATCH                                              
+      *    INITIALIZE  RA041527.                                                
+      *    MOVE 'C'        TO    RA041527-COPERACION.                           
+      *    CALL WS-VA042527   USING RA041527 RA041528 RA041529                  
+      *                          WS-SUBSCHEMA-CTRL.                             
+           IF X372N003-CRETORNO-S EQUAL SPACES                                  
+              MOVE '00'                TO X372N003-CRETORNO-S                   
+           END-IF.                                                              
+
+           IF SI-ROLLBACK                                                       
+              PERFORM 8888-ROLLBACK                                             
+           ELSE                                                                 
+              PERFORM 8889-COMMIT                                               
+           END-IF                                                               
+
+           GOBACK.                                                              

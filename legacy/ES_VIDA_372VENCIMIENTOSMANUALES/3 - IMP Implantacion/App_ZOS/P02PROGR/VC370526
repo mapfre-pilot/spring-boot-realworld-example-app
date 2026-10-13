@@ -1,0 +1,245 @@
+      *RETRIEVAL                                                        00010000
+       IDENTIFICATION DIVISION.                                         00020000
+                                                                        00030000
+       PROGRAM-ID.                                                      00040000
+      ******************************************************************00050000
+      **INV*A372VENM****************************************************00060000
+      ******************************************************************00070000
+           VC370526.                                                    00080000
+      *                                                               * 00090000
+      ***************************************************************** 00100000
+      *                                                               * 00110000
+      *  APLICACION: RESCATES INDIVIDUALES                            * 00120000
+      *  AUTOR.....: INDRA                                            * 00130000
+      *  FECHA ....: MAYO 2015                                        * 00140000
+      *  DESCRPCION: GENERACION FICHERO SAP DEL SIGUIENTE MES DE      * 00150000
+      *              PROVISIONES.                                     * 00160000
+      *                                                               * 00170000
+      *-------------------  F I C H E R O S  -------------------------* 00180000
+      *                                                               * 00190000
+      *     ENTRADA:                                                  * 00200000
+      *         - PROVISIONES HASTA EL MES   SYS001                   * 00210000
+      *         - FICHA PROCESO    ==> SYS010                         * 00220000
+      *                                                               * 00230000
+      *     SALIDA :                                                  * 00240000
+      *         - FICHERO SAP MES SIGUIENTE                           * 00250000
+      *                                                               * 00260000
+      ***************************************************************** 00270000
+      *====================*                                            00280000
+       ENVIRONMENT DIVISION.                                            00290000
+      *====================*                                            00300000
+       CONFIGURATION SECTION.                                           00310000
+       SPECIAL-NAMES.                                                   00320000
+           DECIMAL-POINT IS COMMA.                                      00330000
+                                                                        00340000
+       INPUT-OUTPUT SECTION.                                            00350000
+       FILE-CONTROL.                                                    00360000
+           SELECT FICHA     ASSIGN TO SYS010.                           00370000
+           SELECT ENTRADA   ASSIGN TO SYS001.                           00380000
+           SELECT SALIDA    ASSIGN TO SYS002.                           00390000
+                                                                        00400000
+       DATA DIVISION.                                                   00410000
+       FILE SECTION.                                                    00420000
+                                                                        00430000
+       FD  FICHA   LABEL RECORD STANDARD                                00440000
+                         RECORDING MODE IS F                            00450000
+                         BLOCK CONTAINS 0 RECORDS.                      00460000
+           COPY RC37000.                                                00470000
+                                                                        00480000
+       FD  ENTRADA LABEL RECORD STANDARD                                00490000
+                         RECORDING MODE IS F                            00500000
+                         BLOCK CONTAINS 0 RECORDS.                      00510000
+       01 REG-ENTRADA.                                                  00520000
+           05 FILLER                           PIC X(14).               00530000
+           05 ENT-AA-CONT-T2-SAP               PIC 9(04).               00540000
+           05 ENT-MM-CONT-T2-SAP               PIC 9(02).               00550000
+           05 ENT-DD-CONT-T2-SAP               PIC 9(02).               00560000
+           05 FILLER                           PIC X(03).               00570000
+           05 ENT-CTA-CTBLE-T2-SAP             PIC 9(10).               00580000
+           05 FILLER                           PIC X(137).              00590000
+           05 ENT-DEB-HAB-T2-SAP               PIC X(01).               00600000
+           05 FILLER                           PIC X(350).              00610000
+                                                                        00620000
+       FD  SALIDA                                                       00630000
+           RECORDING F RECORD 523                                       00640000
+           BLOCK  0 RECORDS LABEL RECORD STANDARD                       00650000
+           DATA RECORD IS REG-SAPVTOS.                                  00660000
+           COPY SAPASTON.                                               00670000
+      *                                                                 00680000
+       WORKING-STORAGE SECTION.                                         00690000
+                                                                        00700000
+       01  WS-MENSAJE              PIC X(80) VALUE SPACES.              00710000
+       01  WS-FIN                  PIC X VALUE SPACES.                  00720000
+       01  W-RESULT                PIC 9(4) VALUE ZEROS.                00730000
+       01  W-RESTO                 PIC 9(1) VALUE ZEROS.                00740000
+       01  WS-FTSIS.                                                    00750000
+              05 WS-FSIS.                                               00760000
+                 07 WS-FASIS.                                           00770000
+                    09 WS-FA1SIS   PIC 9(2)  VALUE ZEROS.               00780000
+                    09 WS-FA2SIS   PIC 9(2)  VALUE ZEROS.               00790000
+                 07 WS-FMSIS       PIC 9(2)  VALUE ZEROS.               00800000
+                 07 WS-FDSIS       PIC 9(2)  VALUE ZEROS.               00810000
+              05 WS-TSIS           PIC 9(13) VALUE ZEROS.               00820000
+       01  F-CONTABIL-WS.                                               00830000
+           05 AA-CONT-WS                 PIC 9(04).                     00840000
+           05 MM-CONT-WS                 PIC 9(02).                     00850000
+           05 DD-CONT-WS                 PIC 9(02).                     00860000
+                                                                        00870000
+       01 CT-CONTADORES.                                                00880000
+           03 CT-LEIDOS            PIC 9(7)    VALUE ZEROS.             00890000
+           03 CT-GRABADOS          PIC 9(7)    VALUE ZEROS.             00900000
+           03 T-DEBE               PIC 9(12)V99 VALUE ZEROS.            00910000
+           03 T-HABER              PIC 9(12)V99 VALUE ZEROS.            00920000
+                                                                        00930000
+      *==================*                                              00940000
+       PROCEDURE DIVISION.                                              00950000
+      *==================*                                              00960000
+       PRINCIPAL.                                                       00970000
+                                                                        00980000
+            PERFORM INICIO.                                             00990000
+                                                                        01000000
+            PERFORM PROCESO UNTIL WS-FIN = 'S'.                         01010000
+                                                                        01020000
+            PERFORM TERMINAR.                                           01030000
+                                                                        01040000
+      *                                                                 01050000
+       INICIO.                                                          01060000
+           DISPLAY '******************************************'.        01070000
+           DISPLAY '**       V  C  3  6  0  5  2  6         **'.        01080000
+           DISPLAY '******************************************'.        01090000
+           DISPLAY '**  GENERACION INTERFACE SAP(523) PROV. **'.        01100000
+           DISPLAY '**  ANULACIONES MES SIGUIENTE           **'.        01110000
+                                                                        01120000
+           OPEN INPUT FICHA                                             01130000
+           OPEN INPUT ENTRADA                                           01140000
+                                                                        01150000
+           OPEN OUTPUT SALIDA.                                          01160000
+                                                                        01170000
+           MOVE FUNCTION CURRENT-DATE TO WS-FTSIS.                      01180000
+                                                                        01190000
+           READ FICHA AT END                                            01200000
+               DISPLAY '******************************************'     01210000
+               DISPLAY '**  NO EXISTE  REGISTRO EN LA FICHA     **'     01220000
+               DISPLAY '******************************************'     01230000
+               PERFORM TERMINAR                                         01240000
+           END-READ.                                                    01250000
+                                                                        01260000
+                                                                        01270000
+           MOVE RC37000-FPROCE TO F-CONTABIL-WS                         01280000
+                                                                        01290000
+           EVALUATE RC37000-MMPROCE                                     01300000
+              WHEN 1                                                    01310000
+                 MOVE 28 TO DD-CONT-WS                                  01320000
+                 ADD   1 TO MM-CONT-WS                                  01330000
+                 DIVIDE AA-CONT-WS BY 4                                 01340000
+                 GIVING W-RESULT REMAINDER W-RESTO                      01350000
+                 IF W-RESTO = 0                                         01360000
+                    ADD 1 TO DD-CONT-WS                                 01370000
+                 END-IF                                                 01380000
+              WHEN 2                                                    01390000
+              WHEN 4                                                    01400000
+              WHEN 6                                                    01410000
+              WHEN 7                                                    01420000
+              WHEN 9                                                    01430000
+              WHEN 11                                                   01440000
+                 MOVE 31 TO DD-CONT-WS                                  01450000
+                 ADD   1 TO MM-CONT-WS                                  01460000
+              WHEN 3                                                    01470000
+              WHEN 5                                                    01480000
+              WHEN 8                                                    01490000
+              WHEN 10                                                   01500000
+                 MOVE 30 TO DD-CONT-WS                                  01510000
+                 ADD   1 TO MM-CONT-WS                                  01520000
+              WHEN 12                                                   01530000
+                 MOVE 31 TO DD-CONT-WS                                  01540000
+                 MOVE  1 TO MM-CONT-WS                                  01550000
+                 ADD   1 TO AA-CONT-WS                                  01560000
+           END-EVALUATE                                                 01570000
+                                                                        01580000
+           PERFORM LEER.                                                01590000
+      *                                                                 01600000
+       PROCESO.                                                         01610000
+           MOVE REG-ENTRADA TO R-ASTOS-SAP.                             01620000
+                                                                        01630000
+           MOVE F-CONTABIL-WS    TO F-CONTABIL-T1-SAP                   01640000
+                                                                        01650000
+           IF TIPO-REG-T2-SAP = 22                                      01660000
+              EVALUATE ENT-DEB-HAB-T2-SAP                               01670000
+              WHEN 'D'                                                  01680000
+                 MOVE 'H' TO DEB-HAB-T2-SAP                             01690000
+              WHEN 'H'                                                  01700000
+                 MOVE 'D' TO DEB-HAB-T2-SAP                             01710000
+              END-EVALUATE                                              01720000
+                                                                        01730000
+              IF RC37000-MMPROCE = '12'                                 01740000
+                 EVALUATE ENT-CTA-CTBLE-T2-SAP                          01750000
+                 WHEN 693500                                            01760000
+                    MOVE 793500 TO CTA-CTBLE-T2-SAP                     01770000
+                 WHEN 693502                                            01780000
+                    MOVE 793502 TO CTA-CTBLE-T2-SAP                     01790000
+                 WHEN 693503                                            01800000
+                    MOVE 793503 TO CTA-CTBLE-T2-SAP                     01810000
+                 END-EVALUATE                                           01820000
+              END-IF                                                    01830000
+                                                                        01840000
+           END-IF                                                       01850000
+                                                                        01860000
+           EVALUATE NUM-ASTO-T1-SAP                                     01870000
+              WHEN 449                                                  01880000
+                   MOVE 459 TO NUM-ASTO-T1-SAP                          01890000
+              WHEN 451                                                  01900000
+                   MOVE 461 TO NUM-ASTO-T1-SAP                          01910000
+              WHEN 450                                                  01920000
+                   MOVE 460 TO NUM-ASTO-T1-SAP                          01930000
+              WHEN 452                                                  01940000
+                   MOVE 462 TO NUM-ASTO-T1-SAP                          01950000
+              WHEN 466                                                  01960000
+                   MOVE 476 TO NUM-ASTO-T1-SAP                          01970000
+              WHEN 467                                                  01980000
+                   MOVE 477 TO NUM-ASTO-T1-SAP                          01990000
+           END-EVALUATE                                                 02000000
+                                                                        02010000
+           PERFORM GRABAR.                                              02020000
+                                                                        02030000
+           PERFORM LEER.                                                02040000
+      *                                                                 02050000
+       LEER.                                                            02060000
+           READ ENTRADA AT END                                          02070000
+              MOVE 'S' TO WS-FIN.                                       02080000
+           IF WS-FIN NOT = 'S'                                          02090000
+              ADD 1 TO CT-LEIDOS.                                       02100000
+      *                                                                 02110000
+       GRABAR.                                                          02120000
+           IF DEB-HAB-T2-SAP = 'D'                                      02130000
+              ADD IMP-DOC-T2-SAP  TO T-DEBE                             02140000
+           ELSE                                                         02150000
+              ADD IMP-DOC-T2-SAP  TO T-HABER                            02160000
+           END-IF.                                                      02170000
+                                                                        02180000
+           WRITE R-ASTOS-SAP.                                           02190000
+                                                                        02200000
+           ADD 1 TO CT-GRABADOS.                                        02210000
+      *                                                                 02220000
+       TERMINAR.                                                        02230000
+           CLOSE FICHA                                                  02240000
+           CLOSE ENTRADA                                                02250000
+           CLOSE SALIDA.                                                02260000
+                                                                        02270000
+           DISPLAY '******************************************'.        02280000
+           DISPLAY 'REG. LEIDOS    ..........: ', CT-LEIDOS.            02290000
+           DISPLAY 'REG. ESCRITOS  ..........: ', CT-GRABADOS.          02300000
+           DISPLAY '******************************************'.        02310000
+           DISPLAY 'TOTAL DEBE ..............: ', T-DEBE.               02320000
+           DISPLAY 'TOTAL HABER..............: ', T-HABER.              02330000
+           DISPLAY '******************************************'.        02340000
+                                                                        02350000
+           IF T-DEBE NOT = T-HABER                                      02360000
+                DISPLAY 'ERROR EL ASIENTO NO CUADRA '                   02370000
+                MOVE 'ERROR EL ASIENTO (PROVISIONES) NO CUADRA' TO      02380000
+                                         WS-MENSAJE                     02390000
+                CALL 'CANCELA' USING WS-MENSAJE                         02400000
+           END-IF.                                                      02410000
+                                                                        02420000
+           GOBACK.                                                      02430000
+      *                                                                 02440000
+      *                                                                 02450000

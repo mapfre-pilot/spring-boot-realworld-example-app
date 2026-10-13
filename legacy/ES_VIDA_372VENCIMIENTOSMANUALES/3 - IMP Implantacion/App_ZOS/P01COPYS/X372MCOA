@@ -1,0 +1,42 @@
+      ******************************************************************        
+      **INV: A362RESM                                                           
+      ******************************************************************        
+      *                                                                *        
+      * COPY:              X372MCOA,    PROGRAMA: B372MCOA             *        
+      * APLICACION:        RESCATES FOXPRO                             *        
+      * DESCRIPCION:       COPY DE MANTENIMIENTO TABLA RESCATES MANUAL *        
+      * FECHA DE CREACION: 02-06-2017                                  *        
+      * AUTOR :            EVERIS                                      *        
+      *                                                                *        
+      ******************************************************************        
+       07 X372MCOA-E.                                                           
+          09 X372MCOA-OPERACION-E        PIC X(1).                              
+          09 X372MCOA-ANIO-E             PIC 9(4).                              
+          09 X372MCOA-KEXPEDIENTE-E      PIC 9(10).                             
+          09 X372MCOA-NCOA-E             PIC 9(2).                              
+          09 X372MCOA-COASEGUROS-OCCURS-E PIC 9(2).                             
+          09 X372MCOA-COASEGUROS-E OCCURS 6.                                    
+             15 X372MCOA-CODCOA-E           PIC X(07).                          
+             15 X372MCOA-PORCOA-E           PIC S9(3)V9(6).                     
+             15 X372MCOA-IMPCOA-E           PIC S9(11)V9(2).                    
+             15 X372MCOA-IMPRTOINTEGRCOA-E  PIC S9(11)V9(2).                    
+             15 X372MCOA-IMPREDPRICOA-E     PIC S9(11)V9(2).                    
+             15 X372MCOA-IMPREDTRANCOA-E    PIC S9(11)V9(2).                    
+             15 X372MCOA-IMPRTONETOCOA-E    PIC S9(11)V9(2).                    
+             15 X372MCOA-IMPRETCOA-E        PIC S9(11)V9(2).                    
+             15 X372MCOA-IMPCOMPENSATCOA-E  PIC S9(11)V9(2).                    
+       07 X372MCOA-S.                                                           
+          09 X372MCOA-RETORNO-S          PIC X(02).                             
+          09 X372MCOA-ERROR-S            PIC X(100).                            
+          09 X372MCOA-GNOMPROG-S         PIC X(08).                             
+          09 X372MCOA-COASEGUROS-OCCURS-S PIC 9(2).                             
+          09 X372MCOA-COASEGUROS-S OCCURS 6.                                    
+             15 X372MCOA-CODCOA-S          PIC X(07).                           
+             15 X372MCOA-PORCOA-S          PIC S9(3)V9(6).                      
+             15 X372MCOA-IMPCOA-S          PIC S9(11)V9(2).                     
+             15 X372MCOA-IMPRTOINTEGRCOA-S PIC S9(11)V9(2).                     
+             15 X372MCOA-IMPREDPRICOA-S    PIC S9(11)V9(2).                     
+             15 X372MCOA-IMPREDTRANCOA-S   PIC S9(11)V9(2).                     
+             15 X372MCOA-IMPRTONETOCOA-S   PIC S9(11)V9(2).                     
+             15 X372MCOA-IMPRETCOA-S       PIC S9(11)V9(2).                     
+             15 X372MCOA-IMPCOMPENSATCOA-S PIC S9(11)V9(2).                     

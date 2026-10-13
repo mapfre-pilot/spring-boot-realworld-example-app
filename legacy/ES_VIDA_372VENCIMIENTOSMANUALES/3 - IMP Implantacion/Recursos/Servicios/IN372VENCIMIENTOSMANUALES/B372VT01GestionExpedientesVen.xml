@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<servicios>
+	<servicio nombre_web="B372VT01GestionExpedientesVen">
+
+<!-- MODIFICACION : MU-2016-006664
+FECHA : MARZO 2016
+DESCRIPCION: Se permite modificar y guardar en BBDD los importes de Coaseguros
+AUTOR : RAROALE -->
+
+<!-- MODIFICACION : MU-2016-006673
+FECHA : MARZO 2016
+DESCRIPCION: Se permite modificar y guardar en BBDD el kdomiclio del beneficiario
+AUTOR : RAROALE -->
+<!-- CONTROL -->
+
+		<!-- MODIFICACION : MU-2015-041869
+		FECHA : 14/10/2015
+		DESCRIPCION: Incluir "Año Fiscal" para informar a la BDGI.
+		AUTOR : INDRA  -->
+
+	        <parametro  nombre_web="KSERVICIO-C"  	tipo="X"    longitud="8"       dir="ES"    ocurr="1"/> 
+	        <parametro  nombre_web="CCANAL-C"		tipo="9"    longitud="2"       dir="ES"    ocurr="1"/> 
+	        <parametro  nombre_web="KEMPRESA-C"  	tipo="X"    longitud="3"       dir="ES"    ocurr="1"/> 
+	        <parametro  nombre_web="KDEPARTA-C"  	tipo="X"    longitud="3"       dir="ES"    ocurr="1"/> 
+	        <parametro  nombre_web="KUSUARIO-C"  	tipo="X"    longitud="10"      dir="ES"    ocurr="1"/> 
+	        <parametro  nombre_web="KCADISTR-C"  	tipo="X"    longitud="1"       dir="ES"    ocurr="1"/> 
+	        <parametro  nombre_web="KFILTRO-C"  	tipo="X"    longitud="2"       dir="ES"    ocurr="1"/> 
+	        <parametro  nombre_web="FILLER-C"  		tipo="X"    longitud="17"      dir="ES"    ocurr="1"/> 
+	
+<!-- inicio parametros entrada   -->
+					
+            <parametro nombre_web="OPERACION-E" 			tipo="X" dir="ES" ocurr="1" longitud="2"/>       
+            <parametro nombre_web="ANIO-E" 					tipo="9" dir="ES" ocurr="1" longitud="4"/> 
+           <parametro nombre_web="KEXPEDIENTE-E" 			tipo="9" dir="ES" ocurr="1" longitud="10"/>     
+            <parametro nombre_web="KRAMO-E" 				tipo="X" dir="ES" ocurr="1" longitud="3"/>           
+            <parametro nombre_web="ANIOPOL-E" 				tipo="X" dir="ES" ocurr="1" longitud="4"/>  
+            <parametro nombre_web="KPOLIZA-E" 				tipo="X" dir="ES" ocurr="1" longitud="10"/>          
+            <parametro nombre_web="NSUBPOLIZA-E" 			tipo="S9" dir="ES" ocurr="1" longitud="4"/>     
+            <parametro nombre_web="KCERTIFICADO-E" 			tipo="9" dir="ES" ocurr="1" longitud="6"/>   
+            <parametro nombre_web="KMODALIDAD-E" 			tipo="9" dir="ES" ocurr="1" longitud="5"/>     
+            <parametro nombre_web="CCANALCAMP-E"  		    tipo="X" dir="ES" ocurr="1" longitud="2"/>
+            <parametro nombre_web="CENTIDAD-E"  		    tipo="X" dir="ES" ocurr="1" longitud="4"/>
+           <!--<parametro nombre_web="TIPORESCATE-E" 		tipo="X" dir="ES" ocurr="1" longitud="1"/>-->  
+            <parametro nombre_web="FECEFECTO-E" 			tipo="X" dir="ES" ocurr="1" longitud="8"/> 
+            <parametro nombre_web="KDURACION-E" 			tipo="9" dir="ES" ocurr="1" longitud="2"/>
+            <parametro nombre_web="FECEMISION-E" 			tipo="X" dir="ES" ocurr="1" longitud="8"/>
+            <parametro nombre_web="CCARTERA-E" 				tipo="X" dir="ES" ocurr="1" longitud="3"/>
+            <parametro nombre_web="SREASEGURO-E" 			tipo="X" dir="ES" ocurr="1" longitud="1"/>
+            <parametro nombre_web="REGIONAL-E" 				tipo="X" dir="ES" ocurr="1" longitud="2"/>
+            <parametro nombre_web="LUGARENVIO-E" 			tipo="X" dir="ES" ocurr="1" longitud="2"/>  
+            <parametro nombre_web="KOFICINA-E" 				tipo="X" dir="ES" ocurr="1" longitud="4"/> 
+            <parametro nombre_web="IPENDIENTE-E" 			tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>
+            <parametro nombre_web="CTIPOPERS1-E" 			tipo="X" dir="ES" ocurr="1" longitud="1"/> 
+            <parametro nombre_web="SRESIDENTE1-E" 			tipo="X" dir="ES" ocurr="1" longitud="1"/>
+            <parametro nombre_web="NIF1-E" 					tipo="X" dir="ES" ocurr="1" longitud="10"/>             
+            <parametro nombre_web="KPERSONA1-E" 			tipo="9" dir="ES" ocurr="1" longitud="9"/> 
+            <!-- MU-2016-006673 - RAROALE - INI-->
+            <parametro nombre_web="KDOMICILIO1-E" 			tipo="9" dir="ES" ocurr="1" longitud="9"/>
+            <!-- MU-2016-006673 - RAROALE - FIN-->   
+            <parametro nombre_web="IMPCAPITAL-E" 			tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>    
+            <parametro nombre_web="IMPBENEFICIOS-E" 		tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>
+            <parametro nombre_web="FECPAGOCAPITAL-E" 		tipo="X" dir="ES" ocurr="1" longitud="8"/>  
+            <parametro nombre_web="IMPANTICIPO-E" 			tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>
+            <parametro nombre_web="IMPINTEPEND-E" 			tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>
+            <parametro nombre_web="FECVENCIMICAP-E" 		tipo="X" dir="ES" ocurr="1" longitud="8"/> 
+            <parametro nombre_web="TIPIMPUESTCAP-E" 		tipo="X" dir="ES" ocurr="1" longitud="2"/>
+            <parametro nombre_web="IMPRTOINTEGRCAP-E"		tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>
+            <parametro nombre_web="IMPREDPRICAP-E" 			tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>  
+            <parametro nombre_web="IMPREDTRANCAP-E" 		tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/> 
+            <parametro nombre_web="IMPCOMPENSATORIA-E" 		tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/> 
+            <parametro nombre_web="IMPRTONETOCAP-E" 		tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>  
+            <parametro nombre_web="PORRETCAP-E" 			tipo="S9" dir="ES" ocurr="1" longitud="5" decimales="2"/>  
+            <parametro nombre_web="IMPRETCAP-E" 			tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/> 
+            <parametro nombre_web="IMPLIQCAP-E" 			tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>  
+            <parametro nombre_web="FECIMPRECAP-E"  	    	tipo="X" dir="ES" ocurr="1" longitud="8"/>
+            <parametro nombre_web="FECPAGRET-E" 			tipo="X" dir="ES" ocurr="1" longitud="8"/>
+            <parametro nombre_web="IMPCOMP1-E"            	tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>
+            <parametro nombre_web="FECEMICOMP1-E" 			tipo="X" dir="ES" ocurr="1" longitud="8"/>
+            <parametro nombre_web="FECPAGCOMP1-E" 			tipo="X" dir="ES" ocurr="1" longitud="8"/> 
+            <parametro nombre_web="TIPIMPUESTCOMP1-E" 		tipo="X" dir="ES" ocurr="1" longitud="2"/>
+            <parametro nombre_web="IMPRTOINTCOMP1-E" 		tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/> 
+            <parametro nombre_web="IMPREDPRICOMP1-E" 		tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/> 
+            <parametro nombre_web="IREDTRANCOMP1-E" 		tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/> 
+            <parametro nombre_web="IRTONETCOMP1-E" 			tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>  
+            <parametro nombre_web="PORRETCOMP1-E" 			tipo="S9" dir="ES" ocurr="1" longitud="5" decimales="2"/>     
+            <parametro nombre_web="IRETCOMP1-E" 			tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>  
+            <parametro nombre_web="ILIQCOMP1-E" 			tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>  
+            <parametro nombre_web="FECIMPRECOMP1-E"  	    tipo="X" dir="ES" ocurr="1" longitud="8"/>
+            <parametro nombre_web="FECPAGRETCOM1-E" 		tipo="X" dir="ES" ocurr="1" longitud="8"/>
+            <parametro nombre_web="IMPCOMP2-E"            	tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>
+            <parametro nombre_web="FECEMICOMP2-E" 			tipo="X" dir="ES" ocurr="1" longitud="8"/>
+            <parametro nombre_web="FECPAGCOMP2-E" 			tipo="X" dir="ES" ocurr="1" longitud="8"/> 
+            <parametro nombre_web="TIPIMPUESTCOMP2-E" 		tipo="X" dir="ES" ocurr="1" longitud="2"/>
+            <parametro nombre_web="IMPRTOINTCOMP2-E" 		tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/> 
+            <parametro nombre_web="IMPREDPRICOMP2-E" 		tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/> 
+            <parametro nombre_web="IREDTRANCOMP2-E" 		tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/> 
+            <parametro nombre_web="IRTONETCOMP2-E" 			tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>  
+            <parametro nombre_web="PORRETCOMP2-E" 			tipo="S9" dir="ES" ocurr="1" longitud="5" decimales="2"/>     
+            <parametro nombre_web="IRETCOMP2-E" 			tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>  
+            <parametro nombre_web="ILIQCOMP2-E" 			tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>  
+            <parametro nombre_web="FECIMPRECOMP2-E"  	    tipo="X" dir="ES" ocurr="1" longitud="8"/>
+            <parametro nombre_web="FECPAGRETCOM2-E" 		tipo="X" dir="ES" ocurr="1" longitud="8"/>
+
+
+
+            <!-- R&V Junio 2017 - everis(RGL) - INI -->
+            <!-- R&V To do este bloque se comenta debido a los nuevos cambios -->
+            <!-- <parametro nombre_web="CODCOA1-E" 				tipo="X" dir="ES" ocurr="1" longitud="7"/> -->
+            <!-- <parametro nombre_web="PORCOA1-E" 				tipo="S9" dir="ES" ocurr="1" longitud="5" decimales="2"/> -->
+            <!-- MU-2016-006664 - RAROALE - INI-->
+            <!-- <parametro nombre_web="IMPCOA1-E" 			 	tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/> -->
+            <!-- MU-2016-006664 - RAROALE - FIN-->
+            <!-- <parametro nombre_web="CODCOA2-E" 				tipo="X" dir="ES" ocurr="1" longitud="7"/> -->
+            <!-- <parametro nombre_web="PORCOA2-E" 				tipo="S9" dir="ES" ocurr="1" longitud="5" decimales="2"/> -->
+            <!-- MU-2016-006664 - RAROALE - INI-->
+            <!-- <parametro nombre_web="IMPCOA2-E" 			 	tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/> -->
+            <!-- MU-2016-006664 - RAROALE - FIN-->
+            <!-- <parametro nombre_web="CODCOA3-E" 				tipo="X" dir="ES" ocurr="1" longitud="7"/> -->
+            <!-- <parametro nombre_web="PORCOA3-E" 				tipo="S9" dir="ES" ocurr="1" longitud="5" decimales="2"/> -->
+            <!-- MU-2016-006664 - RAROALE - INI-->
+            <!-- <parametro nombre_web="IMPCOA3-E" 			 	tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/> -->
+            <!-- MU-2016-006664 - RAROALE - FIN-->
+            <!-- <parametro nombre_web="CODCOA4-E" 				tipo="X" dir="ES" ocurr="1" longitud="7"/> -->
+            <!-- <parametro nombre_web="PORCOA4-E" 				tipo="S9" dir="ES" ocurr="1" longitud="5" decimales="2"/> -->
+            <!-- MU-2016-006664 - RAROALE - INI-->
+            <!-- <parametro nombre_web="IMPCOA4-E" 			 	tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/> -->
+            <!-- MU-2016-006664 - RAROALE - FIN-->
+            <!-- <parametro nombre_web="CODCOA5-E" 				tipo="X" dir="ES" ocurr="1" longitud="7"/> -->
+            <!-- <parametro nombre_web="PORCOA5-E" 				tipo="S9" dir="ES" ocurr="1" longitud="5" decimales="2"/> -->
+            <!-- MU-2016-006664 - RAROALE - INI-->
+            <!-- <parametro nombre_web="IMPCOA5-E" 			 	tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/> -->
+            <!-- MU-2016-006664 - RAROALE - FIN-->
+            <!-- <parametro nombre_web="CODCOA6-E" 				tipo="X" dir="ES" ocurr="1" longitud="7"/> -->
+            <!-- <parametro nombre_web="PORCOA6-E" 				tipo="S9" dir="ES" ocurr="1" longitud="5" decimales="2"/> -->
+            <!-- MU-2016-006664 - RAROALE - INI-->
+            <!-- <parametro nombre_web="IMPCOA6-E" 			 	tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/> -->
+            <!-- MU-2016-006664 - RAROALE - FIN-->
+
+            <!-- El bloque de abajo es el nuevo que sustituye al anterior -->
+            <parametro nombre_web="COASEGUROS-OCCURS-E"	        tipo="9" dir="ES" ocurr="1" longitud="1"/>
+            <parametro nombre_web="COASEGUROS-E" 	    dir="ES"  ocurr="6">
+             <parametro nombre_web="CODCOA-E"        tipo="X"    dir="ES" ocurr="1"   longitud="7" />
+             <parametro nombre_web="PORCOA-E"        tipo="S9"   dir="ES" ocurr="1"   longitud="9" decimales="6" />
+             <parametro nombre_web="IMPCOA-E"        tipo="S9"   dir="ES" ocurr="1"   longitud="13" decimales="2" />
+             <parametro nombre_web="IMPRTOINTEGRCOA-E"        tipo="S9"   dir="ES" ocurr="1"   longitud="13" decimales="2" />
+             <parametro nombre_web="IMPREDPRICOA-E"        tipo="S9"   dir="ES" ocurr="1"   longitud="13" decimales="2" />
+             <parametro nombre_web="IMPREDTRANCOA-E"        tipo="S9"   dir="ES" ocurr="1"   longitud="13" decimales="2" />
+             <parametro nombre_web="IMPRTONETOCOA-E"        tipo="S9"   dir="ES" ocurr="1"   longitud="13" decimales="2" />
+             <parametro nombre_web="IMPRETCOA-E"        tipo="S9"   dir="ES" ocurr="1"   longitud="13" decimales="2" />
+             <parametro nombre_web="IMPCOMPENSATCOA-E"        tipo="S9"   dir="ES" ocurr="1"   longitud="13" decimales="2" />
+            </parametro>
+            <!-- R&V Junio 2017 - everis(RGL) - FIN -->
+
+
+            <parametro nombre_web="PAGOTOT-E" 				tipo="X" dir="ES" ocurr="1" longitud="1"/>
+            <parametro nombre_web="SBDGICAP-E" 				tipo="X" dir="ES" ocurr="1" longitud="1"/>      
+            <parametro nombre_web="FECBDGICAP-E" 				tipo="X" dir="ES" ocurr="1" longitud="8"/> 
+            <parametro nombre_web="SBDGICOMP1-E" 				tipo="X" dir="ES" ocurr="1" longitud="1"/>      
+            <parametro nombre_web="FECBDGICOMP1-E" 				tipo="X" dir="ES" ocurr="1" longitud="8"/> 
+			<parametro nombre_web="SBDGICOMP2-E" 				tipo="X" dir="ES" ocurr="1" longitud="1"/>      
+            <parametro nombre_web="FECBDGICOMP2-E" 				tipo="X" dir="ES" ocurr="1" longitud="8"/> 
+            <parametro nombre_web="GOBSERVACION-E" 			tipo="X" dir="ES" ocurr="1" longitud="240"/>
+			<parametro nombre_web="STIPSITUACION-E" 		tipo="X" dir="ES" ocurr="1" longitud="2"/> 
+            <parametro nombre_web="FANULACION-E" 			tipo="X" dir="ES" ocurr="1" longitud="8"/>
+            <!-- INICIO  MU-2015-041869 -->
+            <parametro nombre_web="ANIOFISCAL-E" 			tipo="9" dir="ES" ocurr="1" longitud="4"/>
+            <!-- FIN  MU-2015-041869 -->
+            <!-- MU-2016-006673 - RAROALE - INI-->
+            <parametro nombre_web="FECMODIFICA-E" 			tipo="X" dir="ES" ocurr="1" longitud="8"/>
+            <!-- MU-2016-006673 - RAROALE - FIN-->
+
+            <!-- R&V Junio 2017 - everis(RGL) - INI -->
+            <parametro nombre_web="EXIMIDO-E"      	tipo="X" dir="ES" ocurr="1" longitud="1"/>
+            <parametro nombre_web="KDOMCOM-E"      	tipo="S9" dir="ES" ocurr="1" longitud="9" decimales="0"/>
+            <!-- R&V Junio 2017 - everis(RGL) - FIN -->
+
+
+     <!-- inicio parametros salida   -->
+			<parametro nombre_web="ANIO-S" 		            tipo="9" dir="S" ocurr="1" longitud="04"/>
+			<parametro nombre_web="KEXPEDIENTE-S"			tipo="9" dir="S" ocurr="1" longitud="10"/>
+			<parametro nombre_web="IMPREDPRICAP-S" 			tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>          
+            <parametro nombre_web="IMPREDTRANCAP-S" 		tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>          
+            <parametro nombre_web="IMPRETCAP-S" 			tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>          
+            <parametro nombre_web="IMPRTONETOCAP-S" 		tipo="S9" dir="ES" ocurr="1" longitud="13" decimales="2"/>                     
+			<parametro nombre_web="CRETORNO-S"	    		tipo="X" dir="S" ocurr="1" longitud="02"/>
+			<parametro nombre_web="GERROR-S"	    		tipo="X" dir="S" ocurr="1" longitud="100"/>
+			<parametro nombre_web="GNOMPROG-S"	    		tipo="X" dir="S" ocurr="1" longitud="08"/>
+			
+			            
+	</servicio>
+</servicios>

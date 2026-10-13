@@ -1,0 +1,2216 @@
+      ******************************************************************        
+       IDENTIFICATION DIVISION.                                                 
+       PROGRAM-ID. B372N010.                                                    
+      ******************************************************************        
+      **INV: A372VENM                                                           
+      ******************************************************************        
+      *                                                                *        
+      * APLICACION....:VENCIMIENTOS MANUALES (FOXPRO)                  *        
+      * ANALISTA......:EVERIS                                          *        
+      * PROGRAMADOR...:EVERIS                                          *        
+      * FECHA DE REALIZACION:  JUNIO 2012                              *        
+      *                                                                *        
+      * DESCRIPCIÓN DEL PROGRAMA:                                      *        
+      *                                                                *        
+      * ---------------------------------------------------------------*        
+      * |    EMISION FINIQUITOS E INFORMES VENCIMIENTOS MANUALES      |*        
+      * ---------------------------------------------------------------*        
+      ******************************************************************        
+      * DATOS DE ENTADA  X372VT10-E                                             
+      *                                                                         
+      * TIPO DE OPERACION X372VT10-TIPOEMI-E                                    
+      *                                                                         
+      *  '01' EMISION DE FINIQUITO PRINCIPAL                                    
+      *                                                                         
+      *  '02' EMISION DE FINIQUITO COMPLEMENTARIO                               
+      *                                                                         
+      *  '03' INFORME SIN RETENCION (B372J001)                                  
+      *                                                                         
+      *  '04' INFORME RETENCIONES POR CAPITAL (B372J002)                        
+      *                                                                         
+      *  '05' INFORME RETENCIONES POR TRABJO  (B372J003)                        
+      *                                                                         
+      ******************************************************************        
+      *MODULOS UTILIZADOS:                                                      
+      ******************************************************************        
+      * B160N315 : PROGRAMA DE COMUNIC. DE LA APLICACIóN DE PERSONAS            
+      *                                                                         
+      * B001N007 : MODULO CONVERSOR A EXPRESION UN NUMERO                       
+      *                                                                         
+      * B372M004 : MODULO MANTENIMIENTO TABLA DE RESCATE                        
+      *                                                                         
+      ******************************************************************        
+      * CODIGO DE ERRORES                                                       
+      ******************************************************************        
+      *                                                                         
+      * X372VT10-CRETORNO-S                                                     
+      *          '00' OPERACION CORRECTA                                        
+      *                                                                         
+      *          '02' ERROR FALTAN DATOS INFORMADOS                             
+      *                                                                         
+      *          '03' ERROR REGISTRO NO ENCONTRADO                              
+      *                                                                         
+      *          '04' ERROR REGISTRO NINGUNA MODIFICACION                       
+      *                                                                         
+      *          '05' ERROR EN LA LLAMADA DEL MODULO                            
+      *                                                                         
+      *          '06' ERROR SUPERADO EL NUMERO DE INFORMES DE EXPEDIENTE        
+      *               PARA INFORMAR                                             
+      *                                                                         
+      *          '10' ERROR EN B160N315                                         
+      *               PROGRAMA DE COMUNIC. DE LA APLICACIóN DE PERSONAS         
+      *                                                                         
+      *          '11' ERROR EN B001M007                                         
+      *               MODULO CONVERSOR A EXPRESION UN NUMERO                    
+      *                                                                         
+      *          '99' ERROR EN ACCESO BASE DE DATOS                             
+      *                                                                         
+      ******************************************************************        
+      *                                                               *         
+      * PETICION    : MU-2015-007512       BUSCAR <<507512>           *         
+      * AUTOR       : INDRA                                           *         
+      * FECHA       : 30/04/2015                                      *         
+      * DESCRIPCIÓN : AÑADIR NUEVO TIPO DE INFORME, V6, PARA INFORME  *         
+      *               RESUMEN POR MODALIDAD.                          *         
+      *                                                               *         
+      *****************************************************************         
+      *                                                               *         
+      * PETICION    : MU-2015-007509       BUSCAR <<507509>           *         
+      * AUTOR       : INDRA                                           *         
+      * FECHA       : 07/05/2015                                      *         
+      * DESCRIPCIÓN : AÑADIR NUEVO TIPO DE INFORME, V7, PARA INFORME  *         
+      *               pagos POR MODALIDAD.                            *         
+      *                                                               *         
+      *****************************************************************         
+      *                                                               *         
+      * PETICION    : MU-2015-036085       BUSCAR <<536085>           *         
+      * AUTOR       : INDRA                                           *         
+      * FECHA       : 15/06/2015                                      *         
+      * DESCRIPCIÓN : CUADRE ENTRE LOS INFORMES DE RESCATES MANUALES  *         
+      *               POR MODALIDAD Y POR POLIZA                      *         
+      *                                                               *         
+      *****************************************************************         
+      *                                                               *         
+      * PETICION    : MU-2015-035084       BUSCAR <<535084>           *    *    
+      * AUTOR       : INDRA                                           *    *    
+      * FECHA       : 03/08/2015                                      *    *    
+      * DESCRIPCIÓN : AÑADIR NUEVOS CRITERIOS DE AÑO DESDE Y AÑO      *    *    
+      *               HASTA EN FICHERO RESUMEN POR MODALIDAD          *    *    
+      *                                                               *         
+      *****************************************************************         
+      *                                                                *        
+      * PETICION    : MU-2016-006673       BUSCAR <<606673>            *        
+      * AUTOR       : INDRA                                            *        
+      * FECHA       : MARZO 2016                                       *        
+      * DESCRIPCION : SE GUARDA EN BBDD EL KDOMICILIO DE LOS           *        
+      *               BENEFICIARIOS                                    *        
+
+      ******************************************************************        
+      ******************************************************************        
+      *                                                                *        
+      * MODIFICACION: MU-2017-BDGI-R-V                                 *        
+      * PROGRAMADOR : EVERIS                                           *        
+      * FECHA       : JUNIO   2017                                     *        
+      * DESCRIPCION : ENVIO A BDGI DE RESCATES Y VENCIMIENTOS          *        
+      * MU-2017-BDGI-R-V-INI                                           *        
+      * MU-2017-BDGI-R-V-FIN                                           *        
+      *                                                                *        
+      * MU-2017-BDGI-R-V3-INI                                                   
+      * MU-2017-BDGI-R-V3-FIN                                                   
+      *                                                                *        
+      * MU-2017-BDGI-R-V4-INI                                          *        
+      *   SI IMPORTE DE RETENCION = 0 MANDAMOS EN EL CAMPO IMPRETENC-S *        
+      *   EL TEXTO '0,00'                                              *        
+      * MU-2017-BDGI-R-V4-FIN                                          *        
+      ******************************************************************        
+      *                  ENVIRONMENT DIVISION                                   
+      ******************************************************************        
+       ENVIRONMENT DIVISION.                                                    
+       CONFIGURATION SECTION.                                                   
+       SPECIAL-NAMES.                                                           
+           DECIMAL-POINT IS COMMA.                                              
+      ******************************************************************        
+      *                  DATA DIVISION                                 *        
+      ******************************************************************        
+       DATA DIVISION.                                                           
+      ******************************************************************        
+      *                  WORKING-STORAGE SECTION                       *        
+      ******************************************************************        
+       WORKING-STORAGE SECTION.                                                 
+      *                                                                         
+
+       01 XN-INDICES.                                                           
+606673    03 XN-C                      PIC 999 VALUE ZEROES.                    
+          03 XN-I                      PIC 999 VALUE ZEROES.                    
+          03 XN-J                      PIC 999 VALUE ZEROES.                    
+          03 XN-A                      PIC 999 VALUE ZEROES.                    
+      * MU-2017-BDGI-R-V-INI                                                    
+          03 XN-M                      PIC 9(02) VALUE ZEROES.                  
+      * MU-2017-BDGI-R-V-FIN                                                    
+          03 XN-B                      PIC 999 VALUE ZEROES.                    
+          03 XN-ERR                    PIC 999 VALUE ZEROES.                    
+          03 INDICE-L                  PIC 999 VALUE ZEROES.                    
+          03 INDICE-P                  PIC 999 VALUE ZEROES.                    
+
+             COPY RR431010.                                                     
+
+       01 WS-VARIABLES.                                                         
+          03 WS-X160N315.                                                       
+             COPY X160N315.                                                     
+             COPY X160N000.                                                     
+          03 WS-X372M001.                                                       
+             COPY X372M001.                                                     
+          03 WS-X372M004.                                                       
+             COPY X372M004.                                                     
+          03 WS-X160M013.                                                       
+             COPY X160M013.                                                     
+             COPY X160N000.                                                     
+          03 WS-X001M001.                                                       
+             COPY X001M001.                                                     
+      *   03 WS-X001N007.                                                       
+             COPY X001N007.                                                     
+
+       01 TB-TABLAS-GENERALES.                                                  
+          03 TB-RESCATES-ACT.                                                   
+             05 TB-RESCATES        OCCURS 500.                                  
+                07 TB-ANIO              PIC 9(4).                               
+                07 TB-KEXPEDIENTE       PIC 9(10).                              
+                07 TB-SBDGICAP          PIC X(1).                               
+                07 TB-FECBDGICAP        PIC X(8).                               
+                07 TB-SBDGICOMP1        PIC X(1).                               
+                07 TB-FECBDGICOMP1      PIC X(8).                               
+                07 TB-SBDGICOMP2        PIC X(1).                               
+                07 TB-FECBDGICOMP2      PIC X(8).                               
+                07 TB-FECEMISIONCAP     PIC X(08).                              
+                07 TB-FECEMICOMP1       PIC X(08).                              
+                07 TB-FECEMICOMP2       PIC X(08).                              
+                07 TB-FECDESDELIT       PIC X(08).                              
+                07 TB-KRAMO             PIC X(3).                               
+                07 TB-ANIOPOL           PIC X(4).                               
+                07 TB-KPOLIZA           PIC X(10).                              
+                07 TB-KMODALIDAD        PIC 9(5).                               
+                07 TB-FECEFECTO         PIC X(8).                               
+                07 TB-KOFICINA          PIC X(4).                               
+                07 TB-REGIONAL          PIC X(2).                               
+                07 TB-NIF1              PIC X(10).                              
+                07 TB-KPERSONA1         PIC 9(9).                               
+606673          07 TB-KDOMICILIO1       PIC 9(9).                               
+                07 TB-IMPCAPITAL        PIC S9(13)V9(2).                        
+                07 TB-IMPBENEFICIOS     PIC S9(13)V9(2).                        
+                07 TB-IMPANTICIPO       PIC S9(13)V9(2).                        
+                07 TB-IMPINTEPENDP      PIC S9(13)V9(2).                        
+                07 TB-IMPRETCAP         PIC S9(13)V9(2).                        
+                07 TB-IMPLIQCAP         PIC S9(13)V9(2).                        
+                07 TB-IMPCOMP1          PIC S9(13)V9(2).                        
+                07 TB-IRETCOMP1         PIC S9(13)V9(2).                        
+                07 TB-ILIQCOMP1         PIC S9(13)V9(2).                        
+                07 TB-IMPCOMP2          PIC S9(13)V9(2).                        
+                07 TB-IRETCOMP2         PIC S9(13)V9(2).                        
+                07 TB-ILIQCOMP2         PIC S9(13)V9(2).                        
+                07 TB-TIPIMPUESTCAP     PIC X(2).                               
+                07 TB-TIPIMPUESTCOMP1   PIC X(2).                               
+                07 TB-TIPIMPUESTCOMP2   PIC X(2).                               
+                07 TB-FECIMPRECAP       PIC X(8).                               
+                07 TB-FECIMPRECOMP1     PIC X(8).                               
+                07 TB-FECIMPRECOMP2     PIC X(8).                               
+                07 TB-PORRETCAP         PIC S9(3)V9(2).                         
+                07 TB-PORRETCOMP1       PIC S9(3)V9(2).                         
+                07 TB-PORRETCOMP2       PIC S9(3)V9(2).                         
+606673          07 TB-FECMODIFICA       PIC X(8).                               
+
+      * TABLAS DE PROVINCIAS                                                    
+          03 WS-PROVINCIA              PIC X(05).                               
+          03 INDICE-CP                 PIC 9(02).                               
+          03 WS-PRIMERO            PIC  ---.---.---.---  VALUE ZEROS.           
+          03 WS-ULTIMO             PIC  ---.---.---.---  VALUE ZEROS.           
+
+         03 TABLA-DE-PROVINCIAS.                                                
+           05 FILLER                   PIC X(30) VALUE 'ALAVA  '.               
+           05 FILLER                   PIC X(30) VALUE 'ALBACETE '.             
+           05 FILLER                   PIC X(30) VALUE 'ALICANTE ' .            
+           05 FILLER                   PIC X(30) VALUE 'ALMERIA ' .             
+           05 FILLER                   PIC X(30) VALUE 'AVILA ' .               
+           05 FILLER                   PIC X(30) VALUE 'BADAJOZ ' .             
+           05 FILLER                   PIC X(30) VALUE 'BALEARES ' .            
+           05 FILLER                   PIC X(30) VALUE 'BARCELONA ' .           
+           05 FILLER                   PIC X(30) VALUE 'BURGOS ' .              
+           05 FILLER                   PIC X(30) VALUE 'CACERES ' .             
+           05 FILLER                   PIC X(30) VALUE 'CADIZ ' .               
+           05 FILLER                   PIC X(30) VALUE 'CASTELLON DE            
+      -    'LA PLANA'.                                                          
+           05 FILLER                   PIC X(30) VALUE 'CIUDAD REAL' .          
+           05 FILLER                   PIC X(30) VALUE 'CORDOBA ' .             
+           05 FILLER                   PIC X(30) VALUE 'LA CORUÑA ' .           
+           05 FILLER                   PIC X(30) VALUE 'CUENCA ' .              
+           05 FILLER                   PIC X(30) VALUE 'GERONA ' .              
+           05 FILLER                   PIC X(30) VALUE 'GRANADA ' .             
+           05 FILLER                   PIC X(30) VALUE 'GUADALAJARA' .          
+           05 FILLER                   PIC X(30) VALUE 'GUIPUZCOA ' .           
+           05 FILLER                   PIC X(30) VALUE 'HUELVA ' .              
+           05 FILLER                   PIC X(30) VALUE 'HUESCA ' .              
+           05 FILLER                   PIC X(30) VALUE 'JAEN ' .                
+           05 FILLER                   PIC X(30) VALUE 'LEON ' .                
+           05 FILLER                   PIC X(30) VALUE 'LERIDA ' .              
+           05 FILLER                   PIC X(30) VALUE 'LA RIOJA ' .            
+           05 FILLER                   PIC X(30) VALUE 'LUGO ' .                
+           05 FILLER                   PIC X(30) VALUE 'MADRID ' .              
+           05 FILLER                   PIC X(30) VALUE 'MALAGA ' .              
+           05 FILLER                   PIC X(30) VALUE 'MURCIA ' .              
+           05 FILLER                   PIC X(30) VALUE 'NAVARRA ' .             
+           05 FILLER                   PIC X(30) VALUE 'ORENSE ' .              
+           05 FILLER                   PIC X(30) VALUE 'ASTURIAS ' .            
+           05 FILLER                   PIC X(30) VALUE 'PALENCIA ' .            
+           05 FILLER                   PIC X(30) VALUE 'GRAN CANARIA '.         
+           05 FILLER                   PIC X(30) VALUE 'PONTEVEDRA ' .          
+           05 FILLER                   PIC X(30) VALUE 'SALAMANCA ' .           
+           05 FILLER                   PIC X(30) VALUE 'TENERIFE ' .            
+           05 FILLER                   PIC X(30) VALUE 'SANTANDER ' .           
+           05 FILLER                   PIC X(30) VALUE 'SEGOVIA ' .             
+           05 FILLER                   PIC X(30) VALUE 'SEVILLA ' .             
+           05 FILLER                   PIC X(30) VALUE 'SORIA ' .               
+           05 FILLER                   PIC X(30) VALUE 'TARRAGONA ' .           
+           05 FILLER                   PIC X(30) VALUE 'TERUEL ' .              
+           05 FILLER                   PIC X(30) VALUE 'TOLEDO ' .              
+           05 FILLER                   PIC X(30) VALUE 'VALENCIA ' .            
+           05 FILLER                   PIC X(30) VALUE 'VALLADOLID ' .          
+           05 FILLER                   PIC X(30) VALUE 'VIZCAYA ' .             
+           05 FILLER                   PIC X(30) VALUE 'ZAMORA ' .              
+           05 FILLER                   PIC X(30) VALUE 'ZARAGOZA ' .            
+           05 FILLER                   PIC X(30) VALUE 'CEUTA ' .               
+           05 FILLER                   PIC X(30) VALUE 'MELILLA ' .             
+
+          03  TABLA  REDEFINES  TABLA-DE-PROVINCIAS.                            
+           05 NOM-PROVINCIA     PIC X(30) OCCURS 52 TIMES.                      
+
+          03 WS-ERROR.                                                          
+             05 TB-ERROR-EXP OCCURS  50.                                        
+               07 WS-ERR-ANIO               PIC X(04).                          
+               07 WS-ERR-SEP                PIC X.                              
+               07 WS-ERR-EXP                PIC X(10).                          
+               07 FILLER                    PIC X(6) VALUE '\</br>'.            
+
+
+      *   CONTROL DE ERRORES DEL PROGRAMA                                       
+       01 SW-SWITCH.                                                            
+          03 SW-ERRORES                PIC XX VALUE '00'.                       
+             88 NO-ERROR                      VALUE '00'.                       
+             88 ERROR-GRAVE                   VALUE '01'.                       
+          03 SW-PRIMERO                PIC X VALUE 'S'.                         
+             88 SW-SI-PRIMERO                VALUE 'S'.                         
+             88 SW-NO-PRIMERO                VALUE 'N'.                         
+          03 SW-PORCENTAJE             PIC X VALUE 'S'.                         
+             88 SW-SI-PORCENTAJE             VALUE 'S'.                         
+             88 SW-NO-PORCENTAJE             VALUE 'N'.                         
+      * MU-2017-BDGI-R-V-INI                                                    
+      *   FLAG SI EXISTE DOMICILIO DE PRESTACIONES                              
+          03 SW-INFO-DOM-R             PIC X(01) VALUE SPACES.                  
+             88 NO-INFO-DOM-R                    VALUE 'N'.                     
+             88 SI-INFO-DOM-R                    VALUE 'S'.                     
+      * MU-2017-BDGI-R-V-FIN                                                    
+
+          03 SW-TRATAR                 PIC XX VALUE '00'.                       
+             88 SI-TRATAR                     VALUE '00'.                       
+             88 NO-TRATAR                     VALUE '01'.                       
+          03 SW-MAX-EXPDIENTE          PIC X VALUE 'N'.                         
+             88 SW-SI-MAX-EXP                VALUE 'S'.                         
+             88 SW-NO-MAX-EXP                VALUE 'N'.                         
+
+      * AL HACER UPDATES MASIVOS, CONTROLAMOS PARA HACER ROLLBACK EN            
+      * CASO DE ERROR                                                           
+          03 SW-BORRA-ROLLBACK       PIC X(2)   VALUE '00'.                     
+             88 SW-SI-ROLLBACK                  VALUE '00'.                     
+             88 SW-NO-ROLLBACK                  VALUE '01'.                     
+
+
+      *   MODULOS                                                               
+       01 WS-MODULOS.                                                           
+          03 WS-B372M001               PIC X(8) VALUE 'B372M001'.               
+          03 WS-B372M004               PIC X(8) VALUE 'B372M004'.               
+          03 WS-B160M013               PIC X(8) VALUE 'B160M013'.               
+          03 WS-B160N315               PIC X(8) VALUE 'B160N315'.               
+          03 WS-B001M001               PIC X(8) VALUE 'B001M001'.               
+          03 WS-B001N007               PIC X(8) VALUE 'B001N007'.               
+
+       01 LT-LITERALES.                                                         
+          03 WS-FECHA-ACTUAL.                                                   
+             05 WS-FECHA.                                                       
+                07 WS-ANO                   PIC 9(04).                          
+                07 WS-MES                   PIC 9(02).                          
+                07 WS-DIA                   PIC 9(02).                          
+             05 WS-TIEMPO.                                                      
+                07 WS-HORA                  PIC 9(02).                          
+                07 WS-MINUTOS               PIC 9(02).                          
+                07 WS-SEGUNDOS              PIC 9(02).                          
+                07 WS-CENTESIMAS            PIC 9(02).                          
+
+      * VARIABLES AUXILIARES PARA NOMBRE COMPLETO                               
+          03 WS-NOMBRE-COM                  PIC X(50).                          
+
+          03 WS-NOMBRE-COMPLETO.                                                
+             05 WS-APELLIDO1                PIC X(15).                          
+             05 WS-APELLIDO2                PIC X(15).                          
+             05 WS-NOMBRE                   PIC X(30).                          
+
+      * VARIABLES AUXILIARES PARA NUMERO SIN ESPACIO                            
+          03 WS-NUMERO-SIN-ESPACIO.                                             
+             05 WS-NUMERO-COM               PIC X(15).                          
+             05 WS-NUMERO                   PIC X(15).                          
+
+      * VARIABLES AUXILIARES PARA OFICNIA                                       
+          03 WS-OFICINA.                                                        
+             05 WS-NUMOFICINA               PIC X(04).                          
+             05 FILLER                      PIC X(01) VALUE '-'.                
+             05 WS-LITOFICINA               PIC X(25).                          
+
+      * VARIABLES AUXILIARES PARA DELEGACION                                    
+          03 WS-DELEGACION.                                                     
+             05 WS-NUMDELEGACION            PIC X(02).                          
+             05 FILLER                      PIC X(01) VALUE '-'.                
+             05 WS-LITDELEGACION            PIC X(25).                          
+
+      * VARIABLES AUXILIARES PARA DOMICILIO COMPLETO                            
+          03 WS-DOMICILIO-COM               PIC X(60).                          
+
+          03 WS-DOMICILIO-COMPLETO.                                             
+             05 WS-CTIPOVIA                 PIC X(10).                          
+             05 WS-GDOMICILIO               PIC X(105).                         
+             05 WS-NUMVIA                   PIC X(10).                          
+             05 WS-GDOMIRESTO               PIC X(45).                          
+
+      * TIPO DE IMPUESTO Y SUS LITERALES PARA EMSION FINIQUITO                  
+          03 LT-TIPOS-IMPUESTOS.                                                
+      *         TIPO DE IMPUESTO MOBILIARIO                                     
+             05 LT-TIPO-MOB         PIC X(2) VALUE '12'.                        
+      * MU-2017-BDGI-R-V3-INI                                                   
+      *       05 LT-TIPO-MOB-SALIDA  PIC X(31)                                  
+      *               VALUE 'DEL I.R.P.F.(RDTO. DE CAPITAL) '.                  
+             05 LT-TIPO-MOB-SALIDA  PIC X(15)                                   
+                     VALUE 'RDTO. CAP. MOB '.                                   
+      * MU-2017-BDGI-R-V3-FIN                                                   
+      *         TIPO DE IMPUESTO TRABAJO                                        
+             05 LT-TIPO-TRA         PIC X(5) VALUE '11'.                        
+      * MU-2017-BDGI-R-V3-INI                                                   
+      *       05 LT-TIPO-TRA-SALIDA  PIC X(31)                                  
+      *               VALUE 'DEL I.R.P.F.(RDTO. DE TRABAJO) '.                  
+             05 LT-TIPO-TRA-SALIDA  PIC X(17)                                   
+                     VALUE 'I.R.P.F. TRABAJO '.                                 
+      * MU-2017-BDGI-R-V3-FIN                                                   
+      *         TIPO DE IMPUESTO SOCIEDAD                                       
+             05 LT-TIPO-SOC         PIC X(5) VALUE '22'.                        
+      * MU-2017-BDGI-R-V3-INI                                                   
+      *       05 LT-TIPO-SOC-SALIDA  PIC X(27)                                  
+      *               VALUE 'DEL IMPUESTO DE SOCIEDADES '.                      
+             05 LT-TIPO-SOC-SALIDA  PIC X(16)                                   
+                     VALUE 'IMP. SOCIEDADES '.                                  
+      * MU-2017-BDGI-R-V3-FIN                                                   
+      *         TIPO DE IMPUESTO SIN RETENCION                                  
+             05 LT-TIPO-SRT          PIC X(2) VALUE '34'.                       
+      * MU-2017-BDGI-R-V3-INI                                                   
+             05 LT-TIPO-SINRETENCION PIC X(16)                                  
+                     VALUE '(SIN RETENCION) '.                                  
+      * MU-2017-BDGI-R-V3-FIN                                                   
+      *         TIPO DE IMPUESTO NO RESIDENTE CM                                
+             05 LT-TIPO-NCM          PIC X(5) VALUE '42'.                       
+      *         TIPO DE IMPUESTO NO RESIDENTE TP                                
+             05 LT-TIPO-NTP          PIC X(5) VALUE '41'.                       
+      * MU-2017-BDGI-R-V3-INI                                                   
+      *       05 LT-TIPO-NORESIDENTE PIC X(17)                                  
+      *               VALUE 'I. NO RESIDENTES '.                                
+             05 LT-TIPO-NORESIDENTE PIC X(05)                                   
+                     VALUE 'IRNR '.                                             
+      * MU-2017-BDGI-R-V3-FIN                                                   
+
+      * VARIABLES AUXILIARES PARA TIPO DE RETENCION                             
+          03 WS-TIPO-RETENCION-PORCT.                                           
+             05 WS-TIPO                     PIC X(32).                          
+             05 WS-PORCT                    PIC ZZ9,99.                         
+
+          03 WS-TIPO-RET-COM                PIC X(41).                          
+
+          03 WS-TIPO-RET-SALIDA             PIC X(40).                          
+
+      * VARIABLES AUXILIARES PARA CONVERTIR NUMERICOS EN                        
+      * ALFANUMERICOS A TRAVES DEL SERVICIO B001N007                            
+          03 WS-VARIABLES-AUXILIARES.                                           
+             05 WS-IMPLITERAL-COM           PIC X(80).                          
+             05 WS-IMPLITERAL-S             PIC X(80).                          
+             05 WS-NLONG                    PIC 9(03) VALUE 80.                 
+             05 WS-GRELLENO                 PIC X(01) VALUE SPACES.             
+
+      * MASCARA PARA IMPORTES                                                   
+          03 WS-MASCARA-IMPORTE.                                                
+             05 WS-IMPCAPITAL-S             PIC -ZZZ.ZZZ.ZZ9,99.                
+             05 WS-IMPBENEFICIOS-S          PIC -ZZZ.ZZZ.ZZ9,99.                
+             05 WS-IMPANTICIPO-S            PIC -ZZZ.ZZZ.ZZ9,99.                
+             05 WS-IMPCOBROINT-S            PIC -ZZZ.ZZZ.ZZ9,99.                
+             05 WS-IMPDEVOLUCINT-S          PIC -ZZZ.ZZZ.ZZ9,99.                
+             05 WS-IMPPRIMAREC-S            PIC -ZZZ.ZZZ.ZZ9,99.                
+             05 WS-IMPRETCAP-S              PIC -ZZZ.ZZZ.ZZ9,99.                
+             05 WS-IMPLIQCAP-S              PIC -ZZZ.ZZZ.ZZ9,99.                
+             05 WS-IMPCOMP-S                PIC -ZZZ.ZZZ.ZZ9,99.                
+             05 WS-IRETCOMP-S               PIC -ZZZ.ZZZ.ZZ9,99.                
+             05 WS-ILIQCOMP-S               PIC -ZZZ.ZZZ.ZZ9,99.                
+
+      * VARIABLE  AUXILIAR PARA AÑO DE EJERCICIO                                
+          03 WS-ANOEJERCICIO                PIC 9(04).                          
+          03 WS-ANIO-NUM                    PIC 9(04).                          
+          03 WS-ANIO                        PIC X(08).                          
+
+      * VARIABLES AUXILIARES PARA DAR FORMATOS A FECHAS                         
+          03 WS-FECHAS-AUXILIARES.                                              
+
+             05 WS-FECHA-AUX                PIC X(08).                          
+
+             05 WS-FEMISION                 PIC X(08).                          
+
+             05 WS-FECHA-FORMATO.                                               
+                07 WS-DIA-AUX               PIC X(02).                          
+                07 FILLER                   PIC X VALUE '/'.                    
+                07 WS-MES-AUX               PIC X(02).                          
+                07 FILLER                   PIC X VALUE '/'.                    
+                07 WS-ANO-AUX               PIC X(04).                          
+
+             05 WS-MES-LIT                  PIC X(04).                          
+
+             05 WS-FECHA-LITERAL-COM        PIC X(35).                          
+
+             05 WS-FECHA-LITERAL.                                               
+                07 DIA-LIT                  PIC X(02).                          
+                07 MES-LIT                  PIC X(15).                          
+                07 ANO-LIT                  PIC X(04).                          
+606673                                                                          
+606673* VARIABLES DOMICILIO                                                     
+606673    03 WS-KDOMICILIO               PIC S9(9) VALUE ZEROES.                
+606673    03 WS-FAUX                     PIC 9(8) VALUE ZEROES.                 
+606673    03 WS-FAUX-DOMI                PIC 9(8) VALUE ZEROES.                 
+
+      * CONSTANTES                                                              
+          03 CT-CONSTANTES.                                                     
+             05 CT-NUMERICAS.                                                   
+                07 CT-CERO                     PIC 9(01) VALUE 0.               
+                07 CT-UNO                      PIC 9(01) VALUE 1.               
+                07 CT-DOS                      PIC 9(01) VALUE 2.               
+                07 CT-TRES                     PIC 9(01) VALUE 3.               
+                07 CT-CUATRO                   PIC 9(01) VALUE 4.               
+                07 CT-CINCO                    PIC 9(01) VALUE 5.               
+                07 CT-SEIS                     PIC 9(01) VALUE 6.               
+                07 CT-SIETE                    PIC 9(01) VALUE 7.               
+                07 CT-OCHO                     PIC 9(01) VALUE 8.               
+                07 CT-NUEVE                    PIC 9(01) VALUE 9.               
+606673          07 CTE-50                   PIC 9(02) VALUE 50.                 
+             05 CT-ALFANUMERICAS.                                               
+                07 CT-CONSULTA                 PIC X(01) VALUE 'C'.             
+606673          07 CT-HISTORICO                PIC X(01) VALUE 'H'.             
+                07 CT-C1                       PIC X(02) VALUE 'C1'.            
+                07 CT-C2                       PIC X(02) VALUE 'C2'.            
+606673          07 CT-H2                       PIC X(02) VALUE 'H2'.            
+                07 CT-01                       PIC X(02) VALUE '01'.            
+                07 CT-02                       PIC X(02) VALUE '02'.            
+                07 CT-03                       PIC X(02) VALUE '03'.            
+                07 CT-04                       PIC X(02) VALUE '04'.            
+                07 CT-05                       PIC X(02) VALUE '05'.            
+                07 CT-06                       PIC X(02) VALUE '06'.            
+                07 CT-07                       PIC X(02) VALUE '07'.            
+                07 CT-08                       PIC X(02) VALUE '08'.            
+507512          07 CT-09                       PIC X(02) VALUE '09'.            
+507509          07 CT-10                       PIC X(02) VALUE '10'.            
+                07 CT-CONSULTA-OK              PIC X(06) VALUE '00000'.         
+
+      * CODIGOS DE ERROR DEL PROGRAMA                                           
+          03 LT-ERRORES-RETORNO.                                                
+      *         LITERAL NO HAY ERRORES                                          
+             05 LT-RETURN-OK                PIC X(2) VALUE '00'.                
+      *         ERROR EN MODO                                                   
+             05 LT-RETURN-ERR-MODO          PIC X(2) VALUE '02'.                
+      *         ERROR FALTAN DATOS INFORMADOS                                   
+             05 LT-RETURN-ERR-DATINFO       PIC X(2) VALUE '03'.                
+      *         ERROR REGISTRO NO ENCONTRADO                                    
+             05 LT-RETURN-ERR-NOTFND        PIC X(2) VALUE '04'.                
+      *         ERROR REGISTRO CLAVE DUPLICADA                                  
+             05 LT-RETURN-ERR-CLVDUPLI      PIC X(2) VALUE '05'.                
+      *         ERROR EN ACCESO A BASE DE DATOS                                 
+             05 LT-RETURN-ERR-OTHER         PIC X(2) VALUE '99'.                
+
+      ******************************************************************        
+       LINKAGE SECTION.                                                         
+      ******************************************************************        
+       01 DFHCOMMAREA.                                                          
+           COPY X372VT10.                                                       
+      *************************************************************             
+       PROCEDURE DIVISION USING DFHCOMMAREA.                                    
+      *************************************************************             
+           PERFORM 1000-INICIO.                                                 
+
+           IF NO-ERROR                                                          
+              PERFORM 2000-PROCESO                                              
+           END-IF                                                               
+
+           PERFORM 10000-FIN.                                                   
+
+      *************************************************************             
+       1000-INICIO.                                                             
+      *************************************************************             
+           INITIALIZE WS-VARIABLES                                              
+
+           MOVE LT-RETURN-OK TO X372VT10-CRETORNO-S OF DFHCOMMAREA              
+           MOVE FUNCTION CURRENT-DATE TO WS-FECHA-ACTUAL                        
+
+           .                                                                    
+      ***************************************************************           
+       2000-PROCESO.                                                            
+      ***************************************************************           
+
+           EVALUATE X372VT10-TIPOEMI-E                                          
+
+             WHEN CT-01                                                         
+             WHEN CT-02                                                         
+             WHEN CT-03                                                         
+
+                 PERFORM 2050-VAL-DATOS-ENTRADA                                 
+
+                 IF NO-ERROR                                                    
+                    PERFORM 2100-OBTENER-EXPEDIENTES                            
+                 END-IF                                                         
+
+                 IF NO-ERROR                                                    
+                    PERFORM 2200-EMISION-FINIQUITO                              
+      *D*                                                                       
+      *        DISPLAY ' JAYHACOOOOOOOOOOOOOOOOOOOOOO'                          
+      *        DISPLAY ' XN-ERR ' XN-ERR                                        
+      *        DISPLAY ' XN-B   ' XN-B                                          
+      *F*                                                                       
+              PERFORM VARYING XN-I FROM 1 BY 1                                  
+                        UNTIL XN-I > 10                                         
+      *D*                                                                       
+      *         DISPLAY ' ANIO ' X372VT10-ANIO-S(XN-I)                          
+      *                 ' MES  ' X372VT10-KEXPEDIENTE-S(XN-I)                   
+      *F*                                                                       
+              END-PERFORM                                                       
+      * CONTROLAMOS SI EXISTE ALGUN EXPEDIENTE ERRONEO.                         
+                    IF XN-ERR > 1                                               
+                            MOVE '06'                                           
+                              TO X372VT10-CRETORNO-S                            
+                            STRING                                              
+                                 'NO SE HAN PODIDO IMPRIMIR LOS SIGUIENT        
+      -                          'ES EXPEDIENTES '                              
+                                 WS-ERROR              DELIMITED BY SIZE        
+                              INTO X372VT10-GERROR-S                            
+                    END-IF                                                      
+
+      * CONTROLAMOS SI EXISTE ALGUN EXPEDIENTE PARA IMPRIMIR.                   
+                    IF XN-B = 0                                                 
+                            MOVE '07'                                           
+                              TO X372VT10-CRETORNO-S                            
+                            STRING                                              
+                        'LOS EXPEDIENTES SELECCIONADOS CONTIENEN ERRORES        
+      -                 ' PARA IMPRIMIR.\</br>'                                 
+                                 WS-ERROR              DELIMITED BY SIZE        
+                              INTO X372VT10-GERROR-S                            
+                    END-IF                                                      
+                 END-IF                                                         
+
+             WHEN CT-03                                                         
+             WHEN CT-04                                                         
+             WHEN CT-05                                                         
+             WHEN CT-06                                                         
+             WHEN CT-07                                                         
+             WHEN CT-08                                                         
+507512       WHEN CT-09                                                         
+507509       WHEN CT-10                                                         
+
+                 PERFORM 2050-VAL-DATOS-ENTRADA                                 
+
+             WHEN OTHER                                                         
+                 SET ERROR-GRAVE          TO TRUE                               
+                 MOVE LT-RETURN-ERR-OTHER   TO X372VT10-CRETORNO-S              
+                 MOVE 'B372N010'            TO X372VT10-GNOMPROG-S              
+                 MOVE 'NO SE HA INFORMADO NINGUN TIPO DE INFORME VALIDO'        
+                   TO X372VT10-GERROR-S                                         
+           END-EVALUATE                                                         
+           .                                                                    
+      ***************************************************************           
+       2050-VAL-DATOS-ENTRADA.                                                  
+      ***************************************************************           
+      * VALIDAREMOS LOS DATOS DE ENTRADA EN FUCION DEL TIPO  DE                 
+      * DOCUMENTOS                                                              
+
+           EVALUATE X372VT10-TIPOEMI-E                                          
+
+             WHEN CT-01                                                         
+             WHEN CT-02                                                         
+             WHEN CT-03                                                         
+                  IF X372VT10-ANIODESDE-E  = SPACES OR ZEROES                   
+                     SET  ERROR-GRAVE TO TRUE                                   
+                     MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+                     MOVE 'EL CAMPO AÑO DE EXPEDIENTE ES OBLIGATORIO'           
+                                                TO X372VT10-GERROR-S            
+                     MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+                  END-IF                                                        
+
+                  IF X372VT10-ANIOHASTA-E  = SPACES OR ZEROES                   
+                     SET  ERROR-GRAVE TO TRUE                                   
+                     MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+                     MOVE 'EL CAMPO AÑO DE EXPEDIENTE ES OBLIGATORIO'           
+                                                TO X372VT10-GERROR-S            
+                     MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+                  END-IF                                                        
+
+                  IF X372VT10-EXPEDIDESDE-E = ZEROES                            
+                     SET  ERROR-GRAVE TO TRUE                                   
+                     MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+                     MOVE 'EL CAMPO EXPEDIENTE DESDE ES OBLIGATORIO'            
+                                                TO X372VT10-GERROR-S            
+                     MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+                  END-IF                                                        
+
+                  IF X372VT10-EXPEDIHASTA-E = ZEROES                            
+                     SET  ERROR-GRAVE TO TRUE                                   
+                     MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+                     MOVE 'EL CAMPO EXPEDIENTE HASTA ES OBLIGATORIO'            
+                                                TO X372VT10-GERROR-S            
+                     MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+                  END-IF                                                        
+
+                  IF X372VT10-EXPEDIHASTA-E < X372VT10-EXPEDIDESDE-E            
+                     SET  ERROR-GRAVE TO TRUE                                   
+                     MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+                     MOVE 'EL EXPEDIENTE HASTA DEBE SER MAYOR QUE EL EXP        
+      -                   'EDIENTE DESDE'                                       
+                                                TO X372VT10-GERROR-S            
+                     MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+                  END-IF                                                        
+
+             WHEN CT-04                                                         
+
+                  IF X372VT10-FECEMIDESDE-E = ZEROES                            
+                     SET  ERROR-GRAVE TO TRUE                                   
+                     MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+                     MOVE 'EL CAMPO FECHA DE EMISION DESDE ES OBLIGATORI        
+      -                   'O'                                                   
+                                                TO X372VT10-GERROR-S            
+                     MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+                  END-IF                                                        
+
+                  IF X372VT10-FECEMIHASTA-E = ZEROES                            
+                     SET  ERROR-GRAVE TO TRUE                                   
+                     MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+                     MOVE 'EL CAMPO FECHA DE EMISION HASTA ES OBLIGATORI        
+      -                   'O'                                                   
+                                                TO X372VT10-GERROR-S            
+                     MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+                  END-IF                                                        
+
+                  IF X372VT10-FECEMIHASTA-E < X372VT10-FECEMIDESDE-E            
+                     SET  ERROR-GRAVE TO TRUE                                   
+                     MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+                     MOVE 'LA FECHA DE E.HASTA DEBE SER MAYOR QUE LA FEC        
+      -                   'HA DE E.DESDE'                                       
+                                                TO X372VT10-GERROR-S            
+                     MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+                  END-IF                                                        
+
+             WHEN CT-05                                                         
+             WHEN CT-06                                                         
+             WHEN CT-07                                                         
+507509       WHEN CT-10                                                         
+
+                  IF X372VT10-FECPAGDESDE-E = ZEROES                            
+                     SET  ERROR-GRAVE TO TRUE                                   
+                     MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+                     MOVE 'EL CAMPO EXPEDIENTE DESDE ES OBLIGATORIO'            
+                                                TO X372VT10-GERROR-S            
+                     MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+                  END-IF                                                        
+
+                  IF X372VT10-FECPAGHASTA-E = ZEROES                            
+                     SET  ERROR-GRAVE TO TRUE                                   
+                     MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+                     MOVE 'EL CAMPO EXPEDIENTE HASTA ES OBLIGATORIO'            
+                                                TO X372VT10-GERROR-S            
+                     MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+                  END-IF                                                        
+
+                  IF X372VT10-FECPAGHASTA-E < X372VT10-FECPAGDESDE-E            
+                     SET  ERROR-GRAVE TO TRUE                                   
+                     MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+                     MOVE 'LA FECHA HASTA DEBE SER MAYOR QUE LA FECHA           
+      -                   'DESDE'                                               
+                                                TO X372VT10-GERROR-S            
+                     MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+                  END-IF                                                        
+
+             WHEN CT-08                                                         
+                  IF X372VT10-EXPEDIDESDE-E = ZEROES                            
+                     SET  ERROR-GRAVE TO TRUE                                   
+                     MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+                     MOVE 'EL CAMPO EXPEDIENTE DESDE ES OBLIGATORIO'            
+                                                TO X372VT10-GERROR-S            
+                     MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+                  END-IF                                                        
+
+                  IF X372VT10-EXPEDIHASTA-E = ZEROES                            
+                     SET  ERROR-GRAVE TO TRUE                                   
+                     MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+                     MOVE 'EL CAMPO EXPEDIENTE HASTA ES OBLIGATORIO'            
+                                                TO X372VT10-GERROR-S            
+                     MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+                  END-IF                                                        
+
+536085*            IF X372VT10-EXPEDIHASTA-E < X372VT10-EXPEDIDESDE-E           
+536085*               SET  ERROR-GRAVE TO TRUE                                  
+536085*               MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S         
+536085*              MOVE 'EL EXPEDIENTE HASTA DEBE SER MAYOR QUE EL EXP        
+536085*-                   'EDIENTE DESDE'                                      
+536085*                                          TO X372VT10-GERROR-S           
+536085*               MOVE 'B372N010'            TO X372VT10-GNOMPROG-S         
+536085*            END-IF                                                       
+
+                  IF X372VT10-ANIODESDE-E EQUAL ZEROES                          
+                     SET  ERROR-GRAVE TO TRUE                                   
+                     MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+535084*              MOVE 'EL CAMPO AÑO DE EXPEDIENTE ES OBLIGATORIO'           
+535084*                                         TO X372VT10-GERROR-S            
+535084               MOVE 'EL CAMPO AÑO DESDE ES OBLIGATORIO'                   
+535084                                          TO X372VT10-GERROR-S            
+                     MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+                  END-IF                                                        
+
+535084            IF X372VT10-ANIOHASTA-E EQUAL ZEROES                          
+535084               SET  ERROR-GRAVE TO TRUE                                   
+535084               MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+535084               MOVE 'EL CAMPO AÑO HASTA ES OBLIGATORIO'                   
+535084                                          TO X372VT10-GERROR-S            
+535084               MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+535084            END-IF                                                        
+535084                                                                          
+535084            IF X372VT10-ANIOHASTA-E < X372VT10-ANIODESDE-E                
+535084               SET  ERROR-GRAVE TO TRUE                                   
+535084               MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+535084               MOVE 'EL AÑO HASTA DEBE SER MAYOR QUE EL AÑO               
+535084-                   'DESDE'                                               
+535084                                          TO X372VT10-GERROR-S            
+535084               MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+535084            END-IF                                                        
+
+                  IF X372VT10-FECCALCULO-E  = ZEROES                            
+                     SET  ERROR-GRAVE TO TRUE                                   
+                     MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+                     MOVE 'EL CAMPO FECHA DE CALCULO ES OBLIGATORIO'            
+                                                TO X372VT10-GERROR-S            
+                     MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+                  END-IF                                                        
+507512                                                                          
+507512       WHEN CT-09                                                         
+507512            IF X372VT10-EXPEDIDESDE-E = ZEROES                            
+507512               SET  ERROR-GRAVE TO TRUE                                   
+507512               MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+507512               MOVE 'EL CAMPO EXPEDIENTE DESDE ES OBLIGATORIO'            
+507512                                          TO X372VT10-GERROR-S            
+507512               MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+507512            END-IF                                                        
+507512                                                                          
+507512            IF X372VT10-EXPEDIHASTA-E = ZEROES                            
+507512               SET  ERROR-GRAVE TO TRUE                                   
+507512               MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+507512               MOVE 'EL CAMPO EXPEDIENTE HASTA ES OBLIGATORIO'            
+507512                                          TO X372VT10-GERROR-S            
+507512               MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+507512            END-IF                                                        
+507512                                                                          
+536085* NO ES NECESARIO DICHA VALIDACIÓN                                        
+507512*           IF X372VT10-EXPEDIHASTA-E < X372VT10-EXPEDIDESDE-E            
+507512*              SET  ERROR-GRAVE TO TRUE                                   
+507512*              MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+507512*              MOVE 'EL EXPEDIENTE HASTA DEBE SER MAYOR QUE EL EXP        
+507512*-                  'EDIENTE DESDE'                                       
+507512*                                         TO X372VT10-GERROR-S            
+507512*              MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+507512*           END-IF                                                        
+536085* FIN DE VALIDACIÓN                                                       
+507512                                                                          
+507512            IF X372VT10-ANIODESDE-E EQUAL ZEROES                          
+507512               SET  ERROR-GRAVE TO TRUE                                   
+507512               MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+507512               MOVE 'EL CAMPO AÑO DESDE ES OBLIGATORIO'                   
+507512                                          TO X372VT10-GERROR-S            
+507512               MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+507512            END-IF                                                        
+507512                                                                          
+507512            IF X372VT10-ANIOHASTA-E EQUAL ZEROES                          
+507512               SET  ERROR-GRAVE TO TRUE                                   
+507512               MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+507512               MOVE 'EL CAMPO AÑO HASTA ES OBLIGATORIO'                   
+507512                                          TO X372VT10-GERROR-S            
+507512               MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+507512            END-IF                                                        
+507512                                                                          
+507512            IF X372VT10-ANIOHASTA-E < X372VT10-ANIODESDE-E                
+507512               SET  ERROR-GRAVE TO TRUE                                   
+507512               MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+507512               MOVE 'EL AÑO HASTA DEBE SER MAYOR QUE EL AÑO               
+507512-                   'DESDE'                                               
+507512                                          TO X372VT10-GERROR-S            
+507512               MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+507512            END-IF                                                        
+507512                                                                          
+507512            IF X372VT10-FECCALCULO-E  = ZEROES                            
+507512               SET  ERROR-GRAVE TO TRUE                                   
+507512               MOVE LT-RETURN-ERR-DATINFO TO X372VT10-CRETORNO-S          
+507512               MOVE 'EL CAMPO FECHA DE CALCULO ES OBLIGATORIO'            
+507512                                          TO X372VT10-GERROR-S            
+507512               MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+507512            END-IF                                                        
+
+           END-EVALUATE                                                         
+              .                                                                 
+      ***************************************************************           
+       2100-OBTENER-EXPEDIENTES.                                                
+      ***************************************************************           
+      * OBTENEMOS LLAMANDO AL MODULO DE CONSULTA DE RESCATES AQUELLOS           
+      * EXPEDIENTES A EMITIR                                                    
+
+           SET SW-SI-PRIMERO TO TRUE                                            
+           MOVE 1            TO XN-I                                            
+           INITIALIZE WS-X372M004                                               
+           INITIALIZE TB-RESCATES-ACT                                           
+      * CON XN-I CONTROLAMOS TODOS LOS REGISTROS QUE GUARDAMOS EN EL            
+      * ARRAY TEMPORAL . CON XN-J, LOS QUE VAMOS MOVIENDO DE 50 EN 50           
+
+           PERFORM UNTIL X372M004-SPAGINACION-S = 'N' OR ERROR-GRAVE            
+                                                      OR SW-SI-MAX-EXP          
+
+              IF SW-SI-PRIMERO                                                  
+
+                 SET SW-NO-PRIMERO TO TRUE                                      
+
+                 EVALUATE X372VT10-TIPOEMI-E                                    
+                    WHEN CT-01                                                  
+                       MOVE 'C9'                TO X372M004-OPERACION-E         
+                    WHEN CT-02                                                  
+                       MOVE 'CA'                TO X372M004-OPERACION-E         
+                    WHEN CT-03                                                  
+                       MOVE 'CB'                TO X372M004-OPERACION-E         
+                    WHEN OTHER                                                  
+                       SET ERROR-GRAVE          TO TRUE                         
+                       MOVE LT-RETURN-ERR-OTHER TO X372VT10-CRETORNO-S          
+                       MOVE 'B372N010'          TO X372VT10-GNOMPROG-S          
+                       MOVE 'NO EXISTE TIPO DE EMISION '                        
+                                                TO X372VT10-GERROR-S            
+                 END-EVALUATE                                                   
+
+                 MOVE X372VT10-ANIODESDE-E   TO X372M004-ANIODESDE-E            
+                 MOVE X372VT10-ANIOHASTA-E   TO X372M004-ANIOHASTA-E            
+                 MOVE X372VT10-EXPEDIDESDE-E TO X372M004-EXPEDIDESDE-E          
+                 MOVE X372VT10-EXPEDIHASTA-E TO X372M004-EXPEDIHASTA-E          
+                 MOVE X372VT10-FECEMISION-E  TO X372M004-FECEMISION-E           
+
+                 CALL WS-B372M004 USING WS-X372M004                             
+
+                      MOVE X372M004-KEXPEDIENTE-S(1)                            
+                        TO WS-PRIMERO                                           
+
+                 IF X372M004-CRETORNO-S OF WS-X372M004 NOT = '00'               
+
+                    SET  ERROR-GRAVE TO TRUE                                    
+                    MOVE X372M004-CRETORNO-S TO X372VT10-CRETORNO-S             
+                    MOVE X372M004-GNOMPROG-S TO X372VT10-GNOMPROG-S             
+
+                    IF X372M004-CRETORNO-S OF WS-X372M004 NOT = '03'            
+                       MOVE 'ERROR AL OBTENER LOS EXPEDIENTES'                  
+                                             TO X372VT10-GERROR-S               
+                    ELSE                                                        
+                       MOVE 'NO HAY EXPEDIENTES QUE CUMPLAN LOS CRITERIO        
+      -                     'S SELECCIONADOS'                                   
+                                             TO X372VT10-GERROR-S               
+                    END-IF                                                      
+
+                 ELSE                                                           
+
+                    MOVE    1    TO XN-J                                        
+                    PERFORM UNTIL  XN-J > 20 OR  XN-I > 50 OR                   
+                     X372M004-KEXPEDIENTE-S(XN-J) EQUAL ZEROES OR               
+                     ERROR-GRAVE                                                
+
+                       PERFORM 2150-CARGAR-EXPED-A-TRATAR                       
+
+                          ADD 1 TO XN-J                                         
+                          ADD 1 TO XN-I                                         
+      *                                                                         
+      ** CONTROLAMOS SI SUPERAN LOS 50 REGISTROS, MAXIMOS POSIBLES              
+      ** PARA PODER CREAR LA DOCUMENTACION                                      
+      *                                                                         
+                          IF XN-I > 50                                          
+      *                     SET  ERROR-GRAVE TO TRUE                            
+                            SET  SW-SI-MAX-EXP TO TRUE                          
+                            MOVE '06'                                           
+                              TO X372VT10-CRETORNO-S                            
+                            MOVE 'B372N010'                                     
+                              TO X372VT10-GNOMPROG-S                            
+                            STRING                                              
+                                 'POR RAZONES TECNICAS SOLO SE IMPRIMEN         
+      -                          'LOS FINIQUITOS DE LOS EXPEDIENTES '           
+                                 WS-PRIMERO            DELIMITED BY SIZE        
+                                 ' A '                 DELIMITED BY SIZE        
+                                 WS-ULTIMO             DELIMITED BY SIZE        
+                              INTO X372VT10-GERROR-S                            
+                          END-IF                                                
+                       END-PERFORM                                              
+
+                 END-IF                                                         
+      *                                                                         
+      ** SI NO ES LA PRIMERA VEZ QUE ACCEDEMOS A LA BASE DE DATOS               
+      *                                                                         
+              ELSE                                                              
+
+                 EVALUATE X372VT10-TIPOEMI-E                                    
+                    WHEN CT-01                                                  
+                       MOVE 'C9'                TO X372M004-OPERACION-E         
+                    WHEN CT-02                                                  
+                       MOVE 'CA'                TO X372M004-OPERACION-E         
+                    WHEN CT-03                                                  
+                       MOVE 'CB'                TO X372M004-OPERACION-E         
+                    WHEN OTHER                                                  
+                       SET ERROR-GRAVE          TO TRUE                         
+                       MOVE LT-RETURN-ERR-OTHER TO X372VT10-CRETORNO-S          
+                       MOVE 'B372N010'          TO X372VT10-GNOMPROG-S          
+                       MOVE 'NO EXISTE TIPO DE EMISION '                        
+                                                TO X372VT10-GERROR-S            
+                 END-EVALUATE                                                   
+
+                 MOVE X372VT10-ANIODESDE-E   TO X372M004-ANIODESDE-E            
+                 MOVE X372VT10-ANIOHASTA-E   TO X372M004-ANIOHASTA-E            
+                 MOVE X372VT10-EXPEDIDESDE-E TO X372M004-EXPEDIDESDE-E          
+                 MOVE X372VT10-EXPEDIHASTA-E TO X372M004-EXPEDIHASTA-E          
+                 MOVE X372VT10-FECEMISION-E  TO X372M004-FECEMISION-E           
+
+      ** SE ACCEDE A LA POSICION DEL ARRAY - 1 DEBIDO A QUE EL CONTADOR         
+      ** ESTARA INCREMENTADO EN UNO MAS                                         
+
+                 MOVE TB-ANIO(XN-I - 1)      TO X372M004-ANT-ANIO-E             
+                 MOVE TB-KEXPEDIENTE(XN-I - 1)                                  
+                   TO X372M004-ANT-KEXPEDIENTE-E                                
+
+                 CALL WS-B372M004 USING WS-X372M004                             
+
+                 IF X372M004-CRETORNO-S OF WS-X372M004 NOT = '00'               
+
+                    SET  ERROR-GRAVE TO TRUE                                    
+                    MOVE X372M004-CRETORNO-S TO X372VT10-CRETORNO-S             
+                    MOVE 'B372N010'          TO X372VT10-GNOMPROG-S             
+                    MOVE 'ERROR AL OBTENER LOS EXPEDIENTES'                     
+                                             TO X372VT10-GERROR-S               
+                 ELSE                                                           
+
+                    MOVE    1    TO XN-J                                        
+                    PERFORM UNTIL  XN-J > 20 OR  XN-I > 50 OR                   
+                     X372M004-KEXPEDIENTE-S(XN-J) EQUAL ZEROES OR               
+                     ERROR-GRAVE                                                
+
+                       PERFORM 2150-CARGAR-EXPED-A-TRATAR                       
+
+                          ADD 1 TO XN-J                                         
+                          ADD 1 TO XN-I                                         
+      *                                                                         
+      ** CONTROLAMOS SI SUPERAN LOS 50 REGISTROS, MAXIMOS POSIBLES              
+      ** PARA PODER CREAR LA DOCUMENTACION                                      
+      *                                                                         
+                          IF XN-I > 50                                          
+      *                     SET  ERROR-GRAVE TO TRUE                            
+                            SET  SW-SI-MAX-EXP TO TRUE                          
+                            MOVE '06'                                           
+                              TO X372VT10-CRETORNO-S                            
+                            MOVE 'B372N010'                                     
+                              TO X372VT10-GNOMPROG-S                            
+                            STRING                                              
+                                 'POR RAZONES TECNICAS SOLO SE IMPRIMEN         
+      -                          'LOS FINIQUITOS DE LOS EXPEDIENTES '           
+                                 WS-PRIMERO            DELIMITED BY SIZE        
+                                 ' A '                 DELIMITED BY SIZE        
+                                 WS-ULTIMO             DELIMITED BY SIZE        
+                              INTO X372VT10-GERROR-S                            
+                          END-IF                                                
+                       END-PERFORM                                              
+
+                 END-IF                                                         
+
+              END-IF                                                            
+
+           END-PERFORM                                                          
+           .                                                                    
+      ******************************************************************        
+        2150-CARGAR-EXPED-A-TRATAR.                                             
+      ******************************************************************        
+
+           MOVE X372M004-ANIO-S (XN-J)                                          
+             TO TB-ANIO(XN-I)                                                   
+           MOVE X372M004-KEXPEDIENTE-S(XN-J)                                    
+             TO TB-KEXPEDIENTE(XN-I)                                            
+      * CONTROLAMOS EL ULTIMO EXPEDIENTE INFORMADO                              
+           IF X372M004-KEXPEDIENTE-S(XN-J) NOT EQUAL ZEROS                      
+              MOVE X372M004-KEXPEDIENTE-S(XN-J)                                 
+                TO WS-ULTIMO                                                    
+           END-IF                                                               
+
+           MOVE X372M004-SBDGICAP-S(XN-J)                                       
+             TO TB-SBDGICAP(XN-I)                                               
+           MOVE X372M004-FECBDGICAP-S(XN-J)                                     
+             TO TB-FECBDGICAP(XN-I)                                             
+           MOVE X372M004-SBDGICOMP1-S(XN-J)                                     
+             TO TB-SBDGICOMP1(XN-I)                                             
+           MOVE X372M004-FECBDGICOMP1-S(XN-J)                                   
+             TO TB-FECBDGICOMP1(XN-I)                                           
+           MOVE X372M004-SBDGICOMP2-S(XN-J)                                     
+             TO TB-SBDGICOMP2(XN-I)                                             
+           MOVE X372M004-FECBDGICOMP2-S(XN-J)                                   
+             TO TB-FECBDGICOMP2(XN-I)                                           
+           MOVE X372M004-FECEMISION-S(XN-J)                                     
+             TO TB-FECEMISIONCAP(XN-I)                                          
+           MOVE X372M004-FECEMICOMP1-S(XN-J)                                    
+             TO TB-FECEMICOMP1(XN-I)                                            
+           MOVE X372M004-FECEMICOMP2-S(XN-J)                                    
+             TO TB-FECEMICOMP2(XN-I)                                            
+           MOVE X372M004-FECEMICOMP1-S(XN-J)                                    
+             TO TB-FECDESDELIT(XN-I)                                            
+
+           MOVE X372M004-KRAMO-S (XN-J)                                         
+             TO TB-KRAMO(XN-I)                                                  
+           MOVE X372M004-ANIOPOL-S(XN-J)                                        
+             TO TB-ANIOPOL(XN-I)                                                
+           MOVE X372M004-KPOLIZA-S(XN-J)                                        
+             TO TB-KPOLIZA(XN-I)                                                
+           MOVE X372M004-KMODALIDAD-S(XN-J)                                     
+             TO TB-KMODALIDAD(XN-I)                                             
+           MOVE X372M004-FECEFECTO-S(XN-J)                                      
+             TO TB-FECEFECTO(XN-I)                                              
+           MOVE X372M004-KOFICINA-S(XN-J)                                       
+             TO TB-KOFICINA(XN-I)                                               
+           MOVE X372M004-NIF1-S(XN-J)                                           
+             TO TB-NIF1(XN-I)                                                   
+           MOVE X372M004-KPERSONA1-S(XN-J)                                      
+             TO TB-KPERSONA1(XN-I)                                              
+606673     MOVE X372M004-KDOMICILIO1-S(XN-J)                                    
+606673       TO TB-KDOMICILIO1(XN-I)                                            
+606673     MOVE X372M004-FECMODIFICA-S(XN-J)                                    
+606673       TO TB-FECMODIFICA(XN-I)                                            
+
+           MOVE X372M004-IMPCAPITAL-S(XN-J)                                     
+             TO TB-IMPCAPITAL(XN-I)                                             
+           MOVE X372M004-IMPBENEFICIOS-S(XN-J)                                  
+             TO TB-IMPBENEFICIOS(XN-I)                                          
+           MOVE X372M004-IMPANTICIPO-S(XN-J)                                    
+             TO TB-IMPANTICIPO(XN-I)                                            
+           MOVE X372M004-IMPINTEPEND-S(XN-J)                                    
+             TO TB-IMPINTEPENDP(XN-I)                                           
+           MOVE X372M004-IMPRETCAP-S(XN-J)                                      
+             TO TB-IMPRETCAP(XN-I)                                              
+           MOVE X372M004-IMPLIQCAP-S(XN-J)                                      
+             TO TB-IMPLIQCAP(XN-I)                                              
+           MOVE X372M004-TIPIMPUESTCAP-S(XN-J)                                  
+             TO TB-TIPIMPUESTCAP(XN-I)                                          
+           MOVE X372M004-FECIMPRECAP-S(XN-J)                                    
+             TO TB-FECIMPRECAP(XN-I)                                            
+           MOVE X372M004-PORRETCAP-S(XN-J)                                      
+             TO TB-PORRETCAP(XN-I)                                              
+
+           MOVE X372M004-IMPCOMP1-S(XN-J)                                       
+             TO TB-IMPCOMP1(XN-I)                                               
+           MOVE X372M004-IRETCOMP1-S(XN-J)                                      
+             TO TB-IRETCOMP1(XN-I)                                              
+           MOVE X372M004-ILIQCOMP1-S(XN-J)                                      
+             TO TB-ILIQCOMP1(XN-I)                                              
+           MOVE X372M004-TIPIMPUESTCOMP1-S(XN-J)                                
+             TO TB-TIPIMPUESTCOMP1(XN-I)                                        
+           MOVE X372M004-FECIMPRECOMP1-S(XN-J)                                  
+             TO TB-FECIMPRECOMP1(XN-I)                                          
+           MOVE X372M004-PORRETCOMP1-S(XN-J)                                    
+             TO TB-PORRETCOMP1(XN-I)                                            
+
+           MOVE X372M004-IMPCOMP2-S(XN-J)                                       
+             TO TB-IMPCOMP2(XN-I)                                               
+           MOVE X372M004-IRETCOMP2-S(XN-J)                                      
+             TO TB-IRETCOMP2(XN-I)                                              
+           MOVE X372M004-ILIQCOMP2-S(XN-J)                                      
+             TO TB-ILIQCOMP2(XN-I)                                              
+           MOVE X372M004-TIPIMPUESTCOMP2-S(XN-J)                                
+             TO TB-TIPIMPUESTCOMP2(XN-I)                                        
+           MOVE X372M004-FECIMPRECOMP2-S(XN-J)                                  
+             TO TB-FECIMPRECOMP2(XN-I)                                          
+           MOVE X372M004-PORRETCOMP2-S(XN-J)                                    
+             TO TB-PORRETCOMP2(XN-I)                                            
+
+           .                                                                    
+
+      ***************************************************************           
+       2200-EMISION-FINIQUITO.                                                  
+      ***************************************************************           
+      * RECOGEMOS LA INFORMACION PARA LA EMISION DE FINIQUITOS EN               
+      * DOCPATH, TENDREMOS EN CUENTA QUE SOLO PODREMOS EMITIR COMO              
+      * MAXIMO 50 PDF ONLINE, DEBIDO A LA AQUITECTURA                           
+
+      * CREAMOS LA DOCUMENTACION DE EMISION DE LOS EXPEDIENTES.                 
+           MOVE 1 TO XN-A                                                       
+           MOVE 1 TO XN-B                                                       
+           MOVE    1       TO XN-ERR                                            
+           PERFORM UNTIL XN-A > 50                                              
+                      OR TB-KEXPEDIENTE(XN-A) EQUAL ZEROES                      
+      *               OR ERROR-GRAVE                                            
+
+      * INIZIALIZAMOS SWITCH                                                    
+              SET SI-TRATAR TO TRUE                                             
+
+      * SERVICIO PARA DATOS PERSONALES                                          
+              INITIALIZE WS-X160N315                                            
+              MOVE CT-C1                      TO X160N315-CMODO-E               
+              MOVE WS-FECHA                   TO X160N315-FECHA-E               
+              MOVE TB-KPERSONA1(XN-A)         TO X160N315-KPERSONA-E            
+
+              CALL WS-B160N315 USING WS-X160N315                                
+
+      *D*                                                                       
+      *      DISPLAY ' JAYHACOOOOOOOOO'                                         
+      *      DISPLAY ' RETORNOR ' X160N000-CRETORNO-S OF WS-X160N315            
+      *F*                                                                       
+              IF X160N000-CRETORNO-S OF WS-X160N315  NOT = ZEROES               
+                 SET NO-TRATAR              TO TRUE                             
+                 MOVE TB-ANIO(XN-A)         TO WS-ERR-ANIO(XN-ERR)              
+                 MOVE TB-KEXPEDIENTE(XN-A)  TO WS-ERR-EXP (XN-ERR)              
+                 MOVE '/'                   TO WS-ERR-SEP (XN-ERR)              
+                 ADD 1 TO XN-ERR                                                
+      **         SET ERROR-GRAVE           TO TRUE                              
+      **         SET SW-NO-ROLLBACK        TO TRUE                              
+      **         MOVE '10'                 TO X372VT10-CRETORNO-S               
+      **         MOVE 'B372N010'           TO X372VT10-GNOMPROG-S               
+      **         MOVE 'ERROR EN BUSQUEDA DE PERSONA EN LA BASE DE DATOS''       
+      **                                   TO X372VT10-GERROR-S                 
+              ELSE                                                              
+
+                 PERFORM 2210-COMPACTAR-NOMBRE-COMPLETO                         
+
+                 MOVE WS-NOMBRE-COM      TO X372VT10-NOMBREAPELL-S(XN-A)-A)     
+
+              END-IF                                                            
+
+      * SERVICIO PARA DATOS DOMICILIARIOS                                       
+              INITIALIZE WS-X160N315                                            
+              INITIALIZE WS-PROVINCIA                                           
+606673        MOVE       99999999    TO WS-FAUX-DOMI                            
+606673* SI TENEMOS INFORMADO EL IDENTIFICADOR DEL DOMICLIO, CONSULTAMOS         
+606673* EL HISTORICO, POR SI FUE BORRADO, EN CASO CONTRARIO, CONSULTAMOS        
+606673* CONSULTAMOS LOS DOMICILIOS ACTUALES                                     
+606673        IF TB-KDOMICILIO1(XN-A) EQUAL ZEROES OR SPACES                    
+606673           MOVE WS-FECHA             TO X160N315-FECHA-E                  
+606673           MOVE CT-C2                TO X160N315-CMODO-E                  
+606673           MOVE CT-CONSULTA          TO X160N315-PDO-DOMICILIO-CL         
+606673           MOVE TB-KPERSONA1(XN-A)   TO X160N315-KPERSONA-E               
+606673        ELSE                                                              
+606673           MOVE WS-FECHA             TO X160N315-FECHA-E                  
+606673           MOVE CT-H2                TO X160N315-CMODO-E                  
+606673           MOVE CT-HISTORICO         TO X160N315-PDO-DOMICILIO-CL         
+606673           MOVE TB-KPERSONA1(XN-A)   TO X160N315-KPERSONA-E               
+606673        END-IF                                                            
+606673        CALL WS-B160N315 USING WS-X160N315                                
+606673                                                                          
+606673        IF X160N000-CRETORNO-S OF WS-X160N315 NOT = ZEROES                
+606673              SET NO-TRATAR              TO TRUE                          
+606673              MOVE TB-ANIO(XN-A)         TO WS-ERR-ANIO(XN-ERR)           
+606673              MOVE TB-KEXPEDIENTE(XN-A)  TO WS-ERR-EXP (XN-ERR)           
+606673              MOVE '/'                   TO WS-ERR-SEP (XN-ERR)           
+606673              ADD 1 TO XN-ERR                                             
+606673        ELSE                                                              
+606673           IF TB-KDOMICILIO1(XN-A)   EQUAL ZEROES OR SPACES               
+      * MU-2017-BDGI-R-V-INI                                                    
+      * SI EL KDOMICILIO ES CERO O ESPACIOS, DE LA LISTA DE DOMICILIOS          
+      * RECUPERADOS, SE DEBE SELECCIONAR DE FORMA PREFERENTE UN                 
+      * DOMICILIO DE PRESTACION                                                 
+      *                                                                         
+                    SET NO-INFO-DOM-R          TO TRUE                          
+      *                                                                         
+                    PERFORM VARYING XN-M FROM 1 BY 1                            
+                       UNTIL XN-M > X160N315-DOMICILIOS-OCURRS-S                
+                       OR SI-INFO-DOM-R                                         
+      *                                                                         
+                          IF X160N315-PDO-CTIPODOM-S(XN-M) = 'R'                
+      *                                                                         
+                             SET SI-INFO-DOM-R       TO TRUE                    
+      *                                                                         
+                             MOVE X160N315-PDO-GDOMICILIO-S (XN-M)              
+                               TO X372VT10-DOMICILIO-S      (XN-A)              
+                             MOVE X160N315-PDO-CCODPOST-S   (XN-M)              
+                               TO X372VT10-CODPOSTAL-S      (XN-A)              
+                             MOVE X372VT10-CODPOSTAL-S      (XN-A)              
+                               TO WS-PROVINCIA                                  
+                             MOVE WS-PROVINCIA (1:2)                            
+                               TO INDICE-CP                                     
+                             MOVE NOM-PROVINCIA(INDICE-CP)                      
+                               TO X372VT10-PROVINCIA-S      (XN-A)              
+                             MOVE X160N315-PDO-GPOBLACION-S (XN-M)              
+                               TO X372VT10-POBLACION-S      (XN-A)              
+      *                                                                         
+                          END-IF                                                
+      *                                                                         
+                    END-PERFORM                                                 
+      *                                                                         
+      * MU-2017-BDGI-R-V-FIN                                                    
+      * MU-2017-BDGI-R-V-INI                                                    
+                   IF NO-INFO-DOM-R                                             
+      * MU-2017-BDGI-R-V-FIN                                                    
+606673                PERFORM 2220-COMPACTAR-DOMICILIO                          
+606673                                                                          
+606673                MOVE WS-DOMICILIO-COM                                     
+606673                   TO X372VT10-DOMICILIO-S(XN-A)                          
+606673                MOVE X160N315-PDO-CCODPOST-S(CT-UNO)                      
+606673                   TO X372VT10-CODPOSTAL-S(XN-A)                          
+606673                MOVE X372VT10-CODPOSTAL-S(XN-A)                           
+606673                   TO WS-PROVINCIA                                        
+606673                MOVE WS-PROVINCIA (1:2)                                   
+606673                   TO INDICE-CP                                           
+606673                MOVE NOM-PROVINCIA(INDICE-CP)                             
+606673                   TO X372VT10-PROVINCIA-S(XN-A)                          
+606673                MOVE X160N315-PDO-GPOBLACION-S(CT-UNO)                    
+606673                   TO X372VT10-POBLACION-S(XN-A)                          
+      * MU-2017-BDGI-R-V-INI                                                    
+                   END-IF                                                       
+      * MU-2017-BDGI-R-V-FIN                                                    
+606673           ELSE                                                           
+606673              PERFORM VARYING XN-C FROM 1 BY 1                            
+606673                    UNTIL XN-C > CTE-50                                   
+606673                    OR X160N315-PDO-KDOMICILIO-S(XN-C) = ZEROES           
+606673                    OR X160N315-PDO-KPERSONA-S  (XN-C) = ZEROES           
+606673                 IF TB-KDOMICILIO1(XN-A)   EQUAL                          
+606673                    X160N315-PDO-KDOMICILIO-S(XN-C)                       
+606673                    AND X160N315-PDO-FANULACION-S(XN-C) IS NUMERIC        
+606673                                                                          
+606673                    MOVE  X160N315-PDO-FANULACION-S(XN-C)                 
+606673                                                       TO WS-FAUX         
+606673* SI LA FECHA DE ANULACION DEL DOMICILIO QUE ESTAMOS TRATANDO             
+606673* ES MENOR QUE LA FECHA DE ANULACION DEL DOMICILIO QUE TENEMOS            
+606673* GUARDADO SE MODIFICA                                                    
+606673                    IF TB-FECMODIFICA(XN-A) < WS-FAUX                     
+606673                         AND WS-FAUX < WS-FAUX-DOMI                       
+606673                       MOVE WS-FAUX          TO WS-FAUX-DOMI              
+606673                       PERFORM 2220-COMPACTAR-DOMICILIO-HIS               
+606673                                                                          
+606673                       MOVE WS-DOMICILIO-COM                              
+606673                          TO X372VT10-DOMICILIO-S(XN-A)                   
+606673                       MOVE X160N315-PDO-CCODPOST-S(XN-C)                 
+606673                          TO X372VT10-CODPOSTAL-S(XN-A)                   
+606673                       MOVE X372VT10-CODPOSTAL-S(XN-A)                    
+606673                          TO WS-PROVINCIA                                 
+606673                       MOVE WS-PROVINCIA (1:2)                            
+606673                          TO INDICE-CP                                    
+606673                       MOVE NOM-PROVINCIA(INDICE-CP)                      
+606673                          TO X372VT10-PROVINCIA-S(XN-A)                   
+606673                       MOVE X160N315-PDO-GPOBLACION-S(XN-C)               
+606673                          TO X372VT10-POBLACION-S(XN-A)                   
+606673                    END-IF                                                
+606673                 END-IF                                                   
+606673              END-PERFORM                                                 
+606673           END-IF                                                         
+606673        END-IF                                                            
+
+      * SI TODO CORRECTO MOVEMOS LOS DATOS                                      
+
+      *D*                                                                       
+      *       DISPLAY ' TRATARRRRRRRRRRRRRRRRRRRRRRR ' SW-TRATAR                
+      *       ' ' TB-ANIO(XN-A) ' ' TB-KEXPEDIENTE(XN-A)                        
+      *F*                                                                       
+              IF SI-TRATAR                                                      
+
+                 MOVE TB-ANIO(XN-A)                                             
+                 TO   X372VT10-ANIO-S(XN-B)                                     
+                 MOVE TB-KEXPEDIENTE(XN-A)                                      
+                 TO   X372VT10-KEXPEDIENTE-S(XN-B)                              
+                 MOVE TB-KRAMO(XN-A)                                            
+                 TO   X372VT10-KRAMO-S(XN-B)                                    
+                 MOVE TB-ANIOPOL(XN-A)                                          
+                 TO   X372VT10-ANIOPOL-S(XN-B)                                  
+                 MOVE TB-KMODALIDAD(XN-A)                                       
+                 TO   X372VT10-KMODALIDAD-S(XN-B)                               
+                 MOVE TB-KPOLIZA(XN-A)                                          
+                 TO   X372VT10-KPOLIZA-S(XN-B)                                  
+                 MOVE TB-NIF1(XN-A)                                             
+                 TO   X372VT10-NIF-S(XN-B)                                      
+                 MOVE TB-KOFICINA(XN-A)                                         
+                 TO   X372VT10-KOFICINA-S(XN-B)                                 
+                 MOVE TB-REGIONAL(XN-A)                                         
+                 TO   X372VT10-REGIONAL-S(XN-B)                                 
+
+      ** CAMBIO NUMERICO A LITERAL FECHA PARA COMPL2 Y COMPL1 SIN MAS           
+                 INITIALIZE WS-FECHAS-AUXILIARES                                
+
+                 IF TB-FECDESDELIT(XN-A) EQUAL SPACES                           
+                    MOVE WS-FECHA             TO WS-FECHA-AUX                   
+                 ELSE                                                           
+                    MOVE TB-FECDESDELIT(XN-A) TO WS-FECHA-AUX                   
+                 END-IF                                                         
+
+                 PERFORM 2250-BUSCAR-LITERAL-MESES                              
+
+                 MOVE WS-FECHA-LITERAL-COM                                      
+                   TO X372VT10-FECDESDELIT-S(XN-B)                              
+
+      ** FORMATO IMPORTES ZZZ.ZZZ.ZZ9,99                                        
+
+                 INITIALIZE WS-MASCARA-IMPORTE                                  
+
+                 EVALUATE X372VT10-TIPOEMI-E                                    
+
+                   WHEN CT-01                                                   
+
+                      MOVE 'PR'          TO X372VT10-TIPOEMSION-S(XN-B)         
+
+                      INITIALIZE WS-MASCARA-IMPORTE                             
+                      IF TB-IMPCAPITAL(XN-A) NOT EQUAL ZEROES                   
+                         INITIALIZE WS-NUMERO-SIN-ESPACIO                       
+                         MOVE TB-IMPCAPITAL(XN-A)                               
+                           TO WS-IMPCAPITAL-S                                   
+                         MOVE WS-IMPCAPITAL-S                                   
+                           TO WS-NUMERO                                         
+                         PERFORM 2260-COMPACTAR-NUMERO                          
+                         MOVE WS-NUMERO-COM                                     
+                           TO X372VT10-IMPPREST-S(XN-B)                         
+                      END-IF                                                    
+
+                      INITIALIZE WS-MASCARA-IMPORTE                             
+                      IF TB-IMPBENEFICIOS(XN-A) NOT EQUAL ZEROES                
+                         INITIALIZE WS-NUMERO-SIN-ESPACIO                       
+                         MOVE TB-IMPBENEFICIOS(XN-A)                            
+                           TO WS-IMPBENEFICIOS-S                                
+                         MOVE WS-IMPBENEFICIOS-S                                
+                           TO WS-NUMERO                                         
+                         PERFORM 2260-COMPACTAR-NUMERO                          
+                         MOVE WS-NUMERO-COM                                     
+                           TO X372VT10-IMPBENEFICIOS-S(XN-B)                    
+                      END-IF                                                    
+
+      ** ALGUNOS IMPORTES SE MULTIPLICAN POR -1 DEBIDO A QUE SE TIENE           
+      ** QUE MOSTRAR CON SIGNO NEGATIVO EN LAS CARTAS DE FINIQUITOS             
+
+                      INITIALIZE WS-MASCARA-IMPORTE                             
+                      IF TB-IMPANTICIPO(XN-A) NOT EQUAL ZEROES                  
+                         INITIALIZE WS-NUMERO-SIN-ESPACIO                       
+                         MULTIPLY -1 BY TB-IMPANTICIPO(XN-A)                    
+                         MOVE TB-IMPANTICIPO(XN-A)                              
+                           TO WS-IMPANTICIPO-S                                  
+                         MOVE WS-IMPANTICIPO-S                                  
+                           TO WS-NUMERO                                         
+                         PERFORM 2260-COMPACTAR-NUMERO                          
+                         MOVE WS-NUMERO-COM                                     
+                           TO X372VT10-IMPANTICIPO-S(XN-B)                      
+      *D*                                                                       
+      *        DISPLAY ' YACO-B372N010-ANTICIPO '                               
+      *                  TB-IMPANTICIPO(XN-A)                                   
+      *        DISPLAY ' YACO-B372N010-ANTICIPO '                               
+      *                  X372VT10-IMPANTICIPO-S(XN-A)                           
+      *F*                                                                       
+                      END-IF                                                    
+
+                      INITIALIZE WS-MASCARA-IMPORTE                             
+                      IF TB-IMPINTEPENDP(XN-A) NOT EQUAL ZEROES                 
+                         INITIALIZE WS-NUMERO-SIN-ESPACIO                       
+                         MULTIPLY -1 BY TB-IMPINTEPENDP(XN-A)                   
+                         MOVE TB-IMPINTEPENDP(XN-A)                             
+                           TO WS-IMPDEVOLUCINT-S                                
+                         MOVE WS-IMPDEVOLUCINT-S                                
+                           TO WS-NUMERO                                         
+                         PERFORM 2260-COMPACTAR-NUMERO                          
+                         MOVE WS-NUMERO-COM                                     
+                           TO X372VT10-IMPINTEPENDP-S(XN-B)                     
+                      END-IF                                                    
+
+                      INITIALIZE WS-MASCARA-IMPORTE                             
+                      IF TB-IMPRETCAP(XN-A) NOT EQUAL ZEROES                    
+                         INITIALIZE WS-NUMERO-SIN-ESPACIO                       
+                         MULTIPLY -1 BY TB-IMPRETCAP(XN-A)                      
+                         MOVE TB-IMPRETCAP(XN-A)                                
+                           TO WS-IMPRETCAP-S                                    
+                         MOVE WS-IMPRETCAP-S                                    
+                           TO WS-NUMERO                                         
+                         PERFORM 2260-COMPACTAR-NUMERO                          
+                         MOVE WS-NUMERO-COM                                     
+                           TO X372VT10-IMPRETENC-S(XN-B)                        
+      * MU-2017-BDGI-R-V4-INI                                                   
+                       ELSE                                                     
+                         MOVE '       0,00       ' TO                           
+                              X372VT10-IMPRETENC-S(XN-B)                        
+      * MU-2017-BDGI-R-V4-FIN                                                   
+                      END-IF                                                    
+
+                      INITIALIZE WS-MASCARA-IMPORTE                             
+                      IF TB-IMPLIQCAP(XN-A) NOT EQUAL ZEROES                    
+                         INITIALIZE WS-NUMERO-SIN-ESPACIO                       
+                         MOVE TB-IMPLIQCAP(XN-A)                                
+                           TO WS-IMPLIQCAP-S                                    
+                         MOVE WS-IMPLIQCAP-S                                    
+                           TO WS-NUMERO                                         
+                         PERFORM 2260-COMPACTAR-NUMERO                          
+                         MOVE WS-NUMERO-COM                                     
+                           TO X372VT10-IMPLIQUID-S(XN-B)                        
+                     END-IF                                                     
+
+      **  COMPLEMENTARIO PRIMERO                                                
+
+                   WHEN CT-02                                                   
+
+                      MOVE 'C1'          TO X372VT10-TIPOEMSION-S(XN-B)         
+      ** COMPRABAMOS SI EL PRIMER COMPLEMENTARIO TIENE SEGUNDO COMPLEMEN        
+                      IF TB-IMPCOMP2(XN-A) EQUAL ZEROES                         
+                         MOVE 'N'        TO X372VT10-TIPOCOMPL-S(XN-B)          
+                      ELSE                                                      
+                         MOVE 'S'        TO X372VT10-TIPOCOMPL-S(XN-B)          
+                      END-IF                                                    
+
+      ** FORMATO IMPORTES ZZZ.ZZZ.ZZ9,99 DEL PRIMER COMPLEMENTARIO              
+                      INITIALIZE WS-MASCARA-IMPORTE                             
+                      IF TB-IMPCOMP1(XN-A) NOT EQUAL ZEROES                     
+                         INITIALIZE WS-NUMERO-SIN-ESPACIO                       
+                         MOVE TB-IMPCOMP1(XN-A)                                 
+                           TO WS-IMPCOMP-S                                      
+                         MOVE WS-IMPCOMP-S                                      
+                           TO WS-NUMERO                                         
+                         PERFORM 2260-COMPACTAR-NUMERO                          
+                         MOVE WS-NUMERO-COM                                     
+                           TO X372VT10-IMPPREST-S(XN-B)                         
+                      END-IF                                                    
+
+                      INITIALIZE WS-MASCARA-IMPORTE                             
+                      IF TB-IRETCOMP1(XN-A) NOT EQUAL ZEROES                    
+                         INITIALIZE WS-NUMERO-SIN-ESPACIO                       
+                         MULTIPLY -1 BY TB-IRETCOMP1(XN-A)                      
+                         MOVE TB-IRETCOMP1(XN-A)                                
+                           TO WS-IRETCOMP-S                                     
+                         MOVE WS-IRETCOMP-S                                     
+                           TO WS-NUMERO                                         
+                         PERFORM 2260-COMPACTAR-NUMERO                          
+                         MOVE WS-NUMERO-COM                                     
+                           TO X372VT10-IMPRETENC-S(XN-B)                        
+      * MU-2017-BDGI-R-V4-INI                                                   
+                      ELSE                                                      
+                         MOVE '       0,00       ' TO                           
+                              X372VT10-IMPRETENC-S(XN-B)                        
+      * MU-2017-BDGI-R-V4-FIN                                                   
+                      END-IF                                                    
+
+                      INITIALIZE WS-MASCARA-IMPORTE                             
+                      IF TB-ILIQCOMP1(XN-A) NOT EQUAL ZEROES                    
+                         INITIALIZE WS-NUMERO-SIN-ESPACIO                       
+                         MOVE TB-ILIQCOMP1(XN-A)                                
+                           TO WS-ILIQCOMP-S                                     
+                         MOVE WS-ILIQCOMP-S                                     
+                           TO WS-NUMERO                                         
+                         PERFORM 2260-COMPACTAR-NUMERO                          
+                         MOVE WS-NUMERO-COM                                     
+                           TO X372VT10-IMPLIQUID-S(XN-B)                        
+                      END-IF                                                    
+
+      ** SI LA FECHA DE EMISION DEL PRINCIPAL NO ESTA INFORMADA           A     
+      ** SE RELLENARA CON LA FECHA DEL SISTEMA                                  
+                      INITIALIZE WS-FECHAS-AUXILIARES                           
+                      IF TB-FECEMISIONCAP(XN-A) NOT EQUAL SPACES                
+                         MOVE TB-FECEMISIONCAP(XN-A)                            
+                           TO WS-FECHA-AUX                                      
+                      ELSE                                                      
+                         MOVE WS-FECHA                                          
+                           TO WS-FECHA-AUX                                      
+                      END-IF                                                    
+                      PERFORM 2250-BUSCAR-LITERAL-MESES                         
+                      MOVE WS-FECHA-LITERAL-COM                                 
+                        TO X372VT10-FECLIQUIDALIT-S(XN-B)                       
+
+      **  COMPLEMENTARIO PRIMERO                                                
+
+                   WHEN CT-03                                                   
+
+                      MOVE 'C2'          TO X372VT10-TIPOEMSION-S(XN-B)         
+
+      ** FORMATO IMPORTES ZZZ.ZZZ.ZZ9,99 DEL SEGUNDO COMPLEMENTARIO             
+                      INITIALIZE WS-MASCARA-IMPORTE                             
+                      IF TB-IMPCOMP2(XN-A) NOT EQUAL ZEROES                     
+                         INITIALIZE WS-NUMERO-SIN-ESPACIO                       
+                         MOVE TB-IMPCOMP2(XN-A)                                 
+                           TO WS-IMPCOMP-S                                      
+                         MOVE WS-IMPCOMP-S                                      
+                           TO WS-NUMERO                                         
+                         PERFORM 2260-COMPACTAR-NUMERO                          
+                         MOVE WS-NUMERO-COM                                     
+                           TO X372VT10-IMPPREST-S(XN-B)                         
+                      END-IF                                                    
+
+                      INITIALIZE WS-MASCARA-IMPORTE                             
+                      IF TB-IRETCOMP2(XN-A) NOT EQUAL ZEROES                    
+                         INITIALIZE WS-NUMERO-SIN-ESPACIO                       
+                         MULTIPLY -1 BY TB-IRETCOMP2(XN-A)                      
+                         MOVE TB-IRETCOMP2(XN-A)                                
+                           TO WS-IRETCOMP-S                                     
+                         MOVE WS-IRETCOMP-S                                     
+                           TO WS-NUMERO                                         
+                         PERFORM 2260-COMPACTAR-NUMERO                          
+                         MOVE WS-NUMERO-COM                                     
+                           TO X372VT10-IMPRETENC-S(XN-B)                        
+      * MU-2017-BDGI-R-V4-INI                                                   
+                      ELSE                                                      
+                         MOVE '       0,00       ' TO                           
+                              X372VT10-IMPRETENC-S(XN-B)                        
+      * MU-2017-BDGI-R-V4-FIN                                                   
+                      END-IF                                                    
+
+                      INITIALIZE WS-MASCARA-IMPORTE                             
+                      IF TB-ILIQCOMP2(XN-A) NOT EQUAL ZEROES                    
+                         INITIALIZE WS-NUMERO-SIN-ESPACIO                       
+                         MOVE TB-ILIQCOMP2(XN-A)                                
+                           TO WS-ILIQCOMP-S                                     
+                         MOVE WS-ILIQCOMP-S                                     
+                           TO WS-NUMERO                                         
+                         PERFORM 2260-COMPACTAR-NUMERO                          
+                         MOVE WS-NUMERO-COM                                     
+                           TO X372VT10-IMPLIQUID-S(XN-B)                        
+                      END-IF                                                    
+
+      ** SI LA FECHA DE EMISION DEL PRINCIPAL NO ESTA INFORMADA           A     
+      ** SE RELLENARA CON LA FECHA DEL SISTEMA                                  
+                      INITIALIZE WS-FECHAS-AUXILIARES                           
+                      IF TB-FECEMISIONCAP(XN-A) NOT EQUAL SPACES                
+                         MOVE TB-FECEMISIONCAP(XN-A)                            
+                           TO WS-FECHA-AUX                                      
+                      ELSE                                                      
+                         MOVE WS-FECHA                                          
+                           TO WS-FECHA-AUX                                      
+                      END-IF                                                    
+                      PERFORM 2250-BUSCAR-LITERAL-MESES                         
+                      MOVE WS-FECHA-LITERAL-COM                                 
+                        TO X372VT10-FECLIQUIDALIT-S(XN-B)                       
+
+                 END-EVALUATE                                                   
+
+      ** OBTENER AÑO DE EJERCICIO                                               
+
+                 EVALUATE X372VT10-TIPOEMI-E                                    
+
+                   WHEN CT-01                                                   
+                     MOVE TB-FECEMISIONCAP(XN-A)                                
+                       TO WS-ANIO                                               
+
+                   WHEN CT-02                                                   
+                     MOVE TB-FECEMICOMP1(XN-A)                                  
+                       TO WS-ANIO                                               
+
+                   WHEN CT-03                                                   
+                     MOVE TB-FECEMICOMP2(XN-A)                                  
+                       TO WS-ANIO                                               
+
+                 END-EVALUATE                                                   
+
+                 MOVE WS-ANIO(1:4) TO WS-ANIO-NUM                               
+
+                 SUBTRACT 1 FROM WS-ANIO-NUM                                    
+                   GIVING WS-ANOEJERCICIO                                       
+                 MOVE WS-ANOEJERCICIO TO X372VT10-ANOEJERCICIO-S(XN-B)          
+
+      ** EVALUACION DEL TIPO DE IMPUESTO                                        
+
+                 EVALUATE X372VT10-TIPOEMI-E                                    
+                   WHEN CT-01                                                   
+                      MOVE TB-TIPIMPUESTCAP(XN-A)                               
+                        TO X372VT10-TIPIMPUEST-S(XN-B)                          
+                   WHEN CT-02                                                   
+                      MOVE TB-TIPIMPUESTCOMP1(XN-A)                             
+                        TO X372VT10-TIPIMPUEST-S(XN-B)                          
+                   WHEN CT-03                                                   
+                      MOVE TB-TIPIMPUESTCOMP2(XN-A)                             
+                        TO X372VT10-TIPIMPUEST-S(XN-B)                          
+                   WHEN OTHER                                                   
+                      SET ERROR-GRAVE            TO TRUE                        
+                      MOVE LT-RETURN-ERR-OTHER   TO X372VT10-CRETORNO-S         
+                      MOVE 'B372N010'            TO X372VT10-GNOMPROG-S         
+                      MOVE 'NO EXISTE TIPO DE EMISION '                         
+                                                  TO X372VT10-GERROR-S          
+                 END-EVALUATE                                                   
+      ** VARIABLE RETENCION A CUENTA EN FUNCION DEL IRPF                        
+                 IF X372VT10-TIPIMPUEST-S(XN-A) NOT EQUAL LT-TIPO-SRT           
+
+                    INITIALIZE WS-TIPO-RETENCION-PORCT                          
+                    EVALUATE X372VT10-TIPIMPUEST-S(XN-B)                        
+                      WHEN LT-TIPO-TRA                                          
+                         MOVE LT-TIPO-TRA-SALIDA                                
+                           TO WS-TIPO                                           
+                      WHEN LT-TIPO-MOB                                          
+                         MOVE LT-TIPO-MOB-SALIDA                                
+                           TO WS-TIPO                                           
+                      WHEN LT-TIPO-SOC                                          
+                         MOVE LT-TIPO-SOC-SALIDA                                
+                           TO WS-TIPO                                           
+                      WHEN LT-TIPO-NCM                                          
+                      WHEN LT-TIPO-NTP                                          
+                         MOVE LT-TIPO-NORESIDENTE                               
+                           TO WS-TIPO                                           
+      * MU-2017-BDGI-R-V3-INI                                                   
+                      WHEN LT-TIPO-SRT                                          
+                         MOVE LT-TIPO-SINRETENCION TO WS-TIPO                   
+      * MU-2017-BDGI-R-V3-FIN                                                   
+                    END-EVALUATE                                                
+
+                    PERFORM 2230-COMPACTAR-TIPO-PORCETAJE                       
+
+                    MOVE WS-TIPO-RET-SALIDA                             A)      
+                      TO X372VT10-RETCUENTA-S(XN-B)                     A)      
+                 END-IF                                                         
+
+      ** INFORMAMOS DE LA FECHA DE EMISION DEL FINIQUITO                        
+                 INITIALIZE WS-FECHAS-AUXILIARES                                
+                 EVALUATE X372VT10-TIPOEMI-E                                    
+                   WHEN '01'                                                    
+                     MOVE TB-FECEMISIONCAP(XN-A)  TO WS-FECHA-AUX               
+                   WHEN '02'                                                    
+                     MOVE TB-FECEMICOMP1(XN-A)    TO WS-FECHA-AUX               
+                   WHEN '03'                                                    
+                     MOVE TB-FECEMICOMP2(XN-A)    TO WS-FECHA-AUX               
+                   WHEN OTHER                                                   
+                     SET ERROR-GRAVE             TO TRUE                        
+                     MOVE LT-RETURN-ERR-OTHER    TO X372VT10-CRETORNO-S         
+                     MOVE 'B372N010'             TO X372VT10-GNOMPROG-S         
+                     MOVE 'NO EXISTE TIPO DE EMISION '                          
+                                                 TO X372VT10-GERROR-S           
+                 END-EVALUATE                                                   
+
+                 PERFORM 2250-BUSCAR-LITERAL-MESES                              
+                 MOVE WS-FECHA-LITERAL-COM                                      
+                   TO X372VT10-FECEMISIONLIT-S(XN-B)                            
+
+      ** CAMBIO NUMERICO A LITERAL IMPORTES                                     
+                 PERFORM 2240-ALFANUMERICO-IMPORTE                              
+
+
+      ** ACTUALIZACION DE LAS FECHAS DE IMPRESION                               
+                 INITIALIZE WS-X372M001                                         
+
+                 MOVE 'M5'                  TO X372M001-OPERACION-E             
+                 MOVE TB-ANIO(XN-A)         TO X372M001-ANIO-E                  
+                 MOVE TB-KEXPEDIENTE(XN-A)  TO X372M001-KEXPEDIENTE-E           
+
+                 EVALUATE X372VT10-TIPOEMI-E                                    
+                   WHEN CT-01                                                   
+                     MOVE WS-FECHA          TO X372M001-FECIMPRECAP-E   E       
+                     MOVE TB-FECIMPRECOMP1(XN-A)                        -E      
+                                            TO X372M001-FECIMPRECOMP1-E -E      
+                     MOVE TB-FECIMPRECOMP2(XN-A)                        -E      
+                                            TO X372M001-FECIMPRECOMP2-E -E      
+                   WHEN CT-02                                                   
+                     MOVE TB-FECIMPRECAP(XN-A)                          E       
+                                            TO X372M001-FECIMPRECAP-E   E       
+                     MOVE WS-FECHA          TO X372M001-FECIMPRECOMP1-E -E      
+                     MOVE TB-FECIMPRECOMP2(XN-A)                        -E      
+                                            TO X372M001-FECIMPRECOMP2-E -E      
+                   WHEN CT-03                                                   
+                     MOVE TB-FECIMPRECAP(XN-A)                          E       
+                                            TO X372M001-FECIMPRECAP-E   E       
+                     MOVE TB-FECIMPRECOMP1(XN-A)                        -E      
+                                            TO X372M001-FECIMPRECOMP1-E -E      
+                     MOVE WS-FECHA          TO X372M001-FECIMPRECOMP2-E -E      
+                   WHEN OTHER                                                   
+                     SET ERROR-GRAVE            TO TRUE                         
+                     MOVE LT-RETURN-ERR-OTHER   TO X372VT10-CRETORNO-S          
+                     MOVE 'B372N010'            TO X372VT10-GNOMPROG-S          
+                     MOVE 'NO EXISTE TIPO DE EMISION '                          
+                                                TO X372VT10-GERROR-S            
+                 END-EVALUATE                                                   
+
+                 CALL WS-B372M001 USING WS-X372M001                             
+
+                 IF X372M001-CRETORNO-S NOT = '00'                              
+                    SET ERROR-GRAVE TO TRUE                                     
+                    MOVE X372M001-CRETORNO-S     TO X372VT10-CRETORNO-S         
+                    MOVE X372M001-GNOMPROG-S     TO X372VT10-GNOMPROG-S         
+                    STRING                                                      
+                    'ERROR AL ACTUALIZAR EL EXP. ' DELIMITED BY SIZE            
+                     TB-ANIO(XN-A)                 DELIMITED BY SIZE            
+                    '/'                            DELIMITED BY SIZE            
+                     TB-KEXPEDIENTE(XN-A)          DELIMITED BY SIZE            
+                     INTO X372VT10-GERROR-S                                     
+                     END-STRING                                                 
+                 END-IF                                                         
+
+      ** AUMENTAMOS EL NUMERO DE EXPEDIENTES                                    
+                 ADD 1 TO XN-B                                                  
+
+              END-IF                                                            
+
+      ** AUMENTAMOS EL NUMERO DE EXPEDIENTES                                    
+              ADD 1 TO XN-A                                                     
+
+           END-PERFORM.                                                         
+
+      ******************************************************************        
+        2210-COMPACTAR-NOMBRE-COMPLETO.                                         
+      ******************************************************************        
+
+      ** COMPACTAREMOS LOS APELLIDOS Y NOMBRE DEL BENEFICIARIO                  
+           INITIALIZE WS-NOMBRE-COM                                             
+           INITIALIZE WS-NOMBRE-COMPLETO                                        
+           MOVE 1 TO INDICE-L                                                   
+           MOVE 1 TO INDICE-P                                                   
+
+      ** COMPROBAMOS PERSONA FISICA O PERSONA JURIDICA                          
+           IF X160N315-PPE-CTIPOPERS-S(CT-UNO) EQUAL 'J'                        
+
+             MOVE X160N315-PPE-GNOMBRELARGO-S(CT-UNO) TO WS-NOMBRE-COM          
+
+           ELSE                                                                 
+
+      ** RECORREMOS EL PRIMER APELLIDO PARA ELIMINAR LOS ESPACIO EN             
+      ** EL NOMBRE COMPLETO                                                     
+             MOVE X160N315-PPE-GAPELLIDO1-S(CT-UNO)   TO WS-APELLIDO1           
+
+             PERFORM UNTIL INDICE-P > 15                                        
+                IF WS-APELLIDO1(INDICE-P:2) NOT EQUAL SPACES                    
+                   MOVE WS-APELLIDO1(INDICE-P:1)                                
+                                    TO WS-NOMBRE-COM(INDICE-L:1)                
+                   ADD 1 TO INDICE-L                                            
+                END-IF                                                          
+                ADD 1 TO INDICE-P                                               
+             END-PERFORM                                                        
+
+             IF INDICE-L NOT EQUAL CT-UNO                                       
+                ADD 1 TO INDICE-L                                               
+             END-IF                                                             
+
+      ** RECORREMOS EL SEGUNDO APELLIDO PARA ELIMINAR LOS ESPACIO EN            
+      ** EL NOMBRE COMPLETO                                                     
+             MOVE 1 TO INDICE-P                                                 
+             MOVE X160N315-PPE-GAPELLIDO2-S(CT-UNO)   TO WS-APELLIDO2           
+
+             PERFORM UNTIL INDICE-P > 15                                        
+                IF WS-APELLIDO2(INDICE-P:2) NOT EQUAL SPACES                    
+                   MOVE WS-APELLIDO2(INDICE-P:1)                                
+                                         TO WS-NOMBRE-COM(INDICE-L:1)           
+                   ADD 1 TO INDICE-L                                            
+                END-IF                                                          
+                ADD 1 TO INDICE-P                                               
+             END-PERFORM                                                        
+
+             IF INDICE-L NOT EQUAL CT-UNO                                       
+                MOVE ','             TO WS-NOMBRE-COM(INDICE-L:1)               
+                ADD 1 TO INDICE-L                                               
+             END-IF                                                             
+
+             MOVE 1 TO INDICE-P                                                 
+
+      ** RECORREMOS EL NOMBRE PARA ELIMINAR LOS ESPACIO EN                      
+      ** EL NOMBRE COMPLETO                                                     
+             MOVE X160N315-PPE-GNOMBRELARGO-S(CT-UNO) TO WS-NOMBRE              
+
+             PERFORM UNTIL INDICE-P > 30                                        
+                IF WS-NOMBRE(INDICE-P:2) NOT EQUAL SPACES                       
+                   MOVE WS-NOMBRE(INDICE-P:1)                                   
+                     TO WS-NOMBRE-COM(INDICE-L:1)                               
+                   ADD 1 TO INDICE-L                                            
+                END-IF                                                          
+                ADD 1 TO INDICE-P                                               
+             END-PERFORM                                                        
+
+           END-IF                                                               
+              .                                                                 
+
+      ******************************************************************        
+        2220-COMPACTAR-DOMICILIO.                                               
+      ******************************************************************        
+      ** COMPACTAREMOS EL DOMICILIO DEL BENEFICIARIO                            
+           INITIALIZE WS-DOMICILIO-COM                                          
+           INITIALIZE WS-DOMICILIO-COMPLETO                                     
+           MOVE 1 TO INDICE-L                                                   
+           MOVE 1 TO INDICE-P                                                   
+           MOVE 1 TO XN-I                                                       
+
+      *D*                                                                       
+      *      DISPLAY 'XN-I' XN-I                                                
+      *F*                                                                       
+      ** RECORREREMOS LOS DIFERENTES CAMPOS PARA ELIMINAR LOS ESPACIOS          
+      ** EN EL DOMICILIO                                                        
+           PERFORM UNTIL XN-I > 10                                              
+      *D*                                                                       
+      *      DISPLAY 'XN-I' XN-I                                                
+      *F*                                                                       
+           IF X160N315-PDO-CTIPODOM-S(XN-I) EQUAL 'P'                           
+      *D*                                                                       
+      *      DISPLAY 'X160N315-PDO-CTIPODOM-S(XN-I)'                            
+      *               X160N315-PDO-CTIPODOM-S(XN-I)                             
+      *F*                                                                       
+              MOVE X160N315-PDO-CTIPOVIA-S(XN-I)     TO WS-CTIPOVIA             
+
+              PERFORM UNTIL INDICE-P > 10                                       
+                 IF WS-CTIPOVIA(INDICE-P:2) NOT EQUAL SPACES                    
+                    MOVE WS-CTIPOVIA(INDICE-P:1)                                
+                                         TO WS-DOMICILIO-COM(INDICE-L:1)        
+                    ADD 1 TO INDICE-L                                           
+                 END-IF                                                         
+                    ADD 1 TO INDICE-P                                           
+              END-PERFORM                                                       
+
+              IF INDICE-L NOT EQUAL XN-I                                        
+                 ADD 1 TO INDICE-L                                              
+              END-IF                                                            
+
+              MOVE 1 TO INDICE-P                                                
+              MOVE X160N315-PDO-GDOMICILIO-S(XN-I)   TO WS-GDOMICILIO           
+
+              PERFORM UNTIL INDICE-P > 105                                      
+                 IF WS-GDOMICILIO(INDICE-P:2) NOT EQUAL SPACES                  
+                    MOVE WS-GDOMICILIO(INDICE-P:1)                              
+                                         TO WS-DOMICILIO-COM(INDICE-L:1))       
+                    ADD 1 TO INDICE-L                                           
+                 END-IF                                                         
+                 ADD 1 TO INDICE-P                                              
+              END-PERFORM                                                       
+
+              IF INDICE-L NOT EQUAL XN-I                                        
+                 MOVE ','             TO WS-DOMICILIO-COM(INDICE-L:1)           
+                 ADD 1 TO INDICE-L                                              
+                 MOVE 'NUM '          TO WS-DOMICILIO-COM(INDICE-L:4)           
+                 ADD 4 TO INDICE-L                                              
+              END-IF                                                            
+
+              MOVE 1 TO INDICE-P                                                
+              MOVE X160N315-PDO-GNUMVIA-S(XN-I)      TO WS-NUMVIA               
+
+              PERFORM UNTIL INDICE-P > 10                                       
+                 IF WS-NUMVIA(INDICE-P:2) NOT EQUAL SPACES                      
+                    MOVE WS-NUMVIA(INDICE-P:1)                                  
+                                      TO WS-DOMICILIO-COM(INDICE-L:1)           
+                    ADD 1 TO INDICE-L                                           
+                 END-IF                                                         
+                 ADD 1 TO INDICE-P                                              
+              END-PERFORM                                                       
+
+              IF INDICE-L NOT EQUAL XN-I                                        
+                 ADD 1 TO INDICE-L                                              
+              END-IF                                                            
+
+              MOVE 1 TO INDICE-P                                                
+              MOVE X160N315-PDO-GDOMIRESTO-S(XN-I)   TO WS-GDOMIRESTO           
+
+              PERFORM UNTIL INDICE-P > 45                                       
+                 IF WS-GDOMIRESTO(INDICE-P:2) NOT EQUAL SPACES                  
+                    MOVE  WS-GDOMIRESTO(INDICE-P:1)                             
+                                      TO WS-DOMICILIO-COM(INDICE-L:1)           
+
+                    ADD 1 TO INDICE-L                                           
+                 END-IF                                                         
+                 ADD 1 TO INDICE-P                                              
+              END-PERFORM                                                       
+           END-IF                                                               
+           ADD 1 TO XN-I                                                        
+           END-PERFORM                                                          
+              .                                                                 
+606673******************************************************************        
+606673  2220-COMPACTAR-DOMICILIO-HIS.                                           
+606673******************************************************************        
+606673** COMPACTAREMOS EL DOMICILIO DEL BENEFICIARIO                            
+606673     INITIALIZE WS-DOMICILIO-COM                                          
+606673     INITIALIZE WS-DOMICILIO-COMPLETO                                     
+606673     MOVE 1 TO INDICE-L                                                   
+606673     MOVE 1 TO INDICE-P                                                   
+606673                                                                          
+606673     IF X160N315-PDO-CTIPODOM-S(XN-C) EQUAL 'P'                           
+606673        MOVE X160N315-PDO-CTIPOVIA-S(XN-C)     TO WS-CTIPOVIA             
+606673                                                                          
+606673        PERFORM UNTIL INDICE-P > 10                                       
+606673           IF WS-CTIPOVIA(INDICE-P:2) NOT EQUAL SPACES                    
+606673              MOVE WS-CTIPOVIA(INDICE-P:1)                                
+606673                                   TO WS-DOMICILIO-COM(INDICE-L:1)        
+606673              ADD 1 TO INDICE-L                                           
+606673           END-IF                                                         
+606673              ADD 1 TO INDICE-P                                           
+606673        END-PERFORM                                                       
+606673                                                                          
+606673        IF INDICE-L NOT EQUAL XN-C                                        
+606673           ADD 1 TO INDICE-L                                              
+606673        END-IF                                                            
+606673                                                                          
+606673        MOVE 1 TO INDICE-P                                                
+606673        MOVE X160N315-PDO-GDOMICILIO-S(XN-C)   TO WS-GDOMICILIO           
+606673                                                                          
+606673        PERFORM UNTIL INDICE-P > 105                                      
+606673           IF WS-GDOMICILIO(INDICE-P:2) NOT EQUAL SPACES                  
+606673              MOVE WS-GDOMICILIO(INDICE-P:1)                              
+606673                                   TO WS-DOMICILIO-COM(INDICE-L:1))       
+606673              ADD 1 TO INDICE-L                                           
+606673           END-IF                                                         
+606673           ADD 1 TO INDICE-P                                              
+606673        END-PERFORM                                                       
+606673                                                                          
+606673        IF INDICE-L NOT EQUAL XN-C                                        
+606673           MOVE ','             TO WS-DOMICILIO-COM(INDICE-L:1)           
+606673           ADD 1 TO INDICE-L                                              
+606673           MOVE 'NUM '          TO WS-DOMICILIO-COM(INDICE-L:4)           
+606673           ADD 4 TO INDICE-L                                              
+606673        END-IF                                                            
+606673                                                                          
+606673        MOVE 1 TO INDICE-P                                                
+606673        MOVE X160N315-PDO-GNUMVIA-S(XN-C)      TO WS-NUMVIA               
+606673                                                                          
+606673        PERFORM UNTIL INDICE-P > 10                                       
+606673           IF WS-NUMVIA(INDICE-P:2) NOT EQUAL SPACES                      
+606673              MOVE WS-NUMVIA(INDICE-P:1)                                  
+606673                                TO WS-DOMICILIO-COM(INDICE-L:1)           
+606673              ADD 1 TO INDICE-L                                           
+606673           END-IF                                                         
+606673           ADD 1 TO INDICE-P                                              
+606673        END-PERFORM                                                       
+606673                                                                          
+606673        IF INDICE-L NOT EQUAL XN-C                                        
+606673           ADD 1 TO INDICE-L                                              
+606673        END-IF                                                            
+606673                                                                          
+606673        MOVE 1 TO INDICE-P                                                
+606673        MOVE X160N315-PDO-GDOMIRESTO-S(XN-C)   TO WS-GDOMIRESTO           
+606673                                                                          
+606673        PERFORM UNTIL INDICE-P > 45                                       
+606673           IF WS-GDOMIRESTO(INDICE-P:2) NOT EQUAL SPACES                  
+606673              MOVE  WS-GDOMIRESTO(INDICE-P:1)                             
+606673                                TO WS-DOMICILIO-COM(INDICE-L:1)           
+606673                                                                          
+606673              ADD 1 TO INDICE-L                                           
+606673           END-IF                                                         
+606673           ADD 1 TO INDICE-P                                              
+606673        END-PERFORM                                                       
+606673     END-IF                                                               
+606673        .                                                                 
+      ******************************************************************        
+        2230-COMPACTAR-TIPO-PORCETAJE.                                          
+      ******************************************************************        
+      ** COMPACTAREMOS EL TIPO DE RETENCION CON SU PORCENTAJE                   
+           INITIALIZE WS-TIPO-RET-COM                                           
+           INITIALIZE WS-TIPO-RET-SALIDA                                        
+           SET SW-SI-PORCENTAJE                TO TRUE                          
+
+           EVALUATE X372VT10-TIPOEMI-E                                          
+              WHEN CT-01                                                        
+                 MOVE TB-PORRETCAP(XN-A)       TO WS-PORCT                      
+              WHEN CT-02                                                        
+                 MOVE TB-PORRETCOMP1(XN-A)     TO WS-PORCT                      
+              WHEN CT-03                                                        
+                 MOVE TB-PORRETCOMP2(XN-A)     TO WS-PORCT                      
+           END-EVALUATE                                                         
+
+      * ELIMINAR ESPACIO ENTRE LITERAL Y PORCENTAJE                             
+
+           MOVE 1 TO INDICE-P                                                   
+           MOVE 1 TO INDICE-L                                                   
+
+           PERFORM UNTIL INDICE-P > 38                                          
+              IF WS-TIPO-RETENCION-PORCT(INDICE-P:2) NOT EQUAL SPACES           
+                 MOVE WS-TIPO-RETENCION-PORCT(INDICE-P:1)                       
+                                   TO WS-TIPO-RET-COM(INDICE-L:1)               
+                 ADD 1 TO INDICE-L                                              
+              END-IF                                                            
+              ADD 1 TO INDICE-P                                                 
+           END-PERFORM                                                          
+
+      * INTRODUCCION DE PUNTOS EN LA VARIABLE                                   
+
+           MOVE 1 TO INDICE-P                                                   
+           MOVE 1 TO INDICE-L                                                   
+
+           PERFORM UNTIL INDICE-P > 41                                          
+              IF WS-TIPO-RET-COM(INDICE-P:2) NOT EQUAL SPACES                   
+                 MOVE WS-TIPO-RET-COM(INDICE-P:1)                               
+                                   TO WS-TIPO-RET-SALIDA(INDICE-L:1)            
+                 ADD 1 TO INDICE-L                                              
+              ELSE                                                              
+                 IF SW-SI-PORCENTAJE                                            
+                    MOVE '%'       TO WS-TIPO-RET-SALIDA(INDICE-L:1)            
+                    ADD 1          TO INDICE-L                                  
+                    SET SW-NO-PORCENTAJE  TO TRUE                               
+                 ELSE                                                           
+                    MOVE '.' TO WS-TIPO-RET-SALIDA(INDICE-L:1)                  
+                    ADD 1 TO INDICE-L                                           
+                 END-IF                                                         
+              END-IF                                                            
+              ADD 1 TO INDICE-P                                                 
+           END-PERFORM                                                          
+                 .                                                              
+
+      ******************************************************************        
+        2240-ALFANUMERICO-IMPORTE.                                              
+      ******************************************************************        
+      ** INTRODUCIMOS UN VALOR IMPORTE PARA QUE EL MODULO NOS LO                
+      ** DEVUELVA EN LETRAS                                                     
+           INITIALIZE X001N007                                                  
+           INITIALIZE WS-IMPLITERAL-COM                                         
+
+           MOVE CT-C1                          TO X001N007-COPERACION           
+           MOVE WS-GRELLENO                    TO X001N007-GRELLENO             
+           MOVE WS-NLONG                       TO X001N007-NLONG                
+           MOVE SPACES                         TO X001N007-CTIPOFRASE           
+
+           EVALUATE X372VT10-TIPOEMI-E                                          
+              WHEN CT-01                                                        
+                  MOVE TB-IMPLIQCAP(XN-A)       TO X001N007-ECANTIDAD           
+              WHEN CT-02                                                        
+                  MOVE TB-ILIQCOMP1(XN-A)       TO X001N007-ECANTIDAD           
+              WHEN CT-03                                                        
+                  MOVE TB-ILIQCOMP2(XN-A)       TO X001N007-ECANTIDAD           
+           END-EVALUATE                                                         
+
+           IF X001N007-ECANTIDAD NOT EQUAL ZEROES                               
+              CALL WS-B001N007 USING X001N007                                   
+
+              IF X001N007-CRETORNO NOT EQUAL '00'                               
+                 SET ERROR-GRAVE                TO TRUE                         
+                 MOVE '12'                      TO X372VT10-CRETORNO-S          
+                 MOVE 'B372N010'                TO X372VT10-GNOMPROG-S          
+                 MOVE 'ERROR AL TRNAFORMAR EN LITERAL EL IMPORTE'               
+                                                TO X372VT10-GERROR-S            
+              END-IF                                                            
+
+           END-IF                                                               
+
+           MOVE 1 TO INDICE-P                                                   
+           MOVE 1 TO INDICE-L                                                   
+
+           PERFORM UNTIL INDICE-P > 80                                          
+              IF X001N007-GNUMLITERAL(INDICE-P:2) NOT EQUAL SPACES              
+                 MOVE X001N007-GNUMLITERAL(INDICE-P:1)                          
+                   TO WS-IMPLITERAL-COM(INDICE-L:1)                             
+                 ADD 1 TO INDICE-L                                              
+              END-IF                                                            
+              ADD 1 TO INDICE-P                                                 
+           END-PERFORM                                                          
+
+
+           MOVE WS-IMPLITERAL-COM                                               
+           TO   X372VT10-IMPLITERAL-S(XN-B)                                     
+              .                                                                 
+
+      ******************************************************************        
+       2250-BUSCAR-LITERAL-MESES.                                               
+      ******************************************************************        
+      * EVALUAMOS EL MES DE LA FECHA A TRATAR                                   
+            INITIALIZE WS-FECHA-LITERAL-COM                                     
+            INITIALIZE WS-MES-LIT                                               
+
+            MOVE WS-FECHA-AUX(1:4)     TO ANO-LIT                               
+            MOVE WS-FECHA-AUX(5:2)     TO WS-MES-LIT                            
+            MOVE WS-FECHA-AUX(7:2)     TO DIA-LIT                               
+
+            IF WS-MES-LIT = '01'                                                
+               MOVE 'Enero' TO MES-LIT                                          
+            END-IF                                                              
+            IF WS-MES-LIT = '02'                                                
+               MOVE 'Febrero' TO MES-LIT                                        
+            END-IF                                                              
+            IF WS-MES-LIT = '03'                                                
+               MOVE 'Marzo' TO MES-LIT                                          
+            END-IF                                                              
+            IF WS-MES-LIT = '04'                                                
+               MOVE 'Abril' TO MES-LIT                                          
+            END-IF                                                              
+            IF WS-MES-LIT = '05'                                                
+               MOVE 'Mayo' TO MES-LIT                                           
+            END-IF                                                              
+            IF WS-MES-LIT = '06'                                                
+               MOVE 'Junio' TO MES-LIT                                          
+            END-IF                                                              
+            IF WS-MES-LIT = '07'                                                
+               MOVE 'Julio' TO MES-LIT                                          
+            END-IF                                                              
+            IF WS-MES-LIT = '08'                                                
+               MOVE 'Agosto' TO MES-LIT                                         
+            END-IF                                                              
+            IF WS-MES-LIT = '09'                                                
+               MOVE 'Septiembre' TO MES-LIT                                     
+            END-IF                                                              
+            IF WS-MES-LIT = '10'                                                
+               MOVE 'Octubre' TO MES-LIT                                        
+            END-IF                                                              
+            IF WS-MES-LIT = '11'                                                
+               MOVE 'Noviembre' TO MES-LIT                                      
+            END-IF                                                              
+            IF WS-MES-LIT = '12'                                                
+               MOVE 'Diciembre' TO MES-LIT                                      
+            END-IF                                                              
+
+           MOVE 1 TO INDICE-L                                                   
+           MOVE 1 TO INDICE-P                                                   
+
+      * COMPACTAMOS LA FECHA ELIMINANDO ESPACIOS                                
+           PERFORM UNTIL INDICE-P > 2                                           
+              IF DIA-LIT(INDICE-P:2) NOT EQUAL SPACES                           
+                 MOVE DIA-LIT(INDICE-P:1)                                       
+                                     TO WS-FECHA-LITERAL-COM(INDICE-L:1)        
+                 ADD 1 TO INDICE-L                                              
+              END-IF                                                            
+              ADD 1 TO INDICE-P                                                 
+           END-PERFORM                                                          
+
+           IF INDICE-L NOT EQUAL CT-UNO                                         
+              MOVE ' de '            TO WS-FECHA-LITERAL-COM(INDICE-L:4)        
+              ADD 4 TO INDICE-L                                                 
+           END-IF                                                               
+
+           MOVE 1 TO INDICE-P                                                   
+           PERFORM UNTIL INDICE-P > 12                                          
+              IF MES-LIT(INDICE-P:2) NOT EQUAL SPACES                           
+                 MOVE MES-LIT(INDICE-P:1)                                       
+                   TO WS-FECHA-LITERAL-COM(INDICE-L:1)                          
+                 ADD 1 TO INDICE-L                                              
+              END-IF                                                            
+              ADD 1 TO INDICE-P                                                 
+           END-PERFORM                                                          
+
+           IF INDICE-L NOT EQUAL CT-UNO                                         
+              MOVE ' de '          TO WS-FECHA-LITERAL-COM(INDICE-L:4)          
+              ADD 4 TO INDICE-L                                                 
+           END-IF                                                               
+
+           MOVE 1 TO INDICE-P                                                   
+              PERFORM UNTIL INDICE-P > 4                                        
+              IF ANO-LIT(INDICE-P:1) NOT EQUAL SPACES                           
+                 MOVE ANO-LIT(INDICE-P:1)                                       
+                   TO WS-FECHA-LITERAL-COM(INDICE-L:1)                          
+                 ADD 1 TO INDICE-L                                              
+              END-IF                                                            
+              ADD 1 TO INDICE-P                                                 
+           END-PERFORM                                                          
+                .                                                               
+
+      ******************************************************************        
+        2260-COMPACTAR-NUMERO.                                                  
+      ******************************************************************        
+      * DEBIDO A QUE EL NUMERO LITERAL VIENE CON ESPACIOS,LOS ELIMINAMOS        
+           MOVE 1 TO INDICE-P                                                   
+           MOVE 1 TO INDICE-L                                                   
+
+           PERFORM UNTIL INDICE-P > 15                                          
+              IF WS-NUMERO(INDICE-P:2) NOT EQUAL SPACES                         
+                 MOVE WS-NUMERO(INDICE-P:1)                                     
+                   TO WS-NUMERO-COM(INDICE-L:1)                                 
+                 ADD 1 TO INDICE-L                                              
+              END-IF                                                            
+              ADD 1 TO INDICE-P                                                 
+           END-PERFORM                                                          
+
+              .                                                                 
+
+      ******************************************************************        
+        2300-INFORME-SIN-RETENCION.                                             
+      ******************************************************************        
+           CONTINUE                                                             
+              .                                                                 
+
+      ******************************************************************        
+        2400-INFORME-POR-CAPITAL.                                               
+      ******************************************************************        
+           CONTINUE                                                             
+              .                                                                 
+
+      ******************************************************************        
+        2500-INFORME-POR-TRABAJO.                                               
+      ******************************************************************        
+           CONTINUE                                                             
+              .                                                                 
+
+      ***************************************************************           
+       10000-FIN.                                                               
+      ***************************************************************           
+
+           GOBACK.                                                              

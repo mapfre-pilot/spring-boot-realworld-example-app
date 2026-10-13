@@ -1,0 +1,346 @@
+      ******************************* (]]]) ****************************
+      *                                                                *
+      * IMPORTANTE - PROGRAMA MODIFICADO POR DECOMISADO IDMS           *
+      *                                                                *
+      * AVISAR -> LMAPLVIMA@mapfre.com                                 *
+      *                                                                *
+      ******************************************************************
+      *-----------------------
+       IDENTIFICATION DIVISION.
+      *------------------------
+
+       PROGRAM-ID. B372VT09.
+
+      ******************************************************************
+      *  APLICACION   : VENCIMIENTOS MANUALES (FOXPRO)                 *
+      *  ANALISTA     : EVERIS                                         *
+      *  PROGRAMADOR  : EVERIS                                         *
+      *  FECHA        : JUNIO 2012                                     *
+      *  TIPO PROGRAMA: COBOL-CICS                                     *
+      *  DESCRIPCION  : SERVICIO GESTOR DE LA EMISION DE FINIQUITOS    *
+      *                 DE VENCIMIENTOS MANUALES                       *
+      ******************************************************************
+      *PARAMETROS DE ENTRADA:
+      ******************************************************************
+      *   -X372VT09-ENTRADA-E: COPY DE ENTRADA DE DATOS
+      *
+      ******************************************************************
+      *PARAMETROS DE SALIDA:
+      ******************************************************************
+      * -372VT09-SALIDA-S : COPY DE SALIDA DE DATOS
+      ******************************************************************
+
+      ******************************************************************
+      *MODULOS UTILIZADOS:
+      ******************************************************************
+      * VR431010 : SERVICIO DE NOMBRE OFICINA DE POLIZA
+      *
+      * B372N009 : MODULO DE NEGOCIO DE B372VT09
+      *
+      ******************************************************************
+
+      ******************************************************************
+      * CODIGO DE ERRORES
+      ******************************************************************
+      *
+      * X362VT09-CRETORNO-S
+      *
+      *                    '00' OPERACION CORRECTA
+      *
+      *                    '01' ERROR EN VR431010 : SERVICIO DE NOMBRE
+      *                         OFICINA DE POLIZA
+      *
+      *                    '98' ERROR EN LLAMADA DEL MODULO DE IDMS
+      *
+      *                    '99' ERROR AL DEVOLVER CONTRO
+      *
+      ******************************************************************
+      * MODIFICACION.                             BUSCAR <REDTEM>     *
+      * PROYECTO    : MIGRACION DE LA RED TRERRITORIAL                *
+      * AUTOR       : INDRA                                           *
+      * FECHA       : MAYO  2023                                      *
+      * DESCRIPCIÓN : MIGRACION DE LA RED TRERRITORIAL                *
+      *****************************************************************
+      ******************************************************************
+      *  MODIFICACION:                                                 *
+      *  -------------                       <<USGIBE>>                *
+      *  PROGRAMADOR : NEORIS                                          *
+      *  FECHA       : 09/03/2026                                      *
+      *  DESCRIPCION :                                                 *
+      *             Cambiar VR431010 por B430V023                      *
+      *             Cambiar RR431010 por X4301010                      *
+      *                                                                *
+      *             Cambiar la llamada de gestor de servicios          *
+      *             por la llamada directa:                            *
+      *             Cambiar B430V003 por B430V023                      *
+      ******************************************************************
+      *--------------------
+       ENVIRONMENT DIVISION.
+      *---------------------
+
+       CONFIGURATION SECTION.
+        SPECIAL-NAMES.
+            DECIMAL-POINT IS COMMA.
+
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+
+      *-------------
+       DATA DIVISION.
+      *--------------
+
+       FILE SECTION.
+      *-------------
+
+      *************************
+       WORKING-STORAGE SECTION.
+      *************************
+      *
+       01 COPYS.
+          03 WS-PARAMETRO.
+             COPY R000X000.
+             COPY R000X001.
+
+      *COPYS IDMS
+      *   RR431010.
+USGIBE 01 WS-X4301010.
+USGIBE       COPY X4301010.
+
+       01 WS-VARIABLES.
+      * VARIABLES AUXILIARES PARA OFICNIA
+          03 WS-OFICINA.
+             05 WS-NUMOFICINA               PIC X(04).
+             05 FILLER                      PIC X(01) VALUE '-'.
+             05 WS-LITOFICINA               PIC X(25).
+
+      * VARIABLES AUXILIARES PARA DELEGACION
+          03 WS-DELEGACION.
+             05 WS-NUMDELEGACION            PIC X(02).
+             05 FILLER                      PIC X(01) VALUE '-'.
+             05 WS-LITDELEGACION            PIC X(25).
+
+          03 XN-A                           PIC 999 VALUE ZEROES.
+          03 B000Y011                       PIC X(08) VALUE 'B000Y011'.
+REDTEM    03 B430V003                       PIC X(8)  VALUE 'B430V003'.
+USGIBE    03 LT-B430V023                    PIC X(8)  VALUE 'B430V023'.
+REDTEM    03 ECICS                 PIC S9(8) USAGE IS BINARY.
+REDTEM    03 ECICS2                PIC S9(8) USAGE IS BINARY.
+REDTEM    03 XCICS                 PIC X(08) VALUE SPACES.
+REDTEM    03 XCICS2                PIC X(08) VALUE SPACES.
+
+        01 VARIABLES.
+           03 FILLER                PIC X(17) VALUE 'INICIO DE WORKING'.
+           03 LT-B372N009           PIC X(08) VALUE 'B372N009'.
+           03 FILLER                PIC X(17) VALUE 'FINAL  DE WORKING'.
+
+      *****************
+       LINKAGE SECTION.
+      *****************
+       01 DFHCOMMAREA.
+           COPY R000X000.
+           03 COMMAREA.
+              COPY X372VT09.
+
+
+      *
+      **************************************
+       PROCEDURE DIVISION USING DFHCOMMAREA.
+      **************************************
+
+
+           PERFORM 1000-INICIO.
+
+           PERFORM 2000-PROCESO.
+
+           PERFORM 9000-FIN.
+
+      ******************************************************************
+      *1000-INICIO.
+      ******************************************************************
+       1000-INICIO.
+
+           EXEC CICS
+                IGNORE CONDITION ERROR
+           END-EXEC.
+
+           MOVE '00'       TO X372VT09-CRETORNO-S.
+           MOVE 'B372VT09' TO X372VT09-GNOMPROG-S.
+
+
+      ******************************************************************
+      *2000-PROCESO.
+      ******************************************************************
+       2000-PROCESO.
+
+      *D*
+      *    DISPLAY ' YACO-B372VT09 '
+      *F*
+           CALL LT-B372N009     USING COMMAREA.
+
+           IF X372VT09-CRETORNO-S EQUAL '00'
+              MOVE 1 TO XN-A
+
+              PERFORM UNTIL X372VT09-KEXPEDIENTE-S(XN-A) EQUAL SPACES
+
+      **      RELACION OFICINA/DELEGACION NUMERO CON LITERAL
+                 INITIALIZE WS-OFICINA
+                 INITIALIZE WS-DELEGACION
+
+                 MOVE X372VT09-KOFICINA-S(XN-A)
+                 TO   WS-NUMOFICINA
+
+      **      LLAMADA AL MODULO IDMS PARA LA BUSQUEDA DE LA OFICINA
+USGIBE           INITIALIZE X4301010
+USGIBE           MOVE X372VT09-KOFICINA-S(XN-A) TO X4301010-KOFICINA
+USGIBE           MOVE ZEROES                    TO X4301010-FCONSULTA
+
+                 MOVE R000X000 OF DFHCOMMAREA
+                                   TO R000X000         OF WS-PARAMETRO
+                 MOVE '00'         TO CAB-RESULTADO    OF WS-PARAMETRO
+USGIBE           MOVE 'DB2'        TO CAB-COD-LIBRERIA OF WS-PARAMETRO
+USGIBE           MOVE 'B430V023'   TO CAB-COD-INTERFAZ OF WS-PARAMETRO
+                 MOVE 'N'          TO CAB-ACTUALIZA    OF WS-PARAMETRO
+USGIBE           MOVE LENGTH OF X4301010
+                                   TO CAB-LONG-DATOS   OF WS-PARAMETRO
+USGIBE           MOVE X4301010     TO R000X001         OF WS-PARAMETRO
+
+
+REDTEM*          PERFORM ADAPTADOR-SALIDA
+REDTEM           PERFORM ADAPTADOR-SALIDA-MIG
+USGIBE           MOVE R000X001    OF WS-PARAMETRO TO X4301010
+
+USGIBE           IF X4301010-CRETORNO NOT EQUAL '00' AND
+                                      NOT EQUAL '05'
+                    MOVE '01'         TO X372VT09-CRETORNO-S
+                    MOVE 'ERROR EN LA CONSULTA DE OFICINA EN IDMS'
+                     TO X372VT09-GERROR-S
+                    MOVE 'VR411010'
+                     TO  X372VT09-GNOMPROG-S
+                 END-IF
+
+USGIBE            MOVE X4301010-GNOMCORTO(1) TO WS-LITOFICINA
+USGIBE            MOVE X4301010-GNOMCORTO(2) TO WS-LITDELEGACION
+USGIBE            MOVE X4301010-KDIRECREG    TO WS-NUMDELEGACION
+
+      **      RELLENAMOS EL LA VARIABLE COMPLETA
+                 IF WS-LITOFICINA NOT EQUAL SPACES
+                    MOVE WS-OFICINA         TO X372VT09-KOFICINA-S(XN-A)
+                    MOVE WS-DELEGACION      TO X372VT09-REGIONAL-S(XN-A)
+                 ELSE
+                    MOVE WS-NUMOFICINA      TO X372VT09-KOFICINA-S(XN-A)
+                    MOVE WS-NUMDELEGACION   TO X372VT09-REGIONAL-S(XN-A)
+                 END-IF
+
+
+                 ADD 1 TO XN-A
+              END-PERFORM
+           END-IF
+      *D*
+      *    DISPLAY ' --------------- - YACO-B372VT09 --------------- '
+      *    DISPLAY ' ANIO-S          ' X372VT09-ANIO-S (1)
+      *    DISPLAY ' KEXPEDIENTE-S   ' X372VT09-KEXPEDIENTE-S (1)
+      *    DISPLAY ' KRAMO-S         ' X372VT09-KRAMO-S (1)
+      *    DISPLAY ' ANIOPOL-S       ' X372VT09-ANIOPOL-S (1)
+      *    DISPLAY ' KPOLIZA-S       ' X372VT09-KPOLIZA-S (1)
+      *    DISPLAY ' REGIONAL-S      ' X372VT09-REGIONAL-S (1)
+     **    DISPLAY ' KOFICINA-S      ' X372VT09-KOFICINA-S (1)
+      *    DISPLAY ' KMODALIDAD-S    ' X372VT09-KMODALIDAD-S (1)
+      *    DISPLAY ' FECDESDELIT-S   ' X372VT09-FECDESDELIT-S (1)
+      *    DISPLAY ' FECLIQUIDALIT-S ' X372VT09-FECLIQUIDALIT-S (1)
+      *    DISPLAY ' ANOEJERCICIO-S  ' X372VT09-ANOEJERCICIO-S (1)
+      *    DISPLAY ' IMPPREST-S      ' X372VT09-IMPPREST-S (1)
+      *    DISPLAY ' IMPLITERAL-S    ' X372VT09-IMPLITERAL-S (1)
+      *    DISPLAY ' IMPBENEFICIOS-S ' X372VT09-IMPBENEFICIOS-S (1)
+      *    DISPLAY ' IMPANTICIPO-S   ' X372VT09-IMPANTICIPO-S (1)
+      *    DISPLAY ' IMPINTEPENDP-S  ' X372VT09-IMPINTEPENDP-S (1)
+      *    DISPLAY ' RETCUENTA-S    '  X372VT09-RETCUENTA-S (1)
+      *    DISPLAY ' IMPRETENC-S     ' X372VT09-IMPRETENC-S (1)
+      *    DISPLAY ' IMPLIQUID-S     ' X372VT09-IMPLIQUID-S (1)
+      *    DISPLAY ' FECEMISIONLIT-S ' X372VT09-FECEMISIONLIT-S (1)
+      *    DISPLAY ' NOMBREAPELL-S   ' X372VT09-NOMBREAPELL-S (1)
+      *    DISPLAY ' NIF-S           ' X372VT09-NIF-S (1)
+      *    DISPLAY ' DOMICILIO-S     ' X372VT09-DOMICILIO-S (1)
+      *    DISPLAY ' CODPOSTAL-S     ' X372VT09-CODPOSTAL-S (1)
+      *    DISPLAY ' POBLACION-S     ' X372VT09-POBLACION-S (1)
+      *    DISPLAY ' PROVINCIA-S     ' X372VT09-PROVINCIA-S (1)
+      *    DISPLAY ' TIPOEMSION-S    ' X372VT09-TIPOEMSION-S (1)
+      *    DISPLAY ' TIPIMPUEST-S    ' X372VT09-TIPIMPUEST-S (1)
+      *    DISPLAY ' TIPOCOMPL-S     ' X372VT09-TIPOCOMPL-S (1)
+      *F*
+
+               .
+      ******************************************************************
+      *9000-FIN.
+      ******************************************************************
+       9000-FIN.
+
+           EXEC CICS
+                RETURN
+           END-EXEC.
+
+           IF EIBRESP NOT = DFHRESP(NORMAL)
+
+
+              MOVE  'B372VT09'  TO  X372VT09-GNOMPROG-S
+              MOVE  '99'        TO  X372VT09-CRETORNO-S
+              MOVE  'ERROR AL DEVOLVER CONTROL'
+                                TO  X372VT09-GERROR-S
+
+           END-IF
+           .
+
+      ******************************************************************
+       ADAPTADOR-SALIDA.
+      *----------------*
+
+           EXEC CICS
+              LINK PROGRAM (B000Y011)
+              COMMAREA (WS-PARAMETRO)
+              LENGTH (LENGTH OF WS-PARAMETRO)
+           END-EXEC.
+
+           IF EIBRESP NOT = DFHRESP(NORMAL)
+
+
+              MOVE  'B372VT09'  TO  X372VT09-GNOMPROG-S
+              MOVE  '98'        TO  X372VT09-CRETORNO-S
+              MOVE  'ERROR EN LLAMADA DEL MODULO DE IDMS'
+                                TO  X372VT09-GERROR-S
+              PERFORM 9000-FIN
+
+           END-IF.
+
+           CONTINUE.
+      *************************************************************
+REDTEM ADAPTADOR-SALIDA-MIG.
+REDTEM*************************************************************
+REDTEM*
+REDTEM      EXEC CICS
+USGIBE           LINK PROGRAM (LT-B430V023)
+REDTEM           COMMAREA     (WS-PARAMETRO)
+REDTEM           LENGTH       (LENGTH OF WS-PARAMETRO)
+REDTEM           RESP         (ECICS)
+REDTEM           RESP2        (ECICS2)
+REDTEM      END-EXEC
+REDTEM
+REDTEM      MOVE ECICS  TO XCICS
+REDTEM      MOVE ECICS2 TO XCICS2
+REDTEM      IF EIBRESP NOT EQUAL DFHRESP(NORMAL)
+REDTEM         MOVE '88'             TO CAB-RESULTADO OF WS-PARAMETRO
+REDTEM         MOVE 'ERROR EN LINK ' TO CAB-DESCRIPCION-ERROR
+REDTEM                                       OF WS-PARAMETRO(1:14)
+USGIBE         MOVE LT-B430V023         TO CAB-DESCRIPCION-ERROR
+REDTEM                                       OF WS-PARAMETRO(15:)
+REDTEM         MOVE 'B372VT09'       TO CAB-PROGRAMA  OF DFHCOMMAREA
+REDTEM         MOVE 'ADAPTADOR-SALIDA-MIG   ' TO CAB-PARRAFO
+REDTEM                                       OF WS-PARAMETRO
+REDTEM         MOVE  'B372VT09'  TO  X372VT09-GNOMPROG-S
+REDTEM         MOVE  '98'        TO  X372VT09-CRETORNO-S
+REDTEM         MOVE  'ERROR EN LLAMADA DEL MODULO DE IDMS'
+REDTEM                          TO  X372VT09-GERROR-S
+REDTEM         PERFORM 9000-FIN
+REDTEM      ELSE
+REDTEM         CONTINUE
+REDTEM      END-IF.
+
+

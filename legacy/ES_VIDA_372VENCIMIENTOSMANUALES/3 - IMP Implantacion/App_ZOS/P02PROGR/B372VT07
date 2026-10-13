@@ -1,0 +1,264 @@
+      *-----------------------
+       IDENTIFICATION DIVISION.
+      *------------------------
+
+       PROGRAM-ID. B372VT07.
+
+      ******************************************************************
+      *  APLICACION   : RESACATES MANUALES (FOXPRO)                    *
+      *  ANALISTA     : EVERIS                                         *
+      *  PROGRAMADOR  : EVERIS                                         *
+      *  FECHA        : 28-03-2012                                     *
+      *  TIPO PROGRAMA: COBOL-CICS                                     *
+      *  DESCRIPCION  : SERVICIO GESTOR DE CARGA D EFICHERO            *
+      ******************************************************************
+      *PARAMETROS DE ENTRADA:
+      ******************************************************************
+      *   -X372VT07-ENTRADA-E: COPY DE ENTRADA DE DATOS
+      *
+      ******************************************************************
+      *PARAMETROS DE SALIDA:
+      ******************************************************************
+      *   -X372VT07-SALIDA-S : COPY DE SALIDA DE DATOS
+      ******************************************************************
+
+      ******************************************************************
+      *MODULOS UTILIZADOS:
+      ******************************************************************
+      * B372N010 : MODULO DE NEGOCIO DE B372VT07
+      *
+      ******************************************************************
+
+      ******************************************************************
+      * CODIGO DE ERRORES
+      ******************************************************************
+      *
+      * X372VT07-CRETORNO-S
+      *
+      *                    '00' OPERACION CORRECTA
+      *
+      *                    '99' ERROR AL DEVOLVER CONTROL
+      *
+      ******************************************************************
+      ******************************************************************
+
+      *--------------------
+       ENVIRONMENT DIVISION.
+      *---------------------
+
+       CONFIGURATION SECTION.
+        SPECIAL-NAMES.
+            DECIMAL-POINT IS COMMA.
+
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+
+      *-------------
+       DATA DIVISION.
+      *--------------
+
+       FILE SECTION.
+      *-------------
+
+      *************************
+       WORKING-STORAGE SECTION.
+      *************************
+      *
+        01 VARIABLES.                                                   00960000
+      *   CONTROL DE ERRORES DEL PROGRAMA
+           03 SW-ERRORES              PIC X(2)   VALUE '00'.
+              88 NO-ERROR                        VALUE '00'.
+              88 ERROR-GRAVE                     VALUE '01'.
+
+       01 LT-LITERALES.
+      * CONSTANTES
+          03 CT-CONSTANTES.
+             05 CT-ALFANUMERICAS.
+                07 LT-MODO-ALTA               PIC X(2)  VALUE 'A'.
+                07 CT-01                      PIC X(02) VALUE '01'.
+                07 CT-02                      PIC X(02) VALUE '02'.
+                07 CT-03                      PIC X(02) VALUE '03'.
+                07 CT-04                      PIC X(02) VALUE '04'.
+                07 CT-05                      PIC X(02) VALUE '05'.
+                07 CT-X                       PIC X(01) VALUE 'X'.
+                07 CT-P                       PIC X(01) VALUE 'P'.
+                07 CT-I                       PIC X(01) VALUE 'I'.
+                07 LT-0323765                PIC X(7) VALUE '0323765'.
+                07 LT-0323766                PIC X(7) VALUE '0323766'.
+                07 LT-0323767                PIC X(7) VALUE '0323767'.
+       01  OUTDES.
+           05 FILLER        PIC X(14)   VALUE
+           'WRITER(BSUBMI)'.
+       01  RESP             PIC 9(8) COMP.
+       01  RESP2            PIC 9(8) COMP.
+       01  TOKEN            PIC X(8).
+       01  OUTLEN           PIC S9(8) COMP VALUE +80.
+       77  LINEA1           PIC X(80) VALUE
+           "AGENDAON JOB (42,,30),'AGENDA ONLINE',CLASS=A,MSGCLASS=X,".
+       77  LINEA2           PIC X(80) VALUE
+           "//           USER=SECARDE,PASSWORD=,".
+       77  LINEA3           PIC X(80) VALUE
+           "//           REGION=0M,NOTIFY=&SYSUID,COND=(0,NE)".
+       77  LINEA4           PIC X(80) VALUE
+           "// INCLUDE MEMBER=JDCOBDB2      ".
+       77  LINEA5           PIC X(80) VALUE
+           "//PASO010  EXEC PGM=ICEGENER,REGION=0M".
+       77  LINEA6           PIC X(80) VALUE
+           "//SYSUT1    DD *".
+       77  LINEA7           PIC X(80) VALUE
+           "//SYSUT2   DD DSN=SECARDE.P0365901.FPROCESO,".
+       77  LINEA8           PIC X(80) VALUE
+           "         DISP=(NEW,CATLG,DELETE),".
+       77  LINEA9           PIC X(80) VALUE
+           "         UNIT=SYSDD,SPACE=(TRK,(1,1),RLSE),".
+       77  LINEA10          PIC X(80) VALUE
+           "         DCB=(RECFM=FB,LRECL=8,BLKSIZE=0)".
+       77  LINEA11          PIC X(80) VALUE
+           "SYSPRINT  DD   SYSOUT=*".
+       77  LINEA12          PIC X(80) VALUE
+           "/*".
+       01  PARMSPTR USAGE IS POINTER.
+       01  PARMS-POINT REDEFINES PARMSPTR PIC S9(8) COMP.
+       01  WS-COMMAREA.
+           COPY R000X000.
+           03 WS-CADENA                   PIC X(08).
+       01 FILLER.
+          03 WS-VARIABLES.
+             05 NOMBRE-CICS         PIC X(08)         VALUE SPACES.
+          03 WS-TIEMP                       PIC 9(15).
+          03 WS-FECHA                       PIC X(08).
+
+      *****************
+       LINKAGE SECTION.
+      *****************
+       01 DFHCOMMAREA.
+           COPY R000X000.
+           03 COMMAREA.
+              COPY X372VT07.
+      *
+      **************************************
+       PROCEDURE DIVISION USING DFHCOMMAREA.
+      **************************************
+
+
+           PERFORM 1000-INICIO.
+
+           PERFORM 2000-PROCESO.
+
+           PERFORM 9000-FIN.
+
+      ******************************************************************
+      *1000-INICIO.
+      ******************************************************************
+       1000-INICIO.
+
+           EXEC CICS
+              ASKTIME ABSTIME (WS-TIEMP)
+           END-EXEC
+
+           EXEC CICS
+              FORMATTIME ABSTIME(WS-TIEMP)
+              YYYYMMDD (WS-FECHA)
+           END-EXEC
+
+           EXEC CICS
+                IGNORE CONDITION ERROR
+           END-EXEC
+
+           EXEC CICS
+                ASSIGN APPLID (NOMBRE-CICS)
+           END-EXEC
+
+           MOVE '00'       TO X372VT07-CRETORNO-S.
+           MOVE 'B372VT07' TO X372VT07-GNOMPROG-S.
+
+
+      ******************************************************************
+      *2000-PROCESO.
+      ******************************************************************
+       2000-PROCESO.
+
+
+           EVALUATE X372VT07-TIPOEMI-E
+
+              WHEN CT-01
+              WHEN CT-02
+              WHEN CT-03
+   MSZ*          PERFORM 2200-EJECUTAR-CADENA
+   MSZ           CONTINUE
+
+              WHEN OTHER
+
+                 SET  ERROR-GRAVE TO TRUE
+                 MOVE '01'        TO X372VT07-CRETORNO-S
+                 MOVE 'LA OPERACION DE ENTRADA NO ES VALIDO'
+                                  TO X372VT07-GERROR-S
+                 MOVE 'B372VT07'  TO X372VT07-GNOMPROG-S
+
+           END-EVALUATE.
+
+      ***************************************************************
+       2200-EJECUTAR-CADENA.
+      ***************************************************************
+
+           INITIALIZE R000X000 OF WS-COMMAREA
+      * DETERMINAMOS EN EL ENTORNO QUE ESTAMOS
+           MOVE R000X000 OF DFHCOMMAREA
+             TO R000X000 OF WS-COMMAREA
+
+           EVALUATE NOMBRE-CICS(6:1)
+               WHEN 'D'
+                  MOVE CT-X           TO WS-CADENA(1:1)
+               WHEN 'I'
+                  MOVE CT-I           TO WS-CADENA(1:1)
+               WHEN 'P'
+                  MOVE CT-P           TO WS-CADENA(1:1)
+               WHEN 'R'
+                  MOVE CT-X           TO WS-CADENA(1:1)
+           END-EVALUATE
+
+      * DETERMINAMOS LA CADENA A EJECUTAR
+
+           EVALUATE X372VT07-TIPOEMI-E
+
+              WHEN CT-01
+                 MOVE LT-0323765          TO WS-CADENA(2:7)
+
+              WHEN CT-02
+                 MOVE LT-0323766          TO WS-CADENA(2:7)
+
+              WHEN CT-03
+                 MOVE LT-0323767          TO WS-CADENA(2:7)
+
+           END-EVALUATE.
+
+
+           EXEC CICS
+                LINK PROGRAM('BB00VIRD')
+                COMMAREA(WS-COMMAREA)
+                LENGTH(308)
+           END-EXEC.
+
+      ******************************************************************
+      *9000-FIN.
+      ******************************************************************
+       9000-FIN.
+
+           EXEC CICS                                                    00048300
+                RETURN                                                  00048400
+           END-EXEC.                                                    00048500
+
+           IF EIBRESP NOT = DFHRESP(NORMAL)
+
+
+              MOVE  'B372VT07'  TO  X372VT07-GNOMPROG-S
+              MOVE  '99'        TO  X372VT07-CRETORNO-S
+              MOVE  'ERROR AL DEVOLVER CONTROL'
+                                TO  X372VT07-GERROR-S
+
+           END-IF
+      *D*
+      *    DISPLAY ' B372VT07 FIN DE MODULO'
+      *F*
+           .
+

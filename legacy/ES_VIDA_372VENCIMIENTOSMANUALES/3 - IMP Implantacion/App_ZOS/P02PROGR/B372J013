@@ -1,0 +1,1761 @@
+      ******************************* (]]]) ****************************
+      *                                                                *
+      * IMPORTANTE - PROGRAMA MODIFICADO POR DECOMISADO IDMS           *
+      *                                                                *
+      * AVISAR -> LMAPLVIMA@mapfre.com                                 *
+      *                                                                *
+      ******************************************************************
+      *RETRIEVAL
+      ******************************************************************
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.
+
+                 B372J013.
+      ******************************************************************
+      *    AUTOR      : INDRA                                          *
+      *    FECHA      : ABRIL 2015                                     *
+      *    DESCRIPCION: INFORMES DE VENCIMIENTOS MANUALE RESUMEN POR   *
+      *                 POLIZA                                         *
+      ******************************************************************
+      * MODULOS UTILIZADOS:
+      *****************************************************************
+      *
+      * B001M001 : MODULOS ROLLBACK/COMMIT
+      *
+      * B372M008 : MODULO DE MANTENIMIENTO DE LA TABLA TB372VEN0
+      *
+      * B362M007 : MODULO DE CONSULTA TABLA TB362PIF0
+      *
+      * B430J911 : MODULO DE CONSULTA CECO POR KOFICINA
+      *
+      * B620N050 : MODULO DE NOMBRE POR KPERSONA
+      *
+      ******************************************************************
+      *****************************************************************
+      *                                                               *
+      * PETICION    : MU-2015-036085       BUSCAR <<536085>           *
+      * AUTOR       : INDRA                                           *
+      * FECHA       : 15/06/2015                                      *
+      * DESCRIPCI”N : CUADRE ENTRE LOS INFORMES DE RESCATES MANUALES  *
+      *               POR MODALIDAD Y POR POLIZA                      *
+      *                                                               *
+      *****************************************************************
+      *                                                               *
+      * PETICION    : MU-2016-052647       BUSCAR <<652647>           *
+      * AUTOR       : INDRA                                           *
+      * FECHA       : 16/08/2016                                      *
+      * DESCRIPCI”N : INFORMAR SOLO LA PARTE DE MAPFRE CUANDO HAY     *
+      *               COASEGURO Y PAGO TOTAL MAPFRE ='NO'             *
+      *                                                               *
+      *****************************************************************
+      ******************************************************************
+      *                                                                *
+      * MODIFICACION: MU-2017-BDGI-R-V                                 *
+      * PROGRAMADOR : EVERIS                                           *
+      * FECHA       : JUNIO   2017                                     *
+      * DESCRIPCION : SE OBTIENEN LAS COASEGURADORAS DE LA NUEVA RUTINA*
+      * MU-2017-BDGI-R-V-INI                                           *
+      * MU-2017-BDGI-R-V-FIN                                           *
+      *                                                                *
+      ******************************************************************
+      *                                                               *
+      * PETICION    : IM04522922           BUSCAR <<404522>           *
+      * AUTOR       : MINSAIT                                         *
+      * FECHA       : 19/08/2024                                      *
+      * DESCRIPCI”N : COLUMNA CAPITAL = CAPITAL + PB                  *
+      *               COLUMNA PENDIENTE PARA MODALIDAD 118 SIN FPAGO  *
+      *               PONER PENDIENTE = CAPITAL + PB                  *
+      *****************************************************************
+      ******************************************************************
+      *  MODIFICACION:                                                 *
+      *  -------------                       <<USGIBE>>                *
+      *  PROGRAMADOR : NEORIS                                          *
+      *  FECHA       : 04/03/2026                                      *
+      *  DESCRIPCION :                                                 *
+      *             Cambiar VR432011 por B430J911                      *
+      *             Cambiar RR431011 por X4301011                      *
+      ******************************************************************
+      *  MODIFICACION:                                                 *
+      *  -------------                       <<DECOMI>>                *
+      *  PROGRAMADOR : INDRA                                           *
+      *  FECHA       : 17/07/2026                                      *
+      *  DESCRIPCION : SE INCLUYEN LOS SIGUIENTES CAMPOS:              *
+      *                 -NIF/CIF                                       *
+      *                 -NOMBRE Y LOS APELLIDOS COMPLETOS DEL BENEF    *
+      *                 -SUBPOLIZA Y CERTIFICADO PARA POLIZAS COLECT   *
+      *                 -MIGRADO IDMS. VALORES SI O NO                 *
+      *                 -COASEGURO. VALORES SI O NO                    *
+      *                                                                *
+      ******************************************************************
+   /
+       ENVIRONMENT DIVISION.
+      *---------------------
+       CONFIGURATION SECTION.
+      *----------------------
+       SPECIAL-NAMES.
+            DECIMAL-POINT IS COMMA.
+
+       INPUT-OUTPUT SECTION.
+      *---------------------
+       FILE-CONTROL.
+      ***  FICHERO DE SAIDA DEL INFORME
+            SELECT FICH-INF  ASSIGN TO SYS001.
+
+      ***  FICHERO DE SAIDA DEL INFORME
+            SELECT FICH-TXT  ASSIGN TO SYS002.
+
+      ***  FICHERO DE ERRORES
+           SELECT FICH-ERR
+           ASSIGN       TO SYS003
+           ORGANIZATION IS SEQUENTIAL
+           ACCESS MODE  IS SEQUENTIAL.
+
+
+       DATA DIVISION.
+      *--------------
+       FILE SECTION.
+       FD  FICH-INF
+           LABEL RECORDS OMITTED
+           RECORDING MODE IS F.
+DECOMI*01  RIMPRESO         PIC X(195).
+DECOMI 01  RIMPRESO         PIC X(285).
+      * MU-2017-BDGI-R-V-INI
+      *    03 SAL-ANIO                 PIC  9(4).
+      *    03 SAL-KEXPEDIENTE          PIC  9(10).
+      * MU-2017-BDGI-R-V-FIN
+
+       FD  FICH-TXT
+           LABEL RECORDS OMITTED
+           RECORDING MODE IS F.
+       01  RIMPRTXT         PIC X(241).
+
+       FD FICH-ERR
+             BLOCK CONTAINS 0 RECORDS
+             RECORDING MODE IS F
+             LABEL RECORDS  ARE STANDARD.
+       01 REG-ERR           PIC X(200).
+
+       WORKING-STORAGE SECTION.
+      *-----------------------
+       01  P-FILLER.
+           03  FILLER   PIC X(17)  VALUE 'INICIO-WORKING'.
+
+      **** SWICTH.
+          03 SW-FIN-ENTRADA        PIC X    VALUE 'N'.
+             88 FIN-ENTRADA                 VALUE 'S'.
+
+          03 SW-ESCRITURA          PIC XX VALUE '00'.
+             88 NO-ESCRITURA              VALUE '00'.
+             88 SI-ESCRITURA              VALUE '01'.
+
+652647    03 SW-COASEGURO          PIC X    VALUE 'N'.
+652647         88 SI-COASEGURO              VALUE 'S'.
+652647         88 NO-COASEGURO              VALUE 'N'.
+
+          03 SW-ENTRADA            PIC XX VALUE '00'.
+                88 SW-NO-PRIMERA-VEZ      VALUE '01'.
+                88 SW-SI-PRIMERA-VEZ     VALUE '00'.
+
+          03 SW-ENTIDAD            PIC XX VALUE '00'.
+                88 SW-NO-CAMBIO-ENTIDAD  VALUE '01'.
+                88 SW-CAMBIO-ENTIDAD     VALUE '00'.
+
+          03 SW-COM-MAPFRE            PIC X    VALUE 'N'.
+               88 SI-MAPFRE                    VALUE 'S'.
+
+          03 SW-COM-CMADRID           PIC X    VALUE 'N'.
+               88 SI-CMADRID                   VALUE 'S'.
+
+          03 SW-COM-BANKINTER         PIC X    VALUE 'N'.
+               88 SI-BANKINTER                 VALUE 'S'.
+
+          03 SW-SWITCH.
+             05 SW-ERRORES     PIC 9(01)  VALUE 0.
+                88 NO-ERROR               VALUE 0.
+                88 ERROR-GRAVE            VALUE 1.
+
+          03 SW-BORRA-ROLLBACK     PIC XX VALUE '00'.
+             88 SI-ROLLBACK               VALUE '00'.
+             88 NO-ROLLBACK               VALUE '01'.
+
+          03 SW-PRIMERA-VEZ        PIC XX VALUE '00'.
+             88 SI-PRIMERA                VALUE '00'.
+             88 NO-PRIMERA                VALUE '01'.
+
+      **** VARIABLES DE TRABAJO
+          03 WS-FECHA-SIS.
+             05 WS-FECHA.
+                07 WS-ANO                   PIC 9(04).
+                07 WS-MES                   PIC 9(02).
+                07 WS-DIA                   PIC 9(02).
+
+          03 WS-CONSTANTES.
+             05 XN-I                        PIC 9(03) VALUE 1.
+             05 XN-J                        PIC 9(03) VALUE 1.
+             05 CN-RES-MAX                  PIC 9(03) VALUE 20.
+
+      **** VARIABLE AUXILIZAR MODALIDAD
+          03 WS-MODALIDAD                   PIC 9(05) VALUE ZEROES.
+
+      **** VARIABLE AUXILIZAR KPERSONA
+          03 WS-KPERSONA                    PIC 9(09) VALUE ZEROES.
+
+      **** CONTADORES
+          03 CT-LINEA                       PIC 9(3)   VALUE ZEROS.
+          03 CT-PAGE                        PIC 9(4)   VALUE ZEROS.
+          03 CT-MODALIDAD                   PIC 9(5)   VALUE ZEROS.
+
+          03 INDICE-L                       PIC 999 VALUE ZEROES.
+          03 INDICE-P                       PIC 999 VALUE ZEROES.
+
+      **** VARIABLES DE FICHERO DE TXT
+
+          03 FICHERO-TXT.
+             05 CABECERA-TXT.
+                07 FILLER          PIC X(10) VALUE '1100034459'.
+                07 FILLER          PIC X(04) VALUE SPACES.
+                07 CB-FECALCULO    PIC X(08) VALUE SPACES.
+                07 FILLER          PIC X(05) VALUE 'EURXG'.
+             05 LINEA-TXT.
+                07 FILLER          PIC X(10) VALUE '2200034459'.
+                07 FILLER          PIC X(04) VALUE SPACES.
+                07 LI-FECALCULO    PIC X(08) VALUE SPACES.
+                07 FILLER          PIC X(13) VALUE 'EUR0000693503'.
+                07 FILLER          PIC X(03) VALUE '000'.
+                07 FILLER          PIC X(40) VALUE SPACES.
+                07 FILLER          PIC X(10) VALUE '0000009276'.
+                07 FILLER          PIC X(21) VALUE SPACES.
+                07 LI-MOD          PIC 9(04) VALUE ZEROES.
+                07 FILLER          PIC X(59) VALUE SPACES.
+                07 FILLER          PIC X(01) VALUE 'D'.
+                07 LI-ENTERA-1     PIC 9(12) VALUE ZEROES.
+                07 LI-DECIMAL-1    PIC 9(02) VALUE ZEROES.
+                07 LI-ENTERA-2     PIC 9(12) VALUE ZEROES.
+                07 LI-DECIMAL-2    PIC 9(02) VALUE ZEROES.
+                07 FILLER          PIC X(30) VALUE
+                                   'PROVISI”N VENCIMIE PENDIENTES '.
+                07 LI-FORMFECHA    PIC X(10) VALUE ZEROES.
+             05 LINEA-TOTAL-TXT.
+                07 FILLER          PIC X(10) VALUE '2200034459'.
+                07 FILLER          PIC X(04) VALUE SPACES.
+                07 LI-TO-FECALCULO PIC X(08) VALUE SPACES.
+                07 FILLER          PIC X(13) VALUE 'EUR0000350030'.
+                07 FILLER          PIC X(03) VALUE '000'.
+                07 FILLER          PIC X(40) VALUE SPACES.
+                07 FILLER          PIC X(10) VALUE '0000009997'.
+                07 FILLER          PIC X(21) VALUE SPACES.
+                07 LI-TO-MOD       PIC 9(04) VALUE ZEROES.
+                07 FILLER          PIC X(59) VALUE SPACES.
+                07 FILLER          PIC X(01) VALUE 'H'.
+                07 LI-TO-ENTERA-1  PIC 9(12) VALUE ZEROES.
+                07 LI-TO-DECIMAL-1 PIC 9(02) VALUE ZEROES.
+                07 LI-TO-ENTERA-2  PIC 9(12) VALUE ZEROES.
+                07 LI-TO-DECIMAL-2 PIC 9(02) VALUE ZEROES.
+                07 FILLER          PIC X(30) VALUE
+                                   'PROVISI”N RESCATES PENDIENTES '.
+                07 LI-TO-FORMFECHA PIC X(10) VALUE ZEROES.
+             05 ULTIMA-TXT.
+                07 FILLER          PIC X(10) VALUE '1100034459'.
+                07 FILLER          PIC X(04) VALUE SPACES.
+                07 UL-FECALCULO    PIC X(08) VALUE SPACES.
+                07 FILLER          PIC X(03)  VALUE 'EUR'.
+                07 UL-TO-ENTERA-1  PIC 9(12) VALUE ZEROES.
+                07 UL-TO-DECIMAL-1 PIC 9(02) VALUE ZEROES.
+                07 UL-TO-ENTERA-2  PIC 9(12) VALUE ZEROES.
+                07 UL-TO-DECIMAL-2 PIC 9(02) VALUE ZEROES.
+
+      **** VARIABLES DE LINEA
+      *
+TXT   *      05 DE-IMPORT-TXT REDEFINES DE-IMPORT.
+TXT   *         07 DE-IMPORT-E      PIC 9(12).
+TXT   *         07 DE-IMPORT-D      PIC 9(02).
+TXT   *         07 FILLER          PIC X(01).
+
+      **** VARIABLES DE TOTALES
+          03 VARIABLES-TOTAL.
+             05 WS-TO-CAPITAL      PIC S9(13)V9(2).
+             05 WS-TO-COMPLEMENTO  PIC S9(13)V9(2).
+             05 WS-TO-COMPLEMENTO2 PIC S9(13)V9(2).
+             05 WS-TO-PENDIENTE    PIC S9(13)V9(2).
+
+TXT   *      05 TO-IMPORT-TXT REDEFINES
+TXT   *         TO-IMPORT.
+TXT   *         07 TO-IMPORT-E      PIC 9(13).
+TXT   *         07 TO-IMPORT-D      PIC 9(02).
+
+      **** CABECERAS SALIDAS
+           03 CAB-INTRO.
+              05 FILLER         PIC X(01)  VALUE SPACES.
+              05 FILLER         PIC X      VALUE '['.
+              05 CB-INTRO-DIA   PIC 9(2)   VALUE  ZEROS.
+              05 FILLER         PIC X      VALUE '-'.
+              05 CB-INTRO-MES   PIC 9(2)   VALUE  ZEROS.
+              05 FILLER         PIC X      VALUE '-'.
+              05 CB-INTRO-ANO   PIC 9(4)   VALUE  ZEROS.
+              05 FILLER         PIC X      VALUE ']'.
+              05 FILLER         PIC X(167)  VALUE SPACES.
+              05 FILLER         PIC X(9)   VALUE '   PAG.: '.
+              05 CB-INTRO-PAG   PIC ZZZ.
+
+           03 CAB-INTRO-1.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(16)  VALUE 'MAPFRE VIDA     '.
+              05 FILLER       PIC X(25)  VALUE SPACES.
+              05 FILLER       PIC X(48)
+                VALUE 'RESUMEN DE VENCIMIENTOS PENDIENTES DESDE EL A—O'.
+              05 INTRO-ANIO   PIC 9(4) VALUE ZEROS.
+              05 FILLER       PIC X(14)  VALUE ' HASTA EL A—O '.
+              05 INTRO-ANIOHASTA PIC 9(4) VALUE ZEROES.
+
+           03 CAB-INTRO-2.
+              05 FILLER       PIC X(45) VALUE SPACES.
+              05 FILLER       PIC X(24) VALUE 'Y DESDE EL EXPEDIENTE '.
+              05 INTRO-KEXPEDES  PIC Z.ZZZ.ZZ9.
+              05 FILLER       PIC X(21) VALUE ' HASTA EL EXPEDIENTE '.
+              05 INTRO-KEXPEHAS  PIC Z.ZZZ.ZZ9.
+
+           03 CAB-INTRO-3.
+              05 FILLER       PIC X(61) VALUE SPACES.
+              05 FILLER       PIC X(19) VALUE 'Y FECHA DE CALCULO ' .
+              05 WS-FORMFECHA.
+                 07 WS-FECALDIA  PIC 9(2)  VALUE ZEROS.
+                 07 FILLER       PIC X(1) VALUE '/'.
+                 07 WS-FECALMES  PIC 9(2)  VALUE ZEROS.
+                 07 FILLER       PIC X(1) VALUE '/'.
+                 07 WS-FECALANIO PIC 9(4)  VALUE ZEROS.
+
+           03 CAB-INTRO-4.
+              05 FILLER       PIC X(59) VALUE SPACES.
+              05 FILLER       PIC X(39)
+                    VALUE '(ORDENADO POR A—O+MODALIDAD+EXPEDIENTE)'.
+
+           03 CAB-TITULO-1.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(04)  VALUE 'A—O '.
+              05 WS-ANIO      PIC 9(04)  VALUE ZEROS.
+
+           03 CAB-TITULO-2.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(06)  VALUE 'EXPET.'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(06)  VALUE 'P”LIZA'.
+DECOMI        05 FILLER       PIC X(10)  VALUE SPACES.
+DECOMI        05 FILLER       PIC X(09)  VALUE 'SUBP”LIZA'.
+DECOMI        05 FILLER       PIC X(01)  VALUE SPACES.
+DECOMI        05 FILLER       PIC X(11)  VALUE 'CERTIFICADO'.
+DECOMI        05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(04)  VALUE 'MOD.'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(04)  VALUE 'CECO'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+DECOMI        05 FILLER       PIC X(03)  VALUE 'NIF'.
+DECOMI        05 FILLER       PIC X(08)  VALUE SPACES.
+              05 FILLER       PIC X(06)  VALUE 'NOMBRE'.
+              05 FILLER       PIC X(25)  VALUE SPACES.
+              05 FILLER       PIC X(07)  VALUE 'CAPITAL'.
+              05 FILLER       PIC X(13)  VALUE SPACES.
+              05 FILLER       PIC X(06)  VALUE 'F.PAGO'.
+              05 FILLER       PIC X(05)  VALUE SPACES.
+              05 FILLER       PIC X(11)  VALUE 'COMPLEMEN.1'.
+              05 FILLER       PIC X(09)  VALUE SPACES.
+              05 FILLER       PIC X(06)  VALUE 'F.PAGO'.
+              05 FILLER       PIC X(05)  VALUE SPACES.
+              05 FILLER       PIC X(11)  VALUE 'COMPLEMEN.2'.
+              05 FILLER       PIC X(09)  VALUE SPACES.
+              05 FILLER       PIC X(06)  VALUE 'F.PAGO'.
+              05 FILLER       PIC X(05)  VALUE SPACES.
+              05 FILLER       PIC X(09)  VALUE 'PENDIENTE'.
+              05 FILLER       PIC X(11)  VALUE SPACES.
+DECOMI        05 FILLER       PIC X(12)  VALUE 'MIGRADO_IDMS'.
+DECOMI        05 FILLER       PIC X(01)  VALUE SPACES.
+DECOMI        05 FILLER       PIC X(09)  VALUE 'COASEGURO'.
+DECOMI        05 FILLER       PIC X(01)  VALUE SPACES.
+
+           03 CAB-TITULO-2-SUBRAYADO.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(06)  VALUE ALL '_'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(14)  VALUE ALL '_'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+DECOMI        05 FILLER       PIC X(10)  VALUE ALL '_'.
+DECOMI        05 FILLER       PIC X(01)  VALUE SPACES.
+DECOMI        05 FILLER       PIC X(11)  VALUE ALL '_'.
+DECOMI        05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(04)  VALUE ALL '_'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(04)  VALUE ALL '_'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+DECOMI        05 FILLER       PIC X(10)  VALUE ALL '_'.
+DECOMI        05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(30)  VALUE ALL '_'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(19)  VALUE ALL '_'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(10)  VALUE ALL '_'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(19)  VALUE ALL '_'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(10)  VALUE ALL '_'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(19)  VALUE ALL '_'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(10)  VALUE ALL '_'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(19)  VALUE ALL '_'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+DECOMI        05 FILLER       PIC X(12)  VALUE ALL '_'.
+DECOMI        05 FILLER       PIC X(01)  VALUE SPACES.
+DECOMI        05 FILLER       PIC X(09)  VALUE ALL '_'.
+DECOMI        05 FILLER       PIC X(01)  VALUE SPACES.
+
+           03 LIN-DETALLE.
+              05 FILLER          PIC X(01)  VALUE SPACES.
+              05 DE-EXPED        PIC 99999.
+              05 FILLER          PIC X(02)  VALUE SPACES.
+              05 DE-POLIZA.
+                  07 DE-KRAMO    PIC X(03).
+                  07 FILLER      PIC X(01)  VALUE SPACES.
+                  07 DE-ANIOPOL  PIC X(02).
+                  07 FILLER      PIC X(01)  VALUE SPACES.
+                  07 DE-KPOLIZA  PIC X(07).
+DECOMI        05 DE-NSUBPOL      PIC X(04).
+DECOMI        05 FILLER          PIC X(07)  VALUE SPACES.
+DECOMI        05 DE-CERTIFICADO  PIC 9(06).
+DECOMI        05 FILLER          PIC X(06)  VALUE SPACES.
+DECOMI*       05 FILLER          PIC X(01)  VALUE SPACES.
+              05 DE-MOD          PIC 9(03).
+              05 FILLER          PIC X(02)  VALUE SPACES.
+              05 DE-CECO         PIC X(04).
+              05 FILLER          PIC X(01)  VALUE SPACES.
+DECOMI        05 DE-NIF          PIC X(10)  VALUE SPACES.
+DECOMI        05 FILLER          PIC X(01)  VALUE SPACES.
+              05 DE-PERSONA      PIC X(30)  VALUE SPACES.
+              05 FILLER          PIC X(01)  VALUE SPACES.
+              05 DE-CAPITAL      PIC  ---.---.---.--9,99  VALUE ZEROS.
+              05 FILLER          PIC X(01)  VALUE SPACES.
+              05 DE-FCAPITAL     PIC X(10).
+              05 FILLER          PIC X(01)  VALUE SPACES.
+              05 DE-COMP1        PIC  ---.---.---.--9,99  VALUE ZEROS.
+              05 FILLER          PIC X(01)  VALUE SPACES.
+              05 DE-FCOMP1       PIC X(10).
+              05 FILLER          PIC X(01)  VALUE SPACES.
+              05 DE-COMP2        PIC  ---.---.---.--9,99  VALUE ZEROS.
+              05 FILLER          PIC X(01)  VALUE SPACES.
+              05 DE-FCOMP2       PIC X(10).
+              05 FILLER          PIC X(01)  VALUE SPACES.
+              05 DE-PENDIENTE    PIC  ---.---.---.--9,99  VALUE ZEROS.
+              05 FILLER          PIC X(01)  VALUE SPACES.
+DECOMI        05 DE-MIGRADO-IDMS PIC X(02)  VALUE SPACES.
+DECOMI        05 FILLER          PIC X(09)  VALUE SPACES.
+DECOMI        05 DE-COASEGURO    PIC X(02)  VALUE SPACES.
+
+           03 LIN-TOTAL-SUB.
+DECOMI*       05 FILLER       PIC X(64)  VALUE SPACES.
+DECOMI        05 FILLER       PIC X(98)  VALUE SPACES.
+              05 FILLER       PIC X(19)  VALUE ALL '_'.
+              05 FILLER       PIC X(12)  VALUE SPACES.
+              05 FILLER       PIC X(19)  VALUE ALL '_'.
+              05 FILLER       PIC X(12)  VALUE SPACES.
+              05 FILLER       PIC X(19)  VALUE ALL '_'.
+              05 FILLER       PIC X(12)  VALUE SPACES.
+              05 FILLER       PIC X(19)  VALUE ALL '_'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+
+           03 LIN-TOTAL-MOD.
+              05 FILLER       PIC X(33)  VALUE SPACES.
+              05 FILLER       PIC X(15)  VALUE 'TOTAL MODALIDAD'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 TO-MOD       PIC 9(03).
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(01)  VALUE ':'.
+              05 FILLER       PIC X(02)  VALUE SPACES.
+              05 TO-TMOD      PIC 9(05).
+DECOMI*       05 FILLER       PIC X(03)  VALUE SPACES.
+DECOMI        05 FILLER       PIC X(04)  VALUE SPACES.
+              05 TO-IMPCAP    PIC  ---.---.---.--9,99  VALUE ZEROS.
+              05 FILLER       PIC X(12)  VALUE SPACES.
+              05 TO-IMCOM1    PIC  ---.---.---.--9,99  VALUE ZEROS.
+              05 FILLER       PIC X(12)  VALUE SPACES.
+              05 TO-IMCOM2    PIC  ---.---.---.--9,99  VALUE ZEROS.
+              05 FILLER       PIC X(12)  VALUE SPACES.
+              05 TO-IMPEND    PIC  ---.---.---.--9,99  VALUE ZEROS.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+
+           03 LINEA-BLANCO.
+              05 FILLER       PIC X(195)  VALUE SPACES.
+
+      **** VARIABLE TIPO DE OPERACION
+           03 CT-TIPOPERACION             PIC X(02) VALUE 'C1'.
+
+      * VARIABLES AUXILIARES CRITERIOS1
+           03 WS-CRITERIOS1.
+              05 WS-ANIO-CRIT                PIC 9(04).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-ANIODESDE                PIC 9(04).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-ANIOHASTA                PIC 9(04).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-EXPEDIDESDE              PIC 9(10).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-EXPEDIHASTA              PIC 9(10).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-FECEMISION               PIC X(08).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-FECEMIDESDE              PIC X(08).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-FECEMIHASTA              PIC X(08).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-FECPAGDESDE              PIC X(08).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-FECPAGHASTA              PIC X(08).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-FECCALCULO               PIC X(08).
+              05 FILLER                      PIC X(01) VALUE ';'.
+
+
+      *** ESTRUCTURA DEL FICHERO DE ERRORES
+           03 WS-REG-ERR.
+              05  WS-GPROGRAMA             PIC X(08).
+              05  WS-NPARRAFO              PIC X(10).
+              05  WS-SQLCODE               PIC 9(05).
+              05  WS-CRETORNO              PIC X(05).
+              05  WS-CINCIDENCIA           PIC 9(05).
+              05  WS-GINCIDENCIA           PIC X(70).
+              05  WS-GDATOS                PIC X(100).
+
+      **** VARIABLE AUXILIAR PARA BUSQUEDA PETICION
+           03 WS-KPETINFORME            PIC S9(10)V USAGE COMP-3.
+
+      **** VARIABLE AUXILIAR PARA POLIZA
+           03 WS-KPOLIZA                     PIC X(10).
+
+      **** VARIABLES AUXILIARES PARA NOMBRE
+           03 WS-NOMBRECOMPLETO.
+              05 WS-NOMBRE                    PIC X(75).
+              05 WS-APELLIDO1                 PIC X(25).
+              05 WS-APELLIDO2                 PIC X(25).
+           03 WS-PERSONA.
+              05 DE-NOMBRE                    PIC X(01).
+              05 FILLER                       PIC X(01)  VALUE '.'.
+              05 FILLER                       PIC X(01)  VALUE SPACES.
+              05 DE-APELLIDOS                 PIC X(27).
+
+      **** VARIABLE AUXILIAR FECHAS
+           03 WS-FECHAAUX                    PIC X(08) VALUE ZEROES.
+           03 WS-FECHADATOS.
+               05 DE-FECHAD       PIC X(02).
+               05 FILLER          PIC X(01)   VALUE '/'.
+               05 DE-FECHAM       PIC X(02).
+               05 FILLER          PIC X(01)   VALUE '/'.
+               05 DE-FECHAA       PIC X(04).
+
+652647**** VARIABLES AUXILIZARES DE COASEGURO MAPFRE
+652647     03 LT-MAVI-COASEGURO              PIC X(05) VALUE 'C0511'.
+652647     03 WS-PORC-COASEGUR               PIC S9(3)V9(2).
+652647     03 WS-PORC-COA-DECI               PIC S9(3)V9(6).
+652647     03 WS-IPENDIENTE-COA              PIC S9(13)V9(2).
+652647     03 WS-IMPCOMP-COA                 PIC S9(13)V9(2).
+652647     03 WS-IMPCOMP2-COA                PIC S9(13)V9(2).
+652647     03 WS-IMPCAPITAL-COA              PIC S9(13)V9(2).
+652647     03 WS-CAPITAL                     PIC S9(13)V9(2).
+404522     03 WS-CAPITAL-PC                  PIC S9(13)V9(2).
+
+           03 LT-LITERALES.
+      **** LITERALES DE LOS PROGRAMAS UTILIZADOS
+              05 WS-B372M008               PIC X(08) VALUE 'B372M008'.
+              05 WS-B362M007               PIC X(08) VALUE 'B362M007'.
+              05 WS-B001M001               PIC X(08) VALUE 'B001M001'.
+USGIBE        05 WS-B430J911               PIC X(08) VALUE 'B430J911'.
+              05 WS-B620N050               PIC X(08) VALUE 'B620N050'.
+      * MU-2017-BDGI-R-V-INI
+              05 WS-B372MCOA               PIC X(08) VALUE 'B372MCOA'.
+      * MU-2017-BDGI-R-V-FIN
+DECOMI        05 WS-B372M011               PIC X(08) VALUE 'B372M011'.
+
+      **
+      ** LITERALES DE ERRORES
+      **
+              05 LT-ERRORES.
+      *          LITERAL NO HAY ERRORES
+                 07 LT-RETURN-OK             PIC X(5) VALUE '00000'.
+      *          ERROR REGISTRO NO ENCONTRADO
+                 07 LT-RETURN-ERR-NOTFND     PIC X(5) VALUE '00003'.
+      *          ERROR REGISTRO NO ENCONTRADO EN TABLAS SECUNDARIAS
+                 07 LT-RETURN-ERR-NOTFNDSEC  PIC X(5) VALUE '00004'.
+      *          ERROR REGISTRO CLAVE DUPLICADA
+                 07 LT-RETURN-ERR-CLVDUPLI   PIC X(5) VALUE '00002'.
+      *          ERROR EN ACCESO A BASE DE DATOS
+                 07 LT-RETURN-ERR-OTHER      PIC X(5) VALUE '99999'.
+
+      * CABECERA PARA MANDAR EL LISTADO AL CONTROL-D
+          03 CAB-0.
+             05 FILLER               PIC X(08)  VALUE ' CTDRPT='.
+             05 CB-COMPANIA          PIC 9(02)  VALUE ZEROS.
+             05 CB-BUZON             PIC X(08)  VALUE SPACES.
+             05 FILLER               PIC X(01)  VALUE SPACES.
+             05 CB-CADENA            PIC X(08)  VALUE SPACES.
+             05 CB-FICHERO           PIC X(42)  VALUE SPACES.
+
+
+           03 FICHA-SYSIN-CADENA.
+               05 NOMBRE-CADENA      PIC X(08)  VALUE SPACES.
+
+           03 FICHA-SYSIN-BUZON.
+              05 BUZON-PROCESO      PIC X(08)  VALUE SPACES.
+
+           03 WS-BUZON.
+              05 WS-BUZON-PROCESO     PIC X(08)  VALUE SPACES.
+
+           03 WS-ANT-CENTIDAD        PIC X(04) VALUE ZEROES.
+           03 WS-ANT-ANIO            PIC X(04) VALUE ZEROES.
+
+      **
+      ** COPYS M”DULOS
+      **
+          03 WS-X372M006.
+             COPY X372M006.
+
+          03 WS-X362M007.
+             COPY X362M007.
+
+          03 WS-X001M001.
+             COPY X001M001.
+
+          03 WS-X620M050.
+             COPY X620M050.
+
+      * MU-2017-BDGI-R-V-INI
+          03 WS-X372MCOA.
+             COPY X372MCOA.
+      * MU-2017-BDGI-R-V-FIN
+
+      ****
+       01   FILLER            PIC X(13)  VALUE 'FINAL-WORKING'.
+
+       LOCAL-STORAGE SECTION.
+USGIBE 01 WS-X4301011.
+           COPY X4301011.
+
+DECOMI 01 WS-X372M011.
+DECOMI     COPY X372M011.
+      /
+      *
+       PROCEDURE DIVISION.
+      *===================
+      *
+      ******************************************************************
+      *                                                                *
+      *               N I V E L               0                        *
+      *                                                                *
+      ******************************************************************
+
+       INICIO SECTION.
+
+           PERFORM 1000-P-PROGRAMA.
+
+           PERFORM 2000-PROCESO.
+
+           PERFORM 3000-F-PROGRAMA.
+
+           PERFORM 10000-FIN.
+      /
+      *****************************************************************
+      *                                                               *
+      *                T R A T A M I E N T O S                        *
+      *                                                               *
+      *****************************************************************
+
+       1000-P-PROGRAMA.
+      *
+      *****  ABRIMOS LOS FICHEROS.
+      *
+           OPEN OUTPUT FICH-INF, FICH-TXT, FICH-ERR.
+
+           INITIALIZE WS-CRITERIOS1.
+
+           ACCEPT FICHA-SYSIN-BUZON FROM SYSIN.
+           MOVE FICHA-SYSIN-BUZON     TO WS-BUZON-PROCESO
+
+           ACCEPT FICHA-SYSIN-CADENA FROM SYSIN.
+           MOVE NOMBRE-CADENA          TO CB-CADENA.
+
+USGIBE     INITIALIZE X4301011
+USGIBE     MOVE 'A'    TO X4301011-COPERACION.
+USGIBE     CALL WS-B430J911 USING X4301011.
+
+       3000-F-PROGRAMA.
+      *************
+
+      *
+      ****   SE CIERRA LA BASE DE DATOS Y LOS FICHEROS.
+      *
+           CLOSE FICH-INF, FICH-TXT, FICH-ERR.
+
+USGIBE     INITIALIZE X4301011
+USGIBE     MOVE 'C'     TO X4301011-COPERACION
+USGIBE     CALL WS-B430J911 USING X4301011.
+
+      *****************************************************************
+      *                                                               *
+      *                R U T I N A S    A U X I L I A R E S           *
+      *                                                               *
+      *****************************************************************
+      *
+       2000-PROCESO.
+      ****************
+           INITIALIZE WS-KPETINFORME
+
+           PERFORM 2010-CONSULTAR-AGENDA
+
+           SET NO-ESCRITURA TO TRUE
+           SET SI-PRIMERA   TO TRUE
+
+           INITIALIZE WS-X372M006
+           INITIALIZE VARIABLES-TOTAL
+      *    INITIALIZE FICHERO-TXT
+
+           MOVE FUNCTION CURRENT-DATE TO WS-FECHA-SIS.
+
+           MOVE WS-ANO                TO CB-INTRO-ANO
+           MOVE WS-MES                TO CB-INTRO-MES
+           MOVE WS-DIA                TO CB-INTRO-DIA
+
+           MOVE 1                     TO XN-I
+           MOVE 'S'                   TO X372M006-SPAGINACION-S
+
+           PERFORM 2200-CALCULO-PREVIOS
+
+      *    PERFORM 2700-ESC-CAB-TXT
+
+           PERFORM UNTIL X372M006-NUM-REGISTROS-S  > CN-RES-MAX
+                      OR X372M006-SPAGINACION-S = 'N'
+                      OR XN-I > CN-RES-MAX
+                      OR ERROR-GRAVE
+
+             PERFORM 2100-MOVER-ENTRADA-LISTADO
+
+             CALL WS-B372M008 USING WS-X372M006
+
+             IF X372M006-CRETORNO-S  = '00'
+                PERFORM 2300-ESCRIBIR-LINEA
+                SET SI-ESCRITURA TO TRUE
+             ELSE
+                IF X372M006-CRETORNO-S NOT = '03'
+                   SET SI-ROLLBACK TO TRUE
+                   SET ERROR-GRAVE TO TRUE
+                   PERFORM 2031-ERR-MODULO-CONSULTA
+                END-IF
+             END-IF
+
+           END-PERFORM
+
+      * SI NO EXISE PAGINACION HEMOS TERMINADO Y ESCRIBIMOS LA ULTIMA
+      * LINEA Y LOS TOTALES.
+           IF NO-ERROR
+              PERFORM 2500-ESCRIBIR-TOTALES
+           END-IF
+
+           IF NO-ERROR
+              PERFORM 2020-ACTUALIZAR-AGENDA
+           END-IF
+
+           IF NO-ERROR
+              PERFORM 2099-ERR-NO-REG-ENCONTRADOS
+           END-IF
+            .
+
+      ***************************************************************
+       2005-CONSULTAR-CENTIDAD.
+      ***************************************************************
+
+           EVALUATE X372M006-CENTIDAD-S(XN-J)
+                WHEN '10'
+                      SET SI-MAPFRE    TO TRUE
+                WHEN '20'
+                      SET SI-CMADRID   TO TRUE
+                WHEN '60'
+                      SET SI-BANKINTER TO TRUE
+           END-EVALUATE.
+
+      ***************************************************************
+       2010-CONSULTAR-AGENDA.
+      ***************************************************************
+
+           INITIALIZE WS-X362M007.
+           MOVE 'S1'                        TO X362M007-OPERACION-E
+           MOVE 'V7'                        TO  X362M007-CTIPOINFORME-E
+
+           CALL WS-B362M007 USING WS-X362M007
+
+           IF X362M007-CRETORNO-S EQUAL '00'
+
+              MOVE X362M007-GCRITERIO1-S
+                TO WS-CRITERIOS1
+
+              MOVE X362M007-KPETINFORME-S TO WS-KPETINFORME
+
+           ELSE
+              IF X362M007-CRETORNO-S EQUAL '03'
+                 SET ERROR-GRAVE TO TRUE
+                 PERFORM 2012-ERR-FALTA-PETICIONES
+
+                 ELSE
+                    SET SI-ROLLBACK TO TRUE
+                    SET ERROR-GRAVE TO TRUE
+                    PERFORM 2011-ERR-CONSULTAR-INFORME
+              END-IF
+            END-IF
+              .
+
+      *****************************************************************
+      * 2011-ERR-CONSULTAR-INFORME.                                   *
+      *****************************************************************
+
+       2011-ERR-CONSULTAR-INFORME.
+           INITIALIZE WS-REG-ERR.
+
+           MOVE WS-B362M007
+             TO WS-GPROGRAMA.
+
+           MOVE '2010-CONSULTAR-AGENDA'
+             TO WS-NPARRAFO.
+
+           MOVE X362M007-SQLCODE-S
+             TO WS-SQLCODE.
+
+           MOVE X362M007-GCRITERIO1-S
+             TO WS-GDATOS.
+
+           MOVE '336'      TO WS-CINCIDENCIA
+           MOVE 'ERROR AL CONSULTAR INFORMES Y DE AGENDA'
+             TO WS-GINCIDENCIA
+
+           PERFORM 2510-WRITE-REG-ERR.
+
+      *****************************************************************
+      * 2012-ERR-FALTA-PETICIONES.                                   *
+      *****************************************************************
+
+        2012-ERR-FALTA-PETICIONES.
+           INITIALIZE WS-REG-ERR.
+
+           MOVE WS-B362M007
+             TO WS-GPROGRAMA.
+
+           MOVE '2010-CONSULTAR-AGENDA'
+             TO WS-NPARRAFO.
+
+           MOVE X362M007-SQLCODE-S
+             TO WS-SQLCODE.
+
+           MOVE X362M007-GCRITERIO1-S
+             TO WS-GDATOS.
+
+           MOVE '336'      TO WS-CINCIDENCIA.
+           MOVE 'NO EXISTE REGISTROS EN LA TABLA DE PETICIONES'
+             TO WS-GINCIDENCIA.
+
+           PERFORM 2510-WRITE-REG-ERR.
+
+
+      ***************************************************************
+       2020-ACTUALIZAR-AGENDA.
+      ***************************************************************
+
+           INITIALIZE WS-X362M007.
+           MOVE 'D1'                        TO X362M007-OPERACION-E
+           MOVE 'V7'                        TO  X362M007-CTIPOINFORME-E
+           MOVE WS-KPETINFORME              TO X362M007-KPETINFORME-E
+
+           CALL WS-B362M007 USING WS-X362M007
+
+           IF X362M007-CRETORNO-S  NOT EQUAL '00'
+              SET SI-ROLLBACK TO TRUE
+              SET ERROR-GRAVE TO TRUE
+              PERFORM 2021-ERR-ACT-ESTADO-AGENDA
+           END-IF
+              .
+
+      *****************************************************************
+       2021-ERR-ACT-ESTADO-AGENDA.
+      *****************************************************************
+           INITIALIZE WS-REG-ERR
+
+           MOVE WS-B362M007
+             TO WS-GPROGRAMA.
+
+           MOVE '2020-ACTUALIZAR-AGENDA'
+             TO WS-NPARRAFO.
+
+           MOVE X362M007-SQLCODE-S
+             TO WS-SQLCODE.
+
+           MOVE X362M007-GCRITERIO1-S
+             TO WS-GDATOS.
+
+           MOVE '336'      TO WS-CINCIDENCIA
+           MOVE 'ERROR AL CONSULTAR PROCESOS DE AGENDA'
+             TO WS-GINCIDENCIA
+
+           PERFORM 2510-WRITE-REG-ERR.
+
+      *****************************************************************
+       2031-ERR-MODULO-CONSULTA.
+      *****************************************************************
+           INITIALIZE WS-REG-ERR
+
+           MOVE WS-B372M008
+             TO WS-GPROGRAMA.
+
+           MOVE '2020-ACTUALIZAR-AGENDA'
+             TO WS-NPARRAFO.
+
+           MOVE X362M007-SQLCODE-S
+             TO WS-SQLCODE.
+
+           MOVE X362M007-GCRITERIO1-S
+             TO WS-GDATOS.
+
+           MOVE '336'      TO WS-CINCIDENCIA
+           MOVE 'ERROR AL CONSULTAR EXPEDIENTES'
+             TO WS-GINCIDENCIA
+
+           PERFORM 2510-WRITE-REG-ERR.
+
+
+      ***************************************************************
+       2099-ERR-NO-REG-ENCONTRADOS.
+      ***************************************************************
+           INITIALIZE WS-REG-ERR
+
+           MOVE NOMBRE-CADENA        TO CB-CADENA.
+536085*    MOVE 'ERRORES POR RESUMEN PENDIENTES POR MODALIDAD'
+536085     MOVE 'ERRORES POR RESUMEN PENDIENTES POR POLIZA'
+             TO CB-FICHERO.
+           MOVE WS-BUZON    TO CB-BUZON.
+
+           IF NOT SI-MAPFRE
+              MOVE '10'       TO CB-COMPANIA
+              WRITE REG-ERR  FROM CAB-0
+                                 AFTER ADVANCING PAGE
+              MOVE '336'      TO WS-CINCIDENCIA
+              MOVE 'NO HAY EXPEDIENTES QUE CUMPLAN LOS CRITERIOS SELECCI
+      -            'NADOS'
+                TO WS-GINCIDENCIA
+              PERFORM  2600-WRITE-REG-ERR
+           END-IF
+
+           IF NOT SI-CMADRID
+              MOVE '20'       TO CB-COMPANIA
+              WRITE REG-ERR  FROM CAB-0
+                                 AFTER ADVANCING PAGE
+              MOVE '336'      TO WS-CINCIDENCIA
+              MOVE 'NO HAY EXPEDIENTES QUE CUMPLAN LOS CRITERIOS SELECCI
+      -            'NADOS'
+                TO WS-GINCIDENCIA
+              PERFORM  2600-WRITE-REG-ERR
+           END-IF
+
+
+           IF NOT SI-BANKINTER
+              MOVE '60'        TO CB-COMPANIA
+              WRITE REG-ERR  FROM CAB-0
+                                 AFTER ADVANCING PAGE
+              MOVE '336'      TO WS-CINCIDENCIA
+              MOVE 'NO HAY EXPEDIENTES QUE CUMPLAN LOS CRITERIOS SELECCI
+      -            'NADOS'
+                TO WS-GINCIDENCIA
+              PERFORM  2600-WRITE-REG-ERR
+           END-IF.
+
+      ***************************************************************
+       2100-MOVER-ENTRADA-LISTADO.
+      ***************************************************************
+
+           MOVE CT-TIPOPERACION            TO X372M006-OPERACION-E
+           MOVE WS-FECCALCULO              TO X372M006-FECHADESDE-E
+           MOVE 99991230                   TO X372M006-FECHAHASTA-E
+           MOVE X372M006-PRO-ANO-S         TO X372M006-ANT-ANO-E
+           MOVE X372M006-PRO-CENTIDAD-S    TO X372M006-ANT-CENTIDAD-E
+           MOVE X372M006-PRO-KEXPEDIENTE-S TO X372M006-ANT-KEXPEDIENTE-E
+           MOVE X372M006-PRO-KMODALIDAD-S  TO X372M006-ANT-KMODALIDAD-E
+536085*    MOVE WS-EXPEDIDESDE             TO X372M006-KEXPED-DESDE-E
+536085     MOVE 0000000001                 TO X372M006-KEXPED-DESDE-E
+           MOVE WS-EXPEDIHASTA             TO X372M006-KEXPED-HASTA-E
+           MOVE WS-ANIODESDE               TO X372M006-KANIO-DESDE-E
+           MOVE WS-ANIOHASTA               TO X372M006-KANIO-HASTA-E
+           .
+      ***************************************************************
+       2200-CALCULO-PREVIOS.
+      ***************************************************************
+      * INICIALIZAMOS LAS VARIABLES
+           INITIALIZE LIN-TOTAL-MOD
+           INITIALIZE LIN-DETALLE
+
+      * MOVEMOS LA FECHA
+           MOVE WS-FECCALCULO(1:4)         TO WS-FECALANIO
+           MOVE WS-FECCALCULO(5:2)         TO WS-FECALMES
+           MOVE WS-FECCALCULO(7:2)         TO WS-FECALDIA
+
+      * MOVEMOS LOS AÒOS
+           MOVE WS-ANT-ANIO                TO WS-ANIO
+
+           MOVE WS-ANIODESDE               TO INTRO-ANIO
+           MOVE WS-ANIOHASTA               TO INTRO-ANIOHASTA
+
+      * MOVEMOS LOS EXPEDIENTES
+           MOVE WS-EXPEDIDESDE TO INTRO-KEXPEDES
+           MOVE WS-EXPEDIHASTA TO INTRO-KEXPEHAS
+           .
+      ***************************************************************
+       2300-ESCRIBIR-LINEA.
+      ***************************************************************
+
+           PERFORM VARYING XN-J FROM 1 BY 1
+                     UNTIL XN-J > X372M006-NUM-REGISTROS-S
+                        OR XN-J > CN-RES-MAX
+
+           PERFORM 2005-CONSULTAR-CENTIDAD
+
+             IF X372M006-CENTIDAD-S(XN-J) NOT EQUAL WS-ANT-CENTIDAD
+                OR X372M006-ANIO-S(XN-J) NOT EQUAL WS-ANT-ANIO
+
+                IF X372M006-CENTIDAD-S(XN-J) NOT EQUAL WS-ANT-CENTIDAD
+                    MOVE X372M006-CENTIDAD-S(XN-J) TO WS-ANT-CENTIDAD
+                    MOVE 1 TO CT-PAGE
+                    MOVE 0 TO CT-LINEA
+                    SET SW-CAMBIO-ENTIDAD TO TRUE
+                END-IF
+
+                IF X372M006-ANIO-S(XN-J) NOT EQUAL WS-ANT-ANIO
+                    MOVE X372M006-ANIO-S(XN-J) TO WS-ANT-ANIO
+                    MOVE WS-ANT-ANIO      TO WS-ANIO
+                END-IF
+
+                IF SW-SI-PRIMERA-VEZ
+                   SET SW-NO-PRIMERA-VEZ TO TRUE
+                   PERFORM 8100-CABECERA-BUZON
+                   SET SW-NO-CAMBIO-ENTIDAD TO TRUE
+                ELSE
+                   IF CT-MODALIDAD NOT EQUAL 0
+                      PERFORM 2500-ESCRIBIR-TOTALES
+                   END-IF
+                   IF SW-CAMBIO-ENTIDAD
+                      PERFORM 8100-CABECERA-BUZON
+                      SET SW-NO-CAMBIO-ENTIDAD TO TRUE
+                   END-IF
+                   MOVE 1 TO CT-LINEA
+                   SET SI-PRIMERA TO TRUE
+                   PERFORM 2510-IMPRIMIR-INTRO
+                   PERFORM 2520-IMPRIMIR-TITULOS-1
+                   ADD 1 TO CT-PAGE
+                END-IF
+             END-IF
+
+              IF SI-PRIMERA
+                 SET NO-PRIMERA TO TRUE
+                 MOVE X372M006-KMODALIDAD-S(XN-J) TO WS-MODALIDAD
+              END-IF
+
+              IF X372M006-KMODALIDAD-S(XN-J) EQUAL WS-MODALIDAD
+      * MOVEMOS LOS DATOS Y ESCRIBIMOS LA LINEA
+                 PERFORM 2400-MOVER-DATOS
+              ELSE
+      * CAMBIO DE MODALIDAD, SI EXISTE EXPEDIENTE PENDIENTE ESCRIBIMOS
+      * EL TOTAL DE LA MODALIDAD
+                 IF CT-MODALIDAD NOT EQUAL 0
+                    PERFORM 2500-ESCRIBIR-TOTALES
+                 END-IF
+
+                 MOVE X372M006-KMODALIDAD-S(XN-J) TO WS-MODALIDAD
+
+      *ESCRIBIMOS LA PRIMERA LINEA DE LA NUEVA MODALIDAD
+      * MOVEMOS LOS DATOS DEL PRIMER REGISTRO
+                 PERFORM 2400-MOVER-DATOS
+
+             END-IF
+      *** CONTROLAMOS SI HAY PAGINACION
+      * COMPROBAMOS SI EXISTE PAGINACION
+             IF XN-J >= CN-RES-MAX
+                 MOVE 'S'
+                   TO X372M006-SPAGINACION-S
+                 MOVE X372M006-ANIO-S         (XN-J)
+                   TO X372M006-PRO-ANO-S
+                 MOVE X372M006-KEXPEDIENTE-S  (XN-J)
+                   TO X372M006-PRO-KEXPEDIENTE-S
+                 MOVE X372M006-KMODALIDAD-S   (XN-J)
+                   TO X372M006-PRO-KMODALIDAD-S
+                 MOVE X372M006-CENTIDAD-S     (XN-J)
+                   TO X372M006-PRO-CENTIDAD-S
+              ELSE
+                 MOVE 'N'
+                   TO X372M006-SPAGINACION-S
+             END-IF
+
+           END-PERFORM
+               .
+
+       2400-MOVER-DATOS.
+      *********************
+
+      * PARA AÒO INICIAL
+536085     IF (X372M006-ANIO-S (XN-J) NOT EQUAL WS-ANIOHASTA    OR
+536085        X372M006-KEXPEDIENTE-S(XN-J) <= X372M006-KEXPED-HASTA-E)
+536085        AND (X372M006-ANIO-S (XN-J) NOT EQUAL WS-ANIODESDE    OR
+536085        X372M006-KEXPEDIENTE-S(XN-J) >= WS-EXPEDIDESDE)
+
+              IF X372M006-IPENDIENTE-S (XN-J) NOT EQUAL 0
+                 AND X372M006-FECPAGOCAPITAL-S(XN-J) = ' '
+                 AND ( X372M006-GOBSERVACION-S (XN-J)(1:2)
+                          EQUAL 'VI' OR
+                       X372M006-GOBSERVACION-S (XN-J)(1:1) EQUAL ' ')
+536085*          AND X372M006-FECEMISION-S (XN-I) <= WS-FECCALCULO
+536085           AND X372M006-FECEMISION-S (XN-J) <= WS-FECCALCULO
+      *          AND X372M006-SITUACION-S (XN-J) EQUAL 'V'
+
+652647*             SE REALIZA COMPROBACION DE COASEGURO
+652647              SET NO-COASEGURO                  TO TRUE
+      * MU-2017-BDGI-R-V-INI
+                    PERFORM 2401-CONSULTAR-COASEGURO
+652647*
+652647*             IF X372M006-CODCOA1-S(XN-J) NOT EQUAL SPACES
+652647*             OR X372M006-CODCOA2-S(XN-J) NOT EQUAL SPACES
+652647*             OR X372M006-CODCOA3-S(XN-J) NOT EQUAL SPACES
+652647*             OR X372M006-CODCOA4-S(XN-J) NOT EQUAL SPACES
+652647*             OR X372M006-CODCOA5-S(XN-J) NOT EQUAL SPACES
+652647*             OR X372M006-CODCOA6-S(XN-J) NOT EQUAL SPACES
+652647*                IF X372M006-PAGOTOT-S(XN-J) = '2'
+652647*                   PERFORM 2420-VER-COASEGURO
+652647*                END-IF
+652647*             END-IF
+                    IF X372MCOA-CODCOA-S(1) NOT EQUAL SPACES OR
+                       X372MCOA-CODCOA-S(2) NOT EQUAL SPACES OR
+                       X372MCOA-CODCOA-S(3) NOT EQUAL SPACES OR
+                       X372MCOA-CODCOA-S(4) NOT EQUAL SPACES OR
+                       X372MCOA-CODCOA-S(5) NOT EQUAL SPACES OR
+                       X372MCOA-CODCOA-S(6) NOT EQUAL SPACES
+      *
+                       IF X372M006-PAGOTOT-S(XN-J) = '2'
+                          PERFORM 2420-VER-COASEGURO
+                       END-IF
+                    END-IF
+      * MU-2017-BDGI-R-V-FIN
+
+                    PERFORM 2405-BUSCAR-CECO
+                    PERFORM 2410-BUSCAR-PERSONA
+DECOMI              PERFORM 2430-DATOS-ADICIONALES
+
+                    MOVE X372M006-KEXPEDIENTE-S(XN-J) TO   DE-EXPED
+      **DETALLE POLIZA
+                    MOVE X372M006-KRAMO-S(XN-J)       TO   DE-KRAMO
+                    MOVE X372M006-ANIOPOL-S(XN-J)     TO   DE-ANIOPOL
+                    MOVE X372M006-KPOLIZA-S(XN-J)     TO   WS-KPOLIZA
+                    MOVE WS-KPOLIZA(4:)               TO   DE-KPOLIZA
+DECOMI              MOVE X372M006-NSUBPOLIZA-S(XN-J)  TO   DE-NSUBPOL
+DECOMI              MOVE X372M006-KCERTIFICADO-S(XN-J) TO
+DECOMI                                                DE-CERTIFICADO
+
+
+                    MOVE X372M006-KMODALIDAD-S(XN-J)  TO   DE-MOD
+
+652647              IF SI-COASEGURO
+DECOMI                 MOVE 'SI'                   TO   DE-COASEGURO
+652647                 MOVE WS-IMPCAPITAL-COA         TO   DE-CAPITAL
+652647              ELSE
+DECOMI                 MOVE 'NO'                   TO   DE-COASEGURO
+404522*                MOVE X372M006-IMPCAPITAL-S(XN-J)  TO   DE-CAPITAL
+404522                 MOVE ZEROS TO WS-CAPITAL-PC
+404522                 COMPUTE WS-CAPITAL-PC  =
+404522                   X372M006-IMPCAPITAL-S(XN-J) +
+404522                   X372M006-IMPBENEFICIOS-S(XN-J)
+404522                 MOVE WS-CAPITAL-PC  TO  DE-CAPITAL
+652647              END-IF
+                    IF (X372M006-FECPAGOCAPITAL-S(XN-J) NOT EQUAL SPACES
+                                          AND  NOT EQUAL ZEROES)
+                         MOVE X372M006-FECPAGOCAPITAL-S(XN-J)
+                                              TO WS-FECHAAUX
+                         MOVE WS-FECHAAUX(1:4)          TO DE-FECHAA
+                         MOVE WS-FECHAAUX(5:2)          TO DE-FECHAM
+                         MOVE WS-FECHAAUX(7:2)          TO DE-FECHAD
+                         MOVE WS-FECHADATOS             TO DE-FCAPITAL
+                         INITIALIZE  WS-FECHAAUX WS-FECHADATOS
+                     ELSE
+                         MOVE SPACES                    TO DE-FCAPITAL
+                    END-IF
+652647              IF SI-COASEGURO
+652647                 MOVE WS-IMPCOMP-COA         TO   DE-COMP1
+652647              ELSE
+                       MOVE X372M006-IMPCOMP1-S(XN-J) TO   DE-COMP1
+652647              END-IF
+                    IF X372M006-FECPAGCOMP1-S(XN-J) NOT EQUAL SPACES AND
+                                               NOT EQUAL ZEROES
+                        MOVE X372M006-FECPAGCOMP1-S(XN-J) TO WS-FECHAAUX
+                        MOVE WS-FECHAAUX(1:4)             TO DE-FECHAA
+                        MOVE WS-FECHAAUX(5:2)             TO DE-FECHAM
+                        MOVE WS-FECHAAUX(7:2)             TO DE-FECHAD
+                        MOVE WS-FECHADATOS              TO DE-FCOMP1
+                        INITIALIZE  WS-FECHAAUX WS-FECHADATOS
+                     ELSE
+                        MOVE SPACES                       TO DE-FCOMP1
+                    END-IF
+652647              IF SI-COASEGURO
+652647                 MOVE WS-IMPCOMP2-COA      TO   DE-COMP2
+652647              ELSE
+                       MOVE X372M006-IMPCOMP2-S(XN-J)   TO DE-COMP2
+652647              END-IF
+                    IF X372M006-FECPAGCOMP2-S(XN-J) NOT EQUAL SPACES AND
+                                               NOT EQUAL ZEROES
+                        MOVE X372M006-FECPAGCOMP2-S(XN-J) TO WS-FECHAAUX
+                        MOVE WS-FECHAAUX(1:4)             TO DE-FECHAA
+                        MOVE WS-FECHAAUX(5:2)             TO DE-FECHAM
+                        MOVE WS-FECHAAUX(7:2)             TO DE-FECHAD
+                        MOVE WS-FECHADATOS              TO DE-FCOMP2
+                        INITIALIZE  WS-FECHAAUX WS-FECHADATOS
+                     ELSE
+                        MOVE SPACES                       TO DE-FCOMP2
+                    END-IF
+652647              IF SI-COASEGURO
+652647                 MOVE WS-IPENDIENTE-COA      TO   DE-PENDIENTE
+652647              ELSE
+404522                 IF X372M006-KMODALIDAD-S(XN-J) = '00118' AND
+404522                   (X372M006-FECPAGOCAPITAL-S(XN-J) =  SPACES OR
+404522                                                       ZEROES)
+404522                    MOVE WS-CAPITAL-PC TO DE-PENDIENTE
+404522                 ELSE
+                       MOVE X372M006-IPENDIENTE-S(XN-J) TO DE-PENDIENTE
+404522                 END-IF
+652647              END-IF
+
+      *VAMOS SUMANDO LOS VALORES SEG˙N LOS VAMOS ESCRIBIENDO
+652647              IF SI-COASEGURO
+652647                 COMPUTE WS-TO-CAPITAL  = WS-TO-CAPITAL
+652647                                +  WS-IMPCAPITAL-COA
+652647                 COMPUTE WS-TO-COMPLEMENTO  =   WS-TO-COMPLEMENTO
+652647                                +  WS-IMPCOMP-COA
+652647                 COMPUTE WS-TO-COMPLEMENTO2 =   WS-TO-COMPLEMENTO2
+652647                                +  WS-IMPCOMP2-COA
+652647                 COMPUTE WS-TO-PENDIENTE =   WS-TO-PENDIENTE
+652647                                +  WS-IPENDIENTE-COA
+652647
+652647              ELSE
+                       COMPUTE WS-TO-CAPITAL  = WS-TO-CAPITAL
+                                   +  X372M006-IMPCAPITAL-S(XN-J)
+404522                             +  X372M006-IMPBENEFICIOS-S (XN-J)
+                       COMPUTE WS-TO-COMPLEMENTO  =   WS-TO-COMPLEMENTO
+                                   +  X372M006-IMPCOMP1-S(XN-J)
+                       COMPUTE WS-TO-COMPLEMENTO2 =   WS-TO-COMPLEMENTO2
+                                   +  X372M006-IMPCOMP2-S(XN-J)
+404522                 IF X372M006-KMODALIDAD-S(XN-J) = '00118' AND
+404522                   (X372M006-FECPAGOCAPITAL-S(XN-J) =  SPACES OR
+404522                                                       ZEROES)
+404522                 COMPUTE WS-TO-PENDIENTE =   WS-TO-CAPITAL
+404522                 ELSE
+                       COMPUTE WS-TO-PENDIENTE =   WS-TO-PENDIENTE
+                                   +  X372M006-IPENDIENTE-S(XN-J)
+404522                 END-IF
+652647              END-IF
+                    IF CT-LINEA EQUAL 0 OR CT-LINEA > 58
+                        PERFORM 2510-IMPRIMIR-INTRO
+                        PERFORM 2520-IMPRIMIR-TITULOS-1
+                        ADD 1 TO CT-PAGE
+                        MOVE -1 TO CT-LINEA
+                    END-IF
+
+      *              PERFORM 2700-ESC-CAB-TXT
+      * ESCRIBIMOS LINEA DE DETALLE DEL FICHERO TXT
+      *              PERFORM 2710-ESC-LIN-TXT
+      *              INITIALIZE LINEA-TXT
+
+                    MOVE LIN-DETALLE TO RIMPRESO
+                    WRITE RIMPRESO AFTER ADVANCING 1 LINE
+                    ADD   1  TO  CT-LINEA
+                    INITIALIZE LIN-DETALLE
+
+                    ADD 1 TO CT-MODALIDAD
+              END-IF
+536085     END-IF.
+536085*    .
+
+      * MU-2017-BDGI-R-V-INI
+      **************************************************************
+CU011  2401-CONSULTAR-COASEGURO.
+      **************************************************************
+      * MONTAMOS LA LLAMADA AL PGM B372MCOA CON OPERACION 'C'
+      * Y SIN INFORMAR EL NCOA
+      *
+           INITIALIZE WS-X372MCOA
+      *
+           MOVE 'C'                            TO X372MCOA-OPERACION-E
+           MOVE X372M006-ANIO-S(XN-J)          TO X372MCOA-ANIO-E
+           MOVE X372M006-KEXPEDIENTE-S(XN-J)   TO X372MCOA-KEXPEDIENTE-E
+      *
+           CALL WS-B372MCOA  USING WS-X372MCOA
+      *
+           EVALUATE X372MCOA-RETORNO-S
+               WHEN '00'
+               WHEN '03'
+                    CONTINUE
+               WHEN OTHER
+                    SET ERROR-GRAVE TO TRUE
+                    SET SI-ROLLBACK TO TRUE
+                    PERFORM 2402-ERR-MODULO-COASEGURO
+           END-EVALUATE
+      *
+           .
+      *
+      *****************************************************************
+       2402-ERR-MODULO-COASEGURO.
+      *****************************************************************
+      *
+           INITIALIZE WS-REG-ERR
+      *
+           MOVE WS-B372MCOA
+             TO WS-GPROGRAMA
+      *
+           MOVE '2402-CONSULTAR-COASEGURO'
+             TO WS-NPARRAFO
+      *
+           MOVE X362M007-SQLCODE-S
+             TO WS-SQLCODE
+      *
+           MOVE X362M007-GCRITERIO1-S
+             TO WS-GDATOS
+      *
+           MOVE '336'      TO WS-CINCIDENCIA
+           MOVE 'ERROR AL CONSULTAR COASEGURADORAS'
+             TO WS-GINCIDENCIA
+      *
+           PERFORM 2510-WRITE-REG-ERR
+      *
+           .
+      * MU-2017-BDGI-R-V-FIN
+      *
+       2405-BUSCAR-CECO.
+      *********************
+
+      ***SACAR CECO POR LA OFICINA
+
+      *D*
+      *     DISPLAY 'X372M006-KOFICINA-S ' X372M006-KOFICINA-S
+      *F*
+USGIBE     INITIALIZE X4301011.
+USGIBE     MOVE X372M006-KOFICINA-S(XN-J)  TO X4301011-KOFICINA.
+USGIBE     MOVE ZEROS                      TO X4301011-FCONSULTA.
+USGIBE     MOVE ' '                        TO X4301011-COPERACION.
+
+USGIBE     CALL WS-B430J911   USING X4301011.
+
+USGIBE     IF X4301011-CRETORNO = '05'
+
+USGIBE        CALL WS-B430J911   USING X4301011
+
+USGIBE        IF X4301011-CRETORNO = '00'
+USGIBE           MOVE X4301011-KOFICINA    TO DE-CECO
+              END-IF
+           END-IF
+USGIBE     MOVE X4301011-KOFICINA          TO DE-CECO.
+
+      *D*
+      *     DISPLAY 'X372M006-KOFICINA-S ' X372M006-KOFICINA-S
+      *     DISPLAY 'DE-CECO  '  DE-CECO
+      *F*
+
+
+       2410-BUSCAR-PERSONA.
+      *********************
+
+           INITIALIZE WS-X620M050
+536085     INITIALIZE WS-NOMBRECOMPLETO
+536085     INITIALIZE WS-PERSONA
+           MOVE 1 TO INDICE-P
+           MOVE 1 TO INDICE-L
+
+           MOVE X372M006-KPERSONA1-S(XN-J)  TO X620M050-KPERSONA-E
+           MOVE 'C'                         TO X620M050-CLAVE
+
+           CALL WS-B620N050 USING WS-X620M050.
+
+           IF X620M050-CRETORNO-S    EQUAL '00'
+
+                MOVE X620M050-GNOMBRELARGO-S(1) TO WS-NOMBRE
+                MOVE X620M050-GAPELLIDO1-S(1)   TO WS-APELLIDO1
+                MOVE X620M050-GAPELLIDO2-S(1)   TO WS-APELLIDO2
+
+                MOVE WS-NOMBRE(1:1)             TO DE-NOMBRE
+                PERFORM UNTIL INDICE-P > 27
+                        OR  WS-APELLIDO1(INDICE-P:2) EQUAL SPACES
+                   IF WS-APELLIDO1(INDICE-P:2) NOT EQUAL SPACES
+                      MOVE WS-APELLIDO1(INDICE-P:1)
+                                 TO DE-APELLIDOS(INDICE-L:1)
+                      ADD 1 TO INDICE-L
+                   END-IF
+                   ADD 1 TO INDICE-P
+                END-PERFORM
+
+                MOVE SPACES  TO DE-APELLIDOS(INDICE-L:1)
+                ADD 1 TO INDICE-L
+
+                IF INDICE-L < 27
+                   MOVE 1 TO INDICE-P
+                   PERFORM UNTIL INDICE-L > 27
+                        OR  WS-APELLIDO2(INDICE-P:2) EQUAL SPACES
+                      IF WS-APELLIDO2(INDICE-P:2) NOT EQUAL SPACES
+                         MOVE WS-APELLIDO2(INDICE-P:1)
+                                 TO DE-APELLIDOS(INDICE-L:1)
+                         ADD 1 TO INDICE-L
+                      END-IF
+                      ADD 1 TO INDICE-P
+                   END-PERFORM
+                END-IF
+                MOVE WS-PERSONA  TO DE-PERSONA
+
+             ELSE
+
+                MOVE SPACES      TO DE-PERSONA
+                SET SI-ROLLBACK TO TRUE
+                PERFORM 2411-ERR-CONSULTAR-PERSONA
+           END-IF
+           .
+
+       2411-ERR-CONSULTAR-PERSONA.
+      *********************
+           INITIALIZE WS-REG-ERR.
+
+           MOVE WS-B620N050
+             TO WS-GPROGRAMA.
+
+           MOVE '2410-BUSCAR-PERSONA'
+             TO WS-NPARRAFO.
+
+           MOVE X362M007-SQLCODE-S
+             TO WS-SQLCODE.
+
+           MOVE X362M007-GCRITERIO1-S
+             TO WS-GDATOS.
+
+           MOVE X620M050-CRETORNO-S TO WS-CRETORNO
+           MOVE X620M050-KPERSONA-E TO WS-KPERSONA
+
+           MOVE '336'      TO WS-CINCIDENCIA
+
+           STRING 'ERROR AL SACAR NOMBRE DEL KPERSONA : '
+                   WS-KPERSONA
+           DELIMITED BY SIZE         INTO WS-GINCIDENCIA
+
+           PERFORM 2510-WRITE-REG-ERR.
+
+652647 2420-VER-COASEGURO.
+652647********************
+652647
+652647     INITIALIZE WS-PORC-COASEGUR
+652647                WS-IPENDIENTE-COA
+652647                WS-IMPCOMP-COA
+652647                WS-IMPCOMP2-COA
+652647                WS-IMPCAPITAL-COA
+652647                WS-CAPITAL
+652647                WS-PORC-COA-DECI.
+
+652647     COMPUTE WS-CAPITAL = X372M006-IMPCAPITAL-S(XN-J) +
+652647                          X372M006-IMPBENEFICIOS-S(XN-J)
+652647
+      * MU-2017-BDGI-R-V-INI
+652647*    IF X372M006-CODCOA1-S(XN-J) = LT-MAVI-COASEGURO
+652647*       MOVE X372M006-PORCOA1-S(XN-J) TO WS-PORC-COASEGUR
+652647*       COMPUTE WS-PORC-COA-DECI =
+652647*           (X372M006-IMPCOA1-S(XN-J) * 100) / WS-CAPITAL
+652647*    END-IF
+652647*    IF X372M006-CODCOA2-S(XN-J) = LT-MAVI-COASEGURO
+652647*       MOVE X372M006-PORCOA2-S(XN-J) TO WS-PORC-COASEGUR
+652647*       COMPUTE WS-PORC-COA-DECI =
+652647*           (X372M006-IMPCOA2-S(XN-J) * 100) / WS-CAPITAL
+652647*    END-IF
+652647*    IF X372M006-CODCOA3-S(XN-J) = LT-MAVI-COASEGURO
+652647*       MOVE X372M006-PORCOA3-S(XN-J) TO WS-PORC-COASEGUR
+652647*       COMPUTE WS-PORC-COA-DECI =
+652647*           (X372M006-IMPCOA3-S(XN-J) * 100) / WS-CAPITAL
+652647*    END-IF
+652647*    IF X372M006-CODCOA4-S(XN-J) = LT-MAVI-COASEGURO
+652647*       MOVE X372M006-PORCOA4-S(XN-J) TO WS-PORC-COASEGUR
+652647*       COMPUTE WS-PORC-COA-DECI =
+652647*           (X372M006-IMPCOA4-S(XN-J) * 100) / WS-CAPITAL
+652647*    END-IF
+652647*    IF X372M006-CODCOA5-S(XN-J) = LT-MAVI-COASEGURO
+652647*       MOVE X372M006-PORCOA5-S(XN-J) TO WS-PORC-COASEGUR
+652647*       COMPUTE WS-PORC-COA-DECI =
+652647*           (X372M006-IMPCOA5-S(XN-J) * 100) / WS-CAPITAL
+652647*    END-IF
+652647*    IF X372M006-CODCOA6-S(XN-J) = LT-MAVI-COASEGURO
+652647*       MOVE X372M006-PORCOA6-S(XN-J) TO WS-PORC-COASEGUR
+652647*       COMPUTE WS-PORC-COA-DECI =
+652647*           (X372M006-IMPCOA6-S(XN-J) * 100) / WS-CAPITAL
+652647*    END-IF
+           IF X372MCOA-CODCOA-S(1)     = LT-MAVI-COASEGURO
+              MOVE X372MCOA-PORCOA-S(1)     TO WS-PORC-COASEGUR
+              COMPUTE WS-PORC-COA-DECI =
+                  (X372MCOA-IMPCOA-S(1) * 100) / WS-CAPITAL
+           END-IF
+           IF X372MCOA-CODCOA-S(2)     = LT-MAVI-COASEGURO
+              MOVE X372MCOA-PORCOA-S(2)     TO WS-PORC-COASEGUR
+              COMPUTE WS-PORC-COA-DECI =
+                  (X372MCOA-IMPCOA-S(2) * 100) / WS-CAPITAL
+           END-IF
+           IF X372MCOA-CODCOA-S(3)     = LT-MAVI-COASEGURO
+              MOVE X372MCOA-PORCOA-S(3)     TO WS-PORC-COASEGUR
+              COMPUTE WS-PORC-COA-DECI =
+                  (X372MCOA-IMPCOA-S(3) * 100) / WS-CAPITAL
+           END-IF
+           IF X372MCOA-CODCOA-S(4)     = LT-MAVI-COASEGURO
+              MOVE X372MCOA-PORCOA-S(4)     TO WS-PORC-COASEGUR
+              COMPUTE WS-PORC-COA-DECI =
+                  (X372MCOA-IMPCOA-S(4) * 100) / WS-CAPITAL
+           END-IF
+           IF X372MCOA-CODCOA-S(5)     = LT-MAVI-COASEGURO
+              MOVE X372MCOA-PORCOA-S(5)     TO WS-PORC-COASEGUR
+              COMPUTE WS-PORC-COA-DECI =
+                  (X372MCOA-IMPCOA-S(5) * 100) / WS-CAPITAL
+           END-IF
+           IF X372MCOA-CODCOA-S(6)     = LT-MAVI-COASEGURO
+              MOVE X372MCOA-PORCOA-S(6)     TO WS-PORC-COASEGUR
+              COMPUTE WS-PORC-COA-DECI =
+                  (X372MCOA-IMPCOA-S(6) * 100) / WS-CAPITAL
+           END-IF
+      * MU-2017-BDGI-R-V-FIN
+652647
+652647     IF WS-PORC-COA-DECI > ZEROS
+652647        SET SI-COASEGURO              TO TRUE
+404522        IF X372M006-KMODALIDAD-S(XN-J) = '00118' AND
+404522           (X372M006-FECPAGOCAPITAL-S(XN-J) =  SPACES OR
+404522                                               ZEROES)
+404522           COMPUTE WS-IPENDIENTE-COA =
+404522           (WS-CAPITAL * WS-PORC-COA-DECI) / 100
+404522        ELSE
+652647        COMPUTE WS-IPENDIENTE-COA =
+652647            (X372M006-IPENDIENTE-S(XN-J) * WS-PORC-COA-DECI) / 100
+404522        END-IF
+652647        COMPUTE WS-IMPCOMP-COA =
+652647            (X372M006-IMPCOMP1-S(XN-J)   * WS-PORC-COA-DECI) / 100
+652647        COMPUTE WS-IMPCOMP2-COA =
+652647            (X372M006-IMPCOMP2-S(XN-J)   * WS-PORC-COA-DECI) / 100
+652647        COMPUTE WS-IMPCAPITAL-COA =
+652647*           (X372M006-IMPCAPITAL-S(XN-J) * WS-PORC-COA-DECI) / 100
+404522            (WS-CAPITAL * WS-PORC-COA-DECI) / 100
+652647     END-IF.
+
+       2500-ESCRIBIR-TOTALES.
+      *********************
+      * IMPRIMIR LA LINEA DE TOTAL
+
+           MOVE LIN-TOTAL-SUB TO RIMPRESO
+           WRITE RIMPRESO AFTER ADVANCING 1 LINE
+           ADD   1  TO  CT-LINEA
+
+      * MOVEMOS LOS DATOS A LAS LINEA TOTAL
+           MOVE WS-MODALIDAD                TO TO-MOD
+           MOVE CT-MODALIDAD       TO TO-TMOD
+           MOVE WS-TO-CAPITAL      TO TO-IMPCAP
+           MOVE WS-TO-COMPLEMENTO  TO TO-IMCOM1
+           MOVE WS-TO-PENDIENTE    TO TO-IMPEND
+
+           MOVE LIN-TOTAL-MOD   TO RIMPRESO
+           WRITE RIMPRESO AFTER ADVANCING 1 LINE
+           ADD   1  TO  CT-LINEA
+
+      * IMPRIMIR UNA LINEA EN BLANCO
+           MOVE LINEA-BLANCO TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1       LINES.
+           ADD    1       TO CT-LINEA.
+
+      * INICIALIZAMOS LAS VARIABLES
+           MOVE 0                           TO CT-MODALIDAD.
+           INITIALIZE LIN-TOTAL-MOD.
+           INITIALIZE VARIABLES-TOTAL.
+      * ESCRIBIMOS LA LINEA DE TOTAL Y LA ULTIMA LINEA DEL FICHERO TXT
+      *    PERFORM 2720-ESC-TOT-TXT.
+
+DECOMI 2430-DATOS-ADICIONALES.
+DECOMI************************
+DECOMI     INITIALIZE WS-X372M011
+DECOMI     MOVE X372M006-ANIO-S (XN-J)  TO X372M011-ANIO-B
+DECOMI     MOVE X372M006-KEXPEDIENTE-S (XN-J) TO X372M011-KEXPEDIENTE-B
+DECOMI     MOVE 'D'                           TO X372M011-COPERACION
+DECOMI     MOVE '01'                          TO X372M011-CSELECCION
+DECOMI     CALL WS-B372M011 USING WS-X372M011
+DECOMI     IF X372M011-CRETORNO EQUAL ZEROS
+DECOMI        IF X372M011-VEN-MIGR-T(1) EQUAL 'S'
+DECOMI           MOVE 'SI'                 TO DE-MIGRADO-IDMS
+DECOMI        ELSE
+DECOMI           MOVE 'NO'                 TO DE-MIGRADO-IDMS
+DECOMI        END-IF
+DECOMI      END-IF.
+
+       2510-IMPRIMIR-INTRO.
+      *********************
+
+           MOVE CT-PAGE TO CB-INTRO-PAG.
+           MOVE CAB-INTRO   TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+           MOVE CAB-INTRO-1 TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+           MOVE CAB-INTRO-2 TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+           MOVE CAB-INTRO-3 TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+           MOVE CAB-INTRO-4 TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+           MOVE LINEA-BLANCO TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+
+       2520-IMPRIMIR-TITULOS-1.
+      *****************
+           MOVE CAB-TITULO-1 TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+           MOVE CAB-TITULO-2 TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+           MOVE CAB-TITULO-2-SUBRAYADO TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+      *    MOVE LINEA-BLANCO TO RIMPRESO.
+      *    WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+      *    ADD 1 TO CT-LINEA.
+
+
+      *****************************************************************
+      * 2600-WRITE-REG-ERR.                                           *
+      *****************************************************************
+
+       2600-WRITE-REG-ERR.
+           WRITE REG-ERR FROM WS-REG-ERR.
+
+      *****************************************************************
+      * 2700-ESC-CAB-TXT.                                             *
+      *****************************************************************
+
+       2700-ESC-CAB-TXT.
+
+           MOVE WS-FECCALCULO TO CB-FECALCULO
+
+           WRITE RIMPRTXT FROM CABECERA-TXT AFTER ADVANCING 1 LINES.
+
+      *****************************************************************
+      * 2710-ESC-LIN-TXT.                                             *
+      *****************************************************************
+      *
+      *2710-ESC-LIN-TXT.
+      *
+      *    MOVE WS-FECCALCULO TO LI-FECALCULO
+      *    MOVE DE-MOD        TO LI-MOD
+      *    MOVE DE-IMPORT-E   TO LI-ENTERA-1
+      *    MOVE DE-IMPORT-D   TO LI-DECIMAL-1
+      *    MOVE DE-IMPORT-E   TO LI-ENTERA-2
+      *    MOVE DE-IMPORT-D   TO LI-DECIMAL-2
+      *    MOVE WS-FORMFECHA  TO LI-FORMFECHA
+      *
+      *    WRITE RIMPRTXT FROM LINEA-TXT AFTER ADVANCING 1 LINES.
+      *
+      *****************************************************************
+      * 2720-ESC-TOT-TXT.                                             *
+      *****************************************************************
+      *2720-ESC-TOT-TXT.
+      *
+      *    MOVE WS-FECCALCULO TO LI-TO-FECALCULO
+      *    MOVE 0000          TO LI-TO-MOD
+      *    MOVE TO-IMPORT-E   TO LI-TO-ENTERA-1
+      *    MOVE TO-IMPORT-D   TO LI-TO-DECIMAL-1
+      *    MOVE TO-IMPORT-E   TO LI-TO-ENTERA-2
+      *    MOVE TO-IMPORT-D   TO LI-TO-DECIMAL-2
+      *    MOVE WS-FORMFECHA  TO LI-TO-FORMFECHA
+      *D*
+      *    DISPLAY 'TO-IMPORT ' TO-IMPORT
+      *    DISPLAY 'TO-IMPORT-E ' TO-IMPORT-E
+      *    DISPLAY 'TO-IMPORT-D ' TO-IMPORT-D
+      *F*
+      *    MOVE WS-FECCALCULO TO UL-FECALCULO
+      *    MOVE TO-IMPORT-E   TO UL-TO-ENTERA-1
+      *    MOVE TO-IMPORT-D   TO UL-TO-DECIMAL-1
+      *    MOVE TO-IMPORT-E   TO UL-TO-ENTERA-2
+      *    MOVE TO-IMPORT-D   TO UL-TO-DECIMAL-2
+      *
+      * ESCRIBIMOS LA LINEA TOTAL
+      *
+      *    WRITE RIMPRTXT FROM LINEA-TOTAL-TXT AFTER ADVANCING 1 LINES
+      *
+      * ESCRIBIMOS LA ULTIMA LINEA
+      *    WRITE RIMPRTXT FROM ULTIMA-TXT AFTER ADVANCING 1 LINES.
+
+      *****************************************************************
+      * 2510-WRITE-REG-ERR.                                           *
+      *****************************************************************
+
+       2510-WRITE-REG-ERR.
+           MOVE NOMBRE-CADENA        TO CB-CADENA.
+536085*    MOVE 'ERRORES POR RESUMEN PENDIENTES POR MODALIDAD'
+536085     MOVE 'ERRORES POR RESUMEN PENDIENTES POR POLIZA'
+             TO CB-FICHERO.
+           MOVE WS-BUZON    TO CB-BUZON.
+
+           MOVE '10'       TO CB-COMPANIA
+           WRITE REG-ERR  FROM CAB-0
+                                 AFTER ADVANCING PAGE
+           WRITE REG-ERR FROM WS-REG-ERR.
+
+           MOVE '20'       TO CB-COMPANIA
+           WRITE REG-ERR  FROM CAB-0
+                                 AFTER ADVANCING PAGE
+           WRITE REG-ERR FROM WS-REG-ERR.
+
+           MOVE '60'       TO CB-COMPANIA
+           WRITE REG-ERR  FROM CAB-0
+                                 AFTER ADVANCING PAGE
+           WRITE REG-ERR FROM WS-REG-ERR.
+
+      ******************************************************************
+       8100-CABECERA-BUZON.
+      ******************************************************************
+
+           INITIALIZE CAB-0
+
+           MOVE WS-ANT-CENTIDAD(1:2) TO CB-COMPANIA.
+           MOVE NOMBRE-CADENA        TO CB-CADENA.
+           MOVE 'INFORME POR RESUMEN PENDIENTES POR POLIZA'
+             TO CB-FICHERO.
+
+           MOVE WS-BUZON             TO CB-BUZON.
+
+           WRITE RIMPRESO FROM CAB-0
+                                 AFTER ADVANCING PAGE.
+      ******************************************************************
+        8888-ROLLBACK.
+      ******************************************************************
+
+           INITIALIZE WS-X001M001
+           MOVE 'R'   TO X001M001-CACCION
+
+           CALL WS-B001M001 USING WS-X001M001.
+
+      *****************************************************************
+        8889-COMMIT.
+      *****************************************************************
+           INITIALIZE WS-X001M001
+           MOVE 'C' TO X001M001-CACCION
+
+           CALL WS-B001M001 USING WS-X001M001.
+
+      ***************************************************************
+       10000-FIN.
+      ***************************************************************
+
+           IF NO-ROLLBACK
+              PERFORM 8888-ROLLBACK
+           ELSE
+              PERFORM 8889-COMMIT
+           END-IF
+
+           GOBACK.

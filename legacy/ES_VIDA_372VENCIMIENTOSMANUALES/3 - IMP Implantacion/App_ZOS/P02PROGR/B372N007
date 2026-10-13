@@ -1,0 +1,727 @@
+      ******************************************************************        
+       IDENTIFICATION DIVISION.                                                 
+       PROGRAM-ID. B372N007.                                                    
+      ******************************************************************        
+      * ---------------------------------------------------------------         
+      * |  CARGA DE FICHEROS: DATOS DE COMPLEMENTARIOS                |         
+      * ---------------------------------------------------------------         
+      *                                                                         
+      * APLICACION....:VENCIMIENTOS MANUALES (FOXPRO)                           
+      * ANALISTA......:EVERIS                                                   
+      * PROGRAMADOR...:EVERIS                                                   
+      * FECHA DE REALIZACION:  JULIO 2012                                       
+      *                                                                         
+      *DESCRIPCIÓN DEL PROGRAMA:                                                
+      * ESTE PROGRAMA LLAMA AL B372M001 PARA MODIFICAR LOS DATOS                
+      * DE LOS COMPLEMENTARIOS.                                                 
+      ******************************************************************        
+      *PARAMETROS DE ENTRADA:                                                   
+      ******************************************************************        
+      *   -X372N007 : COPY DE ENTRADA DE DATOS                                  
+      *                                                                         
+      ******************************************************************        
+      *PARAMETROS DE SALIDA:                                                    
+      ******************************************************************        
+      *                                                                         
+      ******************************************************************        
+      *MODULOS UTILIZADOS:                                                      
+      ******************************************************************        
+      * B001M001 : MODULOS ROLLBACK/COMMIT                                      
+      *                                                                         
+      * B372M001 : MODULO MANTENIMIENTO TABLA DE VENCIMIENTO                    
+      *                                                                         
+      * B372M004 : MODULO CONSULTA TABLA DE VENCIMIENTO                         
+      *                                                                         
+      * B160N301 : ENVIO DE DATOS A FISCALIDAD                                  
+      *                                                                         
+      ******************************************************************        
+      *                                                                         
+      * X372N007-CRETORNO-S                                                     
+      *                                                                         
+      *          '00' OPERACION CORRECTA                                        
+      *                                                                         
+      *          '01' ERROR EN MODO                                             
+      *                                                                         
+      *          '02' ERROR FALTAN DATOS INFORMADOS                             
+      *                                                                         
+      *          '03' ERROR REGISTRO NO ENCONTRADO                              
+      *                                                                         
+      *          '04' ERROR REGISTRO NINGUNA MODIFICACION                       
+      *                                                                         
+      *          '05' ERROR EN LOS DATOS INFORMADOS                             
+      *                                                                         
+      *          '06' EXCEDIDO EL NUMERO MAXIMO DE CABEZAS POR POLIZA           
+      *                                                                         
+      *          '07' NO EXISTEN CABEZAS PARA LA POLIZA                         
+      *                                                                         
+      *          '08' NO EXISTEN COMPLEMENTARIOS PARA LA POLIZA                 
+      *                                                                         
+      *          '09' ERROR AL ACTUALIZAR COMPLEMENTARIO PRIMERO                
+      *                                                                         
+      *          '10' ERROR AL ACTUALIZAR COMPLEMENTARIO SEGUNDO                
+      *                                                                         
+      *          '11' EL RENDIMIENTO INTEGRO CAPITAL ES CERO                    
+      *                                                                         
+      *          '12' ERROR ENVIO A FISCALIDAD                                  
+      *                                                                         
+      ******************************************************************        
+      * MODIFICACION:                                                  *        
+      * --------------                                                 *        
+      * AUTOR: EVERIS                                                  *        
+      * FECHA: 22/11/2013                                              *        
+      * DESCRIPCION: SE MODIFICA PARA QUE EL PORCENTAJE DE 15 POR      *        
+      *              UN CAMPO DE ENTRADA                               *        
+      *                                                                *        
+      * BUSCAR: INC1                                                   *        
+      ******************************************************************        
+      *                  ENVIRONMENT DIVISION                                   
+      ******************************************************************        
+       ENVIRONMENT DIVISION.                                                    
+       CONFIGURATION SECTION.                                                   
+       SPECIAL-NAMES.                                                           
+           DECIMAL-POINT IS COMMA.                                              
+
+      ******************************************************************        
+      *                  DATA DIVISION                                 *        
+      ******************************************************************        
+       DATA DIVISION.                                                           
+      ******************************************************************        
+      *                  WORKING-STORAGE SECTION                       *        
+      ******************************************************************        
+       WORKING-STORAGE SECTION.                                                 
+
+      *   CONTROL DE ERRORES DEL PROGRAMA                                       
+       01 SW-SWITCH.                                                            
+          03 SW-ERRORES                PIC XX VALUE '00'.                       
+             88 NO-ERROR                      VALUE '00'.                       
+             88 ERROR-GRAVE                   VALUE '01'.                       
+          03 SW-CAMBIO                 PIC XX VALUE '00'.                       
+             88 NO-CAMBIO                     VALUE '00'.                       
+             88 SI-CAMBIO                     VALUE '01'.                       
+
+          03 SW-PERSONA                PIC X.                                   
+             88 SI-EXISTE                     VALUE 'S'.                        
+             88 NO-EXISTE                     VALUE 'N'.                        
+
+          03 SW-BORRA-ROLLBACK         PIC XX VALUE '00'.                       
+             88 SI-ROLLBACK                   VALUE '00'.                       
+             88 NO-ROLLBACK                   VALUE '01'.                       
+
+      *MODULOS                                                                  
+       01 WS-MODULOS.                                                           
+          03 WS-B372M001               PIC X(8) VALUE 'B372M001'.               
+          03 WS-B372M004               PIC X(8) VALUE 'B372M004'.               
+          03 WS-B372N007               PIC X(8) VALUE 'B372N007'.               
+          03 WS-B160N301               PIC X(8) VALUE 'B160N301'.               
+          03 WS-B001M001               PIC X(8) VALUE 'B001M001'.               
+
+       01 LT-LITERALES.                                                         
+          03 LT-ERRORES-RETORNO.                                                
+      *         LITERAL NO HAY ERRORES                                          
+             05 LT-RETURN-OK             PIC X(5) VALUE '00'.                   
+      *         ERROR EN MODO                                                   
+             05 LT-RETURN-ERR-MODO       PIC X(5) VALUE '20'.                   
+      *         ERROR FALTAN DATOS INFORMADOS                                   
+             05 LT-RETURN-ERR-DATINFO    PIC X(5) VALUE '02'.                   
+      *         ERROR REGISTRO NO ENCONTRADO                                    
+             05 LT-RETURN-ERR-NOTFND     PIC X(5) VALUE '03'.                   
+      *         ERROR REGISTRO CLAVE DUPLICADA                                  
+             05 LT-RETURN-ERR-CLVDUPLI   PIC X(5) VALUE '04'.                   
+      *         ERROR EN ACCESO A BASE DE DATOS                                 
+             05 LT-RETURN-ERR-OTHER      PIC X(5) VALUE '99'.                   
+      *                                                                         
+      ** CODIGOS DE FISCALIDAD                                                  
+      *                                                                         
+          03 CN-TIPOS-IMPORTES.                                                 
+             05 CN-IMP-PRESTACION         PIC X(2) VALUE '71'.                  
+             05 CN-IMP-RENDIMIENTO        PIC X(2) VALUE '50'.                  
+             05 CN-IMP-EXENTO             PIC X(2) VALUE '52'.                  
+             05 CN-IMP-SUJETO             PIC X(2) VALUE '56'.                  
+             05 CN-PRETENCION             PIC X(2) VALUE '68'.                  
+             05 CN-IMP-RETENCION          PIC X(2) VALUE '58'.                  
+             05 CN-IMP-NETO               PIC X(2) VALUE '51'.                  
+             05 CN-IMP-RECOBRO            PIC X(2) VALUE '48'.                  
+             05 CN-IMP-REDUCCION-03       PIC X(2) VALUE '33'.                  
+             05 CN-IMP-REDUCCION-04       PIC X(2) VALUE '34'.                  
+             05 CN-IMP-REDUCCION-05       PIC X(2) VALUE '35'.                  
+             05 CN-IMP-PRIMAS-PAGADAS     PIC X(2) VALUE '72'.                  
+             05 CN-IMP-PRIMAS-IMPUTADAS   PIC X(2) VALUE '73'.                  
+             05 CN-IMP-EA                 PIC X(2) VALUE 'EA'.                  
+             05 CN-IMP-EI                 PIC X(2) VALUE 'EI'.                  
+             05 CN-IMP-EV                 PIC X(2) VALUE 'EV'.                  
+             05 CN-IMP-EX                 PIC X(2) VALUE 'EX'.                  
+             05 CN-IMP-BDGI               PIC X(2) VALUE '46'.                  
+             05 CN-IMP-REDUCCION-01       PIC X(2) VALUE '31'.                  
+             05 CN-IMP-REDUCCION-02       PIC X(2) VALUE '32'.                  
+             05 CN-EXENCION-BDGI          PIC X(2) VALUE '80'.                  
+
+
+      *** LITERALES DE CONSTANTES                                               
+          03 LT-CONSTANTES.                                                     
+             05 CT-MAX-REG               PIC 9(01) VALUE 2.                     
+      **                                                                        
+      **                                                                        
+      **  FECHA DEL SISTEMA                                                     
+      **                                                                        
+          03 WS-FECHA-SIS.                                                      
+             05 WS-FECHA.                                                       
+                07 WS-ANO                   PIC 9(04).                          
+                07 WS-MES                   PIC 9(02).                          
+                07 WS-DIA                   PIC 9(02).                          
+             05 WS-TIEMPO.                                                      
+                07 WS-HORA                  PIC 9(02).                          
+                07 WS-MINUTOS               PIC 9(02).                          
+                07 WS-SEGUNDOS              PIC 9(02).                          
+                07 WS-CENTESIMAS            PIC 9(02).                          
+             05 FILLER                      PIC 9(05).                          
+
+      * VARIABLES DE CALCULO                                                    
+          03 WS-VARIABLES.                                                      
+             05 WS-RAMO                     PIC X(03).                          
+             05 WS-POLIZA                   PIC X(10).                          
+             05 WS-SUBPOL                   PIC S9(04).                         
+             05 WS-CERTIF                   PIC 9(06).                          
+             05 WS-NUMREG                   PIC 9(1).                           
+             05 WS-IMP-COMPLEMENTARIO       PIC S9(11)V9(2).                    
+             05 WS-REDUCCION-PRIMAS         PIC S9(11)V9(2).                    
+             05 WS-REDUCCION-TRANCAP        PIC S9(11)V9(2).                    
+             05 WS-RENDIMIENTO-NETO         PIC S9(11)V9(2).                    
+             05 WS-RETENCION-CAPITAL        PIC S9(11)V9(2).                    
+             05 WS-LIQUIDO                  PIC S9(11)V9(2).                    
+             05 WS-IMPNETO                  PIC S9(11)V9(2).                    
+             05 WS-PENDIENTE-AUX            PIC S9(11)V9(2).                    
+
+             05 WS-POLIZAS                  OCCURS 10.                          
+               07 WS-ANIO                     PIC 9(4).                         
+               07 WS-KEXPEDIENTE              PIC 9(10).                        
+               07 WS-IMPREDPRICAP             PIC S9(11)V9(2).                  
+               07 WS-IMPREDTRANCAP            PIC S9(11)V9(2).                  
+               07 WS-IMPRTOINTEGRCAP          PIC S9(11)V9(2).                  
+               07 WS-IMPCOMP1                 PIC S9(11)V9(2).                  
+               07 WS-IMPCOMP2                 PIC S9(11)V9(2).                  
+               07 WS-PENDIENTE                PIC S9(11)V9(2).                  
+               07 WS-FECVENCIMIENTO           PIC X(08).                        
+               07 WS-KPERSONA                 PIC 9(09).                        
+               07 WS-CODCALFISCOMP1           PIC 9(12).                        
+               07 WS-CODCALFISCOMP2           PIC 9(12).                        
+
+             05 WS-FECVENCIMIENTO-AUX         PIC X(8).                         
+
+             05 WS-FECHA-AUX.                                                   
+                07 WS-ANO-AUX               PIC 9(04).                          
+                07 WS-MES-AUX               PIC 9(02).                          
+                07 WS-DIA-AUX               PIC 9(02).                          
+
+             05 WS-POLIZA-AUX.                                                  
+                07 FILLER                   PIC 9(03) VALUE ZEROS.              
+                07 WS-POLI-AUX              PIC 9(07).                          
+
+      * INDICES                                                                 
+          03 WS-INDICES.                                                        
+             05 XN-I                        PIC 9(3).                           
+             05 XN-J                        PIC 9(3).                           
+             05 I                           PIC 9(3).                           
+
+      * VARIABLE AUXILIAR PARA COMPLEMENTARIO                                   
+          03 WS-SUMA-COMP                   PIC S9(11)V9(2).                    
+
+      *COPYS COBOL                                                              
+       01 WS-COPYS.                                                             
+          03 WS-X372M004.                                                       
+             COPY X372M004.                                                     
+
+          03 WS-X372M001.                                                       
+             COPY X372M001.                                                     
+
+          03 WS-X001M001.                                                       
+             COPY X001M001.                                                     
+
+          03 WS-X160N301.                                                       
+             COPY X160N301.                                                     
+             COPY X160N000.                                                     
+
+      ******************************************************************        
+       LINKAGE SECTION.                                                         
+      ******************************************************************        
+       01 DFHCOMMAREA.                                                          
+           COPY X372N007.                                                       
+      *************************************************************             
+       PROCEDURE DIVISION USING DFHCOMMAREA.                                    
+      *************************************************************             
+           PERFORM 1000-INICIO.                                                 
+
+           IF NOT ERROR-GRAVE                                                   
+              PERFORM 2000-PROCESO                                              
+           END-IF.                                                              
+
+           PERFORM 10000-FIN.                                                   
+      ********************************************************                  
+       1000-INICIO.                                                             
+      ********************************************************                  
+      * INICIALIZAR VARIABLES                                                   
+
+      *D*                                                                       
+           DISPLAY 'B372N007: PRETENCION ' X372N007-PRETENCION                  
+      *F*                                                                       
+           INITIALIZE WS-INDICES.                                               
+           INITIALIZE WS-VARIABLES.                                             
+           INITIALIZE X372N007-SALIDA.                                          
+
+           MOVE FUNCTION CURRENT-DATE TO WS-FECHA-SIS                           
+
+           MOVE '00'  TO X372N007-CRETORNO-S                                    
+
+           SET NO-ERROR     TO TRUE                                             
+           SET NO-ROLLBACK  TO TRUE                                             
+             .                                                                  
+
+      ***************************************************************           
+       2000-PROCESO.                                                            
+      ***************************************************************           
+
+           PERFORM 2100-OBTENER-NUMERO-REGISTROS                                
+
+      ** CONTROLAMOS QUE EXITAN CABEZAS PARA LAS POLIZAS                        
+           IF WS-NUMREG NOT EQUAL ZEROES                                        
+
+            COMPUTE WS-IMP-COMPLEMENTARIO =                                     
+                    FUNCTION NUMVAL(X372N007-BONO) / WS-NUMREG                  
+
+            COMPUTE WS-IMP-COMPLEMENTARIO =                                     
+                    WS-IMP-COMPLEMENTARIO / 100                                 
+
+           ELSE                                                                 
+
+              SET ERROR-GRAVE TO TRUE                                           
+              SET SI-ROLLBACK TO TRUE                                           
+              MOVE '07'                TO X372N007-CRETORNO-S                   
+              MOVE 'NO EXISTEN POLIZAS CON LOS CRITERIOS SELECCIONADOS'         
+                TO X372N007-GERROR-S                                            
+      *D*                                                                       
+      *       DISPLAY ' WS-POLIZA ' WS-POLIZA                                   
+      *       DISPLAY ' WS-POLIZA-AUX ' WS-POLIZA-AUX                           
+      *F*                                                                       
+              MOVE WS-B372N007         TO X372N007-GNOMPROG-S                   
+              MOVE WS-POLIZA           TO X372N007-POLIZA-S                     
+
+           END-IF                                                               
+           IF NO-ERROR                                                          
+              PERFORM VARYING I FROM 1 BY 1 UNTIL I > WS-NUMREG                 
+              SET NO-ERROR TO TRUE                                              
+      *D*                                                                       
+      *    DISPLAY ' COMP1 ' WS-IMPCOMP1(I)                                     
+      *    DISPLAY ' COMP2 ' WS-IMPCOMP2(I)                                     
+      *    DISPLAY ' -----------'                                               
+      *F*                                                                       
+              MOVE WS-FECVENCIMIENTO(I)                                         
+                TO WS-FECVENCIMIENTO-AUX                                        
+
+                 IF WS-IMPCOMP1(I) NOT EQUAL ZEROS AND                          
+                    WS-IMPCOMP2(I) NOT EQUAL ZEROS                              
+
+                   SET SI-ROLLBACK TO TRUE                                      
+                   SET ERROR-GRAVE TO TRUE                                      
+                   MOVE '08'                TO X372N007-CRETORNO-S              
+                   MOVE 'ERROR:EL EXPEDIENTE YA TIENE COMPLEMENTARIOS IN        
+      -                 'FORMADOS'                                              
+                     TO X372N007-GERROR-S                                       
+                   MOVE WS-B372N007         TO X372N007-GNOMPROG-S              
+                   MOVE WS-POLIZA-AUX       TO X372N007-POLIZA-S                
+                   MOVE WS-ANIO(I)          TO X372N007-ANIO-S                  
+                   MOVE WS-KEXPEDIENTE(I)   TO X372N007-KEXPEDIENTE-S           
+                   MOVE WS-FECVENCIMIENTO(I)                                    
+                     TO X372N007-FECVENCIMICAP-S                                
+                   COMPUTE X372N007-IMPORTE-S =                                 
+                       FUNCTION NUMVAL (X372N007-BONO)                          
+                   COMPUTE X372N007-IMPORTE-S =                                 
+                       X372N007-IMPORTE-S / 100                                 
+                   MOVE 'E'                 TO X372N007-TIPOIMPORTE-S           
+
+                 ELSE                                                           
+      * CONTROLAMOS QUE TENGA UN RENDIMIENTO INTEGRO CAPITAL DISTINTO           
+      * DE CERO                                                                 
+                   IF WS-IMPRTOINTEGRCAP(I) NOT EQUAL ZEROES                    
+                      PERFORM 2200-ACTUALIZA-COMPLEMENTARIO                     
+                   ELSE                                                         
+                      SET SI-ROLLBACK TO TRUE                                   
+                      SET ERROR-GRAVE TO TRUE                                   
+                      MOVE '11'           TO X372N007-CRETORNO-S                
+                      MOVE 'EL RENDIMIENTO INTEGRO CAPITAL ES CERO'             
+                        TO X372N007-GERROR-S                                    
+                      MOVE WS-B372N007     TO X372N007-GNOMPROG-S               
+                      MOVE WS-POLIZA-AUX   TO X372N007-POLIZA-S                 
+                   END-IF                                                       
+
+                 END-IF                                                         
+
+              END-PERFORM                                                       
+
+           END-IF                                                               
+           IF X372N007-ANIO-S EQUAL ZEROS                                       
+              MOVE X372M004-ANIO-S(1) TO X372N007-ANIO-S                        
+              MOVE X372M004-KEXPEDIENTE-S(1) TO X372N007-KEXPEDIENTE-S          
+           END-IF.                                                              
+
+           CONTINUE.                                                            
+
+      ***************************************************************           
+       2100-OBTENER-NUMERO-REGISTROS.                                           
+      ***************************************************************           
+           INITIALIZE WS-X372M004                                               
+               REPLACING ALPHANUMERIC DATA BY SPACES                            
+                              NUMERIC DATA BY ZEROS                             
+
+      * MOVEMOS EL CAMPO POLIZA DE LA COPY X372N005 A LAS VARIABLES AUX         
+           MOVE X372N007-POLIZA       TO WS-POLI-AUX                            
+           MOVE WS-POLIZA-AUX         TO WS-POLIZA                              
+           MOVE '0000'                TO WS-SUBPOL                              
+           MOVE 0                     TO WS-CERTIF                              
+
+           MOVE 'CC'                  TO X372M004-OPERACION-E                   
+           MOVE WS-POLIZA             TO X372M004-KPOLIZA-E                     
+           MOVE WS-SUBPOL             TO X372M004-NSUBPOLIZA-E                  
+           MOVE WS-CERTIF             TO X372M004-KCERTIFICADO-E                
+
+           MOVE 0 TO XN-J                                                       
+
+           PERFORM UNTIL X372M004-SPAGINACION-S = 'N' OR ERROR-GRAVE            
+
+      * MOVEMOS EL CAMPO POLIZA DE LA COPY X372N007 A LAS VARIABLES AUX         
+
+              CALL WS-B372M004  USING WS-X372M004                               
+      *D*                                                                       
+      *        DISPLAY ' OPERACION-E  ' X372M004-OPERACION-E                    
+      *        DISPLAY ' KPOLIZA-E    ' X372M004-KPOLIZA-E                      
+      *        DISPLAY ' NSUBPOLIZA-E ' X372M004-NSUBPOLIZA-E                   
+      *        DISPLAY ' KCERTIFICADO ' X372M004-KCERTIFICADO-E                 
+      *        DISPLAY ' CRETORNO-S   ' X372M004-CRETORNO-S                     
+      *F*                                                                       
+
+      *D*                                                                       
+               DISPLAY ' RETORNO M004 ' X372M004-CRETORNO-S                     
+               DISPLAY ' ANIO 1       ' X372M004-ANIO-S(1)                      
+               DISPLAY ' ANIO 2       ' X372M004-ANIO-S(2)                      
+      *F*                                                                       
+              MOVE 1 TO XN-I                                                    
+
+      * COMPROBAREMOS CUANTAS CABEZAS TIENE LA POLIZA, EL CONTADOR XN-I         
+      * CONTROLA LOS EXPEDIENTES ENCONTRADOS MIENTRAS QUE XN-J CONTROLA         
+      * LOS EXPEDIENTES QUE ADEMAS TIENEN EL RAMO IGUAL, QUE NO PUEDE           
+      * EXCEDER DE DOS POR POLIZA.                                              
+
+              PERFORM UNTIL XN-I > X372M004-NUM-REGISTROS-S OR                  
+                            XN-I > 5 OR                                         
+                            ERROR-GRAVE                                         
+
+      * CONTROLAMOS LA PAGINACION                                               
+                 IF X372M004-SPAGINACION-S = 'S'                                
+                    MOVE X372M004-ANIO-S          (XN-I)                        
+                      TO X372M004-ANT-ANIO-E                                    
+                    MOVE X372M004-KEXPEDIENTE-S   (XN-I)                        
+                      TO X372M004-ANT-KEXPEDIENTE-E                             
+                 END-IF                                                         
+
+
+      * CONTROLAMOS LA POLIZA A ACTUALIZAR                                      
+      *          IF X372M004-KRAMO-S(XN-I)        EQUAL WS-RAMO AND             
+                 IF X372M004-KPOLIZA-S(XN-I)      EQUAL WS-POLIZA AND           
+                    X372M004-NSUBPOLIZA-S(XN-I)   EQUAL WS-SUBPOL AND           
+                    X372M004-KCERTIFICADO-S(XN-I) EQUAL WS-CERTIF               
+
+      *D*                                                                       
+      *       DISPLAY ' ENTRAMOSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS'                
+      *       DISPLAY ' M004-KPERSONA1-S ' X372M004-KPERSONA1-S(XN-I)           
+      *F*                                                                       
+
+                    ADD 1 TO XN-J                                               
+      * MOVEMOS LOS CAMPOS A LAS VARIABLES AUXILIARES                           
+                    MOVE X372M004-ANIO-S(XN-I)         TO WS-ANIO(XN-J)         
+                    MOVE X372M004-KEXPEDIENTE-S(XN-I)                           
+                      TO WS-KEXPEDIENTE(XN-J)                                   
+                    MOVE X372M004-IMPREDPRICAP-S(XN-I)                          
+                      TO WS-IMPREDPRICAP(XN-J)                                  
+                    MOVE X372M004-IMPREDTRANCAP-S(XN-I)                         
+                      TO WS-IMPREDTRANCAP(XN-J)                                 
+                    MOVE X372M004-IMPRTOINTEGRCAP-S(XN-I)                       
+                      TO WS-IMPRTOINTEGRCAP(XN-J)                               
+                    MOVE X372M004-IMPCOMP1-S(XN-I)                              
+                      TO WS-IMPCOMP1(XN-J)                                      
+                    MOVE X372M004-KPERSONA1-S(XN-I)                             
+                      TO WS-KPERSONA(XN-J)                                      
+      *D*                                                                       
+      *       DISPLAY ' IMPCOMP1 ' X372M004-IMPCOMP1-S(XN-I)                    
+      *       DISPLAY ' IMPCOMP2 ' WS-IMPCOMP1(XN-J)                            
+      *F*                                                                       
+                    MOVE X372M004-IMPCOMP2-S(XN-I)                              
+                      TO WS-IMPCOMP2(XN-J)                                      
+                    MOVE X372M004-FECVENCIMICAP-S(XN-I)                         
+                      TO WS-FECVENCIMIENTO(XN-J)                                
+
+                    PERFORM 2105-CALCULO-PENDIENTE                              
+                  END-IF                                                        
+
+                  ADD 1 TO XN-I                                                 
+
+               END-PERFORM                                                      
+
+      ** CONTROLAMOS QUE NO TENGAN MAS DE DOS CABEZA POR POLIZA                 
+              MOVE XN-J                     TO WS-NUMREG                        
+      *D*                                                                       
+      *       DISPLAY ' XN-J ' XN-J                                             
+      *F*                                                                       
+
+              IF XN-J > 2                                                       
+
+                 SET ERROR-GRAVE TO TRUE                                        
+                 SET SI-ROLLBACK TO TRUE                                        
+                 MOVE 'N'                   TO X372M004-SPAGINACION-S           
+                 MOVE '06'                TO X372N007-CRETORNO-S                
+                 MOVE 'EXCEDIDO EL NUMERO MAXIMO DE CABEZA PARA LA POLIZ        
+      -               'A'                                                       
+                   TO X372N007-GERROR-S                                         
+                 MOVE WS-B372N007         TO X372N007-GNOMPROG-S                
+                 MOVE WS-POLIZA-AUX       TO X372N007-POLIZA-S                  
+
+              END-IF                                                            
+
+           END-PERFORM                                                          
+
+           CONTINUE.                                                            
+
+      ***************************************************************           
+       2105-CALCULO-PENDIENTE.                                                  
+      ***************************************************************           
+
+           INITIALIZE WS-PENDIENTE-AUX                                          
+
+           IF X372M004-FECPAGOCAPITAL-S(XN-I) EQUAL ZEROES                      
+              COMPUTE WS-PENDIENTE-AUX   =                                      
+                      X372M004-IMPCAPITAL-S(XN-I) +                             
+                      X372M004-IMPBENEFICIOS-S(XN-I)                            
+           ELSE                                                                 
+              MOVE ZEROES  TO WS-PENDIENTE-AUX                                  
+           END-IF                                                               
+
+           IF X372M004-FECPAGCOMP1-S(XN-I) EQUAL ZEROES                         
+              ADD WS-IMP-COMPLEMENTARIO     TO WS-PENDIENTE-AUX                 
+           END-IF                                                               
+
+           IF X372M004-FECPAGCOMP2-S(XN-I) EQUAL ZEROES                         
+              ADD WS-IMP-COMPLEMENTARIO     TO WS-PENDIENTE-AUX                 
+           END-IF                                                               
+
+           MOVE WS-PENDIENTE-AUX            TO WS-PENDIENTE(XN-J)               
+
+             .                                                                  
+      ***************************************************************           
+       2200-ACTUALIZA-COMPLEMENTARIO.                                           
+      ***************************************************************           
+
+      *D*                                                                       
+      *        DISPLAY ' GRAVE I' SW-ERRORES                                    
+      *F*                                                                       
+      *D*                                                                       
+      *       DISPLAY ' 2200-ACTUALIZA-COMPLEMENTARIO. '                        
+      *F*                                                                       
+      *D*                                                                       
+      *       DISPLAY ' COMP1 DISTINTO DE ZEROS'                                
+      *       DISPLAY ' WS-IMPCOMP1(I) ' WS-IMPCOMP1(I)                         
+      *F*                                                                       
+           IF  WS-IMPCOMP1(I) EQUAL ZEROES                                      
+
+               INITIALIZE WS-X372M001                                           
+                   REPLACING ALPHANUMERIC DATA BY SPACES                        
+                                  NUMERIC DATA BY ZEROS                         
+      * INDICAMOS QUE EL USUARIO QUE HA MODIFICADO EL EXPEDIENTE ES             
+      * UN FICHERO                                                              
+               MOVE 'CFICHERO' TO X372M001-CUSUARIO-E                           
+
+               PERFORM 2210-MOVER-CAMPOS-COMP-1                                 
+
+               MOVE 'M7'               TO X372M001-OPERACION-E                  
+               MOVE WS-ANIO(I)         TO X372M001-ANIO-E                       
+               MOVE WS-KEXPEDIENTE(I)  TO X372M001-KEXPEDIENTE-E                
+
+               CALL WS-B372M001 USING WS-X372M001                               
+
+      *D*                                                                       
+      *        DISPLAY ' RETORNO MODIFACION M001 ' X372M001-CRETORNO-S          
+      *F*                                                                       
+               IF X372M001-CRETORNO-S NOT EQUAL '00'                            
+                  SET ERROR-GRAVE TO TRUE                                       
+                  SET SI-ROLLBACK TO TRUE                                       
+                  MOVE '09'                TO X372N007-CRETORNO-S               
+                  MOVE 'ERROR AL ACTUALIZAR COMPLEMENTARIO PRIMERO'             
+                    TO X372N007-GERROR-S                                        
+                  MOVE WS-B372N007         TO X372N007-GNOMPROG-S               
+                  MOVE WS-POLIZA           TO X372N007-POLIZA-S                 
+               END-IF                                                           
+
+           END-IF                                                               
+
+      *D*                                                                       
+      *       DISPLAY ' COMP2 DISTINTO DE ZEROS'                                
+      *       DISPLAY ' WS-IMPCOMP2(I) ' WS-IMPCOMP2(I)                         
+      *F*                                                                       
+           IF  WS-IMPCOMP2(I) EQUAL ZEROS AND NOT ERROR-GRAVE                   
+      *D*                                                                       
+      *       DISPLAY ' COMP2 DISTINTO DE ZEROS'                                
+      *       DISPLAY ' WS-IMPCOMP1(I) ' WS-IMPCOMP1(I)                         
+      *F*                                                                       
+
+               INITIALIZE WS-X372M001                                           
+                   REPLACING ALPHANUMERIC DATA BY SPACES                        
+                                  NUMERIC DATA BY ZEROS                         
+
+               PERFORM 2220-MOVER-CAMPOS-COMP-2                                 
+
+               MOVE 'M8'               TO X372M001-OPERACION-E                  
+               MOVE WS-ANIO(I)         TO X372M001-ANIO-E                       
+               MOVE WS-KEXPEDIENTE(I) TO X372M001-KEXPEDIENTE-E                 
+
+               CALL WS-B372M001 USING WS-X372M001                               
+               IF X372M001-CRETORNO-S NOT EQUAL '00'                            
+                  SET ERROR-GRAVE TO TRUE                                       
+                  SET SI-ROLLBACK TO TRUE                                       
+                  MOVE '10'                TO X372N007-CRETORNO-S               
+                  MOVE 'ERROR AL ACTUALIZAR COMPLEMENTARIO SEGUNDO'             
+                    TO X372N007-GERROR-S                                        
+                  MOVE WS-B372N007         TO X372N007-GNOMPROG-S               
+                  MOVE WS-POLIZA           TO X372N007-POLIZA-S                 
+               END-IF                                                           
+           END-IF                                                               
+
+      * CONTROLAMOS LOS COMPLEMENTARIOS ACTUALIZADOS                            
+      *D*                                                                       
+      *        DISPLAY ' GRAVE F' SW-ERRORES                                    
+      *        DISPLAY ' X372N007-POLIZA-S ' X372N007-POLIZA-S                  
+      *F*                                                                       
+           IF NOT ERROR-GRAVE                                                   
+                  MOVE WS-B372N007         TO X372N007-GNOMPROG-S               
+                  MOVE WS-POLIZA           TO X372N007-POLIZA-S                 
+                  MOVE WS-FECVENCIMIENTO-AUX                                    
+                     TO X372N007-FECVENCIMICAP-S                                
+                   COMPUTE X372N007-IMPORTE-S =                                 
+                               FUNCTION NUMVAL (X372N007-BONO)                  
+
+              COMPUTE WS-SUMA-COMP = WS-IMPCOMP1(I) + WS-IMPCOMP2(I)            
+
+              EVALUATE WS-SUMA-COMP                                             
+                  WHEN WS-IMPCOMP1(I)                                           
+                       MOVE '1'           TO X372N007-TIPOIMPORTE-S             
+                  WHEN WS-IMPCOMP2(I)                                           
+                       MOVE '2'           TO X372N007-TIPOIMPORTE-S             
+                  WHEN OTHER                                                    
+                       MOVE 'A'           TO X372N007-TIPOIMPORTE-S             
+              END-EVALUATE                                                      
+
+           END-IF                                                               
+
+           CONTINUE.                                                            
+
+      ***************************************************************           
+       2210-MOVER-CAMPOS-COMP-1.                                                
+      ***************************************************************           
+
+           MOVE WS-IMP-COMPLEMENTARIO      TO X372M001-IMPCOMP1-E               
+           MOVE WS-IMP-COMPLEMENTARIO      TO X372M001-IMPRTOINTCOMP1-E         
+
+           COMPUTE X372M001-IMPREDPRICOMP1-E =                                  
+           WS-IMP-COMPLEMENTARIO * WS-IMPREDPRICAP(I)  /                        
+                                   WS-IMPRTOINTEGRCAP(I)                        
+
+           COMPUTE X372M001-IREDTRANCOMP1-E  =                                  
+           WS-IMP-COMPLEMENTARIO * WS-IMPREDTRANCAP(I) /                        
+                                   WS-IMPRTOINTEGRCAP(I)                        
+
+           COMPUTE X372M001-IRTONETCOMP1-E = WS-IMP-COMPLEMENTARIO -            
+                                             X372M001-IMPREDPRICOMP1-E -        
+                                             X372M001-IREDTRANCOMP1-E           
+
+      * SEGUN EL DOCUMENTO FUNCIONAL ESTE VALOR SIEMPRE SERA 15                 
+      * Y TIPO DE IMPUESTO MOBILIARIO                                           
+INC1  * SE MODIFICA POR CAMBIO DE PORCENTAJE DE 15 AL CAMPO DE ENTRADA          
+INC1  *    MOVE 15                         TO X372M001-PORRETCOMP1-E            
+INC1       MOVE X372N007-PRETENCION        TO X372M001-PORRETCOMP1-E            
+           MOVE '12'                       TO X372M001-TIPIMPUESTCOMP1-E        
+      *------------------------------------------------------------             
+           COMPUTE X372M001-IRETCOMP1-E =                                       
+INC1  *            X372M001-IRTONETCOMP1-E * 15 / 100                           
+INC1               X372M001-IRTONETCOMP1-E * X372N007-PRETENCION / 100          
+
+           COMPUTE X372M001-ILIQCOMP1-E =                                       
+                   WS-IMP-COMPLEMENTARIO - X372M001-IRETCOMP1-E                 
+
+           MOVE WS-FECHA           TO X372M001-FECEMICOMP1-E                    
+
+           CONTINUE.                                                            
+
+      ***************************************************************           
+       2220-MOVER-CAMPOS-COMP-2.                                                
+      ***************************************************************           
+
+           MOVE WS-IMP-COMPLEMENTARIO      TO X372M001-IMPCOMP2-E               
+           MOVE WS-IMP-COMPLEMENTARIO      TO X372M001-IMPRTOINTCOMP2-E         
+
+           COMPUTE X372M001-IMPREDPRICOMP2-E =                                  
+           WS-IMP-COMPLEMENTARIO * WS-IMPREDPRICAP(I)  /                        
+                                   WS-IMPRTOINTEGRCAP(I)                        
+
+           COMPUTE X372M001-IREDTRANCOMP2-E  =                                  
+           WS-IMP-COMPLEMENTARIO * WS-IMPREDTRANCAP(I) /                        
+                                   WS-IMPRTOINTEGRCAP(I)                        
+
+           COMPUTE X372M001-IRTONETCOMP2-E = WS-IMP-COMPLEMENTARIO -            
+                                             X372M001-IMPREDPRICOMP2-E -        
+                                             X372M001-IREDTRANCOMP2-E           
+
+      * SEGUN EL DOCUMENTO FUNCIONAL ESTE VALOR SIEMPRE SERA 15                 
+      * Y TIPO DE IMPUESTO MOBILIARIO                                           
+INC1  * SE MODIFICA POR CAMBIO DE PORCENTAJE DE 15 AL CAMPO DE ENTRADA          
+INC1  *    MOVE 15                         TO X372M001-PORRETCOMP2-E            
+INC1       MOVE X372N007-PRETENCION        TO X372M001-PORRETCOMP2-E            
+           MOVE '12'                       TO X372M001-TIPIMPUESTCOMP2-E        
+      *------------------------------------------------------------             
+
+           COMPUTE X372M001-IRETCOMP2-E =                                       
+INC1  *            X372M001-IRTONETCOMP2-E * 15 / 100                           
+INC1               X372M001-IRTONETCOMP2-E * X372N007-PRETENCION / 100          
+
+           COMPUTE X372M001-ILIQCOMP2-E =                                       
+                   WS-IMP-COMPLEMENTARIO - X372M001-IRETCOMP2-E                 
+
+           MOVE WS-FECHA           TO X372M001-FECEMICOMP2-E                    
+
+           CONTINUE.                                                            
+
+      ******************************************************************        
+        8888-ROLLBACK.                                                          
+      ******************************************************************        
+
+           INITIALIZE WS-X001M001                                               
+           MOVE 'R'   TO X001M001-CACCION                                       
+
+           CALL WS-B001M001 USING WS-X001M001.                                  
+
+      *****************************************************************         
+        8889-COMMIT.                                                            
+      *****************************************************************         
+           INITIALIZE WS-X001M001                                               
+           MOVE 'C' TO X001M001-CACCION                                         
+
+           CALL WS-B001M001 USING WS-X001M001.                                  
+
+      ***************************************************************           
+       10000-FIN.                                                               
+      ***************************************************************           
+
+           IF SI-ROLLBACK                                                       
+              PERFORM 8888-ROLLBACK                                             
+           ELSE                                                                 
+      *D*                                                                       
+      *    DISPLAY ' HACEMOS COMIT '                                            
+      *F*                                                                       
+              PERFORM 8889-COMMIT                                               
+           END-IF                                                               
+
+           GOBACK.                                                              

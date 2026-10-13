@@ -1,0 +1,53 @@
+      ******************************************************************
+      **INV: A372VENM
+      ******************************************************************
+      *                      COPY  X372VT08                            *
+      *                                                                *
+      *         CONSULTA DE DATOS ADICIONALES DE EXPEDIENTES           *
+      *                     DE VENCIMIENTOS                            *
+      *                                                                *
+      ******************************************************************
+       05 X372VT08.
+          07 X372VT08-E.
+             09 X372VT08-ANIO-E                PIC 9(4).
+             09 X372VT08-KEXPEDIENTE-E         PIC 9(10).
+             09 X372VT08-OPERACION-E           PIC X(1).
+             09 X372VT08-ANT-KEXPEDIENTE-E     PIC 9(10).
+             09 X372VT08-ANT-ANIO-E            PIC 9(4).
+          07 X372VT08-S.
+             09 X372VT08-SSIGUIENTE            PIC X(1).
+             09 X372VT08-KEXPEDIENTE-ANT-S     PIC 9(10).
+             09 X372VT08-ANIO-ANT-S            PIC 9(4).
+             09 X372VT08-NREGSAL               PIC 9(3).
+             09 X372VT08-REGISTROS-OCC-S    OCCURS 20.
+                11 X372VT08-ANIO-S             PIC 9(4).
+                11 X372VT08-KEXPEDIENTE-S      PIC 9(10).
+                11 X372VT08-VEN-MIGR-S         PIC X(01).
+                11 X372VT08-USUARIO-PAGO-S     PIC X(08).
+                11 X372VT08-FCAPTURA-S         PIC X(08).
+                11 X372VT08-CUSUARIO-CAPT-S    PIC X(08).
+                11 X372VT08-FORMAPAGO-S        PIC X(01).
+                11 X372VT08-NUM-CHEQUE-S       PIC 9(10).
+                11 X372VT08-NUM-CUENTA-S       PIC X(20).
+                11 X372VT08-REF-REINVERSION-S  PIC X(15).
+                11 X372VT08-CUSU-PAGO-COMP1-S  PIC X(08).
+                11 X372VT08-FCAPTURA-COMP1-S   PIC X(08).
+                11 X372VT08-CUSU-CAPT-COMP1-S  PIC X(08).
+                11 X372VT08-FORMAPAGO-COMP1-S  PIC X(01).
+                11 X372VT08-NCHEQUE-COMP1-S    PIC 9(10).
+                11 X372VT08-NCUENTA-COMP1-S    PIC X(20).
+                11 X372VT08-CUSU-PAGO-COMP2-S  PIC X(08).
+                11 X372VT08-FCAPTURA-COMP2-S   PIC X(08).
+                11 X372VT08-CUSU-CAPT-COMP2-S  PIC X(08).
+                11 X372VT08-FORMAPAGO-COMP2-S  PIC X(01).
+                11 X372VT08-NCHEQUE-COMP2-S    PIC 9(10).
+                11 X372VT08-NCUENTA-COMP2-S    PIC X(20).
+                11 X372VT08-GRADO-DISCAP-S     PIC X(01).
+                11 X372VT08-PREST-VIVIENDA-S   PIC X(01).
+                11 X372VT08-SITU-FAMILIAR-S    PIC X(20).
+                11 X372VT08-NIF-CONYUGUE-S     PIC X(10).
+                11 X372VT08-ICOMPENSATORIA-S   PIC 9(7)V9(2).
+                11 X372VT08-IMPALIMENHIJOS-S   PIC 9(7)V9(2).
+             09 X372VT08-CRETORNO-S            PIC X(2).
+             09 X372VT08-GERROR-S              PIC X(100).
+             09 X372VT08-GNOMPROG-S            PIC X(8).

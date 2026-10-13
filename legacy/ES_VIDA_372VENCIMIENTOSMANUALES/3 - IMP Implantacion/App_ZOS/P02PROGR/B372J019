@@ -1,0 +1,343 @@
+       IDENTIFICATION DIVISION.                                         00010001
+      ******************************************************************00020001
+      **INV*A372VENM****************************************************00030001
+      ******************************************************************00040001
+       PROGRAM-ID.                                                      00050001
+                  B372J019.                                             00060001
+                                                                        00070001
+      *-+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+-* 00080001
+      *                                                               * 00090001
+      *                                                               * 00100001
+      *  AUTOR     : INDRA                                            * 00110001
+      *  FECHA     : NOVIEMBRE 2017                                   * 00120001
+      *  DESCRIP.  : GENARACION DEL FICHERO SAPASTON DE LOS REGISTROS * 00130001
+      *              DE LA TABLA TB372VEN0 CUYA FEHCA DE PAGO ESTA    * 00140001
+      *              SIN INFORMAR                                     * 00150001
+      *                                                               * 00160001
+      *-+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+-* 00170001
+                                                                        00180001
+       ENVIRONMENT DIVISION.                                            00190001
+                                                                        00200001
+       CONFIGURATION SECTION.                                           00210001
+         SPECIAL-NAMES. DECIMAL-POINT IS COMMA.                         00220001
+       INPUT-OUTPUT SECTION.                                            00230001
+       FILE-CONTROL.                                                    00240001
+                                                                        00250001
+            SELECT ENTRADA1 ASSIGN TO SYS001.                           00260001
+            SELECT ENTRADA2 ASSIGN TO SYS002.                           00270001
+            SELECT FICHA    ASSIGN TO SYS003.                           00280001
+            SELECT SALIDA   ASSIGN TO SYS004.                           00290001
+      *                                                                 00310001
+       DATA DIVISION.                                                   00320001
+       FILE SECTION.                                                    00330001
+                                                                        00340001
+       FD   ENTRADA1                                                    00350001
+            LABEL RECORD STANDARD                                       00360001
+            RECORDING MODE IS F                                         00370001
+            RECORD CONTAINS 100                                         00380001
+            DATA RECORD IS WS-ENTRADA1                                  00390001
+            BLOCK 0 RECORDS.                                            00400001
+       01   WS-ENTRADA1.                                                00410001
+            05 FILLER        PIC X(100).                                00420001
+                                                                        00430001
+       FD   ENTRADA2                                                    00440001
+            LABEL RECORD STANDARD                                       00450001
+            RECORDING MODE IS F                                         00460001
+            RECORD CONTAINS 50                                          00470001
+            DATA RECORD IS WS-ENTRADA2                                  00480001
+            BLOCK 0 RECORDS.                                            00490001
+       01   WS-ENTRADA2.                                                00500001
+            05 FILLER        PIC X(50).                                 00510001
+                                                                        00520001
+       FD   FICHA                                                       00530001
+            LABEL RECORD STANDARD                                       00540001
+            RECORDING MODE IS F                                         00550001
+            BLOCK CONTAINS 0 RECORDS.                                   00560001
+            COPY RC37000.                                               00570001
+                                                                        00580001
+       FD  SALIDA                                                       00590001
+           LABEL RECORD STANDARD                                        00600001
+           RECORDING MODE IS F                                          00610001
+           BLOCK CONTAINS 0 RECORDS.                                    00620001
+       COPY SAPASTON.                                                   00630001
+                                                                        00640001
+       WORKING-STORAGE SECTION.                                         00650001
+                                                                        00660001
+       01 FILLER.                                                       00670001
+          03 FILLER             PIC X(17) VALUE 'INICIO DE WORKING'.    00680001
+                                                                        00690001
+          03 SW-FIN-F01                PIC X.                           00700001
+             88 SI-FIN-F01             VALUE 'S'.                       00710001
+             88 NO-FIN-F01             VALUE 'N'.                       00720001
+                                                                        00730001
+          03 SW-FIN-F02                PIC X.                           00740001
+             88 SI-FIN-F02             VALUE 'S'.                       00750001
+             88 NO-FIN-F02             VALUE 'N'.                       00760001
+                                                                        00770001
+          03 CT-LEIDOS-VEN             PIC 9(08) VALUE ZEROES.          00780001
+          03 CT-LEIDOS-CCV             PIC 9(08) VALUE ZEROES.          00790001
+          03 CT-SAPASTON               PIC 9(08) VALUE ZEROES.          00800001
+          03 WS-FECHA-DESDE            PIC X(08) VALUE SPACES.          00810001
+          03 WS-FECHA-HASTA            PIC X(08) VALUE SPACES.          00820001
+                                                                        00830001
+          03 WS-VEN0-KEXPEDIENTE       PIC X(10).                       00840001
+          03 WS-VEN0-NSUBPOLIZA        PIC X(4).                        00850001
+          03 WS-VEN0-KCERTIFICADO      PIC X(6).                        00860001
+          03 WS-VEN0-KMODALIDAD        PIC X(6).                        00870001
+          03 WS-SAP-KMODALIDAD.                                         00880001
+             05 FILLER                 PIC X(2) VALUE 'V0'.             00890001
+             05 WS-SAP-MODALIDAD       PIC X(3).                        00900001
+          03 IMP-DEBE                  PIC 9(12)V9(02).                 00910001
+          03 IMP-HABER                 PIC 9(12)V9(02).                 00920001
+                                                                        00930001
+          03 WS-FECHA-DIA.                                              00940001
+             05 WS-ANO-DIA              PIC 9(04) VALUE ZEROES.         00950001
+             05 WS-MES-DIA              PIC 9(02) VALUE ZEROES.         00960001
+             05 WS-DIA-DIA              PIC 9(02) VALUE ZEROES.         00970001
+                                                                        00980001
+          03 WS-FECHA-INI.                                              00990001
+             05 WS-ANO-INI              PIC X(04) VALUE SPACES.         01000001
+             05 WS-MES-INI              PIC X(02) VALUE '01'.           01010001
+             05 WS-DIA-INI              PIC X(02) VALUE '01'.           01020001
+                                                                        01030001
+          03 REG-ENTRADA-VEN.                                           01040001
+             05 RG-VEN0-ANIO            PIC S9(4)V USAGE COMP-3.        01050001
+             05 RG-VEN0-KEXPEDIENTE     PIC S9(10)V USAGE COMP-3.       01060001
+             05 RG-VEN0-KPOLIZA         PIC X(10).                      01070001
+             05 RG-VEN0-NSUBPOLIZA      PIC S9(4)V USAGE COMP-3.        01080001
+             05 RG-VEN0-KCERTIFICADO    PIC S9(6)V USAGE COMP-3.        01090001
+             05 RG-VEN0-KMODALIDAD      PIC S9(5)V USAGE COMP-3.        01100001
+             05 RG-VEN0-CCANALCAMP      PIC X(2).                       01110001
+             05 RG-VEN0-FECEFECTO       PIC X(8).                       01120001
+             05 RG-VEN0-KOFICINA        PIC X(4).                       01130001
+             05 RG-VEN0-IMPCAPITAL      PIC S9(11)V9(2) USAGE COMP-3.   01140001
+             05 RG-VEN0-IMPBENEFICIOS   PIC S9(11)V9(2) USAGE COMP-3.   01150001
+             05 FILLER                  PIC X(14).                      01160001
+                                                                        01170001
+          03 REG-ENTRADA-CCV.                                           01180001
+             05 RG-CCV0-ANIO            PIC S9(4)V USAGE COMP-3.        01190001
+             05 RG-CCV0-KEXPEDIENTE     PIC S9(10)V USAGE COMP-3.       01200001
+             05 RG-CCV0-IMPCOA          PIC S9(11)V9(2) USAGE COMP-3.   01210001
+             05 RG-CCV0-OK              PIC X(1).                       01220001
+             05 FILLER                  PIC X(19).                      01230001
+      *                                                                 01240001
+           03 FILLER PIC X(40) VALUE 'FINAL WORKING-STORAGE SECTION'.   01250001
+      *                                                                 01260001
+      ***************************************************************** 01270001
+      ***           P R O C E D U R E    D I V I S I O N            *** 01280001
+      ***************************************************************** 01290001
+      *                                                                 01300001
+       PROCEDURE DIVISION.                                              01310001
+                                                                        01320001
+       PRINCIPAL.                                                       01330001
+                                                                        01340001
+           PERFORM INICIO.                                              01350001
+           PERFORM PROCESO UNTIL SI-FIN-F01.                            01360001
+           PERFORM FIN.                                                 01370001
+      *                                                                 01380001
+      ***************************************************************** 01390001
+      *                                                                 01400001
+      ***************************************************************** 01410001
+       INICIO.                                                          01420001
+      ********                                                          01430001
+      *                                                                 01440001
+           OPEN INPUT ENTRADA1 ENTRADA2 FICHA                           01450001
+                OUTPUT SALIDA.                                          01460001
+                                                                        01470001
+           INITIALIZE IMP-DEBE IMP-HABER R-ASTOS-SAP                    01480001
+                      CT-LEIDOS-VEN CT-LEIDOS-CCV CT-SAPASTON.          01490001
+                                                                        01500001
+           SET NO-FIN-F01   TO TRUE                                     01510001
+           SET NO-FIN-F02   TO TRUE                                     01520001
+                                                                        01530001
+           PERFORM LEER-FECHA.                                          01540001
+           PERFORM LEER-VEN.                                            01550001
+           PERFORM LEER-CCV.                                            01560001
+                                                                        01570001
+           IF NO-FIN-F01                                                01580001
+              PERFORM GRABAR-REG11.                                     01590001
+      *                                                                 01600001
+      ***************************************************************** 01610001
+      *                                                                 01620001
+      ***************************************************************** 01630001
+       PROCESO.                                                         01640001
+      *********                                                         01650001
+      *                                                                 01660001
+           PERFORM GRABAR-REG22.                                        01670001
+           PERFORM LEER-VEN.                                            01680001
+           PERFORM LEER-CCV.                                            01690001
+      *                                                                 01700001
+      ***************************************************************** 01710001
+       FIN.                                                             01720001
+      *****                                                             01730001
+      *                                                                 01740001
+           PERFORM GRABAR-REG22-TOTALES.                                01750001
+           PERFORM GRABAR-REG33.                                        01760001
+                                                                        01770001
+           CLOSE SALIDA ENTRADA1 ENTRADA2.                              01780001
+                                                                        01790001
+      *D*                                                               01800001
+           DISPLAY ' * * * * * * * * * * * * * * * * * * *'.            01810001
+           DISPLAY ' *   F I N      B 3 7 2 J 0 1 9      *'.            01820001
+           DISPLAY ' * * * * * * * * * * * * * * * * * * *'.            01830001
+           DISPLAY ' *  REG. LEIDOS DE VEN...: ' CT-LEIDOS-VEN.         01840001
+           DISPLAY ' *  REG. LEIDOS DE CCV...: ' CT-LEIDOS-CCV.         01850001
+           DISPLAY ' * * * * * * * * * * * * * * * * * * *'.            01860001
+           DISPLAY ' *  LINEAS EN SAPASTON...: ' CT-SAPASTON.           01870001
+           DISPLAY ' * * * * * * * * * * * * * * * * * * *'.            01880001
+      *F*                                                               01890001
+           GOBACK.                                                      01900001
+      *                                                                 01910001
+       LEER-FECHA.                                                      01920001
+      *************                                                     01930001
+      *                                                                 01940001
+           READ FICHA                                                   01950001
+             AT END                                                     01960001
+      *D*                                                               01970001
+                 DISPLAY ' * * * FECHA NO INDICADA EN FICHERO FICHA'    01980001
+      *F*                                                               01990001
+           END-READ.                                                    02000001
+      *                                                                 02010001
+      *                                                                 02020001
+       LEER-VEN.                                                        02030001
+      *************                                                     02040001
+      *                                                                 02050001
+           INITIALIZE REG-ENTRADA-VEN.                                  02060001
+                                                                        02070001
+           READ ENTRADA1                                                02080001
+                AT END                                                  02090001
+                   SET SI-FIN-F01   TO TRUE                             02100001
+                NOT AT END                                              02110001
+                   ADD  1           TO CT-LEIDOS-VEN                    02120001
+                   MOVE WS-ENTRADA1 TO REG-ENTRADA-VEN                  02130001
+           END-READ.                                                    02140001
+      *                                                                 02150001
+       LEER-CCV.                                                        02160001
+      *************                                                     02170001
+      *                                                                 02180001
+           INITIALIZE REG-ENTRADA-CCV.                                  02190001
+                                                                        02200001
+           READ ENTRADA2                                                02210001
+                AT END                                                  02220001
+                   SET SI-FIN-F02   TO TRUE                             02230001
+                NOT AT END                                              02240001
+                   ADD  1           TO CT-LEIDOS-CCV                    02250001
+                   MOVE WS-ENTRADA2 TO REG-ENTRADA-CCV                  02260001
+           END-READ.                                                    02270001
+      *                                                                 02280001
+      *****************                                                 02290001
+       GRABAR-REG11.                                                    02300001
+      *****************                                                 02310001
+      *                                                                 02320001
+           INITIALIZE R-ASTOS-SAP.                                      02330001
+                                                                        02340001
+           MOVE 'XG'          TO INTERFAC-T1-SAP.                       02350001
+           MOVE '11'          TO TIPO-REG-T1-SAP.                       02360001
+           MOVE '0003'        TO SOCIEDAD-T1-SAP.                       02370001
+           MOVE 466           TO NUM-ASTO-T1-SAP.                       02380001
+           MOVE 3             TO NUM-SERI-T1-SAP.                       02390001
+           MOVE 'EUR'         TO MONEDA-T1-SAP.                         02400001
+           MOVE SPACES        TO OF-CONT-RO-T1-SAP.                     02410001
+           MOVE RC37000-FPROCE    TO F-CONTABIL-T1-SAP.                 02420001
+                                                                        02430001
+           WRITE R-ASTOS-SAP.                                           02440001
+           ADD 1 TO CT-SAPASTON.                                        02450001
+      *                                                                 02460001
+      *****************                                                 02470001
+       GRABAR-REG22.                                                    02480001
+      *****************                                                 02490001
+      *                                                                 02500001
+           INITIALIZE R-ASTOS-SAP.                                      02510001
+                                                                        02520001
+           MOVE '22'                      TO TIPO-REG-T2-SAP.           02530001
+           MOVE '0003'                    TO SOCIEDAD-T2-SAP.           02540001
+           MOVE 466                       TO NUM-ASTO-T2-SAP.           02550001
+           MOVE 3                         TO NUM-SERI-T2-SAP.           02560001
+           MOVE 693500                    TO CTA-CTBLE-T2-SAP.          02570001
+           MOVE 'EUR'                     TO MONEDA-T2-SAP.             02580001
+                                                                        02590001
+           IF RG-VEN0-KOFICINA NOT EQUAL ZEROES                         02600001
+              AND RG-VEN0-KOFICINA NOT EQUAL SPACES                     02610001
+              MOVE RG-VEN0-KOFICINA       TO CENTRO-COS-T2-SAP          02620001
+              MOVE RG-VEN0-KOFICINA       TO OF-CONT-RO-T2-SAP          02630001
+           ELSE                                                         02640001
+              MOVE ZEROES                 TO OF-CONT-RO-T2-SAP          02650001
+              MOVE ZEROES                 TO CENTRO-COS-T2-SAP-R        02660001
+           END-IF.                                                      02670001
+                                                                        02680001
+           MOVE RC37000-FPROCE            TO F-CONTABIL-T2-SAP.         02690001
+           MOVE ZEROES                    TO ORIG-GRUP-T2-SAP.          02700001
+           MOVE ZEROES                    TO F-VALOR-T2-SAP.            02710001
+           MOVE ZEROES                    TO NUM-EMPLE-T2-SAP.          02720001
+                                                                        02730001
+           MOVE SPACES                  TO MODALID-T2-SAP               02740001
+           MOVE RG-VEN0-KMODALIDAD      TO WS-VEN0-KMODALIDAD           02750001
+           MOVE WS-VEN0-KMODALIDAD(3:3) TO MODALID-T2-SAP(2:3)          02760001
+           MOVE WS-VEN0-KMODALIDAD(3:3) TO WS-SAP-MODALIDAD             02770001
+           MOVE WS-SAP-KMODALIDAD       TO COB-GAR-T2-SAP               02780001
+           MOVE 'VENCIMIENTOS MANUALES'   TO CONCEPT-T2-SAP.            02790001
+                                                                        02800001
+           IF RG-CCV0-OK = 'N'                                          02810001
+              COMPUTE IMP-DOC-T2-SAP = RG-VEN0-IMPCAPITAL +             02820001
+                                                RG-VEN0-IMPBENEFICIOS   02830001
+              MOVE IMP-DOC-T2-SAP     TO IMP-LOC-T2-SAP                 02840001
+           ELSE                                                         02850001
+              MOVE RG-CCV0-IMPCOA     TO IMP-DOC-T2-SAP                 02860001
+              MOVE RG-CCV0-IMPCOA     TO IMP-LOC-T2-SAP                 02870001
+           END-IF.                                                      02880001
+                                                                        02890001
+           COMPUTE IMP-DEBE = IMP-DEBE + IMP-DOC-T2-SAP.                02900001
+           COMPUTE IMP-HABER = IMP-HABER + IMP-LOC-T2-SAP.              02910001
+                                                                        02920001
+           MOVE 'D'                TO DEB-HAB-T2-SAP.                   02930001
+                                                                        02940001
+           WRITE R-ASTOS-SAP.                                           02950001
+           ADD 1 TO CT-SAPASTON.                                        02960001
+      *                                                                 02970001
+      *****************                                                 02980001
+       GRABAR-REG22-TOTALES.                                            02990001
+      *****************                                                 03000001
+      *                                                                 03010001
+           INITIALIZE R-ASTOS-SAP.                                      03020001
+      *                                                                 03030001
+           MOVE '22'                  TO TIPO-REG-T2-SAP.               03040001
+           MOVE '0003'                TO SOCIEDAD-T2-SAP.               03050001
+           MOVE 466                   TO NUM-ASTO-T2-SAP.               03060001
+           MOVE 3                     TO NUM-SERI-T2-SAP.               03070001
+           MOVE 350000                TO CTA-CTBLE-T2-SAP.              03080001
+           MOVE 'EUR'                 TO MONEDA-T2-SAP.                 03090001
+           MOVE RC37000-FPROCE        TO F-CONTABIL-T2-SAP.             03100001
+           MOVE ZEROES                TO ORIG-GRUP-T2-SAP.              03110001
+           MOVE ZEROES                TO F-VALOR-T2-SAP.                03120001
+           MOVE ZEROES                TO NUM-EMPLE-T2-SAP.              03130001
+           MOVE IMP-DEBE              TO IMP-DOC-T2-SAP                 03140001
+           MOVE IMP-HABER             TO IMP-LOC-T2-SAP                 03150001
+           MOVE 'H'                   TO DEB-HAB-T2-SAP                 03160001
+           MOVE 'VENCIMIENTOS MANUALES'   TO CONCEPT-T2-SAP.            03170001
+                                                                        03180001
+           WRITE R-ASTOS-SAP.                                           03190001
+           ADD 1 TO CT-SAPASTON.                                        03200001
+                                                                        03210001
+      *                                                                 03220001
+      *****************                                                 03230001
+       GRABAR-REG33.                                                    03240001
+      *****************                                                 03250001
+      *                                                                 03260001
+           INITIALIZE R-ASTOS-SAP.                                      03270001
+                                                                        03280001
+           MOVE '33'                  TO TIPO-REG-T3-SAP.               03290001
+           MOVE '0003'                TO SOCIEDAD-T3-SAP.               03300001
+           MOVE 466                   TO NUM-ASTO-T3-SAP.               03310001
+           MOVE 3                     TO NUM-SERI-T3-SAP.               03320001
+           MOVE 'EUR'                 TO MONEDA-T3-SAP.                 03330001
+           MOVE RG-VEN0-KOFICINA      TO OF-CONT-RO-T3-SAP.             03340001
+           MOVE RC37000-FPROCE        TO F-CONTABIL-T3-SAP.             03350001
+           MOVE IMP-DEBE              TO IMP-DEB-T3-SAP.                03360001
+           MOVE IMP-HABER             TO IMP-HAB-T3-SAP.                03370001
+                                                                        03380001
+           WRITE R-ASTOS-SAP.                                           03390001
+           ADD 1 TO CT-SAPASTON.                                        03400001
+      *                                                                 03410001
+      ***************************************************************** 03420001
+      * FIN DEL PROGRAMA.                                               03430001
+      ***************************************************************** 03440001

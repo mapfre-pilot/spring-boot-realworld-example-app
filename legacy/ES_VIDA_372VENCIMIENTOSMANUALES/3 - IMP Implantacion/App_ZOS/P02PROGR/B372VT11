@@ -1,0 +1,133 @@
+      *-----------------------                                                  
+       IDENTIFICATION DIVISION.                                                 
+      *------------------------                                                 
+
+       PROGRAM-ID. B372VT11.                                                    
+
+      ******************************************************************        
+      *  APLICACION   : RESACATES MANUALES (FOXPRO)                    *        
+      *  ANALISTA     : EVERIS                                         *        
+      *  PROGRAMADOR  : EVERIS                                         *        
+      *  FECHA        : JUNIO 2012.                                    *        
+      *  TIPO PROGRAMA: COBOL-CICS                                     *        
+      *  DESCRIPCION  : RECUPERACION DE DATOS DE PERSONAS DE FISCALIDAD*        
+      ******************************************************************        
+      ******************************************************************        
+      *PARAMETROS DE ENTRADA:                                                   
+      ******************************************************************        
+      *   -X372VT11-ENTRADA-E: COPY DE ENTRADA DE DATOS                         
+      *                                                                         
+      ******************************************************************        
+      *PARAMETROS DE SALIDA:                                                    
+      ******************************************************************        
+      *   -X372VT11-SALIDA-S : COPY DE SALIDA DE DATOS                          
+      ******************************************************************        
+
+      ******************************************************************        
+      *MODULOS UTILIZADOS:                                                      
+      ******************************************************************        
+      * B362N011 : MODULO DE NEGOCIO DE B372VT11                                
+      *                                                                         
+      ******************************************************************        
+
+      ******************************************************************        
+      * CODIGO DE ERRORES                                                       
+      ******************************************************************        
+      *                                                                         
+      * X372VT11-CRETORNO-S                                                     
+      *                                                                         
+      *                    '00' OPERACION CORRECTA                              
+      *                                                                         
+      *                    '99' ERROR AL DEVOLVER CONTROL                       
+      *                                                                         
+      ******************************************************************        
+
+      *--------------------                                                     
+       ENVIRONMENT DIVISION.                                                    
+      *---------------------                                                    
+
+       CONFIGURATION SECTION.                                                   
+        SPECIAL-NAMES.                                                          
+            DECIMAL-POINT IS COMMA.                                             
+
+       INPUT-OUTPUT SECTION.                                                    
+       FILE-CONTROL.                                                            
+
+      *-------------                                                            
+       DATA DIVISION.                                                           
+      *--------------                                                           
+
+       FILE SECTION.                                                            
+      *-------------                                                            
+
+      *************************                                                 
+       WORKING-STORAGE SECTION.                                                 
+      *************************                                                 
+      *                                                                         
+        01 VARIABLES.                                                   00960000
+           03 FILLER                PIC X(17) VALUE 'INICIO DE WORKING'.00960000
+           03 LT-B362N011           PIC X(08) VALUE 'B362N011'.                 
+           03 FILLER                PIC X(17) VALUE 'FINAL  DE WORKING'.00960000
+
+        01 WS-X362VT11.                                                         
+           COPY X362VT11.                                                       
+
+      *****************                                                         
+       LINKAGE SECTION.                                                         
+      *****************                                                         
+       01 DFHCOMMAREA.                                                  00012600
+           COPY R000X000.                                                       
+           03 COMMAREA.                                                         
+           COPY X372VT11.                                                       
+      *                                                                         
+      **************************************                                    
+       PROCEDURE DIVISION USING DFHCOMMAREA.                                    
+      **************************************                                    
+
+
+           PERFORM 1000-INICIO.                                                 
+
+           PERFORM 2000-PROCESO.                                                
+
+           PERFORM 9000-FIN.                                                    
+
+      ******************************************************************        
+      *1000-INICIO.                                                             
+      ******************************************************************        
+       1000-INICIO.                                                             
+
+           EXEC CICS                                                            
+                IGNORE CONDITION ERROR                                          
+           END-EXEC.                                                            
+
+           MOVE '00'       TO X372VT11-CRETORNO-S.                              
+           MOVE 'B372VT11' TO X372VT11-GNOMPROG-S.                              
+
+      ******************************************************************        
+      *2000-PROCESO.                                                            
+      ******************************************************************        
+       2000-PROCESO.                                                            
+
+           INITIALIZE WS-X362VT11.                                              
+           MOVE X372VT11              TO WS-X362VT11.                           
+           CALL LT-B362N011     USING WS-X362VT11.                              
+           MOVE WS-X362VT11           TO X372VT11.                              
+
+      ******************************************************************        
+      *9000-FIN.                                                                
+      ******************************************************************        
+       9000-FIN.                                                                
+           EXEC CICS                                                    00048300
+                RETURN                                                  00048400
+           END-EXEC.                                                    00048500
+
+           IF EIBRESP NOT = DFHRESP(NORMAL)                                     
+
+
+              MOVE  'B372VT11'  TO  X372VT11-GNOMPROG-S                         
+              MOVE  '99'        TO  X372VT11-CRETORNO-S                         
+              MOVE  'ERROR AL DEVOLVER CONTROL'                                 
+                                TO  X372VT11-GERROR-S                           
+
+           END-IF                                                               
+           .                                                                    

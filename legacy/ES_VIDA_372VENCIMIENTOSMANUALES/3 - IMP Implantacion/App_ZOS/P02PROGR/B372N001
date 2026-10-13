@@ -1,0 +1,2248 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. B372N001.
+      ******************************************************************
+      **INV: A372VENM
+      ******************************************************************
+      *
+      * APLICACION....:VENCIMIENTOS MANUALES (FOXPRO)
+      * ANALISTA......:EVERIS
+      * PROGRAMADOR...:EVERIS
+      * FECHA DE REALIZACION:  JUNIO 2012.
+      *
+      *DESCRIPCI”N DEL PROGRAMA:
+      *
+      * ---------------------------------------------------------------
+      * |  MANTENIMIENTO TABLA VENCIMIENTOS MANUALES (FOXPRO)         |
+      * ---------------------------------------------------------------
+      *
+      ******************************************************************
+      *PARAMETROS DE ENTRADA:
+      ******************************************************************
+      *   -X372VT01-ENTRADA-E: COPY DE ENTRADA DE DATOS
+      *
+      *   -X372VT01-OPERACION:
+      *
+      *    'A1' : ALTA DE EXPEDIENTE
+      *    'M1' : MODIFICACION DE EXPEDIENTES
+      *    'M2' : BORRADO LOGICO DE EXPEDIENTES
+      *    'M3' : REASEGURACION DE EXPEDIENTES
+      *    'B1' : BORRADO FISICO DE EXPEDIENTE
+      *
+      ******************************************************************
+      *PARAMETROS DE SALIDA:
+      ******************************************************************
+      *
+      ******************************************************************
+      *MODULOS UTILIZADOS:
+      ******************************************************************
+      * B160N315 : PROGRAMA DE COMUNICACIÛN DE LA APLICACIÛN DE PERSONAS
+      *
+      * B160N301 : ENVIO DE DATOS A FISCALIDAD
+      *
+      * B160M013 : ACTUALIZACION DE FINIQUITOS EN FISCALIDAD
+      *
+      * B620N050 : SERVICIO DE KPERSONA DE LAS POLIZAS
+      *
+      * B001N001 : VALIDACION FORMATO DNI
+      *
+      * B001N005 : VALIDACION FORMATO DE LA FECHA
+      *
+      * B001N011 : DIFERENCIA ENTRE FECHAS
+      *
+      * B001M001 : MODULOS ROLLBACK/COMMIT
+      *
+      * B160N055 : OPERACIONES SOBRE EL C¡LCULO FISCAL
+      *
+      * B372M001 : MODULO MANTENIMIENTO TABLA DE VENCIMIENTO
+      *
+      * B362M002 : MODULO MANTENIMIENTI TABLA DE VARIABLES DEL SISTEMA
+      *
+      * B372M004 : MODULO MANTENIMIENTO TABLA DE VENCIMIENTO
+      *
+
+      ******************************************************************
+      * CODIGO DE ERRORES
+      ******************************************************************
+      *
+      * X372VT01-CRETORNO-S
+      *          '00' OPERACION CORRECTA
+      *
+      *          '01' ERROR EN MODO
+      *
+      *          '02' ERROR EN LOS DATOS INFORMADOS
+      *
+      *          '03' ERROR REGISTRO NO ENCONTRADO
+      *
+      *          '04' ERROR REGISTRO NINGUNA MODIFICACION
+      *
+      *          '05' ERROR EN LA LLAMADA DEL MODULO
+      *
+      *          '06' ERROR EN ACCESO A BASE DE DATOS
+      *
+      *          '10' ERROR B160N315 PROGRAMA DE COMUNICACIÛN DE LA
+      *               APLICACION DE PERSONAS
+      *
+      *          '11' ERROR B160N301 ENVIO DE DATOS A FISCALIDAD
+      *
+      *          '12' ERROR B160M013 ACTL. DE FINIQUITOS EN FISCALIDAD
+      *
+      *          '13' ERROR B620N050 SERVICIO DE KPERSONA DE LAS POLIZAS
+      *
+      *          '14' ERROR B001N001 VALIDACION FORMATO DNI
+      *
+      *          '15' ERROR B001N005 VALIDACION FORMATO DE LA FECHA
+      *
+      *          '16' ERROR B001N011 DIFERENCIA ENTRE FECHAS
+      *
+      *          '17' ERROR FECHA DE EMISION INFERIOR A FECHA DE EFECTO
+      *
+      *          '18' ERROR B160N055 OPERACIONES SOBRE FISCALIDAD
+      *
+      *          '19' ERROR B620N050 RELACION NIF Y KPERSONA
+      *
+      *          '99' ERROR EN LOS DATOS INFORMADOS
+      *
+      ******************************************************************
+      * MODIFICACION: MU-2015-041869                   <541869>        *
+      * PROGRAMADOR : INDRA                                            *
+      * FECHA       : OCTUBRE 2015                                     *
+      * DESCRIPCION : INCLUIR CAMPO A—O FISCAL EN EL MANTENIMIENTO     *
+      ******************************************************************
+      * MODIFICACION: MU-2016-006663                   <606663>        *    *010
+      * PROGRAMADOR : INDRA                                            *    *010
+      * FECHA       : FEBRERO 2016                                     *    *010
+      * DESCRIPCION : NO INFORMAR A BDGI SI EL CAMBIO CORRESPONDE A UN * UN *010
+      *               DATO DE OBSERVACIONES.                           *    *010
+      ******************************************************************
+      *                                                                *
+      * PETICION    : MU-2016-006664       BUSCAR <<606664>            *
+      * AUTOR       : INDRA                                            *
+      * FECHA       : MARZO 2016                                       *
+      * DESCRIPCION : SE GUARDA EN BBDD EL IMPORTE DE CADA COASEGURO   *
+      *                                                                *
+      ******************************************************************
+      *                                                                *
+      * PETICION    : MU-2016-006673       BUSCAR <<606673>            *
+      * AUTOR       : INDRA                                            *
+      * FECHA       : MARZO 2016                                       *
+      * DESCRIPCION : SE GUARDA EN BBDD EL KDOMICILIO DE LOS           *
+      *               BENEFICIARIOS                                    *
+      *                                                                *
+      ******************************************************************
+      ******************************************************************
+      *                                                                *
+      * MODIFICACION: MU-2017-BDGI-R-V                                 *
+      * PROGRAMADOR : EVERIS                                           *
+      * FECHA       : JUNIO   2017                                     *
+      * DESCRIPCION : ENVIO A BDGI-RESCATE Y VENCIMIENTOS              *
+      * MU-2017-BDGI-R-V-INI                                           *
+      * MU-2017-BDGI-R-V-FIN                                           *
+      *                                                                *
+      * MU-2017-BDGI-R-V-INI F2                                        *
+      * MU-2017-BDGI-R-V-FIN F2                                        *
+      ******************************************************************
+      *                                                                *
+      * PETICION    : MU-2019-055339       BUSCAR <<955339>            *
+      * AUTOR       : INDRA                                            *
+      * FECHA       : SEPT. 2019                                       *
+      * DESCRIPCION : SE IMPIDE INCLUIR FECHA DE PAGO EN EXPEDIENTES   *
+      *               ANULADOS.                                        *
+      *                                                                *
+      ******************************************************************
+      *                  ENVIRONMENT DIVISION
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+
+      ******************************************************************
+      *                  DATA DIVISION                                 *
+      ******************************************************************
+       DATA DIVISION.
+      ******************************************************************
+      *                  WORKING-STORAGE SECTION                       *
+      ******************************************************************
+       WORKING-STORAGE SECTION.
+      *
+       01 XN-INDICES.
+          03 XN-SALIDA                 PIC 9999 VALUE ZEROES.
+          03 XN-I                      PIC 9(2).
+          03 XN-J                      PIC 9(2).
+      * MU-2017-BDGI-R-V-INI
+          03 XN-M                      PIC 9(2).
+      * MU-2017-BDGI-R-V-FIN
+
+      *   CONTROL DE ERRORES DEL PROGRAMA
+       01 SW-SWITCH.
+          03 SW-ERRORES                    PIC XX VALUE '00'.
+             88 NO-ERROR                      VALUE '00'.
+             88 ERROR-GRAVE                   VALUE '01'.
+          03 SW-CAMBIO                     PIC XX VALUE '00'.
+             88 NO-CAMBIO                     VALUE '00'.
+             88 SI-CAMBIO                     VALUE '01'.
+      * MU-2017-BDGI-R-V-INI
+          03 SW-CAMBIO-OBSERVA             PIC XX VALUE '00'.
+             88 NO-CAMBIO-OBSERVA             VALUE '00'.
+             88 SI-CAMBIO-OBSERVA             VALUE '01'.
+FASE02    03 SW-DUPLICADO                  PIC XX VALUE '00'.
+FASE02       88 NO-DUPLICADO                  VALUE '00'.
+FASE02       88 SI-DUPLICADO                  VALUE '01'.
+      * MU-2017-BDGI-R-V-FIN
+          03 SW-CAMBIO-FISCALIDAD-CAP      PIC XX VALUE '00'.
+             88 NO-CAMBIO-FISCALIDAD-CAP      VALUE '00'.
+             88 SI-CAMBIO-FISCALIDAD-CAP      VALUE '01'.
+          03 SW-CAMBIO-FISCALIDAD-COMP1    PIC XX VALUE '00'.
+             88 NO-CAMBIO-FISCALIDAD-COMP1    VALUE '00'.
+             88 SI-CAMBIO-FISCALIDAD-COMP1    VALUE '01'.
+          03 SW-CAMBIO-FISCALIDAD-COMP2    PIC XX VALUE '00'.
+             88 NO-CAMBIO-FISCALIDAD-COMP2    VALUE '00'.
+             88 SI-CAMBIO-FISCALIDAD-COMP2    VALUE '01'.
+          03 SW-BORRA-ROLLBACK             PIC XX VALUE '00'.
+             88 SI-ROLLBACK                   VALUE '00'.
+             88 NO-ROLLBACK                   VALUE '01'.
+          03 SW-NIF-KPERSONA               PIC XX VALUE '00'.
+             88 NO-PERSONA                    VALUE '00'.
+             88 SI-PERSONA                    VALUE '01'.
+
+      *MODULOS
+       01 WS-MODULOS.
+          03 WS-B372N001               PIC X(8) VALUE 'B372N001'.
+          03 WS-B372M001               PIC X(8) VALUE 'B372M001'.
+          03 WS-B362M002               PIC X(8) VALUE 'B362M002'.
+          03 WS-B001N005               PIC X(8) VALUE 'B001N005'.
+          03 WS-B620N050               PIC X(8) VALUE 'B620N050'.
+          03 WS-B372M004               PIC X(8) VALUE 'B372M004'.
+          03 WS-VA041527               PIC X(8) VALUE 'VA041527'.
+          03 WS-VA541100               PIC X(8) VALUE 'VA541100'.
+          03 WS-B001N001               PIC X(8) VALUE 'B001N001'.
+          03 WS-B001N011               PIC X(8) VALUE 'B001N011'.
+          03 WS-B160N301               PIC X(8) VALUE 'B160N301'.
+          03 WS-B160N315               PIC X(8) VALUE 'B160N315'.
+          03 WS-B160N055               PIC X(8) VALUE 'B160N055'.
+          03 WS-B160M013               PIC X(8) VALUE 'B160M013'.
+          03 WS-B001M001               PIC X(8) VALUE 'B001M001'.
+
+       01 LT-LITERALES.
+      *
+      ** LITERALES DE RETORNO
+      *
+          03 LT-ERRORES-RETORNO.
+      *         LITERAL NO HAY ERRORES
+             05 LT-RETURN-OK             PIC X(5) VALUE '00'.
+      *         ERROR EN MODO
+             05 LT-RETURN-ERR-MODO       PIC X(5) VALUE '01'.
+      *         ERROR EN LOS DATOS INFORMADOS
+             05 LT-ERR-DATOS             PIC X(5) VALUE '02'.
+      *         ERROR REGISTRO NO ENCONTRADO
+             05 LT-RETURN-ERR-NOTFND     PIC X(5) VALUE '03'.
+      *         ERROR REGISTRO CLAVE DUPLICADA
+             05 LT-RETURN-ERR-CLVDUPLI   PIC X(5) VALUE '04'.
+      *         ERROR REGISTRO NINGUNA MODIFICACION
+             05 LT-RETURN-ERR-NOTMODIF   PIC X(5) VALUE '05'.
+      *         ERROR EN LA LLAMADA DEL MODULO
+             05 LT-ERROR-LLAM            PIC X(2) VALUE '06'.
+      *         ERROR EN ACCESO A BASE DE DATOS
+             05 LT-RETURN-ERR-OTHER      PIC X(5) VALUE '99'.
+
+      *
+      ** CODIGOS DE FISCALIDAD
+      *
+          03 CN-TIPOS-IMPORTES.
+             05 CN-IMP-PRESTACION         PIC X(2) VALUE '71'.
+             05 CN-IMP-RENDIMIENTO        PIC X(2) VALUE '50'.
+             05 CN-IMP-EXENTO             PIC X(2) VALUE '52'.
+             05 CN-IMP-SUJETO             PIC X(2) VALUE '56'.
+             05 CN-PRETENCION             PIC X(2) VALUE '68'.
+             05 CN-IMP-RETENCION          PIC X(2) VALUE '58'.
+             05 CN-IMP-NETO               PIC X(2) VALUE '51'.
+             05 CN-IMP-RECOBRO            PIC X(2) VALUE '48'.
+             05 CN-IMP-REDUCCION-03       PIC X(2) VALUE '33'.
+             05 CN-IMP-REDUCCION-04       PIC X(2) VALUE '34'.
+             05 CN-IMP-REDUCCION-05       PIC X(2) VALUE '35'.
+             05 CN-IMP-PRIMAS-PAGADAS     PIC X(2) VALUE '72'.
+             05 CN-IMP-PRIMAS-IMPUTADAS   PIC X(2) VALUE '73'.
+             05 CN-IMP-EA                 PIC X(2) VALUE 'EA'.
+             05 CN-IMP-EI                 PIC X(2) VALUE 'EI'.
+             05 CN-IMP-EV                 PIC X(2) VALUE 'EV'.
+             05 CN-IMP-EX                 PIC X(2) VALUE 'EX'.
+             05 CN-IMP-BDGI               PIC X(2) VALUE '46'.
+             05 CN-IMP-REDUCCION-01       PIC X(2) VALUE '31'.
+             05 CN-IMP-REDUCCION-02       PIC X(2) VALUE '32'.
+             05 CN-EXENCION-BDGI          PIC X(2) VALUE '80'.
+
+      *
+      ** LITERALES DE TIPO DE IMPUESTOS
+      *
+          03 LT-TIPOS-IMPUSETOS.
+      *         TIPO DE IMPUESTO MOBILIARIO
+             05 LT-TIPO-MOB              PIC X(2) VALUE '12'.
+      *         TIPO DE IMPUESTO TRABAJO
+             05 LT-TIPO-TRA              PIC X(5) VALUE '11'.
+      *         TIPO DE IMPUESTO SOCIEDAD
+             05 LT-TIPO-SOC              PIC X(5) VALUE '22'.
+      *         TIPO DE IMPUESTO SIN RETENCION
+             05 LT-TIPO-SRT              PIC X(2) VALUE '34'.
+      *         TIPO DE IMPUESTO NO RESIDENTE CM
+             05 LT-TIPO-NCM              PIC X(5) VALUE '42'.
+      *         TIPO DE IMPUESTO NO RESIDENTE TP
+             05 LT-TIPO-NTP              PIC X(5) VALUE '41'.
+
+      *
+      ** LITERAL DE PORCENTAJE PARA VALIDACION COMPENSATORIA
+      *
+          03 LT-PORCENTAJES.
+             05 LT-PORCENT               PIC 9(01)V9(2) VALUE 0,75.
+
+      *
+      ** VARIABLE PARA EL CALCULO DE COASEGURADOS
+      *
+          03 WS-SUMA-PCOASEGURO          PIC S9(3)V9(2).
+606664    03 WS-SUMA-ICOASEGURO          PIC S9(12)V9(2).
+606664    03 WS-TOTAL-IMP-PRIM-COMP      PIC S9(12)V9(2).
+606673    03 WS-KDOMICILIO               PIC S9(9) VALUE ZEROES.
+606673    03 WS-FAUX                     PIC 9(8) VALUE ZEROES.
+606673    03 WS-FAUX-DOMI                PIC 9(8) VALUE ZEROES.
+      *
+      ** VARIABLE PARA EL CODIGO POSTAL
+      *
+          03 WS-PROVINCIA                PIC X(05).
+          03 WS-CODPOSTAL                PIC 9(02).
+      * MU-2017-BDGI-R-V-INI
+      * MU-2017-BDGI-R-V-INI 27/07/2017
+      *    03 WS-PAIS                     PIC X(3).
+          03 WS-PAIS                     PIC X(10).
+      * MU-2017-BDGI-R-V-FIN 27/07/2017
+          03 WS-DOMICILIO-P              PIC 9(2).
+      * MU-2017-BDGI-R-V-FIN
+
+      *
+      ** VARIABLE PARA ACTUALIZAR EL NUMERO DEL EXPEDIENTE
+      *
+          03 WS-KEXPEDIENTE              PIC 9(10) VALUE ZEROES.
+
+      *
+      ** VARIABLES PARA LOS CALCULOS INTERMEDIOS PARA FISCALIDAD
+      *
+          03 WS-VAR-AUX-FIS.
+             05 WS-IMPNETO               PIC S9(13)V9(2).
+             05 WS-RENNETOCAP            PIC S9(13)V9(2).
+             05 WS-REDNETO               PIC S9(13)V9(2).
+             05 WS-TIPOIMPUES            PIC X(02).
+
+      *
+      ** VARIABLES PARA MOSTRR LOS DIFERENTES MENSJAES DE ERROR
+      *
+          03 WS-ERROR.
+             05 WS-ERROR-1               PIC X(35).
+             05 LT-COMA                  PIC X(01) VALUE ','.
+             05 WS-ERROR-2               PIC X(64).
+
+      *
+      ** CONSTANTES NUMERICAS
+      *
+          03 CONSTANTES.
+             05 CTE-0                    PIC 9(01) VALUE 0.
+             05 CTE-1                    PIC 9(01) VALUE 1.
+             05 CTE-2                    PIC 9(01) VALUE 2.
+             05 CTE-3                    PIC 9(01) VALUE 3.
+             05 CTE-4                    PIC 9(01) VALUE 4.
+             05 CTE-5                    PIC 9(01) VALUE 5.
+             05 CTE-6                    PIC 9(01) VALUE 6.
+             05 CTE-7                    PIC 9(01) VALUE 7.
+             05 CTE-8                    PIC 9(01) VALUE 8.
+             05 CTE-9                    PIC 9(01) VALUE 9.
+606673       05 CTE-50                   PIC 9(02) VALUE 50.
+
+             05 CT-201                   PIC 9(03) VALUE 201.
+             05 CT-202                   PIC 9(03) VALUE 202.
+             05 CT-203                   PIC 9(03) VALUE 203.
+
+             05 CT-ALFANUMERICAS.
+                 07 CT-CONSULTA          PIC X(01) VALUE 'C'.
+606673           07 CT-HISTORICO         PIC X(01) VALUE 'H'.
+                 07 CT-C1                PIC X(02) VALUE 'C1'.
+                 07 CT-C2                PIC X(02) VALUE 'C2'.
+606673           07 CT-H2                PIC X(02) VALUE 'H2'.
+      **
+      **  FECHA DEL SISTEMA
+      **
+          03 WS-FECHA-SIS.
+             05 WS-FECHA.
+                07 WS-ANO                   PIC 9(04).
+                07 WS-MES                   PIC 9(02).
+                07 WS-DIA                   PIC 9(02).
+             05 WS-TIEMPO.
+                07 WS-HORA                  PIC 9(02).
+                07 WS-MINUTOS               PIC 9(02).
+                07 WS-SEGUNDOS              PIC 9(02).
+                07 WS-CENTESIMAS            PIC 9(02).
+             05 FILLER                      PIC 9(05).
+
+      *COPYS COBOL
+       01 WS-VARIABLES.
+          03 WS-PARAMETRO.
+             COPY R000X000.
+             COPY R000X001.
+          03 WS-X372M001.
+             COPY X372M001.
+          03 WS-X362M002.
+             COPY X362M002.
+          03 WS-X620M050.
+             COPY X620M050.
+          03 WS-X372M004.
+             COPY X372M004.
+          03 WS-X160N301.
+             COPY X160N301.
+             COPY X160N000.
+          03 WS-X160N315.
+             COPY X160N315.
+             COPY X160N000.
+          03 WS-X160N055.
+             COPY X160N055.
+             COPY X160N000.
+          03 WS-X160M013.
+             COPY X160M013.
+             COPY X160N000.
+          03 WS-X001M001.
+             COPY X001M001.
+
+             COPY X001N005.
+             COPY X001N001.
+             COPY X001N009.
+
+      *COPYS IDMS
+
+           COPY RA041527.
+           COPY RA541100.
+           COPY RR041534.
+
+      *
+      ******************************************************************
+       LINKAGE SECTION.
+      ******************************************************************
+       01 DFHCOMMAREA.
+           COPY X372VT01.
+      *************************************************************
+       PROCEDURE DIVISION USING DFHCOMMAREA.
+      *************************************************************
+           PERFORM 1000-INICIO.
+
+           IF NOT ERROR-GRAVE
+              PERFORM 2000-PROCESO
+           END-IF.
+
+           PERFORM 10000-FIN.
+      ********************************************************
+       1000-INICIO.
+      ********************************************************
+      * INICIALIZAR VARIABLES
+      ********************************************************
+
+
+           INITIALIZE XN-INDICES.
+           INITIALIZE WS-VARIABLES.
+           INITIALIZE WS-ERROR.
+           INITIALIZE WS-X372M001.
+           INITIALIZE X372VT01-SALIDA.
+
+           MOVE '00'  TO X372VT01-CRETORNO-S
+
+           MOVE FUNCTION CURRENT-DATE TO WS-FECHA-SIS.
+
+
+      * VALIDACION DE OPERACION
+
+           IF X372VT01-OPERACION-E  = SPACES
+              SET  ERROR-GRAVE TO TRUE
+              MOVE LT-RETURN-ERR-MODO    TO X372VT01-CRETORNO-S
+              MOVE 'El campo MODO es obligatorio.'
+                                         TO X372VT01-GERROR-S
+              MOVE 'B372N001'            TO X372VT01-GNOMPROG-S
+           ELSE
+
+              PERFORM 1100-VALIDACION-MODO
+
+              IF NO-ERROR                          AND
+                 X372VT01-OPERACION-E   NOT = 'B1' AND
+                 X372VT01-OPERACION-E   NOT = 'M2' AND
+                 X372VT01-OPERACION-E   NOT = 'M3'
+
+                 PERFORM 1200-VALIDAR-ENTRADA
+              END-IF
+           END-IF.
+
+      ***************************************************************
+       1100-VALIDACION-MODO.
+      ***************************************************************
+           IF X372VT01-OPERACION-E     NOT = 'A1' AND
+              X372VT01-OPERACION-E     NOT = 'B1' AND
+              X372VT01-OPERACION-E     NOT = 'M1' AND
+              X372VT01-OPERACION-E     NOT = 'M2' AND
+              X372VT01-OPERACION-E     NOT = 'M3'
+              SET  ERROR-GRAVE TO TRUE
+              MOVE LT-RETURN-ERR-MODO  TO X372VT01-CRETORNO-S
+              MOVE 'El campo MODO de entrada es incorracto.'
+                                       TO X372VT01-GERROR-S
+              MOVE 'B372N001'          TO X372VT01-GNOMPROG-S
+
+           END-IF.
+
+      ***************************************************************
+       1200-VALIDAR-ENTRADA.
+      ***************************************************************
+
+
+           IF X372VT01-OPERACION-E NOT EQUAL 'A1'
+
+      * VALIDACION DEL A—O DEL EXPEDIENTE
+              IF X372VT01-ANIO-E     EQUAL SPACES
+                 SET  ERROR-GRAVE TO TRUE
+                 MOVE LT-ERR-DATOS             TO X372VT01-CRETORNO-S
+                 MOVE 'El campo A—O es obligatorio.'
+                                               TO X372VT01-GERROR-S
+                 MOVE 'B372N001'               TO X372VT01-GNOMPROG-S
+              END-IF
+
+      * VALIDACION DEL NUMERO DE EXPEDIENTE
+              IF X372VT01-KEXPEDIENTE-E EQUAL ZEROES
+                 SET  ERROR-GRAVE TO TRUE
+                 MOVE LT-ERR-DATOS             TO X372VT01-CRETORNO-S
+                 MOVE 'El campo NUMERO DE EXPEDIENTE es obligatorio.'
+                                               TO X372VT01-GERROR-S
+                 MOVE 'B372N001'               TO X372VT01-GNOMPROG-S
+              END-IF
+
+           END-IF
+
+      * VALIDACION DE POLIZA COLECTIVA
+
+           IF X372VT01-KCERTIFICADO-E EQUAL ZEROES AND
+              X372VT01-NSUBPOLIZA-E   NOT EQUAL ZEROES
+      * MU-2017-BDGI-R-V-INI F2
+FASE02        IF  X372VT01-OPERACION-E NOT EQUAL 'A1'
+FASE02        AND X372VT01-OPERACION-E NOT EQUAL 'M1'
+FASE02        AND X372VT01-OPERACION-E NOT EQUAL 'M2'
+FASE02        AND X372VT01-OPERACION-E NOT EQUAL 'M3'
+      * MU-2017-BDGI-R-V-FIN F2
+
+                SET  ERROR-GRAVE TO TRUE
+                MOVE LT-ERR-DATOS             TO X372VT01-CRETORNO-S
+                MOVE 'EL CERTIFICADO DEBE SER DISTINTO DE CERO.'
+                                              TO X372VT01-GERROR-S
+                MOVE 'B372N001'               TO X372VT01-GNOMPROG-S
+      * MU-2017-BDGI-R-V-INI F2
+FASE02        END-IF
+      * MU-2017-BDGI-R-V-FIN F2
+
+           END-IF
+
+      * VALIDACION DEL NUMERO DE POLIZA DEL EXPEDIENTE
+
+           IF X372VT01-KPOLIZA-E       = SPACES
+              SET  ERROR-GRAVE TO TRUE
+              MOVE LT-ERR-DATOS             TO X372VT01-CRETORNO-S
+              MOVE 'El campo POLIZA es obligatorio.'
+                                            TO X372VT01-GERROR-S
+              MOVE 'B372N001'               TO X372VT01-GNOMPROG-S
+           END-IF
+
+      * VALIDACION DE ENTIDAD
+
+           IF X372VT01-CENTIDAD-E    = SPACES
+              SET  ERROR-GRAVE TO TRUE
+              MOVE LT-ERR-DATOS             TO X372VT01-CRETORNO-S
+              MOVE 'El campo ENTIDAD es obligatorio.'
+                                            TO X372VT01-GERROR-S
+              MOVE 'B372N001'               TO X372VT01-GNOMPROG-S
+           END-IF
+      * VALIDACION DE RAMO
+
+           IF X372VT01-KRAMO-E       = SPACES
+              SET  ERROR-GRAVE TO TRUE
+              MOVE LT-ERR-DATOS             TO X372VT01-CRETORNO-S
+              MOVE 'El campo RAMO es obligatorio.'
+                                            TO X372VT01-GERROR-S
+              MOVE 'B372N001'               TO X372VT01-GNOMPROG-S
+           END-IF
+
+      * VALIDACION DE A—O DE POLIZA
+
+           IF X372VT01-ANIOPOL-E = SPACES
+              SET  ERROR-GRAVE TO TRUE
+              MOVE LT-ERR-DATOS             TO X372VT01-CRETORNO-S
+              MOVE 'El campo A—O DE EXPEDIENTE es obligatorio.'
+                                            TO X372VT01-GERROR-S
+              MOVE 'B372N001'               TO X372VT01-GNOMPROG-S
+           END-IF
+
+      * VALIDACION DE REDUCCION TRANSITORIO
+
+           IF X372VT01-IMPREDTRANCAP-E < CTE-0
+                                  OR X372VT01-IREDTRANCOMP1-E < CTE-0
+                                  OR X372VT01-IREDTRANCOMP2-E < CTE-0
+              SET  ERROR-GRAVE TO TRUE
+              MOVE LT-RETURN-ERR-OTHER      TO X372VT01-CRETORNO-S
+              MOVE 'La RDDUCCION TRANSITORIA no puede ser negativa.'
+                                            TO X372VT01-GERROR-S
+              MOVE 'B372N001'               TO X372VT01-GNOMPROG-S
+           END-IF
+
+      * VALIDACION DE MODALIDAD
+
+           IF X372VT01-KMODALIDAD-E  EQUAL ZEROES
+              SET  ERROR-GRAVE TO TRUE
+              MOVE LT-ERR-DATOS             TO X372VT01-CRETORNO-S
+              MOVE 'El campo de MODALIDAD es obligatorio.'
+                                            TO X372VT01-GERROR-S
+              MOVE 'B372N001'               TO X372VT01-GNOMPROG-S
+           END-IF
+
+      * VALIDACION DE IMPORTE COMPENSATORIA
+
+
+           IF X372VT01-IMPRTONETOCAP-E not equal zero
+              COMPUTE WS-REDNETO = X372VT01-IMPCOMPENSATORIA-E /
+                                X372VT01-IMPRTONETOCAP-E
+           ELSE
+              MOVE ZEROS TO WS-REDNETO
+           END-IF
+
+           IF WS-REDNETO > LT-PORCENT
+              SET  ERROR-GRAVE TO TRUE
+              MOVE LT-RETURN-ERR-OTHER      TO X372VT01-CRETORNO-S
+              MOVE 'EL IMPORTE DEL CAMPO COMPENSATORIA ES MAYOR AL 75% D
+      -            'EL NETO'
+                                            TO X372VT01-GERROR-S
+              MOVE 'B372N001'               TO X372VT01-GNOMPROG-S
+           END-IF
+
+      * VALIDACION DE FECHA DE EFECTO
+
+           IF X372VT01-FECEFECTO-E      = SPACES
+              SET  ERROR-GRAVE TO TRUE
+              MOVE LT-ERR-DATOS             TO X372VT01-CRETORNO-S
+              MOVE 'El campo FECHA DE EFECTO es obligatorio.'
+                                            TO X372VT01-GERROR-S
+              MOVE 'B372N001'               TO X372VT01-GNOMPROG-S
+           ELSE
+
+              INITIALIZE X001N005
+
+              MOVE X372VT01-FECEFECTO-E  TO X001N005-FPARAMVAL
+              MOVE 2                     TO X001N005-CODRETORN
+
+             IF NO-ERROR
+                 PERFORM 1500-VALIDAR-FECHA
+
+                   IF X001N005-CODRETORN NOT = SPACES
+                      SET  ERROR-GRAVE      TO TRUE
+                      MOVE '15'             TO X372VT01-CRETORNO-S
+                      MOVE 'La FECHA DE EFECTO Nno es valida.'
+                                            TO X372VT01-GERROR-S
+                      MOVE 'B372N001'       TO X372VT01-GNOMPROG-S
+                   END-IF
+
+              END-IF
+
+           END-IF
+
+      * VALIDACIONES DE FECHAS DE EMISION
+
+           IF X372VT01-FECEFECTO-E > X372VT01-FECEMISION-E AND
+              X372VT01-FECEMISION-E NOT EQUAL SPACES
+              SET  ERROR-GRAVE TO TRUE
+              MOVE 'B372N001'            TO X372VT01-GNOMPROG-S
+              MOVE 'La F.EFECTO no puede ser superior a la F.EMISION
+      -            'del PRINCIPAL'
+                TO X372VT01-GERROR-S
+              MOVE '17'                  TO X372VT01-CRETORNO-S
+           END-IF
+
+           IF X372VT01-FECEFECTO-E > X372VT01-FECEMICOMP1-E AND
+              X372VT01-FECEMICOMP1-E NOT EQUAL SPACES
+              SET  ERROR-GRAVE TO TRUE
+              MOVE 'B372N001'            TO X372VT01-GNOMPROG-S
+              MOVE 'La F.EFECTO no puede ser superior a la F.EMSION
+      -            'del 1∫ COMPLEMENTARIO'
+                TO X372VT01-GERROR-S
+              MOVE '17'                  TO X372VT01-CRETORNO-S
+           END-IF
+
+           IF X372VT01-FECEFECTO-E > X372VT01-FECEMICOMP2-E AND
+              X372VT01-FECEMICOMP2-E NOT EQUAL SPACES
+              SET  ERROR-GRAVE TO TRUE
+              MOVE 'B372N001'            TO X372VT01-GNOMPROG-S
+              MOVE 'La F.EFECTO no puede ser superior a la F.EMSION
+      -            'del 2∫ COMPLEMENTARIO'
+                TO X372VT01-GERROR-S
+              MOVE '17'                  TO X372VT01-CRETORNO-S
+           END-IF
+
+      * VALIDACION DE FECHA DE VENCIMIENTO O DURACION
+
+           IF X372VT01-FECVENCIMICAP-E  EQUAL SPACES AND
+              X372VT01-KDURACION-E      EQUAL ZEROES
+              SET  ERROR-GRAVE TO TRUE
+              MOVE LT-ERR-DATOS             TO X372VT01-CRETORNO-S
+              MOVE 'Es obligatorio introducir el campo fecha de VENCIMIE
+      -            'NTO Û CAMPO DURACION.'
+                                            TO X372VT01-GERROR-S
+              MOVE 'B372N001'               TO X372VT01-GNOMPROG-S
+           ELSE
+
+              INITIALIZE X001N005
+
+              MOVE X372VT01-FECVENCIMICAP-E TO  X001N005-FPARAMVAL
+              MOVE 2                        TO X001N005-CODRETORN
+
+              IF NO-ERROR
+                 PERFORM 1500-VALIDAR-FECHA
+
+                   IF X001N005-CODRETORN NOT = SPACES
+                      SET  ERROR-GRAVE      TO TRUE
+                      MOVE '15'             TO X372VT01-CRETORNO-S
+                      MOVE 'La FECHA DE VENCIMIENTO no es valida.'
+                                            TO X372VT01-GERROR-S
+                      MOVE 'B372N001'       TO X372VT01-GNOMPROG-S
+                   END-IF
+
+              END-IF
+
+           END-IF
+
+      * VALIDAMOS LOS DATOS DE KPERSONAS
+
+           IF X372VT01-KPERSONA1-E EQUAL ZEROES OR SPACES
+              SET  ERROR-GRAVE     TO TRUE
+              MOVE LT-ERR-DATOS    TO X372VT01-CRETORNO-S
+              MOVE 'Debe informarse el BENEFICIARIO'
+                                   TO X372VT01-GERROR-S
+              MOVE 'B372N001'      TO X372VT01-GNOMPROG-S
+           END-IF
+
+      * VALIDAMOS EL TIPO DE PERSONA
+
+           IF X372VT01-CTIPOPERS1-E EQUAL ZEROES OR SPACES
+              SET  ERROR-GRAVE     TO TRUE
+              MOVE LT-ERR-DATOS    TO X372VT01-CRETORNO-S
+              MOVE 'Debe informarse el TIPO DE PERSONA'
+                                   TO X372VT01-GERROR-S
+              MOVE 'B372N001'      TO X372VT01-GNOMPROG-S
+606673     ELSE
+606673        IF X372VT01-KDOMICILIO1-E EQUAL ZEROES OR SPACES AND
+606673            (X372VT01-OPERACION-E EQUAL 'A1' OR
+606673             X372VT01-OPERACION-E EQUAL 'M1')
+606673           SET  ERROR-GRAVE TO TRUE
+606673           MOVE LT-ERR-DATOS    TO X372VT01-CRETORNO-S
+606673           MOVE 'Debe informar el domicilio del PRIMER
+606673-                         'BENEFICIARIO'
+606673                 TO X372VT01-GERROR-S
+606673           MOVE 'B372N001'      TO X372VT01-GNOMPROG-S
+606673        END-IF
+           END-IF
+
+      * VALIDAMOS EL TIPO DE RETENCION
+
+           IF X372VT01-TIPIMPUESTCAP-E EQUAL ZEROES OR SPACES
+              SET  ERROR-GRAVE     TO TRUE
+              MOVE LT-ERR-DATOS    TO X372VT01-CRETORNO-S
+              MOVE 'Debe informarse el TIPO DE RETENCION'
+                                   TO X372VT01-GERROR-S
+              MOVE 'B372N001'      TO X372VT01-GNOMPROG-S
+           END-IF
+
+      * VALIDAMOS DEL IMPORTE CAPITAL
+
+           IF X372VT01-IMPCAPITAL-E EQUAL ZEROES
+              SET  ERROR-GRAVE     TO TRUE
+              MOVE LT-ERR-DATOS    TO X372VT01-CRETORNO-S
+              MOVE 'Debe informarse el IMPORTE CAPITAL'
+                                   TO X372VT01-GERROR-S
+              MOVE 'B372N001'      TO X372VT01-GNOMPROG-S
+           END-IF
+
+      * VALIDACION DE TIPO DE REGIONAL DE POLIZA
+
+           IF X372VT01-REGIONAL-E       = SPACES
+              SET  ERROR-GRAVE TO TRUE
+              MOVE LT-ERR-DATOS             TO X372VT01-CRETORNO-S
+              MOVE 'El campo REGIONAL DE POLIZA es obligatorio.'
+                                            TO X372VT01-GERROR-S
+              MOVE 'B372N001'               TO X372VT01-GNOMPROG-S
+           END-IF
+
+      * VALIDACION DE TIPO DE REGIONAL DE ENVIO
+
+           IF X372VT01-LUGARENVIO-E     = SPACES
+              SET  ERROR-GRAVE TO TRUE
+              MOVE LT-ERR-DATOS             TO X372VT01-CRETORNO-S
+              MOVE 'El campo REGIONAL DE ENVIO es obligatorio.'
+                                            TO X372VT01-GERROR-S
+              MOVE 'B372N001'               TO X372VT01-GNOMPROG-S
+           END-IF
+
+      * VALIDACION DE LA OFICINA
+
+           IF X372VT01-KOFICINA-E    = SPACES
+              SET  ERROR-GRAVE TO TRUE
+              MOVE LT-ERR-DATOS                TO X372VT01-CRETORNO-S
+              MOVE 'El campo OFICINA es obligatorio.'
+                                               TO X372VT01-GERROR-S
+              MOVE 'B372N001'                  TO X372VT01-GNOMPROG-S
+           END-IF
+
+      * VALIDACION DEL NIF-1
+
+           IF X372VT01-NIF1-E    EQUAL SPACES
+              SET  ERROR-GRAVE TO TRUE
+              MOVE LT-ERR-DATOS                TO X372VT01-CRETORNO-S
+              MOVE 'El NIF del PRIMER BENEFICIARIO es obligatorio.'
+                                               TO X372VT01-GERROR-S
+              MOVE 'B372N001'                  TO X372VT01-GNOMPROG-S
+           ELSE
+
+              IF NO-ERROR
+                 INITIALIZE WS-X620M050
+
+                 MOVE X372VT01-KPERSONA1-E   TO X620M050-KPERSONA-E
+
+                 PERFORM 1600-VALIDAR-PERSONA
+
+      **
+      * COMPROBAMOS LA RELACION ENTRE NIF Y KPERSONA
+
+                      IF X620M050-CRETORNO-S    EQUAL '00'
+                         SET NO-PERSONA TO TRUE
+
+                         MOVE 1 TO XN-J
+                         PERFORM UNTIL X620M050-CIDENTIFICA-S(XN-J)
+                                       EQUAL SPACES
+                                       OR XN-J > 50
+                           IF X620M050-CIDENTIFICA-S(XN-J) EQUAL
+                              X372VT01-NIF1-E
+                                SET SI-PERSONA TO TRUE
+                           END-IF
+                           ADD 1 TO XN-J
+                         END-PERFORM
+
+                         IF NO-PERSONA
+                            SET  ERROR-GRAVE TO TRUE
+                            MOVE '19'            TO X372VT01-CRETORNO-S
+                            MOVE 'Error datos PERSONA, vuelva a buscar a
+      -                          'l BENEFICIARIO'
+                                             TO X372VT01-GERROR-S
+                            MOVE 'B372N001'      TO X372VT01-GNOMPROG-S
+
+                         END-IF
+                      ELSE
+                        SET  ERROR-GRAVE TO TRUE
+                        MOVE '13'            TO X372VT01-CRETORNO-S
+                        MOVE 'NIF del PRIMER BENEFICIARIO no encontrado
+      -                      'EN BBDD.'
+                                             TO X372VT01-GERROR-S
+                        MOVE 'B372N001'      TO X372VT01-GNOMPROG-S
+                      END-IF
+              END-IF
+
+           END-IF
+
+      * VALIDACION DEL FORMATO DEL NIF
+
+           INITIALIZE X001N001
+
+           MOVE X372VT01-NIF1-E        TO COD-DNI-E
+
+           PERFORM 1400-VALIDAR-FORMATO-DNI
+
+           IF  ESTADO-DNI-R NOT EQUAL ZEROES
+              SET ERROR-GRAVE TO TRUE
+              MOVE '14'                        TO X372VT01-CRETORNO-S
+              MOVE 'El formato del NIF del PRIMER BENEFICIARIO es incorr
+      -            'ecto.'
+                                               TO X372VT01-GERROR-S
+              MOVE 'B372N001'                  TO X372VT01-GNOMPROG-S
+           END-IF
+
+
+      * VALIDAMOS QUE LA SUMA DE LOS PORCENTAJES DE COASEGURO SEA 100
+      * MU-2017-BDGI-R-V-INI
+      *     IF X372VT01-CODCOA1-E NOT EQUAL SPACES OR
+      *        X372VT01-CODCOA2-E NOT EQUAL SPACES OR
+      *        X372VT01-CODCOA3-E NOT EQUAL SPACES OR
+      *        X372VT01-CODCOA4-E NOT EQUAL SPACES OR
+      *        X372VT01-CODCOA5-E NOT EQUAL SPACES OR
+      *        X372VT01-CODCOA6-E NOT EQUAL SPACES
+      *
+           IF X372VT01-CODCOA-E (1)    NOT EQUAL SPACES OR
+              X372VT01-CODCOA-E (2)    NOT EQUAL SPACES OR
+              X372VT01-CODCOA-E (3)    NOT EQUAL SPACES OR
+              X372VT01-CODCOA-E (4)    NOT EQUAL SPACES OR
+              X372VT01-CODCOA-E (5)    NOT EQUAL SPACES OR
+              X372VT01-CODCOA-E (6)    NOT EQUAL SPACES
+      * MU-2017-BDGI-R-V-FIN
+      *
+606664*         COMPUTE WS-SUMA-PCOASEGURO = X372VT01-PORCOA1-E +
+606664*                                      X372VT01-PORCOA2-E +
+606664*                                      X372VT01-PORCOA3-E +
+606664*                                      X372VT01-PORCOA4-E +
+606664*                                      X372VT01-PORCOA5-E +
+606664*                                      X372VT01-PORCOA6-E
+606664*
+606664*         IF WS-SUMA-PCOASEGURO NOT = 100
+606664*
+606664*            SET  ERROR-GRAVE         TO TRUE
+606664*
+606664*            MOVE LT-ERR-DATOS        TO X372VT01-CRETORNO-S
+606664*            MOVE 'La suma de PORCENTAJES DE LOS COASEGURO debe seR 1
+606664*                 'r 100%.'
+606664*                                     TO X372VT01-GERROR-S
+606664*            MOVE 'B372N001'          TO X372VT01-GNOMPROG-S
+606664*         END-IF
+606664          COMPUTE WS-TOTAL-IMP-PRIM-COMP =
+606664               X372VT01-IMPCAPITAL-E + X372VT01-IMPCOMP1-E
+606664               + X372VT01-IMPCOMP2-E + X372VT01-IMPBENEFICIOS-E
+606664
+      * MU-2017-BDGI-R-V-INI
+606664*          COMPUTE WS-SUMA-ICOASEGURO = X372VT01-IMPCOA1-E +
+606664*                                       X372VT01-IMPCOA2-E +
+606664*                                       X372VT01-IMPCOA3-E +
+606664*                                       X372VT01-IMPCOA4-E +
+606664*                                       X372VT01-IMPCOA5-E +
+606664*                                       X372VT01-IMPCOA6-E
+                COMPUTE WS-SUMA-ICOASEGURO = X372VT01-IMPCOA-E (1) +
+                                             X372VT01-IMPCOA-E (2) +
+                                             X372VT01-IMPCOA-E (3) +
+                                             X372VT01-IMPCOA-E (4) +
+                                             X372VT01-IMPCOA-E (5) +
+                                             X372VT01-IMPCOA-E (6)
+      * MU-2017-BDGI-R-V-FIN
+606664
+606664          IF WS-SUMA-ICOASEGURO NOT = WS-TOTAL-IMP-PRIM-COMP
+606664
+606664             SET  ERROR-GRAVE            TO TRUE
+606664
+606664             MOVE LT-ERR-DATOS           TO X372VT01-CRETORNO-S
+606664             MOVE 'La suma de importes de los coaseguros no
+606664-              ' suma el importe total'  TO X372VT01-GERROR-S
+606664             MOVE 'B372N001'             TO X372VT01-GNOMPROG-S
+606664          END-IF
+
+           END-IF.
+      * MU-2017-BDGI-R-V-INI F2
+      * VALIDAMOS EL CAMPO EXIMIDO, VALIDAMOS PORRETCAP,IMPRETCAP = 0
+FASE02          IF X372VT01-EXIMIDO-E EQUAL 'S'
+      *
+FASE02            IF X372VT01-PORRETCAP-E        NOT EQUAL ZEROS
+FASE02            OR  X372VT01-IMPRETCAP-E       NOT EQUAL ZEROS
+      *
+FASE02               SET  ERROR-GRAVE            TO TRUE
+      *
+FASE02               MOVE LT-ERR-DATOS           TO X372VT01-CRETORNO-S
+FASE02               MOVE 'PORCENT O IMPORTE DE RETENCION NO INFORMADOS'
+FASE02                                           TO X372VT01-GERROR-S
+FASE02               MOVE 'B372N001'             TO X372VT01-GNOMPROG-S
+      *
+FASE02            END-IF
+FASE02          END-IF
+      * MU-2017-BDGI-R-V-FIN F2
+
+      * VALIDAMOS QUE SI ES UN POLIZA COLECTIVA NO ESTE DUPLICADA
+           IF X372VT01-OPERACION-E  EQUAL 'A1'
+      *    IF X372VT01-NSUBPOLIZA-E NOT EQUAL '0000' AND
+      *MU-2017-BDGI-R-V-INI 2017/08/22 F2
+      *     IF X372VT01-KCERTIFICADO-E NOT EQUAL ZEROS
+      *MU-2017-BDGI-R-V-FIN 2017/08/22 F2
+      *       SI COLECTIVA QUE PERTENEZCA A LOS RAMOS SELECCIONADOS
+      * MU-2017-BDGI-R-V-INI F2
+      * ANULAMOS LA VALIDACION DEL RAMO '118' Y '151' Y LLAMAMOS SEA
+      * CUAL SEA EL RAMO
+FASE02*         IF X372VT01-KRAMO-E EQUAL '118' OR '151'
+      * MU-2017-BDGI-R-V-FIN F2
+                 INITIALIZE WS-X372M004
+FASE02           SET NO-DUPLICADO             TO TRUE
+                 MOVE 'S2'                    TO X372M004-OPERACION-E
+                 MOVE X372VT01-KPOLIZA-E      TO X372M004-KPOLIZA-E
+                 MOVE X372VT01-NSUBPOLIZA-E   TO X372M004-NSUBPOLIZA-E
+                 MOVE X372VT01-KCERTIFICADO-E TO X372M004-KCERTIFICADO-E
+                 MOVE X372VT01-KRAMO-E        TO X372M004-KRAMO-E
+
+                 CALL WS-B372M004 USING WS-X372M004
+
+      * MU-2017-BDGI-R-V-INI F2
+      *          VERIFICAMOS QUE NO EXISTA LA POLIZA.
+FASE02*            IF X372M004-CRETORNO-S OF WS-X372M004 NOT EQUAL '00'
+FASE02*                SET ERROR-GRAVE          TO TRUE
+FASE02*                SET NO-ROLLBACK          TO TRUE
+FASE02*               MOVE X372M004-CRETORNO-S TO X372VT01-CRETORNO-S
+FASE02*               MOVE X372M004-GERROR-S   TO X372VT01-GERROR-S
+FASE02*            END-IF
+FASE02*         END-IF
+      *
+      *        MODIFICAMOS LA EVALUACION DEL RETORNO DE LA RUTINA DE
+      *        FORMA QUE SI EXISTE EL EXPEDIENTE NO DA ERROR GRAVE
+      *        SOLO MUESTRA EL MENSAJE Y PERMITE EL ALTA
+FASE02           EVALUATE X372M004-CRETORNO-S OF WS-X372M004
+FASE02              WHEN LT-RETURN-OK
+FASE02                CONTINUE
+FASE02              WHEN LT-RETURN-ERR-CLVDUPLI
+FASE02                SET SI-DUPLICADO         TO TRUE
+FASE02              WHEN OTHER
+FASE02                SET ERROR-GRAVE          TO TRUE
+FASE02                SET NO-ROLLBACK          TO TRUE
+FASE02
+FASE02                MOVE X372M004-CRETORNO-S TO X372VT01-CRETORNO-S
+FASE02                MOVE X372M004-GERROR-S   TO X372VT01-GERROR-S
+FASE02                MOVE 'B372N001'          TO X372VT01-GNOMPROG-S
+FASE02           END-EVALUATE
+      * MU-2017-BDGI-R-V-FIN F2
+      *MU-2017-BDGI-R-V-INI 2017/08/22 F2
+      *     END-IF
+      *MU-2017-BDGI-R-V-FIN 2017/08/22 F2
+           END-IF.
+
+      ***************************************************************
+       1400-VALIDAR-FORMATO-DNI.
+      ***************************************************************
+
+           CALL WS-B001N001 USING X001N001
+           .
+      ***************************************************************
+       1500-VALIDAR-FECHA.
+      ***************************************************************
+
+           CALL WS-B001N005 USING X001N005.
+
+      ***************************************************************
+       1600-VALIDAR-PERSONA.
+      ***************************************************************
+      *    INITIALIZE X620M050
+
+           MOVE 'C'                    TO X620M050-CLAVE
+
+           CALL WS-B620N050 USING WS-X620M050.
+
+      ***************************************************************
+       2000-PROCESO.
+      ***************************************************************
+
+           PERFORM 2200-MOVER-DATOS-ENTRADA.
+
+           PERFORM 2300-REALIZAR-OPERACIONES.
+
+      ***************************************************************
+       2310-VALIDACION-INFORMATIVAS.
+      ***************************************************************
+      * MOVEMOS LOS DATOS DE ENTRADA A LA SALIDA, SINO FUERA
+      * NECESARIO ALGUNA MODIFICACION VOLVERIAMOS A MANDAR A JAVA
+      * LOS DATOS RECIBIDOS
+
+           MOVE X372VT01-IMPREDPRICAP-E    TO X372VT01-IMPREDPRICAP-S
+           MOVE X372VT01-IMPREDTRANCAP-E   TO X372VT01-IMPREDTRANCAP-S
+           MOVE X372VT01-IMPRETCAP-E       TO X372VT01-IMPRETCAP-S
+           MOVE X372VT01-IMPRTONETOCAP-E   TO X372VT01-IMPRTONETOCAP-S
+
+
+      * SERVICIO PARA DATOS DOMICILIARIOS
+           INITIALIZE WS-X160N315
+           INITIALIZE WS-PROVINCIA
+           INITIALIZE WS-CODPOSTAL
+
+606673     MOVE       99999999    TO WS-FAUX-DOMI
+606673* SI TENEMOS INFORMADO EL IDENTIFICADOR DEL DOMICLIO, CONSULTAMOS
+606673* EL HISTORICO, POR SI FUE BORRADO, EN CASO CONTRARIO, CONSULTAMOS
+606673* CONSULTAMOS LOS DOMICILIOS ACTUALES
+606673     IF WS-KDOMICILIO EQUAL ZEROES OR SPACES
+606673        MOVE WS-FECHA             TO X160N315-FECHA-E
+606673        MOVE CT-C2                TO X160N315-CMODO-E
+606673        MOVE CT-CONSULTA          TO X160N315-PDO-DOMICILIO-CL
+606673        MOVE X372VT01-KPERSONA1-E TO X160N315-KPERSONA-E
+606673     ELSE
+606673        MOVE WS-FECHA             TO X160N315-FECHA-E
+606673        MOVE CT-H2                TO X160N315-CMODO-E
+606673        MOVE CT-HISTORICO         TO X160N315-PDO-DOMICILIO-CL
+606673        MOVE X372VT01-KPERSONA1-E TO X160N315-KPERSONA-E
+606673     END-IF
+606673     CALL WS-B160N315 USING WS-X160N315
+606673
+606673     IF X160N000-CRETORNO-S OF WS-X160N315 NOT = ZEROES
+606673        SET ERROR-GRAVE            TO TRUE
+606673        SET NO-ROLLBACK            TO TRUE
+606673        MOVE '10'                  TO X372VT01-CRETORNO-S
+606673        MOVE 'B372N001'            TO X372VT01-GNOMPROG-S
+606673        MOVE 'Error en la busqueda de DOMICILIO EN LA BBDD.'
+606673                                   TO X372VT01-GERROR-S
+606673     ELSE
+      * MU-2017-BDGI-R-V-INI
+              MOVE SPACES             TO WS-PROVINCIA
+              MOVE ZEROES             TO WS-CODPOSTAL WS-DOMICILIO-P
+      * MU-2017-BDGI-R-V-FIN
+606673        IF X372VT01-KDOMICILIO1-E EQUAL ZEROES OR SPACES
+      * MU-2017-BDGI-R-V-INI
+606673*           MOVE X160N315-PDO-CCODPOST-S(CTE-1) TO   WS-PROVINCIA
+606673*           MOVE WS-PROVINCIA(1:2) TO WS-CODPOSTAL
+      *
+                 PERFORM VARYING XN-I FROM 1 BY 1
+606673                 UNTIL XN-I > X160N315-DOMICILIOS-OCURRS-S
+      * REPASA EL OCCURS DEL DOMICILIO HASTA QUE ENCUENTRA UN
+      * PDO-KDOMICILIO = 'R' (PRESTACIONES)
+                       IF  X160N315-PDO-CTIPODOM-S (XN-I) EQUAL 'R'
+                       AND WS-PROVINCIA EQUAL SPACES
+                       AND WS-CODPOSTAL EQUAL ZEROES
+      *
+                          MOVE X160N315-PDO-CCODPOST-S(XN-I)
+                                                     TO WS-PROVINCIA
+                          MOVE WS-PROVINCIA(1:2)     TO WS-CODPOSTAL
+      *
+                       END-IF
+      * SI NO ENCUENTRA DE PRESTACIONES ALMACENA UNO 'P'(PARTICULARES)
+                       IF  X160N315-PDO-CTIPODOM-S (XN-I) EQUAL 'P'
+                       AND WS-PROVINCIA EQUAL SPACES
+                       AND WS-CODPOSTAL EQUAL ZEROES
+                       AND WS-DOMICILIO-P EQUAL ZEROES
+      *
+                          MOVE XN-I   TO  WS-DOMICILIO-P
+      *
+                       END-IF
+                 END-PERFORM
+      *
+                 IF  WS-PROVINCIA EQUAL SPACES
+                 AND WS-CODPOSTAL EQUAL ZEROES
+                   IF WS-DOMICILIO-P  NOT EQUAL ZEROES
+      *  NO HEMSO ENCONTRADO DOMICLIO DE PRESTACION (R) Y NOS HEMOS
+      *  QUEDADO CON EL PRIMER DOMICLIO PARTICULAR (P) ENCONTRADO
+                     MOVE X160N315-PDO-CCODPOST-S(WS-DOMICILIO-P)
+                                                         TO WS-PROVINCIA
+                     MOVE WS-PROVINCIA(1:2)              TO WS-CODPOSTAL
+                   ELSE
+      * NO HEMSO ENCONTRADO DOMI PARTICULAR (P) , NI DE PRESTACION (R)
+      * POR LO QUE NOS QUEDAMOS CON EL 1ER DOMICL --> LOGICA ORIGINAL
+                     MOVE X160N315-PDO-CCODPOST-S(CTE-1) TO WS-PROVINCIA
+                     MOVE WS-PROVINCIA(1:2)              TO WS-CODPOSTAL
+                   END-IF
+                 END-IF
+      * MU-2017-BDGI-R-V-FIN
+606673        ELSE
+606673           PERFORM VARYING XN-I FROM 1 BY 1
+606673                 UNTIL XN-I > CTE-50
+606673                 OR X160N315-PDO-KDOMICILIO-S(XN-I) = ZEROES
+606673                 OR X160N315-PDO-KPERSONA-S  (XN-I) = ZEROES
+606673              IF X372VT01-KDOMICILIO1-E EQUAL
+606673                   X160N315-PDO-KDOMICILIO-S(XN-I)
+606673                   AND X160N315-PDO-FANULACION-S(XN-I) IS NUMERIC
+606673
+606673                 MOVE  X160N315-PDO-FANULACION-S(XN-I) TO WS-FAUX
+606673* SI LA FECHA DE ANULACION DEL DOMICILIO QUE ESTAMOS TRATANDO
+606673* ES MENOR QUE LA FECHA DE ANULACION DEL DOMICILIO QUE TENEMOS
+606673* GUARDADO SE MODIFICA
+606673                 IF X372VT01-FECMODIFICA-E <  WS-FAUX
+606673                      AND WS-FAUX <  WS-FAUX-DOMI
+606673                    MOVE X160N315-PDO-CCODPOST-S(XN-I)
+606673                                TO WS-PROVINCIA
+606673                    MOVE WS-PROVINCIA(1:2) TO WS-CODPOSTAL
+606673                    MOVE WS-FAUX           TO WS-FAUX-DOMI
+      * MU-2017-BDGI-R-V-INI 01/08/2017
+                          MOVE X160N315-PDO-CPAIS-S(XN-I) TO WS-PAIS
+      * MU-2017-BDGI-R-V-FIN 01/08/2017
+606673                 END-IF
+606673              END-IF
+606673           END-PERFORM
+606673        END-IF
+606673     END-IF
+      * MU-2017-BDGI-R-V-INI
+      *    IF (X372VT01-TIPIMPUESTCAP-E  = '41'
+      *    OR  X372VT01-TIPIMPUESTCAP-E  = '42')
+      * MU-2017-BDGI-R-V-INI 27/07/2017
+      *     AND WS-PAIS            EQUAL '011'
+      *    AND WS-PAIS(1:3)         EQUAL '011'
+      * MU-2017-BDGI-R-V-FIN 27/07/2017
+      *
+      *        SET ERROR-GRAVE      TO TRUE
+      *        MOVE 'B372N001'      TO X372VT01-GNOMPROG-S
+      *        MOVE 'SI BENEF NO RESIDENTE, PAIS NO PUEDE SER ESPA—A'
+      *                             TO X372VT01-GERROR-S
+      *        MOVE LT-ERR-DATOS    TO X372VT01-CRETORNO-S
+      *
+      *    END-IF
+      *
+      * MU-2017-BDGI-R-V-INI 27/07/2017
+      *     IF  X372VT01-TIPIMPUESTCAP-E  = '41'
+      *     OR  X372VT01-TIPIMPUESTCAP-E  = '42'
+      *     AND WS-CODPOSTAL         NOT EQUAL  99
+      *
+      *         SET ERROR-GRAVE      TO TRUE
+      *         MOVE 'B372N001'      TO X372VT01-GNOMPROG-S
+      *         MOVE 'SI BENEF NO RESIDENTE, PROVINCIA DEBER SER 99'
+      *                              TO X372VT01-GERROR-S
+      *         MOVE LT-ERR-DATOS    TO X372VT01-CRETORNO-S
+      *
+      *     END-IF
+      * MU-2017-BDGI-R-V-FIN 27/07/2017
+      * MU-2017-BDGI-R-V-FIN
+      * CALCULO DE DIAS ENTRE FECHAS DE EFECTO Y EMISION
+
+           INITIALIZE X001N009
+           IF X372VT01-FECEMISION-E = SPACES
+                  MOVE WS-FECHA               TO X001N009-FFINPER
+           ELSE
+                  MOVE X372VT01-FECEMISION-E TO X001N009-FFINPER
+           END-IF
+
+           MOVE X372VT01-FECEFECTO-E TO X001N009-FINIPER
+           MOVE 'D'                  TO X001N009-COPERACION
+           MOVE 'D'                  TO X001N009-COPCION
+
+      ** CONTROLAMOS QUE LA FECHA DE EMISION SEA SUPERIOR A LA FECHA DE
+      **   EFECTO
+           CALL WS-B001N011 USING X001N009
+
+           IF  X001N009-CRETORNO NOT EQUAL '00'
+               SET  ERROR-GRAVE TO TRUE
+               MOVE 'B372N001'            TO X372VT01-GNOMPROG-S
+               MOVE 'Error en el calculo de DIFERENCIA DE FECHAS.'
+                 TO X372VT01-GERROR-S
+               MOVE '16'                  TO X372VT01-CRETORNO-S
+           END-IF
+
+      * VALIDACIONES PARA A—OS POSTERIORES AL 2000
+      *D*
+      *    DISPLAY 'X372VT01-ANIO-E-->' X372VT01-ANIO-E
+      *F*
+           IF NO-ERROR AND X372VT01-ANIO-E  > 2000
+
+      * VALIDACION DE TIPO DE IMPUESTO DE SOCIEDAD
+      *D*
+      *    DISPLAY 'B372N001: 23010-VALIDACIONES-INFORMATIVAS'
+      *    DISPLAY 'TIPO IMPUESTO   ' X372VT01-TIPIMPUESTCAP-E
+      *    DISPLAY 'PRIMAS          ' X372VT01-IMPREDPRICAP-E
+      *    DISPLAY 'TRANSITORIA     ' X372VT01-IMPREDTRANCAP-E
+      *    DISPLAY 'INTEGRO         ' X372VT01-IMPRTOINTEGRCAP-E
+      *    DISPLAY 'DURACION        ' X001N009-NANNTOTAL
+      *    DISPLAY 'COD POSTAL      ' WS-CODPOSTAL
+      *    DISPLAY 'FEC EFECTO      ' X372VT01-FECEFECTO-E
+      *F*
+              IF X372VT01-TIPIMPUESTCAP-E = '22'
+                 IF X372VT01-IMPREDPRICAP-E NOT EQUAL ZEROES OR
+                    X372VT01-IMPREDTRANCAP-E NOT EQUAL ZEROES
+
+      *D*
+      *    DISPLAY 'LT-RETURN-OK -->' LT-RETURN-OK
+      *F*
+                MOVE LT-RETURN-OK     TO X372VT01-CRETORNO-S
+   MSZ          MOVE 'LAS REDS. DE PRIMA Y TRANSITORIA DEBERIAN SER CERO
+   MSZ-              '.'
+                                           TO WS-ERROR-2
+      *D*
+      *    DISPLAY 'WS-ERROR-2-->' WS-ERROR-2
+      *F*
+                 END-IF
+              END-IF
+
+      * VALIDACION DE TIPO DE IMPUESTO MOBILIARIO
+   MSZ        IF X372VT01-TIPIMPUESTCAP-E = '12'
+      *D*
+      *    DISPLAY 'VALIDACION DE TIPO DE IMPUESTO MOBILIARIO'
+      *F*
+   MSZ           IF X001N009-NANNTOTAL > 2 AND
+   MSZ              X372VT01-FECEFECTO-E >= 19941231 AND
+   MSZ              WS-CODPOSTAL = 31 AND
+   MSZ              X372VT01-IMPRTOINTEGRCAP-E < CTE-0 AND
+                    (X372VT01-IMPREDPRICAP-E NOT EQUAL ZEROES OR
+                    X372VT01-IMPREDTRANCAP-E NOT EQUAL ZEROES)
+   MSZ
+   MSZ                MOVE LT-RETURN-OK     TO X372VT01-CRETORNO-S
+   MSZ                MOVE 'LAS REDS DE PRIMA Y TRANSITORIA DEBERIAN SER
+   MSZ-                    ' CEROS.'
+   MSZ                                       TO WS-ERROR-2
+   MSZ           END-IF
+
+   MSZ           IF X001N009-NANNTOTAL > 2 AND
+   MSZ              X372VT01-FECEFECTO-E >= 19941231 AND
+   MSZ              WS-CODPOSTAL NOT EQUAL 31 AND
+   MSZ              X372VT01-IMPRTOINTEGRCAP-E > CTE-0 AND
+   MSZ*             X372VT01-IMPREDPRICAP-E EQUAL ZEROES AND
+   MSZ              X372VT01-IMPREDTRANCAP-E NOT EQUAL ZEROES
+   MSZ
+   MSZ                MOVE LT-RETURN-OK     TO X372VT01-CRETORNO-S
+   MSZ                MOVE 'LAS RED. TRANSITORIA DEBE SER IGUAL A CERO.'
+   MSZ                                       TO WS-ERROR-2
+   MSZ           END-IF
+
+   MSZ           IF X001N009-NANNTOTAL > 2 AND
+   MSZ              X372VT01-FECEFECTO-E < 19941231 AND
+   MSZ              X372VT01-IMPRTOINTEGRCAP-E < CTE-0 AND
+   MSZ              (X372VT01-IMPREDPRICAP-E NOT EQUAL ZEROES OR
+   MSZ              X372VT01-IMPREDTRANCAP-E NOT EQUAL ZEROES)
+   MSZ
+   MSZ                MOVE LT-RETURN-OK     TO X372VT01-CRETORNO-S
+   MSZ                MOVE 'LAS REDS DE PRIMA Y TRANSITORIA DEBERIAN SER
+   MSZ-                    ' CERO.'
+   MSZ                                       TO WS-ERROR-2
+   MSZ           END-IF
+
+   MSZ           IF X001N009-NANNTOTAL > 2 AND
+   MSZ              X372VT01-FECEFECTO-E < 19941231 AND
+   MSZ              X372VT01-IMPRTOINTEGRCAP-E > CTE-0 AND
+                    X372VT01-IMPREDPRICAP-E EQUAL ZEROES AND
+                    X372VT01-IMPREDTRANCAP-E EQUAL ZEROES
+   MSZ
+   MSZ                MOVE LT-RETURN-OK     TO X372VT01-CRETORNO-S
+   MSZ                MOVE 'LAS RED. TRANSITORIA DEBE SER DISTINTA DE CE
+   MSZ-                    'RO.'
+   MSZ                                       TO WS-ERROR-2
+   MSZ           END-IF
+
+   MSZ        END-IF
+
+
+
+   MSZ     END-IF
+
+   MSZ* SE COMENTA ESTA PARTE POR INCIDENCIA EN PROD.
+   MSZ* AL GUARDAR LA RETENCION EN BBDD
+   MSZ*    IF X372VT01-TIPIMPUESTCAP-E = '11'
+   MSZ*
+   MSZ*       IF WS-CODPOSTAL = 01                    OR
+   MSZ*          WS-CODPOSTAL = 20                    OR
+   MSZ*          WS-CODPOSTAL = 31                    OR
+   MSZ*          WS-CODPOSTAL = 48
+   MSZ*
+   MSZ*          COMPUTE X372M001-IMPRETCAP-E =
+   MSZ*                 (X372VT01-IMPRTOINTEGRCAP-E *
+   MSZ*                  X372VT01-PORRETCAP-E) / 100
+   MSZ*
+   MSZ*          MOVE X372M001-IMPRETCAP-E
+   MSZ*          TO X372VT01-IMPRETCAP-S
+   MSZ*
+   MSZ*       ELSE
+   MSZ*         COMPUTE X372M001-IMPRETCAP-E =
+   MSZ*                 (X372VT01-IMPRTONETOCAP-E *
+   MSZ*                 X372VT01-PORRETCAP-E) / 100
+   MSZ*          MOVE X372M001-IMPRETCAP-E TO X372VT01-IMPRETCAP-S
+   MSZ*
+   MSZ*       END-IF
+   MSZ*    END-IF
+
+      * EXISTENCIA DE IMPORTE CONPENSATORIO EN LA POLIZA
+           IF X372VT01-OPERACION-E = 'M1'
+              INITIALIZE WS-X372M004
+              MOVE 'CI'                   TO X372M004-OPERACION-E
+              MOVE X372VT01-ANIO-E        TO X372M004-ANIO-E
+              MOVE X372VT01-KEXPEDIENTE-E TO X372M004-KEXPEDIENTE-E
+              CALL WS-B372M004 USING WS-X372M004
+
+              IF X372M004-CRETORNO-S OF WS-X372M004 NOT = '00'
+                  SET  ERROR-GRAVE       TO TRUE
+                  MOVE LT-ERROR-LLAM     TO X372VT01-CRETORNO-S
+                  MOVE X372M004-GERROR-S   TO X372VT01-GERROR-S
+                  MOVE X372M004-GNOMPROG-S TO X372VT01-GNOMPROG-S
+              END-IF
+
+              IF X372VT01-KCERTIFICADO-E =
+                 X372M004-KCERTIFICADO-S(1) AND
+                 X372M004-IMPCOMPENSATORIA-S(1) NOT EQUAL ZEROS
+                  MOVE LT-RETURN-OK            TO X372VT01-CRETORNO-S
+                  MOVE 'Ya existe un importe compensatorio para esta pol
+      -                'iza en la BBDD.'
+                    TO WS-ERROR-2
+              END-IF
+
+955339        IF X372VT01-FECPAGOCAPITAL-E NOT = SPACES
+955339           IF X372M004-STIPSITUACION-S(1) = 'A'
+955339              SET  ERROR-GRAVE       TO TRUE
+955339              MOVE 'B372N001'   TO X372VT01-GNOMPROG-S
+955339              MOVE LT-ERR-DATOS TO X372VT01-CRETORNO-S
+955339            MOVE 'No se puede incluir fecha de pago, exp. anulado'
+955339              TO X372VT01-GERROR-S
+955339           END-IF
+955339        END-IF
+           END-IF
+           .
+
+
+      ***************************************************************
+       2200-MOVER-DATOS-ENTRADA.
+      ***************************************************************
+
+           MOVE X372VT01-OPERACION-E      TO X372M001-OPERACION-E
+           MOVE X372VT01-ANIO-E           TO X372M001-ANIO-E
+           MOVE X372VT01-KEXPEDIENTE-E    TO X372M001-KEXPEDIENTE-E
+           MOVE X372VT01-KRAMO-E          TO X372M001-KRAMO-E
+           MOVE X372VT01-ANIOPOL-E        TO X372M001-ANIOPOL-E
+           MOVE X372VT01-KPOLIZA-E        TO X372M001-KPOLIZA-E
+           MOVE X372VT01-NSUBPOLIZA-E     TO X372M001-NSUBPOLIZA-E
+           MOVE X372VT01-KCERTIFICADO-E   TO X372M001-KCERTIFICADO-E
+           MOVE X372VT01-KMODALIDAD-E     TO X372M001-KMODALIDAD-E
+           MOVE X372VT01-CCANALCAMP-E     TO X372M001-CCANALCAMP-E
+           MOVE X372VT01-CENTIDAD-E       TO X372M001-CENTIDAD-E
+           MOVE X372VT01-FECEFECTO-E      TO X372M001-FECEFECTO-E
+           MOVE X372VT01-KDURACION-E      TO X372M001-KDURACION-E
+           MOVE X372VT01-FECEMISION-E     TO X372M001-FECEMISION-E
+           MOVE X372VT01-CCARTERA-E       TO X372M001-CCARTERA-E
+           MOVE X372VT01-SREASEGURO-E     TO X372M001-SREASEGURO-E
+           MOVE X372VT01-REGIONAL-E       TO X372M001-REGIONAL-E
+           MOVE X372VT01-LUGARENVIO-E     TO X372M001-LUGARENVIO-E
+           MOVE X372VT01-KOFICINA-E       TO X372M001-KOFICINA-E
+           MOVE X372VT01-IPENDIENTE-E     TO X372M001-IPENDIENTE-E
+           MOVE X372VT01-CTIPOPERS1-E     TO X372M001-CTIPOPERS1-E
+           MOVE X372VT01-SRESIDENTE1-E    TO X372M001-SRESIDENTE1-E
+           MOVE X372VT01-NIF1-E           TO X372M001-NIF1-E
+           MOVE X372VT01-KPERSONA1-E      TO X372M001-KPERSONA1-E
+606673     MOVE X372VT01-KDOMICILIO1-E    TO X372M001-KDOMICILIO1-E
+           MOVE X372VT01-IMPCAPITAL-E     TO X372M001-IMPCAPITAL-E
+           MOVE X372VT01-IMPBENEFICIOS-E  TO X372M001-IMPBENEFICIOS-E
+           MOVE X372VT01-FECPAGOCAPITAL-E TO X372M001-FECPAGOCAPITAL-E
+           MOVE X372VT01-IMPANTICIPO-E    TO X372M001-IMPANTICIPO-E
+           MOVE X372VT01-IMPINTEPEND-E    TO X372M001-IMPINTEPEND-E
+           MOVE X372VT01-FECVENCIMICAP-E  TO X372M001-FECVENCIMICAP-E
+           MOVE X372VT01-TIPIMPUESTCAP-E  TO X372M001-TIPIMPUESTCAP-E
+           MOVE X372VT01-IMPRTOINTEGRCAP-E
+                                          TO X372M001-IMPRTOINTEGRCAP-E
+           MOVE X372VT01-IMPREDPRICAP-E   TO X372M001-IMPREDPRICAP-E
+           MOVE X372VT01-IMPREDTRANCAP-E  TO X372M001-IMPREDTRANCAP-E
+           MOVE X372VT01-IMPCOMPENSATORIA-E
+                                          TO X372M001-IMPCOMPENSATORIA-E
+           MOVE X372VT01-IMPRTONETOCAP-E  TO X372M001-IMPRTONETOCAP-E
+           MOVE X372VT01-PORRETCAP-E      TO X372M001-PORRETCAP-E
+           MOVE X372VT01-IMPRETCAP-E      TO X372M001-IMPRETCAP-E
+           MOVE X372VT01-IMPLIQCAP-E      TO X372M001-IMPLIQCAP-E
+           MOVE X372VT01-FECIMPRECAP-E    TO X372M001-FECIMPRECAP-E
+           MOVE X372VT01-FECPAGRET-E      TO X372M001-FECPAGRET-E
+           MOVE X372VT01-IMPCOMP1-E       TO X372M001-IMPCOMP1-E
+           MOVE X372VT01-FECEMICOMP1-E    TO X372M001-FECEMICOMP1-E
+           MOVE X372VT01-FECPAGCOMP1-E    TO X372M001-FECPAGCOMP1-E
+           MOVE X372VT01-TIPIMPUESTCOMP1-E
+                                          TO X372M001-TIPIMPUESTCOMP1-E
+           MOVE X372VT01-IMPRTOINTCOMP1-E TO X372M001-IMPRTOINTCOMP1-E
+           MOVE X372VT01-IMPREDPRICOMP1-E TO X372M001-IMPREDPRICOMP1-E
+           MOVE X372VT01-IREDTRANCOMP1-E  TO X372M001-IREDTRANCOMP1-E
+           MOVE X372VT01-IRTONETCOMP1-E   TO X372M001-IRTONETCOMP1-E
+           MOVE X372VT01-PORRETCOMP1-E    TO X372M001-PORRETCOMP1-E
+           MOVE X372VT01-IRETCOMP1-E      TO X372M001-IRETCOMP1-E
+           MOVE X372VT01-ILIQCOMP1-E      TO X372M001-ILIQCOMP1-E
+           MOVE X372VT01-FECIMPRECOMP1-E  TO X372M001-FECIMPRECOMP1-E
+           MOVE X372VT01-FECPAGRETCOM1-E  TO X372M001-FECPAGRETCOM1-E
+           MOVE X372VT01-IMPCOMP2-E       TO X372M001-IMPCOMP2-E
+           MOVE X372VT01-FECEMICOMP2-E    TO X372M001-FECEMICOMP2-E
+           MOVE X372VT01-FECPAGCOMP2-E    TO X372M001-FECPAGCOMP2-E
+           MOVE X372VT01-TIPIMPUESTCOMP2-E
+                                          TO X372M001-TIPIMPUESTCOMP2-E
+           MOVE X372VT01-IMPRTOINTCOMP2-E TO X372M001-IMPRTOINTCOMP2-E
+           MOVE X372VT01-IMPREDPRICOMP2-E TO X372M001-IMPREDPRICOMP2-E
+           MOVE X372VT01-IREDTRANCOMP2-E  TO X372M001-IREDTRANCOMP2-E
+           MOVE X372VT01-IRTONETCOMP2-E   TO X372M001-IRTONETCOMP2-E
+           MOVE X372VT01-PORRETCOMP2-E    TO X372M001-PORRETCOMP2-E
+           MOVE X372VT01-IRETCOMP2-E      TO X372M001-IRETCOMP2-E
+           MOVE X372VT01-ILIQCOMP2-E      TO X372M001-ILIQCOMP2-E
+           MOVE X372VT01-FECIMPRECOMP2-E  TO X372M001-FECIMPRECOMP2-E
+           MOVE X372VT01-FECPAGRETCOM2-E  TO X372M001-FECPAGRETCOM2-E
+      * MU-2017-BDGI-R-V-INI
+      *     MOVE X372VT01-CODCOA1-E        TO X372M001-CODCOA1-E
+      *     MOVE X372VT01-PORCOA1-E        TO X372M001-PORCOA1-E
+606664*     MOVE X372VT01-IMPCOA1-E        TO X372M001-IMPCOA1-E
+      *     MOVE X372VT01-CODCOA2-E        TO X372M001-CODCOA2-E
+      *     MOVE X372VT01-PORCOA2-E        TO X372M001-PORCOA2-E
+606664*     MOVE X372VT01-IMPCOA2-E        TO X372M001-IMPCOA2-E
+      *     MOVE X372VT01-CODCOA3-E        TO X372M001-CODCOA3-E
+      *     MOVE X372VT01-PORCOA3-E        TO X372M001-PORCOA3-E
+606664*     MOVE X372VT01-IMPCOA3-E        TO X372M001-IMPCOA3-E
+      *     MOVE X372VT01-CODCOA4-E        TO X372M001-CODCOA4-E
+      *     MOVE X372VT01-PORCOA4-E        TO X372M001-PORCOA4-E
+606664*     MOVE X372VT01-IMPCOA4-E        TO X372M001-IMPCOA4-E
+      *     MOVE X372VT01-CODCOA5-E        TO X372M001-CODCOA5-E
+      *     MOVE X372VT01-PORCOA5-E        TO X372M001-PORCOA5-E
+606664*     MOVE X372VT01-IMPCOA5-E        TO X372M001-IMPCOA5-E
+      *     MOVE X372VT01-CODCOA6-E        TO X372M001-CODCOA6-E
+      *     MOVE X372VT01-PORCOA6-E        TO X372M001-PORCOA6-E
+606664*     MOVE X372VT01-IMPCOA6-E        TO X372M001-IMPCOA6-E
+      *
+      *
+           PERFORM VARYING XN-M FROM 1 BY 1
+                     UNTIL XN-M > X372VT01-COASEGUROS-OCCURS-E
+      *
+              MOVE  X372VT01-CODCOA-E          (XN-M)
+                TO  X372M001-CODCOA-E          (XN-M)
+              MOVE  X372VT01-PORCOA-E          (XN-M)
+                TO  X372M001-PORCOA-E          (XN-M)
+              MOVE  X372VT01-IMPCOA-E          (XN-M)
+                TO  X372M001-IMPCOA-E          (XN-M)
+              MOVE  X372VT01-IMPRTOINTEGRCOA-E (XN-M)
+                TO  X372M001-IMPRTOINTEGRCOA-E (XN-M)
+              MOVE  X372VT01-IMPREDPRICOA-E    (XN-M)
+                TO  X372M001-IMPREDPRICOA-E    (XN-M)
+              MOVE  X372VT01-IMPREDTRANCOA-E   (XN-M)
+                TO  X372M001-IMPREDTRANCOA-E   (XN-M)
+      * MU-2017-BDGI-R-V-INI V2
+              MOVE  X372VT01-IMPRTONETOCOA-E   (XN-M)
+                TO  X372M001-IMPRTONETOCOA-E   (XN-M)
+      * MU-2017-BDGI-R-V-FIN V2
+              MOVE  X372VT01-IMPRETCOA-E       (XN-M)
+                TO  X372M001-IMPRETCOA-E       (XN-M)
+              MOVE  X372VT01-IMPCOMPENSATCOA-E (XN-M)
+                TO  X372M001-IMPCOMPENSATCOA-E (XN-M)
+      *
+           END-PERFORM
+      * MU-2017-BDGI-R-V-FIN
+           MOVE X372VT01-PAGOTOT-E        TO X372M001-PAGOTOT-E
+           MOVE X372VT01-SBDGICAP-E       TO X372M001-SBDGICAP-E
+           MOVE X372VT01-FECBDGICAP-E     TO X372M001-FECBDGICAP-E
+           MOVE X372VT01-SBDGICOMP1-E     TO X372M001-SBDGICOMP1-E
+           MOVE X372VT01-FECBDGICOMP1-E   TO X372M001-FECBDGICOMP1-E
+           MOVE X372VT01-SBDGICOMP2-E     TO X372M001-SBDGICOMP2-E
+           MOVE X372VT01-FECBDGICOMP2-E   TO X372M001-FECBDGICOMP2-E
+           MOVE X372VT01-KUSUARIO-C       TO X372M001-CUSUARIO-E
+           MOVE X372VT01-GOBSERVACION-E   TO X372M001-GOBSERVACION-E.
+606673     MOVE X372VT01-ANIOFISCAL-E     TO X372M001-ANIOFISCAL-E.
+541869     MOVE X372VT01-FECMODIFICA-E    TO X372M001-FECMODIFICA-E.
+
+           MOVE X372VT01-STIPSITUACION-E  TO X372M001-STIPSITUACION-E.
+           MOVE X372VT01-FANUALACION-E    TO X372M001-FANUALACION-E.
+      * MU-2017-BDGI-R-V-INI
+           MOVE X372VT01-EXIMIDO-E        TO X372M001-EXIMIDO-E.
+           MOVE X372VT01-KDOMCOM-E        TO X372M001-KDOMCOM-E.
+      * MU-2017-BDGI-R-V-FIN
+      ***************************************************************
+       2300-REALIZAR-OPERACIONES.
+      ***************************************************************
+           EVALUATE X372VT01-OPERACION-E
+
+               WHEN 'A1'
+                    PERFORM 3000-OBTENER-KEXPEDIENTE
+
+                    IF NO-ERROR AND
+                       (X372VT01-KMODALIDAD-E NOT EQUAL CT-201 OR
+                        X372VT01-KMODALIDAD-E NOT EQUAL CT-202 OR
+                        X372VT01-KMODALIDAD-E NOT EQUAL CT-203   )
+
+                       PERFORM 2310-VALIDACION-INFORMATIVAS
+      * SE GUARDA EN EL CAMPO OBSERVACIONES EL ERROR INFORMATIVO
+                       IF WS-ERROR-2 NOT EQUAL SPACES
+                          MOVE WS-ERROR-2 TO X372M001-GOBSERVACION-E
+                       END-IF
+      *D*
+      *    DISPLAY 'sale del parrafo 2310'
+      *F*
+      *D*
+      *    DISPLAY 'LT-RETURN-OK -->' LT-RETURN-OK
+      *F*
+      *D*
+      *    DISPLAY 'WS-ERROR-2-->' WS-ERROR-2
+      *F*
+
+                    END-IF
+
+                    IF NO-ERROR
+                       IF WS-ERROR-2 NOT EQUAL SPACES
+                          MOVE WS-ERROR-2 TO X372M001-GOBSERVACION-E
+                       END-IF
+                       PERFORM 2500-REALIZAR-MANTENIMIENTO
+                       MOVE X372M001-GERROR-S      TO WS-ERROR-1
+                    END-IF
+
+                    IF NO-ERROR
+                      PERFORM 3200-ACTUALIZAR-KEXPEDIENTE
+                    END-IF
+      * ESTA VARIABLE AUXILIAR NOS SIRVE PARA MOSTRAR TANTO EL ALTA
+      * CORRECTO COMO LAS VALIDACIONES LEVES
+
+                    IF NO-ERROR
+                      IF WS-ERROR-2 NOT EQUAL SPACES
+                         MOVE WS-ERROR            TO X372VT01-GERROR-S
+                      ELSE
+                         MOVE WS-ERROR-1          TO X372VT01-GERROR-S
+                      END-IF
+      * MU-2017-BDGI-R-V-INI
+FASE02*   YA EXISTE EXPEDIENTE PARA ESTA POLIZA, SE PINTA MENSAJE
+FASE02*   EN EL FRONTAL MANDOLE UNA S EN LA ULTIMA POSICION
+FASE02                IF SI-DUPLICADO
+FASE02                   MOVE 'S'          TO X372VT01-GERROR-S(100:1)
+FASE02                   SET NO-DUPLICADO  TO TRUE
+FASE02                END-IF
+      * MU-2017-BDGI-R-V-FIN
+                    END-IF
+
+               WHEN 'M1'
+      *** MODIFICACION DE UN REGISTRO
+
+                    IF X372VT01-KMODALIDAD-E NOT EQUAL CT-201 OR
+                       X372VT01-KMODALIDAD-E NOT EQUAL CT-202 OR
+                       X372VT01-KMODALIDAD-E NOT EQUAL CT-203
+
+                        PERFORM 2310-VALIDACION-INFORMATIVAS
+      *D*
+      *    DISPLAY 'sale del parrafo 2310'
+      *F*
+      *D*
+      *    DISPLAY 'LT-RETURN-OK -->' LT-RETURN-OK
+      *F*
+      *D*
+      *    DISPLAY 'WS-ERROR-2-->' WS-ERROR-2
+      *F*
+
+                    END-IF
+
+                    PERFORM 4000-REALIZAR-CONSULTA
+
+      * SE GUARDA EN EL CAMPO OBSERVACIONES EL ERROR INFORMATIVO
+                    IF NO-ERROR AND SI-CAMBIO
+                       PERFORM 4100-COMPARAR-FISCALIDAD
+                    END-IF
+
+                    IF NO-ERROR AND SI-CAMBIO
+                       IF WS-ERROR-2 NOT EQUAL SPACES
+                          MOVE WS-ERROR-2 TO X372M001-GOBSERVACION-E
+                       END-IF
+                       PERFORM 2500-REALIZAR-MANTENIMIENTO
+                    END-IF
+
+      *        WHEN 'M2'
+      *** ANULACION DE UN REGISTRO (BORRADO LOGICO)
+      *             MOVE 'A'  TO X372M001-SITUACION-E
+      *             IF NO-ERROR
+      *                PERFORM 2500-REALIZAR-MANTENIMIENTO
+      *             END-IF
+
+               WHEN 'B1'
+      *** BORRADO FÌSICO DE UN REGISTRO
+                    IF NO-ERROR
+                       PERFORM 2500-REALIZAR-MANTENIMIENTO
+                    END-IF
+
+
+               WHEN 'M3'
+      *** DESMARCA EL CAMPO REASEGURO EN TODOS AQUELLOS REGISTROS QUE LO
+      *** TENGAN INFORMADO
+                    MOVE ' '   TO X372M001-SREASEGURO-E
+                    IF NO-ERROR
+                       PERFORM 2500-REALIZAR-MANTENIMIENTO
+                    END-IF
+
+           END-EVALUATE.
+
+      ***************************************************************
+       3000-OBTENER-KEXPEDIENTE.
+      ***************************************************************
+           INITIALIZE WS-X362M002
+
+           MOVE 'S1'                     TO X362M002-OPERACION-E
+           MOVE 'VE'                     TO X362M002-TABLA-E
+
+           CALL WS-B362M002 USING WS-X362M002
+
+           IF X362M002-CRETORNO-S = LT-RETURN-OK
+
+              MOVE X362M002-ANIO-S         TO X372VT01-ANIO-E
+              MOVE X362M002-EXPEDIENTE-S   TO X372VT01-KEXPEDIENTE-E
+              MOVE X362M002-EXPEDIENTE-S   TO WS-KEXPEDIENTE
+
+           ELSE
+
+               SET  ERROR-GRAVE TO TRUE
+               MOVE X362M002-CRETORNO-S     TO X372VT01-CRETORNO-S
+               MOVE X362M002-GNOMPROG-S     TO X372VT01-GNOMPROG-S
+               MOVE X362M002-GERROR-S       TO X372VT01-GERROR-S
+
+           END-IF
+           .
+      ***************************************************************
+       2500-REALIZAR-MANTENIMIENTO.
+      ***************************************************************
+
+           MOVE X372VT01-ANIO-E         TO X372M001-ANIO-E
+           MOVE X372VT01-KEXPEDIENTE-E  TO X372M001-KEXPEDIENTE-E
+      *MU-2017-BGDI-R-V-INI
+           MOVE X372VT01-COASEGUROS-OCCURS-E
+                                        TO X372M001-COASEGUROS-OCCURS-E
+      *MU-2017-BGDI-R-V-FIN
+
+           CALL WS-B372M001 USING WS-X372M001.
+
+           IF X372M001-CRETORNO-S NOT = LT-RETURN-OK
+              SET ERROR-GRAVE      TO TRUE
+              SET NO-ROLLBACK      TO TRUE
+           END-IF
+
+           MOVE X372M001-CRETORNO-S     TO X372VT01-CRETORNO-S
+           MOVE X372M001-GNOMPROG-S     TO X372VT01-GNOMPROG-S
+           MOVE X372M001-GERROR-S       TO X372VT01-GERROR-S
+      *    MOVE X372M001-GERROR-S       TO WS-ERROR-1
+           MOVE X372M001-ANIO-E         TO X372VT01-ANIO-S
+           MOVE X372M001-KEXPEDIENTE-E  TO X372VT01-KEXPEDIENTE-S
+      * ESTA VARIABLE AUXILIAR NOS SIRVE PARA MOSTRAR TANTO EL ALTA
+      * CORRECTO COMO LAS VALIDACIONES LEVES
+
+           IF NO-ERROR
+              IF WS-ERROR-2 NOT EQUAL SPACES
+                 MOVE WS-ERROR            TO X372VT01-GERROR-S
+              ELSE
+                 MOVE WS-ERROR-1          TO X372VT01-GERROR-S
+              END-IF
+           END-IF
+
+           .
+      ***************************************************************
+       3200-ACTUALIZAR-KEXPEDIENTE.
+      ***************************************************************
+            INITIALIZE WS-X362M002
+            ADD 1                         TO WS-KEXPEDIENTE
+
+           MOVE 'M1'                     TO X362M002-OPERACION-E
+           MOVE 'VE'                     TO X362M002-TABLA-E
+           MOVE X372VT01-ANIO-E          TO X362M002-ANIO-E
+           MOVE WS-KEXPEDIENTE           TO X362M002-EXPEDIENTE-E
+           MOVE WS-FECHA-SIS             TO X362M002-FMODIFICACION-E
+           MOVE WS-B362M002              TO X362M002-USUARIO-E
+
+           CALL WS-B362M002 USING WS-X362M002
+
+           IF X362M002-CRETORNO-S = LT-RETURN-OK
+
+              MOVE X362M002-ANIO-S         TO X372VT01-ANIO-E
+              MOVE X362M002-EXPEDIENTE-S   TO X372VT01-KEXPEDIENTE-E
+
+           ELSE
+
+               SET ERROR-GRAVE     TO TRUE
+               SET NO-ROLLBACK     TO TRUE
+               MOVE X362M002-CRETORNO-S     TO X372VT01-CRETORNO-S
+               MOVE X362M002-GNOMPROG-S     TO X372VT01-GNOMPROG-S
+               MOVE X362M002-GERROR-S       TO X372VT01-GERROR-S
+
+           END-IF
+           .
+
+      ***************************************************************
+       4000-REALIZAR-CONSULTA.
+      ***************************************************************
+           INITIALIZE WS-X372M004.
+           MOVE 'CI'                    TO X372M004-OPERACION-E
+           MOVE X372VT01-ANIO-E         TO X372M004-ANIO-E
+           MOVE X372VT01-KEXPEDIENTE-E  TO X372M004-KEXPEDIENTE-E
+           CALL WS-B372M004 USING WS-X372M004
+
+           IF X372M004-CRETORNO-S OF WS-X372M004 = '00'
+              PERFORM 4050-COMPARAR
+           ELSE
+              SET ERROR-GRAVE          TO TRUE
+              SET NO-ROLLBACK          TO TRUE
+              MOVE X372M004-CRETORNO-S TO X372VT01-CRETORNO-S
+              MOVE 'Error al consultar los DATOS DEL EXPEDIENTE.'
+                                       TO X372VT01-GERROR-S
+           END-IF
+           .
+      ***************************************************************
+       4050-COMPARAR.
+      ***************************************************************
+
+      * MU-2017-BDGI-R-V-INI
+      *
+           SET NO-CAMBIO TO TRUE
+      *
+           PERFORM VARYING XN-M FROM 1 BY 1
+                     UNTIL XN-M > X372M004-COASEGUROS-OCCURS-S (1)
+      *
+             IF  NO-CAMBIO
+              AND   X372M004-CODCOA-S          (1, XN-M)
+                  = X372M001-CODCOA-E          (XN-M)
+              AND   X372M004-PORCOA-S          (1, XN-M)
+                  = X372M001-PORCOA-E          (XN-M)
+              AND   X372M004-IMPCOA-S          (1, XN-M)
+                  = X372M001-IMPCOA-E          (XN-M)
+              AND   X372M004-IMPRTOINTEGRCOA-S (1, XN-M)
+                  = X372M001-IMPRTOINTEGRCOA-E (XN-M)
+              AND   X372M004-IMPREDPRICOA-S    (1, XN-M)
+                  = X372M001-IMPREDPRICOA-E    (XN-M)
+              AND   X372M004-IMPREDTRANCOA-S   (1, XN-M)
+                  = X372M001-IMPREDTRANCOA-E   (XN-M)
+      * MU-2017-BDGI-R-V-INI V2
+              AND   X372M004-IMPRTONETOCOA-S   (1, XN-M)
+                  = X372M001-IMPRTONETOCOA-E   (XN-M)
+      * MU-2017-BDGI-R-V-FIN V2
+              AND   X372M004-IMPRETCOA-S       (1, XN-M)
+                  = X372M001-IMPRETCOA-E       (XN-M)
+              AND   X372M004-IMPCOMPENSATCOA-S (1, XN-M)
+                  = X372M001-IMPCOMPENSATCOA-E (XN-M)
+      *
+                  SET NO-CAMBIO TO TRUE
+             ELSE
+                  SET SI-CAMBIO TO TRUE
+             END-IF
+      *
+           END-PERFORM
+      *
+      *     IF  X372M004-ANIO-S(1)          = X372M001-ANIO-E
+           IF  NO-CAMBIO
+            AND X372M004-ANIO-S(1)          = X372M001-ANIO-E
+      * MU-2017-BDGI-R-V-FIN
+            AND X372M004-KEXPEDIENTE-S(1)   = X372M001-KEXPEDIENTE-E
+            AND X372M004-KRAMO-S(1)         = X372M001-KRAMO-E
+            AND X372M004-ANIOPOL-S(1)       = X372M001-ANIOPOL-E
+            AND X372M004-KPOLIZA-S(1)       = X372M001-KPOLIZA-E
+            AND X372M004-NSUBPOLIZA-S(1)    = X372M001-NSUBPOLIZA-E
+            AND X372M004-KCERTIFICADO-S(1)  = X372M001-KCERTIFICADO-E
+            AND X372M004-KMODALIDAD-S(1)    = X372M001-KMODALIDAD-E
+            AND X372M004-CCANALCAMP-S(1)    = X372M001-CCANALCAMP-E
+            AND X372M004-CENTIDAD-S(1)      = X372M001-CENTIDAD-E
+            AND X372M004-FECEFECTO-S(1)     = X372M001-FECEFECTO-E
+            AND X372M004-KDURACION-S(1)     = X372M001-KDURACION-E
+            AND X372M004-FECEMISION-S(1)    = X372M001-FECEMISION-E
+            AND X372M004-CCARTERA-S(1)      = X372M001-CCARTERA-E
+            AND X372M004-SREASEGURO-S (1)   = X372M001-SREASEGURO-E
+            AND X372M004-REGIONAL-S (1)     = X372M001-REGIONAL-E
+            AND X372M004-LUGARENVIO-S (1)   = X372M001-LUGARENVIO-E
+            AND X372M004-KOFICINA-S (1)     = X372M001-KOFICINA-E
+            AND X372M004-IPENDIENTE-S (1)   = X372M001-IPENDIENTE-E
+            AND X372M004-CTIPOPERS1-S (1)   = X372M001-CTIPOPERS1-E
+            AND X372M004-SRESIDENTE1-S (1)  = X372M001-SRESIDENTE1-E
+            AND X372M004-NIF1-S (1)         = X372M001-NIF1-E
+            AND X372M004-KPERSONA1-S (1)    = X372M001-KPERSONA1-E
+606673      AND X372M004-KDOMICILIO1-S (1)  = X372M001-KDOMICILIO1-E
+            AND X372M004-IMPCAPITAL-S (1)   = X372M001-IMPCAPITAL-E
+            AND X372M004-IMPBENEFICIOS-S (1)
+                                         = X372M001-IMPBENEFICIOS-E
+            AND X372M004-FECPAGOCAPITAL-S (1)
+                                         = X372M001-FECPAGOCAPITAL-E
+            AND X372M004-IMPANTICIPO-S (1)  = X372M001-IMPANTICIPO-E
+            AND X372M004-IMPINTEPEND-S (1)  = X372M001-IMPINTEPEND-E
+            AND X372M004-FECVENCIMICAP-S (1)
+                                         = X372M001-FECVENCIMICAP-E
+            AND X372M004-TIPIMPUESTCAP-S (1)
+                                         = X372M001-TIPIMPUESTCAP-E
+            AND X372M004-IMPRTOINTEGRCAP-S (1)
+                                         = X372M001-IMPRTOINTEGRCAP-E
+            AND X372M004-IMPREDPRICAP-S (1) = X372M001-IMPREDPRICAP-E
+            AND X372M004-IMPREDTRANCAP-S (1)
+                                         = X372M001-IMPREDTRANCAP-E
+            AND X372M004-IMPCOMPENSATORIA-S (1)
+                                         = X372M001-IMPCOMPENSATORIA-E
+            AND X372M004-IMPRTONETOCAP-S (1)
+                                         = X372M001-IMPRTONETOCAP-E
+            AND X372M004-PORRETCAP-S (1)    = X372M001-PORRETCAP-E
+            AND X372M004-IMPRETCAP-S (1)    = X372M001-IMPRETCAP-E
+            AND X372M004-IMPLIQCAP-S (1)    = X372M001-IMPLIQCAP-E
+            AND X372M004-FECIMPRECAP-S (1)  = X372M001-FECIMPRECAP-E
+            AND X372M004-FECPAGRET-S (1)    = X372M001-FECPAGRET-E
+            AND X372M004-IMPCOMP1-S (1)     = X372M001-IMPCOMP1-E
+            AND X372M004-FECEMICOMP1-S (1)  = X372M001-FECEMICOMP1-E
+            AND X372M004-FECPAGCOMP1-S (1) = X372M001-FECPAGCOMP1-E
+            AND X372M004-TIPIMPUESTCOMP1-S (1)
+                                         = X372M001-TIPIMPUESTCOMP1-E
+            AND X372M004-IMPRTOINTCOMP1-S (1)
+                                         = X372M001-IMPRTOINTCOMP1-E
+            AND X372M004-IMPREDPRICOMP1-S (1)
+                                         = X372M001-IMPREDPRICOMP1-E
+            AND X372M004-IREDTRANCOMP1-S (1)
+                                         = X372M001-IREDTRANCOMP1-E
+            AND X372M004-IRTONETCOMP1-S (1) = X372M001-IRTONETCOMP1-E
+            AND X372M004-PORRETCOMP1-S (1)  = X372M001-PORRETCOMP1-E
+            AND X372M004-IRETCOMP1-S (1)    = X372M001-IRETCOMP1-E
+            AND X372M004-ILIQCOMP1-S (1)    = X372M001-ILIQCOMP1-E
+            AND X372M004-FECIMPRECOMP1-S (1)
+                                           = X372M001-FECIMPRECOMP1-E
+            AND X372M004-FECPAGRETCOM1-S (1)
+                                           = X372M001-FECPAGRETCOM1-E
+            AND X372M004-IMPCOMP2-S (1)     = X372M001-IMPCOMP2-E
+            AND X372M004-FECEMICOMP2-S (1)  = X372M001-FECEMICOMP2-E
+            AND X372M004-FECPAGCOMP2-S (1)  = X372M001-FECPAGCOMP2-E
+            AND X372M004-TIPIMPUESTCOMP2-S (1)
+                                           = X372M001-TIPIMPUESTCOMP2-E
+            AND X372M004-IMPRTOINTCOMP2-S (1)
+                                           = X372M001-IMPRTOINTCOMP2-E
+            AND X372M004-IMPREDPRICOMP2-S (1)
+                                           = X372M001-IMPREDPRICOMP2-E
+            AND X372M004-IREDTRANCOMP2-S (1)
+                                           = X372M001-IREDTRANCOMP2-E
+            AND X372M004-IRTONETCOMP2-S (1) = X372M001-IRTONETCOMP2-E
+            AND X372M004-PORRETCOMP2-S (1)  = X372M001-PORRETCOMP2-E
+            AND X372M004-IRETCOMP2-S (1)    = X372M001-IRETCOMP2-E
+            AND X372M004-ILIQCOMP2-S (1)    = X372M001-ILIQCOMP2-E
+            AND X372M004-FECIMPRECOMP2-S (1)
+                                           = X372M001-FECIMPRECOMP2-E
+            AND X372M004-FECPAGRETCOM2-S (1)
+                                           = X372M001-FECPAGRETCOM2-E
+      * MU-2017-BDGI-R-V-INI
+      *      AND X372M004-CODCOA1-S (1)      = X372M001-CODCOA1-E
+      *      AND X372M004-PORCOA1-S (1)      = X372M001-PORCOA1-E
+606664*      AND X372M004-IMPCOA1-S (1)      = X372M001-IMPCOA1-E
+      *      AND X372M004-CODCOA2-S (1)      = X372M001-CODCOA2-E
+      *      AND X372M004-PORCOA2-S (1)      = X372M001-PORCOA2-E
+606664*      AND X372M004-IMPCOA2-S (1)      = X372M001-IMPCOA2-E
+      *      AND X372M004-CODCOA3-S (1)      = X372M001-CODCOA3-E
+      *      AND X372M004-PORCOA3-S (1)      = X372M001-PORCOA3-E
+606664*      AND X372M004-IMPCOA3-S (1)      = X372M001-IMPCOA3-E
+      *      AND X372M004-CODCOA4-S (1)      = X372M001-CODCOA4-E
+      *      AND X372M004-PORCOA4-S (1)      = X372M001-PORCOA4-E
+606664*      AND X372M004-IMPCOA4-S (1)      = X372M001-IMPCOA4-E
+      *      AND X372M004-CODCOA5-S (1)      = X372M001-CODCOA5-E
+      *      AND X372M004-PORCOA5-S (1)      = X372M001-PORCOA5-E
+606664*      AND X372M004-IMPCOA5-S (1)      = X372M001-IMPCOA5-E
+      *      AND X372M004-CODCOA6-S (1)      = X372M001-CODCOA6-E
+      *      AND X372M004-PORCOA6-S (1)      = X372M001-PORCOA6-E
+606664*      AND X372M004-IMPCOA6-S (1)      = X372M001-IMPCOA6-E
+      * MU-2017-BDGI-R-V-FIN
+            AND X372M004-PAGOTOT-S (1)      = X372M001-PAGOTOT-E
+      *     AND X372M004-SBDGICAP-S        (1) = X372M001-SBDGICAP-E
+      *     AND X372M004-FECBDGICAP-S        (1)
+      *                                    = X372M001-FECBDGICAP-E
+      *     AND X372M004-SBDGICOMP1-S   (1) = X372M001-SBDGICOMP1-E
+      *     AND X372M004-FECBDGICOMP1-S        (1)
+      *                                    = X372M001-FECBDGICOMP1-E
+      *     AND X372M004-SBDGICOMP2-S   (1) = X372M001-SBDGICOMP2-E
+      *     AND X372M004-FECBDGICOMP2-S        (1)
+      *                                    = X372M001-FECBDGICOMP2-E
+            AND X372M004-GOBSERVACION-S (1) = X372M001-GOBSERVACION-E
+541869      AND X372M004-ANIOFISCAL-S (1)   = X372M001-ANIOFISCAL-E
+
+606663      AND X372M004-STIPSITUACION-S(1) =
+606663                  X372M001-STIPSITUACION-E(1:1)
+            AND X372M004-FANUALACION-S  (1) = X372M001-FANUALACION-E
+      * MU-2017-BDGI-R-V-INI
+            AND X372M004-EXIMIDO-S (1)      = X372M001-EXIMIDO-E
+      * MU-2017-BDGI-R-V-FIN
+
+               SET NO-CAMBIO TO TRUE
+
+               MOVE X372M001-ANIO-E        TO X372VT01-ANIO-S
+               MOVE X372M001-KEXPEDIENTE-E TO X372VT01-KEXPEDIENTE-S
+               MOVE LT-RETURN-ERR-NOTMODIF TO X372VT01-CRETORNO-S
+               MOVE 'B372N001'            TO X372VT01-GNOMPROG-S
+               MOVE 'No existe ninguna modificaciÛn en el expediente.'
+                 TO X372VT01-GERROR-S
+           ELSE
+
+               SET SI-CAMBIO TO TRUE
+
+      * SI EXISTEN MODIFICACIONES, SE TENDRAN QUE VOLVER A MANDAR A BDGI
+
+               MOVE SPACES            TO X372M001-FECBDGICAP-E
+               MOVE SPACES            TO X372M001-SBDGICAP-E
+               MOVE SPACES            TO X372M001-FECBDGICOMP1-E
+               MOVE SPACES            TO X372M001-SBDGICOMP1-E
+               MOVE SPACES            TO X372M001-FECBDGICOMP2-E
+               MOVE SPACES            TO X372M001-SBDGICOMP2-E
+
+606663*        SI SE MODIFICA SOLO LA OBSERVACI”N NO SE TIENE QUE
+606663*        VOLVER A ENVIAR A BDGI.         ”
+606663         PERFORM 4100-COMPROBAR-OBSERVACION
+
+      * SI VARIA EL IMPORTE DEL CAPITAL O BENEFICIOS DEL PRINCIPAL,
+      * SE MARCA A 'S' EL CAMPO REASEGURO
+
+               IF (X372M004-IMPCAPITAL-S (1)  NOT EQUAL
+                   X372M001-IMPCAPITAL-E               )  OR
+                  (X372M004-IMPBENEFICIOS-S(1) NOT EQUAL
+                   X372M001-IMPBENEFICIOS-E            )
+
+                  MOVE 'S'   TO  X372M001-SREASEGURO-E
+                  MOVE LT-RETURN-OK       TO X372VT01-CRETORNO-S
+      *           MOVE 'Se ha reasegurado la poliza.'
+      *                                   TO WS-ERROR-1
+
+               END-IF
+
+           END-IF
+           .
+      ***************************************************************
+       4100-COMPARAR-FISCALIDAD.
+      ***************************************************************
+      * VERFICAMOS SI EXISTE ALGUN TIPO DE CAMBIO EN LOS DATOS DEL
+      * CAPITAL PARA SU ENVIO A FISCALIDAD
+
+           IF  X372M004-ANIO-S(1)          = X372M001-ANIO-E
+            AND X372M004-KEXPEDIENTE-S(1)   = X372M001-KEXPEDIENTE-E
+            AND X372M004-KPOLIZA-S(1)       = X372M001-KPOLIZA-E
+            AND X372M004-NSUBPOLIZA-S(1)    = X372M001-NSUBPOLIZA-E
+            AND X372M004-KCERTIFICADO-S(1)  = X372M001-KCERTIFICADO-E
+            AND X372M004-NIF1-S (1)         = X372M001-NIF1-E
+            AND X372M004-KPERSONA1-S (1)    = X372M001-KPERSONA1-E
+            AND X372M004-IMPCAPITAL-S (1)   = X372M001-IMPCAPITAL-E
+            AND X372M004-IMPBENEFICIOS-S (1)
+                                         = X372M001-IMPBENEFICIOS-E
+            AND X372M004-IMPANTICIPO-S (1)  = X372M001-IMPANTICIPO-E
+            AND X372M004-IMPINTEPEND-S (1)  = X372M001-IMPINTEPEND-E
+            AND X372M004-TIPIMPUESTCAP-S (1)
+                                         = X372M001-TIPIMPUESTCAP-E
+            AND X372M004-IMPRTOINTEGRCAP-S (1)
+                                         = X372M001-IMPRTOINTEGRCAP-E
+            AND X372M004-IMPREDPRICAP-S (1) = X372M001-IMPREDPRICAP-E
+            AND X372M004-IMPREDTRANCAP-S (1)
+                                         = X372M001-IMPREDTRANCAP-E
+            AND X372M004-IMPCOMPENSATORIA-S (1)
+                                         = X372M001-IMPCOMPENSATORIA-E
+            AND X372M004-IMPRTONETOCAP-S (1)
+                                         = X372M001-IMPRTONETOCAP-E
+            AND X372M004-PORRETCAP-S (1)    = X372M001-PORRETCAP-E
+            AND X372M004-IMPRETCAP-S (1)    = X372M001-IMPRETCAP-E
+            AND X372M004-IMPLIQCAP-S (1)    = X372M001-IMPLIQCAP-E
+               SET NO-CAMBIO-FISCALIDAD-CAP TO TRUE
+
+           ELSE
+
+               SET SI-CAMBIO-FISCALIDAD-CAP TO TRUE
+
+
+           END-IF
+
+
+      * VERFICAMOS SI EXISTE ALGUN TIPO DE CAMBIO EN LOS DATOS DEL
+      * COMPLEMENTARIO PRIMERO PARA SU ENVIO A FISCALIDAD
+           IF  X372M004-ANIO-S(1)          = X372M001-ANIO-E
+            AND X372M004-KEXPEDIENTE-S(1)   = X372M001-KEXPEDIENTE-E
+            AND X372M004-KPOLIZA-S(1)       = X372M001-KPOLIZA-E
+            AND X372M004-NSUBPOLIZA-S(1)    = X372M001-NSUBPOLIZA-E
+            AND X372M004-KCERTIFICADO-S(1)  = X372M001-KCERTIFICADO-E
+            AND X372M004-NIF1-S (1)         = X372M001-NIF1-E
+            AND X372M004-KPERSONA1-S (1)    = X372M001-KPERSONA1-E
+            AND X372M004-IMPCOMP1-S (1)     = X372M001-IMPCOMP1-E
+            AND X372M004-TIPIMPUESTCOMP1-S (1)
+                                         = X372M001-TIPIMPUESTCOMP1-E
+            AND X372M004-IMPRTOINTCOMP1-S (1)
+                                         = X372M001-IMPRTOINTCOMP1-E
+            AND X372M004-IMPREDPRICOMP1-S (1)
+                                         = X372M001-IMPREDPRICOMP1-E
+            AND X372M004-IREDTRANCOMP1-S (1)
+                                         = X372M001-IREDTRANCOMP1-E
+            AND X372M004-IRTONETCOMP1-S (1) = X372M001-IRTONETCOMP1-E
+            AND X372M004-PORRETCOMP1-S (1)  = X372M001-PORRETCOMP1-E
+            AND X372M004-IRETCOMP1-S (1)    = X372M001-IRETCOMP1-E
+            AND X372M004-ILIQCOMP1-S (1)    = X372M001-ILIQCOMP1-E
+               SET NO-CAMBIO-FISCALIDAD-COMP1 TO TRUE
+
+           ELSE
+
+               SET SI-CAMBIO-FISCALIDAD-COMP1 TO TRUE
+
+
+           END-IF
+
+      * VERFICAMOS SI EXISTE ALGUN TIPO DE CAMBIO EN LOS DATOS DEL
+      * COMPLEMENTARIO SEGUNDO PARA SU ENVIO A FISCALIDAD
+           IF  X372M004-ANIO-S(1)          = X372M001-ANIO-E
+            AND X372M004-KEXPEDIENTE-S(1)   = X372M001-KEXPEDIENTE-E
+            AND X372M004-KPOLIZA-S(1)       = X372M001-KPOLIZA-E
+            AND X372M004-NSUBPOLIZA-S(1)    = X372M001-NSUBPOLIZA-E
+            AND X372M004-KCERTIFICADO-S(1)  = X372M001-KCERTIFICADO-E
+            AND X372M004-NIF1-S (1)         = X372M001-NIF1-E
+            AND X372M004-KPERSONA1-S (1)    = X372M001-KPERSONA1-E
+            AND X372M004-IMPCOMP2-S (1)     = X372M001-IMPCOMP2-E
+            AND X372M004-TIPIMPUESTCOMP2-S (1)
+                                           = X372M001-TIPIMPUESTCOMP2-E
+            AND X372M004-IMPRTOINTCOMP2-S (1)
+                                           = X372M001-IMPRTOINTCOMP2-E
+            AND X372M004-IMPREDPRICOMP2-S (1)
+                                           = X372M001-IMPREDPRICOMP2-E
+            AND X372M004-IREDTRANCOMP2-S (1)
+                                           = X372M001-IREDTRANCOMP2-E
+            AND X372M004-IRTONETCOMP2-S (1) = X372M001-IRTONETCOMP2-E
+            AND X372M004-PORRETCOMP2-S (1)  = X372M001-PORRETCOMP2-E
+            AND X372M004-IRETCOMP2-S (1)    = X372M001-IRETCOMP2-E
+            AND X372M004-ILIQCOMP2-S (1)    = X372M001-ILIQCOMP2-E
+            AND X372M004-SBDGICAP-S     (1) = X372M001-SBDGICAP-E
+            AND X372M004-FECBDGICAP-S     (1)
+                                           = X372M001-FECBDGICAP-E
+            AND X372M004-SBDGICOMP1-S   (1) = X372M001-SBDGICOMP1-E
+            AND X372M004-FECBDGICOMP1-S   (1)
+                                           = X372M001-FECBDGICOMP1-E
+            AND X372M004-SBDGICOMP2-S   (1) = X372M001-SBDGICOMP2-E
+            AND X372M004-FECBDGICOMP2-S   (1)
+                                           = X372M001-FECBDGICOMP2-E
+               SET NO-CAMBIO-FISCALIDAD-COMP2 TO TRUE
+
+           ELSE
+
+               SET SI-CAMBIO-FISCALIDAD-COMP2 TO TRUE
+
+
+           END-IF
+           .
+
+606663***************************************************************
+606663 4100-COMPROBAR-OBSERVACION.
+606663***************************************************************
+606663
+606663*    SI SE MODIFICA SOLO LA OBSERVACI    ”N NO SE TIENE QUE
+606663*    VOLVER A ENVIAR A BDGI.             ”
+      * MU-2017-BDGI-R-V-INI
+      *
+           SET NO-CAMBIO-OBSERVA TO TRUE
+      *
+           PERFORM VARYING XN-M FROM 1 BY 1
+                     UNTIL XN-M > X372M004-COASEGUROS-OCCURS-S (1)
+      *
+              IF  NO-CAMBIO-OBSERVA
+              AND   X372M004-CODCOA-S          (1, XN-M)
+                  = X372M001-CODCOA-E          (XN-M)
+              AND   X372M004-PORCOA-S          (1, XN-M)
+                  = X372M001-PORCOA-E          (XN-M)
+              AND   X372M004-IMPCOA-S          (1, XN-M)
+                  = X372M001-IMPCOA-E          (XN-M)
+              AND   X372M004-IMPRTOINTEGRCOA-S (1, XN-M)
+                  = X372M001-IMPRTOINTEGRCOA-E (XN-M)
+              AND   X372M004-IMPREDPRICOA-S    (1, XN-M)
+                  = X372M001-IMPREDPRICOA-E    (XN-M)
+              AND   X372M004-IMPREDTRANCOA-S   (1, XN-M)
+                  = X372M001-IMPREDTRANCOA-E   (XN-M)
+              AND   X372M004-IMPRETCOA-S       (1, XN-M)
+                  = X372M001-IMPRETCOA-E       (XN-M)
+              AND   X372M004-IMPCOMPENSATCOA-S (1, XN-M)
+                  = X372M001-IMPCOMPENSATCOA-E (XN-M)
+      *
+                  SET NO-CAMBIO-OBSERVA TO TRUE
+             ELSE
+                  SET SI-CAMBIO-OBSERVA TO TRUE
+             END-IF
+      *
+           END-PERFORM
+      *
+606663     IF  NO-CAMBIO-OBSERVA
+606663      AND X372M004-ANIO-S(1)          = X372M001-ANIO-E
+606663*     IF  X372M004-ANIO-S(1)          = X372M001-ANIO-E
+      * MU-2017-BDGI-R-V-FIN
+606663      AND X372M004-KEXPEDIENTE-S(1)   = X372M001-KEXPEDIENTE-E
+606663      AND X372M004-KRAMO-S(1)         = X372M001-KRAMO-E
+606663      AND X372M004-ANIOPOL-S(1)       = X372M001-ANIOPOL-E
+606663      AND X372M004-KPOLIZA-S(1)       = X372M001-KPOLIZA-E
+606663      AND X372M004-NSUBPOLIZA-S(1)    = X372M001-NSUBPOLIZA-E
+606663      AND X372M004-KCERTIFICADO-S(1)  = X372M001-KCERTIFICADO-E
+606663      AND X372M004-KMODALIDAD-S(1)    = X372M001-KMODALIDAD-E
+606663      AND X372M004-CCANALCAMP-S(1)    = X372M001-CCANALCAMP-E
+606663      AND X372M004-CENTIDAD-S(1)      = X372M001-CENTIDAD-E
+606663      AND X372M004-FECEFECTO-S(1)     = X372M001-FECEFECTO-E
+606663      AND X372M004-KDURACION-S(1)     = X372M001-KDURACION-E
+606663      AND X372M004-FECEMISION-S(1)    = X372M001-FECEMISION-E
+606663      AND X372M004-CCARTERA-S(1)      = X372M001-CCARTERA-E
+606663      AND X372M004-SREASEGURO-S (1)   = X372M001-SREASEGURO-E
+606663      AND X372M004-REGIONAL-S (1)     = X372M001-REGIONAL-E
+606663      AND X372M004-LUGARENVIO-S (1)   = X372M001-LUGARENVIO-E
+606663      AND X372M004-KOFICINA-S (1)     = X372M001-KOFICINA-E
+606663      AND X372M004-IPENDIENTE-S (1)   = X372M001-IPENDIENTE-E
+606663      AND X372M004-CTIPOPERS1-S (1)   = X372M001-CTIPOPERS1-E
+606663      AND X372M004-SRESIDENTE1-S (1)  = X372M001-SRESIDENTE1-E
+606663      AND X372M004-NIF1-S (1)         = X372M001-NIF1-E
+606663      AND X372M004-KPERSONA1-S (1)    = X372M001-KPERSONA1-E
+606663      AND X372M004-IMPCAPITAL-S (1)   = X372M001-IMPCAPITAL-E
+606663      AND X372M004-IMPBENEFICIOS-S (1)
+606663                                   = X372M001-IMPBENEFICIOS-E
+606663      AND X372M004-FECPAGOCAPITAL-S (1)
+606663                                   = X372M001-FECPAGOCAPITAL-E
+606663      AND X372M004-IMPANTICIPO-S (1)  = X372M001-IMPANTICIPO-E
+606663      AND X372M004-IMPINTEPEND-S (1)  = X372M001-IMPINTEPEND-E
+606663      AND X372M004-FECVENCIMICAP-S (1)
+606663                                   = X372M001-FECVENCIMICAP-E
+606663      AND X372M004-TIPIMPUESTCAP-S (1)
+606663                                   = X372M001-TIPIMPUESTCAP-E
+606663      AND X372M004-IMPRTOINTEGRCAP-S (1)
+606663                                   = X372M001-IMPRTOINTEGRCAP-E
+606663      AND X372M004-IMPREDPRICAP-S (1) = X372M001-IMPREDPRICAP-E
+606663      AND X372M004-IMPREDTRANCAP-S (1)
+606663                                   = X372M001-IMPREDTRANCAP-E
+606663      AND X372M004-IMPCOMPENSATORIA-S (1)
+606663                                   = X372M001-IMPCOMPENSATORIA-E
+606663      AND X372M004-IMPRTONETOCAP-S (1)
+606663                                   = X372M001-IMPRTONETOCAP-E
+606663      AND X372M004-PORRETCAP-S (1)    = X372M001-PORRETCAP-E
+606663      AND X372M004-IMPRETCAP-S (1)    = X372M001-IMPRETCAP-E
+606663      AND X372M004-IMPLIQCAP-S (1)    = X372M001-IMPLIQCAP-E
+606663      AND X372M004-FECIMPRECAP-S (1)  = X372M001-FECIMPRECAP-E
+606663      AND X372M004-FECPAGRET-S (1)    = X372M001-FECPAGRET-E
+606663      AND X372M004-IMPCOMP1-S (1)     = X372M001-IMPCOMP1-E
+606663      AND X372M004-FECEMICOMP1-S (1)  = X372M001-FECEMICOMP1-E
+606663      AND X372M004-FECPAGCOMP1-S (1) = X372M001-FECPAGCOMP1-E
+606663      AND X372M004-TIPIMPUESTCOMP1-S (1)
+606663                                   = X372M001-TIPIMPUESTCOMP1-E
+606663      AND X372M004-IMPRTOINTCOMP1-S (1)
+606663                                   = X372M001-IMPRTOINTCOMP1-E
+606663      AND X372M004-IMPREDPRICOMP1-S (1)
+606663                                   = X372M001-IMPREDPRICOMP1-E
+606663      AND X372M004-IREDTRANCOMP1-S (1)
+606663                                   = X372M001-IREDTRANCOMP1-E
+606663      AND X372M004-IRTONETCOMP1-S (1) = X372M001-IRTONETCOMP1-E
+606663      AND X372M004-PORRETCOMP1-S (1)  = X372M001-PORRETCOMP1-E
+606663      AND X372M004-IRETCOMP1-S (1)    = X372M001-IRETCOMP1-E
+606663      AND X372M004-ILIQCOMP1-S (1)    = X372M001-ILIQCOMP1-E
+606663      AND X372M004-FECIMPRECOMP1-S (1)
+606663                                     = X372M001-FECIMPRECOMP1-E
+606663      AND X372M004-FECPAGRETCOM1-S (1)
+606663                                     = X372M001-FECPAGRETCOM1-E
+606663      AND X372M004-IMPCOMP2-S (1)     = X372M001-IMPCOMP2-E
+606663      AND X372M004-FECEMICOMP2-S (1)  = X372M001-FECEMICOMP2-E
+606663      AND X372M004-FECPAGCOMP2-S (1)  = X372M001-FECPAGCOMP2-E
+606663      AND X372M004-TIPIMPUESTCOMP2-S (1)
+606663                                     = X372M001-TIPIMPUESTCOMP2-E
+606663      AND X372M004-IMPRTOINTCOMP2-S (1)
+606663                                     = X372M001-IMPRTOINTCOMP2-E
+606663      AND X372M004-IMPREDPRICOMP2-S (1)
+606663                                     = X372M001-IMPREDPRICOMP2-E
+606663      AND X372M004-IREDTRANCOMP2-S (1)
+606663                                     = X372M001-IREDTRANCOMP2-E
+606663      AND X372M004-IRTONETCOMP2-S (1) = X372M001-IRTONETCOMP2-E
+606663      AND X372M004-PORRETCOMP2-S (1)  = X372M001-PORRETCOMP2-E
+606663      AND X372M004-IRETCOMP2-S (1)    = X372M001-IRETCOMP2-E
+606663      AND X372M004-ILIQCOMP2-S (1)    = X372M001-ILIQCOMP2-E
+606663      AND X372M004-FECIMPRECOMP2-S (1)
+606663                                     = X372M001-FECIMPRECOMP2-E
+606663      AND X372M004-FECPAGRETCOM2-S (1)
+606663                                     = X372M001-FECPAGRETCOM2-E
+      *MU-2017-BDGI-R-V-INI
+606663*      AND X372M004-CODCOA1-S (1)      = X372M001-CODCOA1-E
+606663*      AND X372M004-PORCOA1-S (1)      = X372M001-PORCOA1-E
+606663*      AND X372M004-CODCOA2-S (1)      = X372M001-CODCOA2-E
+606663*      AND X372M004-PORCOA2-S (1)      = X372M001-PORCOA2-E
+606663*      AND X372M004-CODCOA3-S (1)      = X372M001-CODCOA3-E
+606663*      AND X372M004-PORCOA3-S (1)      = X372M001-PORCOA3-E
+606663*      AND X372M004-CODCOA4-S (1)      = X372M001-CODCOA4-E
+606663*      AND X372M004-PORCOA4-S (1)      = X372M001-PORCOA4-E
+606663*      AND X372M004-CODCOA5-S (1)      = X372M001-CODCOA5-E
+606663*      AND X372M004-PORCOA5-S (1)      = X372M001-PORCOA5-E
+606663*      AND X372M004-CODCOA6-S (1)      = X372M001-CODCOA6-E
+606663*      AND X372M004-PORCOA6-S (1)      = X372M001-PORCOA6-E
+      *MU-2017-BDGI-R-V-FIN
+606663      AND X372M004-PAGOTOT-S (1)      = X372M001-PAGOTOT-E
+606663      AND X372M004-ANIOFISCAL-S (1)   = X372M001-ANIOFISCAL-E
+      * MU-2017-BDGI-R-V-INI
+            AND X372M004-EXIMIDO-S (1)      = X372M001-EXIMIDO-E
+      * MU-2017-BDGI-R-V-FIN
+606663
+606663      AND X372M004-STIPSITUACION-S(1) =
+606663                          X372M001-STIPSITUACION-E(1:1)
+606663      AND X372M004-FANUALACION-S  (1) = X372M001-FANUALACION-E
+606663
+606663      AND (X372M004-GOBSERVACION-S (1)
+606663                               NOT = X372M001-GOBSERVACION-E)
+606663
+606663            MOVE X372M004-FECBDGICAP-S (1)
+606663                                     TO X372M001-FECBDGICAP-E
+606663            MOVE X372M004-FECBDGICOMP1-S (1)
+606663                                     TO X372M001-FECBDGICOMP1-E
+606663            MOVE X372M004-FECBDGICOMP2-S (1)
+606663                                     TO X372M001-FECBDGICOMP2-E
+606663     END-IF.
+      ******************************************************************
+        8888-ROLLBACK.
+      ******************************************************************
+
+           INITIALIZE WS-X001M001
+           MOVE 'R'   TO X001M001-CACCION
+
+           CALL WS-B001M001 USING WS-X001M001.
+
+      *****************************************************************
+        8889-COMMIT.
+      *****************************************************************
+           INITIALIZE WS-X001M001
+           MOVE 'C' TO X001M001-CACCION
+
+           CALL WS-B001M001 USING WS-X001M001.
+
+      ***************************************************************
+       10000-FIN.
+      ***************************************************************
+
+           IF NO-ROLLBACK
+              PERFORM 8888-ROLLBACK
+           ELSE
+              PERFORM 8889-COMMIT
+           END-IF
+
+
+           GOBACK.

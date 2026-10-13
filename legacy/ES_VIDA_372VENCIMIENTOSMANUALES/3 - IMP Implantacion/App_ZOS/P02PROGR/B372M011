@@ -1,0 +1,588 @@
+      ******************************************************************
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. B372M011.
+      ******************************************************************
+      **INV: A372VENM
+      ******************************************************************
+      * APLICACIÓN.....: VENCIMIENTOS MANUALES                         *
+      * ANALISTA.......: INDRA                                         *
+      * PROGRAMADOR....: INDRA                                         *
+      * FECHA DE REALIZACIÓN: MAYO 2026                                *
+      *                                                                *
+      * DESCRIPCIÓN:                                                   *
+      *   ------------------------------------------------------------ *
+      *  | CONSULTA DE DATOS ADICIONALES DE MIGRACION DE LA TABLA DE  |*
+      *  | EXPEDIENTES DE VENCIMIENTOS MANUALES                       |*
+      *   ------------------------------------------------------------ *
+      *                                                                *
+      *  PARAMETROS:                                                   *
+      *  OPERACION LISTA:                                              *
+      *        SELECCION...'01': CONSULTA DE LOS DATOS A PARTIR DEL    *
+      *                          AÑO Y EXPEDIENTE DE ENTRADA           *
+      *                                                                *
+      *  OPERACION DETALLE:                                            *
+      *        SELECCION...'01': CONSULTA DE LOS DATOS POR EL AÑO Y    *
+      *                          EXPEDIENTE                            *
+      *                                                                *
+      ******************************************************************
+      * TABLA DE TRABAJO
+      ******************************************************************
+      *
+      * TB372MIG0    TABLA DE DATOS AUXILIARES VENCIMIENTOS MANUALES
+      *
+      ******************************************************************
+      * CODIGO DE ERRORES
+      ******************************************************************
+      *
+      * X372M011-CRETORNO-S
+      *         '00' OPERACION CORRECTA
+      *
+      *         '01' ERROR EN MODO
+      *
+      *         '02' ERROR FALTAN DATOS INFORMADOS
+      *
+      *         '03' ERROR REGISTRO NO ENCONTRADO
+      *
+      *         '04' OPERACION NO VALIDA
+      *
+      *         '99' ERROR EN ACCESO A BASE DE DATOS
+      *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+
+       DATA DIVISION.
+       FILE SECTION.
+
+       WORKING-STORAGE SECTION.
+
+       01 FILLER.
+          03 FILLER PIC X(40) VALUE 'INICIO WORKING-STORAGE SECTION'.
+
+      *****************************************************
+      ** SWITCH **
+      *****************************************************
+          03 SW-SWITCH.
+             05 SW-ERROR-DB2   PIC S9(3)  VALUE  0.
+                88 DB2-OK                 VALUE  0.
+                88 DB2-NOTFND             VALUE +100.
+                88 DB2-DUPLICADO          VALUE -803.
+                88 DB2-SELECTDUP          VALUE -811.
+
+             05 SW-COPERACION       PIC X.
+                88 LISTA                  VALUE "L".
+                88 DETALLE                VALUE "D".
+
+             05 SW-BD               PIC X.
+                88 BD-ABIERTA             VALUE "A".
+                88 BD-CERRADA             VALUE "C".
+
+             05 SW-PRIMERA-LECTURA        PIC X  VALUE '0'.
+                88 NO-PRIMERA-LECTURA            VALUE '1'.
+                88 PRIMERA-LECTURA               VALUE '0'.
+
+      *****************************************************
+      *   CONTROL PARA SABER SI EL CURSOR SE HA ABIERTO   *
+      *****************************************************
+
+             05 SW-CURSOR-ABIERTO         PIC X  VALUE '0'.
+                88 NO-CURSOR-OK                  VALUE '1'.
+                88 CURSOR-OK                     VALUE '0'.
+      ****************************************************
+      *   CONTROL DE ERRORES DEL PROGRAMA
+      ****************************************************
+             05 SW-ERROR                  PIC X.
+                88 SI-ERROR                      VALUE "S".
+                88 NO-ERROR                      VALUE "N".
+
+
+      *    CAMPOS BUSQUEDA/SIGUIENTES
+
+           03 WS-BUSQUEDA.
+              05 B-ANIO           PIC S9(4)V USAGE COMP-3.
+              05 B-KEXPEDIENTE    PIC S9(10)V USAGE COMP-3.
+
+      ****************************************************
+      *VARIABLES AUXILIARES
+      ****************************************************
+          03 WS-VARIABLES-PAG.
+             05 WS-ANT-ANO                PIC S9(4)V USAGE COMP-3.
+             05 WS-ANT-KEXPEDIENTE        PIC S9(10)V USAGE COMP-3.
+
+      ****************************************************
+      ** LITERALES
+      ****************************************************
+          03 LT-LITERALES.
+             05 LT-NREGENT                PIC 9(03) VALUE 50.
+
+      *    INDICES
+
+           03 X                   PIC 9(03)        VALUE ZEROES.
+
+      ****************************************************
+      ** AREA DE COMUNICACION CON DB2
+      ****************************************************
+            EXEC SQL INCLUDE SQLCA     END-EXEC.
+            EXEC SQL INCLUDE T372MIG0  END-EXEC.
+
+      ******************************************************************
+      * CURSOR PARA RECUPERAR LOS DATOS AUXILIARES DE LOS EXPEDIENTES
+      ******************************************************************
+           EXEC SQL DECLARE C1 CURSOR FOR
+           SELECT MIG0_ANIO            ,
+                  MIG0_KEXPEDIENTE     ,
+                  MIG0_VEN_MIGR        ,
+                  MIG0_USUARIO_PAGO    ,
+                  MIG0_FCAPTURA        ,
+                  MIG0_CUSUARIO_CAPT   ,
+                  MIG0_FORMAPAGO       ,
+                  MIG0_NUM_CHEQUE      ,
+                  MIG0_NUM_CUENTA      ,
+                  MIG0_REF_REINVERSION ,
+                  MIG0_CUSU_PAGO_COMP1 ,
+                  MIG0_FCAPTURA_COMP1  ,
+                  MIG0_CUSU_CAPT_COMP1 ,
+                  MIG0_FORMAPAGO_COMP1 ,
+                  MIG0_NCHEQUE_COMP1   ,
+                  MIG0_NCUENTA_COMP1   ,
+                  MIG0_CUSU_PAGO_COMP2 ,
+                  MIG0_FCAPTURA_COMP2  ,
+                  MIG0_CUSU_CAPT_COMP2 ,
+                  MIG0_FORMAPAGO_COMP2 ,
+                  MIG0_NCHEQUE_COMP2   ,
+                  MIG0_NCUENTA_COMP2   ,
+                  MIG0_GRADO_DISCAP    ,
+                  MIG0_PREST_VIVIENDA  ,
+                  MIG0_SITU_FAMILIAR   ,
+                  MIG0_NIF_CONYUGUE    ,
+                  MIG0_ICOMPENSATORIA  ,
+                  MIG0_IMPALIMENHIJOS
+                FROM TB372MIG0
+                WHERE   MIG0_ANIO          >= :MIG0-ANIO
+                  AND   MIG0_KEXPEDIENTE   >= :MIG0-KEXPEDIENTE
+      * VARIABLES DE PAGINACION
+                  AND ((MIG0_ANIO          >  :B-ANIO
+                   OR  (MIG0_ANIO          =  :B-ANIO
+                  AND  (MIG0_KEXPEDIENTE   >  :B-KEXPEDIENTE
+                   OR   MIG0_KEXPEDIENTE   =  :B-KEXPEDIENTE))))
+             ORDER BY MIG0_ANIO,
+                      MIG0_KEXPEDIENTE
+           END-EXEC.
+
+          03 FILLER PIC X(40) VALUE 'FINAL WORKING-STORAGE SECTION'.
+
+       LINKAGE SECTION.
+       01 DFHCOMMAREA.
+             COPY X372M011.
+
+      *************************************************************
+      * PROCEDURE DIVISION.                                       *
+      *************************************************************
+      *
+       PROCEDURE DIVISION USING DFHCOMMAREA.
+
+           PERFORM INICIO.
+
+           IF NO-ERROR
+              PERFORM PROCESO
+           END-IF
+
+           PERFORM TERMINAR.
+
+       INICIO.
+      *-------
+           PERFORM INICIALIZAR-VARIABLES.
+           PERFORM VALIDAR-ENTRADA
+           IF NO-ERROR
+              PERFORM DATOS-SIGUIENTE
+           END-IF
+           .
+
+       PROCESO.
+      *--------
+      *D*
+           DISPLAY ' B372M011 - PROCESO'
+           DISPLAY ' B372M011 - X372M011-COPERACION: '
+                                X372M011-COPERACION
+      *f*
+           EVALUATE X372M011-COPERACION
+              WHEN "L"
+                 SET LISTA TO TRUE
+              WHEN "D"
+                 SET DETALLE TO TRUE
+              WHEN OTHER
+      *-->       Operación no válida
+                 SET SI-ERROR TO TRUE
+                 MOVE "OPERACION NO VALIDA" TO X372M011-GERROR
+                 MOVE "04"                  TO X372M011-CRETORNO
+           END-EVALUATE.
+
+           IF NO-ERROR
+              PERFORM COMPONER-NUMERO-REGISTROS
+              IF LISTA
+                 PERFORM TRATAR-LISTADO
+              ELSE
+                 PERFORM TRATAR-DETALLE
+              END-IF
+           END-IF.
+
+       TERMINAR.
+      *---------
+           GOBACK.
+
+       INICIALIZAR-VARIABLES.
+      *----------------------
+           SET NO-ERROR   TO TRUE.
+           SET DB2-OK     TO TRUE.
+           SET BD-CERRADA TO TRUE.
+           MOVE "00"   TO X372M011-CRETORNO
+
+           MOVE ZEROES TO X372M011-CERRORSQL
+                          X372M011-NREGSAL.
+
+       VALIDAR-ENTRADA.
+      *----------------
+      *D*
+           DISPLAY ' B372M011 - VALIDAR-ENTRADA'
+           DISPLAY ' B372M011 - X372M011-ANIO-B: ' X372M011-ANIO-B
+           DISPLAY ' B372M011 - X372M011-KEXPEDIENTE-B: '
+                                X372M011-KEXPEDIENTE-B
+      *F*
+           EVALUATE TRUE
+            WHEN X372M011-ANIO-B        IS NOT NUMERIC
+            WHEN X372M011-KEXPEDIENTE-B IS NOT NUMERIC
+      *-->     ERROR VALOR EN VARIABLE NUMERICA
+               SET SI-ERROR TO TRUE
+               MOVE "ANIO O EXPEDIENTE NO NUMERICO"
+                            TO X372M011-GERROR
+               MOVE "10"    TO X372M011-CRETORNO
+            WHEN OTHER
+              CONTINUE
+           END-EVALUATE
+           .
+
+       DATOS-SIGUIENTE.
+      *----------------
+      *    COMPROBAR DATOS SIGUIENTE / MOVER DATOS CLAVE.
+
+           INITIALIZE WS-BUSQUEDA.
+           IF X372M011-SSIGUIENTE = "S"
+              MOVE X372M011-ANIO-S          TO B-ANIO
+              MOVE X372M011-KEXPEDIENTE-S   TO B-KEXPEDIENTE
+           ELSE
+              MOVE X372M011-ANIO-B          TO B-ANIO
+              MOVE X372M011-KEXPEDIENTE-B   TO B-KEXPEDIENTE
+           END-IF.
+           INITIALIZE X372M011-MIG0-S.
+           MOVE "N" TO X372M011-SSIGUIENTE.
+
+           MOVE X372M011-ANIO-B          TO MIG0-ANIO.
+           MOVE X372M011-KEXPEDIENTE-B   TO MIG0-KEXPEDIENTE.
+
+       COMPONER-NUMERO-REGISTROS.
+      *--------------------------
+           IF X372M011-NREGENT IS NOT NUMERIC
+              MOVE ZEROES TO X372M011-NREGENT
+           END-IF.
+
+           IF LISTA
+              IF X372M011-NREGENT = ZEROES OR
+                 X372M011-NREGENT > LT-NREGENT
+                 MOVE LT-NREGENT TO X372M011-NREGENT
+              END-IF
+           ELSE
+              MOVE 1 TO X372M011-NREGENT
+           END-IF.
+
+       TRATAR-LISTADO.
+      *---------------
+           PERFORM ABRIR-LEER-CURSOR.
+
+           PERFORM CARGAR-DATOS-LISTADO VARYING X FROM 1 BY 1
+              UNTIL X > X372M011-NREGENT OR DB2-NOTFND OR SI-ERROR.
+
+           IF NO-ERROR AND DB2-OK AND X > X372M011-NREGENT
+              MOVE "S"              TO X372M011-SSIGUIENTE
+              MOVE MIG0-ANIO        TO X372M011-ANIO-S
+              MOVE MIG0-KEXPEDIENTE TO X372M011-KEXPEDIENTE-S
+           END-IF.
+
+           IF BD-ABIERTA
+              PERFORM CERRAR-CURSOR
+           END-IF.
+
+       TRATAR-DETALLE.
+      *---------------
+           PERFORM LEER-REGISTRO.
+           IF NO-ERROR AND DB2-OK
+              MOVE 1 TO X
+              PERFORM CARGAR-DATOS
+           END-IF.
+
+       CARGAR-DATOS-LISTADO.
+      *---------------------
+           PERFORM CARGAR-DATOS
+           PERFORM LEER-CURSOR.
+
+       CARGAR-DATOS.
+      *-------------
+           ADD 1 TO X372M011-NREGSAL.
+           MOVE MIG0-ANIO              TO X372M011-ANIO-T(X).
+           MOVE MIG0-KEXPEDIENTE       TO X372M011-KEXPEDIENTE-T(X).
+           MOVE MIG0-VEN-MIGR          TO X372M011-VEN-MIGR-T(X).
+           MOVE MIG0-USUARIO-PAGO      TO X372M011-USUARIO-PAGO-T(X).
+           MOVE MIG0-FCAPTURA          TO X372M011-FCAPTURA-T(X).
+           MOVE MIG0-CUSUARIO-CAPT     TO X372M011-CUSUARIO-CAPT-T(X).
+           MOVE MIG0-FORMAPAGO         TO X372M011-FORMAPAGO-T(X).
+           MOVE MIG0-NUM-CHEQUE        TO X372M011-NUM-CHEQUE-T(X).
+           MOVE MIG0-NUM-CUENTA        TO X372M011-NUM-CUENTA-T(X).
+           MOVE MIG0-REF-REINVERSION   TO X372M011-REF-REINVERSION-T(X).
+           MOVE MIG0-CUSU-PAGO-COMP1   TO X372M011-CUSU-PAGO-COMP1-T(X).
+           MOVE MIG0-FCAPTURA-COMP1    TO X372M011-FCAPTURA-COMP1-T(X).
+           MOVE MIG0-CUSU-CAPT-COMP1   TO X372M011-CUSU-CAPT-COMP1-T(X).
+           MOVE MIG0-FORMAPAGO-COMP1   TO X372M011-FORMAPAGO-COMP1-T(X).
+           MOVE MIG0-NCHEQUE-COMP1     TO X372M011-NCHEQUE-COMP1-T(X).
+           MOVE MIG0-NCUENTA-COMP1     TO X372M011-NCUENTA-COMP1-T(X).
+           MOVE MIG0-CUSU-PAGO-COMP2   TO X372M011-CUSU-PAGO-COMP2-T(X).
+           MOVE MIG0-FCAPTURA-COMP2    TO X372M011-FCAPTURA-COMP2-T(X).
+           MOVE MIG0-CUSU-CAPT-COMP2   TO X372M011-CUSU-CAPT-COMP2-T(X).
+           MOVE MIG0-FORMAPAGO-COMP2   TO X372M011-FORMAPAGO-COMP2-T(X).
+           MOVE MIG0-NCHEQUE-COMP2     TO X372M011-NCHEQUE-COMP2-T(X).
+           MOVE MIG0-NCUENTA-COMP2     TO X372M011-NCUENTA-COMP2-T(X).
+           MOVE MIG0-GRADO-DISCAP      TO X372M011-GRADO-DISCAP-T(X).
+           MOVE MIG0-PREST-VIVIENDA    TO X372M011-PREST-VIVIENDA-T(X).
+           MOVE MIG0-SITU-FAMILIAR     TO X372M011-SITU-FAMILIAR-T(X).
+           MOVE MIG0-NIF-CONYUGUE      TO X372M011-NIF-CONYUGUE-T(X).
+           MOVE MIG0-ICOMPENSATORIA    TO X372M011-ICOMPENSATORIA-T(X).
+           MOVE MIG0-IMPALIMENHIJOS    TO X372M011-IMPALIMENHIJOS-T(X).
+
+      *
+       ABRIR-LEER-CURSOR.
+      *------------------
+      *D*
+           DISPLAY ' B372M011 - ABRIR-LEER-CURSOR'
+           DISPLAY ' B372M011 - X372M011-CSELECCION: '
+                                X372M011-CSELECCION
+      *F*
+           EVALUATE X372M011-CSELECCION
+
+              WHEN "01"
+                 EXEC SQL
+                    OPEN C1
+                 END-EXEC
+
+              WHEN OTHER
+      *-->       Selección de búsqueda incorrecto
+                 SET SI-ERROR TO TRUE
+                 MOVE "SELECCIóN DE BúSQUEDA INCORRECTO"
+                           TO X372M011-GERROR
+                 MOVE "06" TO X372M011-CRETORNO
+
+           END-EVALUATE.
+
+      *D*
+           DISPLAY ' B372M011 - SQLCODE: ' SQLCODE
+      *F*
+           IF NO-ERROR
+              MOVE SQLCODE TO SW-ERROR-DB2
+              IF NOT DB2-OK AND NOT DB2-NOTFND
+      *-->       Error al abrir el cursor
+                 SET SI-ERROR TO TRUE
+                 MOVE "01"            TO X372M011-CRETORNO
+                 MOVE "ERROR AL ABRIR EL CURSOR"
+                                      TO X372M011-GERROR
+                 MOVE SW-ERROR-DB2 TO X372M011-CERRORSQL
+              ELSE
+                 SET BD-ABIERTA TO TRUE
+                 PERFORM LEER-CURSOR
+              END-IF
+           END-IF.
+
+       LEER-CURSOR.
+      *------------
+           EVALUATE X372M011-CSELECCION
+
+              WHEN "01"
+                 EXEC SQL
+                    FETCH C1
+                    INTO
+                         :MIG0-ANIO,
+                         :MIG0-KEXPEDIENTE,
+                         :MIG0-VEN-MIGR,
+                         :MIG0-USUARIO-PAGO,
+                         :MIG0-FCAPTURA,
+                         :MIG0-CUSUARIO-CAPT,
+                         :MIG0-FORMAPAGO,
+                         :MIG0-NUM-CHEQUE,
+                         :MIG0-NUM-CUENTA,
+                         :MIG0-REF-REINVERSION,
+                         :MIG0-CUSU-PAGO-COMP1,
+                         :MIG0-FCAPTURA-COMP1,
+                         :MIG0-CUSU-CAPT-COMP1,
+                         :MIG0-FORMAPAGO-COMP1,
+                         :MIG0-NCHEQUE-COMP1,
+                         :MIG0-NCUENTA-COMP1,
+                         :MIG0-CUSU-PAGO-COMP2,
+                         :MIG0-FCAPTURA-COMP2,
+                         :MIG0-CUSU-CAPT-COMP2,
+                         :MIG0-FORMAPAGO-COMP2,
+                         :MIG0-NCHEQUE-COMP2,
+                         :MIG0-NCUENTA-COMP2,
+                         :MIG0-GRADO-DISCAP,
+                         :MIG0-PREST-VIVIENDA,
+                         :MIG0-SITU-FAMILIAR,
+                         :MIG0-NIF-CONYUGUE,
+                         :MIG0-ICOMPENSATORIA,
+                         :MIG0-IMPALIMENHIJOS
+                 END-EXEC
+
+           END-EVALUATE.
+
+      *D*
+           DISPLAY ' B372M011 - LEER-CURSOR'
+           DISPLAY ' B372M011 - SQLCODE: ' SQLCODE
+      *F*
+           MOVE SQLCODE TO SW-ERROR-DB2.
+
+           IF NOT DB2-OK AND NOT DB2-NOTFND
+      *-->    Error al leer el cursor
+              SET SI-ERROR TO TRUE
+              MOVE "02"          TO X372M011-CRETORNO
+              MOVE "ERROR AL LEER EL CURSOR"
+                                 TO X372M011-GERROR
+              MOVE SW-ERROR-DB2  TO X372M011-CERRORSQL
+           END-IF.
+
+       LEER-REGISTRO.
+      *--------------
+           EVALUATE X372M011-CSELECCION
+
+              WHEN "01"
+                 EXEC SQL
+                    SELECT
+                           MIG0_ANIO,
+                           MIG0_KEXPEDIENTE,
+                           MIG0_VEN_MIGR,
+                           MIG0_USUARIO_PAGO,
+                           MIG0_FCAPTURA,
+                           MIG0_CUSUARIO_CAPT,
+                           MIG0_FORMAPAGO,
+                           MIG0_NUM_CHEQUE,
+                           MIG0_NUM_CUENTA,
+                           MIG0_REF_REINVERSION,
+                           MIG0_CUSU_PAGO_COMP1,
+                           MIG0_FCAPTURA_COMP1,
+                           MIG0_CUSU_CAPT_COMP1,
+                           MIG0_FORMAPAGO_COMP1,
+                           MIG0_NCHEQUE_COMP1,
+                           MIG0_NCUENTA_COMP1,
+                           MIG0_CUSU_PAGO_COMP2,
+                           MIG0_FCAPTURA_COMP2,
+                           MIG0_CUSU_CAPT_COMP2,
+                           MIG0_FORMAPAGO_COMP2,
+                           MIG0_NCHEQUE_COMP2,
+                           MIG0_NCUENTA_COMP2,
+                           MIG0_GRADO_DISCAP,
+                           MIG0_PREST_VIVIENDA,
+                           MIG0_SITU_FAMILIAR,
+                           MIG0_NIF_CONYUGUE,
+                           MIG0_ICOMPENSATORIA,
+                           MIG0_IMPALIMENHIJOS
+                    INTO
+                           :MIG0-ANIO,
+                           :MIG0-KEXPEDIENTE,
+                           :MIG0-VEN-MIGR,
+                           :MIG0-USUARIO-PAGO,
+                           :MIG0-FCAPTURA,
+                           :MIG0-CUSUARIO-CAPT,
+                           :MIG0-FORMAPAGO,
+                           :MIG0-NUM-CHEQUE,
+                           :MIG0-NUM-CUENTA,
+                           :MIG0-REF-REINVERSION,
+                           :MIG0-CUSU-PAGO-COMP1,
+                           :MIG0-FCAPTURA-COMP1,
+                           :MIG0-CUSU-CAPT-COMP1,
+                           :MIG0-FORMAPAGO-COMP1,
+                           :MIG0-NCHEQUE-COMP1,
+                           :MIG0-NCUENTA-COMP1,
+                           :MIG0-CUSU-PAGO-COMP2,
+                           :MIG0-FCAPTURA-COMP2,
+                           :MIG0-CUSU-CAPT-COMP2,
+                           :MIG0-FORMAPAGO-COMP2,
+                           :MIG0-NCHEQUE-COMP2,
+                           :MIG0-NCUENTA-COMP2,
+                           :MIG0-GRADO-DISCAP,
+                           :MIG0-PREST-VIVIENDA,
+                           :MIG0-SITU-FAMILIAR,
+                           :MIG0-NIF-CONYUGUE,
+                           :MIG0-ICOMPENSATORIA,
+                           :MIG0-IMPALIMENHIJOS
+                    FROM
+                           TB372MIG0
+                    WHERE
+                           MIG0_ANIO        = :B-ANIO         AND
+                           MIG0_KEXPEDIENTE = :B-KEXPEDIENTE
+                 END-EXEC
+
+              WHEN OTHER
+      *-->       Selección de búsqueda incorrecto
+                 MOVE "06" TO X372M011-CRETORNO
+                 MOVE "SELECCIóN DE BúSQUEDA INCORRECTO"
+                           TO X372M011-GERROR
+                 SET SI-ERROR TO TRUE
+
+           END-EVALUATE.
+
+      *D*
+           DISPLAY ' B372M011 - LEER-REGISTRO'
+           DISPLAY ' B372M011 - SQLCODE: ' SQLCODE
+      *F*
+           IF NO-ERROR
+              MOVE SQLCODE TO SW-ERROR-DB2
+              IF NOT DB2-OK
+                 IF DB2-NOTFND
+      *-->          NO SE HA ENCONTRADO EL EXPEDIENTE
+                    SET SI-ERROR TO TRUE
+                    MOVE "05"          TO X372M011-CRETORNO
+                    MOVE "NO SE HA ENCONTRADO EL EXPEDIENTE"
+                                       TO X372M011-GERROR
+                    MOVE SW-ERROR-DB2  TO X372M011-CERRORSQL
+                 ELSE
+      *-->          ERROR EJECUCIóN SQL
+                    SET SI-ERROR TO TRUE
+                    MOVE "07"          TO X372M011-CRETORNO
+                    MOVE "ERROR EN LA CONSULTA DEL EXPEDIENTE"
+                                       TO X372M011-GERROR
+                    MOVE SW-ERROR-DB2  TO X372M011-CERRORSQL
+                 END-IF
+              END-IF
+           END-IF.
+
+       CERRAR-CURSOR.
+      *--------------
+           EVALUATE X372M011-CSELECCION
+
+              WHEN "01"
+                 EXEC SQL
+                    CLOSE C1
+                 END-EXEC
+
+           END-EVALUATE.
+
+      *D*
+           DISPLAY ' B372M011 - LCERRAR-CURSOR'
+           DISPLAY ' B372M011 - SQLCODE: ' SQLCODE
+      *F*
+           MOVE SQLCODE TO SW-ERROR-DB2.
+
+           IF (NOT DB2-OK AND NOT DB2-NOTFND)
+      *-->     Error al cerrar el cursor
+               SET SI-ERROR TO TRUE
+               MOVE "03"         TO X372M011-CRETORNO
+               MOVE "ERROR AL CERRAR EL CURSOR"
+                                 TO X372M011-GERROR
+               MOVE SW-ERROR-DB2 TO X372M011-CERRORSQL
+           END-IF.
+

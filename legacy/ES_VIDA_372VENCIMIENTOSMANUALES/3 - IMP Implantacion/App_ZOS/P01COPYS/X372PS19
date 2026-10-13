@@ -1,0 +1,106 @@
+      ******************************************************************        
+      * COPY:              X372PS19                                    *        
+      * APLICACION:        REPOSITORIO BI - EXTRACCION RCTES/VCTOS     *        
+      * DESCRIPCION:       COPY VENCIMIENTOS -SALIDA-                  *        
+      * FECHA DE CREACION: 28-07-2015                                  *        
+      *                    LONGITUD = 1000                             *        
+      ******************************************************************        
+      *                                                                *        
+      * COPY:              X372PS19,    PROGRAMA: B372KA75             *        
+      * APLICACION:        VENCIMIENTOS                                *        
+      * DESCRIPCION:       COPY VENCIMIE -SALIDA-                      *        
+      * FECHA DE CREACION: 27-06-2017                                  *        
+      * AUTOR :            EVERIS                                      *        
+      *                                                                *        
+      ******************************************************************        
+       01  SAL19S-VENCIMIENTOS.                                                 
+  1- 4     05 SAL19S-ANIO             PIC 9(4).                                 
+  5-14     05 SAL19S-KEXPEDIENTE      PIC 9(10).                                
+ 15-17     05 SAL19S-KRAMO            PIC X(3).                                 
+ 18-21     05 SAL19S-ANIOPOL          PIC X(4).                                 
+ 22-31     05 SAL19S-KPOLIZA          PIC X(10).                                
+ 32-35     05 SAL19S-NSUBPOLIZA       PIC 9(4).                                 
+ 36-41     05 SAL19S-KCERTIFICADO     PIC 9(6).                                 
+ 42-46     05 SAL19S-KMODALIDAD       PIC 9(5).                                 
+ 47-48     05 SAL19S-CCANALCAMP       PIC X(2).                                 
+ 49-52     05 SAL19S-CENTIDAD         PIC X(4).                                 
+ 53-60     05 SAL19S-FECEFECTO        PIC X(8).                                 
+ 61-62     05 SAL19S-KDURACION        PIC 9(2).                                 
+ 63-70     05 SAL19S-FECEMISION       PIC X(8).                                 
+ 71-73     05 SAL19S-CCARTERA         PIC X(3).                                 
+ 74-74     05 SAL19S-SREASEGURO       PIC X(1).                                 
+ 75-76     05 SAL19S-REGIONAL         PIC X(2).                                 
+ 77-78     05 SAL19S-LUGARENVIO       PIC X(2).                                 
+ 79-82     05 SAL19S-KOFICINA         PIC X(4).                                 
+ 83-95     05 SAL19S-IPENDIENTE       PIC S9(11)V9(2).                          
+ 96-96     05 SAL19S-CTIPOPERS1       PIC X(1).                                 
+ 97-97     05 SAL19S-SRESIDENTE1      PIC X(1).                                 
+  -107     05 SAL19S-NIF1             PIC X(10).                                
+  -116     05 SAL19S-KPERSONA1        PIC 9(9).                                 
+  -129     05 SAL19S-IMPCAPITAL       PIC S9(11)V9(2).                          
+  -142     05 SAL19S-IMPBENEFICIOS    PIC S9(11)V9(2).                          
+  -150     05 SAL19S-FECPAGOCAPITAL   PIC X(8).                                 
+  -163     05 SAL19S-IMPANTICIPO      PIC S9(11)V9(2).                          
+  -176     05 SAL19S-IMPINTEPEND      PIC S9(11)V9(2).                          
+  -184     05 SAL19S-FECVENCIMICAP    PIC X(8).                                 
+  -186     05 SAL19S-TIPIMPUESTCAP    PIC X(2).                                 
+  -199     05 SAL19S-IMPRTOINTEGRCAP  PIC S9(11)V9(2).                          
+  -212     05 SAL19S-IMPREDPRICAP     PIC S9(11)V9(2).                          
+  -225     05 SAL19S-IMPREDTRANCAP    PIC S9(11)V9(2).                          
+  -238     05 SAL19S-IMPCOMPENSATORIA PIC S9(11)V9(2).                          
+  -251     05 SAL19S-IMPRTONETOCAP    PIC S9(11)V9(2).                          
+  -256     05 SAL19S-PORRETCAP        PIC 9(3)V9(2).                            
+  -269     05 SAL19S-IMPRETCAP        PIC S9(11)V9(2).                          
+  -282     05 SAL19S-IMPLIQCAP        PIC S9(11)V9(2).                          
+  -290     05 SAL19S-FECIMPRECAP      PIC X(8).                                 
+  -298     05 SAL19S-FECPAGRET        PIC X(8).                                 
+  -311     05 SAL19S-IMPCOMP1         PIC S9(11)V9(2).                          
+  -319     05 SAL19S-FECPAGCOMP1      PIC X(8).                                 
+  -327     05 SAL19S-FECEMICOMP1      PIC X(8).                                 
+  -329     05 SAL19S-TIPIMPUESTCOMP1  PIC X(2).                                 
+  -342     05 SAL19S-IMPRTOINTCOMP1   PIC S9(11)V9(2).                          
+  -355     05 SAL19S-IMPREDPRICOMP1   PIC S9(11)V9(2).                          
+  -368     05 SAL19S-IREDTRANCOMP1    PIC S9(11)V9(2).                          
+  -381     05 SAL19S-IRTONETCOMP1     PIC S9(11)V9(2).                          
+  -386     05 SAL19S-PORRETCOMP1      PIC 9(3)V9(2).                            
+  -399     05 SAL19S-IRETCOMP1        PIC S9(11)V9(2).                          
+  -412     05 SAL19S-ILIQCOMP1        PIC S9(11)V9(2).                          
+  -420     05 SAL19S-FECIMPRECOMP1    PIC X(8).                                 
+  -428     05 SAL19S-FECPAGRETCOM1    PIC X(8).                                 
+  -441     05 SAL19S-IMPCOMP2         PIC S9(11)V9(2).                          
+  -449     05 SAL19S-FECPAGCOMP2      PIC X(8).                                 
+  -457     05 SAL19S-FECEMICOMP2      PIC X(8).                                 
+  -459     05 SAL19S-TIPIMPUESTCOMP2  PIC X(2).                                 
+  -472     05 SAL19S-IMPRTOINTCOMP2   PIC S9(11)V9(2).                          
+  -485     05 SAL19S-IMPREDPRICOMP2   PIC S9(11)V9(2).                          
+  -498     05 SAL19S-IREDTRANCOMP2    PIC S9(11)V9(2).                          
+  -511     05 SAL19S-IRTONETCOMP2     PIC S9(11)V9(2).                          
+  -516     05 SAL19S-PORRETCOMP2      PIC 9(3)V9(2).                            
+  -529     05 SAL19S-IRETCOMP2        PIC S9(11)V9(2).                          
+  -542     05 SAL19S-ILIQCOMP2        PIC S9(11)V9(2).                          
+  -550     05 SAL19S-FECIMPRECOMP2    PIC X(8).                                 
+  -558     05 SAL19S-FECPAGRETCOM2    PIC X(8).                                 
+           05 SAL19S-COASEGUROS OCCURS 6.                                       
+              09 SAL19S-CODCOA             PIC X(07).                           
+              09 SAL19S-PORCOA             PIC S9(3)V9(6).                      
+              09 SAL19S-IMPCOA             PIC S9(11)V9(2).                     
+              09 SAL19S-IMPRTOINTEGRCOA    PIC S9(11)V9(2).                     
+              09 SAL19S-IMPREDPRICOA       PIC S9(11)V9(2).                     
+              09 SAL19S-IMPREDTRANCOA      PIC S9(11)V9(2).                     
+              09 SAL19S-IMPRTONETOCOA      PIC S9(11)V9(2).                     
+              09 SAL19S-IMPRETCOA          PIC S9(11)V9(2).                     
+              09 SAL19S-IMPCOMPENSATCOA    PIC S9(11)V9(2).                     
+  -631     05 SAL19S-PAGOTOT          PIC X(1).                                 
+  -639     05 SAL19S-CUSUARIO         PIC X(8).                                 
+  -640     05 SAL19S-SBDGICAP         PIC X(1).                                 
+  -648     05 SAL19S-FECBDGICAP       PIC X(8).                                 
+  -649     05 SAL19S-SBDGICOMP1       PIC X(1).                                 
+  -657     05 SAL19S-FECBDGICOMP1     PIC X(8).                                 
+  -658     05 SAL19S-SBDGICOMP2       PIC X(1).                                 
+  -666     05 SAL19S-FECBDGICOMP2     PIC X(8).                                 
+  -921     05 SAL19S-GOBSERVACION     PIC X(255).                               
+  -926     05 SAL19S-CCODPOST         PIC X(5).                                 
+  -934     05 SAL19S-FANULACION       PIC X(8).                                 
+           05 SAL19S-EXIMIDO          PIC X(1).                                 
+           05 SAL19S-KDOMCOM          PIC S9(9)V.                               
+  1000     05 SAL19S-FILLER           PIC X(66).                                

@@ -1,0 +1,345 @@
+      *RETRIEVAL
+      *-----------------------
+       IDENTIFICATION DIVISION.
+      *------------------------
+
+       PROGRAM-ID. B372VT08.
+
+      ******************************************************************
+      *  APLICACION   : DATOS ADICIONALES VENCIMIENTOS MANUALES        *
+      *  ANALISTA     : MINSAIT                                        *
+      *  PROGRAMADOR  : MINSAIT                                        *
+      *  FECHA        : MAYO 2026                                      *
+      *  TIPO PROGRAMA: COBOL-CICS                                     *
+      *  DESCRIPCION  : SERVICIO GESTOR DE CONSULTA DE DATOS           *
+      *                 ADICIONALES DE EXPEDIENTES DE VENCIMIENTOS     *
+      ******************************************************************
+      *PARAMETROS DE ENTRADA:
+      ******************************************************************
+      *   -X372VT08-ENTRADA-E: COPY DE ENTRADA DE DATOS
+      ******************************************************************
+      *PARAMETROS DE SALIDA:
+      ******************************************************************
+      *   -X372VT08-SALIDA-S : COPY DE SALIDA DE DATOS
+      ******************************************************************
+
+      ******************************************************************
+      *MODULOS UTILIZADOS:
+      ******************************************************************
+      *
+      * B372M011 : MODULO DE CONSULTA TABLA DATOS ADICIONALES DE
+      *            EXPEDIENTES DE VENCIMIENTOS
+      ******************************************************************
+
+      ******************************************************************
+      * CODIGO DE ERRORES
+      ******************************************************************
+      *
+      * X372VT08-CRETORNO-S
+      *
+      *                    '00' OPERACION CORRECTA
+      *
+      *                    '99' ERROR AL DEVOLVER CONTROL
+      *
+      ******************************************************************
+
+      *--------------------
+       ENVIRONMENT DIVISION.
+      *---------------------
+
+       CONFIGURATION SECTION.
+        SPECIAL-NAMES.
+            DECIMAL-POINT IS COMMA.
+
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+
+      *-------------
+       DATA DIVISION.
+      *--------------
+
+       FILE SECTION.
+      *-------------
+
+      *************************
+       WORKING-STORAGE SECTION.
+      *************************
+      *
+       01  VARIABLES.
+           03 FILLER                         PIC X(17) VALUE
+                                             'INICIO WORKING'.
+           03 WS-FECHA                     PIC X(08) VALUE SPACES.
+           03 XN-INDICES.
+              05 XN-J                      PIC 99 VALUE ZEROES.
+              05 XN-A                      PIC 99 VALUE ZEROES.
+              05 XN-B                      PIC 99 VALUE ZEROES.
+
+           03 CN-CONSTANTES.
+              05 CN-VEN-MAX                PIC 9(2) VALUE 20.
+
+           03 LITERALES.                                                00960000
+              05 LT-B372M011               PIC X(08) VALUE 'B372M011'.
+
+           03 SW-SWITCH.
+              05 SW-ERRORES                PIC XX VALUE '00'.
+                 88 NO-ERROR                      VALUE '00'.
+                 88 ERROR-GRAVE                   VALUE '01'.
+
+           03 WS-X372M011.
+              COPY X372M011.
+
+       01 FILLER                             PIC X(14) VALUE
+                                             'FIN DE WORKING'.
+      *****************
+       LINKAGE SECTION.
+      *****************
+       01 DFHCOMMAREA.
+           COPY R000X000.
+           03 COMMAREA.
+              COPY X372VT08.
+
+      **************************************
+       PROCEDURE DIVISION USING DFHCOMMAREA.
+      **************************************
+
+
+           PERFORM 1000-INICIO.
+
+           PERFORM 2000-PROCESO.
+
+           PERFORM 9000-FIN.
+
+      ******************************************************************
+      *1000-INICIO.
+      ******************************************************************
+       1000-INICIO.
+
+           EXEC CICS
+                IGNORE CONDITION ERROR
+           END-EXEC.
+
+           MOVE '00'       TO X372VT08-CRETORNO-S.
+           MOVE 'B372VT08' TO X372VT08-GNOMPROG-S.
+
+
+      ******************************************************************
+      *2000-PROCESO.
+      ******************************************************************
+       2000-PROCESO.
+
+           PERFORM 2100-MOVER-DATOS-ENTRADA
+
+      *D*
+            DISPLAY '***************   B372VT08 *********'
+            DISPLAY 'ANIO-E            ' X372VT08-ANIO-E
+            DISPLAY 'KEXPEDIENTE-E     ' X372VT08-KEXPEDIENTE-E
+            DISPLAY 'OPERACION-E       ' X372VT08-OPERACION-E
+            DISPLAY 'ANT-KEXPEDIENTE-E ' X372VT08-ANT-KEXPEDIENTE-E
+            DISPLAY 'ANT-ANIO-E        ' X372VT08-ANT-ANIO-E
+      *F*
+            CALL LT-B372M011 USING WS-X372M011
+
+      *D*
+            DISPLAY 'X372M011-CRETORNO: ' X372M011-CRETORNO
+      *F*
+            IF X372M011-CRETORNO = '00'
+               PERFORM 2300-MOVER-SALIDA
+            ELSE
+               SET  ERROR-GRAVE         TO TRUE
+               MOVE X372M011-CRETORNO   TO X372VT08-CRETORNO-S
+               MOVE X372M011-GERROR     TO X372VT08-GERROR-S
+               MOVE LT-B372M011         TO X372VT08-GNOMPROG-S
+      *D*
+      *    DISPLAY 'B372M011:CRETORNO  :' X372VT08-CRETORNO-S
+      *    DISPLAY 'B372M011:GERROR    :' X372VT08-GERROR-S
+      *    DISPLAY 'B372M011:GNOMPROG  :' X372VT08-GNOMPROG-S
+      *F*
+            END-IF.
+
+      ***************************************************************
+       2100-MOVER-DATOS-ENTRADA.
+      ***************************************************************
+           INITIALIZE WS-X372M011.
+           MOVE '01'                    TO X372M011-CSELECCION
+           MOVE X372VT08-OPERACION-E    TO X372M011-COPERACION
+           MOVE X372VT08-ANIO-E         TO X372M011-ANIO-B
+           MOVE X372VT08-KEXPEDIENTE-E  TO X372M011-KEXPEDIENTE-B
+           MOVE X372VT08-SSIGUIENTE     TO X372M011-SSIGUIENTE
+           MOVE X372VT08-ANT-ANIO-E     TO X372M011-ANIO-S
+           MOVE X372VT08-ANT-KEXPEDIENTE-E
+                                        TO X372M011-KEXPEDIENTE-S
+           .
+      ***************************************************************
+       2300-MOVER-SALIDA.
+      ***************************************************************
+           IF NOT ERROR-GRAVE
+
+              MOVE X372M011-SSIGUIENTE
+                TO X372VT08-SSIGUIENTE
+              MOVE X372M011-ANIO-S
+                TO X372VT08-ANIO-ANT-S
+              MOVE X372M011-KEXPEDIENTE-S
+                TO X372VT08-KEXPEDIENTE-ANT-S
+              MOVE X372M011-NREGSAL
+                TO X372VT08-NREGSAL
+
+              PERFORM VARYING XN-J FROM 1 BY 1
+                        UNTIL XN-J > X372M011-NREGSAL
+                           OR XN-J > CN-VEN-MAX
+                           OR ERROR-GRAVE
+
+                 MOVE XN-J TO XN-A
+                 MOVE XN-J TO XN-B
+
+                 PERFORM 2700-MOVER-OCCUR
+
+              END-PERFORM
+
+           END-IF.
+
+      ****************************************************************
+       2700-MOVER-OCCUR.
+      ****************************************************************
+
+      *D*
+           DISPLAY ' B372VT08 - 2700-MOVER-OCCUR'
+           DISPLAY 'ANIO-T             : ' X372M011-ANIO-T(XN-A)
+           DISPLAY 'KEXPEDIENTE-T      : ' X372M011-KEXPEDIENTE-T(XN-A)
+           DISPLAY 'VEN-MIGR-T         : ' X372M011-VEN-MIGR-T(XN-A)
+           DISPLAY 'USUARIO-PAGO-T     : ' X372M011-USUARIO-PAGO-T(XN-A)
+           DISPLAY 'FCAPTURA-T         : ' X372M011-FCAPTURA-T(XN-A)
+           DISPLAY 'CUSUARIO-CAPT-T : ' X372M011-CUSUARIO-CAPT-T(XN-A)
+           DISPLAY 'FORMAPAGO-T        : ' X372M011-FORMAPAGO-T(XN-A)
+           DISPLAY 'NUM-CHEQUE-T       : ' X372M011-NUM-CHEQUE-T(XN-A)
+           DISPLAY 'NUM-CUENTA-T       : ' X372M011-NUM-CUENTA-T(XN-A)
+           DISPLAY 'REF-REINVERSION-T  : '
+                                        X372M011-REF-REINVERSION-T(XN-A)
+           DISPLAY 'CUSU-PAGO-COMP1-T:' X372M011-CUSU-PAGO-COMP1-T(XN-A)
+           DISPLAY 'FCAPTURA-COMP1-T: ' X372M011-FCAPTURA-COMP1-T(XN-A)
+           DISPLAY 'CUSU-CAPT-COMP1-T:' X372M011-CUSU-CAPT-COMP1-T(XN-A)
+           DISPLAY 'FORMAPAGO-COMP1-T:' X372M011-FORMAPAGO-COMP1-T(XN-A)
+           DISPLAY 'NCHEQUE-COMP1-T: ' X372M011-NCHEQUE-COMP1-T(XN-A)
+           DISPLAY 'NCUENTA-COMP1-T: ' X372M011-NCUENTA-COMP1-T(XN-A)
+           DISPLAY 'CUSU-PAGO-COMP2-T:' X372M011-CUSU-PAGO-COMP2-T(XN-A)
+           DISPLAY 'FCAPTURA-COMP2-T: ' X372M011-FCAPTURA-COMP2-T(XN-A)
+           DISPLAY 'CUSU-CAPT-COMP2-T:' X372M011-CUSU-CAPT-COMP2-T(XN-A)
+           DISPLAY 'FORMAPAGO-COMP2-T:' X372M011-FORMAPAGO-COMP2-T(XN-A)
+           DISPLAY 'NCHEQUE-COMP2-T: ' X372M011-NCHEQUE-COMP2-T(XN-A)
+           DISPLAY 'NCUENTA-COMP2-T: ' X372M011-NCUENTA-COMP2-T(XN-A)
+           DISPLAY 'GRADO-DISCAP-T: ' X372M011-GRADO-DISCAP-T(XN-A)
+           DISPLAY 'PREST-VIVIENDA-T: ' X372M011-PREST-VIVIENDA-T(XN-A)
+           DISPLAY 'SITU-FAMILIAR-T: ' X372M011-SITU-FAMILIAR-T(XN-A)
+           DISPLAY 'NIF-CONYUGUE-T  : ' X372M011-NIF-CONYUGUE-T(XN-A)
+           DISPLAY 'ICOMPENSATORIA-T: ' X372M011-ICOMPENSATORIA-T(XN-A)
+           DISPLAY 'IMPALIMENHIJOS-T: ' X372M011-IMPALIMENHIJOS-T(XN-A)
+      *F*
+           MOVE X372M011-ANIO-T (XN-A)
+                                  TO X372VT08-ANIO-S (XN-B)
+           MOVE X372M011-KEXPEDIENTE-T (XN-A)
+                                  TO X372VT08-KEXPEDIENTE-S (XN-B)
+           MOVE X372M011-VEN-MIGR-T (XN-A)
+                                  TO X372VT08-VEN-MIGR-S (XN-B)
+           MOVE X372M011-USUARIO-PAGO-T (XN-A)
+                                  TO X372VT08-USUARIO-PAGO-S (XN-B)
+           MOVE X372M011-FCAPTURA-T (XN-A)
+                                  TO X372VT08-FCAPTURA-S (XN-B)
+           MOVE X372M011-CUSUARIO-CAPT-T (XN-A)
+                                  TO X372VT08-CUSUARIO-CAPT-S (XN-B)
+           MOVE X372M011-FORMAPAGO-T (XN-A)
+                                  TO X372VT08-FORMAPAGO-S (XN-B)
+           MOVE X372M011-NUM-CHEQUE-T (XN-A)
+                                  TO X372VT08-NUM-CHEQUE-S (XN-B)
+           MOVE X372M011-NUM-CUENTA-T (XN-A)
+                                  TO X372VT08-NUM-CUENTA-S (XN-B)
+           MOVE X372M011-REF-REINVERSION-T (XN-A)
+                                  TO X372VT08-REF-REINVERSION-S (XN-B)
+           MOVE X372M011-CUSU-PAGO-COMP1-T (XN-A)
+                                  TO X372VT08-CUSU-PAGO-COMP1-S (XN-B)
+           MOVE X372M011-FCAPTURA-COMP1-T (XN-A)
+                                  TO X372VT08-FCAPTURA-COMP1-S (XN-B)
+           MOVE X372M011-CUSU-CAPT-COMP1-T (XN-A)
+                                  TO X372VT08-CUSU-CAPT-COMP1-S (XN-B)
+           MOVE X372M011-FORMAPAGO-COMP1-T (XN-A)
+                                  TO X372VT08-FORMAPAGO-COMP1-S (XN-B)
+           MOVE X372M011-NCHEQUE-COMP1-T (XN-A)
+                                  TO X372VT08-NCHEQUE-COMP1-S (XN-B)
+           MOVE X372M011-NCUENTA-COMP1-T (XN-A)
+                                  TO X372VT08-NCUENTA-COMP1-S (XN-B)
+           MOVE X372M011-CUSU-PAGO-COMP2-T (XN-A)
+                                  TO X372VT08-CUSU-PAGO-COMP2-S (XN-B)
+           MOVE X372M011-FCAPTURA-COMP2-T (XN-A)
+                                  TO X372VT08-FCAPTURA-COMP2-S (XN-B)
+           MOVE X372M011-CUSU-CAPT-COMP2-T (XN-A)
+                                  TO X372VT08-CUSU-CAPT-COMP2-S (XN-B)
+           MOVE X372M011-FORMAPAGO-COMP2-T (XN-A)
+                                  TO X372VT08-FORMAPAGO-COMP2-S (XN-B)
+           MOVE X372M011-NCHEQUE-COMP2-T (XN-A)
+                                  TO X372VT08-NCHEQUE-COMP2-S (XN-B)
+           MOVE X372M011-NCUENTA-COMP2-T (XN-A)
+                                  TO X372VT08-NCUENTA-COMP2-S (XN-B)
+           MOVE X372M011-GRADO-DISCAP-T (XN-A)
+                                  TO X372VT08-GRADO-DISCAP-S (XN-B)
+           MOVE X372M011-PREST-VIVIENDA-T (XN-A)
+                                  TO X372VT08-PREST-VIVIENDA-S (XN-B)
+           MOVE X372M011-SITU-FAMILIAR-T (XN-A)
+                                  TO X372VT08-SITU-FAMILIAR-S (XN-B)
+           MOVE X372M011-NIF-CONYUGUE-T (XN-A)
+                                  TO X372VT08-NIF-CONYUGUE-S (XN-B)
+           MOVE X372M011-ICOMPENSATORIA-T (XN-A)
+                                  TO X372VT08-ICOMPENSATORIA-S (XN-B)
+           MOVE X372M011-IMPALIMENHIJOS-T (XN-A)
+                                  TO X372VT08-IMPALIMENHIJOS-S (XN-B)
+      *D*
+           DISPLAY ' ****** SALIDA VT07 ***************'
+           DISPLAY 'ANIO-S             : ' X372VT08-ANIO-S(XN-B)
+           DISPLAY 'KEXPEDIENTE-S      : ' X372VT08-KEXPEDIENTE-S(XN-B)
+           DISPLAY 'VEN-MIGR-S         : ' X372VT08-VEN-MIGR-S(XN-B)
+           DISPLAY 'USUARIO-PAGO-S     : ' X372VT08-USUARIO-PAGO-S(XN-B)
+           DISPLAY 'FCAPTURA-S         : ' X372VT08-FCAPTURA-S(XN-B)
+           DISPLAY 'CUSUARIO-CAPT-S : ' X372VT08-CUSUARIO-CAPT-S(XN-B)
+           DISPLAY 'FORMAPAGO-S        : ' X372VT08-FORMAPAGO-S(XN-B)
+           DISPLAY 'NUM-CHEQUE-S       : ' X372VT08-NUM-CHEQUE-S(XN-B)
+           DISPLAY 'NUM-CUENTA-S       : ' X372VT08-NUM-CUENTA-S(XN-B)
+           DISPLAY 'REF-REINVERSION-S  : '
+                                        X372VT08-REF-REINVERSION-S(XN-B)
+           DISPLAY 'CUSU-PAGO-COMP1-S:' X372VT08-CUSU-PAGO-COMP1-S(XN-B)
+           DISPLAY 'FCAPTURA-COMP1-S: ' X372VT08-FCAPTURA-COMP1-S(XN-B)
+           DISPLAY 'CUSU-CAPT-COMP1-S:' X372VT08-CUSU-CAPT-COMP1-S(XN-B)
+           DISPLAY 'FORMAPAGO-COMP1-S:' X372VT08-FORMAPAGO-COMP1-S(XN-B)
+           DISPLAY 'NCHEQUE-COMP1-S: ' X372VT08-NCHEQUE-COMP1-S(XN-B)
+           DISPLAY 'NCUENTA-COMP1-S: ' X372VT08-NCUENTA-COMP1-S(XN-B)
+           DISPLAY 'CUSU-PAGO-COMP2-S:' X372VT08-CUSU-PAGO-COMP2-S(XN-B)
+           DISPLAY 'FCAPTURA-COMP2-S: ' X372VT08-FCAPTURA-COMP2-S(XN-B)
+           DISPLAY 'CUSU-CAPT-COMP2-S:' X372VT08-CUSU-CAPT-COMP2-S(XN-B)
+           DISPLAY 'FORMAPAGO-COMP2-S:' X372VT08-FORMAPAGO-COMP2-S(XN-B)
+           DISPLAY 'NCHEQUE-COMP2-S: ' X372VT08-NCHEQUE-COMP2-S(XN-B)
+           DISPLAY 'NCUENTA-COMP2-S: ' X372VT08-NCUENTA-COMP2-S(XN-B)
+           DISPLAY 'GRADO-DISCAP-S: ' X372VT08-GRADO-DISCAP-S(XN-B)
+           DISPLAY 'PREST-VIVIENDA-S: ' X372VT08-PREST-VIVIENDA-S(XN-B)
+           DISPLAY 'SITU-FAMILIAR-S: ' X372VT08-SITU-FAMILIAR-S(XN-B)
+           DISPLAY 'NIF-CONYUGUE-S  : ' X372VT08-NIF-CONYUGUE-S(XN-B)
+           DISPLAY 'ICOMPENSATORIA-S: ' X372VT08-ICOMPENSATORIA-S(XN-B)
+           DISPLAY 'IMPALIMENHIJOS-S: ' X372VT08-IMPALIMENHIJOS-S(XN-B)
+      *F*
+           .
+
+      *****************************************************************
+      *9000-FIN.
+      ******************************************************************
+       9000-FIN.
+
+           EXEC CICS                                                    00048300
+                RETURN                                                  00048400
+           END-EXEC.                                                    00048500
+
+           IF EIBRESP NOT = DFHRESP(NORMAL)
+
+
+              MOVE  'B372VT08'  TO  X372VT08-GNOMPROG-S
+              MOVE  '99'        TO  X372VT08-CRETORNO-S
+              MOVE  'ERROR AL DEVOLVER CONTROL'
+                                TO  X372VT08-GERROR-S
+
+           END-IF
+           .
+

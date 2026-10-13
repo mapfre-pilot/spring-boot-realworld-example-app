@@ -1,0 +1,423 @@
+      *RETRIEVAL                                                        00010000
+       IDENTIFICATION DIVISION.                                         00020000
+                                                                        00030000
+       PROGRAM-ID.                                                      00040000
+      ******************************************************************00050000
+      **INV*A372VENM****************************************************00060000
+      ******************************************************************00070000
+           VC370001.                                                    00080000
+      *                                                                *00090000
+      ******************************************************************00100000
+      **INV: A372VENM                                                  *00110000
+      ******************************************************************00120000
+      *================================================================*00130000
+      * GENERA EL JUSTIFICANTE DEL ASIENTO CORRESPONDIENTE A VENCIMIENT*00140000
+      ******************************************************************00150000
+      *                                                                *00160000
+       ENVIRONMENT DIVISION.                                            00170000
+      *---------------------                                            00180000
+       CONFIGURATION SECTION.                                           00190000
+       SPECIAL-NAMES.                                                   00200000
+           DECIMAL-POINT IS COMMA.                                      00210000
+                                                                        00220000
+       INPUT-OUTPUT SECTION.                                            00230000
+       FILE-CONTROL.                                                    00240000
+           SELECT FICHA   ASSIGN TO SYS010.                             00250000
+           SELECT ENTRADA ASSIGN TO SYS001.                             00260000
+           SELECT MEMO    ASSIGN TO SYS002.                             00270000
+      *                                                                 00280000
+       DATA DIVISION.                                                   00290000
+      *--------------                                                   00300000
+       FILE SECTION.                                                    00310000
+      *                                                                 00320000
+       FD  FICHA   LABEL RECORD STANDARD                                00330000
+                          BLOCK CONTAINS  0 RECORDS.                    00340000
+        COPY RC37000.                                                   00350000
+      *                                                                 00360000
+       FD  ENTRADA                                                      00370000
+           LABEL RECORD STANDARD                                        00380000
+           RECORDING F RECORD 523                                       00390000
+           BLOCK CONTAINS 0 RECORDS.                                    00400000
+           COPY SAPASTON.                                               00410000
+      *                                                                 00420000
+       FD  MEMO                                                         00430000
+           RECORDING F RECORD 80                                        00440000
+           BLOCK  0 RECORDS LABEL RECORD STANDARD                       00450000
+           DATA RECORD IS REG-IMPRESORA.                                00460000
+       01  REG-MEMO.                                                    00470000
+           02  LINEA                        PIC X(80).                  00480000
+      *                                                                 00490000
+                                                                        00500000
+      ***************************************************************   00510000
+      *------------------------                                         00520000
+       WORKING-STORAGE SECTION.                                         00530000
+      *------------------------                                         00540000
+                                                                        00550000
+       01  INICIO-WORKING.                                              00560000
+           03 FILLER                 PIC X(17) VALUE                    00570000
+              'INICIO DE WORKING'.                                      00580000
+           03 INDICES.                                                  00590000
+              05 X1                  PIC  9(04) VALUE 0.                00600000
+              05 X2                   PIC 9(05) VALUE 0.                00610000
+           03 SW-FIN                 PIC X VALUE SPACES.                00620000
+      *                                                                 00630000
+           03 LT-VR002057           PIC X(08) VALUE 'VR002057'.         00640000
+      *                                                                 00650000
+           03 GENERALES.                                                00660000
+              05   TOTAL-DEBE-ENTI   PIC 9(12)V9(02)  VALUE 0.          00670000
+              05   TOTAL-HABER-ENTI  PIC 9(12)V9(02)  VALUE 0.          00680000
+              05   WS-CTA            PIC 9(10) VALUE ZEROS.             00690000
+      *                                                                 00700000
+           03 ACUMULADORES.                                             00710000
+              05   IMPORTE           PIC 9(12)V9(02)  VALUE 0.          00720000
+      *                                                                 00730000
+           03 CONTADORES.                                               00740000
+              05 CT-LEIDOS           PIC 9(09) VALUE 0.                 00750000
+              05 CT-GRABADOS         PIC 9(09) VALUE 0.                 00760000
+      *                                                                 00770000
+           03 AUXILIARES.                                               00780000
+              05  MENSAJE            PIC X(120) VALUE SPACES.           00790000
+      *                                                                 00800000
+      * --> VARIABLES                                                   00810000
+      *                                                                 00820000
+           03  TABLA-MESES.                                             00830000
+               05  FILLER PIC X(10)  VALUE 'ENERO     '.                00840000
+               05  FILLER PIC X(10)  VALUE 'FEBRERO   '.                00850000
+               05  FILLER PIC X(10)  VALUE 'MARZO     '.                00860000
+               05  FILLER PIC X(10)  VALUE 'ABRIL     '.                00870000
+               05  FILLER PIC X(10)  VALUE 'MAYO      '.                00880000
+               05  FILLER PIC X(10)  VALUE 'JUNIO     '.                00890000
+               05  FILLER PIC X(10)  VALUE 'JULIO     '.                00900000
+               05  FILLER PIC X(10)  VALUE 'AGOSTO    '.                00910000
+               05  FILLER PIC X(10)  VALUE 'SEPTIEMBRE'.                00920000
+               05  FILLER PIC X(10)  VALUE 'OCTUBRE   '.                00930000
+               05  FILLER PIC X(10)  VALUE 'NOVIEMBRE '.                00940000
+               05  FILLER PIC X(10)  VALUE 'DICIEMBRE '.                00950000
+           03  TAB-MES       REDEFINES TABLA-MESES.                     00960000
+               05  MES             PIC X(10) OCCURS 12.                 00970000
+                                                                        00980000
+           03  TB-ENTIDADES OCCURS 25.                                  00990000
+               05 TB-CENTIDADSAP       PIC X(04) VALUE SPACES.          01000000
+               05 TB-GENTIDADSAP       PIC X(50) VALUE SPACES.          01010000
+      *                                                                 01020000
+      ***  NUMEROS DE CUENTAS    ***                                    01030000
+      *                                                                 01040000
+           03 NUM-CUENTAS.                                              01050000
+              05 NUM-440077        PIC 9(6) VALUE 440077.               01060000
+                                                                        01070000
+           03 LM-LINEA-1.                                               01080000
+              05 FILLER            PIC  X(01) VALUE SPACES.             01090000
+              05 LM-EMPRESA        PIC  X(45) VALUE SPACES.             01100000
+              05 FILLER            PIC  X(19) VALUE SPACES.             01110000
+              05 LM-DD-SIS         PIC  9(02) VALUE ZEROES.             01120000
+              05 FILLER            PIC  X(01) VALUE '.'.                01130000
+              05 LM-MM-SIS         PIC  9(02) VALUE ZEROES.             01140000
+              05 FILLER            PIC  X(01) VALUE '.'.                01150000
+              05 LM-AA-SIS         PIC  9(04) VALUE ZEROES.             01160000
+                                                                        01170000
+           03 LM-LINEA-2.                                               01180000
+              05 FILLER   PIC X(14)  VALUE                              01190000
+                   '  - VC370001 -'.                                    01200000
+              05 FILLER   PIC X(04)  VALUE SPACES.                      01210000
+              05 FILLER   PIC X(21)  VALUE                              01220000
+               'JUSTIFICANTE ASIENTO '.                                 01230000
+              05 LM-TIPO  PIC X(15)  VALUE SPACES.                      01240000
+              05 FILLER   PIC X      VALUE SPACES.                      01250000
+              05 LM-MES   PIC X(10)  VALUE SPACES.                      01260000
+              05 FILLER   PIC X      VALUE SPACES.                      01270000
+              05 LM-ANNO  PIC X(04)  VALUE SPACES.                      01280000
+                                                                        01290000
+           03 LM-LINEA-3.                                               01300000
+              05 FILLER   PIC X(18)  VALUE SPACES.                      01310000
+              05 FILLER   PIC X(50)  VALUE ALL '='.                     01320000
+           03 LM-LINEA-4.                                               01330000
+              05 FILLER   PIC X(1)   VALUE SPACES.                      01340000
+              05 FILLER   PIC X(10)  VALUE 'CUENTA    '.                01350000
+              05 FILLER   PIC X(1)   VALUE SPACES.                      01360000
+              05 FILLER   PIC X(30)                                     01370000
+                          VALUE 'DESCRIPCION                   '.       01380000
+              05 FILLER   PIC X(1)   VALUE SPACES.                      01390000
+              05 FILLER   PIC X(18)  VALUE 'CARGOS            '.        01400000
+              05 FILLER   PIC X(1)   VALUE SPACES.                      01410000
+              05 FILLER   PIC X(18)  VALUE 'ABONOS            '.        01420000
+           03 LM-LINEA-5.                                               01430000
+              05 FILLER   PIC X(1)   VALUE SPACES.                      01440000
+              05 FILLER   PIC X(10)  VALUE '=========='.                01450000
+              05 FILLER   PIC X(1)   VALUE SPACES.                      01460000
+              05 FILLER   PIC X(30)                                     01470000
+                          VALUE '=============================='.       01480000
+              05 FILLER   PIC X(1)   VALUE SPACES.                      01490000
+              05 FILLER   PIC X(16)  VALUE '================'.          01500000
+              05 FILLER   PIC X(1)   VALUE SPACES.                      01510000
+              05 FILLER   PIC X(16)  VALUE '================'.          01520000
+           03 LM-DETALLE.                                               01530000
+              05 FILLER    PIC X(1)   VALUE SPACES.                     01540000
+              05 DET-CTA   PIC Z(10)  VALUE SPACES.                     01550000
+              05 FILLER    PIC X(1)   VALUE SPACES.                     01560000
+              05 DET-DES   PIC X(30)  VALUE SPACES.                     01570000
+              05 FILLER    PIC X(1)   VALUE SPACES.                     01580000
+              05 DET-DEBE  PIC Z.ZZZ.ZZZ.ZZ9,99.                        01590000
+              05 FILLER    PIC X(1)   VALUE SPACES.                     01600000
+              05 DET-HABER PIC Z.ZZZ.ZZZ.ZZ9,99.                        01610000
+           03 LM-TOTAL.                                                 01620000
+              05 FILLER    PIC X(43)  VALUE SPACES.                     01630000
+              05 FILLER   PIC X(16)  VALUE '================'.          01640000
+              05 FILLER   PIC X(1)   VALUE SPACES.                      01650000
+              05 FILLER   PIC X(16)  VALUE '================'.          01660000
+                                                                        01670000
+           03 LM-DETTOTAL.                                              01680000
+              05 FILLER    PIC X(43)  VALUE SPACES.                     01690000
+              05 TOT-DEBE  PIC Z.ZZZ.ZZZ.ZZ9,99.                        01700000
+              05 FILLER    PIC X(1)   VALUE SPACES.                     01710000
+              05 TOT-HABER PIC Z.ZZZ.ZZZ.ZZ9,99.                        01720000
+      *                                                                 01730000
+           03  WS-FEHORA-SYS.                                           01740000
+               05  WS-FECHA-SYS.                                        01750000
+                   07 WS-ANO-SYS      PIC 9(4)  VALUE ZEROS.            01760000
+                   07 WS-MES-SYS      PIC 9(2)  VALUE ZEROS.            01770000
+                   07 WS-DIA-SYS      PIC 9(2)  VALUE ZEROS.            01780000
+               05  WS-RESTO-SYS       PIC 9(13) VALUE ZEROS.            01790000
+      *                                                                 01800000
+         01  RW06560.                                                   01810000
+           02  RW06560-KTABLA560.                                       01820000
+            03  RW06560-NTABLA         PIC XXX.                         01830000
+            03  RW06560-GSPACE17       PIC X(17).                       01840000
+            03  RW06560-CORGANISMO     PIC 9(2).                        01850000
+            03  RW06560-CMODAL5        PIC X(05).                       01860000
+            03  RW06560-NREGISTRO      PIC X VALUE '0'.                 01870000
+           02  RW06560-KMODALSAP       PIC X(04).                       01880000
+           02  RW06560-CENTIDAD        PIC X(2).                        01890000
+           02  RW06560-CENTIDADSAP     PIC X(04).                       01900000
+           02  RW06560-GENTIDADSAP     PIC X(50).                       01910000
+           02  RW06560-CEMPRESA        PIC X(2).                        01920000
+           02  RW06560-CCANAL          PIC X(02).                       01930000
+      *                                                                 01940000
+         COPY RR001057.                                                 01950000
+      *                                                                 01960000
+                                                                        01970000
+       01  FILLER                    PIC X(16) VALUE                    01980000
+              'FINAL DE WORKING'.                                       01990000
+                                                                        02000000
+                                                                        02010000
+      *--------------------------                                       02020000
+       PROCEDURE DIVISION.                                              02030000
+                                                                        02040000
+           PERFORM ABRIR.                                               02050000
+           PERFORM LEER.                                                02060000
+           PERFORM CABECERAS.                                           02070000
+           PERFORM PROCESO UNTIL SW-FIN = 'S'.                          02080000
+           PERFORM TOTALES.                                             02090000
+           PERFORM CERRAR.                                              02100000
+           GOBACK.                                                      02110000
+                                                                        02120000
+       F-PROCEDURE.                                                     02130000
+           EXIT.                                                        02140000
+      *--------------------------                                       02150000
+      *=====*                                                           02160000
+       ABRIR.                                                           02170000
+      *=====*                                                           02180000
+           DISPLAY '******************************************'.        02190000
+           DISPLAY '**  I N I C I O :  V C 3 7 0 0 0 1      **'.        02200000
+           DISPLAY '******************************************'.        02210000
+           OPEN INPUT  FICHA ENTRADA.                                   02220000
+           OPEN OUTPUT MEMO.                                            02230000
+                                                                        02240000
+           READ FICHA AT END                                            02250000
+               DISPLAY '******************************************'     02260000
+               DISPLAY '**  NO EXISTE  REGISTRO EN LA FICHA P37 **'     02270000
+               DISPLAY '******************************************'     02280000
+               MOVE 'ERROR NO EXISTE LA FICHA' TO MENSAJE               02290000
+               CALL 'CANCELA' USING MENSAJE.                            02300000
+                                                                        02310000
+           PERFORM OBTENER-TAB560.                                      02320000
+                                                                        02330000
+      *=========*                                                       02340000
+       CABECERAS.                                                       02350000
+      *=========*                                                       02360000
+SWPRUE     DISPLAY 'CABECERAS'.                                         02370000
+           MOVE FUNCTION CURRENT-DATE TO WS-FEHORA-SYS.                 02380000
+           MOVE SPACES TO REG-MEMO.                                     02390000
+                                                                        02400000
+           PERFORM BUSCAR-TAB560.                                       02410000
+                                                                        02420000
+           IF X2 > 25                                                   02430000
+             MOVE SPACES   TO LM-EMPRESA                                02440000
+           ELSE                                                         02450000
+             MOVE TB-GENTIDADSAP(X2) TO LM-EMPRESA                      02460000
+           END-IF.                                                      02470000
+                                                                        02480000
+           MOVE WS-DIA-SYS TO LM-DD-SIS.                                02490000
+           MOVE WS-MES-SYS TO LM-MM-SIS.                                02500000
+           MOVE WS-ANO-SYS TO LM-AA-SIS.                                02510000
+           MOVE LM-LINEA-1 TO REG-MEMO.                                 02520000
+           WRITE REG-MEMO.                                              02530000
+           MOVE MES(RC37000-MMPROCE) TO LM-MES.                         02540000
+           MOVE RC37000-AAPROCE      TO LM-ANNO.                        02550000
+           MOVE CONCEPT-T2-SAP(1:15) TO LM-TIPO.                        02560000
+           MOVE LM-LINEA-2 TO REG-MEMO.                                 02570000
+           WRITE REG-MEMO.                                              02580000
+           MOVE LM-LINEA-3 TO REG-MEMO.                                 02590000
+           WRITE REG-MEMO.                                              02600000
+           MOVE SPACES TO REG-MEMO.                                     02610000
+           WRITE REG-MEMO.                                              02620000
+           MOVE SPACES TO REG-MEMO.                                     02630000
+           WRITE REG-MEMO.                                              02640000
+           MOVE LM-LINEA-4 TO REG-MEMO.                                 02650000
+           WRITE REG-MEMO.                                              02660000
+           MOVE LM-LINEA-5 TO REG-MEMO.                                 02670000
+           WRITE REG-MEMO.                                              02680000
+                                                                        02690000
+      *======*                                                          02700000
+       LEER.                                                            02710000
+      *======*                                                          02720000
+SWPRUE     DISPLAY 'LEER'.                                              02730000
+           READ ENTRADA AT END MOVE 'S' TO SW-FIN.                      02740000
+           IF SW-FIN NOT = 'S'                                          02750000
+              ADD 1 TO CT-LEIDOS                                        02760000
+           END-IF.                                                      02770000
+                                                                        02780000
+      *=======*                                                         02790000
+       PROCESO.                                                         02800000
+      *=======*                                                         02810000
+SWPRUE     DISPLAY 'PROCESO'.                                           02820000
+           MOVE CTA-CTBLE-T2-SAP TO WS-CTA.                             02830000
+           MOVE SPACES TO LM-DETALLE.                                   02840000
+           MOVE CTA-CTBLE-T2-SAP TO DET-CTA.                            02850000
+           PERFORM DESCRIPCION.                                         02860000
+           PERFORM CUENTAS UNTIL CTA-CTBLE-T2-SAP NOT = WS-CTA          02870000
+                    OR SW-FIN = 'S'.                                    02880000
+           MOVE LM-DETALLE TO REG-MEMO.                                 02890000
+           WRITE REG-MEMO.                                              02900000
+           ADD 1 TO CT-GRABADOS.                                        02910000
+                                                                        02920000
+      *=======*                                                         02930000
+       CUENTAS.                                                         02940000
+      *=======*                                                         02950000
+SWPRUE     DISPLAY 'CUENTAS'.                                           02960000
+           IF  DEB-HAB-T2-SAP = 'D'                                     02970000
+               MOVE IMP-DOC-T2-SAP TO DET-DEBE                          02980000
+               ADD  IMP-DOC-T2-SAP TO TOTAL-DEBE-ENTI                   02990000
+           END-IF.                                                      03000000
+           IF  DEB-HAB-T2-SAP = 'H'                                     03010000
+               MOVE IMP-DOC-T2-SAP TO DET-HABER                         03020000
+               ADD  IMP-DOC-T2-SAP TO TOTAL-HABER-ENTI                  03030000
+           END-IF.                                                      03040000
+           PERFORM LEER.                                                03050000
+                                                                        03060000
+      *===========*                                                     03070000
+       DESCRIPCION.                                                     03080000
+      *===========*                                                     03090000
+SWPRUE     DISPLAY 'DESCRIPCION'                                        03100000
+                                                                        03110000
+           EVALUATE CTA-CTBLE-T2-SAP                                    03120000
+             WHEN 256000                                                03130000
+                  MOVE 'PTMOS. Y ANTIC. S/POLIZAS    ' TO DET-DES       03140000
+             WHEN 350000                                                03150000
+                  MOVE 'VENCIMIENTOS                 ' TO DET-DES       03160000
+             WHEN 410000                                                03170000
+                  MOVE 'ACREE/PRES SERV:REC COB PT/AP' TO DET-DES       03180000
+             WHEN 434100                                                03190000
+                  MOVE 'OT.DEU CON ASE:COBR ANTC RECI' TO DET-DES       03200000
+             WHEN 434120                                                03210000
+                  MOVE 'OT.DEU CON ASE:COBR REC SIN C' TO DET-DES       03220000
+             WHEN 434180                                                03230000
+                  MOVE 'OT.DEU CON ASE:OTRAS         ' TO DET-DES       03240000
+             WHEN 440070                                                03250000
+                  MOVE 'PREST PDTES APLI VENCIMIENTOS' TO DET-DES       03260000
+             WHEN 475164                                                03270000
+                  MOVE 'H.P. ACREE RET PREST:CAP MOBI' TO DET-DES       03280000
+             WHEN 552004                                                03290000
+                  MOVE 'CUP. VENCIDOS:ANTICIP S/POLIZ' TO DET-DES       03300000
+             WHEN 601000                                                03310000
+                  MOVE 'PRESTA PAGADAS, VTOS         ' TO DET-DES       03320000
+             WHEN 693500                                                03330000
+                  MOVE 'DOT PROV PREST PTE PAAGO     ' TO DET-DES       03340000
+             WHEN NUM-440077                                            03350000
+                  MOVE 'OT.DEU CON ASE:OTRAS         ' TO DET-DES       03360000
+             END-EVALUATE.                                              03370000
+      *======*                                                          03380000
+       TOTALES.                                                         03390000
+      *======*                                                          03400000
+            MOVE SPACES           TO REG-MEMO.                          03410000
+            MOVE LM-TOTAL         TO REG-MEMO.                          03420000
+            WRITE REG-MEMO.                                             03430000
+            MOVE SPACES           TO REG-MEMO.                          03440000
+            MOVE TOTAL-DEBE-ENTI  TO TOT-DEBE.                          03450000
+            MOVE TOTAL-HABER-ENTI TO TOT-HABER.                         03460000
+            MOVE LM-DETTOTAL      TO REG-MEMO.                          03470000
+            WRITE REG-MEMO.                                             03480000
+      *                                                                 03490000
+      *===============*                                                 03500000
+       OBTENER-TAB560.                                                  03510000
+      *===============*                                                 03520000
+      *                                                                 03530000
+      * SE OBTIENE LA TABLA 560 DE ENTIDADES                            03540000
+      *                                                                 03550000
+SWPRUE      DISPLAY 'SE OBTIENE LA TABLA 560 DE ENTIDADES'              03560000
+            MOVE ZEROS TO X2                                            03570000
+            INITIALIZE RR001057.                                        03580000
+            INITIALIZE RW06560.                                         03590000
+            MOVE '560'               TO RW06560-NTABLA.                 03600000
+            MOVE SPACES              TO RW06560-GSPACE17.               03610000
+            MOVE ZEROS               TO RW06560-CORGANISMO.             03620000
+            MOVE SPACES              TO RW06560-CMODAL5                 03630000
+            MOVE '0'                 TO RW06560-NREGISTRO.              03640000
+            MOVE RW06560             TO RR001057.                       03650000
+            MOVE 'S'                 TO RR001057-COPERACION.            03660000
+            MOVE '00'                TO RR001057-CRETORNO.              03670000
+                                                                        03680000
+            CALL LT-VR002057 USING RR001057                             03690000
+                                                                        03700000
+            PERFORM UNTIL RR001057-CRETORNO NOT = '00'                  03710000
+                                                                        03720000
+              MOVE RR001057 TO RW06560                                  03730000
+                                                                        03740000
+              ADD 1 TO X2                                               03750000
+                                                                        03760000
+              IF X2 > 25                                                03770000
+                 MOVE '99' TO RR001057-CRETORNO                         03780000
+              END-IF                                                    03790000
+                                                                        03800000
+              MOVE RW06560-CENTIDADSAP TO TB-CENTIDADSAP(X2)            03810000
+              MOVE RW06560-GENTIDADSAP TO TB-GENTIDADSAP(X2)            03820000
+                                                                        03830000
+SWPRUE      DISPLAY 'TB-CENTIDADSAP' TB-CENTIDADSAP(X2)                 03840000
+SWPRUE      DISPLAY 'TB-GENTIDADSAP' TB-GENTIDADSAP(X2)                 03850000
+              CALL LT-VR002057 USING RR001057                           03860000
+           END-PERFORM.                                                 03870000
+      *                                                                 03880000
+      *****************                                                 03890000
+       BUSCAR-TAB560.                                                   03900000
+      *****************                                                 03910000
+      *                                                                 03920000
+      *                                                                 03930000
+SWPRUE     DISPLAY 'SE BUSCA LA TABLA 560 DE ENTIDADES'                 03940000
+           PERFORM VARYING X2 FROM 1 BY 1 UNTIL X2 > 25                 03950000
+           OR TB-CENTIDADSAP(X2) = SOCIEDAD-T2-SAP                      03960000
+           OR TB-CENTIDADSAP(X2) = SPACES                               03970000
+           END-PERFORM.                                                 03980000
+SWPRUE     DISPLAY 'TB-GENTIDADSAP' TB-GENTIDADSAP(X2).                 03990000
+      *                                                                 04000000
+      *======*                                                          04010000
+       CERRAR.                                                          04020000
+      *======*                                                          04030000
+                                                                        04040000
+           CLOSE FICHA ENTRADA MEMO.                                    04050000
+                                                                        04060000
+           IF TOTAL-DEBE-ENTI NOT = TOTAL-HABER-ENTI                    04070000
+              MOVE 'ASIENTO DESCUADRADO' TO MENSAJE                     04080000
+              CALL 'CANCELA' USING MENSAJE                              04090000
+           END-IF.                                                      04100000
+                                                                        04110000
+           DISPLAY '   LEIDOS     : ' CT-LEIDOS.                        04120000
+           DISPLAY '   GRABADOS   : ' CT-GRABADOS.                      04130000
+           DISPLAY '   TOTAL DEBE : ' TOTAL-DEBE-ENTI.                  04140000
+           DISPLAY '   TOTAL HABER: ' TOTAL-HABER-ENTI.                 04150000
+                                                                        04160000
+           DISPLAY '******************************************'.        04170000
+           DISPLAY '**  F I N A L   :  V C 3 7 0 0 0 1      **'.        04180000
+           DISPLAY '******************************************'.        04190000
+                                                                        04200000
+           GOBACK.                                                      04210000
+                                                                        04220000
+      *                                                                 04230000

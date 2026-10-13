@@ -1,0 +1,95 @@
+      ******************************************************************
+      * AUTOR......: MINSAIT                                           *
+      * FECHA......: MAYO 2026                                         *
+      * DESCRIPCION: COPY PARA LA CONSULTA DE LA TABLA AUXILIAR DE     *
+      *              MIGRACION DE DATOS VENCIMIENTOS MANUALES          *
+      ******************************************************************
+
+              05 X372M011.
+
+                 07 X372M011-ENTRADA.
+                    09 X372M011-CIDIOMA                PIC X(02).
+                    09 X372M011-CUSERID                PIC X(08).
+                    09 X372M011-COPERACION             PIC X(01).
+      *-->             L - Lista
+      *                D - Detalle
+                    09 X372M011-CSELECCION             PIC X(02).
+                    09 X372M011-NREGENT                PIC 9(03).
+
+      *             Búsqueda
+
+                    09 X372M011-MIG0-B.
+                       11 X372M011-ANIO-B              PIC 9(04).
+                       11 X372M011-KEXPEDIENTE-B       PIC 9(10).
+                       11 X372M011-VEN-MIGR-B          PIC X(01).
+                       11 X372M011-USUARIO-PAGO-B      PIC X(08).
+                       11 X372M011-FCAPTURA-B          PIC X(08).
+                       11 X372M011-CUSUARIO-CAPT-B     PIC X(08).
+                       11 X372M011-FORMAPAGO-B         PIC X(01).
+                       11 X372M011-NUM-CHEQUE-B        PIC 9(10).
+                       11 X372M011-NUM-CUENTA-B        PIC X(20).
+                       11 X372M011-REF-REINVERSION-B   PIC X(15).
+                       11 X372M011-CUSU-PAGO-COMP1-B   PIC X(08).
+                       11 X372M011-FCAPTURA-COMP1-B    PIC X(08).
+                       11 X372M011-CUSU-CAPT-COMP1-B   PIC X(08).
+                       11 X372M011-FORMAPAGO-COMP1-B   PIC X(01).
+                       11 X372M011-NCHEQUE-COMP1-B     PIC 9(10).
+                       11 X372M011-NCUENTA-COMP1-B     PIC X(20).
+                       11 X372M011-CUSU-PAGO-COMP2-B   PIC X(08).
+                       11 X372M011-FCAPTURA-COMP2-B    PIC X(08).
+                       11 X372M011-CUSU-CAPT-COMP2-B   PIC X(08).
+                       11 X372M011-FORMAPAGO-COMP2-B   PIC X(01).
+                       11 X372M011-NCHEQUE-COMP2-B     PIC 9(10).
+                       11 X372M011-NCUENTA-COMP2-B     PIC X(20).
+                       11 X372M011-GRADO-DISCAP-B      PIC X(01).
+                       11 X372M011-PREST-VIVIENDA-B    PIC X(01).
+                       11 X372M011-SITU-FAMILIAR-B     PIC X(20).
+                       11 X372M011-NIF-CONYUGUE-B      PIC X(10).
+                       11 X372M011-ICOMPENSATORIA-B    PIC 9(7)V9(2).
+                       11 X372M011-IMPALIMENHIJOS-B    PIC 9(7)V9(2).
+
+                 07 X372M011-SALIDA.
+                    09 X372M011-CRETORNO               PIC X(02).
+                    09 X372M011-CERRORSQL              PIC S9(05).
+                    09 X372M011-GERROR                 PIC X(100).
+                    09 X372M011-GNOMPROG               PIC X(8).
+                    09 X372M011-NREGSAL                PIC 9(03).
+                    09 X372M011-SSIGUIENTE             PIC X(01).
+
+      *             Clave Siguiente
+
+                    09 X372M011-MIG0-S.
+                       11 X372M011-ANIO-S              PIC 9(04).
+                       11 X372M011-KEXPEDIENTE-S       PIC 9(10).
+
+                    09 X372M011-TABLA-MIG0.
+                       11 X372M011-MIG0-T            OCCURS 50.
+                          13 X372M011-ANIO-T              PIC 9(04).
+                          13 X372M011-KEXPEDIENTE-T       PIC 9(10).
+                          13 X372M011-VEN-MIGR-T          PIC X(01).
+                          13 X372M011-USUARIO-PAGO-T      PIC X(08).
+                          13 X372M011-FCAPTURA-T          PIC X(08).
+                          13 X372M011-CUSUARIO-CAPT-T     PIC X(08).
+                          13 X372M011-FORMAPAGO-T         PIC X(01).
+                          13 X372M011-NUM-CHEQUE-T        PIC 9(10).
+                          13 X372M011-NUM-CUENTA-T        PIC X(20).
+                          13 X372M011-REF-REINVERSION-T   PIC X(15).
+                          13 X372M011-CUSU-PAGO-COMP1-T   PIC X(08).
+                          13 X372M011-FCAPTURA-COMP1-T    PIC X(08).
+                          13 X372M011-CUSU-CAPT-COMP1-T   PIC X(08).
+                          13 X372M011-FORMAPAGO-COMP1-T   PIC X(01).
+                          13 X372M011-NCHEQUE-COMP1-T     PIC 9(10).
+                          13 X372M011-NCUENTA-COMP1-T     PIC X(20).
+                          13 X372M011-CUSU-PAGO-COMP2-T   PIC X(08).
+                          13 X372M011-FCAPTURA-COMP2-T    PIC X(08).
+                          13 X372M011-CUSU-CAPT-COMP2-T   PIC X(08).
+                          13 X372M011-FORMAPAGO-COMP2-T   PIC X(01).
+                          13 X372M011-NCHEQUE-COMP2-T     PIC 9(10).
+                          13 X372M011-NCUENTA-COMP2-T     PIC X(20).
+                          13 X372M011-GRADO-DISCAP-T      PIC X(01).
+                          13 X372M011-PREST-VIVIENDA-T    PIC X(01).
+                          13 X372M011-SITU-FAMILIAR-T     PIC X(20).
+                          13 X372M011-NIF-CONYUGUE-T      PIC X(10).
+                          13 X372M011-ICOMPENSATORIA-T    PIC 9(7)V9(2).
+                          13 X372M011-IMPALIMENHIJOS-T    PIC 9(7)V9(2).
+

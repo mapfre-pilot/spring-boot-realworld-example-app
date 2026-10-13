@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<funcionalidades>
+
+	<!--Gestion Expedientes -->
+		<funcionalidad funcId="expedientes.gestion" value="10020"/>
+		<funcionalidad funcId="expedientes.alta" value="10021"/>
+		<funcionalidad funcId="expedientes.consulta" value="10022"/>
+		<funcionalidad funcId="expedientes.modificacion" value="10023"/>
+		<funcionalidad funcId="expedientes.busqueda" value="10024"/>
+		<funcionalidad funcId="expedientes.anulacion" value="10025"/>
+		<funcionalidad funcId="expedientes.simular" value="10026"/>
+		<funcionalidad funcId="expedientes.enviarfiscalidad" value="10027"/>
+
+	<!-- Gestión Variables del Sistema -->
+		<funcionalidad funcId="variables.gestiona" value="10028"/>
+		
+	<!-- Emision de Finiquitos -->
+		<funcionalidad funcId="emision.finiquitos" value="10029"/>
+		
+	<!-- BDGI -->
+		<funcionalidad funcId="bgdi.alta" value="10030"/>
+		
+	<!-- Reaseguro -->
+		<funcionalidad funcId="reaseguro.alta" value="10031"/>
+		
+	<!-- Informes -->
+		<funcionalidad funcId="informes.consulta" value="10032"/>
+
+	<!-- Cargar Fichero -->
+		<funcionalidad funcId="cargar.fichero" value="10033"/>
+		
+</funcionalidades>

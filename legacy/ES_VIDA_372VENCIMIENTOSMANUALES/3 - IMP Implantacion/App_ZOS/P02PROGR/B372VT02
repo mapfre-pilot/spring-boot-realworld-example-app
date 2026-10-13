@@ -1,0 +1,170 @@
+      *-----------------------                                                  
+       IDENTIFICATION DIVISION.                                                 
+      *------------------------                                                 
+
+       PROGRAM-ID. B372VT02.                                                    
+
+      ******************************************************************        
+      *  APLICACION   : VENCIMIENTOS MANUALES (FOXPRO)                 *        
+      *  ANALISTA     : EVERIS                                         *        
+      *  PROGRAMADOR  : EVERIS                                         *        
+      *  FECHA        :  JUNIO-2012                                    *        
+      *  TIPO PROGRAMA: COBOL-CICS                                     *        
+      *  DESCRIPCION  : SERVICIO GESTOR DE CONSULTA Y MANTENIMIENTO    *        
+      *                 DE VARIABLES DE SISTEMA VENCIMIENTOS FOXPRO    *        
+      ******************************************************************        
+      ******************************************************************        
+      *PARAMETROS DE ENTRADA:                                                   
+      ******************************************************************        
+      *   -X372VT02-ENTRADA-E: COPY DE ENTRADA DE DATOS                         
+      *                                                                         
+      ******************************************************************        
+      *PARAMETROS DE SALIDA:                                                    
+      ******************************************************************        
+      *   -X372VT02SALIDA-S : COPY DE SALIDA DE DATOS                           
+      ******************************************************************        
+
+      ******************************************************************        
+      *MODULOS UTILIZADOS:                                                      
+      ******************************************************************        
+      * B372N002 : MODULO DE NEGOCIO DE B362VT02                                
+      *                                                                         
+      ******************************************************************        
+
+      ******************************************************************        
+      * CODIGO DE ERRORES                                                       
+      ******************************************************************        
+      *                                                                         
+      * X372VT02-CRETORNO-S                                                     
+      *                                                                         
+      *                    '00' OPERACION CORRECTA                              
+      *                                                                         
+      *                    '99' ERROR AL DEVOLVER CONTROL                       
+      *                                                                         
+      ******************************************************************        
+
+      *--------------------                                                     
+       ENVIRONMENT DIVISION.                                                    
+      *---------------------                                                    
+
+       CONFIGURATION SECTION.                                                   
+        SPECIAL-NAMES.                                                          
+            DECIMAL-POINT IS COMMA.                                             
+
+       INPUT-OUTPUT SECTION.                                                    
+       FILE-CONTROL.                                                            
+
+      *-------------                                                            
+       DATA DIVISION.                                                           
+      *--------------                                                           
+
+       FILE SECTION.                                                            
+      *-------------                                                            
+
+      *************************                                                 
+       WORKING-STORAGE SECTION.                                                 
+      *************************                                                 
+      *                                                                         
+        01 VARIABLES.                                                   00960000
+           03 FILLER                PIC X(17) VALUE 'INICIO DE WORKING'.00960000
+           03 LT-B362N002           PIC X(08) VALUE 'B362N002'.                 
+           03 FILLER                PIC X(17) VALUE 'FINAL  DE WORKING'.00960000
+
+        01 WS-X362VT02.                                                         
+           COPY X362VT02.                                                       
+
+      *****************                                                         
+       LINKAGE SECTION.                                                         
+      *****************                                                         
+       01 DFHCOMMAREA.                                                  00012600
+           COPY R000X000.                                                       
+           03 COMMAREA.                                                         
+           COPY X372VT02.                                                       
+      *                                                                         
+      **************************************                                    
+       PROCEDURE DIVISION USING DFHCOMMAREA.                                    
+      **************************************                                    
+
+
+           PERFORM 1000-INICIO.                                                 
+
+           PERFORM 2000-PROCESO.                                                
+
+           PERFORM 9000-FIN.                                                    
+
+      ******************************************************************        
+      *1000-INICIO.                                                             
+      ******************************************************************        
+       1000-INICIO.                                                             
+
+           EXEC CICS                                                            
+                IGNORE CONDITION ERROR                                          
+           END-EXEC.                                                            
+
+           MOVE '00'       TO X372VT02-CRETORNO-S.                              
+           MOVE 'B362VT02' TO X372VT02-GNOMPROG-S.                              
+
+           PERFORM 1100-MOVER-DATOS-ENTRADA.                                    
+
+      ******************************************************************        
+      *1100-MOVER-DATOS-ENTRADA.                                                
+      ******************************************************************        
+       1100-MOVER-DATOS-ENTRADA.                                                
+
+           INITIALIZE WS-X362VT02                                               
+
+           MOVE X372VT02-DATOS-CABECERA TO X362VT02-DATOS-CABECERA              
+
+           MOVE X372VT02-ENTRADA        TO X362VT02-ENTRADA                     
+              .                                                                 
+      ******************************************************************        
+      *2000-PROCESO.                                                            
+      ******************************************************************        
+       2000-PROCESO.                                                            
+
+      *D*                                                                       
+      *    DISPLAY ' B372VT02-ENTRADA '                                         
+      *    DISPLAY ' X372VT02-OPERACION-E ' X362VT02-OPERACION-E                
+      *    DISPLAY ' X372VT02-TABLA-E  ' X362VT02-TABLA-E                       
+      *    DISPLAY ' X372VT02-ANIO-E  ' X362VT02-ANIO-E                         
+      *    DISPLAY ' X372VT02-EXPEDIENTE-E   ' X362VT02-EXPEDIENTE-E            
+      *F*                                                                       
+           CALL LT-B362N002     USING WS-X362VT02                               
+
+           PERFORM 2100-MOVER-DATOS-SALIDA                                      
+      *D*                                                                       
+           DISPLAY ' B372VT02-SALIDA '                                          
+      *    DISPLAY ' X372VT02-ANIO-E      '     X372VT02-ANIO-E                 
+      *    DISPLAY ' X372VT02-EXPEDIENTE-E '    X372VT02-EXPEDIENTE-E           
+      *    DISPLAY ' X372VT02-ANIO-S      '     X372VT02-ANIO-S                 
+      *    DISPLAY ' X372VT02-EXPEDIENTE-S '    X372VT02-EXPEDIENTE-S           
+           DISPLAY ' X372VT02-CRETORNO-S   '    X372VT02-CRETORNO-S             
+           DISPLAY ' X372VT02-GERROR-S       '  X372VT02-GERROR-S               
+           DISPLAY ' X372VT02-GNOMPROG-S     '  X372VT02-GNOMPROG-S             
+      *F*                                                                       
+           .                                                                    
+      ******************************************************************        
+      *2100-MOVER-DATOS-SALIDA.                                                 
+      ******************************************************************        
+       2100-MOVER-DATOS-SALIDA.                                                 
+
+           MOVE X362VT02-SALIDA        TO X372VT02-SALIDA                       
+               .                                                                
+      ******************************************************************        
+      *9000-FIN.                                                                
+      ******************************************************************        
+       9000-FIN.                                                                
+           EXEC CICS                                                    00048300
+                RETURN                                                  00048400
+           END-EXEC.                                                    00048500
+
+           IF EIBRESP NOT = DFHRESP(NORMAL)                                     
+
+
+              MOVE  'B372VT02'  TO  X372VT02-GNOMPROG-S                         
+              MOVE  '99'        TO  X372VT02-CRETORNO-S                         
+              MOVE  'ERROR AL DEVOLVER EL CONTROL'                              
+                                TO  X372VT02-GERROR-S                           
+
+           END-IF                                                               
+           .                                                                    

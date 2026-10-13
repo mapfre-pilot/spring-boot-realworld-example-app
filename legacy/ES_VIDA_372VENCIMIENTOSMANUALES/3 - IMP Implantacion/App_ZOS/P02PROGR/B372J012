@@ -1,0 +1,394 @@
+       IDENTIFICATION DIVISION.                                                 
+        PROGRAM-ID.                                                             
+      * -----------                                                             
+      *                                                                         
+                  B372J012.                                                     
+      *                                                                         
+
+      ***************************************************************           
+      *                                                             *           
+      *  APLICACION .: ENVIO ANULACION/MODIFICACION BDGI            *           
+      *                                                             *           
+      *  ANAL/PROG ..: EVERIS                                       *           
+      *                                                             *           
+      *  FECHA ......: 11/06/2012                                   *           
+      *                                                             *           
+      *  DESCRIPCION : CREACIÛN DE REGISTROS NEGATIVOS PARA BDGI   *            
+      ***************************************************************           
+      *---------------------  PARAMETROS  --------------------------*           
+      *  ENTRADA                                                    *           
+      *---------                                                    *           
+      *                                                             *           
+      * - FICHEROS:                                                 *           
+      *  . SYS001 : EXPEDIENTES QUE SE ENVIARAN A BDGI              *           
+      *  . SYS002 : REGISTRO DE BDGI YA MANDADOS TECNICOS           *           
+      *  . SYS003 : REGISTRO DE BDGI YA MANDADOS AUXLIAR            *           
+      *                                                             *           
+      *  SALIDA                                                     *           
+      *---------                                                    *           
+      *                                                             *           
+      * - FICHEROS                                                  *           
+      *  . SYS004 : REGISTROS DE SALIDA DE BDGI NEGATIVOS TECNICOS  *           
+      *  . SYS005 : REGISTROS DE SALIDA DE BDGI NEGATIVOS AUXLIARES *           
+      *                                                             *           
+      ***************************************************************           
+       ENVIRONMENT DIVISION.                                                    
+
+        CONFIGURATION SECTION.                                                  
+      *-----------------------                                                  
+         SPECIAL-NAMES.                                                         
+            DECIMAL-POINT IS COMMA.                                             
+
+        INPUT-OUTPUT SECTION.                                                   
+      *----------------------                                                   
+         FILE-CONTROL.                                                          
+           SELECT FENTRAD1   ASSIGN TO SYS001.                                  
+           SELECT FENTRAD2   ASSIGN TO SYS002.                                  
+           SELECT FENTRAD3   ASSIGN TO SYS003.                                  
+           SELECT FSALTEC    ASSIGN TO SYS004.                                  
+           SELECT FSALAUX    ASSIGN TO SYS005.                                  
+
+
+      ***************************************************************           
+       DATA DIVISION.                                                           
+
+        FILE SECTION.                                                           
+      *--------------                                                           
+      * FICHERO DE EXPEDIENTES PARA BDGI                                        
+       FD  FENTRAD1                                                             
+           RECORDING MODE F                                                     
+           LABEL RECORD STANDARD                                                
+           BLOCK 0 RECORDS.                                                     
+       01  REG-ENTRAD1        PIC X(733).                                       
+
+      * REGISTROS MANDADOS A BDGI TECNICOS                                      
+       FD  FENTRAD2                                                             
+           RECORDING MODE F                                                     
+           LABEL RECORD STANDARD                                                
+           BLOCK 0 RECORDS.                                                     
+       01  REG-ENTRAD2        PIC X(442).                                       
+
+
+      * REGISTROS MANDADOS A BDGI AUXLIAR                                       
+       FD  FENTRAD3                                                             
+           RECORDING MODE F                                                     
+           LABEL RECORD STANDARD                                                
+           BLOCK 0 RECORDS.                                                     
+       01  REG-ENTRAD3        PIC X(186).                                       
+
+
+      * REGISTROS NEGATICOS PARA BDGI TECNICO                                   
+       FD  FSALTEC                                                              
+           RECORDING MODE IS F                                                  
+           LABEL RECORD STANDARD                                                
+           BLOCK 0 RECORDS.                                                     
+       01  REG-SALTEC        PIC X(423).                                        
+
+      * REGISTROS NEGATICOS PARA BDGI AUXLIAR.                                  
+       FD  FSALAUX                                                              
+           RECORDING MODE IS F                                                  
+           LABEL RECORD STANDARD                                                
+           BLOCK 0 RECORDS.                                                     
+       01  REG-SALAUX        PIC X(168).                                        
+
+        WORKING-STORAGE SECTION.                                                
+      *-------------------------                                                
+      *                                                                         
+       01 SWTICH.                                                               
+          03 SW-FIN-TEC            PIC X    VALUE 'N'.                          
+               88  WS-FIN-TEC               VALUE 'S'.                          
+          03 SW-FIN-EXP            PIC X    VALUE 'N'.                          
+               88  WS-FIN-EXP               VALUE 'S'.                          
+               88  WS-NO-FIN-EXP            VALUE 'N'.                          
+          03 SW-FIN-AUX            PIC X    VALUE 'N'.                          
+               88  WS-FIN-AUX               VALUE 'S'.                          
+
+       01  WS-VARIABLES.                                                        
+          03 WS-ENT-VENCIMIENTO.                                                
+             05 WS-VEN-KSOLSUB.                                                 
+                07 WS-VEN-ANIO            PIC S9(4)V USAGE COMP-3.              
+                07 WS-VEN-KEXPEDIENTE     PIC S9(10)V USAGE COMP-3.             
+             05 WS-VEN-KRAMO           PIC X(3).                                
+             05 WS-VEN-ANIOPOL         PIC X(4).                                
+             05 WS-VEN-KPOLIZA         PIC X(10).                               
+             05 WS-VEN-NSUBPOLIZA      PIC S9(4)V USAGE COMP-3.                 
+             05 WS-VEN-KCERTIFICADO    PIC S9(6)V USAGE COMP-3.                 
+             05 WS-VEN-KMODALIDAD      PIC S9(5)V USAGE COMP-3.                 
+             05 WS-VEN-CCANALCAMP      PIC X(2).                                
+             05 WS-VEN-CENTIDAD        PIC X(4).                                
+             05 WS-VEN-FECEFECTO       PIC X(8).                                
+             05 WS-VEN-KDURACION       PIC S9(2)V USAGE COMP-3.                 
+             05 WS-VEN-FECEMISION      PIC X(8).                                
+             05 WS-VEN-CCARTERA        PIC X(3).                                
+             05 WS-VEN-SREASEGURO      PIC X(1).                                
+             05 WS-VEN-REGIONAL        PIC X(2).                                
+             05 WS-VEN-LUGARENVIO      PIC X(2).                                
+             05 WS-VEN-KOFICINA        PIC X(4).                                
+             05 WS-VEN-IPENDIENTE      PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-CTIPOPERS1      PIC X(1).                                
+             05 WS-VEN-SRESIDENTE1     PIC X(1).                                
+             05 WS-VEN-NIF1            PIC X(10).                               
+             05 WS-VEN-KPERSONA1       PIC S9(9)V USAGE COMP-3.                 
+             05 WS-VEN-IMPCAPITAL      PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPBENEFICIOS   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECPAGOCAPITAL  PIC X(8).                                
+             05 WS-VEN-IMPANTICIPO     PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPINTEPEND     PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECVENCIMICAP   PIC X(8).                                
+             05 WS-VEN-TIPIMPUESTCAP   PIC X(2).                                
+             05 WS-VEN-IMPRTOINTEGRCAP PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPREDPRICAP    PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPREDTRANCAP   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPCOMPENSATORIA PIC S9(11)V9(2) USAGE COMP-3.           
+             05 WS-VEN-IMPRTONETOCAP   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-PORRETCAP       PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-IMPRETCAP       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPLIQCAP       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECIMPRECAP     PIC X(8).                                
+             05 WS-VEN-FECPAGRET       PIC X(8).                                
+             05 WS-VEN-IMPCOMP1        PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECPAGCOMP1     PIC X(8).                                
+             05 WS-VEN-FECEMICOMP1     PIC X(8).                                
+             05 WS-VEN-TIPIMPUESTCOMP1 PIC X(2).                                
+             05 WS-VEN-IMPRTOINTCOMP1  PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPREDPRICOMP1  PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IREDTRANCOMP1   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IRTONETCOMP1    PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-PORRETCOMP1     PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-IRETCOMP1       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-ILIQCOMP1       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECIMPRECOMP1   PIC X(8).                                
+             05 WS-VEN-FECPAGRETCOM1   PIC X(8).                                
+             05 WS-VEN-IMPCOMP2        PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECPAGCOMP2     PIC X(8).                                
+             05 WS-VEN-FECEMICOMP2     PIC X(8).                                
+             05 WS-VEN-TIPIMPUESTCOMP2 PIC X(2).                                
+             05 WS-VEN-IMPRTOINTCOMP2  PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPREDPRICOMP2  PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IREDTRANCOMP2   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IRTONETCOMP2    PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-PORRETCOMP2     PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-IRETCOMP2       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-ILIQCOMP2       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECIMPRECOMP2   PIC X(8).                                
+             05 WS-VEN-FECPAGRETCOM2   PIC X(8).                                
+             05 WS-VEN-CODCOA1         PIC X(7).                                
+             05 WS-VEN-PORCOA1         PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-CODCOA2         PIC X(7).                                
+             05 WS-VEN-PORCOA2         PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-CODCOA3         PIC X(7).                                
+             05 WS-VEN-PORCOA3         PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-CODCOA4         PIC X(7).                                
+             05 WS-VEN-PORCOA4         PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-CODCOA5         PIC X(7).                                
+             05 WS-VEN-PORCOA5         PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-CODCOA6         PIC X(7).                                
+             05 WS-VEN-PORCOA6         PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-PAGOTOT         PIC X(1).                                
+             05 WS-VEN-CUSUARIO        PIC X(8).                                
+             05 WS-VEN-SBDGICAP        PIC X(1).                                
+             05 WS-VEN-FECBDGICAP      PIC X(8).                                
+             05 WS-VEN-SBDGICOMP1      PIC X(1).                                
+             05 WS-VEN-FECBDGICOMP1    PIC X(8).                                
+             05 WS-VEN-SBDGICOMP2      PIC X(1).                                
+             05 WS-VEN-FECBDGICOMP2    PIC X(8).                                
+             05 WS-VEN-GOBSERVACION    PIC X(255).                              
+
+          03 WS-BDGI-TECNICO.                                                   
+             COPY X362X101.                                                     
+             COPY X362X102.                                                     
+             COPY X362X103.                                                     
+             07 WS-KSOLSUB-TEC.                                                 
+                09 WS-ANIO-TEC            PIC S9(4)V USAGE COMP-3.              
+                09 WS-KEXPEDIENTE-TEC     PIC S9(10)V USAGE COMP-3.             
+
+          03 WS-BDGI-AUXILIAR.                                                  
+             COPY X362X105.                                                     
+             07 WS-KSOLSUB-AUX.                                                 
+                09 WS-ANIO-AUX            PIC S9(4)V USAGE COMP-3.              
+                09 WS-KEXPEDIENTE-AUX     PIC S9(10)V USAGE COMP-3.             
+
+      **                                                                        
+      **  FECHA DEL SISTEMA                                                     
+      **                                                                        
+          03 WS-FECHA-SIS.                                                      
+             05 WS-FECHA.                                                       
+                07 WS-ANO                   PIC 9(04).                          
+                07 WS-MES                   PIC 9(02).                          
+                07 WS-DIA                   PIC 9(02).                          
+             05 WS-TIEMPO.                                                      
+                07 WS-HORA                  PIC 9(02).                          
+                07 WS-MINUTOS               PIC 9(02).                          
+                07 WS-SEGUNDOS              PIC 9(02).                          
+                07 WS-CENTESIMAS            PIC 9(02).                          
+             05 FILLER                      PIC 9(05).                          
+
+      *                                                                         
+      *                                                                         
+      *****************************************************************         
+      ***       P R O C E D U R E    D I V I S I O N                ***         
+      *****************************************************************         
+
+       PROCEDURE DIVISION.                                                      
+
+      ***                                                                       
+       PRINCIPAL.                                                               
+      ***                                                                       
+           PERFORM INICIO.                                                      
+           PERFORM PROCESO-TECNICO UNTIL SW-FIN-TEC          =  'S'             
+                                   OR    SW-FIN-EXP          =  'S'.            
+           PERFORM P-PROCESO-AUXILIAR.                                          
+           PERFORM PROCESO-AUXILIAR UNTIL SW-FIN-AUX          =  'S'            
+                                    OR    SW-FIN-EXP          =  'S'.           
+           PERFORM TERMINO.                                                     
+
+      ***                                                                       
+       INICIO.                                                                  
+      ***                                                                       
+           INITIALIZE WS-VARIABLES                                              
+           MOVE FUNCTION CURRENT-DATE TO WS-FECHA-SIS.                          
+
+           OPEN INPUT  FENTRAD1 FENTRAD2 FENTRAD3.                              
+           OPEN OUTPUT FSALTEC FSALAUX.                                         
+
+           PERFORM LEER-EXPEDIENTE.                                             
+           PERFORM LEER-BDGI-TECNICO.                                           
+           PERFORM LEER-BDGI-AUXILIAR.                                          
+
+      *                                                                         
+      ***                                                                       
+       PROCESO-TECNICO.                                                         
+      ***                                                                       
+
+           IF WS-VEN-KSOLSUB EQUAL WS-KSOLSUB-TEC                               
+
+              PERFORM GENERAR-FICHERO-TECNICO                                   
+              PERFORM LEER-BDGI-TECNICO                                         
+           ELSE                                                                 
+              IF WS-VEN-KSOLSUB < WS-KSOLSUB-TEC                                
+                 PERFORM LEER-EXPEDIENTE                                        
+              ELSE                                                              
+                 PERFORM LEER-BDGI-TECNICO                                      
+              END-IF                                                            
+           END-IF.                                                              
+
+      ***                                                                       
+       P-PROCESO-AUXILIAR.                                                      
+      ***                                                                       
+           CLOSE FENTRAD1.                                                      
+           OPEN INPUT  FENTRAD1.                                                
+           SET WS-NO-FIN-EXP TO TRUE.                                           
+           PERFORM LEER-EXPEDIENTE.                                             
+           PERFORM LEER-BDGI-AUXILIAR.                                          
+
+      ***                                                                       
+       PROCESO-AUXILIAR.                                                        
+      ***                                                                       
+
+           IF WS-VEN-KSOLSUB EQUAL WS-KSOLSUB-AUX                               
+
+              PERFORM GENERAR-FICHERO-AUXLIAR                                   
+              PERFORM LEER-BDGI-AUXILIAR                                        
+           ELSE                                                                 
+              IF WS-VEN-KSOLSUB < WS-KSOLSUB-AUX                                
+                 PERFORM LEER-EXPEDIENTE                                        
+              ELSE                                                              
+                 PERFORM LEER-BDGI-AUXILIAR                                     
+              END-IF                                                            
+           END-IF.                                                              
+
+
+      ***                                                                       
+       LEER-EXPEDIENTE.                                                         
+      ***                                                                       
+           INITIALIZE WS-ENT-VENCIMIENTO.                                       
+
+           READ FENTRAD1 INTO WS-ENT-VENCIMIENTO                                
+                AT END SET WS-FIN-EXP TO TRUE.                                  
+
+      ***                                                                       
+       LEER-BDGI-TECNICO.                                                       
+      ***                                                                       
+           INITIALIZE WS-BDGI-TECNICO                                           
+
+             READ FENTRAD2 INTO WS-BDGI-TECNICO                                 
+                  AT END SET WS-FIN-TEC TO TRUE.                                
+
+      ***                                                                       
+       LEER-BDGI-AUXILIAR.                                                      
+      ***                                                                       
+           INITIALIZE WS-BDGI-AUXILIAR                                          
+
+             READ FENTRAD3 INTO WS-BDGI-AUXILIAR                                
+                  AT END SET WS-FIN-AUX TO TRUE.                                
+
+      ***                                                                       
+       GENERAR-FICHERO-TECNICO.                                                 
+      ***                                                                       
+
+      * SI EL ANIO NO CORRESPONDE AL ACTUAL MODIFICAMOS EL MES PARA QUE         
+      * SEA EL ULTIMO DEL AÒO QUE SE GENERO.                                    
+
+           IF X362X101-DATECO-AEJERCICIO < WS-ANO                               
+              MOVE 12              TO  X362X101-DATECO-MEJERCICIO               
+           END-IF                                                               
+
+           COMPUTE X362X103-IRPF-IBRTPREST-IINDE =                              
+                    X362X103-IRPF-IBRTPREST-IINDE * (-1)                        
+
+           COMPUTE X362X103-IRPF-PRIMAS-PAGADAS =                               
+                    X362X103-IRPF-PRIMAS-PAGADAS  * (-1)                        
+
+           COMPUTE X362X103-IRPF-PRIM-IMPUTADAS =                               
+                    X362X103-IRPF-PRIM-IMPUTADAS  * (-1)                        
+
+           COMPUTE X362X103-IRPF-REND-INTEGRO   =                               
+                    X362X103-IRPF-REND-INTEGRO    * (-1)                        
+
+           COMPUTE X362X103-IRPF-IRREDUCCION-1  =                               
+                    X362X103-IRPF-IRREDUCCION-1  * (-1)                         
+
+           COMPUTE X362X103-IRPF-IRREDUCCION-2  =                               
+                    X362X103-IRPF-IRREDUCCION-2  * (-1)                         
+
+           COMPUTE X362X103-IRPF-IRREDUCCION-3  =                               
+                    X362X103-IRPF-IRREDUCCION-3  * (-1)                         
+
+           COMPUTE X362X103-IRPF-IRREDUCCION-4  =                               
+                    X362X103-IRPF-IRREDUCCION-4  * (-1)                         
+
+           COMPUTE X362X103-IRPF-IRREDUCCION-5  =                               
+                    X362X103-IRPF-IRREDUCCION-5  * (-1)                         
+
+           COMPUTE X362X103-IRPF-BASE-RETENCION =                               
+                    X362X103-IRPF-BASE-RETENCION * (-1)                         
+
+           COMPUTE X362X103-IRPF-IRETENCION     =                               
+                    X362X103-IRPF-IRETENCION     * (-1)                         
+
+           WRITE REG-SALTEC FROM WS-BDGI-TECNICO .                              
+
+      ***                                                                       
+       GENERAR-FICHERO-AUXLIAR.                                                 
+      ***                                                                       
+
+           COMPUTE X362X105-M190-REDUCCION       =                              
+                    X362X105-M190-REDUCCION       * (-1)                        
+
+           COMPUTE X362X105-M190-PENS-CONYU     =                               
+                    X362X105-M190-PENS-CONYU      * (-1)                        
+
+           COMPUTE X362X105-M190-ANU-ALIMENT    =                               
+                    X362X105-M190-ANU-ALIMENT     * (-1)                        
+
+
+           WRITE REG-SALAUX FROM WS-BDGI-AUXILIAR.                              
+
+      ***                                                                       
+       TERMINO.                                                                 
+      ***                                                                       
+
+           CLOSE FENTRAD1 FENTRAD2 FENTRAD3 FSALTEC FSALAUX.                    
+
+
+           GOBACK.                                                              

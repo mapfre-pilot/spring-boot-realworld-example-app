@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
+<web-app id="WebApp">
+	<display-name>WSS372VENCIMIENTOSMANUALES</display-name>
+	
+	<!-- FILTRO DE PAGINACION -->
+	<filter>
+		<filter-name>TableTagFilter</filter-name>
+		<display-name>TableTagFilter</display-name>
+		<filter-class>mapfre.wss000arquitect.jsp.etiquetas.table.filter.TableTagFilter</filter-class>
+	</filter>
+	<!-- FILTRO DE ACCESO -->
+	<filter>
+		<filter-name>J000J000FiltroAcceso</filter-name>
+		<display-name>J000J000FiltroAcceso</display-name>
+		<filter-class>mapfre.wss000arquitect.controlacceso.J000J000FiltroAcceso</filter-class>
+	</filter>
+	<!-- FILTRO SERVICIOS LOCALES  -->
+	<filter>
+		<filter-name>J000J000FiltroConfigWeb</filter-name>
+		<display-name>J000J000FiltroConfigWeb</display-name>
+		<filter-class>mapfre.wss000arquitect.config.J000J000FiltroConfigWeb</filter-class>
+	</filter>	
+	<!-- FILTRO DE PAGINACION -->
+	<filter-mapping>
+		<filter-name>TableTagFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	<!-- FILTRO DE ACCESO -->
+	<filter-mapping>
+		<filter-name>J000J000FiltroAcceso</filter-name>
+		<url-pattern>*.jsp</url-pattern>
+	</filter-mapping>
+	<!-- 
+	<filter-mapping>
+		<filter-name>J000J000FiltroAcceso</filter-name>
+		<servlet-name>action</servlet-name>
+	</filter-mapping>
+	 -->
+	<filter-mapping>
+		<filter-name>J000J000FiltroAcceso</filter-name>
+		<servlet-name>MapfreActionServlet</servlet-name>
+	</filter-mapping>
+	<!-- FILTRO SERVICIOS LOCALES  -->
+	<filter-mapping>
+		<filter-name>J000J000FiltroConfigWeb</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	
+	
+	<!-- STRUTS -->
+	<servlet>
+		<!--
+		<servlet-name>action</servlet-name>
+		<servlet-class>org.apache.struts.action.ActionServlet</servlet-class>
+		-->
+		<servlet-name>MapfreActionServlet</servlet-name>
+		<servlet-class>com.mapfre.mavisa.wss372vencimientosmanuales.actions.MapfreActionServlet</servlet-class>
+		<init-param>
+			<param-name>config</param-name>
+			<param-value>/WEB-INF/struts-config.xml</param-value>
+		</init-param>
+		<init-param>
+			<param-name>debug</param-name>
+			<param-value>2</param-value>
+		</init-param>
+		<init-param>
+			<param-name>detail</param-name>
+			<param-value>2</param-value>
+		</init-param>
+		<init-param>
+			<param-name>validate</param-name>
+			<param-value>true</param-value>
+		</init-param>
+		<init-param>
+			<param-name>application</param-name>
+			<param-value>net.mapfre.rescate.resources.ApplicationResources</param-value>
+		</init-param>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+	<!-- SERVLET DE STRUTS -->
+	<servlet>
+		<servlet-name>PrintServlet</servlet-name>
+		<display-name>PrintServlet</display-name>
+		<servlet-class>mapfre.wss000arquitect.impresion.servlet.PrintServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>J000J000CargaFicheroPropiedades</servlet-name>
+		<display-name>J000J000CargaFicheroPropiedades</display-name>
+		<servlet-class>mapfre.wss000arquitect.controlacceso.J000J000CargaFicheroPropiedades</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<!-- 
+	<servlet-mapping>
+		<servlet-name>action</servlet-name>
+		<url-pattern>*.do</url-pattern>
+	</servlet-mapping>
+	-->
+	<servlet-mapping>
+		<servlet-name>MapfreActionServlet</servlet-name>
+		<url-pattern>*.do</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>PrintServlet</servlet-name>
+		<url-pattern>/print/*</url-pattern>
+	</servlet-mapping>
+	
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+		<welcome-file>index.htm</welcome-file>
+		<welcome-file>index.jsp</welcome-file>
+		<welcome-file>default.html</welcome-file>
+		<welcome-file>default.htm</welcome-file>
+		<welcome-file>default.jsp</welcome-file>
+	</welcome-file-list>
+	<taglib>
+		<taglib-uri>/WEB-INF/maptags.tld</taglib-uri>
+		<taglib-location>/WEB-INF/maptags.tld</taglib-location>
+	</taglib>	
+	<taglib>
+		<taglib-uri>/WEB-INF/struts-bean.tld</taglib-uri>
+		<taglib-location>/WEB-INF/struts-bean.tld</taglib-location>
+	</taglib>
+	<taglib>
+		<taglib-uri>/WEB-INF/struts-html.tld</taglib-uri>
+		<taglib-location>/WEB-INF/struts-html.tld</taglib-location>
+	</taglib>
+	<taglib>
+		<taglib-uri>/WEB-INF/struts-logic.tld</taglib-uri>
+		<taglib-location>/WEB-INF/struts-logic.tld</taglib-location>
+	</taglib>
+	<taglib>
+		<taglib-uri>/WEB-INF/struts-template.tld</taglib-uri>
+		<taglib-location>/WEB-INF/struts-template.tld</taglib-location>
+	</taglib>
+	<taglib>
+		<taglib-uri>/WEB-INF/struts-nested.tld</taglib-uri>
+		<taglib-location>/WEB-INF/struts-nested.tld</taglib-location>
+	</taglib>
+	<taglib>
+		<taglib-uri>/WEB-INF/struts-tiles.tld</taglib-uri>
+		<taglib-location>/WEB-INF/struts-tiles.tld</taglib-location>
+	</taglib>
+</web-app>

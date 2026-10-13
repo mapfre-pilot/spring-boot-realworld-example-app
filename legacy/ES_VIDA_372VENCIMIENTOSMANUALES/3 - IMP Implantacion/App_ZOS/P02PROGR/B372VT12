@@ -1,0 +1,194 @@
+      *RETRIEVAL.                                                               
+      *-----------------------                                                  
+       IDENTIFICATION DIVISION.                                                 
+      *------------------------                                                 
+      *                                                                         
+       PROGRAM-ID. B372VT12.                                                    
+      *                                                                         
+      ******************************************************************        
+      *  APLICACION   : RESCATE MANUALES                               *        
+      *  ANALISTA     : EVERIS                                         *        
+      *  PROGRAMADOR  : EVERIS                                         *        
+      *  FECHA        : 07/06/2017                                     *        
+      *  TIPO PROGRAMA: COBOL-CICS                                     *        
+      *  DESCRIPCION  : OBTENCION CUADRO COASEGURO DE LA POLIZA        *        
+      *                                                                *        
+      ******************************************************************        
+      *PARAMETROS DE ENTRADA:                                                   
+      ******************************************************************        
+      *   -X372VT12-ENTRADA: COPY DE ENTRADA DE DATOS                           
+      *                                                                         
+      ******************************************************************        
+      *PARAMETROS DE SALIDA:                                                    
+      ******************************************************************        
+      *   -X372VT12-SALIDA : COPY DE SALIDA DE DATOS                            
+      ******************************************************************        
+      *                                                                         
+      ******************************************************************        
+      * CODIGO DE ERRORES                                                       
+      ******************************************************************        
+      *                                                                *        
+      * X372VT12-CRETORNO-S                                            *        
+      *                                                                *        
+      *        '00' OPERACION CORRECTA                                 *        
+      *                                                                *        
+      *        '01' ERROR EN LOS COASEGUROS                            *        
+      *                                                                *        
+      *        '02' POLIZA NO ENCONTRADA                               *        
+      *                                                                *        
+      *        '05' ERROR AL OBTENER CUADRO COASEGURADORA              *        
+      *                                                                *        
+      *        '10' NO EXISTE COASEGURADORAS PARA LA POLIZA            *        
+      *                                                                *        
+      *        '98' ERROR EN LLAMADA DEL MODULO DE IDMS                *        
+      *                                                                *        
+      *        '99' ERROR AL DEVOLVER CONTRO                           *        
+      *                                                                *        
+      ******************************************************************        
+      ******************************************************************        
+      *                                                                *        
+      * MODIFICACION:                                                  *        
+      * PROGRAMADOR :                                                  *        
+      * FECHA       :                                                  *        
+      * DESCRIPCION :                                                  *        
+      *                                                                *        
+      *                                                                *        
+      ******************************************************************        
+      *                                                                         
+      *--------------------                                                     
+       ENVIRONMENT DIVISION.                                                    
+      *---------------------                                                    
+
+       CONFIGURATION SECTION.                                                   
+        SPECIAL-NAMES.                                                          
+            DECIMAL-POINT IS COMMA.                                             
+
+       INPUT-OUTPUT SECTION.                                                    
+       FILE-CONTROL.                                                            
+
+      *-------------                                                            
+       DATA DIVISION.                                                           
+      *--------------                                                           
+
+       FILE SECTION.                                                            
+      *-------------                                                            
+
+      *************************                                                 
+       WORKING-STORAGE SECTION.                                                 
+      *************************                                                 
+      *                                                                         
+        01 VARIABLES.                                                   00960000
+      *                                                                         
+           03 ECICS            PIC S9(8) USAGE IS BINARY.                       
+           03 LT-ERRORES.                                                       
+      *         RETORNO OK                                                      
+                07 LT-OK         PIC X(02)  VALUE '00'.                         
+           03 LT-B372V012        PIC X(08)  VALUE 'B372V012'.                   
+      *                                                                         
+      * COPYS COBOL.                                                            
+      *****************                                                         
+       LINKAGE SECTION.                                                         
+      *****************                                                         
+       01 DFHCOMMAREA.                                                          
+           COPY R000X000.                                                       
+           03 COMMAREA.                                                         
+               COPY X372VT12.                                                   
+      *                                                                         
+      **************************************                                    
+       PROCEDURE DIVISION USING DFHCOMMAREA.                                    
+      **************************************                                    
+      *                                                                         
+           PERFORM 1000-INICIO.                                                 
+      *                                                                         
+           PERFORM 2000-PROCESO.                                                
+      *                                                                         
+           PERFORM 9000-FIN.                                                    
+      *                                                                         
+      ******************************************************************        
+      * 1000-INICIO.                                                            
+      ******************************************************************        
+       1000-INICIO.                                                             
+      *                                                                         
+           EXEC CICS                                                            
+                IGNORE CONDITION ERROR                                          
+           END-EXEC.                                                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'AGUS-B372VT12'                                              
+DSPLYS*    DISPLAY '1000-INICIO'                                                
+      *F*                                                                       
+      *                                                                         
+           MOVE '00'                   TO X372VT12-CRETORNO-S                   
+           MOVE 'B372VT12'             TO X372VT12-GNOMPROG-S                   
+      *D*                                                                       
+DSPLYS*    DISPLAY 'X372VT12-CRETORNO-S: ' X372VT12-CRETORNO-S                  
+DSPLYS*    DISPLAY 'X372VT12-GNOMPROG-S: ' X372VT12-GNOMPROG-S                  
+      *F*                                                                       
+           .                                                                    
+      *                                                                         
+      ******************************************************************        
+      * 2000-PROCESO.                                                           
+      ******************************************************************        
+       2000-PROCESO.                                                            
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY '2000-PROCESO-B372VT12'                                      
+      *F*                                                                       
+      *                                                                         
+           MOVE 'C1'                   TO    X372VT12-OPERACION-E               
+
+      *D*                                                                       
+      *    DISPLAY 'X372VT12-OPERACION-E: '  X372VT12-OPERACION-E               
+      *F*                                                                       
+      *                                                                         
+           EXEC CICS                                                            
+                LINK PROGRAM (LT-B372V012)                                      
+                COMMAREA     (DFHCOMMAREA)                                      
+                LENGTH       (LENGTH OF DFHCOMMAREA)                            
+                RESP         (ECICS)                                            
+           END-EXEC                                                             
+      *D*                                                                       
+      *    DISPLAY 'X372VT12-CRETORNO-S: '   X372VT12-CRETORNO-S                
+      *F*                                                                       
+      *                                                                         
+           .                                                                    
+      *                                                                         
+      ******************************************************************        
+      * 9000-FIN.                                                               
+      ******************************************************************        
+       9000-FIN.                                                                
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372VT12: 9000-FINAL.'.                                     
+DSPLYS*    DISPLAY 'X372VT12-CRETORNO-S: '   X372VT12-CRETORNO-S                
+DSPLYS*    DISPLAY 'X372VT12-GERROR-S: '     X372VT12-GERROR-S                  
+DSPLYS*    DISPLAY 'X372VT12-GNOMPROG-S: '   X372VT12-GNOMPROG-S                
+DSPLYS*    DISPLAY '******************************************'                 
+DSPLYS*    DISPLAY 'X372VT12-COASEGUROS-OCCURS-S: '                             
+DSPLYS*             X372VT12-COASEGUROS-OCCURS-S                                
+DSPLYS*    DISPLAY 'X372VT12-CODCOA-S(1): '  X372VT12-CODCOA-S(1)               
+DSPLYS*    DISPLAY 'X372VT12-PORCOA-S(1): '  X372VT12-PORCOA-S(1)               
+DSPLYS*    DISPLAY 'X372VT12-CODCOA-S(2): '  X372VT12-CODCOA-S(2)               
+DSPLYS*    DISPLAY 'X372VT12-PORCOA-S(2): '  X372VT12-PORCOA-S(2)               
+DSPLYS*    DISPLAY 'X372VT12-CODCOA-S(3): '  X372VT12-CODCOA-S(3)               
+DSPLYS*    DISPLAY 'X372VT12-PORCOA-S(3): '  X372VT12-PORCOA-S(3)               
+DSPLYS*    DISPLAY 'X372VT12-CODCOA-S(4): '  X372VT12-CODCOA-S(4)               
+DSPLYS*    DISPLAY 'X372VT12-PORCOA-S(4): '  X372VT12-PORCOA-S(4)               
+DSPLYS*    DISPLAY 'X372VT12-CODCOA-S(5): '  X372VT12-CODCOA-S(5)               
+DSPLYS*    DISPLAY 'X372VT12-PORCOA-S(5): '  X372VT12-PORCOA-S(5)               
+DSPLYS*    DISPLAY 'X372VT12-CODCOA-S(6): '  X372VT12-CODCOA-S(6)               
+DSPLYS*    DISPLAY 'X372VT12-PORCOA-S(6): '  X372VT12-PORCOA-S(6)               
+      *F*                                                                       
+      *                                                                         
+           EXEC CICS                                                    00048300
+                RETURN                                                  00048400
+           END-EXEC.                                                    00048500
+           IF EIBRESP NOT = DFHRESP(NORMAL)                                     
+
+
+              MOVE  'B372VT12'  TO  X372VT12-GNOMPROG-S                         
+              MOVE  '99'        TO  X372VT12-CRETORNO-S                         
+              MOVE  'ERROR AL DEVOLVER CONTROL'                                 
+                                TO  X372VT12-GERROR-S                           
+
+           END-IF.                                                              
+      *                                                                         

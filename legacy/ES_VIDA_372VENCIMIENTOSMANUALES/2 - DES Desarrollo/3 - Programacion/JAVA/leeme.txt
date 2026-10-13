@@ -1,0 +1,9 @@
+Se incluirá en esta carpeta una copia del proyecto de DESARROLLO de la versión de
+los fuentes JAVA que se desee instalar, tras versionar en el proyecto de DESARROLLO.
+
+Una vez copiados aquí los fuentes, se versionará este proyecto y etiquetará.
+
+La solicitud de instalación debe hacerse basada en esta versión generada de ESTOS fuentes.
+
+ESTE PROYECTO NO ES DE DESARROLLO.
+SOLO DEBEN ESTAR AQUÍ LAS COPIAS DE LOS FUENTES DE VERSIONES INSTALABLES.

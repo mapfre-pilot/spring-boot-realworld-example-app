@@ -1,0 +1,382 @@
+       IDENTIFICATION DIVISION.                                                 
+      *                                                                         
+        PROGRAM-ID.                                                             
+                   B372J006.                                                    
+      ******************************************************************        
+      * EVERIS                                                         *        
+      * APLICACION ...: RESCATES Y VENCIMIENTOS                        *        
+      * DATE-WRITTEN..:  JUNIO 2012                                    *        
+      ******************************************************************        
+      *                                                                *        
+      *   BREVE DESCRIPCION DEL PROGRAMA :MODULO QUE PERMITE LA CARGA  *        
+      *   DE FICHEROS PARA PERMITIR SU ALTA O ACTULIZACION             *        
+      *   DE EXPEDIENTES                                               *        
+      *                                                                *        
+      *   PROGRAMA LANZADOR DE PRUEBAS :B372VT05                       *        
+      *                                                                *        
+      *   RECIBE COMO ENTRADA: FICHERO DE ENTRADA                      *        
+      *                                                                *        
+      ******************************************************************        
+      * PARÁMETROS:                                                    *        
+      *                                                                *        
+      *   - SYS001: FICHERO DE ENTRADA 1.                              *        
+      *             FICHERO DE CARGA DE DATOS DE COMPLEMENTARIO        *        
+      *                                                                *        
+      *   - SYS002: FICHERO DE SALIDA 1.                               *        
+      *             FICHERO DE ERROR                                   *        
+      *                                                                *        
+      *   - SYS003: FICHERO DE SALIDA 2.                               *        
+      *             FICHERO DE INFORME SALIDA                          *        
+      ******************************************************************        
+      * MODIFICACION:                                                  *        
+      * --------------                                                 *        
+      * AUTOR: EVERIS                                                  *        
+      * FECHA: 22/11/2013                                              *        
+      * DESCRIPCION: SE INCLUYE POR SYSIN EL PORCENTAJE DE RETENCION   *        
+      *              DEL BONO                                          *        
+      *                                                                *        
+      * BUSCAR: INC1                                                   *        
+      ******************************************************************        
+       ENVIRONMENT DIVISION.                                                    
+      *====================>                                                    
+        CONFIGURATION SECTION.                                                  
+         SPECIAL-NAMES. DECIMAL-POINT IS COMMA.                                 
+      *                                                                         
+       INPUT-OUTPUT SECTION.                                                    
+         FILE-CONTROL.                                                          
+      *                                                                         
+             SELECT FICH-ENT        ASSIGN TO SYS001                            
+             ORGANIZATION IS SEQUENTIAL                                         
+             ACCESS MODE  IS SEQUENTIAL.                                        
+      *                                                                         
+             SELECT FICH-ERR        ASSIGN TO SYS002                            
+             ORGANIZATION IS SEQUENTIAL                                         
+             ACCESS MODE  IS SEQUENTIAL.                                        
+      *                                                                         
+             SELECT FICH-SAL        ASSIGN TO SYS003                            
+             ORGANIZATION IS SEQUENTIAL                                         
+             ACCESS MODE  IS SEQUENTIAL.                                        
+      *                                                                         
+
+      *                                                                         
+       DATA DIVISION.                                                           
+      *=============>                                                           
+        FILE SECTION.                                                           
+      *->                                                                       
+        FD   FICH-ENT                                                           
+             LABEL RECORD STANDARD                                              
+             RECORDING MODE IS F                                                
+             BLOCK CONTAINS 0 RECORDS.                                          
+        01   RTO-FICH-ENT        PIC X(032).                                    
+      *->                                                                       
+        FD   FICH-ERR                                                           
+             RECORDING MODE  F                                                  
+             LABEL RECORDS  ARE STANDARD.                                       
+        01   RTO-FICH-ERR        PIC X(101).                                    
+      *->                                                                       
+        FD   FICH-SAL                                                           
+             RECORDING MODE  F                                                  
+             LABEL RECORDS  ARE STANDARD.                                       
+        01   RTO-FICH-SAL        PIC X(350).                                    
+
+      *->                                                                       
+       WORKING-STORAGE SECTION.                                                 
+      *->                                                                       
+       01  SW-VARS-WORKING.                                                     
+          03 FILLER              PIC X(17)  VALUE                               
+               'INICIO DE WORKING'.                                             
+      *->                                                                       
+      *-> SWITCHS                                                               
+      *->                                                                       
+          03 SWITCHES.                                                          
+             05 SW-FIN-PROCESO       PIC X(01)  VALUE 'N'.                      
+                88 FIN-PROCESO                  VALUE 'S'.                      
+                88 NO-FIN-PROCESO               VALUE 'N'.                      
+
+             05 SW-ESCRITURA         PIC XX     VALUE '00'.                     
+                88 NO-ESCRITURA                 VALUE '00'.                     
+                88 SI-ESCRITURA                 VALUE '01'.                     
+
+             05 SW-ERROR-GRAVE       PIC X(01)  VALUE 'N'.                      
+                88 ERROR-GRAVE                  VALUE 'S'.                      
+                88 NO-ERROR                     VALUE 'N'.                      
+
+             05 SW-FICH-ENT          PIC 9(1)   VALUE 0.                        
+                88 SW-FIN-FICH-ENT              VALUE 1.                        
+                88 SW-INI-FICH-ENT              VALUE 0.                        
+
+      *->                                                                       
+      *-> FECHA ACTUAL                                                          
+      *->                                                                       
+          03 WS-FECHA-ACTUAL.                                                   
+             05 WS-FECHA.                                                       
+                07 WS-ANO                   PIC 9(04).                          
+                07 WS-MES                   PIC 9(02).                          
+                07 WS-DIA                   PIC 9(02).                          
+             05 WS-TIEMPO.                                                      
+                07 WS-HORA                  PIC 9(02).                          
+                07 WS-MINUTOS               PIC 9(02).                          
+                07 WS-SEGUNDOS              PIC 9(02).                          
+                07 WS-CENTESIMAS            PIC 9(02).                          
+
+          03 WS-POLIZA-AUX.                                                     
+             05 FILLER                   PIC 9(03) VALUE ZEROS.                 
+             05 WS-POLI-AUX              PIC X(07).                             
+      *->                                                                       
+      *-> INDICES                                                               
+      *->                                                                       
+          03 X-INDICES.                                                         
+             05 CT-LEIDOS            PIC 9(03) VALUE ZEROES.                    
+             05 CT-MODIF             PIC 9(03) VALUE ZEROES.                    
+             05 CT-ERRORES           PIC 9(03) VALUE ZEROES.                    
+      *->                                                                       
+      *-> VARIABLES.                                                            
+      *->                                                                       
+      *->                                                                       
+      *-> LLAMADAS                                                              
+      *->                                                                       
+
+       01 WS-MODULOS.                                                           
+          03 B372N007              PIC X(08) VALUE 'B372N007'.                  
+
+
+       01 WS-COPYS.                                                             
+
+      *** ESTRUCTURA DEL FICHERO DE ERRORES                                     
+          03 WS-REG-ERR.                                                        
+             05  WS-POLIZA         PIC X(10).                                   
+             05  WS-SUBPOLIZA      PIC 9(04).                                   
+             05  WS-CERTIFICADO    PIC X(05).                                   
+             05  WS-RAMO           PIC X(03).                                   
+             05  WS-CRETORNO       PIC X(02).                                   
+             05  WS-GNOMPROG       PIC X(08).                                   
+             05  WS-GERROR         PIC X(70).                                   
+
+
+      *** ESTRUCTURA DEL FICHERO DE ERRORES                                     
+          03 WS-SALIDA.                                                         
+             05 WS-POLIZA-S         PIC X(10).                                  
+             05 WS-ANIO-S           PIC 9(04).                                  
+             05 WS-KEXPEDIENTE-S    PIC 9(10).                                  
+             05 WS-FECVENCIMICAP-S  PIC X(08).                                  
+             05 WS-IMPORTE-S        PIC 9(11)V9(2).                             
+             05 WS-TIPOIMPORTE-S    PIC X(01).                                  
+
+INC1  *** VARIABLE DE SYSIN.                                                    
+INC1      03 WS-SYSIN.                                                          
+INC1         05 WS-PRETENCION       PIC 9(2)V9(2).                              
+
+
+
+      *** ESTRUCTURA DEL FICHERO DE SALIDA DE ALTAS                             
+          03 WS-REG-MODIF.                                                      
+             05  WS-FECHA-ESC      PIC X(08).                                   
+             05  FILLER            PIC X(13) VALUE 'EXPEDT LEIDOS'.             
+             05  WS-LEIDOS         PIC 9(03).                                   
+             05  FILLER            PIC X(18) VALUE 'EXPEDT MODIFICADOS'.        
+             05  WS-MODIF          PIC 9(03).                                   
+             05  FILLER            PIC X(17) VALUE 'EXPEDT DE ERRORES'.         
+             05  WS-ERRORES        PIC 9(03).                                   
+
+      * COPYS DE MODULOS                                                        
+          03 WS-X372N007.                                                       
+             COPY X372N007.                                                     
+      *                                                                         
+       01  LT-FIN-WORKING.                                                      
+          03 FILLER                 PIC X(16)  VALUE                            
+             'FINAL DE WORKING'.                                                
+
+
+       PROCEDURE DIVISION.                                                      
+      *==================>                                                      
+      *                                                                         
+       PRINCIPAL  SECTION.                                                      
+      *====================                                                     
+      *                                                                         
+           PERFORM 1000-INICIO                                                  
+
+           PERFORM 2000-PROCESO                                                 
+
+           PERFORM 5000-FINAL                                                   
+      *                                                                         
+           CONTINUE.                                                            
+
+       F-PRINCIPAL.                                                             
+
+           GOBACK.                                                              
+
+      ******************************************************************        
+       1000-INICIO.                                                             
+      ******************************************************************        
+
+
+           PERFORM 1100-ABRIR-FICHEROS.                                         
+           PERFORM 1200-INICIAR-VARIABLES.                                      
+
+      ******************************************************************        
+      * 1100-ABRIR-FICHEROS.                                           *        
+      ******************************************************************        
+
+      * ABRIMOS LOS FICHEROS TANTO EL DE ENTRADA COMO EL DE SALIDA              
+       1100-ABRIR-FICHEROS.                                                     
+
+           OPEN INPUT   FICH-ENT                                                
+           SET SW-INI-FICH-ENT TO TRUE                                          
+           SET NO-ERROR        TO TRUE                                          
+           SET SI-ESCRITURA    TO TRUE                                          
+
+           OPEN OUTPUT  FICH-ERR, FICH-SAL.                                     
+
+      ******************************************************************        
+      * 1200-INICIAR-VARIABLES.                                        *        
+      ******************************************************************        
+
+      * INICIALIZAOMS LAS VARIABLES                                             
+       1200-INICIAR-VARIABLES.                                                  
+
+           INITIALIZE WS-COPYS                                                  
+               REPLACING ALPHANUMERIC DATA BY SPACES                            
+                              NUMERIC DATA BY ZEROS.                            
+
+           MOVE FUNCTION CURRENT-DATE TO WS-FECHA-ACTUAL.                       
+
+INC1       ACCEPT WS-PRETENCION FROM SYSIN.                                     
+
+
+      ******************************************************************        
+       2000-PROCESO.                                                            
+      ******************************************************************        
+
+      * INICIALIZAMOS EL PROCESO CON LA LECTURA DEL FICHERO                     
+           PERFORM 2001-LEER-REGISTRO                                           
+
+           PERFORM UNTIL SW-FIN-FICH-ENT                                        
+              PERFORM 2100-LLAMAR-A-MODULO                                      
+              PERFORM 2001-LEER-REGISTRO                                        
+           END-PERFORM                                                          
+
+           PERFORM 3000-ESCRIBIR-MODIF                                          
+
+            .                                                                   
+
+      ******************************************************************        
+       2001-LEER-REGISTRO.                                                      
+      ******************************************************************        
+
+      * LECTURA DEL FICHERO AÑADIENDO UNO AL CONTADOR DE LECTURA                
+           READ FICH-ENT INTO WS-X372N007                                       
+             AT END                                                             
+                SET SW-FIN-FICH-ENT TO TRUE                                     
+             NOT AT END                                                         
+                ADD 1 TO CT-LEIDOS                                              
+      *D*                                                                       
+      *    DISPLAY ' REGISTRO '                                                 
+      *    DISPLAY ' ********************************* '                        
+      *    DISPLAY '  X372N007-POLIZA       '  X372N007-POLIZA                  
+      *    DISPLAY '  X372N007-MODALIDAD    '  X372N007-MODALIDAD               
+      *    DISPLAY '  X372N007-FVENCIMIENTO '  X372N007-FVENCIMIENTO            
+      *    DISPLAY '  X372N007-BONO         '  X372N007-BONO                    
+      *F*                                                                       
+           END-READ                                                             
+              .                                                                 
+
+      ******************************************************************        
+       2100-LLAMAR-A-MODULO.                                                    
+      ******************************************************************        
+
+INC1       MOVE WS-PRETENCION TO X372N007-PRETENCION                            
+
+      * LLAMADA AL MODULO PARA SU ALTA, AÑADIENDO UNO AL CONTADOR DE            
+      * ALTA O ERROR EN FUNCION DE SU RETORNO                                   
+           CALL B372N007 USING WS-X372N007                                      
+      *D*                                                                       
+      *    DISPLAY ' RETORNO B372NN07 ' X372N007-CRETORNO-S                     
+      *F*                                                                       
+           EVALUATE X372N007-CRETORNO-S                                         
+
+              WHEN '00'                                                         
+              WHEN '08'                                                         
+                 SET SI-ESCRITURA TO TRUE                                       
+
+                 ADD 1 TO CT-MODIF                                              
+
+                 INITIALIZE WS-SALIDA                                           
+
+                 INITIALIZE WS-POLIZA-AUX                                       
+                 MOVE X372N007-POLIZA-S(4:7)   TO WS-POLI-AUX                   
+                 MOVE WS-POLIZA-AUX            TO WS-POLIZA-S                   
+                 MOVE X372N007-ANIO-S          TO WS-ANIO-S                     
+                 MOVE X372N007-KEXPEDIENTE-S   TO WS-KEXPEDIENTE-S              
+                 MOVE X372N007-FECVENCIMICAP-S TO WS-FECVENCIMICAP-S            
+                 MOVE X372N007-IMPORTE-S       TO WS-IMPORTE-S                  
+                 MOVE X372N007-TIPOIMPORTE-S   TO WS-TIPOIMPORTE-S              
+
+                 PERFORM 4000-ESCRIBIR-INFORME                                  
+              WHEN OTHER                                                        
+
+                 INITIALIZE WS-REG-ERR                                          
+
+                 MOVE ZEROS                 TO WS-RAMO                          
+                 MOVE X372N007-POLIZA-S      TO WS-POLIZA                       
+                 MOVE '0000'                 TO WS-SUBPOLIZA                    
+                 MOVE ZEROS                  TO WS-CERTIFICADO                  
+                 MOVE X372N007-CRETORNO-S    TO WS-CRETORNO                     
+                 MOVE X372N007-GERROR-S      TO WS-GERROR                       
+                 MOVE X372N007-GNOMPROG-S    TO WS-GNOMPROG                     
+
+                 PERFORM 2500-ESCRIBIR-ERROR                                    
+
+                 ADD 1 TO CT-ERRORES                                            
+
+           END-EVALUATE                                                         
+
+
+           CONTINUE.                                                            
+
+      ******************************************************************        
+       2500-ESCRIBIR-ERROR.                                                     
+      ******************************************************************        
+
+      * ESCRITURA SI EL ALTA DEL EXPEDIENTE HA SALIDO ERRONEA                   
+           WRITE RTO-FICH-ERR FROM WS-REG-ERR.                                  
+
+      ******************************************************************        
+       3000-ESCRIBIR-MODIF.                                                     
+      ******************************************************************        
+
+      * ESCRITURA FINAL DEL FICHERO CON EL RESUMEN DE LOS CONTADORES            
+           INITIALIZE WS-REG-MODIF                                              
+
+           MOVE WS-FECHA      TO WS-FECHA-ESC                                   
+           MOVE CT-LEIDOS     TO WS-LEIDOS                                      
+           MOVE CT-MODIF      TO WS-MODIF                                       
+           MOVE CT-ERRORES    TO WS-ERRORES                                     
+
+           WRITE RTO-FICH-ERR FROM WS-REG-MODIF.                                
+
+      ******************************************************************        
+       4000-ESCRIBIR-INFORME.                                                   
+      ******************************************************************        
+
+      *    INITIALIZE FECHA-AUX                                                 
+      *    MOVE X372N007-FECVENCIMICAP-S(1:4) TO ANIO-AUX                       
+      *    MOVE X372N007-FECVENCIMICAP-S(5:2) TO MES-AUX                        
+      *    MOVE X372N007-FECVENCIMICAP-S(7:2) TO DIA-AUX                        
+      *                                                                         
+      *    INITIALIZE LIN-DETALLE                                               
+      *                                                                         
+      *    PERFORM 4100-ESCRIBIR-LINEA                                          
+
+
+      * ESCRITURA SI EL ALTA DEL EXPEDIENTE HA SALIDO ERRONEA  NEA              
+           WRITE RTO-FICH-SAL FROM WS-SALIDA.                                   
+
+
+      ******************************************************************        
+       5000-FINAL.                                                              
+      ******************************************************************        
+
+      * CIERRE DE LOS FICHEROS UTILIZADOS                                       
+           CLOSE FICH-ENT                                                       
+           CLOSE FICH-ERR                                                       
+           CLOSE FICH-SAL.                                                      

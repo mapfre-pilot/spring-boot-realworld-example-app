@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<servicios>
+	<servicio nombre_web="B372VT08BusquedaAdicExpVen">
+		<!-- inicio parametros entrada   -->
+		<parametro nombre_web="ANIO-E" 	                tipo="9" dir="E" ocurr="1" longitud="4"/>
+		<parametro nombre_web="KEXPEDIENTE-E"           tipo="9" dir="E" ocurr="1" longitud="10"/>
+		<parametro nombre_web="OPERACION-E"           	tipo="X" dir="E" ocurr="1" longitud="1"/>
+		<parametro nombre_web="ANT-KEXPEDIENTE-E"       tipo="9" dir="E" ocurr="1" longitud="10"/>
+		<parametro nombre_web="ANT-ANIO-E"              tipo="9" dir="E" ocurr="1" longitud="4"/>
+		<!-- inicio parametros salida   -->
+		<parametro nombre_web="SSIGUIENTE" 	        	tipo="X" dir="S" ocurr="1" longitud="1"/>
+		<parametro nombre_web="KEXPEDIENTE-ANT-S"	    tipo="9" dir="S" ocurr="1" longitud="10"/>
+		<parametro nombre_web="ANIO-ANT-S"	            tipo="9" dir="S" ocurr="1" longitud="4"/>
+		<parametro nombre_web="NREGSAL"	        		tipo="9" dir="S" ocurr="1" longitud="3"/> 
+		<parametro nombre_web="REGISTROS-OCC-S" 	    dir="S"  ocurr="20">    
+			<parametro nombre_web="ANIO-S"  			tipo="9" dir="S" ocurr="1" longitud="4"/>    
+            <parametro nombre_web="KEXPEDIENTE-S"  		tipo="9" dir="S" ocurr="1" longitud="10"/>  
+            <parametro nombre_web="VEN-MIGR-S"  		tipo="X" dir="S" ocurr="1" longitud="1"/>     
+            <parametro nombre_web="USUARIO-PAGO-S"  	tipo="X" dir="S" ocurr="1" longitud="8"/>       
+            <parametro nombre_web="FCAPTURA-S"  		tipo="X" dir="S" ocurr="1" longitud="8"/>
+            <parametro nombre_web="CUSUARIO-CAPT-S"  	tipo="X" dir="S" ocurr="1" longitud="8"/>                
+            <parametro nombre_web="FORMAPAGO-S"  		tipo="X" dir="S" ocurr="1" longitud="1"/>    
+            <parametro nombre_web="NUM-CHEQUE-S"  		tipo="9" dir="S" ocurr="1" longitud="10"/>     
+            <parametro nombre_web="NUM-CUENTA-S"  		tipo="X" dir="S" ocurr="1" longitud="20"/>     
+            <parametro nombre_web="REF-REINVERSION-S"  	tipo="X" dir="S" ocurr="1" longitud="15"/>
+            <parametro nombre_web="CUSU-PAGO-COMP1-S"  	tipo="X" dir="S" ocurr="1" longitud="8"/> 			
+			<parametro nombre_web="FCAPTURA-COMP1-S"  	tipo="X" dir="S" ocurr="1" longitud="8"/>
+            <parametro nombre_web="CUSU-CAPT-COMP1-S"  	tipo="X" dir="S" ocurr="1" longitud="8"/>              
+            <parametro nombre_web="FORMAPAGO-COMP1-S"  	tipo="X" dir="S" ocurr="1" longitud="1"/>                    
+            <parametro nombre_web="NCHEQUE-COMP1-S"  	tipo="9" dir="S" ocurr="1" longitud="10"/>  
+            <parametro nombre_web="NCUENTA-COMP1-S"  	tipo="X" dir="S" ocurr="1" longitud="20"/>  
+			<parametro nombre_web="CUSU-PAGO-COMP2-S"  	tipo="X" dir="S" ocurr="1" longitud="8"/> 			
+			<parametro nombre_web="FCAPTURA-COMP2-S"  	tipo="X" dir="S" ocurr="1" longitud="8"/>
+            <parametro nombre_web="CUSU-CAPT-COMP2-S"  	tipo="X" dir="S" ocurr="1" longitud="8"/>              
+            <parametro nombre_web="FORMAPAGO-COMP2-S"  	tipo="X" dir="S" ocurr="1" longitud="1"/>                    
+            <parametro nombre_web="NCHEQUE-COMP2-S"  	tipo="9" dir="S" ocurr="1" longitud="10"/>  
+            <parametro nombre_web="NCUENTA-COMP2-S"  	tipo="X" dir="S" ocurr="1" longitud="20"/>
+            <parametro nombre_web="GRADO-DISCAP-S"  	tipo="X" dir="S" ocurr="1" longitud="1"/>             
+            <parametro nombre_web="PREST-VIVIENDA-S"  	tipo="X" dir="S" ocurr="1" longitud="1"/>          
+            <parametro nombre_web="SITU-FAMILIAR-S"  	tipo="X" dir="S" ocurr="1" longitud="20"/>        
+            <parametro nombre_web="NIF-CONYUGUE-S"  	tipo="X" dir="S" ocurr="1" longitud="10"/>            
+            <parametro nombre_web="ICOMPENSATORIA-S"  	tipo="9" dir="S" ocurr="1" longitud="9"  decimales="2"/>             
+            <parametro nombre_web="IMPALIMENHIJOS-S"  	tipo="9" dir="S" ocurr="1" longitud="9"  decimales="2"/> 			
+		</parametro>
+ 		<parametro nombre_web="CRETORNO-S"	            tipo="X" dir="S" ocurr="1" longitud="2"/>	        
+		<parametro nombre_web="GERROR-S"	            tipo="X" dir="S" ocurr="1" longitud="100"/>	
+		<parametro nombre_web="GNOMPROG-S"	            tipo="X" dir="S" ocurr="1" longitud="8"/>	        
+	</servicio>
+</servicios>

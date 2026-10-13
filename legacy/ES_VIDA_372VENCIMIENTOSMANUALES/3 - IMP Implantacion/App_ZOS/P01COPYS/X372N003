@@ -1,0 +1,38 @@
+      ******************************************************************00010000
+      *                                                                *00020000
+      * COPY:              X372N003                                    *00030005
+      * APLICACION:        VENCIMIENTOS FOXPRO                         *00040000
+      * DESCRIPCION:       COPY DE CARGA DE FICHERO DE VENCIMIENTOS    *00050000
+      * FECHA DE CREACION:  JUNIO 2012                                 *00060008
+      * AUTOR :            EVERIS                                      *00070000
+      *                                                                *00080000
+      ******************************************************************00090000
+       05 X372N003.                                                     00100005
+          07 X372N003-ENTRADA.                                          00101005
+            10 X372N003-RAMO             PIC X(3).                      00110005
+            10 X372N003-POLIZA           PIC X(7).                      00120009
+            10 X372N003-ANIOPOLIZA       PIC X(2).                      00130009
+            10 X372N003-MODALIDAD        PIC X(3).                      00140009
+            10 X372N003-REGIONAL         PIC X(2).                      00150005
+            10 X372N003-OFICINA          PIC X(4).                      00160005
+            10 X372N003-FECEFECTO        PIC X(8).                      00180005
+            10 X372N003-DURACION         PIC 9(2).                      00190005
+            10 X372N003-NOMBRE-BEN       PIC X(12).                     00200005
+            10 X372N003-APELLIDOS-BEN    PIC X(32).                     00210005
+            10 X372N003-FNACIMIENTO      PIC X(8).                      00220005
+            10 X372N003-DNI              PIC X(10).                     00230005
+            10 X372N003-DOMICILIO        PIC X(34).                     00240005
+            10 X372N003-LOCALIDAD        PIC X(18).                     00250005
+            10 X372N003-CODPOSTAL        PIC X(5).                      00260005
+            10 X372N003-BENEFICIARIO     PIC X(44).                     00270005
+            10 X372N003-CAPITAL          PIC X(9).                      00280009
+            10 X372N003-BENEFICIOS       PIC X(9).                      00290009
+            10 X372N003-ANTICIPO         PIC X(9).                      00300009
+            10 X372N003-INTERESES-PEND   PIC X(9).                      00310009
+            10 X372N003-COMPLEMENTARIO1  PIC X(9).                      00320009
+            10 X372N003-COMPLEMENTARIO2  PIC X(9).                      00330009
+                                                                        00331002
+          07 X372N003-SALIDA.                                           00340005
+             10 X372N003-CRETORNO-S      PIC X(2).                      00380005
+             10 X372N003-GERROR-S        PIC X(70).                     00381005
+             10 X372N003-GNOMPROG-S      PIC X(8).                      00390005

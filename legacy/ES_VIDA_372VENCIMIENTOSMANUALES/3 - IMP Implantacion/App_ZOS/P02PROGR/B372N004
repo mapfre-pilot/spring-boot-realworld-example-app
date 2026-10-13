@@ -1,0 +1,810 @@
+      ******************************************************************        
+      **INV: A372VENM                                                           
+      ******************************************************************        
+       IDENTIFICATION DIVISION.                                                 
+       PROGRAM-ID. B372N004.                                                    
+      ******************************************************************        
+      *                                                                *        
+      * APLICACION....:VENCIMIENTOS MANUALES (FOXPRO)                  *        
+      * ANALISTA......:EVERIS                                          *        
+      * PROGRAMADOR...:EVERIS                                          *        
+      * FECHA DE REALIZACION:  JUNIO 2012                              *        
+      *                                                                *        
+      * DESCRIPCIÓN DEL PROGRAMA:                                      *        
+      *                                                                *        
+      * ---------------------------------------------------------------*        
+      * |            CONSULTA TABLA EXPEDIENTES DE VENCIMIENTOS       |*        
+      * ---------------------------------------------------------------*        
+      ******************************************************************        
+      *PARAMETROS DE ENTRADA:                                          *        
+      ******************************************************************        
+      *   -X372N004-ENTRADA-E: COPY DE ENTRADA DE DATOS                         
+      *                                                                         
+      *   -X372N004-OPERACION:                                                  
+      *                                                                         
+      *    'LI' : LISTADO. NO SE INFORMA NINGUN PARAMETRO DE ENTRADA            
+      *    'LA' : LISTADO POR AÑO                                               
+      *    'LE' : LISTADO POR EXPEDIENTE                                        
+      *    'LP' : LISTADO POR POLIZA                                            
+      *    'LN' : LISTADO POR NIF                                               
+      *    'CI' : CONSULTA INDIVIDUAL POR AÑO Y EXPEDIENTE                      
+      *                                                                         
+      *                                                                         
+      ******************************************************************        
+      *PARAMETROS DE SALIDA:                                                    
+      ******************************************************************        
+      *                                                                         
+      ******************************************************************        
+      *MODULOS UTILIZADOS:                                                      
+      ******************************************************************        
+      *                                                                         
+      * B372M004 : MODULO MANTENIMIENTO TABLA DE VENCIMIENTO                    
+      *                                                                         
+      ******************************************************************        
+      * CODIGO DE ERRORES                                                       
+      ******************************************************************        
+      *                                                                         
+      * X372VT04-CRETORNO-S                                                     
+      *                    '00' OPERACION CORRECTA                              
+      *                                                                         
+      *                    '01' ERROR MODO NO INFORMADO                         
+      *                                                                         
+      *                    '02' ERROR AÑO NO INFORMADO                          
+      *                                                                         
+      *                    '03' ERROR EXPEDIENTE NO INFORMADO                   
+      *                                                                         
+      *                    '04' ERROR POLIZA NO INFORMADO                       
+      *                                                                         
+      *                    '05' ERROR NIF NO INFORMADO                          
+      *                                                                         
+      *                    '06' ERROR EN ACCESO A BASE DE DATOS                 
+      *                                                                         
+      ******************************************************************        
+      * MODIFICACION: MU-2015-041869                   <541869>        *        
+      * PROGRAMADOR : INDRA                                            *        
+      * FECHA       : OCTUBRE 2015                                     *        
+      * DESCRIPCION : INCLUIR CAMPO AÑO FISCAL EN LA CONSULTA          *        
+      ******************************************************************        
+      *                                                                *        
+      * PETICION    : MU-2016-006664       BUSCAR <<606664>            *        
+      * AUTOR       : INDRA                                            *        
+      * FECHA       : MARZO 2016                                       *        
+      * DESCRIPCION : SE GUARDA EN BBDD EL IMPORTE DE CADA COASEGURO   *        
+      *                                                                *        
+      ******************************************************************        
+      *                                                                *        
+      * PETICION    : MU-2016-006673       BUSCAR <<606673>            *        
+      * AUTOR       : INDRA                                            *        
+      * FECHA       : MARZO 2016                                       *        
+      * DESCRIPCION : SE GUARDA EN BBDD EL KDOMICILIO DE LOS           *        
+      *               BENEFICIARIOS                                    *        
+      *                                                                *        
+      ******************************************************************        
+      ******************************************************************        
+      *                                                                *        
+      * MODIFICACION: MU-2017-BDGI-R-V                                 *        
+      * PROGRAMADOR : EVERIS                                           *        
+      * FECHA       : JUNIO   2017                                     *        
+      * DESCRIPCION : ENVIO A BDGI-RESCATE Y VENCIMIENTOS              *        
+      * MU-2017-BDGI-R-V-INI                                           *        
+      * MU-2017-BDGI-R-V-FIN                                           *        
+      *                                                                *        
+      ******************************************************************        
+      *                  ENVIRONMENT DIVISION                                   
+      ******************************************************************        
+       ENVIRONMENT DIVISION.                                                    
+       CONFIGURATION SECTION.                                                   
+       SPECIAL-NAMES.                                                           
+           DECIMAL-POINT IS COMMA.                                              
+      ******************************************************************        
+      *                  DATA DIVISION                                 *        
+      ******************************************************************        
+       DATA DIVISION.                                                           
+      ******************************************************************        
+      *                  WORKING-STORAGE SECTION                       *        
+      ******************************************************************        
+       WORKING-STORAGE SECTION.                                                 
+      *                                                                         
+       01 XN-INDICES.                                                           
+          03 XN-I                      PIC 99 VALUE ZEROES.                     
+          03 XN-J                      PIC 99 VALUE ZEROES.                     
+          03 XN-A                      PIC 99 VALUE ZEROES.                     
+          03 XN-B                      PIC 99 VALUE ZEROES.                     
+      *MU-2017-BDGI-V-R-INI                                                     
+          03 XN-M                      PIC 99 VALUE ZEROES.                     
+      *MU-2017-BDGI-V-R-FIN                                                     
+
+       01 WS-VARIABLES.                                                         
+          03 WS-X372M004.                                                       
+             COPY X372M004.                                                     
+
+          03 WS-DATOS.                                                          
+             05 WS-ANIO            PIC 9(4).                                    
+             05 WS-KEXPEDIENTE     PIC 9(10).                                   
+             05 WS-CMODO           PIC X(2).                                    
+
+          03 CN-CONSTANTES.                                                     
+             05 CN-RES-MAX            PIC 9(2) VALUE 20.                        
+
+      *   CONTROL DE ERRORES DEL PROGRAMA                                       
+       01 SW-SWITCH.                                                            
+          03 SW-ERRORES                PIC XX VALUE '00'.                       
+             88 NO-ERROR                      VALUE '00'.                       
+             88 ERROR-GRAVE                   VALUE '01'.                       
+
+          03 SW-INCIDENCIA             PIC X VALUE 'N'.                         
+             88 SW-NO-INCIDENCIA             VALUE 'N'.                         
+             88 SW-SI-INCIDENCIA             VALUE 'S'.                         
+
+          03 SW-PRIMERO                PIC X VALUE 'S'.                         
+             88 SW-SI-PRIMERO                VALUE 'S'.                         
+             88 SW-NO-PRIMERO                VALUE 'N'.                         
+
+      *MODULOS                                                                  
+       01 WS-MODULOS.                                                           
+          03 WS-B372M004               PIC X(8) VALUE 'B372M004'.               
+
+       01 LT-LITERALES.                                                         
+          03 WS-FECHA-ACTUAL.                                                   
+             05 WS-FECHA.                                                       
+                07 WS-ANO                   PIC 9(04).                          
+                07 WS-MES                   PIC 9(02).                          
+                07 WS-DIA                   PIC 9(02).                          
+             05 WS-TIEMPO.                                                      
+                07 WS-HORA                  PIC 9(02).                          
+                07 WS-MINUTOS               PIC 9(02).                          
+                07 WS-SEGUNDOS              PIC 9(02).                          
+                07 WS-CENTESIMAS            PIC 9(02).                          
+          03 LT-RETURN-OK              PIC X(2) VALUE '00'.                     
+          03 LT-NO-OPER                PIC X(2) VALUE '01'.                     
+          03 LT-NO-ANIO                PIC X(2) VALUE '02'.                     
+          03 LT-NO-EXPE                PIC X(2) VALUE '03'.                     
+          03 LT-NO-POLIZ               PIC X(2) VALUE '04'.                     
+          03 LT-NO-NIF                 PIC X(2) VALUE '05'.                     
+          03 LT-ERROR-LLAM             PIC X(2) VALUE '06'.                     
+      ******************************************************************        
+       LINKAGE SECTION.                                                         
+      ******************************************************************        
+       01 DFHCOMMAREA.                                                          
+           COPY X372VT04.                                                       
+      *************************************************************             
+       PROCEDURE DIVISION USING DFHCOMMAREA.                                    
+      *************************************************************             
+           PERFORM 1000-INICIO.                                                 
+           PERFORM 2000-PROCESO.                                                
+           PERFORM 10000-FIN.                                                   
+      ********************************************************                  
+       1000-INICIO.                                                             
+      ********************************************************                  
+      * INICIALIZAR VARIABLES                                                   
+      ********************************************************                  
+           INITIALIZE XN-INDICES.                                               
+           INITIALIZE WS-DATOS.                                                 
+           INITIALIZE WS-X372M004.                                              
+           INITIALIZE X372VT04-NUM-REGISTROS-S.                                 
+           MOVE 'S'  TO X372VT04-SPAGINACION-S.                                 
+           MOVE 'N'  TO X372M004-SPAGINACION-S.                                 
+           MOVE LT-RETURN-OK TO X372VT04-CRETORNO-S OF DFHCOMMAREA.             
+           MOVE FUNCTION CURRENT-DATE TO WS-FECHA-ACTUAL                        
+            .                                                                   
+      ***************************************************************           
+       2000-PROCESO.                                                            
+      ***************************************************************           
+           IF X372VT04-OPERACION-E NOT = SPACES                                 
+              PERFORM 2200-REALIZAR-OPERACIONES                                 
+           ELSE                                                                 
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE LT-NO-OPER  TO X372VT04-CRETORNO-S                           
+              MOVE 'LA OPERACION NO ESTA INFORMADA'                             
+                               TO X372VT04-GERROR-S                             
+              MOVE 'B372N004'  TO X372VT04-GNOMPROG-S                           
+           END-IF                                                               
+
+           IF X372VT04-OPERACION-E = 'CI'                                       
+              MOVE 1   TO X372VT04-NUM-REGISTROS-S                              
+           END-IF.                                                              
+
+
+      ***************************************************************           
+       2200-REALIZAR-OPERACIONES.                                               
+      ***************************************************************           
+      *D*                                                                       
+      *    DISPLAY ' OPERACION-YACO ' X372VT04-OPERACION-E                      
+      *F*                                                                       
+           IF X372VT04-OPERACION-E NOT = 'LI'                                   
+
+              PERFORM 2050-VALIDAR-ENTRADA                                      
+
+              IF X372VT04-OPERACION-E = 'LP' AND SW-NO-INCIDENCIA               
+
+                 PERFORM 2040-VALIDAR-OPERACION                                 
+
+              END-IF                                                            
+
+           ELSE                                                                 
+
+              MOVE 'LI'        TO WS-CMODO                                      
+              MOVE ZEROES      TO X372M004-ANIO-E                               
+              MOVE ZEROES      TO X372M004-KEXPEDIENTE-E                        
+
+           END-IF.                                                              
+
+
+           IF NOT ERROR-GRAVE                                                   
+
+              EVALUATE WS-CMODO                                                 
+
+                  WHEN 'CI'                                                     
+
+                     PERFORM 2100-MOVER-DATOS-ENTRADA                           
+
+                     CALL WS-B372M004 USING WS-X372M004                         
+
+                     IF X372M004-CRETORNO-S OF WS-X372M004 = '00'               
+                        PERFORM 2300-MOVER-SALIDA                               
+                     ELSE                                                       
+                        SET  ERROR-GRAVE         TO TRUE                        
+                        MOVE LT-ERROR-LLAM       TO X372VT04-CRETORNO-S         
+                        MOVE X372M004-GERROR-S   TO X372VT04-GERROR-S           
+                        MOVE X372M004-GNOMPROG-S TO X372VT04-GNOMPROG-S         
+                     END-IF                                                     
+
+                  WHEN 'LI'                                                     
+                  WHEN 'LA'                                                     
+                  WHEN 'LE'                                                     
+                  WHEN 'LP'                                                     
+                  WHEN 'LS'                                                     
+                  WHEN 'LC'                                                     
+                  WHEN 'LN'                                                     
+                  WHEN 'L0'                                                     
+
+                     SET SW-SI-PRIMERO TO TRUE                                  
+
+                     MOVE ZEROES TO XN-I                                        
+                     PERFORM UNTIL X372M004-SPAGINACION-S = 'S'                 
+                               OR X372VT04-SPAGINACION-S = 'N'                  
+                               OR X372M004-NUM-REGISTROS-S  > CN-RES-MAX        
+                               OR XN-I > CN-RES-MAX                             
+                               OR XN-I > X372M004-NUM-REGISTROS-S               
+                               OR ERROR-GRAVE                                   
+
+                        IF SW-SI-PRIMERO                                        
+                           PERFORM 2100-MOVER-DATOS-ENTRADA                     
+                           SET SW-NO-PRIMERO TO TRUE                            
+                        ELSE                                                    
+                           PERFORM 2150-MOVER-ENTRADA-LISTADO                   
+                        END-IF                                                  
+
+                        CALL WS-B372M004 USING WS-X372M004                      
+      *D*                                                                       
+      *         DISPLAY 'RETORNO M004 ' X372M004-CRETORNO-S                     
+      *F*                                                                       
+                        IF X372M004-CRETORNO-S  = '00'                     ROES 
+                           PERFORM 2350-MOVER-LISTADO                           
+                        ELSE                                                    
+                           SET ERROR-GRAVE        TO TRUE                       
+                           MOVE LT-ERROR-LLAM     TO X372VT04-CRETORNO-S        
+                           MOVE X372M004-GERROR-S TO X372VT04-GERROR-S          
+                           MOVE X372M004-GNOMPROG-S                             
+                                                  TO X372VT04-GNOMPROG-S        
+                        END-IF                                                  
+
+                     END-PERFORM                                                
+
+                  WHEN OTHER                                                    
+                     SET  ERROR-GRAVE TO TRUE                                   
+                     MOVE LT-NO-OPER  TO X372VT04-CRETORNO-S                    
+                     MOVE 'EL CAMPO MODO DE ENTRADA NO ESTA INFORMADO'          
+                                      TO X372VT04-GERROR-S                      
+                     MOVE 'B372N004'  TO X372VT04-GNOMPROG-S                    
+              END-EVALUATE                                                      
+           END-IF.                                                              
+
+      ***************************************************************           
+       2040-VALIDAR-OPERACION.                                                  
+      ***************************************************************           
+           IF X372VT04-KCERTIFICADO-E NOT EQUAL TO ZEROS                        
+           AND X372VT04-NSUBPOLIZA-E NOT EQUAL TO ZEROS                         
+                 MOVE 'LC' TO WS-CMODO                                          
+      *D*                                                                       
+      *    DISPLAY ' ENTRAMOS EN ERTIFICADO '                                   
+      *F*                                                                       
+           END-IF                                                               
+
+           IF X372VT04-NSUBPOLIZA-E NOT EQUAL TO ZEROS                          
+           AND X372VT04-KCERTIFICADO-E EQUAL TO ZEROS                           
+                 MOVE 'LS' TO WS-CMODO                                          
+      *D*                                                                       
+      *    DISPLAY ' ENTRAMOS EN SUBPOLIZA '                                    
+      *F*                                                                       
+           END-IF                                                               
+
+           IF X372VT04-NSUBPOLIZA-E EQUAL TO ZEROS                              
+           AND X372VT04-KCERTIFICADO-E EQUAL TO ZEROS                           
+                 MOVE 'LP' TO WS-CMODO                                          
+           END-IF.                                                              
+      *D*                                                                       
+      *    DISPLAY 'B372N004: ENTRAMOS EN ESTADO'                               
+      *    DISPLAY 'B372N004: SUBPOL :' X372VT04-NSUBPOLIZA-E                   
+      *    DISPLAY 'B372N004: CERTIF :' X372VT04-KCERTIFICADO-E                 
+      *    DISPLAY 'B372N004: POLIZA :' X372VT04-KPOLIZA-E                      
+      *F*                                                                       
+
+           IF  X372VT04-NSUBPOLIZA-E EQUAL TO ZEROS                             
+           AND X372VT04-KCERTIFICADO-E EQUAL TO ZEROS                           
+           AND X372VT04-KPOLIZA-E      EQUAL TO ZEROS                           
+      *D*                                                                       
+      *    DISPLAY 'B372N004: ENTRAMOS EN ESTADO'                               
+      *    DISPLAY 'B372N004: ESTADO :' X372VT04-STIPSITUACION-E                
+      *F*                                                                       
+                 MOVE 'L0' TO WS-CMODO                                          
+           END-IF.                                                              
+      ***************************************************************           
+       2050-VALIDAR-ENTRADA.                                                    
+      ***************************************************************           
+           SET  SW-NO-INCIDENCIA TO TRUE.                                       
+
+           EVALUATE X372VT04-OPERACION-E                                        
+
+           WHEN 'LA'                                                            
+
+              IF X372VT04-ANIO-E   NOT = ZEROES                                 
+                 MOVE 'LA' TO WS-CMODO                                          
+              ELSE                                                              
+                 MOVE LT-NO-ANIO       TO X372VT04-CRETORNO-S                   
+                 SET  SW-SI-INCIDENCIA TO TRUE                                  
+                 MOVE 'B372N004'       TO X372VT04-GNOMPROG-S                   
+              END-IF                                                            
+
+           WHEN 'LE'                                                            
+
+              IF X372VT04-KEXPEDIENTE-E   NOT = ZEROES                          
+                 MOVE 'LE' TO WS-CMODO                                          
+              ELSE                                                              
+                 MOVE LT-NO-EXPE       TO X372VT04-CRETORNO-S                   
+                 SET  SW-SI-INCIDENCIA TO TRUE                                  
+                 MOVE 'B372N004'       TO X372VT04-GNOMPROG-S                   
+              END-IF                                                            
+
+           WHEN 'LP'                                                            
+      *D*                                                                       
+      *     DISPLAY ' VALIDACIONES LP '                                         
+      *     DISPLAY ' POLIZA          ' X372VT04-KPOLIZA-E                      
+      *     DISPLAY ' SITUACION       ' X372VT04-STIPSITUACION-E                
+      *F*                                                                       
+
+              IF X372VT04-KPOLIZA-E  NOT EQUAL SPACES                           
+                 MOVE 'LP' TO WS-CMODO                                          
+              ELSE                                                              
+                 IF X372VT04-STIPSITUACION-E NOT EQUAL SPACES                   
+                    MOVE 'LE' TO WS-CMODO                                       
+                 ELSE                                                           
+                    MOVE LT-NO-POLIZ      TO X372VT04-CRETORNO-S                
+                    SET  SW-SI-INCIDENCIA TO TRUE                               
+                    MOVE 'B372N004'       TO X372VT04-GNOMPROG-S                
+                 END-IF                                                         
+              END-IF                                                            
+
+           WHEN 'LN'                                                            
+
+              IF X372VT04-NIF-E  NOT EQUAL SPACES                               
+                 MOVE 'LN' TO WS-CMODO                                          
+              ELSE                                                              
+                 MOVE LT-NO-NIF        TO X372VT04-CRETORNO-S                   
+                 SET  SW-SI-INCIDENCIA TO TRUE                                  
+                 MOVE 'B372N004'       TO X372VT04-GNOMPROG-S                   
+              END-IF                                                            
+
+           WHEN 'CI'                                                            
+
+              IF X372VT04-KEXPEDIENTE-E NOT EQUAL ZEROES AND                    
+                 X372VT04-ANIO-E        NOT EQUAL ZEROES                        
+                 MOVE 'CI' TO WS-CMODO                                          
+              ELSE                                                              
+                 MOVE LT-NO-POLIZ      TO X372VT04-CRETORNO-S                   
+                 SET  SW-SI-INCIDENCIA TO TRUE                                  
+                 MOVE 'B372N004'       TO X372VT04-GNOMPROG-S                   
+              END-IF                                                            
+
+           WHEN OTHER                                                           
+
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE LT-NO-OPER  TO X372VT04-CRETORNO-S                           
+              MOVE 'LA OPERACION DE ENTRADA NO ES VALIDO'                       
+                               TO X372VT04-GERROR-S                             
+              MOVE 'B372N004'  TO X372VT04-GNOMPROG-S                           
+           END-EVALUATE                                                         
+
+           IF SW-SI-INCIDENCIA                                                  
+
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE 'LOS PARAMETROS DE ENTRADA SON INCORRECTOS'                  
+                               TO X372VT04-GERROR-S                             
+              MOVE 'B372N004'  TO X372VT04-GNOMPROG-S                           
+           END-IF.                                                              
+
+      ***************************************************************           
+       2100-MOVER-DATOS-ENTRADA.                                                
+      ***************************************************************           
+           INITIALIZE WS-X372M004.                                              
+           MOVE WS-CMODO                TO X372M004-OPERACION-E                 
+           MOVE X372VT04-ANIO-E         TO X372M004-ANIO-E                      
+           MOVE X372VT04-KEXPEDIENTE-E  TO X372M004-KEXPEDIENTE-E               
+           MOVE X372VT04-KPOLIZA-E      TO X372M004-KPOLIZA-E                   
+           MOVE X372VT04-NSUBPOLIZA-E   TO X372M004-NSUBPOLIZA-E                
+           MOVE X372VT04-KCERTIFICADO-E TO X372M004-KCERTIFICADO-E              
+           MOVE X372VT04-STIPSITUACION-E TO X372M004-STIPSITUACION-E            
+           MOVE X372VT04-NIF-E          TO X372M004-NIF-E                       
+           MOVE X372VT04-ANT-ANIO-E     TO X372M004-ANT-ANIO-E                  
+           MOVE X372VT04-ANT-KEXPEDIENTE-E                                      
+                                        TO X372M004-ANT-KEXPEDIENTE-E           
+      *D*                                                                       
+      *    DISPLAY ' MODO ' X372M004-OPERACION-E                                
+      *    DISPLAY ' POLIZA ' X372M004-KPOLIZA-E                                
+      *    DISPLAY ' SUBPOL ' X372M004-NSUBPOLIZA-E                             
+      *    DISPLAY ' CERTIF ' X372M004-KCERTIFICADO-E                           
+      *F*                                                                       
+           .                                                                    
+      ***************************************************************           
+       2150-MOVER-ENTRADA-LISTADO.                                              
+      ***************************************************************           
+
+           MOVE WS-CMODO                     TO X372M004-OPERACION-E            
+           MOVE X372VT04-ANIO-S       (XN-I) TO X372M004-ANIO-E                 
+           MOVE X372VT04-KEXPEDIENTE-S(XN-I) TO X372M004-KEXPEDIENTE-E          
+           MOVE X372VT04-KPOLIZA-S    (XN-I) TO X372M004-KPOLIZA-E              
+           MOVE X372VT04-NSUBPOLIZA-S (XN-I) TO X372M004-NSUBPOLIZA-E           
+           MOVE X372VT04-KCERTIFICADO-S (XN-I)                                  
+                                             TO X372M004-KCERTIFICADO-E         
+           MOVE X372VT04-NIF1-S       (XN-I) TO X372M004-NIF-E                  
+
+
+           IF X372M004-SPAGINACION-S = 'S'                                      
+              MOVE X372VT04-ANIO-S          (XN-I)                              
+                TO X372M004-ANT-ANIO-E                                          
+              MOVE X372VT04-KEXPEDIENTE-S   (XN-I)                              
+                TO X372M004-ANT-KEXPEDIENTE-E                                   
+           END-IF                                                               
+           .                                                                    
+      ***************************************************************           
+       2300-MOVER-SALIDA.                                                       
+      ***************************************************************           
+           IF NOT ERROR-GRAVE                                                   
+
+              MOVE X372M004-SPAGINACION-S                                       
+                TO X372VT04-SPAGINACION-S                                       
+              MOVE X372M004-PRO-ANIO-S                                          
+                TO X372VT04-PRO-ANIO-S                                          
+              MOVE X372M004-PRO-KEXPEDIENTE-S                                   
+                TO X372VT04-PRO-KEXPEDIENTE-S                                   
+              MOVE X372M004-NUM-REGISTROS-S                                     
+                TO X372VT04-NUM-REGISTROS-S                                     
+
+              PERFORM VARYING XN-J FROM 1 BY 1                                  
+                        UNTIL XN-J > X372M004-NUM-REGISTROS-S                   
+                           OR XN-J > CN-RES-MAX                                 
+                           OR ERROR-GRAVE                                       
+
+                 MOVE XN-J TO XN-A                                              
+                 MOVE XN-J TO XN-B                                              
+
+                 PERFORM 2700-MOVER-OCCUR                                       
+
+              END-PERFORM                                                       
+
+           END-IF.                                                              
+
+      *****************************************************************         
+       2350-MOVER-LISTADO.                                                      
+      *****************************************************************         
+           IF X372M004-NUM-REGISTROS-S > ZEROES                                 
+
+              IF NOT ERROR-GRAVE                                                
+
+                 ADD 1 TO XN-I                                                  
+
+                 MOVE X372M004-ANIO-S      (1)                                  
+                   TO WS-ANIO                                                   
+                 MOVE X372M004-KEXPEDIENTE-S(1)                                 
+                   TO WS-KEXPEDIENTE                                            
+
+                 MOVE 1    TO XN-A                                              
+                 MOVE XN-I TO XN-B                                              
+
+                 PERFORM 2700-MOVER-OCCUR                                       
+
+                 PERFORM VARYING XN-J FROM 1 BY 1                               
+                           UNTIL XN-J > X372M004-NUM-REGISTROS-S                
+                              OR XN-I >= CN-RES-MAX                             
+                              OR ERROR-GRAVE                                    
+
+                   IF X372M004-ANIO-S           (XN-J)     = WS-ANIO            
+
+                      IF X372M004-KEXPEDIENTE-S (XN-J) >                        
+                         WS-KEXPEDIENTE                                         
+
+                         ADD 1 TO XN-I                                          
+                         MOVE XN-J TO XN-A                                      
+                         MOVE XN-I TO XN-B                                      
+
+                         PERFORM 2700-MOVER-OCCUR                               
+
+                      END-IF                                                    
+
+                   ELSE                                                         
+
+                      ADD 1 TO XN-I                                             
+                      MOVE XN-J TO XN-A                                         
+                      MOVE XN-I TO XN-B                                         
+
+                      PERFORM 2700-MOVER-OCCUR                                  
+
+                   END-IF                                                       
+
+                   MOVE X372M004-ANIO-S      (XN-J)                             
+                     TO WS-ANIO                                                 
+                   MOVE X372M004-KEXPEDIENTE-S(XN-J)                            
+                     TO WS-KEXPEDIENTE                                          
+
+                 END-PERFORM                                                    
+
+      *** CONTROLAMOS SI HAY PAGINACION                                         
+
+                IF XN-I >= CN-RES-MAX                                           
+                   MOVE 'S'                                                     
+                     TO X372VT04-SPAGINACION-S                                  
+                   MOVE X372VT04-ANIO-S         (XN-I)                          
+                     TO X372VT04-PRO-ANIO-S                                     
+                   MOVE X372VT04-KEXPEDIENTE-S  (XN-I)                          
+                     TO X372VT04-PRO-KEXPEDIENTE-S                              
+                ELSE                                                            
+                   MOVE 'N'                                                     
+                     TO X372VT04-SPAGINACION-S                                  
+                END-IF                                                          
+
+                MOVE XN-I TO X372VT04-NUM-REGISTROS-S                           
+
+              END-IF                                                            
+
+           END-IF.                                                              
+
+      ****************************************************************          
+       2700-MOVER-OCCUR.                                                        
+      ****************************************************************          
+           MOVE X372M004-ANIO-S(XN-A)                                           
+             TO X372VT04-ANIO-S(XN-B)                                           
+           MOVE X372M004-KEXPEDIENTE-S(XN-A)                                    
+             TO X372VT04-KEXPEDIENTE-S(XN-B)                                    
+           MOVE X372M004-KRAMO-S(XN-A)                                          
+             TO X372VT04-KRAMO-S(XN-B)                                          
+           MOVE X372M004-ANIOPOL-S(XN-A)                                        
+             TO X372VT04-ANIOPOL-S(XN-B)                                        
+           MOVE X372M004-KPOLIZA-S(XN-A)                                        
+             TO X372VT04-KPOLIZA-S(XN-B)                                        
+           MOVE X372M004-NSUBPOLIZA-S(XN-A)                                     
+             TO X372VT04-NSUBPOLIZA-S(XN-B)                                     
+           MOVE X372M004-KCERTIFICADO-S(XN-A)                                   
+             TO X372VT04-KCERTIFICADO-S(XN-B)                                   
+           MOVE X372M004-KMODALIDAD-S(XN-A)                                     
+             TO X372VT04-KMODALIDAD-S(XN-B)                                     
+           MOVE X372M004-CCANALCAMP-S(XN-A)                                     
+             TO X372VT04-CCANALCAMP-S(XN-B)                                     
+           MOVE X372M004-CENTIDAD-S(XN-A)                                       
+             TO X372VT04-CENTIDAD-S(XN-B)                                       
+           MOVE X372M004-FECEFECTO-S(XN-A)                                      
+             TO X372VT04-FECEFECTO-S(XN-B)                                      
+           MOVE X372M004-KDURACION-S(XN-A)                                      
+             TO X372VT04-KDURACION-S(XN-B)                                      
+           MOVE X372M004-FECEMISION-S(XN-A)                                     
+             TO X372VT04-FECEMISION-S(XN-B)                                     
+           MOVE X372M004-CCARTERA-S(XN-A)                                       
+             TO X372VT04-CCARTERA-S(XN-B)                                       
+           MOVE X372M004-SREASEGURO-S(XN-A)                                     
+             TO X372VT04-SREASEGURO-S(XN-B)                                     
+           MOVE X372M004-REGIONAL-S(XN-A)                                       
+             TO X372VT04-REGIONAL-S(XN-B)                                       
+           MOVE X372M004-LUGARENVIO-S(XN-A)                                     
+             TO X372VT04-LUGARENVIO-S(XN-B)                                     
+           MOVE X372M004-KOFICINA-S(XN-A)                                       
+             TO X372VT04-KOFICINA-S(XN-B)                                       
+           MOVE X372M004-IPENDIENTE-S(XN-A)                                     
+             TO X372VT04-IPENDIENTE-S(XN-B)                                     
+           MOVE X372M004-CTIPOPERS1-S(XN-A)                                     
+             TO X372VT04-CTIPOPERS1-S(XN-B)                                     
+           MOVE X372M004-SRESIDENTE1-S(XN-A)                                    
+             TO X372VT04-SRESIDENTE1-S(XN-B)                                    
+           MOVE X372M004-NIF1-S(XN-A)                                           
+             TO X372VT04-NIF1-S(XN-B)                                           
+           MOVE X372M004-KPERSONA1-S(XN-A)                                      
+             TO X372VT04-KPERSONA1-S(XN-B)                                      
+606673     MOVE X372M004-KDOMICILIO1-S(XN-A)                                    
+606673       TO X372VT04-KDOMICILIO1-S(XN-B)                                    
+           MOVE X372M004-IMPCAPITAL-S(XN-A)                                     
+             TO X372VT04-IMPCAPITAL-S(XN-B)                                     
+           MOVE X372M004-IMPBENEFICIOS-S(XN-A)                                  
+             TO X372VT04-IMPBENEFICIOS-S(XN-B)                                  
+           MOVE X372M004-FECPAGOCAPITAL-S(XN-A)                                 
+             TO X372VT04-FECPAGOCAPITAL-S(XN-B)                                 
+           MOVE X372M004-IMPANTICIPO-S(XN-A)                                    
+             TO X372VT04-IMPANTICIPO-S(XN-B)                                    
+           MOVE X372M004-IMPINTEPEND-S(XN-A)                                    
+             TO X372VT04-IMPINTEPEND-S(XN-B)                                    
+           MOVE X372M004-FECVENCIMICAP-S(XN-A)                                  
+             TO X372VT04-FECVENCIMICAP-S(XN-B)                                  
+           MOVE X372M004-TIPIMPUESTCAP-S(XN-A)                                  
+             TO X372VT04-TIPIMPUESTCAP-S(XN-B)                                  
+           MOVE X372M004-IMPRTOINTEGRCAP-S(XN-A)                                
+             TO X372VT04-IMPRTOINTEGRCAP-S(XN-B)                                
+           MOVE X372M004-IMPREDPRICAP-S(XN-A)                                   
+             TO X372VT04-IMPREDPRICAP-S(XN-B)                                   
+           MOVE X372M004-IMPREDTRANCAP-S(XN-A)                                  
+             TO X372VT04-IMPREDTRANCAP-S(XN-B)                                  
+           MOVE X372M004-IMPCOMPENSATORIA-S(XN-A)                               
+             TO X372VT04-IMPCOMPENSATORIA-S(XN-B)                               
+           MOVE X372M004-IMPRTONETOCAP-S(XN-A)                                  
+             TO X372VT04-IMPRTONETOCAP-S(XN-B)                                  
+           MOVE X372M004-PORRETCAP-S(XN-A)                                      
+             TO X372VT04-PORRETCAP-S(XN-B)                                      
+           MOVE X372M004-IMPRETCAP-S(XN-A)                                      
+             TO X372VT04-IMPRETCAP-S(XN-B)                                      
+           MOVE X372M004-IMPLIQCAP-S(XN-A)                                      
+             TO X372VT04-IMPLIQCAP-S(XN-B)                                      
+           MOVE X372M004-FECIMPRECAP-S(XN-A)                                    
+             TO X372VT04-FECIMPRECAP-S(XN-B)                                    
+           MOVE X372M004-FECPAGRET-S(XN-A)                                      
+             TO X372VT04-FECPAGRET-S(XN-B)                                      
+           MOVE X372M004-IMPCOMP1-S(XN-A)                                       
+             TO X372VT04-IMPCOMP1-S(XN-B)                                       
+           MOVE X372M004-FECEMICOMP1-S(XN-A)                                    
+             TO X372VT04-FECEMICOMP1-S(XN-B)                                    
+           MOVE X372M004-FECPAGCOMP1-S(XN-A)                                    
+             TO X372VT04-FECPAGCOMP1-S(XN-B)                                    
+           MOVE X372M004-TIPIMPUESTCOMP1-S(XN-A)                                
+             TO X372VT04-TIPIMPUESTCOMP1-S(XN-B)                                
+           MOVE X372M004-IMPRTOINTCOMP1-S(XN-A)                                 
+             TO X372VT04-IMPRTOINTCOMP1-S(XN-B)                                 
+           MOVE X372M004-IMPREDPRICOMP1-S(XN-A)                                 
+             TO X372VT04-IMPREDPRICOMP1-S(XN-B)                                 
+           MOVE X372M004-IREDTRANCOMP1-S(XN-A)                                  
+             TO X372VT04-IREDTRANCOMP1-S(XN-B)                                  
+           MOVE X372M004-IRTONETCOMP1-S(XN-A)                                   
+             TO X372VT04-IRTONETCOMP1-S(XN-B)                                   
+           MOVE X372M004-PORRETCOMP1-S(XN-A)                                    
+             TO X372VT04-PORRETCOMP1-S(XN-B)                                    
+           MOVE X372M004-IRETCOMP1-S(XN-A)                                      
+             TO X372VT04-IRETCOMP1-S(XN-B)                                      
+           MOVE X372M004-ILIQCOMP1-S(XN-A)                                      
+             TO X372VT04-ILIQCOMP1-S(XN-B)                                      
+           MOVE X372M004-FECIMPRECOMP1-S(XN-A)                                  
+             TO X372VT04-FECIMPRECOMP1-S(XN-B)                                  
+           MOVE X372M004-FECPAGRETCOM1-S(XN-A)                                  
+             TO X372VT04-FECPAGRETCOM1-S(XN-B)                                  
+           MOVE X372M004-IMPCOMP2-S(XN-A)                                       
+             TO X372VT04-IMPCOMP2-S(XN-B)                                       
+           MOVE X372M004-FECEMICOMP2-S(XN-A)                                    
+             TO X372VT04-FECEMICOMP2-S(XN-B)                                    
+           MOVE X372M004-FECPAGCOMP2-S(XN-A)                                    
+             TO X372VT04-FECPAGCOMP2-S(XN-B)                                    
+           MOVE X372M004-TIPIMPUESTCOMP2-S(XN-A)                                
+             TO X372VT04-TIPIMPUESTCOMP2-S(XN-B)                                
+           MOVE X372M004-IMPRTOINTCOMP2-S(XN-A)                                 
+             TO X372VT04-IMPRTOINTCOMP2-S(XN-B)                                 
+           MOVE X372M004-IMPREDPRICOMP2-S(XN-A)                                 
+             TO X372VT04-IMPREDPRICOMP2-S(XN-B)                                 
+           MOVE X372M004-IREDTRANCOMP2-S(XN-A)                                  
+             TO X372VT04-IREDTRANCOMP2-S(XN-B)                                  
+           MOVE X372M004-IRTONETCOMP2-S(XN-A)                                   
+             TO X372VT04-IRTONETCOMP2-S(XN-B)                                   
+           MOVE X372M004-PORRETCOMP2-S(XN-A)                                    
+             TO X372VT04-PORRETCOMP2-S(XN-B)                                    
+           MOVE X372M004-IRETCOMP2-S(XN-A)                                      
+             TO X372VT04-IRETCOMP2-S(XN-B)                                      
+           MOVE X372M004-ILIQCOMP2-S(XN-A)                                      
+             TO X372VT04-ILIQCOMP2-S(XN-B)                                      
+           MOVE X372M004-FECIMPRECOMP2-S(XN-A)                                  
+             TO X372VT04-FECIMPRECOMP2-S(XN-B)                                  
+           MOVE X372M004-FECPAGRETCOM2-S(XN-A)                                  
+             TO X372VT04-FECPAGRETCOM2-S(XN-B)                                  
+      * MU-2017-BDGI-R-V-INI                                                    
+      *     MOVE X372M004-CODCOA1-S(XN-A)                                       
+      *       TO X372VT04-CODCOA1-S(XN-B)                                       
+      *     MOVE X372M004-PORCOA1-S(XN-A)                                       
+      *       TO X372VT04-PORCOA1-S(XN-B)                                       
+606664*     MOVE X372M004-IMPCOA1-S(XN-A)                                       
+606664*       TO X372VT04-IMPCOA1-S(XN-B)                                       
+      *     MOVE X372M004-CODCOA2-S(XN-A)                                       
+      *       TO X372VT04-CODCOA2-S(XN-B)                                       
+      *     MOVE X372M004-PORCOA2-S(XN-A)                                       
+      *       TO X372VT04-PORCOA2-S(XN-B)                                       
+606664*     MOVE X372M004-IMPCOA2-S(XN-A)                                       
+606664*       TO X372VT04-IMPCOA2-S(XN-B)                                       
+      *     MOVE X372M004-CODCOA3-S(XN-A)                                       
+      *       TO X372VT04-CODCOA3-S(XN-B)                                       
+      *     MOVE X372M004-PORCOA3-S(XN-A)                                       
+      *       TO X372VT04-PORCOA3-S(XN-B)                                       
+606664*     MOVE X372M004-IMPCOA3-S(XN-A)                                       
+606664*       TO X372VT04-IMPCOA3-S(XN-B)                                       
+      *     MOVE X372M004-CODCOA4-S(XN-A)                                       
+      *       TO X372VT04-CODCOA4-S(XN-B)                                       
+      *     MOVE X372M004-PORCOA4-S(XN-A)                                       
+      *       TO X372VT04-PORCOA4-S(XN-B)                                       
+606664*     MOVE X372M004-IMPCOA4-S(XN-A)                                       
+606664*       TO X372VT04-IMPCOA4-S(XN-B)                                       
+      *     MOVE X372M004-CODCOA5-S(XN-A)                                       
+      *       TO X372VT04-CODCOA5-S(XN-B)                                       
+      *     MOVE X372M004-PORCOA5-S(XN-A)                                       
+      *       TO X372VT04-PORCOA5-S(XN-B)                                       
+606664*     MOVE X372M004-IMPCOA5-S(XN-A)                                       
+606664*       TO X372VT04-IMPCOA5-S(XN-B)                                       
+      *     MOVE X372M004-CODCOA6-S(XN-A)                                       
+      *       TO X372VT04-CODCOA6-S(XN-B)                                       
+      *     MOVE X372M004-PORCOA6-S(XN-A)                                       
+      *       TO X372VT04-PORCOA6-S(XN-B)                                       
+606664*     MOVE X372M004-IMPCOA6-S(XN-A)                                       
+606664*       TO X372VT04-IMPCOA6-S(XN-B)                                       
+      *                                                                         
+           MOVE X372M004-COASEGUROS-OCCURS-S (XN-A)                             
+             TO X372VT04-COASEGUROS-OCCURS-S (XN-B)                             
+      *                                                                         
+           PERFORM VARYING XN-M FROM 1 BY 1                                     
+             UNTIL XN-M > X372M004-COASEGUROS-OCCURS-S (XN-A)                   
+      *                                                                         
+             MOVE X372M004-CODCOA-S          (XN-A, XN-M)                       
+                      TO X372VT04-CODCOA-S          (XN-B, XN-M)                
+             MOVE X372M004-PORCOA-S          (XN-A, XN-M)                       
+                      TO X372VT04-PORCOA-S          (XN-B, XN-M)                
+             MOVE X372M004-IMPCOA-S          (XN-A, XN-M)                       
+                      TO X372VT04-IMPCOA-S          (XN-B, XN-M)                
+             MOVE X372M004-IMPRTOINTEGRCOA-S (XN-A, XN-M)                       
+                      TO X372VT04-IMPRTOINTEGRCOA-S (XN-B, XN-M)                
+             MOVE X372M004-IMPREDPRICOA-S    (XN-A, XN-M)                       
+                      TO X372VT04-IMPREDPRICOA-S    (XN-B, XN-M)                
+             MOVE X372M004-IMPREDTRANCOA-S   (XN-A, XN-M)                       
+                      TO X372VT04-IMPREDTRANCOA-S   (XN-B, XN-M)                
+             MOVE X372M004-IMPRTONETOCOA-S   (XN-A, XN-M)                       
+                      TO X372VT04-IMPRTONETOCOA-S   (XN-B, XN-M)                
+             MOVE X372M004-IMPRETCOA-S       (XN-A, XN-M)                       
+                      TO X372VT04-IMPRETCOA-S       (XN-B, XN-M)                
+             MOVE X372M004-IMPCOMPENSATCOA-S (XN-A, XN-M)                       
+                      TO X372VT04-IMPCOMPENSATCOA-S (XN-B, XN-M)                
+           END-PERFORM                                                          
+      *                                                                         
+      * MU-2017-BDGI-R-V-FIN                                                    
+           MOVE X372M004-PAGOTOT-S(XN-A)                                        
+             TO X372VT04-PAGOTOT-S(XN-B)                                        
+           MOVE X372M004-SBDGICAP-S(XN-A)                                       
+             TO X372VT04-SBDGICAP-S(XN-B)                                       
+           MOVE X372M004-FECBDGICAP-S(XN-A)                                     
+             TO X372VT04-FECBDGICAP-S(XN-B)                                     
+           MOVE X372M004-SBDGICOMP1-S(XN-A)                                     
+             TO X372VT04-SBDGICOMP1-S(XN-B)                                     
+           MOVE X372M004-FECBDGICOMP1-S(XN-A)                                   
+             TO X372VT04-FECBDGICOMP1-S(XN-B)                                   
+           MOVE X372M004-SBDGICOMP2-S(XN-A)                                     
+             TO X372VT04-SBDGICOMP2-S(XN-B)                                     
+           MOVE X372M004-FECBDGICOMP2-S(XN-A)                                   
+             TO X372VT04-FECBDGICOMP2-S(XN-B)                                   
+           MOVE X372M004-CUSUARIO-S(XN-A)                                       
+             TO X372VT04-CUSUARIO-S(XN-B)                                       
+           MOVE X372M004-GOBSERVACION-S(XN-A)                                   
+             TO X372VT04-GOBSERVACION-S(XN-B)                                   
+           MOVE X372M004-STIPSITUACION-S(XN-A)                                  
+             TO X372VT04-STIPSITUACION-S(XN-B)                                  
+           MOVE X372M004-FANUALACION-S(XN-A)                                    
+             TO X372VT04-FANUALACION-S(XN-B)                                    
+541869     MOVE X372M004-ANIOFISCAL-S(XN-A)                                     
+541869       TO X372VT04-ANIOFISCAL-S(XN-B)                                     
+606673     MOVE X372M004-FECMODIFICA-S(XN-A)                                    
+606673       TO X372VT04-FECMODIFICA-S(XN-B)                                    
+      * MU-2017-BDGI-R-V-INI                                                    
+           MOVE X372M004-EXIMIDO-S    (XN-A)                                    
+             TO X372VT04-EXIMIDO-S    (XN-B)                                    
+           MOVE X372M004-KDOMCOM-S    (XN-A)                                    
+             TO X372VT04-KDOMCOM-S    (XN-B)                                    
+      * MU-2017-BDGI-R-V-FIN                                                    
+606673     .                                                                    
+      ***************************************************************           
+       10000-FIN.                                                               
+      ***************************************************************           
+
+           GOBACK.                                                              

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<interfaces>
+	<!-- Servicios CTG -->
+	
+	<!--
+		Por cada una de las interfaces de comunicación mediante CTG que necesite la apliacion
+		se debe definir una entrada en este fichero y un XML en el mismo directorio que se
+		correspondera con el nombre de la transaccion.
+		La normativa marca la definicion de estas interfaces con el siguiente formato:
+		
+		<interfaz servicio="NombreDelServicio">
+			<conexion tipo_conector="CTG" tipo_conexion="conexion_CTG"/>
+			<parametros nombre_programa="nombreCobolCics" transaccion_cics="idTransaccionCics" mecanismo="E|S|ES"/>
+		</interfaz>
+		
+		Donde:
+			NombreDelServicio debe ser SR + 3 caracteres id de aplicacion + 3 caracteres id servicio + descripcion corta de servicio
+				Por ejemplo:  SR010001PrimeraTransaccion
+				Debe existir un XML con ese mismo nombre (p.ej.: SR010001PrimeraTransaccion.xml
+
+		A fecha de 11/06/2012 existe 10 Interfaz
+			
+		
+	-->
+	
+	<!-- Consulta de perfiles -->
+	
+	<interfaz servicio="B372VT02GestionVariablesVen">
+		<conexion tipo_conector="CTG" tipo_conexion="conexion_CTG"/>
+		<parametros nombre_programa="B372VT02" transaccion_cics="3702" mecanismo="A"/>
+	</interfaz>
+	
+	<interfaz servicio="B372VT09EmisionFiniquitosVen">
+		<conexion tipo_conector="CTG" tipo_conexion="conexion_CTG"/>
+		<parametros nombre_programa="B372VT09" transaccion_cics="3709" mecanismo="A"/>
+	</interfaz>
+	
+	<interfaz servicio="B372VT05GestionCarterasListadoVen">
+		<conexion tipo_conector="CTG" tipo_conexion="conexion_CTG"/>
+		<parametros nombre_programa="B372VT05" transaccion_cics="3705" mecanismo="A"/>
+	</interfaz>
+	
+	<interfaz servicio="B372VT06PeticionBDGIVen">
+		<conexion tipo_conector="CTG" tipo_conexion="conexion_CTG"/>
+		<parametros nombre_programa="B372VT06" transaccion_cics="3706" mecanismo="A"/>
+	</interfaz>
+	
+	<interfaz servicio="B372VT03GestionCarterasVen">
+		<conexion tipo_conector="CTG" tipo_conexion="conexion_CTG"/>
+		<parametros nombre_programa="B372VT03" transaccion_cics="3703" mecanismo="A"/>
+	</interfaz>
+	
+	<interfaz servicio="B372VT04BusquedaExpVen">
+		<conexion tipo_conector="CTG" tipo_conexion="conexion_CTG"/>
+		<parametros nombre_programa="B372VT04" transaccion_cics="3704" mecanismo="A"/>
+	</interfaz>
+	<interfaz servicio="B372VT01GestionExpedientesVen">
+		<conexion tipo_conector="CTG" tipo_conexion="conexion_CTG"/>
+		<parametros nombre_programa="B372VT01" transaccion_cics="3701" mecanismo="A"/>
+	</interfaz>
+	<interfaz servicio="B372VT19ConsultaCarteraVen">
+		<conexion tipo_conector="CTG" tipo_conexion="conexion_CTG"/>
+		<parametros nombre_programa="B372VT19" transaccion_cics="3719" mecanismo="A"/>
+	</interfaz>
+	<interfaz servicio="B372VT10ImpresionInformesVen">
+		<conexion tipo_conector="CTG" tipo_conexion="conexion_CTG"/>
+		<parametros nombre_programa="B372VT10" transaccion_cics="3710" mecanismo="A"/>
+	</interfaz>
+	<interfaz servicio="B372VT07CargaFicheroVen">
+		<conexion tipo_conector="CTG" tipo_conexion="conexion_CTG"/>
+		<parametros nombre_programa="B372VT07" transaccion_cics="3707" mecanismo="A"/>
+	</interfaz>
+	<interfaz servicio="B372VT11GestionPersonasVen">
+		<conexion tipo_conector="CTG" tipo_conexion="conexion_CTG"/>
+		<parametros nombre_programa="B372VT11" transaccion_cics="3711" mecanismo="A"/>
+	</interfaz>
+
+	<!-- R&V Junio 2017 - CU011 - everis(RGL) - INI -->
+	<interfaz servicio="B372VT12GestionExpCoaseguroVen">
+		<conexion tipo_conector="CTG" tipo_conexion="conexion_CTG"/>
+		<parametros nombre_programa="B372VT12" transaccion_cics="3612" mecanismo="A"/>
+	</interfaz>
+	<!-- R&V Junio 2017 - CU011 - everis(RGL) - FIN -->
+
+
+</interfaces>

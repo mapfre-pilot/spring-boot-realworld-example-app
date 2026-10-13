@@ -1,0 +1,182 @@
+      *-----------------------
+       IDENTIFICATION DIVISION.
+      *------------------------
+
+       PROGRAM-ID. B372VT19.
+
+      ******************************************************************
+      *  APLICACION   : VENCIMIENTOS MANUALES (FOXPRO)                 *
+      *  ANALISTA     : EVERIS                                         *
+      *  PROGRAMADOR  : EVERIS                                         *
+      *  FECHA        : JUNIO 2012                                     *
+      *  TIPO PROGRAMA: COBOL-CICS                                     *
+      *  DESCRIPCION  : SERVICIO GESTOR DE CONSULTA DE EXPEDIENTES     *
+      *                 DE VENCIMIENTOS MANUALES (FOXPRO)              *
+      ******************************************************************
+      *PARAMETROS DE ENTRADA:
+      ******************************************************************
+      *   -X372VT19-ENTRADA-E: COPY DE ENTRADA DE DATOS
+      *
+      ******************************************************************
+      *PARAMETROS DE SALIDA:
+      ******************************************************************
+      *   -X372VT19-SALIDA-S : COPY DE SALIDA DE DATOS
+      ******************************************************************
+
+      ******************************************************************
+      *MODULOS UTILIZADOS:
+      ******************************************************************
+      *
+      ******************************************************************
+
+      ******************************************************************
+      * CODIGO DE ERRORES
+      ******************************************************************
+      *
+      * X372VT19-CRETORNO-S
+      *
+      *        '00' OPERACION CORRECTA
+      *
+      *        '99' ERROR AL DEVOLVER CONTRO
+      *
+      ******************************************************************
+      * AUTOR        : INDRA                                           *
+      * MODIFICACION : 00417388 MULTICOMPAÑIA COLECTIVOS IDMS          *
+      * FECHA        : NOVIEMBRE 2020                                  *
+      * DESCRIPCION  : CONTEMPLAR CANAL 80 - MAPFRE ESPAÑA             *
+      *                INCORPORAR CL48 A PLAN PL3719                   *
+      ******************************************************************
+
+      *--------------------
+       ENVIRONMENT DIVISION.
+      *---------------------
+
+       CONFIGURATION SECTION.
+        SPECIAL-NAMES.
+            DECIMAL-POINT IS COMMA.
+
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+
+      *-------------
+       DATA DIVISION.
+      *--------------
+
+       FILE SECTION.
+      *-------------
+
+      *************************
+       WORKING-STORAGE SECTION.
+      *************************
+      *
+        01 VARIABLES.                                                   00960000
+           03 FILLER                PIC X(17) VALUE 'INICIO DE WORKING'.00960000
+           03 LT-B372VT19           PIC X(08) VALUE 'B372VT19'.
+           03 LT-B362VT19           PIC X(08) VALUE 'B362VT19'.
+           03 FILLER                PIC X(17) VALUE 'FINAL  DE WORKING'.00960000
+
+      * COPYS
+        01 COPYS.
+
+      * COPY PARA LA LLAMADA A SERVICIO BUSQUEDA POLIZA RESCATES MANUALE
+           03 WS-X362VT19.
+              COPY R000X000.
+              COPY X362VT19.
+
+
+
+
+      *****************
+       LINKAGE SECTION.
+      *****************
+       01 DFHCOMMAREA.
+           COPY R000X000.
+           03 COMMAREA.
+              COPY X372VT19.
+
+      **************************************
+       PROCEDURE DIVISION USING DFHCOMMAREA.
+      **************************************
+
+
+           PERFORM 1000-INICIO.
+
+           PERFORM 2000-PROCESO.
+
+           PERFORM 9000-FIN.
+
+      ******************************************************************
+      *1000-INICIO.
+      ******************************************************************
+       1000-INICIO.
+
+           EXEC CICS
+                IGNORE CONDITION ERROR
+           END-EXEC.
+
+           MOVE '00'       TO X372VT19-CRETORNO-S.
+           MOVE 'B372VT19' TO X372VT19-GNOMPROG-S.
+
+
+      ******************************************************************
+      *2000-PROCESO.
+      ******************************************************************
+       2000-PROCESO.
+
+           INITIALIZE WS-X362VT19
+
+           MOVE X372VT19-POLIZA-E      TO X362VT19-POLIZA-E
+           MOVE X372VT19-SUBPOLIZA-E   TO X362VT19-SUBPOLIZA-E
+           MOVE X372VT19-CERTIFICADO-E TO X362VT19-CERTIFICADO-E
+
+           EXEC CICS
+                LINK PROGRAM (LT-B362VT19)
+                COMMAREA     (WS-X362VT19)
+                LENGTH       (LENGTH OF WS-X362VT19)
+           END-EXEC.
+      *D*
+      *    DISPLAY ' YACO-B372VT19 ' X362VT19-CRETORNO-S
+      *    DISPLAY ' YACO-POLIZA   ' X372VT19-POLIZA-E
+      *F*
+
+           MOVE  X362VT19-GNOMPROG-S TO X372VT19-GNOMPROG-S
+           MOVE  X362VT19-CRETORNO-S TO X372VT19-CRETORNO-S
+           MOVE  X362VT19-GERROR-S   TO X372VT19-GERROR-S
+
+           MOVE X362VT19-ANIOPOL-S    TO X372VT19-ANIOPOL-S
+           MOVE X362VT19-RAMO-S       TO X372VT19-RAMO-S
+           MOVE X362VT19-POLIZA-S     TO X372VT19-POLIZA-S
+           MOVE X362VT19-SUBPOLIZA-S  TO X372VT19-SUBPOLIZA-S
+           MOVE X362VT19-SITUACION-S  TO X372VT19-SITUACION-S
+           MOVE X362VT19-MODALIDAD-S  TO X372VT19-MODALIDAD-S
+           MOVE X362VT19-FEFECTO-S    TO X372VT19-FEFECTO-S
+           MOVE X362VT19-FANULACION-S TO X372VT19-FANULACION-S
+           MOVE X362VT19-REGIONAL-S   TO X372VT19-REGIONAL-S
+           MOVE X362VT19-CANAL-S      TO X372VT19-CANAL-S
+           MOVE X362VT19-CENTIDAD-S   TO X372VT19-CENTIDAD-S
+           MOVE X362VT19-OFICINA-S    TO X372VT19-OFICINA-S
+           MOVE X362VT19-TOMADOR-S    TO X372VT19-TOMADOR-S
+           MOVE X362VT19-NIF1-S       TO X372VT19-NIF1-S
+           MOVE X362VT19-DURACION-S   TO X372VT19-DURACION-S
+
+            .
+      ******************************************************************
+      *9000-FIN.
+      ******************************************************************
+       9000-FIN.
+
+           EXEC CICS                                                    00048300
+                RETURN                                                  00048400
+           END-EXEC.                                                    00048500
+
+           IF EIBRESP NOT = DFHRESP(NORMAL)
+
+
+              MOVE  'B372VT19'  TO  X372VT19-GNOMPROG-S
+              MOVE  '99'        TO  X372VT19-CRETORNO-S
+              MOVE  'ERROR AL DEVOLVER CONTROL'
+                                TO  X372VT19-GERROR-S
+
+           END-IF
+           .
+

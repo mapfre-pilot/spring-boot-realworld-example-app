@@ -1,0 +1,2066 @@
+       IDENTIFICATION DIVISION.                                         00010001
+       PROGRAM-ID.                                                      00020001
+                                                                        00030001
+                 B372J009.                                              00040001
+      ******************************************************************00050001
+      *    AUTOR      : EVERIS                                         *00060001
+      *    FECHA      :  JUNIO 2012                                    *00070001
+      *    DESCRIPCION: INFORMES DE VENCIMIENTOS MANUALE RESUMEN POR   *00080001
+      *                 MODALIDADES                                    *00090001
+      ****************************************************************  00100001
+      * MODULOS UTILIZADOS:                                             00110001
+      ******************************************************************00120001
+      *                                                                 00130001
+      * B001M001 : MODULOS ROLLBACK/COMMIT                              00140001
+      *                                                                 00150001
+      * B372M006 : MODULO DE MANTENIMIENTO DE LA TABLA TB372VEN0        00160001
+      *                                                                 00170001
+      * B596M705 : MODULO DE CONSULTA TABLA TB596AGN0                   00180001
+      *                                                                 00190001
+      * B596M706 : MODULO DE CONSULTA TABLA TB596PIF0                   00200001
+      *                                                                 00210001
+      * B596M709 : MODULO DE ACTULIZACION DE LA TABLA TB596AGN0         00220001
+      *                                                                 00230001
+      ******************************************************************00240001
+      ***************************************************************** 00250001
+      *                                                               * 00260001
+      * PETICION    : MU-2015-036085       BUSCAR <<536085>           * 00270001
+      * AUTOR       : INDRA                                           * 00280001
+      * FECHA       : 15/06/2015                                      * 00290001
+      * DESCRIPCI”N : CUADRE ENTRE LOS INFORMES DE RESCATES MANUALES  * 00300001
+      *               POR MODALIDAD Y POR POLIZA                      * 00310001
+      *                                                               * 00320001
+      ***************************************************************** 00330001
+      *                                                               * 00340001
+      * PETICION    : MU-2015-035084       BUSCAR <<535084>           * 00350001
+      * AUTOR       : INDRA                                           * 00360001
+      * FECHA       : 08/09/2015                                      * 00370001
+      * DESCRIPCI”N : A—ADIR NUEVOS CRITERIOS:                        * 00380001
+      *                  A—O DESDE Y A—O HASTA Y EXPEDIENTE DESDE Y   * 00390001
+      *                  EXPEDIENTE HASTA                             * 00400001
+      *                                                               * 00410001
+      ***************************************************************** 00420001
+      *                                                               * 00430001
+      * PETICION    : MU-2016-052647       BUSCAR <<652647>           * 00440001
+      * AUTOR       : INDRA                                           * 00450001
+      * FECHA       : 16/08/2016                                      * 00460001
+      * DESCRIPCI”N : INFORMAR SOLO LA PARTE DE MAPFRE CUANDO HAY     * 00470001
+      *               COASEGURO Y PAGO TOTAL MAPFRE ='NO'             * 00480001
+      *               ADEMAS SE UTILIZA PARA EL CALCULO EL % CON 6    * 00490001
+      *               DECIMALES.                                      * 00500001
+      *                                                               * 00510001
+      ***************************************************************** 00520001
+      ***************************************************************** 00530001
+      *  MODIFICACION                                                  *00540001
+      *  ------------                                                  *00550001
+      *  FECHA:       JULIO 2017                                       *00560001
+      *  AUTORA:      EVERIS SPAIN                                     *00570001
+      *  ARTEMIS:     MU-2017-BDGI-R-V  RESCATES  Y VENCIMIENTOS       *00580001
+      *  DESCRIPCION: INFORME DE VENCIMIENTOS XPEDIENTE A LAS COPYS DE *00590001
+      *               ENTRADA Y SALIDA.                                *00600001
+      *  MU-2017-BDGI-R-V-INI                                          *00610001
+      *  MU-2017-BDGI-R-V-FIN                                          *00620001
+      ******************************************************************00630001
+      *                                                               * 00632002
+      * PETICION    : MU-2017-066347       BUSCAR <<766347>           * 00633002
+      * AUTOR       : INDRA                                           * 00634002
+      * FECHA       : 06/11/2017                                      * 00635002
+      * DESCRIPCI”N : NO PAGINAR SI LAS FILAS RECUPERADAS COINCIDEN   * 00636002
+      *               CON LAS M¡XIMAS DE LA COPY X372M006 (20).       * 00637002
+      *               ESTO HA PROVOCADO LA CANCELACI”N POR BUCLE DE LA* 00638002
+      *               CADENA X0323769 EN EL CIERRE DE NOVIEMBRE.      * 00639002
+      *                                                               * 00639102
+      ***************************************************************** 00639202
+      *                                                                 00640001
+       ENVIRONMENT DIVISION.                                            00650001
+      *---------------------                                            00660001
+       CONFIGURATION SECTION.                                           00670001
+      *----------------------                                           00680001
+       SPECIAL-NAMES.                                                   00690001
+            DECIMAL-POINT IS COMMA.                                     00700001
+                                                                        00710001
+       INPUT-OUTPUT SECTION.                                            00720001
+      *---------------------                                            00730001
+       FILE-CONTROL.                                                    00740001
+      ***  FICHERO DE SAIDA DEL INFORME                                 00750001
+            SELECT FICH-INF  ASSIGN TO SYS001.                          00760001
+                                                                        00770001
+      ***  FICHERO DE SAIDA DEL INFORME                                 00780001
+            SELECT FICH-TXT  ASSIGN TO SYS002.                          00790001
+                                                                        00800001
+      ***  FICHERO DE ERRORES                                           00810001
+           SELECT FICH-ERR                                              00820001
+           ASSIGN       TO SYS003                                       00830001
+           ORGANIZATION IS SEQUENTIAL                                   00840001
+           ACCESS MODE  IS SEQUENTIAL.                                  00850001
+                                                                        00860001
+                                                                        00870001
+       DATA DIVISION.                                                   00880001
+      *--------------                                                   00890001
+       FILE SECTION.                                                    00900001
+       FD  FICH-INF                                                     00910001
+           LABEL RECORDS OMITTED                                        00920001
+           RECORDING MODE IS F.                                         00930001
+       01  RIMPRESO         PIC X(195).                                 00940001
+                                                                        00950001
+       FD  FICH-TXT                                                     00960001
+           LABEL RECORDS OMITTED                                        00970001
+           RECORDING MODE IS F.                                         00980001
+       01  RIMPRTXT         PIC X(241).                                 00990001
+                                                                        01000001
+       FD FICH-ERR                                                      01010001
+             BLOCK CONTAINS 0 RECORDS                                   01020001
+             RECORDING MODE IS F                                        01030001
+             LABEL RECORDS  ARE STANDARD.                               01040001
+       01 REG-ERR           PIC X(200).                                 01050001
+                                                                        01060001
+       WORKING-STORAGE SECTION.                                         01070001
+      *-----------------------                                          01080001
+       01  P-FILLER.                                                    01090001
+           03  FILLER   PIC X(17)  VALUE 'INICIO-WORKING'.              01100001
+                                                                        01110001
+      **** SWICTH.                                                      01120001
+          03 SW-FIN-ENTRADA        PIC X    VALUE 'N'.                  01130001
+             88 FIN-ENTRADA                 VALUE 'S'.                  01140001
+                                                                        01150001
+          03 SW-ESCRITURA          PIC XX VALUE '00'.                   01160001
+             88 NO-ESCRITURA              VALUE '00'.                   01170001
+             88 SI-ESCRITURA              VALUE '01'.                   01180001
+                                                                        01190001
+          03 SW-ENTRADA            PIC XX VALUE '00'.                   01200001
+                88 SW-NO-PRIMERA-VEZ      VALUE '01'.                   01210001
+                88 SW-SI-PRIMERA-VEZ     VALUE '00'.                    01220001
+                                                                        01230001
+          03 SW-COM-MAPFRE            PIC X    VALUE 'N'.               01240001
+               88 SI-MAPFRE                    VALUE 'S'.               01250001
+                                                                        01260001
+          03 SW-COM-CMADRID           PIC X    VALUE 'N'.               01270001
+               88 SI-CMADRID                   VALUE 'S'.               01280001
+                                                                        01290001
+          03 SW-COM-BANKINTER         PIC X    VALUE 'N'.               01300001
+               88 SI-BANKINTER                 VALUE 'S'.               01310001
+                                                                        01320001
+          03 SW-SWITCH.                                                 01330001
+             05 SW-ERRORES     PIC 9(01)  VALUE 0.                      01340001
+                88 NO-ERROR               VALUE 0.                      01350001
+                88 ERROR-GRAVE            VALUE 1.                      01360001
+                                                                        01370001
+          03 SW-BORRA-ROLLBACK     PIC XX VALUE '00'.                   01380001
+             88 SI-ROLLBACK               VALUE '00'.                   01390001
+             88 NO-ROLLBACK               VALUE '01'.                   01400001
+                                                                        01410001
+          03 SW-PRIMERA-VEZ        PIC XX VALUE '00'.                   01420001
+             88 SI-PRIMERA                VALUE '00'.                   01430001
+             88 NO-PRIMERA                VALUE '01'.                   01440001
+                                                                        01450001
+      **** VARIABLES DE TRABAJO                                         01460001
+          03 WS-FECHA-SIS.                                              01470001
+             05 WS-FECHA.                                               01480001
+                07 WS-ANO                   PIC 9(04).                  01490001
+                07 WS-MES                   PIC 9(02).                  01500001
+                07 WS-DIA                   PIC 9(02).                  01510001
+                                                                        01520001
+          03 WS-CONSTANTES.                                             01530001
+             05 XN-I                        PIC 9(03) VALUE 1.          01540001
+             05 XN-J                        PIC 9(03) VALUE 1.          01550001
+      * MU-2017-BDGI-R-V-INI                                            01560001
+             05 XN-M                        PIC 9(03) VALUE 1.          01570001
+      * MU-2017-BDGI-R-V-FIN                                            01580001
+             05 CN-RES-MAX                  PIC 9(03) VALUE 20.         01590001
+                                                                        01600001
+      **** VARIABLE AUXILIZAR MODALIDAD                                 01610001
+          03 WS-MODALIDAD                   PIC 9(05) VALUE ZEROES.     01620001
+                                                                        01630001
+      **** VARIABLES AUXILIZARES DE COASEGURO MAPFRE                    01640001
+          03 LT-MAVI-COASEGURO              PIC X(05) VALUE 'C0511'.    01650001
+          03 WS-PORC-COASEGUR               PIC S9(3)V9(2).             01660001
+652647    03 WS-PORC-COA-DECI               PIC S9(3)V9(6).             01670001
+          03 WS-IPENDIENTE-COA              PIC S9(13)V9(2).            01680001
+          03 WS-CAPITAL                     PIC S9(13)V9(2).            01690001
+                                                                        01700001
+      **** CONTADORES                                                   01710001
+          03 CT-LINEA                       PIC 9(3)   VALUE ZEROS.     01720001
+          03 CT-PAGE                        PIC 9(4)   VALUE ZEROS.     01730001
+535084    03 CT-ANIOS                       PIC 9(1)   VALUE ZEROS.     01740001
+535084    03 CT-ANIOS-1                     PIC 9(1)   VALUE ZEROS.     01750001
+535084    03 CT-ANIOS-2                     PIC 9(1)   VALUE ZEROS.     01760001
+                                                                        01770001
+      **** VARIABLES DE FICHERO DE TXT                                  01780001
+                                                                        01790001
+          03 FICHERO-TXT.                                               01800001
+             05 CABECERA-TXT.                                           01810001
+                07 FILLER          PIC X(10) VALUE '1100034459'.        01820001
+                07 FILLER          PIC X(04) VALUE SPACES.              01830001
+                07 CB-FECALCULO    PIC X(08) VALUE SPACES.              01840001
+                07 FILLER          PIC X(05) VALUE 'EURXG'.             01850001
+             05 LINEA-TXT.                                              01860001
+                07 FILLER          PIC X(10) VALUE '2200034459'.        01870001
+                07 FILLER          PIC X(04) VALUE SPACES.              01880001
+                07 LI-FECALCULO    PIC X(08) VALUE SPACES.              01890001
+                07 FILLER          PIC X(13) VALUE 'EUR0000693503'.     01900001
+                07 FILLER          PIC X(03) VALUE '000'.               01910001
+                07 FILLER          PIC X(40) VALUE SPACES.              01920001
+                07 FILLER          PIC X(10) VALUE '0000009276'.        01930001
+                07 FILLER          PIC X(21) VALUE SPACES.              01940001
+                07 LI-MOD          PIC 9(04) VALUE ZEROES.              01950001
+                07 FILLER          PIC X(59) VALUE SPACES.              01960001
+                07 FILLER          PIC X(01) VALUE 'D'.                 01970001
+                07 LI-ENTERA-1     PIC 9(12) VALUE ZEROES.              01980001
+                07 LI-DECIMAL-1    PIC 9(02) VALUE ZEROES.              01990001
+                07 LI-ENTERA-2     PIC 9(12) VALUE ZEROES.              02000001
+                07 LI-DECIMAL-2    PIC 9(02) VALUE ZEROES.              02010001
+                07 FILLER          PIC X(30) VALUE                      02020001
+                                   'PROVISI”N VENCIMIE PENDIENTES '.    02030001
+                07 LI-FORMFECHA    PIC X(10) VALUE ZEROES.              02040001
+             05 LINEA-TOTAL-TXT.                                        02050001
+                07 FILLER          PIC X(10) VALUE '2200034459'.        02060001
+                07 FILLER          PIC X(04) VALUE SPACES.              02070001
+                07 LI-TO-FECALCULO PIC X(08) VALUE SPACES.              02080001
+                07 FILLER          PIC X(13) VALUE 'EUR0000350030'.     02090001
+                07 FILLER          PIC X(03) VALUE '000'.               02100001
+                07 FILLER          PIC X(40) VALUE SPACES.              02110001
+                07 FILLER          PIC X(10) VALUE '0000009997'.        02120001
+                07 FILLER          PIC X(21) VALUE SPACES.              02130001
+                07 LI-TO-MOD       PIC 9(04) VALUE ZEROES.              02140001
+                07 FILLER          PIC X(59) VALUE SPACES.              02150001
+                07 FILLER          PIC X(01) VALUE 'H'.                 02160001
+                07 LI-TO-ENTERA-1  PIC 9(12) VALUE ZEROES.              02170001
+                07 LI-TO-DECIMAL-1 PIC 9(02) VALUE ZEROES.              02180001
+                07 LI-TO-ENTERA-2  PIC 9(12) VALUE ZEROES.              02190001
+                07 LI-TO-DECIMAL-2 PIC 9(02) VALUE ZEROES.              02200001
+                07 FILLER          PIC X(30) VALUE                      02210001
+535084                             'PROVISI”N VENCIMIE PENDIENTES '.    02220001
+                07 LI-TO-FORMFECHA PIC X(10) VALUE ZEROES.              02230001
+             05 ULTIMA-TXT.                                             02240001
+                07 FILLER          PIC X(10) VALUE '1100034459'.        02250001
+                07 FILLER          PIC X(04) VALUE SPACES.              02260001
+                07 UL-FECALCULO    PIC X(08) VALUE SPACES.              02270001
+                07 FILLER          PIC X(03)  VALUE 'EUR'.              02280001
+                07 UL-TO-ENTERA-1  PIC 9(12) VALUE ZEROES.              02290001
+                07 UL-TO-DECIMAL-1 PIC 9(02) VALUE ZEROES.              02300001
+                07 UL-TO-ENTERA-2  PIC 9(12) VALUE ZEROES.              02310001
+                07 UL-TO-DECIMAL-2 PIC 9(02) VALUE ZEROES.              02320001
+                                                                        02330001
+      **** VARIABLES DE LINEA                                           02340001
+          03 VARIABLES-LINEA.                                           02350001
+             05 DE-IMPOR           PIC S9(13)V9(2).                     02360001
+             05 DE-IMPOR1          PIC S9(13)V9(2).                     02370001
+             05 DE-IMPOR2          PIC S9(13)V9(2).                     02380001
+             05 DE-IMPOR3          PIC S9(13)V9(2).                     02390001
+             05 DE-IMPOR4          PIC S9(13)V9(2).                     02400001
+             05 DE-IMPOR5          PIC S9(13)V9(2).                     02410001
+             05 DE-IMPORT          PIC S9(13)V9(2).                     02420001
+             05 DE-IMPORT-TXT REDEFINES DE-IMPORT.                      02430001
+                07 DE-IMPORT-E      PIC 9(12).                          02440001
+                07 DE-IMPORT-D      PIC 9(02).                          02450001
+             05 DE-EXPED           PIC 9(3).                            02460001
+             05 DE-EXPED1          PIC 9(3).                            02470001
+             05 DE-EXPED2          PIC 9(3).                            02480001
+             05 DE-EXPED3          PIC 9(3).                            02490001
+             05 DE-EXPED4          PIC 9(3).                            02500001
+             05 DE-EXPED5          PIC 9(3).                            02510001
+             05 DE-EXPEDT          PIC 9(3).                            02520001
+                                                                        02530001
+      **** VARIABLES DE TOTALES                                         02540001
+          03 VARIABLES-TOTAL.                                           02550001
+             05 TO-IMPOR           PIC S9(13)V9(2).                     02560001
+             05 TO-IMPOR1          PIC S9(13)V9(2).                     02570001
+             05 TO-IMPOR2          PIC S9(13)V9(2).                     02580001
+             05 TO-IMPOR3          PIC S9(13)V9(2).                     02590001
+             05 TO-IMPOR4          PIC S9(13)V9(2).                     02600001
+             05 TO-IMPOR5          PIC S9(13)V9(2).                     02610001
+             05 TO-IMPORT          PIC S9(13)V9(2).                     02620001
+             05 TO-IMPORT-TXT REDEFINES                                 02630001
+                TO-IMPORT.                                              02640001
+                07 TO-IMPORT-E      PIC 9(13).                          02650001
+                07 TO-IMPORT-D      PIC 9(02).                          02660001
+             05 TO-EXPED           PIC 9(3).                            02670001
+             05 TO-EXPED1          PIC 9(3).                            02680001
+             05 TO-EXPED2          PIC 9(3).                            02690001
+             05 TO-EXPED3          PIC 9(3).                            02700001
+             05 TO-EXPED4          PIC 9(3).                            02710001
+             05 TO-EXPED5          PIC 9(3).                            02720001
+             05 TO-EXPEDT          PIC 9(3).                            02730001
+                                                                        02740001
+      **** CABECERAS SALIDAS                                            02750001
+           03 CAB-INTRO.                                                02760001
+              05 FILLER         PIC X(01)  VALUE SPACES.                02770001
+              05 FILLER         PIC X      VALUE '['.                   02780001
+              05 CB-INTRO-DIA   PIC 9(2)   VALUE  ZEROS.                02790001
+              05 FILLER         PIC X      VALUE '-'.                   02800001
+              05 CB-INTRO-MES   PIC 9(2)   VALUE  ZEROS.                02810001
+              05 FILLER         PIC X      VALUE '-'.                   02820001
+              05 CB-INTRO-ANO   PIC 9(4)   VALUE  ZEROS.                02830001
+              05 FILLER         PIC X      VALUE ']'.                   02840001
+              05 FILLER         PIC X(167)  VALUE SPACES.               02850001
+              05 FILLER         PIC X(9)   VALUE '   PAG.: '.           02860001
+              05 CB-INTRO-PAG   PIC ZZZ.                                02870001
+                                                                        02880001
+           03 CAB-INTRO-1.                                              02890001
+              05 FILLER       PIC X(01)  VALUE SPACES.                  02900001
+              05 FILLER       PIC X(16)  VALUE 'MAPFRE VIDA     '.      02910001
+              05 FILLER       PIC X(25)  VALUE SPACES.                  02920001
+535084        05 FILLER       PIC X(45)                                 02930001
+535084           VALUE 'RESUMEN VENCIMIENTOS PENDIENTES DESDE EL A—O '. 02940001
+              05 INTRO-ANIO   PIC 9(4) VALUE ZEROS.                     02950001
+              05 FILLER       PIC X(14)  VALUE ' HASTA EL A—O '.        02960001
+              05 INTRO-ANIOMAS5  PIC 9(4) VALUE ZEROES.                 02970001
+                                                                        02980001
+           03 CAB-INTRO-2.                                              02990001
+              05 FILLER       PIC X(45) VALUE SPACES.                   03000001
+              05 FILLER       PIC X(24) VALUE 'Y DESDE EL EXPEDIENTE '. 03010001
+              05 INTRO-KEXPEDES  PIC Z.ZZZ.ZZ9.                         03020001
+              05 FILLER       PIC X(21) VALUE ' HASTA EL EXPEDIENTE '.  03030001
+              05 INTRO-KEXPEHAS  PIC Z.ZZZ.ZZ9.                         03040001
+                                                                        03050001
+           03 CAB-INTRO-3.                                              03060001
+              05 FILLER       PIC X(61) VALUE SPACES.                   03070001
+              05 FILLER       PIC X(19) VALUE 'Y FECHA DE CALCULO ' .   03080001
+              05 WS-FORMFECHA.                                          03090001
+                 07 WS-FECALDIA  PIC 9(2)  VALUE ZEROS.                 03100001
+                 07 FILLER       PIC X(1) VALUE '/'.                    03110001
+                 07 WS-FECALMES  PIC 9(2)  VALUE ZEROS.                 03120001
+                 07 FILLER       PIC X(1) VALUE '/'.                    03130001
+                 07 WS-FECALANIO PIC 9(4)  VALUE ZEROS.                 03140001
+                                                                        03150001
+535084*NUEVAS CABECERAS                                                 03160001
+                                                                        03170001
+           03 CAB-TITULO-1.                                             03180001
+              05 FILLER       PIC X(27)  VALUE SPACES.                  03190001
+              05 FILLER       PIC X(04)  VALUE 'A—O '.                  03200001
+              05 WS-ANIO      PIC 9(04)  VALUE ZEROS.                   03210001
+535084        05 ST-CABECERA  PIC X(164) VALUE '.'.                     03220001
+535084                                                                  03230001
+535084     03 CAB-TITULO-ANIOS  OCCURS 5.                               03240001
+535084        05 FILLER       PIC X(17)  VALUE SPACES.                  03250001
+535084        05 FILLER       PIC X(04)  VALUE 'A—O '.                  03260001
+535084        05 WS-ANIOMAS1  PIC 9(04)  VALUE ZEROS.                   03270001
+535084        05 FILLER       PIC X(01)  VALUE '.'.                     03280001
+535084                                                                  03290001
+535084     03 CAB-TITULO-TOTAL.                                         03300001
+535084        05 FILLER       PIC X(17)  VALUE SPACES.                  03310001
+535084        05 FILLER       PIC X(05)  VALUE 'TOTAL'.                 03320001
+535084*                                                                 03330001
+535084*       05 FILLER       PIC X(17)  VALUE SPACES.                  03340001
+535084*       05 FILLER       PIC X(04)  VALUE 'A—O '.                  03350001
+535084*       05 WS-ANIOMAS1  PIC 9(04)  VALUE ZEROS.                   03360001
+535084*       05 FILLER       PIC X(17)  VALUE SPACES.                  03370001
+535084*       05 FILLER       PIC X(04)  VALUE 'A—O '.                  03380001
+535084*       05 WS-ANIOMAS2  PIC 9(04)  VALUE ZEROS.                   03390001
+535084*       05 FILLER       PIC X(17)  VALUE SPACES.                  03400001
+535084*       05 FILLER       PIC X(04)  VALUE 'A—O '.                  03410001
+535084*       05 WS-ANIOMAS3  PIC 9(04)  VALUE ZEROS.                   03420001
+535084*       05 FILLER       PIC X(17)  VALUE SPACES.                  03430001
+535084*       05 FILLER       PIC X(04)  VALUE 'A—O '.                  03440001
+535084*       05 WS-ANIOMAS4  PIC 9(04)  VALUE ZEROS.                   03450001
+535084*       05 FILLER       PIC X(17)  VALUE SPACES.                  03460001
+535084*       05 FILLER       PIC X(04)  VALUE 'A—O '.                  03470001
+535084*       05 WS-ANIOMAS5  PIC 9(04)  VALUE ZEROS.                   03480001
+535084*       05 FILLER       PIC X(17)  VALUE SPACES.                  03490001
+535084*       05 FILLER       PIC X(05)  VALUE 'TOTAL'.                 03500001
+                                                                        03510001
+           03 CAB-TITULO-1-SUBRAYADO.                                   03520001
+              05 FILLER       PIC X(15)  VALUE SPACES.                  03530001
+              05 FILLER       PIC X(04)  VALUE ALL '_'.                 03540001
+              05 FILLER       PIC X(01)  VALUE SPACES.                  03550001
+              05 FILLER       PIC X(23)  VALUE ALL '_'.                 03560001
+              05 FILLER       PIC X(02)  VALUE SPACES.                  03570001
+535084        05 ST-SUBRAYADO PIC X(200) VALUE '.'.                     03580001
+535084                                                                  03590001
+535084     03 CAB-TITULO-1-SUB-VAR.                                     03600001
+535084        05 FILLER       PIC X(23)  VALUE ALL '_'.                 03610001
+535084        05 FILLER       PIC X(02)  VALUE SPACES.                  03620001
+535084        05 FILLER       PIC X(01)  VALUE '.'.                     03630001
+535084                                                                  03640001
+535084     03 CAB-TITULO-1-SUB-TOTAL.                                   03650001
+535084        05 FILLER       PIC X(23)  VALUE ALL '_'.                 03660001
+535084        05 FILLER       PIC X(02)  VALUE SPACES.                  03670001
+535084*                                                                 03680001
+535084*       05 FILLER       PIC X(23)  VALUE ALL '_'.                 03690001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  03700001
+535084*       05 FILLER       PIC X(23)  VALUE ALL '_'.                 03710001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  03720001
+535084*       05 FILLER       PIC X(23)  VALUE ALL '_'.                 03730001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  03740001
+535084*       05 FILLER       PIC X(23)  VALUE ALL '_'.                 03750001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  03760001
+535084*       05 FILLER       PIC X(23)  VALUE ALL '_'.                 03770001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  03780001
+535084*       05 FILLER       PIC X(23)  VALUE ALL '_'.                 03790001
+535084*       05 FILLER       PIC X(15)  VALUE SPACES.                  03800001
+535084*       05 FILLER       PIC X(04)  VALUE ALL '_'.                 03810001
+535084*       05 FILLER       PIC X(01)  VALUE SPACES.                  03820001
+535084*       05 FILLER       PIC X(04)  VALUE ALL '_'.                 03830001
+535084*       05 FILLER       PIC X(01)  VALUE SPACES.                  03840001
+535084*       05 FILLER       PIC X(18)  VALUE ALL '_'.                 03850001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  03860001
+535084*       05 FILLER       PIC X(04)  VALUE ALL '_'.                 03870001
+535084*       05 FILLER       PIC X(01)  VALUE SPACES.                  03880001
+535084*       05 FILLER       PIC X(18)  VALUE ALL '_'.                 03890001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  03900001
+535084*       05 FILLER       PIC X(04)  VALUE ALL '_'.                 03910001
+535084*       05 FILLER       PIC X(01)  VALUE SPACES.                  03920001
+535084*       05 FILLER       PIC X(18)  VALUE ALL '_'.                 03930001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  03940001
+535084*       05 FILLER       PIC X(04)  VALUE ALL '_'.                 03950001
+535084*       05 FILLER       PIC X(01)  VALUE SPACES.                  03960001
+535084*       05 FILLER       PIC X(18)  VALUE ALL '_'.                 03970001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  03980001
+535084*       05 FILLER       PIC X(04)  VALUE ALL '_'.                 03990001
+535084*       05 FILLER       PIC X(01)  VALUE SPACES.                  04000001
+535084*       05 FILLER       PIC X(18)  VALUE ALL '_'.                 04010001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  04020001
+535084*       05 FILLER       PIC X(04)  VALUE ALL '_'.                 04030001
+535084*       05 FILLER       PIC X(01)  VALUE SPACES.                  04040001
+535084*       05 FILLER       PIC X(18)  VALUE ALL '_'.                 04050001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  04060001
+535084*       05 FILLER       PIC X(04)  VALUE ALL '_'.                 04070001
+535084*       05 FILLER       PIC X(01)  VALUE SPACES.                  04080001
+535084*       05 FILLER       PIC X(18)  VALUE ALL '_'.                 04090001
+                                                                        04100001
+           03 CAB-TITULO-2.                                             04110001
+              05 FILLER       PIC X(15)  VALUE SPACES.                  04120001
+              05 FILLER       PIC X(04)  VALUE 'MOD.'.                  04130001
+              05 FILLER       PIC X(01)  VALUE SPACES.                  04140001
+              05 FILLER       PIC X(04)  VALUE 'EXP.'.                  04150001
+              05 FILLER       PIC X(02)  VALUE SPACES.                  04160001
+              05 FILLER       PIC X(07)  VALUE 'IMPORTE'.               04170001
+535084        05 ST-TITULO-2  PIC X(150) VALUE ' .'.                    04180001
+535084                                                                  04190001
+535084     03 CAB-TITULO-2-VARIABLE.                                    04200001
+535084        05 FILLER       PIC X(12)  VALUE SPACES.                  04210001
+535084        05 FILLER       PIC X(04)  VALUE 'EXP.'.                  04220001
+535084        05 FILLER       PIC X(02)  VALUE SPACES.                  04230001
+535084        05 FILLER       PIC X(07)  VALUE 'IMPORTE'.               04240001
+535084        05 FILLER       PIC X(02)  VALUE ' .'.                    04250001
+535084                                                                  04260001
+535084     03 CAB-TITULO-2-TOTAL.                                       04270001
+535084        05 FILLER       PIC X(12)  VALUE SPACES.                  04280001
+535084        05 FILLER       PIC X(04)  VALUE 'EXP.'.                  04290001
+535084        05 FILLER       PIC X(02)  VALUE SPACES.                  04300001
+535084        05 FILLER       PIC X(07)  VALUE 'IMPORTE'.               04310001
+535084*                                                                 04320001
+535084*       05 FILLER       PIC X(12)  VALUE SPACES.                  04330001
+535084*       05 FILLER       PIC X(04)  VALUE 'EXP.'.                  04340001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  04350001
+535084*       05 FILLER       PIC X(07)  VALUE 'IMPORTE'.               04360001
+535084*       05 FILLER       PIC X(12)  VALUE SPACES.                  04370001
+535084*       05 FILLER       PIC X(04)  VALUE 'EXP.'.                  04380001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  04390001
+535084*       05 FILLER       PIC X(07)  VALUE 'IMPORTE'.               04400001
+535084*       05 FILLER       PIC X(12)  VALUE SPACES.                  04410001
+535084*       05 FILLER       PIC X(04)  VALUE 'EXP.'.                  04420001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  04430001
+535084*       05 FILLER       PIC X(07)  VALUE 'IMPORTE'.               04440001
+535084*       05 FILLER       PIC X(12)  VALUE SPACES.                  04450001
+535084*       05 FILLER       PIC X(04)  VALUE 'EXP.'.                  04460001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  04470001
+535084*       05 FILLER       PIC X(07)  VALUE 'IMPORTE'.               04480001
+535084*       05 FILLER       PIC X(12)  VALUE SPACES.                  04490001
+535084*       05 FILLER       PIC X(04)  VALUE 'EXP.'.                  04500001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  04510001
+535084*       05 FILLER       PIC X(07)  VALUE 'IMPORTE'.               04520001
+535084*       05 FILLER       PIC X(12)  VALUE SPACES.                  04530001
+535084*       05 FILLER       PIC X(04)  VALUE 'EXP.'.                  04540001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  04550001
+535084*       05 FILLER       PIC X(07)  VALUE 'IMPORTE'.               04560001
+                                                                        04570001
+           03 CAB-TITULO-2-SUBRAYADO.                                   04580001
+              05 FILLER       PIC X(15)  VALUE SPACES.                  04590001
+              05 FILLER       PIC X(04)  VALUE ALL '_'.                 04600001
+              05 FILLER       PIC X(01)  VALUE SPACES.                  04610001
+              05 FILLER       PIC X(04)  VALUE ALL '_'.                 04620001
+              05 FILLER       PIC X(01)  VALUE SPACES.                  04630001
+              05 FILLER       PIC X(18)  VALUE ALL '_'.                 04640001
+535084        05 ST-SUBRAYADO-2 PIC X(150) VALUE '.'.                   04650001
+535084                                                                  04660001
+535084     03 CAB-TITULO-2-SUB-VAR.                                     04670001
+535084        05 FILLER       PIC X(02)  VALUE SPACES.                  04680001
+535084        05 FILLER       PIC X(04)  VALUE ALL '_'.                 04690001
+535084        05 FILLER       PIC X(01)  VALUE SPACES.                  04700001
+535084        05 FILLER       PIC X(18)  VALUE ALL '_'.                 04710001
+535084        05 FILLER       PIC X(01)  VALUE ALL '.'.                 04720001
+535084                                                                  04730001
+535084     03 CAB-TITULO-2-SUB-TOTAL.                                   04740001
+535084        05 FILLER       PIC X(02)  VALUE SPACES.                  04750001
+535084        05 FILLER       PIC X(04)  VALUE ALL '_'.                 04760001
+535084        05 FILLER       PIC X(01)  VALUE SPACES.                  04770001
+535084        05 FILLER       PIC X(18)  VALUE ALL '_'.                 04780001
+535084*                                                                 04790001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  04800001
+535084*       05 FILLER       PIC X(04)  VALUE ALL '_'.                 04810001
+535084*       05 FILLER       PIC X(01)  VALUE SPACES.                  04820001
+535084*       05 FILLER       PIC X(18)  VALUE ALL '_'.                 04830001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  04840001
+535084*       05 FILLER       PIC X(04)  VALUE ALL '_'.                 04850001
+535084*       05 FILLER       PIC X(01)  VALUE SPACES.                  04860001
+535084*       05 FILLER       PIC X(18)  VALUE ALL '_'.                 04870001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  04880001
+535084*       05 FILLER       PIC X(04)  VALUE ALL '_'.                 04890001
+535084*       05 FILLER       PIC X(01)  VALUE SPACES.                  04900001
+535084*       05 FILLER       PIC X(18)  VALUE ALL '_'.                 04910001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  04920001
+535084*       05 FILLER       PIC X(04)  VALUE ALL '_'.                 04930001
+535084*       05 FILLER       PIC X(01)  VALUE SPACES.                  04940001
+535084*       05 FILLER       PIC X(18)  VALUE ALL '_'.                 04950001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  04960001
+535084*       05 FILLER       PIC X(04)  VALUE ALL '_'.                 04970001
+535084*       05 FILLER       PIC X(01)  VALUE SPACES.                  04980001
+535084*       05 FILLER       PIC X(18)  VALUE ALL '_'.                 04990001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05000001
+535084*       05 FILLER       PIC X(04)  VALUE ALL '_'.                 05010001
+535084*       05 FILLER       PIC X(01)  VALUE SPACES.                  05020001
+535084*       05 FILLER       PIC X(18)  VALUE ALL '_'.                 05030001
+                                                                        05040001
+           03 LIN-DETALLE.                                              05050001
+              05 FILLER       PIC X(15)  VALUE SPACES.                  05060001
+              05 DE-MOD       PIC 9(03).                                05070001
+              05 FILLER       PIC X(02)  VALUE SPACES.                  05080001
+              05 WS-DE-EXPED  PIC ZZ9.                                  05090001
+              05 FILLER       PIC X(02)  VALUE SPACES.                  05100001
+              05 WS-DE-IMPOR  PIC  ---.---.---.--9,99  VALUE ZEROS.     05110001
+              05 FILLER       PIC X(02)  VALUE SPACES.                  05120001
+535084        05 ST-DETALLE   PIC X(150) VALUE '..'.                    05130001
+535084                                                                  05140001
+535084     03 LIN-DETALLE-VARIABLE OCCURS 5.                            05150001
+535084        05 WS-DE-EXPED1 PIC ZZ9.                                  05160001
+535084        05 FILLER       PIC X(02)  VALUE SPACES.                  05170001
+535084        05 WS-DE-IMPOR1 PIC  ---.---.---.--9,99  VALUE ZEROS.     05180001
+535084        05 FILLER       PIC X(02)  VALUE SPACES.                  05190001
+535084        05 FILLER       PIC X(02)  VALUE '..'.                    05200001
+535084                                                                  05210001
+535084     03 LIN-DETALLE-TOTAL.                                        05220001
+535084        05 WS-DE-EXPEDT PIC ZZ9.                                  05230001
+535084        05 FILLER       PIC X(02)  VALUE SPACES.                  05240001
+535084        05 WS-DE-IMPORT PIC  ---.---.---.--9,99  VALUE ZEROS.     05250001
+535084        05 FILLER       PIC X(01)  VALUE SPACES.                  05260001
+535084*                                                                 05270001
+535084*       05 WS-DE-EXPED2 PIC ZZ9.                                  05280001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05290001
+535084*       05 WS-DE-IMPOR2 PIC  ---.---.---.--9,99  VALUE ZEROS.     05300001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05310001
+535084*       05 WS-DE-EXPED3 PIC ZZ9.                                  05320001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05330001
+535084*       05 WS-DE-IMPOR3 PIC  ---.---.---.--9,99  VALUE ZEROS.     05340001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05350001
+535084*       05 WS-DE-EXPED4 PIC ZZ9.                                  05360001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05370001
+535084*       05 WS-DE-IMPOR4 PIC  ---.---.---.--9,99  VALUE ZEROS.     05380001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05390001
+535084*       05 WS-DE-EXPED5 PIC ZZ9.                                  05400001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05410001
+535084*       05 WS-DE-IMPOR5 PIC  ---.---.---.--9,99  VALUE ZEROS.     05420001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05430001
+535084*       05 WS-DE-EXPEDT PIC ZZ9.                                  05440001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05450001
+535084*       05 WS-DE-IMPORT PIC  ---.---.---.--9,99  VALUE ZEROS.     05460001
+535084*       05 FILLER       PIC X(01)  VALUE SPACES.                  05470001
+                                                                        05480001
+           03 LIN-TOTAL.                                                05490001
+              05 FILLER       PIC X(15)  VALUE SPACES.                  05500001
+              05 FILLER       PIC X(03)  VALUE 'TOT'.                   05510001
+              05 FILLER       PIC X(02)  VALUE SPACES.                  05520001
+              05 WS-TO-EXPED  PIC ZZ9.                                  05530001
+              05 FILLER       PIC X(02)  VALUE SPACES.                  05540001
+              05 WS-TO-IMPOR  PIC  ---.---.---.--9,99  VALUE ZEROS.     05550001
+              05 FILLER       PIC X(02)  VALUE SPACES.                  05560001
+535084        05 ST-TOTAL     PIC X(185) VALUE ' .'.                    05570001
+535084                                                                  05580001
+535084     03 LIN-TOTAL-VARIABLE  OCCURS 5.                             05590001
+535084        05 WS-TO-EXPED1 PIC ZZ9.                                  05600001
+535084        05 FILLER       PIC X(02)  VALUE SPACES.                  05610001
+535084        05 WS-TO-IMPOR1 PIC  ---.---.---.--9,99  VALUE ZEROS.     05620001
+535084        05 FILLER       PIC X(02)  VALUE SPACES.                  05630001
+535084        05 FILLER       PIC X(02)  VALUE ' .'.                    05640001
+535084                                                                  05650001
+535084     03 LIN-TOTAL-TOTAL.                                          05660001
+535084        05 WS-TO-EXPEDT PIC ZZ9.                                  05670001
+535084        05 FILLER       PIC X(02)  VALUE SPACES.                  05680001
+535084        05 WS-TO-IMPORT PIC  ---.---.---.--9,99  VALUE ZEROS.     05690001
+535084*                                                                 05700001
+535084*       05 WS-TO-EXPED1 PIC ZZ9.                                  05710001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05720001
+535084*       05 WS-TO-IMPOR1 PIC  ---.---.---.--9,99  VALUE ZEROS.     05730001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05740001
+535084*       05 WS-TO-EXPED2 PIC ZZ9.                                  05750001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05760001
+535084*       05 WS-TO-IMPOR2 PIC  ---.---.---.--9,99  VALUE ZEROS.     05770001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05780001
+535084*       05 WS-TO-EXPED3 PIC ZZ9.                                  05790001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05800001
+535084*       05 WS-TO-IMPOR3 PIC  ---.---.---.--9,99  VALUE ZEROS.     05810001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05820001
+535084*       05 WS-TO-EXPED4 PIC ZZ9.                                  05830001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05840001
+535084*       05 WS-TO-IMPOR4 PIC  ---.---.---.--9,99  VALUE ZEROS.     05850001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05860001
+535084*       05 WS-TO-EXPED5 PIC ZZ9.                                  05870001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05880001
+535084*       05 WS-TO-IMPOR5 PIC  ---.---.---.--9,99  VALUE ZEROS.     05890001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05900001
+535084*       05 WS-TO-EXPEDT PIC ZZ9.                                  05910001
+535084*       05 FILLER       PIC X(02)  VALUE SPACES.                  05920001
+535084*       05 WS-TO-IMPORT PIC  ---.---.---.--9,99  VALUE ZEROS.     05930001
+           03 LINEA-BLANCO.                                             05940001
+              05 FILLER       PIC X(195)  VALUE SPACES.                 05950001
+                                                                        05960001
+      **** VARIABLE TIPO DE OPERACION                                   05970001
+           03 CT-TIPOPERACION             PIC X(02) VALUE 'C6'.         05980001
+                                                                        05990001
+      * VARIABLES AUXILIARES CRITERIOS1                                 06000001
+           03 WS-CRITERIOS1.                                            06010001
+              05 WS-ANIO-CRIT                PIC 9(04).                 06020001
+              05 FILLER                      PIC X(01) VALUE ';'.       06030001
+              05 WS-ANIODESDE                PIC 9(04).                 06040001
+              05 FILLER                      PIC X(01) VALUE ';'.       06050001
+              05 WS-ANIOHASTA                PIC 9(04).                 06060001
+              05 FILLER                      PIC X(01) VALUE ';'.       06070001
+              05 WS-EXPEDIDESDE              PIC 9(10).                 06080001
+              05 FILLER                      PIC X(01) VALUE ';'.       06090001
+              05 WS-EXPEDIHASTA              PIC 9(10).                 06100001
+              05 FILLER                      PIC X(01) VALUE ';'.       06110001
+              05 WS-FECEMISION               PIC X(08).                 06120001
+              05 FILLER                      PIC X(01) VALUE ';'.       06130001
+              05 WS-FECEMIDESDE              PIC X(08).                 06140001
+              05 FILLER                      PIC X(01) VALUE ';'.       06150001
+              05 WS-FECEMIHASTA              PIC X(08).                 06160001
+              05 FILLER                      PIC X(01) VALUE ';'.       06170001
+              05 WS-FECPAGDESDE              PIC X(08).                 06180001
+              05 FILLER                      PIC X(01) VALUE ';'.       06190001
+              05 WS-FECPAGHASTA              PIC X(08).                 06200001
+              05 FILLER                      PIC X(01) VALUE ';'.       06210001
+              05 WS-FECCALCULO               PIC X(08).                 06220001
+              05 FILLER                      PIC X(01) VALUE ';'.       06230001
+                                                                        06240001
+                                                                        06250001
+           03 WS-CLAVEELTO-ALF.                                         06260001
+              05 WS-CLAVEELTO-NUM            PIC 9(10).                 06270001
+              05 FILLER                      PIC X(240).                06280001
+                                                                        06290001
+                                                                        06300001
+      *** ESTRUCTURA DEL FICHERO DE ERRORES                             06310001
+           03 WS-REG-ERR.                                               06320001
+              05  WS-GPROGRAMA             PIC X(08).                   06330001
+              05  WS-NPARRAFO              PIC X(10).                   06340001
+              05  WS-SQLCODE               PIC 9(05).                   06350001
+              05  WS-CRETORNO              PIC X(05).                   06360001
+              05  WS-CINCIDENCIA           PIC 9(05).                   06370001
+              05  WS-GINCIDENCIA           PIC X(70).                   06380001
+              05  WS-GDATOS                PIC X(100).                  06390001
+                                                                        06400001
+           03 LT-LITERALES.                                             06410001
+      **** LITERALES DE LOS PROGRAMAS UTILIZADOS                        06420001
+              05 WS-B372M006               PIC X(08) VALUE 'B372M006'.  06430001
+              05 WS-B362M007               PIC X(08) VALUE 'B362M007'.  06440001
+              05 WS-B596M709               PIC X(08) VALUE 'B596M709'.  06450001
+              05 WS-B596M706               PIC X(08) VALUE 'B596M706'.  06460001
+              05 WS-B596M705               PIC X(08) VALUE 'B596M705'.  06470001
+              05 WS-B001M001               PIC X(08) VALUE 'B001M001'.  06480001
+      **                                                                06490001
+      ** LITERALES DE ERRORES                                           06500001
+      **                                                                06510001
+              05 LT-ERRORES.                                            06520001
+      *          LITERAL NO HAY ERRORES                                 06530001
+                 07 LT-RETURN-OK             PIC X(5) VALUE '00000'.    06540001
+      *          ERROR REGISTRO NO ENCONTRADO                           06550001
+                 07 LT-RETURN-ERR-NOTFND     PIC X(5) VALUE '00003'.    06560001
+      *          ERROR REGISTRO NO ENCONTRADO EN TABLAS SECUNDARIAS     06570001
+                 07 LT-RETURN-ERR-NOTFNDSEC  PIC X(5) VALUE '00004'.    06580001
+      *          ERROR REGISTRO CLAVE DUPLICADA                         06590001
+                 07 LT-RETURN-ERR-CLVDUPLI   PIC X(5) VALUE '00002'.    06600001
+      *          ERROR EN ACCESO A BASE DE DATOS                        06610001
+                 07 LT-RETURN-ERR-OTHER      PIC X(5) VALUE '99999'.    06620001
+                                                                        06630001
+      * CABECERA PARA MANDAR EL LISTADO AL CONTROL-D                    06640001
+          03 CAB-0.                                                     06650001
+MMC   *      05 FILLER               PIC X(09)  VALUE '1 CTDRPT='.      06660001
+MMC          05 FILLER               PIC X(08)  VALUE ' CTDRPT='.       06670001
+             05 CB-COMPANIA          PIC 9(02)  VALUE ZEROS.            06680001
+             05 CB-BUZON             PIC X(08)  VALUE SPACES.           06690001
+             05 FILLER               PIC X(01)  VALUE SPACES.           06700001
+             05 CB-CADENA            PIC X(08)  VALUE SPACES.           06710001
+             05 CB-FICHERO           PIC X(42)  VALUE SPACES.           06720001
+                                                                        06730001
+      **** VARIABLE AUXILIAR PARA BUSQUEDA PETICION                     06740001
+           03 WS-KPETINFORME            PIC S9(10)V USAGE COMP-3.       06750001
+                                                                        06760001
+                                                                        06770001
+           03 FICHA-SYSIN-CADENA.                                       06780001
+               05 NOMBRE-CADENA      PIC X(08)  VALUE SPACES.           06790001
+                                                                        06800001
+           03 FICHA-SYSIN-BUZON.                                        06810001
+              05 BUZON-PROCESO      PIC X(08)  VALUE SPACES.            06820001
+                                                                        06830001
+           03 WS-BUZON.                                                 06840001
+              05 WS-BUZON-PROCESO     PIC X(08)  VALUE SPACES.          06850001
+                                                                        06860001
+           03 WS-ANT-CENTIDAD        PIC X(04) VALUE ZEROES.            06870001
+                                                                        06880001
+          03 WS-VR562007           PIC X(08) VALUE 'VR562007'.          06890001
+                                                                        06900001
+      **                                                                06910001
+      ** COPYS M”DULOS                                                  06920001
+      **                                                                06930001
+          03 WS-X596M704.                                               06940001
+             COPY X596M704.                                             06950001
+             COPY X596N000.                                             06960001
+                                                                        06970001
+          03 WS-X596M705.                                               06980001
+             COPY X596M705.                                             06990001
+             COPY X596N000.                                             07000001
+                                                                        07010001
+          03 WS-X596M706.                                               07020001
+             COPY X596M706.                                             07030001
+             COPY X596N000.                                             07040001
+                                                                        07050001
+          03 WS-X596M709.                                               07060001
+             COPY X596M709.                                             07070001
+             COPY X596N000.                                             07080001
+                                                                        07090001
+          03 WS-X372M006.                                               07100001
+             COPY X372M006.                                             07110001
+                                                                        07120001
+          03 WS-X362M007.                                               07130001
+             COPY X362M007.                                             07140001
+                                                                        07150001
+          03 WS-X001M001.                                               07160001
+             COPY X001M001.                                             07170001
+                                                                        07180001
+                                                                        07190001
+      ****                                                              07200001
+       01   FILLER            PIC X(13)  VALUE 'FINAL-WORKING'.         07210001
+                                                                        07220001
+      *                                                                 07230001
+      *                                                                 07240001
+       PROCEDURE DIVISION.                                              07250001
+      *===================                                              07260001
+      *                                                                 07270001
+      ******************************************************************07280001
+      *                                                                *07290001
+      *               N I V E L               0                        *07300001
+      *                                                                *07310001
+      ******************************************************************07320001
+      *                                                                 07330001
+       INICIO SECTION.                                                  07340001
+                                                                        07350001
+           PERFORM 1000-P-PROGRAMA.                                     07360001
+                                                                        07370001
+           PERFORM 2000-PROCESO.                                        07380001
+                                                                        07390001
+           PERFORM 3000-F-PROGRAMA.                                     07400001
+                                                                        07410001
+           PERFORM 10000-FIN.                                           07420001
+      *                                                                 07430001
+      ***************************************************************** 07440001
+      *                                                               * 07450001
+      *                T R A T A M I E N T O S                        * 07460001
+      *                                                               * 07470001
+      ***************************************************************** 07480001
+                                                                        07490001
+       1000-P-PROGRAMA.                                                 07500001
+      *                                                                 07510001
+      *****  ABRIMOS LOS FICHEROS.                                      07520001
+      *                                                                 07530001
+           OPEN OUTPUT FICH-INF, FICH-TXT, FICH-ERR.                    07540001
+      ***** INICIALIZAMOS LA PRIMERA PAGINA                             07550001
+           MOVE 1 TO CT-PAGE.                                           07560001
+                                                                        07570001
+           INITIALIZE WS-CRITERIOS1.                                    07580001
+                                                                        07590001
+      *    ACCEPT FICHA-SYSIN FROM SYSIN.                               07600001
+           ACCEPT FICHA-SYSIN-BUZON FROM SYSIN.                         07610001
+           MOVE FICHA-SYSIN-BUZON     TO WS-BUZON-PROCESO               07620001
+                                                                        07630001
+           ACCEPT FICHA-SYSIN-CADENA FROM SYSIN.                        07640001
+           MOVE NOMBRE-CADENA          TO CB-CADENA.                    07650001
+                                                                        07660001
+                                                                        07670001
+       3000-F-PROGRAMA.                                                 07680001
+      *************                                                     07690001
+                                                                        07700001
+      *                                                                 07710001
+      ****   SE CIERRA LA BASE DE DATOS Y LOS FICHEROS.                 07720001
+      *                                                                 07730001
+           CLOSE FICH-INF, FICH-TXT, FICH-ERR.                          07740001
+                                                                        07750001
+      ***************************************************************** 07760001
+      *                                                               * 07770001
+      *                R U T I N A S    A U X I L I A R E S           * 07780001
+      *                                                               * 07790001
+      ***************************************************************** 07800001
+      *                                                                 07810001
+       2000-PROCESO.                                                    07820001
+      ****************                                                  07830001
+           INITIALIZE WS-KPETINFORME                                    07840001
+                                                                        07850001
+           PERFORM 2010-CONSULTAR-AGENDA                                07860001
+                                                                        07870001
+           SET NO-ESCRITURA TO TRUE                                     07880001
+           SET SI-PRIMERA   TO TRUE                                     07890001
+                                                                        07900001
+           INITIALIZE WS-X372M006                                       07910001
+           INITIALIZE VARIABLES-LINEA                                   07920001
+           INITIALIZE VARIABLES-TOTAL                                   07930001
+           INITIALIZE FICHERO-TXT                                       07940001
+                                                                        07950001
+           MOVE FUNCTION CURRENT-DATE TO WS-FECHA-SIS.                  07960001
+                                                                        07970001
+           MOVE WS-ANO                   TO CB-INTRO-ANO                07980001
+           MOVE WS-MES                   TO CB-INTRO-MES                07990001
+           MOVE WS-DIA                   TO CB-INTRO-DIA                08000001
+                                                                        08010001
+           MOVE 1       TO XN-I                                         08020001
+           MOVE 'S'                      TO X372M006-SPAGINACION-S      08030001
+                                                                        08040001
+           PERFORM 2200-CALCULO-PREVIOS                                 08050001
+                                                                        08060001
+           PERFORM 2700-ESC-CAB-TXT                                     08070001
+                                                                        08080001
+           PERFORM UNTIL X372M006-NUM-REGISTROS-S  > CN-RES-MAX         08090001
+                      OR X372M006-SPAGINACION-S = 'N'                   08100001
+                      OR XN-I > CN-RES-MAX                              08110001
+      *               OR XN-I > X372M006-NUM-REGISTROS-S                08120001
+                      OR ERROR-GRAVE                                    08130001
+                                                                        08140001
+                                                                        08150001
+             PERFORM 2100-MOVER-ENTRADA-LISTADO                         08160001
+                                                                        08170001
+             CALL WS-B372M006 USING WS-X372M006                         08180001
+                                                                        08190001
+             IF X372M006-CRETORNO-S  = '00'                             08200001
+                PERFORM 2300-ESCRIBIR-LINEA                             08210001
+                SET SI-ESCRITURA TO TRUE                                08220001
+             ELSE                                                       08230001
+                IF X372M006-CRETORNO-S NOT = '03'                       08240001
+                   SET SI-ROLLBACK TO TRUE                              08250001
+                   SET ERROR-GRAVE TO TRUE                              08260001
+                   PERFORM 2031-ERR-MODULO-CONSULTA                     08270001
+                END-IF                                                  08280001
+             END-IF                                                     08290001
+                                                                        08300001
+           END-PERFORM                                                  08310001
+                                                                        08320001
+           IF NO-ERROR                                                  08330001
+              PERFORM 2099-ERR-NO-REG-ENCONTRADOS                       08340001
+           END-IF                                                       08350001
+      * SI NO EXISE PAGINACION HEMOS TERMINADO Y ESCRIBIMOS LA ULTIMA   08360001
+      * LINEA Y LOS TOTALES.                                            08370001
+           IF NO-ERROR                                                  08380001
+              PERFORM 2020-ACTUALIZAR-AGENDA                            08390001
+           END-IF                                                       08400001
+                                                                        08410001
+           IF NO-ERROR                                                  08420001
+              PERFORM 2500-ESCRIBIR-TOTALES                             08430001
+           END-IF                                                       08440001
+                                                                        08450001
+            .                                                           08460001
+                                                                        08470001
+      ***************************************************************   08480001
+       2005-CONSULTAR-CENTIDAD.                                         08490001
+      ***************************************************************   08500001
+                                                                        08510001
+           EVALUATE X372M006-CENTIDAD-S(XN-J)                           08520001
+                WHEN '10'                                               08530001
+                      SET SI-MAPFRE    TO TRUE                          08540001
+                WHEN '20'                                               08550001
+                      SET SI-CMADRID   TO TRUE                          08560001
+                WHEN '60'                                               08570001
+                      SET SI-BANKINTER TO TRUE                          08580001
+           END-EVALUATE.                                                08590001
+                                                                        08600001
+      ***************************************************************   08610001
+       2010-CONSULTAR-AGENDA.                                           08620001
+      ***************************************************************   08630001
+                                                                        08640001
+           INITIALIZE WS-X362M007.                                      08650001
+           MOVE 'S1'                        TO X362M007-OPERACION-E     08660001
+           MOVE 'V5'                        TO  X362M007-CTIPOINFORME-E 08670001
+                                                                        08680001
+           CALL WS-B362M007 USING WS-X362M007                           08690001
+                                                                        08700001
+           IF X362M007-CRETORNO-S EQUAL '00'                            08710001
+                                                                        08720001
+              MOVE X362M007-GCRITERIO1-S                                08730001
+                TO WS-CRITERIOS1                                        08740001
+                                                                        08750001
+              MOVE X362M007-KPETINFORME-S TO WS-KPETINFORME             08760001
+                                                                        08770001
+           ELSE                                                         08780001
+              IF X362M007-CRETORNO-S EQUAL '03'                         08790001
+                 SET ERROR-GRAVE TO TRUE                                08800001
+                 PERFORM 2012-ERR-FALTA-PETICIONES                      08810001
+                                                                        08820001
+                 ELSE                                                   08830001
+                    SET SI-ROLLBACK TO TRUE                             08840001
+                    SET ERROR-GRAVE TO TRUE                             08850001
+                    PERFORM 2011-ERR-CONSULTAR-INFORME                  08860001
+              END-IF                                                    08870001
+            END-IF                                                      08880001
+              .                                                         08890001
+                                                                        08900001
+      ***************************************************************** 08910001
+      * 2011-ERR-CONSULTAR-INFORME.                                   * 08920001
+      ***************************************************************** 08930001
+                                                                        08940001
+       2011-ERR-CONSULTAR-INFORME.                                      08950001
+           INITIALIZE WS-REG-ERR.                                       08960001
+                                                                        08970001
+           MOVE WS-B362M007                                             08980001
+             TO WS-GPROGRAMA.                                           08990001
+                                                                        09000001
+           MOVE '2010-CONSULTAR-AGENDA'                                 09010001
+             TO WS-NPARRAFO.                                            09020001
+                                                                        09030001
+           MOVE X362M007-SQLCODE-S                                      09040001
+             TO WS-SQLCODE.                                             09050001
+                                                                        09060001
+           MOVE X362M007-GCRITERIO1-S                                   09070001
+             TO WS-GDATOS.                                              09080001
+                                                                        09090001
+           MOVE '336'      TO WS-CINCIDENCIA                            09100001
+           MOVE 'ERROR AL CONSULTAR INFORMES Y DE AGENDA'               09110001
+             TO WS-GINCIDENCIA                                          09120001
+                                                                        09130001
+           PERFORM 2510-WRITE-REG-ERR.                                  09140001
+                                                                        09150001
+      ***************************************************************** 09160001
+      * 2012-ERR-FALTA-PETICIONES.                                   *  09170001
+      ***************************************************************** 09180001
+                                                                        09190001
+        2012-ERR-FALTA-PETICIONES.                                      09200001
+           INITIALIZE WS-REG-ERR.                                       09210001
+                                                                        09220001
+           MOVE WS-B362M007                                             09230001
+             TO WS-GPROGRAMA.                                           09240001
+                                                                        09250001
+           MOVE '2010-CONSULTAR-AGENDA'                                 09260001
+             TO WS-NPARRAFO.                                            09270001
+                                                                        09280001
+           MOVE X362M007-SQLCODE-S                                      09290001
+             TO WS-SQLCODE.                                             09300001
+                                                                        09310001
+           MOVE X362M007-GCRITERIO1-S                                   09320001
+             TO WS-GDATOS.                                              09330001
+                                                                        09340001
+           MOVE '336'      TO WS-CINCIDENCIA.                           09350001
+           MOVE 'NO EXISTE REGISTROS EN LA TABLA DE PETICIONES'         09360001
+             TO WS-GINCIDENCIA.                                         09370001
+                                                                        09380001
+           PERFORM 2510-WRITE-REG-ERR.                                  09390001
+                                                                        09400001
+                                                                        09410001
+      ***************************************************************   09420001
+       2020-ACTUALIZAR-AGENDA.                                          09430001
+      ***************************************************************   09440001
+                                                                        09450001
+           INITIALIZE WS-X362M007.                                      09460001
+           MOVE 'D1'                        TO X362M007-OPERACION-E     09470001
+           MOVE 'V5'                        TO  X362M007-CTIPOINFORME-E 09480001
+           MOVE WS-KPETINFORME              TO X362M007-KPETINFORME-E   09490001
+                                                                        09500001
+           CALL WS-B362M007 USING WS-X362M007                           09510001
+                                                                        09520001
+           IF X362M007-CRETORNO-S  NOT EQUAL '00'                       09530001
+              SET SI-ROLLBACK TO TRUE                                   09540001
+              SET ERROR-GRAVE TO TRUE                                   09550001
+              PERFORM 2021-ERR-ACT-ESTADO-AGENDA                        09560001
+           END-IF                                                       09570001
+              .                                                         09580001
+                                                                        09590001
+      ***************************************************************** 09600001
+       2021-ERR-ACT-ESTADO-AGENDA.                                      09610001
+      ***************************************************************** 09620001
+           INITIALIZE WS-REG-ERR                                        09630001
+                                                                        09640001
+           MOVE WS-B362M007                                             09650001
+             TO WS-GPROGRAMA.                                           09660001
+                                                                        09670001
+           MOVE '2020-ACTUALIZAR-AGENDA'                                09680001
+             TO WS-NPARRAFO.                                            09690001
+                                                                        09700001
+           MOVE X362M007-SQLCODE-S                                      09710001
+             TO WS-SQLCODE.                                             09720001
+                                                                        09730001
+           MOVE X362M007-GCRITERIO1-S                                   09740001
+             TO WS-GDATOS.                                              09750001
+                                                                        09760001
+           MOVE '336'      TO WS-CINCIDENCIA                            09770001
+           MOVE 'ERROR AL CONSULTAR PROCESOS DE AGENDA'                 09780001
+             TO WS-GINCIDENCIA                                          09790001
+                                                                        09800001
+           PERFORM 2510-WRITE-REG-ERR.                                  09810001
+                                                                        09820001
+      ***************************************************************** 09830001
+       2031-ERR-MODULO-CONSULTA.                                        09840001
+      ***************************************************************** 09850001
+           INITIALIZE WS-REG-ERR                                        09860001
+                                                                        09870001
+           MOVE WS-B372M006                                             09880001
+             TO WS-GPROGRAMA.                                           09890001
+                                                                        09900001
+           MOVE '2020-ACTUALIZAR-AGENDA'                                09910001
+             TO WS-NPARRAFO.                                            09920001
+                                                                        09930001
+           MOVE X362M007-SQLCODE-S                                      09940001
+             TO WS-SQLCODE.                                             09950001
+                                                                        09960001
+           MOVE X362M007-GCRITERIO1-S                                   09970001
+             TO WS-GDATOS.                                              09980001
+                                                                        09990001
+           MOVE '336'      TO WS-CINCIDENCIA                            10000001
+           MOVE 'ERROR AL CONSULTAR EXPEDIENTES'                        10010001
+             TO WS-GINCIDENCIA                                          10020001
+                                                                        10030001
+           PERFORM 2510-WRITE-REG-ERR.                                  10040001
+                                                                        10050001
+                                                                        10060001
+      ***************************************************************   10070001
+       2099-ERR-NO-REG-ENCONTRADOS.                                     10080001
+      ***************************************************************   10090001
+           INITIALIZE WS-REG-ERR                                        10100001
+                                                                        10110001
+           MOVE NOMBRE-CADENA        TO CB-CADENA.                      10120001
+           MOVE 'ERRORES POR RESUMEN PENDIENTES POR MODALIDAD'          10130001
+             TO CB-FICHERO.                                             10140001
+           MOVE WS-BUZON    TO CB-BUZON.                                10150001
+                                                                        10160001
+           IF NOT SI-MAPFRE                                             10170001
+              MOVE '10'       TO CB-COMPANIA                            10180001
+              WRITE REG-ERR  FROM CAB-0                                 10190001
+MMC                              AFTER ADVANCING PAGE                   10200001
+              MOVE '336'      TO WS-CINCIDENCIA                         10210001
+              MOVE 'NO HAY EXPEDIENTES QUE CUMPLAN LOS CRITERIOS SELECCI10220001
+      -            'DOS'                                                10230001
+                TO WS-GINCIDENCIA                                       10240001
+              PERFORM  2600-WRITE-REG-ERR                               10250001
+           END-IF                                                       10260001
+                                                                        10270001
+                                                                        10280001
+           IF NOT SI-CMADRID                                            10290001
+              MOVE '20'       TO CB-COMPANIA                            10300001
+              WRITE REG-ERR  FROM CAB-0                                 10310001
+MMC                              AFTER ADVANCING PAGE                   10320001
+              MOVE '336'      TO WS-CINCIDENCIA                         10330001
+              MOVE 'NO HAY EXPEDIENTES QUE CUMPLAN LOS CRITERIOS SELECCI10340001
+      -            'DOS'                                                10350001
+                TO WS-GINCIDENCIA                                       10360001
+              PERFORM  2600-WRITE-REG-ERR                               10370001
+           END-IF                                                       10380001
+                                                                        10390001
+                                                                        10400001
+           IF NOT SI-BANKINTER                                          10410001
+              MOVE '60'        TO CB-COMPANIA                           10420001
+              WRITE REG-ERR  FROM CAB-0                                 10430001
+MMC                              AFTER ADVANCING PAGE                   10440001
+              MOVE '336'      TO WS-CINCIDENCIA                         10450001
+              MOVE 'NO HAY EXPEDIENTES QUE CUMPLAN LOS CRITERIOS SELECCI10460001
+      -            'DOS'                                                10470001
+                TO WS-GINCIDENCIA                                       10480001
+              PERFORM  2600-WRITE-REG-ERR                               10490001
+           END-IF.                                                      10500001
+                                                                        10510001
+      ***************************************************************   10520001
+       2100-MOVER-ENTRADA-LISTADO.                                      10530001
+      ***************************************************************   10540001
+                                                                        10550001
+           INITIALIZE X372M006-KANIO-HASTA-E                            10560001
+                                                                        10570001
+           MOVE CT-TIPOPERACION            TO X372M006-OPERACION-E      10580001
+           MOVE WS-FECCALCULO              TO X372M006-FECHADESDE-E     10590001
+           MOVE 99991230                   TO X372M006-FECHAHASTA-E     10600001
+           MOVE X372M006-PRO-ANO-S         TO X372M006-ANT-ANO-E        10610001
+           MOVE X372M006-PRO-CENTIDAD-S    TO X372M006-ANT-CENTIDAD-E   10620001
+           MOVE X372M006-PRO-KEXPEDIENTE-S TO X372M006-ANT-KEXPEDIENTE-E10630001
+           MOVE X372M006-PRO-KMODALIDAD-S  TO X372M006-ANT-KMODALIDAD-E 10640001
+536085*    MOVE WS-EXPEDIDESDE             TO X372M006-KEXPED-DESDE-E   10650001
+536085     MOVE 0000000001                 TO X372M006-KEXPED-DESDE-E   10660001
+           MOVE WS-EXPEDIHASTA             TO X372M006-KEXPED-HASTA-E   10670001
+           MOVE WS-ANIODESDE               TO X372M006-KANIO-DESDE-E    10680001
+      *D*                                                               10690001
+      *    DISPLAY 'X372M006-KANIO-DESDE-E ' X372M006-KANIO-DESDE-E     10700001
+      *F*                                                               10710001
+535084     MOVE WS-ANIOHASTA               TO X372M006-KANIO-HASTA-E    10720001
+535084*    ADD 5 TO WS-ANIODESDE GIVING X372M006-KANIO-HASTA-E          10730001
+                                                                        10740001
+      *D*                                                               10750001
+      *    DISPLAY 'WS-ANIODESDE  ' WS-ANIODESDE                        10760001
+      *F*                                                               10770001
+           .                                                            10780001
+      ***************************************************************   10790001
+       2200-CALCULO-PREVIOS.                                            10800001
+      ***************************************************************   10810001
+      * INICIALIZAMOS LAS VARIABLES                                     10820001
+           INITIALIZE LIN-TOTAL                                         10830001
+           INITIALIZE LIN-DETALLE                                       10840001
+                                                                        10850001
+      * MOVEMOS LA FECHA                                                10860001
+           MOVE WS-FECCALCULO(1:4)         TO WS-FECALANIO              10870001
+           MOVE WS-FECCALCULO(5:2)         TO WS-FECALMES               10880001
+           MOVE WS-FECCALCULO(7:2)         TO WS-FECALDIA               10890001
+                                                                        10900001
+      * MOVEMOS LOS AÒOS                                                10910001
+           MOVE WS-ANIODESDE               TO WS-ANIO                   10920001
+      *D*                                                               10930001
+      *    DISPLAY ' WS-ANIO ' WS-ANIO                                  10940001
+      *F*                                                               10950001
+535084*                                                                 10960001
+535084*    ADD 1 TO WS-ANIO GIVING WS-ANIOMAS1                          10970001
+535084*    ADD 2 TO WS-ANIO GIVING WS-ANIOMAS2                          10980001
+535084*    ADD 3 TO WS-ANIO GIVING WS-ANIOMAS3                          10990001
+535084*    ADD 4 TO WS-ANIO GIVING WS-ANIOMAS4                          11000001
+535084*    ADD 5 TO WS-ANIO GIVING WS-ANIOMAS5                          11010001
+                                                                        11020001
+535084     IF WS-ANIODESDE NOT EQUAL WS-ANIOHASTA                       11030001
+535084          MOVE 1 TO CT-ANIOS-1                                    11040001
+535084          PERFORM VARYING CT-ANIOS FROM 1 BY 1                    11050001
+535084              UNTIL WS-ANIOMAS1(CT-ANIOS-1) = WS-ANIOHASTA        11060001
+535084                                                                  11070001
+535084              ADD CT-ANIOS TO WS-ANIO GIVING WS-ANIOMAS1(CT-ANIOS)11080001
+535084              MOVE CT-ANIOS  TO  CT-ANIOS-1                       11090001
+535084              COMPUTE CT-ANIOS-2 = CT-ANIOS - 1                   11100001
+535084                                                                  11110001
+535084                 STRING ST-CABECERA DELIMITED BY '.'              11120001
+535084                      CAB-TITULO-ANIOS(CT-ANIOS) DELIMITED BY SIZE11130001
+535084                       INTO ST-CABECERA                           11140001
+535084                 STRING ST-SUBRAYADO DELIMITED BY '.'             11150001
+535084                      CAB-TITULO-1-SUB-VAR                        11160001
+535084                       DELIMITED BY SIZE INTO ST-SUBRAYADO        11170001
+535084                 STRING ST-TITULO-2  DELIMITED BY ' .'            11180001
+535084                      CAB-TITULO-2-VARIABLE                       11190001
+535084                       DELIMITED BY SIZE INTO ST-TITULO-2         11200001
+535084                 STRING ST-SUBRAYADO-2 DELIMITED BY '.'           11210001
+535084                      CAB-TITULO-2-SUB-VAR                        11220001
+535084                       DELIMITED BY SIZE INTO ST-SUBRAYADO-2      11230001
+535084                                                                  11240001
+535084          END-PERFORM                                             11250001
+535084                                                                  11260001
+535084     END-IF                                                       11270001
+535084                                                                  11280001
+535084     STRING ST-CABECERA DELIMITED BY '.'                          11290001
+535084            CAB-TITULO-TOTAL  DELIMITED BY SIZE                   11300001
+535084            INTO ST-CABECERA                                      11310001
+535084     STRING ST-SUBRAYADO DELIMITED BY '.'                         11320001
+535084            CAB-TITULO-1-SUB-TOTAL                                11330001
+535084            DELIMITED BY SIZE INTO ST-SUBRAYADO                   11340001
+535084     STRING ST-TITULO-2  DELIMITED BY ' .'                        11350001
+535084            CAB-TITULO-2-TOTAL                                    11360001
+535084            DELIMITED BY SIZE INTO ST-TITULO-2                    11370001
+535084     STRING ST-SUBRAYADO-2 DELIMITED BY '.'                       11380001
+535084            CAB-TITULO-2-SUB-TOTAL                                11390001
+535084            DELIMITED BY SIZE INTO ST-SUBRAYADO-2                 11400001
+535084                                                                  11410001
+535084*                                                                 11420001
+535084     MOVE WS-ANIODESDE TO INTRO-ANIO                              11430001
+535084*    ADD     5       TO WS-ANIODESDE GIVING INTRO-ANIOMAS5        11440001
+535084     MOVE WS-ANIOHASTA TO INTRO-ANIOMAS5                          11450001
+                                                                        11460001
+      * MOVEMOS LOS EXPEDIENTES                                         11470001
+           MOVE WS-EXPEDIDESDE TO INTRO-KEXPEDES                        11480001
+           MOVE WS-EXPEDIHASTA TO INTRO-KEXPEHAS                        11490001
+           .                                                            11500001
+      ***************************************************************   11510001
+       2300-ESCRIBIR-LINEA.                                             11520001
+      ***************************************************************   11530001
+                                                                        11540001
+      *D*                                                               11550001
+      *    DISPLAY ' NUMERO DE REGISTRO ' X372M006-NUM-REGISTROS-S      11560001
+      *F*                                                               11570001
+           PERFORM VARYING XN-J FROM 1 BY 1                             11580001
+                     UNTIL XN-J > X372M006-NUM-REGISTROS-S              11590001
+                        OR XN-J > CN-RES-MAX                            11600001
+                                                                        11610001
+           PERFORM 2005-CONSULTAR-CENTIDAD                              11620001
+                                                                        11630001
+             IF X372M006-CENTIDAD-S(XN-J) NOT EQUAL WS-ANT-CENTIDAD     11640001
+                MOVE X372M006-CENTIDAD-S(XN-J) TO WS-ANT-CENTIDAD       11650001
+                IF SW-SI-PRIMERA-VEZ                                    11660001
+                   SET SW-NO-PRIMERA-VEZ TO TRUE                        11670001
+                   PERFORM 8100-CABECERA-BUZON                          11680001
+                ELSE                                                    11690001
+                   MOVE 1 TO CT-PAGE                                    11700001
+                   MOVE 1 TO CT-LINEA                                   11710001
+      *            MOVE ZEROES           TO WS-MODALIDAD                11720001
+                   SET SI-PRIMERA TO TRUE                               11730001
+                   PERFORM 2500-ESCRIBIR-TOTALES                        11740001
+                   PERFORM 8100-CABECERA-BUZON                          11750001
+                   INITIALIZE VARIABLES-TOTAL LIN-TOTAL                 11760001
+                   PERFORM 2510-IMPRIMIR-INTRO                          11770001
+                   PERFORM 2520-IMPRIMIR-TITULOS-1                      11780001
+                END-IF                                                  11790001
+             END-IF                                                     11800001
+                                                                        11810001
+      *D*                                                               11820001
+      *     DISPLAY ' ANIO-S        ' X372M006-ANIO-S(XN-J)             11830001
+      *     DISPLAY ' KEXPEDIENTE-S ' X372M006-KEXPEDIENTE-S(XN-J)      11840001
+      *     DISPLAY ' MODALIDAD     ' X372M006-KMODALIDAD-S(XN-J)       11850001
+      *F*                                                               11860001
+              IF SI-PRIMERA                                             11870001
+                 SET NO-PRIMERA TO TRUE                                 11880001
+                 MOVE X372M006-KMODALIDAD-S(XN-J) TO WS-MODALIDAD       11890001
+              END-IF                                                    11900001
+                                                                        11910001
+              IF X372M006-KMODALIDAD-S(XN-J) EQUAL WS-MODALIDAD         11920001
+                                                                        11930001
+      *D*                                                               11940001
+      *     DISPLAY 'WS-MODALIDAD--' WS-MODALIDAD                       11950001
+      *F*                                                               11960001
+                 PERFORM 2400-MOVER-DATOS                               11970001
+                                                                        11980001
+              ELSE                                                      11990001
+      * CAMBIO DE MODALIDAD                                             12000001
+                 MOVE WS-MODALIDAD                TO DE-MOD             12010001
+                 MOVE X372M006-KMODALIDAD-S(XN-J) TO WS-MODALIDAD       12020001
+                                                                        12030001
+      * SUMO LOS TOTALES Y MUVEMOS LOS VALORES POR MODALIDADES          12040001
+                 COMPUTE DE-EXPEDT = DE-EXPED  + DE-EXPED1 + DE-EXPED2 +12050001
+                                     DE-EXPED3 + DE-EXPED4 + DE-EXPED5  12060001
+                                                                        12070001
+                 COMPUTE DE-IMPORT = DE-IMPOR  + DE-IMPOR1 + DE-IMPOR2 +12080001
+                                     DE-IMPOR3 + DE-IMPOR4 + DE-IMPOR5  12090001
+                                                                        12100001
+      * SUMA TOTALES                                                    12110001
+                 COMPUTE TO-EXPED = TO-EXPED + DE-EXPED                 12120001
+                 COMPUTE TO-IMPOR = TO-IMPOR + DE-IMPOR                 12130001
+                 COMPUTE TO-EXPED1 = TO-EXPED1 + DE-EXPED1              12140001
+                 COMPUTE TO-IMPOR1 = TO-IMPOR1 + DE-IMPOR1              12150001
+                 COMPUTE TO-EXPED2 = TO-EXPED2 + DE-EXPED2              12160001
+                 COMPUTE TO-IMPOR2 = TO-IMPOR2 + DE-IMPOR2              12170001
+                 COMPUTE TO-EXPED3 = TO-EXPED3 + DE-EXPED3              12180001
+                 COMPUTE TO-IMPOR3 = TO-IMPOR3 + DE-IMPOR3              12190001
+                 COMPUTE TO-EXPED4 = TO-EXPED4 + DE-EXPED4              12200001
+                 COMPUTE TO-IMPOR4 = TO-IMPOR4 + DE-IMPOR4              12210001
+                 COMPUTE TO-EXPED5 = TO-EXPED5 + DE-EXPED5              12220001
+                 COMPUTE TO-IMPOR5 = TO-IMPOR5 + DE-IMPOR5              12230001
+                 COMPUTE TO-EXPEDT = TO-EXPEDT + DE-EXPEDT              12240001
+                 COMPUTE TO-IMPORT = TO-IMPORT + DE-IMPORT              12250001
+                                                                        12260001
+                 IF CT-LINEA EQUAL 0 OR CT-LINEA > 58                   12270001
+                    PERFORM 2510-IMPRIMIR-INTRO                         12280001
+                    PERFORM 2520-IMPRIMIR-TITULOS-1                     12290001
+                    ADD 1 TO CT-PAGE                                    12300001
+                    MOVE -1 TO CT-LINEA                                 12310001
+                 END-IF                                                 12320001
+                                                                        12330001
+      * IMPRIMIR-LINEA-DETALLE.                                         12340001
+      * ANTES DE ESCRIBIR LA LINEA PASAMOS LOS IMPORTES A LA MASCARA    12350001
+                MOVE DE-EXPED        TO WS-DE-EXPED                     12360001
+535084*         MOVE DE-EXPED1       TO WS-DE-EXPED1                    12370001
+535084          MOVE DE-EXPED1       TO WS-DE-EXPED1(1)                 12380001
+535084*         MOVE DE-EXPED2       TO WS-DE-EXPED2                    12390001
+535084          MOVE DE-EXPED2       TO WS-DE-EXPED1(2)                 12400001
+535084*         MOVE DE-EXPED3       TO WS-DE-EXPED3                    12410001
+535084          MOVE DE-EXPED3       TO WS-DE-EXPED1(3)                 12420001
+535084*         MOVE DE-EXPED4       TO WS-DE-EXPED4                    12430001
+535084          MOVE DE-EXPED4       TO WS-DE-EXPED1(4)                 12440001
+535084*         MOVE DE-EXPED5       TO WS-DE-EXPED5                    12450001
+                MOVE DE-EXPED5       TO WS-DE-EXPED1(5)                 12460001
+                MOVE DE-EXPEDT       TO WS-DE-EXPEDT                    12470001
+                                                                        12480001
+      * ANTES DE ESCRIBIR LA LINEA PASAMOS LOS EXPEDIENTES A LAS MASCARA12490001
+                MOVE DE-IMPOR        TO WS-DE-IMPOR                     12500001
+535084*         MOVE DE-IMPOR1       TO WS-DE-IMPOR1                    12510001
+535084          MOVE DE-IMPOR1       TO WS-DE-IMPOR1(1)                 12520001
+535084*         MOVE DE-IMPOR2       TO WS-DE-IMPOR2                    12530001
+535084          MOVE DE-IMPOR2       TO WS-DE-IMPOR1(2)                 12540001
+535084*         MOVE DE-IMPOR3       TO WS-DE-IMPOR3                    12550001
+535084          MOVE DE-IMPOR3       TO WS-DE-IMPOR1(3)                 12560001
+535084*         MOVE DE-IMPOR4       TO WS-DE-IMPOR4                    12570001
+535084          MOVE DE-IMPOR4       TO WS-DE-IMPOR1(4)                 12580001
+535084*         MOVE DE-IMPOR5       TO WS-DE-IMPOR5                    12590001
+535084          MOVE DE-IMPOR5       TO WS-DE-IMPOR1(5)                 12600001
+                MOVE DE-IMPORT       TO WS-DE-IMPORT                    12610001
+                                                                        12620001
+      * ESCRIBIMOS LINEA DE DETALLE DEL FICHERO TXT                     12630001
+                 PERFORM 2710-ESC-LIN-TXT                               12640001
+                 INITIALIZE LINEA-TXT                                   12650001
+                                                                        12660001
+535084           PERFORM 2410-MOVER-DATOS-LINEA                         12670001
+                 MOVE LIN-DETALLE TO RIMPRESO                           12680001
+                 WRITE RIMPRESO AFTER ADVANCING 1 LINE                  12690001
+                 ADD   1  TO  CT-LINEA                                  12700001
+                 INITIALIZE LIN-DETALLE                                 12710001
+                 INITIALIZE VARIABLES-LINEA                             12720001
+                                                                        12730001
+      * MOVEMOS LOS DATOS DEL PRIMER REGISTRO                           12740001
+                 PERFORM 2400-MOVER-DATOS                               12750001
+                                                                        12760001
+              END-IF                                                    12770001
+      *** CONTROLAMOS SI HAY PAGINACION                                 12780001
+      * COMPROBAMOS SI EXISTE PAGINACION                                12790001
+              IF XN-J >= CN-RES-MAX                                     12800001
+                 MOVE 'S'                                               12810001
+                   TO X372M006-SPAGINACION-S                            12820001
+      *          MOVE X372M006-ANIO-S         (XN-J)                    12830001
+      *            TO X372M006-PRO-ANO-S                                12840001
+      *          MOVE X372M006-KEXPEDIENTE-S  (XN-J)                    12850001
+      *            TO X372M006-PRO-KEXPEDIENTE-S                        12860001
+      *          MOVE X372M006-KMODALIDAD-S   (XN-J)                    12870001
+      *            TO X372M006-PRO-KMODALIDAD-S                         12880001
+              ELSE                                                      12890001
+                 MOVE 'N'                                               12900001
+                   TO X372M006-SPAGINACION-S                            12910001
+              END-IF                                                    12920001
+                                                                        12930001
+           END-PERFORM                                                  12940001
+                                                                        12940102
+766347     IF X372M006-SPAGINACION-S = 'S' AND                          12941002
+766347        X372M006-PRO-KEXPEDIENTE-S = ZEROS                        12942002
+766347        MOVE 'N' TO X372M006-SPAGINACION-S                        12943002
+766347     END-IF                                                       12944002
+               .                                                        12950001
+                                                                        12960001
+       2400-MOVER-DATOS.                                                12970001
+      *********************                                             12980001
+                                                                        12990001
+      * PARA AÒO INICIAL                                                13000001
+                 IF X372M006-ANIO-S (XN-J) EQUAL WS-ANIO                13010001
+536085              AND  X372M006-KEXPEDIENTE-S (XN-J)                  13020001
+536085                               >= WS-EXPEDIDESDE                  13030001
+      *             IF X372M006-FECPAGOCAPITAL-S(XN-J) > WS-FECCALCULO  13040001
+      *                OR X372M006-FECPAGOCAPITAL-S(XN-J) EQUAL SPACES  13050001
+                    IF X372M006-IPENDIENTE-S (XN-J) NOT EQUAL 0         13060001
+                      AND X372M006-FECPAGOCAPITAL-S(XN-J) = ' '         13070001
+                      AND ( X372M006-GOBSERVACION-S (XN-J)(1:2)         13080001
+                          EQUAL 'VI' OR                                 13090001
+                       X372M006-GOBSERVACION-S (XN-J)(1:1) EQUAL ' ')   13100001
+536085                AND X372M006-FECEMISION-S (XN-J) <= WS-FECCALCULO 13110001
+      *D*                                                               13120001
+      *     DISPLAY 'DENTRO DEL IF'                                     13130001
+      *     DISPLAY 'X372M006-ANIO-S (XN-J)' X372M006-ANIO-S (XN-J)     13140001
+      *     DISPLAY 'X372M006-KEXPEDIENTE-S (XN-J)'                     13150001
+      *            X372M006-KEXPEDIENTE-S (XN-J)                        13160001
+      *     DISPLAY 'X372M006-KMODALIDAD-S (XN-J)'                      13170001
+      *            X372M006-KMODALIDAD-S (XN-J)                         13180001
+      *     DISPLAY 'X372M006-IPENDIENTE-S (XN-J)'                      13190001
+      *            X372M006-IPENDIENTE-S (XN-J)                         13200001
+      *     DISPLAY 'X372M006-SITUACION-S (XN-J)'                       13210001
+      *            X372M006-SITUACION-S (XN-J)                          13220001
+      *F*                                                               13230001
+      *                AND X372M006-SITUACION-S (XN-J) EQUAL 'V'        13240001
+652647*                SE REALIZA COMPROBACION DE COASEGURO             13250001
+      * MU-2017-BDGI-R-V-INI                                            13260001
+                       IF X372M006-COASEGUROS-OCCURS-S (XN-J) > ZEROS   13270001
+652647*                 IF X372M006-CODCOA1-S(XN-J) NOT EQUAL SPACES    13280001
+652647*                 OR X372M006-CODCOA2-S(XN-J) NOT EQUAL SPACES    13290001
+652647*                 OR X372M006-CODCOA3-S(XN-J) NOT EQUAL SPACES    13300001
+652647*                 OR X372M006-CODCOA4-S(XN-J) NOT EQUAL SPACES    13310001
+652647*                 OR X372M006-CODCOA5-S(XN-J) NOT EQUAL SPACES    13320001
+652647*                 OR X372M006-CODCOA6-S(XN-J) NOT EQUAL SPACES    13330001
+      * MU-2017-BDGI-R-V-FIN                                            13340001
+652647                    IF X372M006-PAGOTOT-S(XN-J) = '2'             13350001
+652647                       PERFORM 2420-VER-COASEGURO                 13360001
+652647                       ADD 1 TO DE-EXPED                          13370001
+652647                       COMPUTE DE-IMPOR = DE-IMPOR +              13380001
+652647                               WS-IPENDIENTE-COA                  13390001
+652647                    ELSE                                          13400001
+652647                       ADD 1 TO DE-EXPED                          13410001
+652647                       COMPUTE DE-IMPOR = DE-IMPOR +              13420001
+652647                               X372M006-IPENDIENTE-S (XN-J)       13430001
+652647                    END-IF                                        13440001
+652647                 ELSE                                             13450001
+                          ADD 1 TO DE-EXPED                             13460001
+                          COMPUTE DE-IMPOR = DE-IMPOR +                 13470001
+MMC                            X372M006-IPENDIENTE-S (XN-J)             13480001
+      *                        X372M006-IMPCAPITAL-S(XN-J)+             13490001
+      *                        X372M006-IMPBENEFICIOS-S(XN-J)           13500001
+652647                 END-IF                                           13510001
+                                                                        13520001
+                    END-IF                                              13530001
+                                                                        13540001
+      *             IF X372M006-FECPAGCOMP1-S(XN-J) > WS-FECCALCULO     13550001
+      *                OR X372M006-FECPAGCOMP1-S(XN-J) EQUAL SPACES     13560001
+      *                COMPUTE DE-IMPOR = DE-IMPOR +                    13570001
+      *                        X372M006-IMPCOMP1-S(XN-J)                13580001
+      *             END-IF                                              13590001
+                                                                        13600001
+      *             IF X372M006-FECPAGCOMP2-S(XN-J) > WS-FECCALCULO     13610001
+      *                OR X372M006-FECPAGCOMP2-S(XN-J) EQUAL SPACES     13620001
+      *                COMPUTE DE-IMPOR = DE-IMPOR +                    13630001
+      *                        X372M006-IMPCOMP2-S(XN-J)                13640001
+      *             END-IF                                              13650001
+                 END-IF                                                 13660001
+                                                                        13670001
+      * PARA AÒO INICIAL MAS UNO                                        13680001
+535084*          IF X372M006-ANIO-S (XN-J) EQUAL WS-ANIOMAS1            13690001
+535084           IF X372M006-ANIO-S (XN-J) EQUAL WS-ANIOMAS1(1)         13700001
+                    IF X372M006-IPENDIENTE-S (XN-J) NOT EQUAL 0         13710001
+                      AND X372M006-FECPAGOCAPITAL-S(XN-J) = ' '         13720001
+                      AND ( X372M006-GOBSERVACION-S (XN-J)(1:2)         13730001
+                          EQUAL 'VI' OR                                 13740001
+                       X372M006-GOBSERVACION-S (XN-J)(1:1) EQUAL ' ')   13750001
+536085                AND X372M006-FECEMISION-S (XN-J) <= WS-FECCALCULO 13760001
+      *                AND X372M006-SITUACION-S (XN-J) EQUAL 'V'        13770001
+652647*                SE REALIZA COMPROBACION DE COASEGURO             13780001
+      * MU-2017-BDGI-R-V-INI                                            13790001
+                       IF X372M006-COASEGUROS-OCCURS-S (XN-J) > ZEROS   13800001
+652647*                 IF X372M006-CODCOA1-S(XN-J) NOT EQUAL SPACES    13810001
+652647*                 OR X372M006-CODCOA2-S(XN-J) NOT EQUAL SPACES    13820001
+652647*                 OR X372M006-CODCOA3-S(XN-J) NOT EQUAL SPACES    13830001
+652647*                 OR X372M006-CODCOA4-S(XN-J) NOT EQUAL SPACES    13840001
+652647*                 OR X372M006-CODCOA5-S(XN-J) NOT EQUAL SPACES    13850001
+652647*                 OR X372M006-CODCOA6-S(XN-J) NOT EQUAL SPACES    13860001
+      * MU-2017-BDGI-R-V-FIN                                            13870001
+652647                    IF X372M006-PAGOTOT-S(XN-J) = '2'             13880001
+652647                       PERFORM 2420-VER-COASEGURO                 13890001
+652647                       ADD 1 TO DE-EXPED1                         13900001
+652647                       COMPUTE DE-IMPOR1 = DE-IMPOR1 +            13910001
+652647                               WS-IPENDIENTE-COA                  13920001
+652647                    ELSE                                          13930001
+652647                       ADD 1 TO DE-EXPED1                         13940001
+652647                       COMPUTE DE-IMPOR1 = DE-IMPOR1 +            13950001
+652647                               X372M006-IPENDIENTE-S (XN-J)       13960001
+652647                    END-IF                                        13970001
+652647                 ELSE                                             13980001
+                          ADD 1 TO DE-EXPED1                            13990001
+      *             IF X372M006-FECPAGOCAPITAL-S(XN-J) > WS-FECCALCULO  14000001
+      *                OR X372M006-FECPAGOCAPITAL-S(XN-J) EQUAL SPACES  14010001
+                          COMPUTE DE-IMPOR1 = DE-IMPOR1 +               14020001
+MMC                             X372M006-IPENDIENTE-S (XN-J)            14030001
+      *                         X372M006-IMPCAPITAL-S(XN-J)+            14040001
+      *                         X372M006-IMPBENEFICIOS-S(XN-J)          14050001
+652647                 END-IF                                           14060001
+                                                                        14070001
+                    END-IF                                              14080001
+                                                                        14090001
+      *             IF X372M006-FECPAGCOMP1-S(XN-J) > WS-FECCALCULO     14100001
+      *                OR X372M006-FECPAGCOMP1-S(XN-J) EQUAL SPACES     14110001
+      *                COMPUTE DE-IMPOR1 = DE-IMPOR1 +                  14120001
+      *                        X372M006-IMPCOMP1-S(XN-J)                14130001
+      *             END-IF                                              14140001
+                                                                        14150001
+      *             IF X372M006-FECPAGCOMP2-S(XN-J) > WS-FECCALCULO     14160001
+      *                OR X372M006-FECPAGCOMP2-S(XN-J) EQUAL SPACES     14170001
+      *                COMPUTE DE-IMPOR1 = DE-IMPOR1 +                  14180001
+      *                        X372M006-IMPCOMP2-S(XN-J)                14190001
+      *             END-IF                                              14200001
+                                                                        14210001
+                 END-IF                                                 14220001
+                                                                        14230001
+      * PARA AÒO INICIAL MAS DOS                                        14240001
+535084*          IF X372M006-ANIO-S (XN-J) EQUAL WS-ANIOMAS2            14250001
+535084           IF X372M006-ANIO-S (XN-J) EQUAL WS-ANIOMAS1(2)         14260001
+                    IF X372M006-IPENDIENTE-S (XN-J) NOT EQUAL 0         14270001
+                      AND X372M006-FECPAGOCAPITAL-S(XN-J) = ' '         14280001
+                      AND (X372M006-GOBSERVACION-S (XN-J)(1:2)          14290001
+                          EQUAL 'VI' OR                                 14300001
+                       X372M006-GOBSERVACION-S (XN-J)(1:1) EQUAL ' ')   14310001
+536085                AND X372M006-FECEMISION-S (XN-J) <= WS-FECCALCULO 14320001
+      *                AND X372M006-SITUACION-S (XN-J) EQUAL 'V'        14330001
+652647*                SE REALIZA COMPROBACION DE COASEGURO             14340001
+      * MU-2017-BDGI-R-V-INI                                            14350001
+                       IF X372M006-COASEGUROS-OCCURS-S (XN-J) > ZEROS   14360001
+652647*                 IF X372M006-CODCOA1-S(XN-J) NOT EQUAL SPACES    14370001
+652647*                 OR X372M006-CODCOA2-S(XN-J) NOT EQUAL SPACES    14380001
+652647*                 OR X372M006-CODCOA3-S(XN-J) NOT EQUAL SPACES    14390001
+652647*                 OR X372M006-CODCOA4-S(XN-J) NOT EQUAL SPACES    14400001
+652647*                 OR X372M006-CODCOA5-S(XN-J) NOT EQUAL SPACES    14410001
+652647*                 OR X372M006-CODCOA6-S(XN-J) NOT EQUAL SPACES    14420001
+      * MU-2017-BDGI-R-V-FIN                                            14430001
+652647                    IF X372M006-PAGOTOT-S(XN-J) = '2'             14440001
+652647                       PERFORM 2420-VER-COASEGURO                 14450001
+652647                       ADD 1 TO DE-EXPED2                         14460001
+652647                       COMPUTE DE-IMPOR2 = DE-IMPOR2 +            14470001
+652647                               WS-IPENDIENTE-COA                  14480001
+652647                    ELSE                                          14490001
+652647                       ADD 1 TO DE-EXPED2                         14500001
+652647                       COMPUTE DE-IMPOR2 = DE-IMPOR2 +            14510001
+652647                               X372M006-IPENDIENTE-S (XN-J)       14520001
+652647                    END-IF                                        14530001
+652647                 ELSE                                             14540001
+                          ADD 1 TO DE-EXPED2                            14550001
+      *             IF X372M006-FECPAGOCAPITAL-S(XN-J) > WS-FECCALCULO  14560001
+      *                OR X372M006-FECPAGOCAPITAL-S(XN-J) EQUAL SPACES  14570001
+                          COMPUTE DE-IMPOR2 = DE-IMPOR2 +               14580001
+MMC                            X372M006-IPENDIENTE-S (XN-J)             14590001
+      *                         X372M006-IMPCAPITAL-S(XN-J)+            14600001
+      *                         X372M006-IMPBENEFICIOS-S(XN-J)          14610001
+652647                 END-IF                                           14620001
+                    END-IF                                              14630001
+                                                                        14640001
+      *             IF X372M006-FECPAGCOMP1-S(XN-J) > WS-FECCALCULO     14650001
+      *                OR X372M006-FECPAGCOMP1-S(XN-J) EQUAL SPACES     14660001
+      *                COMPUTE DE-IMPOR2 = DE-IMPOR2 +                  14670001
+      *                        X372M006-IMPCOMP1-S(XN-J)                14680001
+      *             END-IF                                              14690001
+                                                                        14700001
+      *             IF X372M006-FECPAGCOMP2-S(XN-J) > WS-FECCALCULO     14710001
+      *                OR X372M006-FECPAGCOMP2-S(XN-J) EQUAL SPACES     14720001
+      *                COMPUTE DE-IMPOR2 = DE-IMPOR2 +                  14730001
+      *                        X372M006-IMPCOMP2-S(XN-J)                14740001
+      *             END-IF                                              14750001
+                                                                        14760001
+                 END-IF                                                 14770001
+                                                                        14780001
+      * PARA AÒO INICIAL MAS TRES                                       14790001
+535084*          IF X372M006-ANIO-S (XN-J) EQUAL WS-ANIOMAS3            14800001
+535084           IF X372M006-ANIO-S (XN-J) EQUAL WS-ANIOMAS1(3)         14810001
+                    IF X372M006-IPENDIENTE-S (XN-J) NOT EQUAL 0         14820001
+                      AND X372M006-FECPAGOCAPITAL-S(XN-J) = ' '         14830001
+                      AND (X372M006-GOBSERVACION-S (XN-J)(1:2)          14840001
+                          EQUAL 'VI' OR                                 14850001
+                           X372M006-GOBSERVACION-S (XN-J)(1:2) = SPACES)14860001
+536085                AND X372M006-FECEMISION-S (XN-J) <= WS-FECCALCULO 14870001
+      *                AND X372M006-SITUACION-S (XN-J) EQUAL 'V'        14880001
+652647*                SE REALIZA COMPROBACION DE COASEGURO             14890001
+      * MU-2017-BDGI-R-V-INI                                            14900001
+                       IF X372M006-COASEGUROS-OCCURS-S (XN-J) > ZEROS   14910001
+652647*                 IF X372M006-CODCOA1-S(XN-J) NOT EQUAL SPACES    14920001
+652647*                 OR X372M006-CODCOA2-S(XN-J) NOT EQUAL SPACES    14930001
+652647*                 OR X372M006-CODCOA3-S(XN-J) NOT EQUAL SPACES    14940001
+652647*                 OR X372M006-CODCOA4-S(XN-J) NOT EQUAL SPACES    14950001
+652647*                 OR X372M006-CODCOA5-S(XN-J) NOT EQUAL SPACES    14960001
+652647*                 OR X372M006-CODCOA6-S(XN-J) NOT EQUAL SPACES    14970001
+      * MU-2017-BDGI-R-V-FIN                                            14980001
+652647                    IF X372M006-PAGOTOT-S(XN-J) = '2'             14990001
+652647                       PERFORM 2420-VER-COASEGURO                 15000001
+652647                       ADD 1 TO DE-EXPED3                         15010001
+652647                       COMPUTE DE-IMPOR3 = DE-IMPOR3 +            15020001
+652647                               WS-IPENDIENTE-COA                  15030001
+652647                    ELSE                                          15040001
+652647                       ADD 1 TO DE-EXPED3                         15050001
+652647                       COMPUTE DE-IMPOR3 = DE-IMPOR3 +            15060001
+652647                               X372M006-IPENDIENTE-S (XN-J)       15070001
+652647                    END-IF                                        15080001
+652647                 ELSE                                             15090001
+                          ADD 1 TO DE-EXPED3                            15100001
+      *             IF X372M006-FECPAGOCAPITAL-S(XN-J) > WS-FECCALCULO  15110001
+      *                OR X372M006-FECPAGOCAPITAL-S(XN-J) EQUAL SPACES  15120001
+                          COMPUTE DE-IMPOR3 = DE-IMPOR3 +               15130001
+MMC                            X372M006-IPENDIENTE-S (XN-J)             15140001
+      *                         X372M006-IMPCAPITAL-S(XN-J)+            15150001
+      *                         X372M006-IMPBENEFICIOS-S(XN-J)          15160001
+652647                 END-IF                                           15170001
+                    END-IF                                              15180001
+                                                                        15190001
+      *             IF X372M006-FECPAGCOMP1-S(XN-J) > WS-FECCALCULO     15200001
+      *                OR X372M006-FECPAGCOMP1-S(XN-J) EQUAL SPACES     15210001
+      *                COMPUTE DE-IMPOR3 = DE-IMPOR3 +                  15220001
+      *                        X372M006-IMPCOMP1-S(XN-J)                15230001
+      *             END-IF                                              15240001
+                                                                        15250001
+      *             IF X372M006-FECPAGCOMP2-S(XN-J) > WS-FECCALCULO     15260001
+      *                OR X372M006-FECPAGCOMP2-S(XN-J) EQUAL SPACES     15270001
+      *                COMPUTE DE-IMPOR3 = DE-IMPOR3 +                  15280001
+      *                        X372M006-IMPCOMP2-S(XN-J)                15290001
+      *             END-IF                                              15300001
+                                                                        15310001
+                 END-IF                                                 15320001
+                                                                        15330001
+      * PARA AÒO INICIAL MAS CUATRO                                     15340001
+535084*          IF X372M006-ANIO-S (XN-J) EQUAL WS-ANIOMAS4            15350001
+535084           IF X372M006-ANIO-S (XN-J) EQUAL WS-ANIOMAS1(4)         15360001
+                    IF X372M006-IPENDIENTE-S (XN-J) NOT EQUAL 0         15370001
+                      AND X372M006-FECPAGOCAPITAL-S(XN-J) = ' '         15380001
+                      AND ( X372M006-GOBSERVACION-S (XN-J)(1:2)         15390001
+                          EQUAL 'VI' OR                                 15400001
+                           X372M006-GOBSERVACION-S (XN-J)(1:2) = SPACES)15410001
+536085                AND X372M006-FECEMISION-S (XN-J) <= WS-FECCALCULO 15420001
+      *                AND X372M006-SITUACION-S (XN-J) EQUAL 'V'        15430001
+652647*                SE REALIZA COMPROBACION DE COASEGURO             15440001
+      * MU-2017-BDGI-R-V-INI                                            15450001
+                       IF X372M006-COASEGUROS-OCCURS-S (XN-J) > ZEROS   15460001
+652647*                 IF X372M006-CODCOA1-S(XN-J) NOT EQUAL SPACES    15470001
+652647*                 OR X372M006-CODCOA2-S(XN-J) NOT EQUAL SPACES    15480001
+652647*                 OR X372M006-CODCOA3-S(XN-J) NOT EQUAL SPACES    15490001
+652647*                 OR X372M006-CODCOA4-S(XN-J) NOT EQUAL SPACES    15500001
+652647*                 OR X372M006-CODCOA5-S(XN-J) NOT EQUAL SPACES    15510001
+652647*                 OR X372M006-CODCOA6-S(XN-J) NOT EQUAL SPACES    15520001
+      * MU-2017-BDGI-R-V-FIN                                            15530001
+652647                    IF X372M006-PAGOTOT-S(XN-J) = '2'             15540001
+652647                       PERFORM 2420-VER-COASEGURO                 15550001
+652647                       ADD 1 TO DE-EXPED4                         15560001
+652647                       COMPUTE DE-IMPOR4 = DE-IMPOR4 +            15570001
+652647                               WS-IPENDIENTE-COA                  15580001
+652647                    ELSE                                          15590001
+652647                       ADD 1 TO DE-EXPED4                         15600001
+652647                       COMPUTE DE-IMPOR4 = DE-IMPOR4 +            15610001
+652647                               X372M006-IPENDIENTE-S (XN-J)       15620001
+652647                    END-IF                                        15630001
+652647                 ELSE                                             15640001
+                          ADD 1 TO DE-EXPED4                            15650001
+      *             IF X372M006-FECPAGOCAPITAL-S(XN-J) > WS-FECCALCULO  15660001
+      *                OR X372M006-FECPAGOCAPITAL-S(XN-J) EQUAL SPACES  15670001
+                          COMPUTE DE-IMPOR4 = DE-IMPOR4 +               15680001
+MMC                            X372M006-IPENDIENTE-S (XN-J)             15690001
+      *                         X372M006-IMPCAPITAL-S(XN-J)+            15700001
+      *                         X372M006-IMPBENEFICIOS-S(XN-J)          15710001
+652647                 END-IF                                           15720001
+                    END-IF                                              15730001
+                                                                        15740001
+      *             IF X372M006-FECPAGCOMP1-S(XN-J) > WS-FECCALCULO     15750001
+      *                OR X372M006-FECPAGCOMP1-S(XN-J) EQUAL SPACES     15760001
+      *                COMPUTE DE-IMPOR4 = DE-IMPOR4 +                  15770001
+      *                        X372M006-IMPCOMP1-S(XN-J)                15780001
+      *             END-IF                                              15790001
+                                                                        15800001
+      *             IF X372M006-FECPAGCOMP2-S(XN-J) > WS-FECCALCULO     15810001
+      *                OR X372M006-FECPAGCOMP2-S(XN-J) EQUAL SPACES     15820001
+      *                COMPUTE DE-IMPOR4 = DE-IMPOR4 +                  15830001
+      *                        X372M006-IMPCOMP2-S(XN-J)                15840001
+      *             END-IF                                              15850001
+                                                                        15860001
+                 END-IF                                                 15870001
+                                                                        15880001
+      * PARA AÒO INICIAL MAS CINCO                                      15890001
+535084*          IF X372M006-ANIO-S (XN-J) EQUAL WS-ANIOMAS5            15900001
+535084           IF X372M006-ANIO-S (XN-J) EQUAL WS-ANIOMAS1(5)         15910001
+                    AND X372M006-KEXPEDIENTE-S  (XN-J) <=               15920001
+                    X372M006-KEXPED-HASTA-E                             15930001
+                    IF X372M006-IPENDIENTE-S (XN-J) NOT EQUAL 0         15940001
+                      AND X372M006-FECPAGOCAPITAL-S(XN-J) = ' '         15950001
+                      AND ( X372M006-GOBSERVACION-S (XN-J)(1:2)         15960001
+                          EQUAL 'VI' OR                                 15970001
+                           X372M006-GOBSERVACION-S (XN-J)(1:2) = SPACES)15980001
+536085                AND X372M006-FECEMISION-S (XN-J) <= WS-FECCALCULO 15990001
+      *                AND X372M006-SITUACION-S (XN-J) EQUAL 'V'        16000001
+652647*                SE REALIZA COMPROBACION DE COASEGURO             16010001
+      * MU-2017-BDGI-R-V-INI                                            16020001
+                       IF X372M006-COASEGUROS-OCCURS-S (XN-J) > ZEROS   16030001
+652647*                 IF X372M006-CODCOA1-S(XN-J) NOT EQUAL SPACES    16040001
+652647*                 OR X372M006-CODCOA2-S(XN-J) NOT EQUAL SPACES    16050001
+652647*                 OR X372M006-CODCOA3-S(XN-J) NOT EQUAL SPACES    16060001
+652647*                 OR X372M006-CODCOA4-S(XN-J) NOT EQUAL SPACES    16070001
+652647*                 OR X372M006-CODCOA5-S(XN-J) NOT EQUAL SPACES    16080001
+652647*                 OR X372M006-CODCOA6-S(XN-J) NOT EQUAL SPACES    16090001
+      * MU-2017-BDGI-R-V-FIN                                            16100001
+652647                    IF X372M006-PAGOTOT-S(XN-J) = '2'             16110001
+652647                       PERFORM 2420-VER-COASEGURO                 16120001
+652647                       ADD 1 TO DE-EXPED5                         16130001
+652647                       COMPUTE DE-IMPOR5 = DE-IMPOR5 +            16140001
+652647                               WS-IPENDIENTE-COA                  16150001
+652647                    ELSE                                          16160001
+652647                       ADD 1 TO DE-EXPED5                         16170001
+652647                       COMPUTE DE-IMPOR5 = DE-IMPOR5 +            16180001
+652647                               X372M006-IPENDIENTE-S (XN-J)       16190001
+652647                    END-IF                                        16200001
+652647                 ELSE                                             16210001
+                          ADD 1 TO DE-EXPED5                            16220001
+      *             IF X372M006-FECPAGOCAPITAL-S(XN-J) > WS-FECCALCULO  16230001
+      *                OR X372M006-FECPAGOCAPITAL-S(XN-J) EQUAL SPACES  16240001
+                          COMPUTE DE-IMPOR5 = DE-IMPOR5 +               16250001
+MMC                            X372M006-IPENDIENTE-S (XN-J)             16260001
+      *                         X372M006-IMPCAPITAL-S(XN-J)+            16270001
+      *                         X372M006-IMPBENEFICIOS-S(XN-J)          16280001
+652647                 END-IF                                           16290001
+                    END-IF                                              16300001
+                                                                        16310001
+      *             IF X372M006-FECPAGCOMP1-S(XN-J) > WS-FECCALCULO     16320001
+      *                OR X372M006-FECPAGCOMP1-S(XN-J) EQUAL SPACES     16330001
+      *                COMPUTE DE-IMPOR5 = DE-IMPOR5 +                  16340001
+      *                        X372M006-IMPCOMP1-S(XN-J)                16350001
+      *             END-IF                                              16360001
+                                                                        16370001
+      *             IF X372M006-FECPAGCOMP2-S(XN-J) > WS-FECCALCULO     16380001
+      *                OR X372M006-FECPAGCOMP2-S(XN-J) EQUAL SPACES     16390001
+      *                COMPUTE DE-IMPOR5 = DE-IMPOR5 +                  16400001
+      *                        X372M006-IMPCOMP2-S(XN-J)                16410001
+      *             END-IF                                              16420001
+                                                                        16430001
+                 END-IF.                                                16440001
+                                                                        16450001
+535084 2410-MOVER-DATOS-LINEA.                                          16460001
+535084***********************                                           16470001
+535084                                                                  16480001
+535084*ANTES DE ESCRIBIR LA LINEA RECORREMOS EL OCURS PARA              16490001
+535084*PASAR AL STRING LOS DATOS                                        16500001
+535084     MOVE 0 TO CT-ANIOS                                           16510001
+535084*INICIALIZAMOS LA VARIABLE ST-DETALLE CON .. PARA PODER           16520001
+535084*CONCATENAR LOS DETALLES DE LOS AÒOS                              16530001
+535084     MOVE '..' TO ST-DETALLE                                      16540001
+535084     PERFORM VARYING CT-ANIOS FROM 1 BY 1                         16550001
+535084        UNTIL CT-ANIOS > CT-ANIOS-1                               16560001
+535084                                                                  16570001
+535084               STRING ST-DETALLE  DELIMITED BY '..'               16580001
+535084                      LIN-DETALLE-VARIABLE(CT-ANIOS)              16590001
+535084                      DELIMITED BY SIZE INTO ST-DETALLE           16600001
+535084                                                                  16610001
+535084     END-PERFORM                                                  16620001
+535084                                                                  16630001
+535084     STRING ST-DETALLE  DELIMITED BY '..'                         16640001
+535084           LIN-DETALLE-TOTAL                                      16650001
+535084           DELIMITED BY SIZE INTO ST-DETALLE                      16660001
+535084     .                                                            16670001
+535084                                                                  16680001
+535084 2415-MOVER-DATOS-TOTAL.                                          16690001
+535084***********************                                           16700001
+535084                                                                  16710001
+535084*ANTES DE ESCRIBIR EL TOTAL RECORREMOS EL OCURS PARA              16720001
+535084*PASAR AL STRING LOS DATOS                                        16730001
+535084     MOVE 0 TO CT-ANIOS                                           16740001
+535084     MOVE ' .' TO ST-TOTAL                                        16750001
+535084     PERFORM VARYING CT-ANIOS FROM 1 BY 1                         16760001
+535084        UNTIL CT-ANIOS > CT-ANIOS-1                               16770001
+535084                                                                  16780001
+535084               STRING ST-TOTAL  DELIMITED BY ' .'                 16790001
+535084                      LIN-TOTAL-VARIABLE(CT-ANIOS)                16800001
+535084                      DELIMITED BY SIZE INTO ST-TOTAL             16810001
+535084                                                                  16820001
+535084     END-PERFORM                                                  16830001
+535084                                                                  16840001
+535084     STRING ST-TOTAL    DELIMITED BY ' .'                         16850001
+535084           LIN-TOTAL-TOTAL                                        16860001
+535084           DELIMITED BY SIZE INTO ST-TOTAL                        16870001
+535084     .                                                            16880001
+535084                                                                  16890001
+652647 2420-VER-COASEGURO.                                              16900001
+652647********************                                              16910001
+652647                                                                  16920001
+652647     INITIALIZE WS-PORC-COASEGUR                                  16930001
+652647                WS-IPENDIENTE-COA                                 16940001
+652647                WS-PORC-COA-DECI                                  16950001
+652647                WS-CAPITAL                                        16960001
+652647                                                                  16970001
+652647     COMPUTE WS-CAPITAL = X372M006-IMPCAPITAL-S(XN-J) +           16980001
+652647                          X372M006-IMPBENEFICIOS-S(XN-J)          16990001
+652647                                                                  17000001
+      * MU-2017-BDGI-R-V-INI                                            17010001
+652647*     IF X372M006-CODCOA1-S(XN-J) = LT-MAVI-COASEGURO             17020001
+652647**       MOVE X372M006-PORCOA1-S(XN-J) TO WS-PORC-COASEGUR        17030001
+652647*        COMPUTE WS-PORC-COA-DECI =                               17040001
+652647*            (X372M006-IMPCOA1-S(XN-J) * 100) / WS-CAPITAL        17050001
+652647*     END-IF                                                      17060001
+                                                                        17070001
+652647*     IF X372M006-CODCOA2-S(XN-J) = LT-MAVI-COASEGURO             17080001
+652647**       MOVE X372M006-PORCOA2-S(XN-J) TO WS-PORC-COASEGUR        17090001
+652647*        COMPUTE WS-PORC-COA-DECI =                               17100001
+652647*            (X372M006-IMPCOA2-S(XN-J) * 100) / WS-CAPITAL        17110001
+652647*     END-IF                                                      17120001
+                                                                        17130001
+652647*     IF X372M006-CODCOA3-S(XN-J) = LT-MAVI-COASEGURO             17140001
+652647**       MOVE X372M006-PORCOA3-S(XN-J) TO WS-PORC-COASEGUR        17150001
+652647*        COMPUTE WS-PORC-COA-DECI =                               17160001
+652647*            (X372M006-IMPCOA3-S(XN-J) * 100) / WS-CAPITAL        17170001
+652647*     END-IF                                                      17180001
+                                                                        17190001
+652647*     IF X372M006-CODCOA4-S(XN-J) = LT-MAVI-COASEGURO             17200001
+652647*       MOVE X372M006-PORCOA4-S(XN-J) TO WS-PORC-COASEGUR         17210001
+652647*        COMPUTE WS-PORC-COA-DECI =                               17220001
+652647*            (X372M006-IMPCOA4-S(XN-J) * 100) / WS-CAPITAL        17230001
+652647*     END-IF                                                      17240001
+                                                                        17250001
+652647*     IF X372M006-CODCOA5-S(XN-J) = LT-MAVI-COASEGURO             17260001
+652647**       MOVE X372M006-PORCOA5-S(XN-J) TO WS-PORC-COASEGUR        17270001
+652647*        COMPUTE WS-PORC-COA-DECI =                               17280001
+652647*            (X372M006-IMPCOA5-S(XN-J) * 100) / WS-CAPITAL        17290001
+652647*     END-IF                                                      17300001
+652647*     IF X372M006-CODCOA6-S(XN-J) = LT-MAVI-COASEGURO             17310001
+652647**       MOVE X372M006-PORCOA6-S(XN-J) TO WS-PORC-COASEGUR        17320001
+652647*        COMPUTE WS-PORC-COA-DECI =                               17330001
+652647*            (X372M006-IMPCOA6-S(XN-J) * 100) / WS-CAPITAL        17340001
+652647*     END-IF                                                      17350001
+      *                                                                 17360001
+      * UTILIZAMOS LOS NUEVOS CAMPOS EN LUGAR DE CALCULARLOS            17370001
+      *                                                                 17380001
+            PERFORM VARYING XN-M FROM 1 BY 1                            17390001
+               UNTIL XN-M > X372M006-COASEGUROS-OCCURS-S(XN-J)          17400001
+      *                                                                 17410001
+                  IF X372M006-CODCOA-S (XN-J, XN-M)                     17420001
+                     = LT-MAVI-COASEGURO                                17430001
+      *                                                                 17440001
+                     MOVE X372M006-PORCOA-S(XN-J, XN-M)                 17450001
+                       TO WS-PORC-COASEGUR                              17460001
+      *   COMO LA MCOA NOS DEVUELVE YA EL PORCENTAJE CON 6 DECIMALES,   17470001
+      *   NO HAY QUE CALCULAR NADA, SIMPLEMENTE INFORMAR LA VARIABLE    17480001
+                     MOVE X372M006-IMPCOA-S(XN-J, XN-M)                 17490001
+                       TO WS-PORC-COA-DECI                              17500001
+      *                                                                 17510001
+                  END-IF                                                17520001
+      *                                                                 17530001
+            END-PERFORM                                                 17540001
+            .                                                           17550001
+      * MU-2017-BDGI-R-V-FIN                                            17560001
+                                                                        17570001
+       2500-ESCRIBIR-TOTALES.                                           17580001
+      *********************                                             17590001
+           MOVE WS-MODALIDAD                TO DE-MOD                   17600001
+                                                                        17610001
+      * SUMO LOS TOTALES Y MUVEMOS LOS VALORES POR MODALIDADES          17620001
+           COMPUTE DE-EXPEDT = DE-EXPED  + DE-EXPED1 + DE-EXPED2 +      17630001
+                               DE-EXPED3 + DE-EXPED4 + DE-EXPED5        17640001
+                                                                        17650001
+           COMPUTE DE-IMPORT = DE-IMPOR  + DE-IMPOR1 + DE-IMPOR2 +      17660001
+                               DE-IMPOR3 + DE-IMPOR4 + DE-IMPOR5        17670001
+                                                                        17680001
+      * SUMA TOTALES                                                    17690001
+           COMPUTE TO-EXPED = TO-EXPED + DE-EXPED                       17700001
+           COMPUTE TO-IMPOR = TO-IMPOR + DE-IMPOR                       17710001
+           COMPUTE TO-EXPED1 = TO-EXPED1 + DE-EXPED1                    17720001
+           COMPUTE TO-IMPOR1 = TO-IMPOR1 + DE-IMPOR1                    17730001
+           COMPUTE TO-EXPED2 = TO-EXPED2 + DE-EXPED2                    17740001
+           COMPUTE TO-IMPOR2 = TO-IMPOR2 + DE-IMPOR2                    17750001
+           COMPUTE TO-EXPED3 = TO-EXPED3 + DE-EXPED3                    17760001
+           COMPUTE TO-IMPOR3 = TO-IMPOR3 + DE-IMPOR3                    17770001
+           COMPUTE TO-EXPED4 = TO-EXPED4 + DE-EXPED4                    17780001
+           COMPUTE TO-IMPOR4 = TO-IMPOR4 + DE-IMPOR4                    17790001
+           COMPUTE TO-EXPED5 = TO-EXPED5 + DE-EXPED5                    17800001
+           COMPUTE TO-IMPOR5 = TO-IMPOR5 + DE-IMPOR5                    17810001
+           COMPUTE TO-EXPEDT = TO-EXPEDT + DE-EXPEDT                    17820001
+           COMPUTE TO-IMPORT = TO-IMPORT + DE-IMPORT                    17830001
+                                                                        17840001
+           IF CT-LINEA EQUAL 0 OR CT-LINEA > 58                         17850001
+              PERFORM 2510-IMPRIMIR-INTRO                               17860001
+              PERFORM 2520-IMPRIMIR-TITULOS-1                           17870001
+              ADD 1 TO CT-PAGE                                          17880001
+              MOVE -1 TO CT-LINEA                                       17890001
+           END-IF                                                       17900001
+                                                                        17910001
+      * IMPRIMIR ULTIMA LINEA DE DETALLE                                17920001
+      * ANTES DE ESCRIBIR LA ULTIMA LINEA PASAMOS A LA MASCARA LOS IMPOR17930001
+                                                                        17940001
+           MOVE DE-IMPOR        TO WS-DE-IMPOR                          17950001
+535084*    MOVE DE-IMPOR1       TO WS-DE-IMPOR1                         17960001
+535084     MOVE DE-IMPOR1       TO WS-DE-IMPOR1(1)                      17970001
+535084*    MOVE DE-IMPOR2       TO WS-DE-IMPOR2                         17980001
+535084     MOVE DE-IMPOR2       TO WS-DE-IMPOR1(2)                      17990001
+535084*    MOVE DE-IMPOR3       TO WS-DE-IMPOR3                         18000001
+535084     MOVE DE-IMPOR3       TO WS-DE-IMPOR1(3)                      18010001
+535084*    MOVE DE-IMPOR4       TO WS-DE-IMPOR4                         18020001
+535084     MOVE DE-IMPOR4       TO WS-DE-IMPOR1(4)                      18030001
+535084*    MOVE DE-IMPOR5       TO WS-DE-IMPOR5                         18040001
+535084     MOVE DE-IMPOR5       TO WS-DE-IMPOR1(5)                      18050001
+           MOVE DE-IMPORT       TO WS-DE-IMPORT                         18060001
+                                                                        18070001
+      * ANTES DE ESCRIBIR LA ULTIMA LINEA PASAMOS A LA MASCARA LOS EXPED18080001
+           MOVE DE-EXPED        TO WS-DE-EXPED                          18090001
+535084*    MOVE DE-EXPED1       TO WS-DE-EXPED1                         18100001
+535084     MOVE DE-EXPED1       TO WS-DE-EXPED1(1)                      18110001
+535084*    MOVE DE-EXPED2       TO WS-DE-EXPED2                         18120001
+535084     MOVE DE-EXPED2       TO WS-DE-EXPED1(2)                      18130001
+535084*    MOVE DE-EXPED3       TO WS-DE-EXPED3                         18140001
+535084     MOVE DE-EXPED3       TO WS-DE-EXPED1(3)                      18150001
+535084*    MOVE DE-EXPED4       TO WS-DE-EXPED4                         18160001
+535084     MOVE DE-EXPED4       TO WS-DE-EXPED1(4)                      18170001
+535084*    MOVE DE-EXPED5       TO WS-DE-EXPED5                         18180001
+535084     MOVE DE-EXPED5       TO WS-DE-EXPED1(5)                      18190001
+           MOVE DE-EXPEDT       TO WS-DE-EXPEDT                         18200001
+                                                                        18210001
+      * ESCRIBIMOS LA ULTIMA LINEA EN EL FICHERO TXT                    18220001
+           PERFORM 2710-ESC-LIN-TXT                                     18230001
+           INITIALIZE LINEA-TXT                                         18240001
+                                                                        18250001
+535084     PERFORM 2410-MOVER-DATOS-LINEA                               18260001
+           ADD   1  TO  CT-LINEA                                        18270001
+           MOVE LIN-DETALLE TO RIMPRESO                                 18280001
+           WRITE RIMPRESO AFTER ADVANCING 1 LINE                        18290001
+           ADD   1  TO  CT-LINEA                                        18300001
+           INITIALIZE LIN-DETALLE                                       18310001
+           INITIALIZE VARIABLES-LINEA                                   18320001
+                                                                        18330001
+      * IMPRIMIR UNA LINEA EN BLANCO                                    18340001
+           MOVE LINEA-BLANCO TO RIMPRESO.                               18350001
+           WRITE RIMPRESO AFTER ADVANCING 1       LINES.                18360001
+           ADD    1       TO CT-LINEA.                                  18370001
+           MOVE CAB-TITULO-2-SUBRAYADO TO RIMPRESO                      18380001
+           WRITE RIMPRESO AFTER ADVANCING 1 LINE                        18390001
+                                                                        18400001
+      * IMPRIMIR LA LINEA DE TOTAL                                      18410001
+           MOVE TO-IMPOR        TO WS-TO-IMPOR                          18420001
+535084*    MOVE TO-IMPOR1       TO WS-TO-IMPOR1                         18430001
+535084     MOVE TO-IMPOR1       TO WS-TO-IMPOR1(1)                      18440001
+535084*    MOVE TO-IMPOR2       TO WS-TO-IMPOR2                         18450001
+535084     MOVE TO-IMPOR2       TO WS-TO-IMPOR1(2)                      18460001
+535084*    MOVE TO-IMPOR3       TO WS-TO-IMPOR3                         18470001
+535084     MOVE TO-IMPOR3       TO WS-TO-IMPOR1(3)                      18480001
+535084*    MOVE TO-IMPOR4       TO WS-TO-IMPOR4                         18490001
+535084     MOVE TO-IMPOR4       TO WS-TO-IMPOR1(4)                      18500001
+535084*    MOVE TO-IMPOR5       TO WS-TO-IMPOR5                         18510001
+535084     MOVE TO-IMPOR5       TO WS-TO-IMPOR1(5)                      18520001
+           MOVE TO-IMPORT       TO WS-TO-IMPORT                         18530001
+                                                                        18540001
+      * ANTES DE ESCRIBIR LA ULTIMA LINEA PASAMOS A LA MASCARA LOS EXPED18550001
+           MOVE TO-EXPED        TO WS-TO-EXPED                          18560001
+535084*    MOVE TO-EXPED1       TO WS-TO-EXPED1                         18570001
+535084     MOVE TO-EXPED1       TO WS-TO-EXPED1(1)                      18580001
+535084*    MOVE TO-EXPED2       TO WS-TO-EXPED2                         18590001
+535084     MOVE TO-EXPED2       TO WS-TO-EXPED1(2)                      18600001
+535084*    MOVE TO-EXPED3       TO WS-TO-EXPED3                         18610001
+535084     MOVE TO-EXPED3       TO WS-TO-EXPED1(3)                      18620001
+535084*    MOVE TO-EXPED4       TO WS-TO-EXPED4                         18630001
+535084     MOVE TO-EXPED4       TO WS-TO-EXPED1(4)                      18640001
+535084*    MOVE TO-EXPED5       TO WS-TO-EXPED5                         18650001
+535084     MOVE TO-EXPED5       TO WS-TO-EXPED1(5)                      18660001
+           MOVE TO-EXPEDT       TO WS-TO-EXPEDT                         18670001
+                                                                        18680001
+                                                                        18690001
+535084     PERFORM 2415-MOVER-DATOS-TOTAL                               18700001
+           MOVE LIN-TOTAL   TO RIMPRESO                                 18710001
+           WRITE RIMPRESO AFTER ADVANCING 1 LINE                        18720001
+           ADD   1  TO  CT-LINEA                                        18730001
+      * ESCRIBIMOS LA LINEA DE TOTAL Y LA ULTIMA LINEA DEL FICHERO TXT  18740001
+           PERFORM 2720-ESC-TOT-TXT                                     18750001
+                                                                        18760001
+               .                                                        18770001
+                                                                        18780001
+       2510-IMPRIMIR-INTRO.                                             18790001
+      *********************                                             18800001
+           MOVE CT-PAGE TO CB-INTRO-PAG.                                18810001
+           MOVE CAB-INTRO   TO RIMPRESO.                                18820001
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.                      18830001
+           ADD 1 TO CT-LINEA.                                           18840001
+           MOVE CAB-INTRO-1 TO RIMPRESO.                                18850001
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.                      18860001
+           ADD 1 TO CT-LINEA.                                           18870001
+           MOVE CAB-INTRO-2 TO RIMPRESO.                                18880001
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.                      18890001
+           ADD 1 TO CT-LINEA.                                           18900001
+           MOVE CAB-INTRO-3 TO RIMPRESO.                                18910001
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.                      18920001
+           ADD 1 TO CT-LINEA.                                           18930001
+           MOVE LINEA-BLANCO TO RIMPRESO.                               18940001
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.                      18950001
+           ADD 1 TO CT-LINEA.                                           18960001
+                                                                        18970001
+       2520-IMPRIMIR-TITULOS-1.                                         18980001
+      *****************                                                 18990001
+           MOVE CAB-TITULO-1 TO RIMPRESO.                               19000001
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.                      19010001
+           ADD 1 TO CT-LINEA.                                           19020001
+           MOVE CAB-TITULO-1-SUBRAYADO TO RIMPRESO.                     19030001
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.                      19040001
+           ADD 1 TO CT-LINEA.                                           19050001
+           MOVE CAB-TITULO-2 TO RIMPRESO.                               19060001
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.                      19070001
+           ADD 1 TO CT-LINEA.                                           19080001
+           MOVE CAB-TITULO-2-SUBRAYADO TO RIMPRESO.                     19090001
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.                      19100001
+           ADD 1 TO CT-LINEA.                                           19110001
+           MOVE LINEA-BLANCO TO RIMPRESO.                               19120001
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.                      19130001
+            ADD 1 TO CT-LINEA.                                          19140001
+                                                                        19150001
+                                                                        19160001
+      ***************************************************************** 19170001
+      * 2600-WRITE-REG-ERR.                                           * 19180001
+      ***************************************************************** 19190001
+                                                                        19200001
+       2600-WRITE-REG-ERR.                                              19210001
+           WRITE REG-ERR FROM WS-REG-ERR.                               19220001
+                                                                        19230001
+      ***************************************************************** 19240001
+      * 2700-ESC-CAB-TXT.                                             * 19250001
+      ***************************************************************** 19260001
+                                                                        19270001
+       2700-ESC-CAB-TXT.                                                19280001
+                                                                        19290001
+           MOVE WS-FECCALCULO TO CB-FECALCULO                           19300001
+                                                                        19310001
+           WRITE RIMPRTXT FROM CABECERA-TXT AFTER ADVANCING 1 LINES.    19320001
+                                                                        19330001
+      ***************************************************************** 19340001
+      * 2710-ESC-LIN-TXT.                                             * 19350001
+      ***************************************************************** 19360001
+                                                                        19370001
+       2710-ESC-LIN-TXT.                                                19380001
+                                                                        19390001
+           MOVE WS-FECCALCULO TO LI-FECALCULO                           19400001
+           MOVE DE-MOD        TO LI-MOD                                 19410001
+           MOVE DE-IMPORT-E   TO LI-ENTERA-1                            19420001
+           MOVE DE-IMPORT-D   TO LI-DECIMAL-1                           19430001
+           MOVE DE-IMPORT-E   TO LI-ENTERA-2                            19440001
+           MOVE DE-IMPORT-D   TO LI-DECIMAL-2                           19450001
+           MOVE WS-FORMFECHA  TO LI-FORMFECHA                           19460001
+      *D*                                                               19470001
+      *    DISPLAY 'DE-IMPORT ' DE-IMPORT                               19480001
+      *    DISPLAY 'DE-IMPORT-D ' DE-IMPORT-D                           19490001
+      *    DISPLAY 'DE-IMPORT-E ' DE-IMPORT-E                           19500001
+      *F*                                                               19510001
+                                                                        19520001
+           WRITE RIMPRTXT FROM LINEA-TXT AFTER ADVANCING 1 LINES.       19530001
+                                                                        19540001
+      ***************************************************************** 19550001
+      * 2720-ESC-TOT-TXT.                                             * 19560001
+      ***************************************************************** 19570001
+       2720-ESC-TOT-TXT.                                                19580001
+                                                                        19590001
+           MOVE WS-FECCALCULO TO LI-TO-FECALCULO                        19600001
+           MOVE 0000          TO LI-TO-MOD                              19610001
+           MOVE TO-IMPORT-E   TO LI-TO-ENTERA-1                         19620001
+           MOVE TO-IMPORT-D   TO LI-TO-DECIMAL-1                        19630001
+           MOVE TO-IMPORT-E   TO LI-TO-ENTERA-2                         19640001
+           MOVE TO-IMPORT-D   TO LI-TO-DECIMAL-2                        19650001
+           MOVE WS-FORMFECHA  TO LI-TO-FORMFECHA                        19660001
+      *D*                                                               19670001
+      *    DISPLAY 'TO-IMPORT ' TO-IMPORT                               19680001
+      *    DISPLAY 'TO-IMPORT-E ' TO-IMPORT-E                           19690001
+      *    DISPLAY 'TO-IMPORT-D ' TO-IMPORT-D                           19700001
+      *F*                                                               19710001
+           MOVE WS-FECCALCULO TO UL-FECALCULO                           19720001
+           MOVE TO-IMPORT-E   TO UL-TO-ENTERA-1                         19730001
+           MOVE TO-IMPORT-D   TO UL-TO-DECIMAL-1                        19740001
+           MOVE TO-IMPORT-E   TO UL-TO-ENTERA-2                         19750001
+           MOVE TO-IMPORT-D   TO UL-TO-DECIMAL-2                        19760001
+                                                                        19770001
+      * ESCRIBIMOS LA LINEA TOTAL                                       19780001
+                                                                        19790001
+           WRITE RIMPRTXT FROM LINEA-TOTAL-TXT AFTER ADVANCING 1 LINES  19800001
+                                                                        19810001
+      * ESCRIBIMOS LA ULTIMA LINEA                                      19820001
+           WRITE RIMPRTXT FROM ULTIMA-TXT AFTER ADVANCING 1 LINES.      19830001
+                                                                        19840001
+      ***************************************************************** 19850001
+      * 2510-WRITE-REG-ERR.                                           * 19860001
+      ***************************************************************** 19870001
+                                                                        19880001
+       2510-WRITE-REG-ERR.                                              19890001
+           MOVE NOMBRE-CADENA        TO CB-CADENA.                      19900001
+           MOVE 'ERRORES POR RESUMEN PENDIENTES POR MODALIDAD'          19910001
+             TO CB-FICHERO.                                             19920001
+           MOVE WS-BUZON    TO CB-BUZON.                                19930001
+                                                                        19940001
+           MOVE '10'       TO CB-COMPANIA                               19950001
+           WRITE REG-ERR  FROM CAB-0                                    19960001
+MMC                              AFTER ADVANCING PAGE                   19970001
+           WRITE REG-ERR FROM WS-REG-ERR.                               19980001
+                                                                        19990001
+           MOVE '20'       TO CB-COMPANIA                               20000001
+           WRITE REG-ERR  FROM CAB-0                                    20010001
+MMC                              AFTER ADVANCING PAGE                   20020001
+           WRITE REG-ERR FROM WS-REG-ERR.                               20030001
+                                                                        20040001
+           MOVE '60'       TO CB-COMPANIA                               20050001
+           WRITE REG-ERR  FROM CAB-0                                    20060001
+MMC                              AFTER ADVANCING PAGE                   20070001
+           WRITE REG-ERR FROM WS-REG-ERR.                               20080001
+                                                                        20090001
+      ******************************************************************20100001
+       8100-CABECERA-BUZON.                                             20110001
+      ******************************************************************20120001
+           INITIALIZE CAB-0                                             20130001
+                                                                        20140001
+           MOVE WS-ANT-CENTIDAD(1:2) TO CB-COMPANIA.                    20150001
+           MOVE NOMBRE-CADENA        TO CB-CADENA.                      20160001
+           MOVE 'INFORME POR RESUMEN PENDIENTES POR MODALIDAD'          20170001
+             TO CB-FICHERO.                                             20180001
+                                                                        20190001
+           MOVE WS-BUZON             TO CB-BUZON.                       20200001
+                                                                        20210001
+           WRITE RIMPRESO FROM CAB-0                                    20220001
+MMC                              AFTER ADVANCING PAGE.                  20230001
+      ******************************************************************20240001
+        8888-ROLLBACK.                                                  20250001
+      ******************************************************************20260001
+                                                                        20270001
+           INITIALIZE WS-X001M001                                       20280001
+           MOVE 'R'   TO X001M001-CACCION                               20290001
+                                                                        20300001
+           CALL WS-B001M001 USING WS-X001M001.                          20310001
+                                                                        20320001
+      ***************************************************************** 20330001
+        8889-COMMIT.                                                    20340001
+      ***************************************************************** 20350001
+           INITIALIZE WS-X001M001                                       20360001
+           MOVE 'C' TO X001M001-CACCION                                 20370001
+                                                                        20380001
+           CALL WS-B001M001 USING WS-X001M001.                          20390001
+                                                                        20400001
+      ***************************************************************   20410001
+       10000-FIN.                                                       20420001
+      ***************************************************************   20430001
+                                                                        20440001
+           IF NO-ROLLBACK                                               20450001
+              PERFORM 8888-ROLLBACK                                     20460001
+           ELSE                                                         20470001
+              PERFORM 8889-COMMIT                                       20480001
+           END-IF                                                       20490001
+                                                                        20500001
+           GOBACK.                                                      20510001

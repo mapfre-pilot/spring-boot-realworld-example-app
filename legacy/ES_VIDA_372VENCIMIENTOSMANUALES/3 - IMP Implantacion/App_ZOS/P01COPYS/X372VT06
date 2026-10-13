@@ -1,0 +1,27 @@
+      ******************************************************************00010018
+      *                      COPY  X372VT06                            *00020025
+      *                                                                *00030010
+      *   PETICION DE DESCARGA BDGI VENCIMIENTOS MANUALES (FOXPRO)     *00040027
+      * -------------------------------------------------------------  *00050027
+      * FECHA DE CREACION:  JUNIO 2012                                 *00051028
+      ******************************************************************00060010
+       05 X372VT06.                                                     00061025
+          07 X372VT06-DATOS-CABECERA.                                   00071025
+             09 X372VT06-KSERVICIO-C        PIC X(08).                  00072025
+             09 X372VT06-CCANAL-C           PIC 9(02).                  00073025
+             09 X372VT06-KEMPRESA-C         PIC X(03).                  00074025
+             09 X372VT06-KDEPARTA-C         PIC X(03).                  00075025
+             09 X372VT06-KUSUARIO-C         PIC X(10).                  00076025
+             09 X372VT06-KCADISTR-C         PIC X(01).                  00077025
+             09 X372VT06-KFILTRO-C          PIC X(02).                  00078025
+             09 X372VT06-FILLER-C           PIC X(17).                  00079025
+          07 X372VT06-E.                                                00079125
+             09 X372VT06-ANIOEJER-E             PIC 9(4).               00079225
+             09 X372VT06-MESEJER-E              PIC 9(2).               00079325
+             09 X372VT06-FECHAINICIAL-BDGI-E    PIC X(08).              00079425
+             09 X372VT06-FECHAFINAL-BDGI-E      PIC X(08).              00079525
+                                                                        00080323
+          07 X372VT06-S.                                                00080425
+             09 X372VT06-CRETORNO-S           PIC X(2).                 00083425
+             09 X372VT06-GERROR-S             PIC X(100).               00083526
+             09 X372VT06-GNOMPROG-S           PIC X(8).                 00083625

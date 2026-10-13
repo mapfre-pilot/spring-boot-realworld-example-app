@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<project name="WSS362RESCATESMANUALES" basedir="." default="all">
+
+	<!-- Workspace -->
+	<property file="build.properties"/> 
+	<property name="project.dir" value=".."/>
+	<property name="src.dir" value="${project.dir}/${src.dir.name}"/>
+	<property name="webcontent.dir" value="${project.dir}/${webcontent.dir.name}"/>
+	<property name="build.classes.dir" value="${webcontent.dir}/WEB-INF/classes"/>
+	<property name="path.lib" value="${webcontent.dir}/WEB-INF/lib"/>
+	
+	<!--property name="local.base" value="../../../../3 - IMP Implantacion/Java"/-->
+	<property name="path.dist" value="${local.base}"/>
+	<property name="path.ear" value="${impl.base}/${ear.name}.ear"/>
+	<property name="path.war" value="${path.dist}/${ear.name}.war"/>
+	<property name="path.jar" value="${path.dist}/${jar.name}.jar"/>
+	
+	<taskdef resource="tasks.properties" classpath="${sdesa.ant.mapfre.tasks.jars}" />
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="${sdesa.ant.contrib.tasks.jars}" />
+	
+	<!-- the build path -->
+	<!-- directorio con los jar dependientes necesarios para compilacion -->
+	<path id="compile.classpath">
+			<fileset dir="${path.lib}">
+				<include name="*.jar"/>
+			</fileset>
+			<fileset dir="${path.sharedlibs0}">
+				<include name="*.jar"/>
+			</fileset>
+			<fileset dir="${path.sharedlibs1}">
+				<include name="*.jar"/>
+			</fileset>
+			<fileset dir="${path.sharedlibs2}">
+				<include name="*.jar"/>
+			</fileset>
+			<!-- Librerías de Arquitectura -->
+			<fileset dir="${aejec.lib}">
+				<include name="*.jar"/>
+			</fileset>
+		</path> 
+	
+
+	
+	<target name="init">
+		<tstamp/>
+	</target>
+	
+	<target name="makedirs" description="Crea los directorios necesarios">
+		<mkdir dir="${path.dist}"/>
+		<mkdir dir="${build.classes.dir}"/>
+	</target>
+
+	<target name="clean" description="Elimina los .class">
+		<delete failonerror="false">
+			<fileset dir="${build.classes.dir}" includes="**/*.class"/>
+			<fileset dir="${build.classes.dir}" includes="**/*.properties"/>
+		</delete>
+	</target>
+
+	<target name="all" depends="clean" description="Limpia y genera war, ear y jar">
+		<if>
+			<isset property="generate.ear" />
+			<then>
+				<if>
+					<equals arg1="${generate.ear}" arg2="yes" />
+					<then>
+						<antcall target="ear" inheritAll="true"></antcall>
+					</then>
+				</if>
+			</then>
+		</if>
+		<if>
+			<isset property="generate.jar" />
+			<then>
+				<if>
+					<equals arg1="${generate.jar}" arg2="yes" />
+					<then>
+						<antcall target="jar" inheritAll="true"></antcall>
+					</then>
+				</if>
+			</then>
+		</if>		
+	</target>
+
+	<target name="compile" depends="init" description="Compila los .java">
+		<if>
+			<available file="${src.dir}" property="i.have.sources" />
+			<then>
+				<antcall target="makedirs" inheritAll="true"></antcall>							
+				<javac destdir="${build.classes.dir}" 
+					debug="${compile.debug}" 
+					deprecation="on" 
+					optimize="off"
+					verbose="no"
+					executable="${javac.path}" 
+					fork="true"			
+					source="${compile.jdk-version}"
+					target="${compile.jdk-version}" failonerror="${compile.failonerror}">
+					<src path="${src.dir}"/>
+					<classpath refid="compile.classpath"/>
+				</javac>
+				
+				<copy todir="${build.classes.dir}">
+					<fileset dir="${src.dir}" casesensitive="yes">
+						<include name="**/*.properties"/>
+					</fileset>
+				</copy>
+				<echo>Compilacion realizada</echo>
+			</then>
+			<else>
+				<echo>ATENCIÓN: NO ENCONTRADO RUTA DE FUENTES</echo>
+				<if>
+					<isset property="generate.ear" />
+					<then>
+						<if>
+							<equals arg1="${generate.ear}" arg2="yes" />
+							<then>
+								<fail>ERROR: Imposible generar WAR y EAR. No se ha encontrado ruta de fuentes a compilar, revise la variable src.dir.name del fichero build.properties</fail>
+							</then>
+						</if>
+						
+					</then>
+				</if>
+				<if>
+					<isset property="generate.jar" />
+					<then>
+						<if>
+							<equals arg1="${generate.jar}" arg2="yes" />
+							<then>
+								<input addProperty="go.anyway" validargs="y,n" defaultvalue="n">No se ha localizado el directorio de fuentes, ¿desea continuar con la generación del JAR sin compilar?</input>
+								<if>
+									<equals arg1="${resp}" arg2="no" />
+									<then>
+										<fail>Accion interrumpida</fail>
+									</then>
+								</if>
+							</then>
+						</if>
+					</then>
+				</if>					
+			</else>
+		</if>
+	</target>
+	
+	<target name="ear" depends="war" description="Genera EAR y copia en carpeta 3 - IMP Implantacion,Java">
+		<echo>Comprobando ${impl.base}</echo>		
+		<if>
+			<available file="${impl.base}" property="i.have.targetdir" />
+			<then>
+				<echo>Generando ${path.ear}</echo>
+				<echo>  usando: ../../${project.name}EAR/META-INF/application.xml</echo>
+				<echo>     con: ${path.dist}/*.war</echo>
+				<echo>      en: ${impl.base}</echo>
+			    <ear destfile="${path.ear}" appxml="../../${project.name}EAR/META-INF/application.xml">
+			      <fileset dir="${path.dist}" includes="*.war"/>
+			    </ear>
+			</then>
+		</if>				
+	</target>
+
+	<target name="war" depends="compile" description="Genera el fichero WAR">
+		<echo>Empaquetando WAR: ${path.war}</echo>
+		<echo>   Contenido WEB: ${webcontent.dir}</echo>		
+		<!--echo>        Path lib: ${path.weblib}</echo-->
+		<echo>          Clases: ${build.classes.dir}</echo>
+		
+		<delete failonerror="false">
+			<fileset dir="${path.dist}" includes="**/*.war"/>
+		</delete>
+		
+		<war destfile="${path.war}" webxml="${webcontent.dir}/WEB-INF/web.xml">
+			<!-- Base de los ficheros a incluir -->
+			<fileset dir="${webcontent.dir}" casesensitive="yes">
+				<include name="**/*.jsp"/>
+				<include name="**/*.js"/>
+				<include name="**/*.css"/>
+				<include name="**/*.jpg"/>
+				<include name="**/*.gif"/>
+				<include name="**/*.html"/>
+				<include name="**/*.htm"/>
+				<include name="**/*.tld"/>
+				<include name="**/*.xmi"/>
+				<include name="**/*.xml"/>
+				<include name="**/*.xsl"/>
+				<include name="**/*.xslt"/>
+				<exclude name="**/web.xml"/>
+			</fileset>
+			<!-- Base de los ficheros .jar -->
+			<!--lib dir="${path.weblib}">
+				<include name="**/*.jar"/>
+			</lib-->
+			<!-- Base de los ficheros .class -->
+			<classes dir="${build.classes.dir}"/>
+		</war>
+		<echo>    WAR generado.</echo>
+	</target>
+    
+	<target name="jar" depends="compile" description="Genera el fichero JAR">
+		<jar jarfile="${path.jar}">
+			<fileset dir="${build.classes.dir}">
+				<include name="**/*.class"/>
+				<include name="**/*.properties"/>
+				<exclude name="*.*"/>
+			</fileset>
+		</jar>
+	</target>
+</project>
+

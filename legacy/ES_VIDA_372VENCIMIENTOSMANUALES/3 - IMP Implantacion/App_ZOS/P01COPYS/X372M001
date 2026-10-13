@@ -1,0 +1,163 @@
+      ******************************************************************        
+      **INV: A372VENM                                                           
+      ******************************************************************        
+      *                                                                *        
+      * COPY:              X372M001,    PROGRAMA: B372M001             *        
+      * APLICACION:        RESCATES FOXPRO                             *        
+      * DESCRIPCION:       COPY DE MANTENIMIENTO TABLA VENCIMIENTO     *        
+      *                    MANUALES                                    *        
+      * FECHA DE CREACION:  JUNIO 2012                                 *        
+      * AUTOR :            EVERIS                                      *        
+      *                                                                *        
+      ******************************************************************        
+      *                                                                *        
+      * PETICION    : MU-2016-006664       BUSCAR <<606664>            *        
+      * AUTOR       : INDRA                                            *        
+      * FECHA       : MARZO 2016                                       *        
+      * DESCRIPCION : SE GUARDA EN BBDD EL IMPORTE DE CADA COASEGURO   *        
+      *                                                                *        
+      ******************************************************************        
+      *                                                                *        
+      * PETICION    : MU-2016-006673       BUSCAR <<606673>            *        
+      * AUTOR       : INDRA                                            *        
+      * FECHA       : MARZO 2016                                       *        
+      * DESCRIPCION : SE GUARDA EN BBDD EL KDOMICILIO DE LOS           *        
+      *               BENEFICIARIOS                                    *        
+      *                                                                *        
+      ******************************************************************        
+      ******************************************************************        
+      *                                                                *        
+      * MODIFICACION: MU-2017-BDGI-R-V                                 *        
+      * PROGRAMADOR : EVERIS                                           *        
+      * FECHA       : JUNIO   2017                                     *        
+      * DESCRIPCION : SE ELIMINAN LOS ANTIGUOS CAMPOS REFERENTES A     *        
+      *               COASEGURO(CODIGO, PORCENTAJE E IMPORTE) POR      *        
+      *               ESTRUCTURA NUEVA                                 *        
+      * MU-2017-BDGI-R-V-INI                                           *        
+      * MU-2017-BDGI-R-V-FIN                                           *        
+      *                                                                *        
+      ******************************************************************        
+       07 X372M001-E.                                                           
+                09 X372M001-OPERACION-E        PIC X(02).                       
+                09 X372M001-ANIO-E             PIC 9(04).                       
+                09 X372M001-KEXPEDIENTE-E      PIC 9(10).                       
+                09 X372M001-KRAMO-E            PIC X(03).                       
+                09 X372M001-ANIOPOL-E          PIC X(04).                       
+                09 X372M001-KPOLIZA-E          PIC X(10).                       
+                09 X372M001-NSUBPOLIZA-E       PIC S9(04).                      
+                09 X372M001-KCERTIFICADO-E     PIC 9(06).                       
+                09 X372M001-KMODALIDAD-E       PIC 9(05).                       
+                09 X372M001-CCANALCAMP-E       PIC X(02).                       
+                09 X372M001-CENTIDAD-E         PIC X(04).                       
+                09 X372M001-FECEFECTO-E        PIC X(08).                       
+                09 X372M001-KDURACION-E        PIC 9(02).                       
+                09 X372M001-FECEMISION-E       PIC X(08).                       
+                09 X372M001-CCARTERA-E         PIC X(03).                       
+                09 X372M001-SREASEGURO-E       PIC X(01).                       
+                09 X372M001-REGIONAL-E         PIC X(02).                       
+                09 X372M001-LUGARENVIO-E       PIC X(02).                       
+                09 X372M001-KOFICINA-E         PIC X(04).                       
+                09 X372M001-IPENDIENTE-E       PIC S9(11)V9(2).                 
+                09 X372M001-CTIPOPERS1-E       PIC X(01).                       
+                09 X372M001-SRESIDENTE1-E      PIC X(01).                       
+                09 X372M001-NIF1-E             PIC X(10).                       
+                09 X372M001-KPERSONA1-E        PIC 9(09).                       
+606673          09 X372M001-KDOMICILIO1-E      PIC 9(9).                        
+                09 X372M001-IMPCAPITAL-E       PIC S9(11)V9(2).                 
+                09 X372M001-IMPBENEFICIOS-E    PIC S9(11)V9(2).                 
+                09 X372M001-FECPAGOCAPITAL-E   PIC X(08).                       
+                09 X372M001-IMPANTICIPO-E      PIC S9(11)V9(2).                 
+                09 X372M001-IMPINTEPEND-E      PIC S9(11)V9(2).                 
+                09 X372M001-FECVENCIMICAP-E    PIC X(08).                       
+                09 X372M001-TIPIMPUESTCAP-E    PIC X(02).                       
+                09 X372M001-IMPRTOINTEGRCAP-E  PIC S9(11)V9(2).                 
+                09 X372M001-IMPREDPRICAP-E     PIC S9(11)V9(2).                 
+                09 X372M001-IMPREDTRANCAP-E    PIC S9(11)V9(2).                 
+                09 X372M001-IMPCOMPENSATORIA-E PIC S9(11)V9(2).                 
+                09 X372M001-IMPRTONETOCAP-E    PIC S9(11)V9(2).                 
+                09 X372M001-PORRETCAP-E        PIC S9(3)V9(2).                  
+                09 X372M001-IMPRETCAP-E        PIC S9(11)V9(2).                 
+                09 X372M001-IMPLIQCAP-E        PIC S9(11)V9(2).                 
+                09 X372M001-FECIMPRECAP-E      PIC X(8).                        
+                09 X372M001-FECPAGRET-E        PIC X(8).                        
+                09 X372M001-IMPCOMP1-E         PIC S9(11)V9(2).                 
+                09 X372M001-FECEMICOMP1-E      PIC X(8).                        
+                09 X372M001-FECPAGCOMP1-E      PIC X(8).                        
+                09 X372M001-TIPIMPUESTCOMP1-E  PIC X(2).                        
+                09 X372M001-IMPRTOINTCOMP1-E   PIC S9(11)V9(2).                 
+                09 X372M001-IMPREDPRICOMP1-E   PIC S9(11)V9(2).                 
+                09 X372M001-IREDTRANCOMP1-E    PIC S9(11)V9(2).                 
+                09 X372M001-IRTONETCOMP1-E     PIC S9(11)V9(2).                 
+                09 X372M001-PORRETCOMP1-E      PIC S9(3)V9(2).                  
+                09 X372M001-IRETCOMP1-E        PIC S9(11)V9(2).                 
+                09 X372M001-ILIQCOMP1-E        PIC S9(11)V9(2).                 
+                09 X372M001-FECIMPRECOMP1-E    PIC X(08).                       
+                09 X372M001-FECPAGRETCOM1-E    PIC X(08).                       
+                09 X372M001-IMPCOMP2-E         PIC S9(11)V9(2).                 
+                09 X372M001-FECEMICOMP2-E      PIC X(8).                        
+                09 X372M001-FECPAGCOMP2-E      PIC X(8).                        
+                09 X372M001-TIPIMPUESTCOMP2-E  PIC X(2).                        
+                09 X372M001-IMPRTOINTCOMP2-E   PIC S9(11)V9(2).                 
+                09 X372M001-IMPREDPRICOMP2-E   PIC S9(11)V9(2).                 
+                09 X372M001-IREDTRANCOMP2-E    PIC S9(11)V9(2).                 
+                09 X372M001-IRTONETCOMP2-E     PIC S9(11)V9(2).                 
+                09 X372M001-PORRETCOMP2-E      PIC S9(3)V9(2).                  
+                09 X372M001-IRETCOMP2-E        PIC S9(11)V9(2).                 
+                09 X372M001-ILIQCOMP2-E        PIC S9(11)V9(2).                 
+                09 X372M001-FECIMPRECOMP2-E    PIC X(08).                       
+                09 X372M001-FECPAGRETCOM2-E    PIC X(08).                       
+      * MU-2017-BDGI-R-V-INI                                                    
+      *         09 X372M001-CODCOA1-E          PIC X(7).                        
+      *         09 X372M001-PORCOA1-E          PIC S9(3)V9(2).                  
+606664*         09 X372M001-IMPCOA1-E          PIC S9(11)V9(2).                 
+      *         09 X372M001-CODCOA2-E          PIC X(7).                        
+      *         09 X372M001-PORCOA2-E          PIC S9(3)V9(2).                  
+606664*         09 X372M001-IMPCOA2-E          PIC S9(11)V9(2).                 
+      *         09 X372M001-CODCOA3-E          PIC X(7).                        
+      *         09 X372M001-PORCOA3-E          PIC S9(3)V9(2).                  
+606664*         09 X372M001-IMPCOA3-E          PIC S9(11)V9(2).                 
+      *         09 X372M001-CODCOA4-E          PIC X(7).                        
+      *         09 X372M001-PORCOA4-E          PIC S9(3)V9(2).                  
+606664*         09 X372M001-IMPCOA4-E          PIC S9(11)V9(2).                 
+      *         09 X372M001-CODCOA5-E          PIC X(7).                        
+      *         09 X372M001-PORCOA5-E          PIC S9(3)V9(2).                  
+606664*         09 X372M001-IMPCOA5-E          PIC S9(11)V9(2).                 
+      *         09 X372M001-CODCOA6-E          PIC X(7).                        
+      *         09 X372M001-PORCOA6-E          PIC S9(3)V9(2).                  
+606664*         09 X372M001-IMPCOA6-E          PIC S9(11)V9(2).                 
+                09 X372M001-COASEGUROS-OCCURS-E   PIC 9(1).                     
+                09 X372M001-COASEGUROS-E       OCCURS 6.                        
+                   11 X372M001-CODCOA-E           PIC X(07).                    
+                   11 X372M001-PORCOA-E           PIC S9(3)V9(6).               
+                   11 X372M001-IMPCOA-E           PIC S9(11)V9(2).              
+                   11 X372M001-IMPRTOINTEGRCOA-E  PIC S9(11)V9(2).              
+                   11 X372M001-IMPREDPRICOA-E     PIC S9(11)V9(2).              
+                   11 X372M001-IMPREDTRANCOA-E    PIC S9(11)V9(2).              
+                   11 X372M001-IMPRTONETOCOA-E    PIC S9(11)V9(2).              
+                   11 X372M001-IMPRETCOA-E        PIC S9(11)V9(2).              
+                   11 X372M001-IMPCOMPENSATCOA-E  PIC S9(11)V9(2).              
+      * MU-2017-BDGI-R-V-FIN                                                    
+                09 X372M001-PAGOTOT-E          PIC X(1).                        
+                09 X372M001-SBDGICAP-E         PIC X(1).                        
+                09 X372M001-FECBDGICAP-E       PIC X(8).                        
+                09 X372M001-SBDGICOMP1-E       PIC X(1).                        
+                09 X372M001-FECBDGICOMP1-E     PIC X(8).                        
+                09 X372M001-SBDGICOMP2-E       PIC X(1).                        
+                09 X372M001-FECBDGICOMP2-E     PIC X(8).                        
+                09 X372M001-SBDGI-E            PIC X(1).                        
+                09 X372M001-FECBDGI-E          PIC X(8).                        
+                09 X372M001-CUSUARIO-E         PIC X(08).                       
+                09 X372M001-GOBSERVACION-E     PIC X(240).                      
+                09 X372M001-STIPSITUACION-E    PIC X(2).                        
+                09 X372M001-FANUALACION-E      PIC X(8).                        
+      * MU-2015-041869 NUEVO CAMPO ANIOFISCAL                                   
+                09 X372M001-ANIOFISCAL-E       PIC 9(04).                       
+606673          09 X372M001-FECMODIFICA-E      PIC X(08).                       
+      * MU-2017-BDGI-R-V-INI                                                    
+                09 X372M001-EXIMIDO-E          PIC X(01).                       
+                09 X372M001-KDOMCOM-E          PIC S9(9)V.                      
+      * MU-2017-BDGI-R-V-FIN                                                    
+       07 X372M001-S.                                                           
+          09 X372M001-CRETORNO-S         PIC X(2).                              
+          09 X372M001-GERROR-S           PIC X(100).                            
+          09 X372M001-GNOMPROG-S         PIC X(8).                              

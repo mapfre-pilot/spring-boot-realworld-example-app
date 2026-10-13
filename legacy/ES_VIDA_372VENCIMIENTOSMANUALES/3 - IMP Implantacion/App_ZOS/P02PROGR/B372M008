@@ -1,0 +1,1209 @@
+      ******************************************************************        
+       IDENTIFICATION DIVISION.                                                 
+       PROGRAM-ID. B372M008.                                                    
+      *****************************************************************        
+      *INV: A372VENM                                                           
+      ******************************************************************        
+      * APLICACIÓN.....: VENCIMIENTOS MANUALES (FOXPRO)                *        
+      * ANALISTA.......: INDRA                                         *        
+      * PROGRAMADOR....: INDRA                                         *        
+      * FECHA DE REALIZACIÓN:  ABRIL 2015                              *        
+      *                                                                *        
+      * DESCRIPCIÓN:                                                   *        
+      *   -------------------------------------------------------------*        
+      * CONSULTA DE EXPEDIENTES DE IMPRESION DE INFORMES VENCIMIENTOS  *        
+      *   ------------------------------------------------------------ *        
+      *                                                                *        
+      *  PARAMETROS:                                                   *        
+      *                                                                *        
+      *  LT-MODO-CURSOR1...'C1': CONSULTA DE EXPEDIENTE EN UN INTERVAL *        
+      *                          DESDE/HASTA FECHA DE PAGO CAPITAL/    *        
+      *                          COMPLEMENTARIO CON ESTADO EN VIGOR O  *        
+      *                          FECHA DE PAGO MAYOR A LA FECHA DE     *        
+      *                          CALCULO                               *        
+      *                                                                *        
+      *  LT-MODO-CURSOR2...'C2': CONSULTA DE EXPEDIENTE EN UN INTERVAL *        
+      *                          DESDE/HASTA FECHA DE PAGO CAPITAL/    *        
+      *                          COMPLEMENTARIO CON TIPO DE IMPUESTO   *        
+      *                          TRABAJO.                              *        
+      ******************************************************************        
+      *****************************************************************         
+      *                                                               *         
+      * PETICION    : MU-2015-036085       BUSCAR <<536085>           *         
+      * AUTOR       : INDRA                                           *         
+      * FECHA       : 15/06/2015                                      *         
+      * DESCRIPCIÓN : CUADRE ENTRE LOS INFORMES DE RESCATES MANUALES  *         
+      *               POR MODALIDAD Y POR POLIZA                      *         
+      *                                                               *         
+      *****************************************************************         
+      *                                                                *        
+      * PETICION    : MU-2016-006664       BUSCAR <<606664>            *        
+      * AUTOR       : INDRA                                            *        
+      * FECHA       : MARZO 2016                                       *        
+      * DESCRIPCION : SE GUARDA EN BBDD EL IMPORTE DE CADA COASEGURO   *        
+      *                                                                *        
+      ******************************************************************        
+      *                                                                *        
+      * PETICION    : MU-2016-006673       BUSCAR <<606673>            *        
+      * AUTOR       : INDRA                                            *        
+      * FECHA       : MARZO 2016                                       *        
+      * DESCRIPCION : SE GUARDA EN BBDD EL KDOMICILIO DE LOS           *        
+      *               BENEFICIARIOS                                    *        
+      *                                                                *        
+      ******************************************************************        
+      ******************************************************************        
+      *                                                                *        
+      * MODIFICACION: MU-2017-BDGI-R-V                                 *        
+      * PROGRAMADOR : EVERIS                                           *        
+      * FECHA       : JUNIO   2017                                     *        
+      * DESCRIPCION : ENVIO A BDGI-RESCATE Y VENCIMIENTOS              *        
+      * MU-2017-BDGI-R-V-INI                                           *        
+      * MU-2017-BDGI-R-V-FIN                                           *        
+      *                                                                *        
+      ******************************************************************        
+       ENVIRONMENT DIVISION.                                                    
+
+       INPUT-OUTPUT SECTION.                                                    
+       FILE-CONTROL.                                                            
+
+       DATA DIVISION.                                                           
+       FILE SECTION.                                                            
+
+       WORKING-STORAGE SECTION.                                                 
+
+       01 FILLER.                                                               
+          03 FILLER PIC X(40) VALUE 'INICIO WORKING-STORAGE SECTION'.           
+
+      *****************************************************                     
+      ** SWITCH **                                                              
+      *****************************************************                     
+          03 SW-SWITCH.                                                         
+             05 SW-ERROR-DB2   PIC S9(3)  VALUE  0.                             
+                88 DB2-OK                 VALUE  0.                             
+                88 DB2-NOTFND             VALUE +100.                           
+                88 DB2-DUPLICADO          VALUE -803.                           
+                88 DB2-SELECTDUP          VALUE -811.                           
+
+             05 SW-PRIMERA-LECTURA        PIC X  VALUE '0'.                     
+                88 NO-PRIMERA-LECTURA            VALUE '1'.                     
+                88 PRIMERA-LECTURA               VALUE '0'.                     
+
+      *****************************************************                     
+      *   CONTROL PARA SABER SI EL CURSOR SE HA ABIERTO   *                     
+      *****************************************************                     
+
+             05 SW-CURSOR-ABIERTO         PIC X  VALUE '0'.                     
+                88 NO-CURSOR-OK                  VALUE '1'.                     
+                88 CURSOR-OK                     VALUE '0'.                     
+      ****************************************************                      
+      *   CONTROL DE ERRORES DEL PROGRAMA                                       
+      ****************************************************                      
+             05 SW-ERRORES                PIC XX VALUE '00'.                    
+                88 NO-ERROR                      VALUE '00'.                    
+                88 ERROR-GRAVE                   VALUE '01'.                    
+
+      ****************************************************                      
+      *VARIABLES AUXILIARES PARA LA PAGINACION                                  
+      ****************************************************                      
+          03 WS-VARIABLES-PAG.                                                  
+             05 WS-ANT-ANO                PIC S9(4)V USAGE COMP-3.              
+             05 WS-FECHADESDE             PIC X(08).                            
+             05 WS-FECHAHASTA             PIC X(08).                            
+             05 WS-ANT-KEXPEDIENTE        PIC S9(10)V USAGE COMP-3.             
+             05 WS-ANT-KMOD               PIC S9(5)V USAGE COMP-3.              
+             05 WS-ANT-CENTIDAD           PIC X(04) VALUE SPACES.               
+
+      ****************************************************                      
+      *VARIABLES AUXILIARES PARA LA BUSQUEDA                                    
+      ****************************************************                      
+          03 WS-VARIABLES.                                                      
+             05 WS-ANO-EXP-DESDE          PIC S9(4)V USAGE COMP-3.              
+             05 WS-ANO-EXP-HASTA          PIC S9(4)V USAGE COMP-3.              
+             05 WS-KEP-EXP-DESDE          PIC S9(10)V USAGE COMP-3.             
+             05 WS-KEP-EXP-HASTA          PIC S9(10)V USAGE COMP-3.             
+
+      ****************************************************                      
+      ** LITERALES                                                              
+      ****************************************************                      
+          03 LT-LITERALES.                                                      
+             05 LT-PGM                PIC X(8)   VALUE 'B372M008'.              
+             05 LT-SO                     PIC X(02) VALUE '22'.                 
+             05 LT-MO                     PIC X(02) VALUE '12'.                 
+             05 LT-TR                     PIC X(02) VALUE '11'.                 
+             05 LT-SR                     PIC X(02) VALUE '34'.                 
+             05 LT-NRCM                   PIC X(02) VALUE '41'.                 
+             05 LT-NRTP                   PIC X(02) VALUE '42'.                 
+             05 LT-SITUACION              PIC X(01) VALUE 'V'.                  
+             05 LT-ESPACIO                PIC X(01) VALUE ' '.                  
+
+             05 LT-MODOS-ENTRADA.                                               
+                07 LT-MODO-CURSOR-C1  PIC X(2)   VALUE 'C1'.                    
+                07 LT-MODO-CURSOR-C2  PIC X(2)   VALUE 'C2'.                    
+
+             05 LT-ERRORES-RETORNO.                                             
+      *         LITERAL NO HAY ERRORES                                          
+                07 LT-RETURN-OK             PIC X(5) VALUE '00'.                
+      *         ERROR EN MODO                                                   
+                07 LT-RETURN-ERR-MODO       PIC X(5) VALUE '20'.                
+      *         ERROR FALTAN DATOS INFORMADOS                                   
+                07 LT-RETURN-ERR-DATINFO    PIC X(5) VALUE '02'.                
+      *         ERROR REGISTRO NO ENCONTRADO                                    
+                07 LT-RETURN-ERR-NOTFND     PIC X(5) VALUE '03'.                
+      *         ERROR REGISTRO CLAVE DUPLICADA                                  
+                07 LT-RETURN-ERR-CLVDUPLI   PIC X(5) VALUE '04'.                
+      *         ERROR EN ACCESO A BASE DE DATOS                                 
+                07 LT-RETURN-ERR-OTHER      PIC X(5) VALUE '99'.                
+      ****************************************************                      
+      ** CONTADORES Y CONSTANTES                                                
+      ****************************************************                      
+          03 XN-CONTADORES.                                                     
+             05 XN-I                  PIC 9(2).                                 
+             05 XN-K                  PIC 9(2) VALUE 0.                         
+      * MU-2017-BDGI-R-V-INI                                                    
+             05 XN-M                  PIC 9(2).                                 
+      * MU-2017-BDGI-R-V-FIN                                                    
+
+          03 CN-CONSTANTES.                                                     
+             05 CN-RES-MAX            PIC 9(2) VALUE 20.                        
+             05 CTE-CERO              PIC S9(13)V9(2) USAGE COMP-3.             
+      * MU-2017-BDGI-R-V-INI                                                    
+      *****************************************************                     
+      *  MODULOS                                          *                     
+      *****************************************************                     
+          03 WS-MODULOS.                                                        
+             05 WS-B372MCOA                 PIC X(08) VALUE 'B372MCOA'.         
+      *****************************************************                     
+      *  COPYS                                            *                     
+      *****************************************************                     
+          03 WS-COPYS.                                                          
+             05 WS-X372MCOA.                                                    
+             COPY X372MCOA.                                                     
+      *                                                                         
+      * MU-2017-BDGI-R-V-FIN                                                    
+
+      ****************************************************                      
+      ** AREA DE COMUNICACION CON DB2                                           
+      ****************************************************                      
+            EXEC SQL INCLUDE SQLCA     END-EXEC.                                
+            EXEC SQL INCLUDE T372VEN0  END-EXEC.                                
+
+      ******************************************************************        
+      * CURSOR PARA RECUPERAR LOS EXPEDIENTES EN UN INTERVALO FECHA DE          
+      * PAGO TANTO PRINCIPAL COMO COMPLEMENTARIO NO INFORMADA O                 
+      * POSTERIOR A LA FECHA DE CALCULO                                         
+      ******************************************************************        
+           EXEC SQL DECLARE C1 CURSOR FOR                                       
+           SELECT VEN0_ANIO            ,                                        
+                  VEN0_KEXPEDIENTE     ,                                        
+                  VEN0_KRAMO           ,                                        
+                  VEN0_ANIOPOL         ,                                        
+                  VEN0_KPOLIZA         ,                                        
+                  VEN0_NSUBPOLIZA      ,                                        
+                  VEN0_KCERTIFICADO    ,                                        
+                  VEN0_KMODALIDAD      ,                                        
+                  VEN0_CCANALCAMP      ,                                        
+                  VEN0_CENTIDAD        ,                                        
+                  VEN0_FECEFECTO       ,                                        
+                  VEN0_KDURACION       ,                                        
+                  VEN0_FECEMISION      ,                                        
+                  VEN0_CCARTERA        ,                                        
+                  VEN0_SREASEGURO      ,                                        
+                  VEN0_REGIONAL        ,                                        
+                  VEN0_LUGARENVIO      ,                                        
+                  VEN0_KOFICINA        ,                                        
+                  VEN0_IPENDIENTE      ,                                        
+                  VEN0_CTIPOPERS1      ,                                        
+                  VEN0_SRESIDENTE1     ,                                        
+                  VEN0_NIF1            ,                                        
+                  VEN0_KPERSONA1       ,                                        
+606673            VEN0_KDOMICILIO1     ,                                        
+                  VEN0_IMPCAPITAL      ,                                        
+                  VEN0_IMPBENEFICIOS   ,                                        
+                  VEN0_FECPAGOCAPITAL  ,                                        
+                  VEN0_IMPANTICIPO     ,                                        
+                  VEN0_IMPINTEPEND     ,                                        
+                  VEN0_FECVENCIMICAP   ,                                        
+                  VEN0_TIPIMPUESTCAP   ,                                        
+                  VEN0_IMPRTOINTEGRCAP ,                                        
+                  VEN0_IMPREDPRICAP    ,                                        
+                  VEN0_IMPREDTRANCAP   ,                                        
+                  VEN0_IMPCOMPENSATORIA,                                        
+                  VEN0_IMPRTONETOCAP   ,                                        
+                  VEN0_PORRETCAP       ,                                        
+                  VEN0_IMPRETCAP       ,                                        
+                  VEN0_IMPLIQCAP       ,                                        
+                  VEN0_FECIMPRECAP     ,                                        
+                  VEN0_FECPAGRET       ,                                        
+                  VEN0_IMPCOMP1        ,                                        
+                  VEN0_FECPAGCOMP1     ,                                        
+                  VEN0_FECEMICOMP1     ,                                        
+                  VEN0_TIPIMPUESTCOMP1 ,                                        
+                  VEN0_IMPRTOINTCOMP1  ,                                        
+                  VEN0_IMPREDPRICOMP1  ,                                        
+                  VEN0_IREDTRANCOMP1   ,                                        
+                  VEN0_IRTONETCOMP1    ,                                        
+                  VEN0_PORRETCOMP1     ,                                        
+                  VEN0_IRETCOMP1       ,                                        
+                  VEN0_ILIQCOMP1       ,                                        
+                  VEN0_FECIMPRECOMP1   ,                                        
+                  VEN0_FECPAGRETCOM1   ,                                        
+                  VEN0_IMPCOMP2        ,                                        
+                  VEN0_FECEMICOMP2     ,                                        
+                  VEN0_FECPAGCOMP2     ,                                        
+                  VEN0_TIPIMPUESTCOMP2 ,                                        
+                  VEN0_IMPRTOINTCOMP2  ,                                        
+                  VEN0_IMPREDPRICOMP2  ,                                        
+                  VEN0_IREDTRANCOMP2   ,                                        
+                  VEN0_IRTONETCOMP2    ,                                        
+                  VEN0_PORRETCOMP2     ,                                        
+                  VEN0_IRETCOMP2       ,                                        
+                  VEN0_ILIQCOMP2       ,                                        
+                  VEN0_FECIMPRECOMP2   ,                                        
+                  VEN0_FECPAGRETCOM2   ,                                        
+      * MU-2017-BDGI-R-V-INI                                                    
+      *            VEN0_CODCOA1         ,                                       
+      *            VEN0_PORCOA1         ,                                       
+606664*            VEN0_IMPCOA1         ,                                       
+      *            VEN0_CODCOA2         ,                                       
+      *            VEN0_PORCOA2         ,                                       
+606664*            VEN0_IMPCOA2         ,                                       
+      *            VEN0_CODCOA3         ,                                       
+      *            VEN0_PORCOA3         ,                                       
+606664*            VEN0_IMPCOA3         ,                                       
+      *            VEN0_CODCOA4         ,                                       
+      *            VEN0_PORCOA4         ,                                       
+606664*            VEN0_IMPCOA4         ,                                       
+      *            VEN0_CODCOA5         ,                                       
+      *            VEN0_PORCOA5         ,                                       
+606664*            VEN0_IMPCOA5         ,                                       
+      *            VEN0_CODCOA6         ,                                       
+      *            VEN0_PORCOA6         ,                                       
+606664*            VEN0_IMPCOA6         ,                                       
+      * MU-2017-BDGI-R-V-FIN                                                    
+                  VEN0_PAGOTOT         ,                                        
+                  VEN0_SBDGICAP        ,                                        
+                  VEN0_FECBDGICAP      ,                                        
+                  VEN0_SBDGICOMP1      ,                                        
+                  VEN0_FECBDGICOMP1    ,                                        
+                  VEN0_SBDGICOMP2      ,                                        
+                  VEN0_FECBDGICOMP2    ,                                        
+                  VEN0_CUSUARIO        ,                                        
+606673*           VEN0_GOBSERVACION                                             
+606673            VEN0_GOBSERVACION    ,                                        
+606673            VEN0_FMODIFICACION                                            
+      * MU-2017-BDGI-R-V-INI                                                    
+                 ,VEN0_EXIMIDO                                                  
+                 ,VEN0_KDOMCOM                                                  
+      * MU-2017-BDGI-R-V-FIN                                                    
+                FROM TB372VEN0                                                  
+      * AñO EXPEDIENTE COMPRENDIDO ENTRE LOS AñOS DE CALCULO                    
+                WHERE   (VEN0_ANIO       >= :WS-ANO-EXP-DESDE                   
+                  AND    VEN0_ANIO       <= :WS-ANO-EXP-HASTA)                  
+      * NUM EXPEDIENTE COMPRENDIDO ENTRE LOS NUMS DE EXPEDIENTES DE CALC        
+                  AND   (VEN0_KEXPEDIENTE     >=  :WS-KEP-EXP-DESDE             
+536085            AND    VEN0_KEXPEDIENTE     <=  0000099999)                   
+536085*           AND    VEN0_KEXPEDIENTE     <=  :WS-KEP-EXP-HASTA)            
+      * IMPORTE DISTINTO DE CERO Y  FECHA DE PAGO NO INFORMADA O EN SU          
+      * DEFECTO MAYOR QUE LA FECHA DE CALCULO                                   
+                  AND    VEN0_IPENDIENTE      <>  0                             
+OJO   *           AND    VEN0_SITUACION       =  :LT-SITUACION                  
+      * VARIABLES DE PAGINACION                                                 
+                  AND ((VEN0_CENTIDAD         >  :WS-ANT-CENTIDAD)              
+                   OR  (VEN0_CENTIDAD         =  :WS-ANT-CENTIDAD               
+                  AND  (VEN0_ANIO             >  :WS-ANT-ANO                    
+                   OR  (VEN0_ANIO             =  :WS-ANT-ANO                    
+                  AND  (VEN0_KMODALIDAD       >  :WS-ANT-KMOD                   
+                   OR  (VEN0_KMODALIDAD       =  :WS-ANT-KMOD                   
+                  AND  (VEN0_KEXPEDIENTE   >  :WS-ANT-KEXPEDIENTE)))))))        
+      *            OR   VEN0_KEXPEDIENTE   =  :WS-ANT-KEXPEDIENTE)))))))        
+             ORDER BY VEN0_CENTIDAD,                                            
+                      VEN0_ANIO,                                                
+                      VEN0_KMODALIDAD,                                          
+                      VEN0_KEXPEDIENTE                                          
+           END-EXEC.                                                            
+
+      ******************************************************************        
+      * CURSOR PARA RECUPERAR LOS EXPEDIENTES EN UN INTERVALO FECHA DE          
+      * PAGO TANTO PRINCIPAL COMO COMPLEMENTARIO POR MODALIDAD                  
+      ******************************************************************        
+           EXEC SQL DECLARE C2 CURSOR FOR                                       
+           SELECT VEN0_ANIO            ,                                        
+                  VEN0_KEXPEDIENTE     ,                                        
+                  VEN0_KRAMO           ,                                        
+                  VEN0_ANIOPOL         ,                                        
+                  VEN0_KPOLIZA         ,                                        
+                  VEN0_NSUBPOLIZA      ,                                        
+                  VEN0_KCERTIFICADO    ,                                        
+                  VEN0_KMODALIDAD      ,                                        
+                  VEN0_CCANALCAMP      ,                                        
+                  VEN0_CENTIDAD        ,                                        
+                  VEN0_FECEFECTO       ,                                        
+                  VEN0_KDURACION       ,                                        
+                  VEN0_FECEMISION      ,                                        
+                  VEN0_CCARTERA        ,                                        
+                  VEN0_SREASEGURO      ,                                        
+                  VEN0_REGIONAL        ,                                        
+                  VEN0_LUGARENVIO      ,                                        
+                  VEN0_KOFICINA        ,                                        
+                  VEN0_IPENDIENTE      ,                                        
+                  VEN0_CTIPOPERS1      ,                                        
+                  VEN0_SRESIDENTE1     ,                                        
+                  VEN0_NIF1            ,                                        
+                  VEN0_KPERSONA1       ,                                        
+606673            VEN0_KDOMICILIO1     ,                                        
+                  VEN0_IMPCAPITAL      ,                                        
+                  VEN0_IMPBENEFICIOS   ,                                        
+                  VEN0_FECPAGOCAPITAL  ,                                        
+                  VEN0_IMPANTICIPO     ,                                        
+                  VEN0_IMPINTEPEND     ,                                        
+                  VEN0_FECVENCIMICAP   ,                                        
+                  VEN0_TIPIMPUESTCAP   ,                                        
+                  VEN0_IMPRTOINTEGRCAP ,                                        
+                  VEN0_IMPREDPRICAP    ,                                        
+                  VEN0_IMPREDTRANCAP   ,                                        
+                  VEN0_IMPCOMPENSATORIA,                                        
+                  VEN0_IMPRTONETOCAP   ,                                        
+                  VEN0_PORRETCAP       ,                                        
+                  VEN0_IMPRETCAP       ,                                        
+                  VEN0_IMPLIQCAP       ,                                        
+                  VEN0_FECIMPRECAP     ,                                        
+                  VEN0_FECPAGRET       ,                                        
+                  VEN0_IMPCOMP1        ,                                        
+                  VEN0_FECPAGCOMP1     ,                                        
+                  VEN0_FECEMICOMP1     ,                                        
+                  VEN0_TIPIMPUESTCOMP1 ,                                        
+                  VEN0_IMPRTOINTCOMP1  ,                                        
+                  VEN0_IMPREDPRICOMP1  ,                                        
+                  VEN0_IREDTRANCOMP1   ,                                        
+                  VEN0_IRTONETCOMP1    ,                                        
+                  VEN0_PORRETCOMP1     ,                                        
+                  VEN0_IRETCOMP1       ,                                        
+                  VEN0_ILIQCOMP1       ,                                        
+                  VEN0_FECIMPRECOMP1   ,                                        
+                  VEN0_FECPAGRETCOM1   ,                                        
+                  VEN0_IMPCOMP2        ,                                        
+                  VEN0_FECEMICOMP2     ,                                        
+                  VEN0_FECPAGCOMP2     ,                                        
+                  VEN0_TIPIMPUESTCOMP2 ,                                        
+                  VEN0_IMPRTOINTCOMP2  ,                                        
+                  VEN0_IMPREDPRICOMP2  ,                                        
+                  VEN0_IREDTRANCOMP2   ,                                        
+                  VEN0_IRTONETCOMP2    ,                                        
+                  VEN0_PORRETCOMP2     ,                                        
+                  VEN0_IRETCOMP2       ,                                        
+                  VEN0_ILIQCOMP2       ,                                        
+                  VEN0_FECIMPRECOMP2   ,                                        
+                  VEN0_FECPAGRETCOM2   ,                                        
+      * MU-2017-BDGI-R-V-INI                                                    
+      *            VEN0_CODCOA1         ,                                       
+      *            VEN0_PORCOA1         ,                                       
+606664*            VEN0_IMPCOA1         ,                                       
+      *            VEN0_CODCOA2         ,                                       
+      *            VEN0_PORCOA2         ,                                       
+606664*            VEN0_IMPCOA2         ,                                       
+      *            VEN0_CODCOA3         ,                                       
+      *            VEN0_PORCOA3         ,                                       
+606664*            VEN0_IMPCOA3         ,                                       
+      *            VEN0_CODCOA4         ,                                       
+      *            VEN0_PORCOA4         ,                                       
+606664*            VEN0_IMPCOA4         ,                                       
+      *            VEN0_CODCOA5         ,                                       
+      *            VEN0_PORCOA5         ,                                       
+606664*            VEN0_IMPCOA5         ,                                       
+      *            VEN0_CODCOA6         ,                                       
+      *            VEN0_PORCOA6         ,                                       
+606664*            VEN0_IMPCOA6         ,                                       
+      * MU-2017-BDGI-R-V-FIN                                                    
+                  VEN0_PAGOTOT         ,                                        
+                  VEN0_SBDGICAP        ,                                        
+                  VEN0_FECBDGICAP      ,                                        
+                  VEN0_SBDGICOMP1      ,                                        
+                  VEN0_FECBDGICOMP1    ,                                        
+                  VEN0_SBDGICOMP2      ,                                        
+                  VEN0_FECBDGICOMP2    ,                                        
+                  VEN0_CUSUARIO        ,                                        
+606673*           VEN0_GOBSERVACION                                             
+606673            VEN0_GOBSERVACION    ,                                        
+606673            VEN0_FMODIFICACION                                            
+      * MU-2017-BDGI-R-V-INI                                                    
+                 ,VEN0_EXIMIDO                                                  
+                 ,VEN0_KDOMCOM                                                  
+      * MU-2017-BDGI-R-V-FIN                                                    
+                FROM TB372VEN0                                                  
+                WHERE  ((VEN0_FECPAGOCAPITAL >= :WS-FECHADESDE                  
+                  AND    VEN0_FECPAGOCAPITAL <= :WS-FECHAHASTA )                
+                   OR   (VEN0_FECPAGCOMP1    >= :WS-FECHADESDE                  
+                  AND    VEN0_FECPAGCOMP1    <= :WS-FECHAHASTA )                
+                   OR   (VEN0_FECPAGCOMP2    >= :WS-FECHADESDE                  
+                  AND    VEN0_FECPAGCOMP2    <= :WS-FECHAHASTA ))               
+      *PAGINACION                                                               
+                  AND  ((VEN0_CENTIDAD       >  :WS-ANT-CENTIDAD)               
+                   OR   (VEN0_CENTIDAD       =  :WS-ANT-CENTIDAD                
+                  AND   (VEN0_ANIO           >  :WS-ANT-ANO                     
+                   OR   (VEN0_ANIO           =  :WS-ANT-ANO                     
+                  AND  (VEN0_KMODALIDAD       >  :WS-ANT-KMOD                   
+                   OR  (VEN0_KMODALIDAD       =  :WS-ANT-KMOD                   
+536085            AND   (VEN0_KEXPEDIENTE  >  :WS-ANT-KEXPEDIENTE)))))))        
+536085*            OR   VEN0_KEXPEDIENTE   =  :WS-ANT-KEXPEDIENTE)))))))        
+             ORDER BY VEN0_CENTIDAD,                                            
+                      VEN0_ANIO,                                                
+                      VEN0_KMODALIDAD,                                          
+                      VEN0_KEXPEDIENTE                                          
+           END-EXEC.                                                            
+
+
+          03 FILLER PIC X(40) VALUE 'FINAL WORKING-STORAGE SECTION'.            
+
+       LINKAGE SECTION.                                                         
+       01 DFHCOMMAREA.                                                          
+             COPY X372M006.                                                     
+
+      *************************************************************             
+      * PROCEDURE DIVISION.                                       *             
+      *************************************************************             
+      *                                                                         
+       PROCEDURE DIVISION USING DFHCOMMAREA.                                    
+
+           PERFORM 1000-INICIO.                                                 
+
+           IF NOT ERROR-GRAVE                                                   
+              PERFORM 2000-PROCESO                                              
+           END-IF.                                                              
+
+           PERFORM 9000-FINAL.                                                  
+
+      ******************************************************************        
+      * 1000-INICIO                                                    *        
+      ******************************************************************        
+      *                                                                         
+       1000-INICIO.                                                             
+
+           SET  NO-ERROR     TO TRUE.                                           
+           INITIALIZE X372M006-S.                                               
+           INITIALIZE WS-VARIABLES.                                             
+           INITIALIZE WS-VARIABLES-PAG.                                         
+           MOVE 'N' TO X372M006-SPAGINACION-S                                   
+           MOVE ZEROES TO CTE-CERO                                              
+           MOVE LT-RETURN-OK TO X372M006-CRETORNO-S                             
+
+           IF X372M006-OPERACION-E   = SPACES                                   
+              MOVE 'N' TO X372M006-SPAGINACION-S                                
+              SET ERROR-GRAVE TO TRUE                                           
+              MOVE LT-RETURN-ERR-DATINFO     TO X372M006-CRETORNO-S             
+              MOVE 'B372M008'                TO X372M006-GNOMPROG-S             
+              MOVE 'EL CAMPO OPERACION ES OBLIGATORIO'                          
+                                             TO X372M006-GERROR-S               
+           END-IF.                                                              
+
+      ******************************************************************        
+      * 2000-PROCESO                                                   *        
+      ******************************************************************        
+      *                                                                         
+       2000-PROCESO.                                                            
+      *D*                                                                       
+      *    DISPLAY ' 2000-PROCESO: B372M008 '                                   
+      *F*                                                                       
+           PERFORM 8000-RECIBIR-ENTRADA                                         
+           EVALUATE X372M006-OPERACION-E                                        
+               WHEN LT-MODO-CURSOR-C1   PERFORM 2100-PROCESO-CURSOR-C1          
+               WHEN LT-MODO-CURSOR-C2   PERFORM 2200-PROCESO-CURSOR-C2          
+               WHEN OTHER                                                       
+                    SET ERROR-GRAVE TO TRUE                                     
+                    MOVE 'N' TO X372M006-SPAGINACION-S                          
+                    MOVE LT-RETURN-ERR-MODO TO X372M006-CRETORNO-S              
+                    MOVE 'B372M008'         TO X372M006-GNOMPROG-S              
+                    MOVE 'EL CAMPO OPERACION ES INCORRECTO'                     
+                                            TO X372M006-GERROR-S                
+           END-EVALUATE.                                                        
+
+      *********************************************************                 
+       2100-PROCESO-CURSOR-C1.                                                  
+      *********************************************************                 
+
+      *INICIALIZAMOS LOS SWITCH DEL CONTROL DE CURSOR                           
+
+           SET PRIMERA-LECTURA TO TRUE.                                         
+           SET NO-CURSOR-OK    TO TRUE.                                         
+
+      *ABRIMOS EL CURSOR                                                        
+
+           IF NOT ERROR-GRAVE                                                   
+              PERFORM 2110-ABRIR-CURSOR                                         
+           END-IF.                                                              
+
+           MOVE 1 TO XN-I                                                       
+           PERFORM 2120-LEER-FILA                                               
+                   UNTIL DB2-NOTFND                                             
+                   OR ERROR-GRAVE                                               
+                   OR XN-I > CN-RES-MAX                                         
+
+      *SI EL CURSOR SE ABRIO CORRECTAMENTE SE CIERRA                            
+
+           IF CURSOR-OK                                                         
+              PERFORM 2130-CERRAR-CURSOR                                        
+           END-IF.                                                              
+
+      ********************************************************                  
+       2110-ABRIR-CURSOR.                                                       
+      ******************************************************************        
+
+           EXEC SQL OPEN C1 END-EXEC.                                           
+           MOVE SQLCODE TO SW-ERROR-DB2.                                        
+      *D*                                                                       
+      *    DISPLAY ' ABRIR CURSOR ' SQLCODE                                     
+      *F*                                                                       
+           IF NOT DB2-OK                                                        
+              MOVE 'N' TO X372M006-SPAGINACION-S                                
+              SET ERROR-GRAVE                  TO TRUE                          
+              MOVE '99'                        TO X372M006-CRETORNO-S           
+              MOVE 'ERROR AL ABRIR CURSOR C1 ' TO X372M006-GERROR-S             
+              MOVE 'B372M008'                  TO X372M006-GNOMPROG-S           
+           ELSE                                                                 
+              SET CURSOR-OK   TO TRUE                                           
+           END-IF.                                                              
+
+      ***************************************************************           
+       2120-LEER-FILA.                                                          
+      ******************************************************************        
+
+            ADD 1 TO XN-K.                                                      
+            EXEC SQL                                                            
+                  FETCH C1                                                      
+               INTO                                                             
+                  :VEN0-ANIO            ,                                       
+                  :VEN0-KEXPEDIENTE     ,                                       
+                  :VEN0-KRAMO           ,                                       
+                  :VEN0-ANIOPOL         ,                                       
+                  :VEN0-KPOLIZA         ,                                       
+                  :VEN0-NSUBPOLIZA      ,                                       
+                  :VEN0-KCERTIFICADO    ,                                       
+                  :VEN0-KMODALIDAD      ,                                       
+                  :VEN0-CCANALCAMP      ,                                       
+                  :VEN0-CENTIDAD        ,                                       
+                  :VEN0-FECEFECTO       ,                                       
+                  :VEN0-KDURACION       ,                                       
+                  :VEN0-FECEMISION      ,                                       
+                  :VEN0-CCARTERA        ,                                       
+                  :VEN0-SREASEGURO      ,                                       
+                  :VEN0-REGIONAL        ,                                       
+                  :VEN0-LUGARENVIO      ,                                       
+                  :VEN0-KOFICINA        ,                                       
+                  :VEN0-IPENDIENTE      ,                                       
+                  :VEN0-CTIPOPERS1      ,                                       
+                  :VEN0-SRESIDENTE1     ,                                       
+                  :VEN0-NIF1            ,                                       
+                  :VEN0-KPERSONA1       ,                                       
+606673            :VEN0-KDOMICILIO1     ,                                       
+                  :VEN0-IMPCAPITAL      ,                                       
+                  :VEN0-IMPBENEFICIOS   ,                                       
+                  :VEN0-FECPAGOCAPITAL  ,                                       
+                  :VEN0-IMPANTICIPO     ,                                       
+                  :VEN0-IMPINTEPEND     ,                                       
+                  :VEN0-FECVENCIMICAP   ,                                       
+                  :VEN0-TIPIMPUESTCAP   ,                                       
+                  :VEN0-IMPRTOINTEGRCAP ,                                       
+                  :VEN0-IMPREDPRICAP    ,                                       
+                  :VEN0-IMPREDTRANCAP   ,                                       
+                  :VEN0-IMPCOMPENSATORIA,                                       
+                  :VEN0-IMPRTONETOCAP   ,                                       
+                  :VEN0-PORRETCAP       ,                                       
+                  :VEN0-IMPRETCAP       ,                                       
+                  :VEN0-IMPLIQCAP       ,                                       
+                  :VEN0-FECIMPRECAP     ,                                       
+                  :VEN0-FECPAGRET       ,                                       
+                  :VEN0-IMPCOMP1        ,                                       
+                  :VEN0-FECPAGCOMP1     ,                                       
+                  :VEN0-FECEMICOMP1     ,                                       
+                  :VEN0-TIPIMPUESTCOMP1 ,                                       
+                  :VEN0-IMPRTOINTCOMP1  ,                                       
+                  :VEN0-IMPREDPRICOMP1  ,                                       
+                  :VEN0-IREDTRANCOMP1   ,                                       
+                  :VEN0-IRTONETCOMP1    ,                                       
+                  :VEN0-PORRETCOMP1     ,                                       
+                  :VEN0-IRETCOMP1       ,                                       
+                  :VEN0-ILIQCOMP1       ,                                       
+                  :VEN0-FECIMPRECOMP1   ,                                       
+                  :VEN0-FECPAGRETCOM1   ,                                       
+                  :VEN0-IMPCOMP2        ,                                       
+                  :VEN0-FECEMICOMP2     ,                                       
+                  :VEN0-FECPAGCOMP2     ,                                       
+                  :VEN0-TIPIMPUESTCOMP2 ,                                       
+                  :VEN0-IMPRTOINTCOMP2  ,                                       
+                  :VEN0-IMPREDPRICOMP2  ,                                       
+                  :VEN0-IREDTRANCOMP2   ,                                       
+                  :VEN0-IRTONETCOMP2    ,                                       
+                  :VEN0-PORRETCOMP2     ,                                       
+                  :VEN0-IRETCOMP2       ,                                       
+                  :VEN0-ILIQCOMP2       ,                                       
+                  :VEN0-FECIMPRECOMP2   ,                                       
+                  :VEN0-FECPAGRETCOM2   ,                                       
+      * MU-2017-BDGI-R-V-INI                                                    
+      *            :VEN0-CODCOA1         ,                                      
+      *            :VEN0-PORCOA1         ,                                      
+606664*            :VEN0-IMPCOA1         ,                                      
+      *            :VEN0-CODCOA2         ,                                      
+      *            :VEN0-PORCOA2         ,                                      
+606664*            :VEN0-IMPCOA2         ,                                      
+      *            :VEN0-CODCOA3         ,                                      
+      *            :VEN0-PORCOA3         ,                                      
+606664*            :VEN0-IMPCOA3         ,                                      
+      *            :VEN0-CODCOA4         ,                                      
+      *            :VEN0-PORCOA4         ,                                      
+606664*            :VEN0-IMPCOA4         ,                                      
+      *            :VEN0-CODCOA5         ,                                      
+      *            :VEN0-PORCOA5         ,                                      
+606664*            :VEN0-IMPCOA5         ,                                      
+      *            :VEN0-CODCOA6         ,                                      
+      *            :VEN0-PORCOA6         ,                                      
+606664*            :VEN0-IMPCOA6         ,                                      
+      * MU-2017-BDGI-R-V-FIN                                                    
+                  :VEN0-PAGOTOT         ,                                       
+                  :VEN0-SBDGICAP        ,                                       
+                  :VEN0-FECBDGICAP      ,                                       
+                  :VEN0-SBDGICOMP1      ,                                       
+                  :VEN0-FECBDGICOMP1    ,                                       
+                  :VEN0-SBDGICOMP2      ,                                       
+                  :VEN0-FECBDGICOMP2    ,                                       
+                  :VEN0-CUSUARIO        ,                                       
+606673*           :VEN0-GOBSERVACION                                            
+606673            :VEN0-GOBSERVACION    ,                                       
+606673            :VEN0-FMODIFICACION                                           
+      * MU-2017-BDGI-R-V-INI                                                    
+                 ,:VEN0-EXIMIDO                                                 
+                 ,:VEN0-KDOMCOM                                                 
+      * MU-2017-BDGI-R-V-FIN                                                    
+            END-EXEC.                                                           
+
+
+            MOVE SQLCODE TO SW-ERROR-DB2.                                       
+      *SI NO DEVUELVE DATOS         , INFORMAMOS ERROR GRAVE                    
+            IF NOT DB2-OK AND NOT DB2-NOTFND                                    
+
+               SET ERROR-GRAVE                  TO TRUE                         
+               MOVE '99'                        TO X372M006-CRETORNO-S          
+               MOVE 'ERROR AL CONSULTAR CURSOR C1'                              
+                 TO X372M006-GERROR-S                                           
+               MOVE 'B372M008'                  TO X372M006-GNOMPROG-S          
+
+            ELSE                                                                
+
+               IF DB2-OK AND XN-I <= CN-RES-MAX                                 
+
+      * DESPUES DE HACER LA PRIMERA LECTURA MOVEMOS NO AL SWITCH                
+                  IF PRIMERA-LECTURA                                            
+                     SET NO-PRIMERA-LECTURA TO TRUE                             
+                  END-IF                                                        
+
+      * MOVEMOS LOS REGISTROS A LA COPY DE SALIDA. INCREMENTAMOS INDICE         
+                  PERFORM 5000-MOVER-SALIDA                                     
+
+                  MOVE XN-I   TO X372M006-NUM-REGISTROS-S                       
+                  ADD 1       TO XN-I                                           
+                  MOVE ZEROES TO SW-ERROR-DB2                                   
+
+               ELSE                                                             
+
+      * UN SQLCODE = 100 EN LA PRIMERA LECTURA DEL CURSOR ES UN ERROR  -03      
+
+                  IF PRIMERA-LECTURA AND DB2-NOTFND                             
+                     MOVE 'N' TO X372M006-SPAGINACION-S                         
+                     SET ERROR-GRAVE TO TRUE                                    
+                     MOVE LT-RETURN-ERR-NOTFND TO X372M006-CRETORNO-S           
+                     MOVE 'B372M008' TO X372M006-GNOMPROG-S                     
+                     MOVE 'NO HAY EXPEDIENTES QUE CUMPLAN LOS CRITERIOS         
+      -                   'SELECCIONADOS'                                       
+                                     TO X372M006-GERROR-S                       
+                  END-IF                                                        
+
+               END-IF                                                           
+            END-IF.                                                             
+
+      **************************************************************            
+       2130-CERRAR-CURSOR.                                                      
+      **************************************************************            
+    ***                                                                         
+    ***    IF NOT ERROR-GRAVE                                                   
+    ***                                                                         
+    ***      IF XN-I > CN-RES-MAX                                               
+    ***SI EL INDICE ES > 50 SE HACE UNA NUEVA LECTURA PARA VER SI HAY           
+    *** MAS REGISTROS Y SE TIENE QUE PAGINAR                                    
+    ***         PERFORM 2120-LEER-FILA                                          
+    ***                                                                         
+    ***         IF DB2-OK                                                       
+    ***            MOVE 'S' TO X372M006-SPAGINACION-S                           
+    ***            MOVE VEN0-CENTIDAD                                           
+    ***              TO X372M006-PRO-CENTIDAD-S                                 
+    ***            MOVE VEN0-ANIO                                               
+    ***              TO X372M006-PRO-ANO-S                                      
+    ***            MOVE VEN0-KEXPEDIENTE                                        
+    ***              TO X372M006-PRO-KEXPEDIENTE-S                              
+    ***            MOVE VEN0-KMODALIDAD                                         
+    ***              TO X372M006-PRO-KMODALIDAD-S                               
+    ***         ELSE                                                            
+                   MOVE 'N' TO X372M006-SPAGINACION-S                           
+    ***         END-IF                                                          
+    ***      ELSE                                                               
+    ***         MOVE 'N' TO X372M006-SPAGINACION-S                              
+    ***         INITIALIZE X372M006-PRO-ANO-S                                   
+    ***         INITIALIZE X372M006-PRO-KEXPEDIENTE-S                           
+    ***      END-IF                                                             
+    ***    END-IF                                                               
+                .                                                               
+           EXEC SQL CLOSE C1 END-EXEC.                                          
+           MOVE SQLCODE TO SW-ERROR-DB2.                                        
+           IF NOT DB2-OK                                                        
+              MOVE 'N' TO X372M006-SPAGINACION-S                                
+              SET ERROR-GRAVE                  TO TRUE                          
+              MOVE '99'                        TO X372M006-CRETORNO-S           
+              MOVE 'ERROR AL CERRAR CURSOR 16' TO X372M006-GERROR-S             
+              MOVE 'B372M008'                  TO X372M006-GNOMPROG-S           
+           END-IF.                                                              
+
+      *********************************************************                 
+       2200-PROCESO-CURSOR-C2.                                                  
+      *********************************************************                 
+
+      *INICIALIZAMOS LOS SWITCH DEL CONTROL DE CURSOR                           
+
+           SET PRIMERA-LECTURA TO TRUE.                                         
+           SET NO-CURSOR-OK    TO TRUE.                                         
+
+      *ABRIMOS EL CURSOR                                                        
+
+           IF NOT ERROR-GRAVE                                                   
+              PERFORM 2210-ABRIR-CURSOR                                         
+           END-IF.                                                              
+
+           MOVE 1 TO XN-I                                                       
+           PERFORM 2220-LEER-FILA                                               
+                   UNTIL DB2-NOTFND                                             
+                   OR ERROR-GRAVE                                               
+                   OR XN-I > CN-RES-MAX                                         
+
+      *SI EL CURSOR SE ABRIO CORRECTAMENTE SE CIERRA                            
+
+           IF CURSOR-OK                                                         
+              PERFORM 2230-CERRAR-CURSOR                                        
+           END-IF.                                                              
+
+      ********************************************************                  
+       2210-ABRIR-CURSOR.                                                       
+      ******************************************************************        
+
+           EXEC SQL OPEN C2 END-EXEC.                                           
+           MOVE SQLCODE TO SW-ERROR-DB2.                                        
+           IF NOT DB2-OK                                                        
+              MOVE 'N' TO X372M006-SPAGINACION-S                                
+              SET ERROR-GRAVE                  TO TRUE                          
+              MOVE '99'                        TO X372M006-CRETORNO-S           
+              MOVE 'ERROR AL ABRIR CURSOR C2 ' TO X372M006-GERROR-S             
+              MOVE 'B372M008'                  TO X372M006-GNOMPROG-S           
+           ELSE                                                                 
+              SET CURSOR-OK   TO TRUE                                           
+           END-IF.                                                              
+
+      ***************************************************************           
+       2220-LEER-FILA.                                                          
+      ******************************************************************        
+
+            EXEC SQL                                                            
+                  FETCH C2                                                      
+               INTO                                                             
+                  :VEN0-ANIO            ,                                       
+                  :VEN0-KEXPEDIENTE     ,                                       
+                  :VEN0-KRAMO           ,                                       
+                  :VEN0-ANIOPOL         ,                                       
+                  :VEN0-KPOLIZA         ,                                       
+                  :VEN0-NSUBPOLIZA      ,                                       
+                  :VEN0-KCERTIFICADO    ,                                       
+                  :VEN0-KMODALIDAD      ,                                       
+                  :VEN0-CCANALCAMP      ,                                       
+                  :VEN0-CENTIDAD        ,                                       
+                  :VEN0-FECEFECTO       ,                                       
+                  :VEN0-KDURACION       ,                                       
+                  :VEN0-FECEMISION      ,                                       
+                  :VEN0-CCARTERA        ,                                       
+                  :VEN0-SREASEGURO      ,                                       
+                  :VEN0-REGIONAL        ,                                       
+                  :VEN0-LUGARENVIO      ,                                       
+                  :VEN0-KOFICINA        ,                                       
+                  :VEN0-IPENDIENTE      ,                                       
+                  :VEN0-CTIPOPERS1      ,                                       
+                  :VEN0-SRESIDENTE1     ,                                       
+                  :VEN0-NIF1            ,                                       
+                  :VEN0-KPERSONA1       ,                                       
+606673            :VEN0-KDOMICILIO1     ,                                       
+                  :VEN0-IMPCAPITAL      ,                                       
+                  :VEN0-IMPBENEFICIOS   ,                                       
+                  :VEN0-FECPAGOCAPITAL  ,                                       
+                  :VEN0-IMPANTICIPO     ,                                       
+                  :VEN0-IMPINTEPEND     ,                                       
+                  :VEN0-FECVENCIMICAP   ,                                       
+                  :VEN0-TIPIMPUESTCAP   ,                                       
+                  :VEN0-IMPRTOINTEGRCAP ,                                       
+                  :VEN0-IMPREDPRICAP    ,                                       
+                  :VEN0-IMPREDTRANCAP   ,                                       
+                  :VEN0-IMPCOMPENSATORIA,                                       
+                  :VEN0-IMPRTONETOCAP   ,                                       
+                  :VEN0-PORRETCAP       ,                                       
+                  :VEN0-IMPRETCAP       ,                                       
+                  :VEN0-IMPLIQCAP       ,                                       
+                  :VEN0-FECIMPRECAP     ,                                       
+                  :VEN0-FECPAGRET       ,                                       
+                  :VEN0-IMPCOMP1        ,                                       
+                  :VEN0-FECPAGCOMP1     ,                                       
+                  :VEN0-FECEMICOMP1     ,                                       
+                  :VEN0-TIPIMPUESTCOMP1 ,                                       
+                  :VEN0-IMPRTOINTCOMP1  ,                                       
+                  :VEN0-IMPREDPRICOMP1  ,                                       
+                  :VEN0-IREDTRANCOMP1   ,                                       
+                  :VEN0-IRTONETCOMP1    ,                                       
+                  :VEN0-PORRETCOMP1     ,                                       
+                  :VEN0-IRETCOMP1       ,                                       
+                  :VEN0-ILIQCOMP1       ,                                       
+                  :VEN0-FECIMPRECOMP1   ,                                       
+                  :VEN0-FECPAGRETCOM1   ,                                       
+                  :VEN0-IMPCOMP2        ,                                       
+                  :VEN0-FECEMICOMP2     ,                                       
+                  :VEN0-FECPAGCOMP2     ,                                       
+                  :VEN0-TIPIMPUESTCOMP2 ,                                       
+                  :VEN0-IMPRTOINTCOMP2  ,                                       
+                  :VEN0-IMPREDPRICOMP2  ,                                       
+                  :VEN0-IREDTRANCOMP2   ,                                       
+                  :VEN0-IRTONETCOMP2    ,                                       
+                  :VEN0-PORRETCOMP2     ,                                       
+                  :VEN0-IRETCOMP2       ,                                       
+                  :VEN0-ILIQCOMP2       ,                                       
+                  :VEN0-FECIMPRECOMP2   ,                                       
+                  :VEN0-FECPAGRETCOM2   ,                                       
+      * MU-2017-BDGI-R-V-INI                                                    
+      *            :VEN0-CODCOA1         ,                                      
+      *            :VEN0-PORCOA1         ,                                      
+606664*            :VEN0-IMPCOA1         ,                                      
+      *            :VEN0-CODCOA2         ,                                      
+      *            :VEN0-PORCOA2         ,                                      
+606664*            :VEN0-IMPCOA2         ,                                      
+      *            :VEN0-CODCOA3         ,                                      
+      *            :VEN0-PORCOA3         ,                                      
+606664*            :VEN0-IMPCOA3         ,                                      
+      *            :VEN0-CODCOA4         ,                                      
+      *            :VEN0-PORCOA4         ,                                      
+606664*            :VEN0-IMPCOA4         ,                                      
+      *            :VEN0-CODCOA5         ,                                      
+      *            :VEN0-PORCOA5         ,                                      
+606664*            :VEN0-IMPCOA5         ,                                      
+      *            :VEN0-CODCOA6         ,                                      
+      *            :VEN0-PORCOA6         ,                                      
+606664*            :VEN0-IMPCOA6         ,                                      
+      * MU-2017-BDGI-R-V-FIN                                                    
+                  :VEN0-PAGOTOT         ,                                       
+                  :VEN0-SBDGICAP        ,                                       
+                  :VEN0-FECBDGICAP      ,                                       
+                  :VEN0-SBDGICOMP1      ,                                       
+                  :VEN0-FECBDGICOMP1    ,                                       
+                  :VEN0-SBDGICOMP2      ,                                       
+                  :VEN0-FECBDGICOMP2    ,                                       
+                  :VEN0-CUSUARIO        ,                                       
+606673*           :VEN0-GOBSERVACION                                            
+606673            :VEN0-GOBSERVACION    ,                                       
+606673            :VEN0-FMODIFICACION                                           
+      * MU-2017-BDGI-R-V-INI                                                    
+                 ,:VEN0-EXIMIDO                                                 
+                 ,:VEN0-KDOMCOM                                                 
+      * MU-2017-BDGI-R-V-FIN                                                    
+            END-EXEC.                                                           
+
+
+            MOVE SQLCODE TO SW-ERROR-DB2.                                       
+      *SI NO DEVUELVE NOTFND NI CERO, INFORMAMOS ERROR GRAVE                    
+            IF NOT DB2-OK AND NOT DB2-NOTFND                                    
+
+               SET ERROR-GRAVE                  TO TRUE                         
+               MOVE '99'                        TO X372M006-CRETORNO-S          
+               MOVE 'ERROR AL CONSULTAR CURSOR C2 '                             
+                 TO X372M006-GERROR-S                                           
+               MOVE 'B372M008'                  TO X372M006-GNOMPROG-S          
+
+            ELSE                                                                
+
+               IF DB2-OK AND XN-I <= CN-RES-MAX                                 
+
+      * DESPUES DE HACER LA PRIMERA LECTURA MOVEMOS NO AL SWITCH                
+                  IF PRIMERA-LECTURA                                            
+                     SET NO-PRIMERA-LECTURA TO TRUE                             
+                  END-IF                                                        
+
+      * MOVEMOS LOS REGISTROS A LA COPY DE SALIDA. INCREMENTAMOS INDICE         
+                  PERFORM 5000-MOVER-SALIDA                                     
+
+                  MOVE XN-I   TO X372M006-NUM-REGISTROS-S                       
+                  ADD 1       TO XN-I                                           
+                  MOVE ZEROES TO SW-ERROR-DB2                                   
+
+               ELSE                                                             
+
+      * UN SQLCODE = 100 EN LA PRIMERA LECTURA DEL CURSOR ES UN ERROR  -03      
+
+                  IF PRIMERA-LECTURA AND DB2-NOTFND                             
+                     MOVE 'N' TO X372M006-SPAGINACION-S                         
+                     SET ERROR-GRAVE TO TRUE                                    
+                     MOVE LT-RETURN-ERR-NOTFND TO X372M006-CRETORNO-S           
+                     MOVE 'B372M008' TO X372M006-GNOMPROG-S                     
+                     MOVE 'NO HAY EXPEDIENTES QUE CUMPLAN LOS CRITERIOS         
+      -                   'SELECCIONADOS'                                       
+                                     TO X372M006-GERROR-S                       
+                  END-IF                                                        
+
+               END-IF                                                           
+            END-IF.                                                             
+
+      **************************************************************            
+       2230-CERRAR-CURSOR.                                                      
+      **************************************************************            
+      *                                                                         
+      *    IF NOT ERROR-GRAVE                                                   
+      *                                                                         
+      *      IF XN-I > CN-RES-MAX                                               
+      *SI EL INDICE ES > 50 SE HACE UNA NUEVA LECTURA PARA VER SI HAY           
+      * MAS REGISTROS Y SE TIENE QUE PAGINAR                                    
+      *         PERFORM 2220-LEER-FILA                                          
+      *                                                                         
+      *         IF DB2-OK                                                       
+      *                                                                         
+      *            MOVE 'S' TO X372M006-SPAGINACION-S                           
+      *            MOVE VEN0-CENTIDAD                                           
+      *              TO X372M006-PRO-CENTIDAD-S                                 
+      *            MOVE VEN0-ANIO                                               
+      *              TO X372M006-PRO-ANO-S                                      
+      *            MOVE VEN0-KEXPEDIENTE                                        
+      *              TO X372M006-PRO-KEXPEDIENTE-S                              
+      *            MOVE VEN0-KMODALIDAD                                         
+      *                    TO X372M006-PRO-KMODALIDAD-S                         
+      *         ELSE                                                            
+      *            MOVE 'N' TO X372M006-SPAGINACION-S                           
+      *         END-IF                                                          
+      *      ELSE                                                               
+                MOVE 'N' TO X372M006-SPAGINACION-S                              
+      *         INITIALIZE X372M006-PRO-ANO-S                                   
+      *         INITIALIZE X372M006-PRO-KEXPEDIENTE-S                           
+      *      END-IF                                                             
+      *    END-IF                                                               
+                .                                                               
+           EXEC SQL CLOSE C2 END-EXEC.                                          
+           MOVE SQLCODE TO SW-ERROR-DB2.                                        
+           IF NOT DB2-OK                                                        
+              MOVE 'N' TO X372M006-SPAGINACION-S                                
+              SET ERROR-GRAVE                  TO TRUE                          
+              MOVE '99'                        TO X372M006-CRETORNO-S           
+              MOVE 'ERROR AL CERRAR CURSOR C2' TO X372M006-GERROR-S             
+              MOVE 'B372M008'                  TO X372M006-GNOMPROG-S           
+           END-IF.                                                              
+
+
+      *********************************************************                 
+       5000-MOVER-SALIDA.                                                       
+      *********************************************************                 
+
+           MOVE VEN0-ANIO             TO X372M006-ANIO-S          (XN-I)        
+           MOVE VEN0-KEXPEDIENTE      TO X372M006-KEXPEDIENTE-S   (XN-I)        
+           MOVE VEN0-KRAMO            TO X372M006-KRAMO-S         (XN-I)        
+           MOVE VEN0-ANIOPOL          TO X372M006-ANIOPOL-S       (XN-I)        
+           MOVE VEN0-KPOLIZA          TO X372M006-KPOLIZA-S       (XN-I)        
+           MOVE VEN0-NSUBPOLIZA       TO X372M006-NSUBPOLIZA-S    (XN-I)        
+           MOVE VEN0-KCERTIFICADO     TO X372M006-KCERTIFICADO-S  (XN-I)        
+           MOVE VEN0-KMODALIDAD       TO X372M006-KMODALIDAD-S    (XN-I)        
+           MOVE VEN0-CCANALCAMP       TO X372M006-CCANALCAMP-S    (XN-I)        
+           MOVE VEN0-CENTIDAD         TO X372M006-CENTIDAD-S      (XN-I)        
+           MOVE VEN0-FECEFECTO        TO X372M006-FECEFECTO-S     (XN-I)        
+           MOVE VEN0-KDURACION        TO X372M006-KDURACION-S     (XN-I)        
+           MOVE VEN0-FECEMISION       TO X372M006-FECEMISION-S    (XN-I)        
+           MOVE VEN0-CCARTERA         TO X372M006-CCARTERA-S      (XN-I)        
+           MOVE VEN0-SREASEGURO       TO X372M006-SREASEGURO-S    (XN-I)        
+           MOVE VEN0-REGIONAL         TO X372M006-REGIONAL-S      (XN-I)        
+           MOVE VEN0-LUGARENVIO       TO X372M006-LUGARENVIO-S    (XN-I)        
+           MOVE VEN0-KOFICINA         TO X372M006-KOFICINA-S      (XN-I)        
+           MOVE VEN0-IPENDIENTE       TO X372M006-IPENDIENTE-S    (XN-I)        
+           MOVE VEN0-CTIPOPERS1       TO X372M006-CTIPOPERS1-S    (XN-I)        
+           MOVE VEN0-SRESIDENTE1      TO X372M006-SRESIDENTE1-S   (XN-I)        
+           MOVE VEN0-NIF1             TO X372M006-NIF1-S          (XN-I)        
+           MOVE VEN0-KPERSONA1        TO X372M006-KPERSONA1-S     (XN-I)        
+606673     MOVE VEN0-KDOMICILIO1      TO X372M006-KDOMICILIO1-S   (XN-I)        
+           MOVE VEN0-IMPCAPITAL       TO X372M006-IMPCAPITAL-S    (XN-I)        
+           MOVE VEN0-IMPBENEFICIOS    TO X372M006-IMPBENEFICIOS-S (XN-I)        
+           MOVE VEN0-FECPAGOCAPITAL   TO X372M006-FECPAGOCAPITAL-S(XN-I)        
+           MOVE VEN0-IMPANTICIPO      TO X372M006-IMPANTICIPO-S   (XN-I)        
+           MOVE VEN0-IMPINTEPEND      TO X372M006-IMPINTEPEND-S   (XN-I)        
+           MOVE VEN0-FECVENCIMICAP    TO X372M006-FECVENCIMICAP-S (XN-I)        
+           MOVE VEN0-TIPIMPUESTCAP    TO X372M006-TIPIMPUESTCAP-S (XN-I)        
+           MOVE VEN0-IMPRTOINTEGRCAP                                            
+                                    TO X372M006-IMPRTOINTEGRCAP-S (XN-I)        
+           MOVE VEN0-IMPREDPRICAP     TO X372M006-IMPREDPRICAP-S(XN-I)          
+           MOVE VEN0-IMPREDTRANCAP    TO X372M006-IMPREDTRANCAP-S (XN-I)        
+           MOVE VEN0-IMPCOMPENSATORIA                                           
+                                    TO X372M006-IMPCOMPENSATORIA-S(XN-I)        
+           MOVE VEN0-IMPRTONETOCAP    TO X372M006-IMPRTONETOCAP-S (XN-I)        
+           MOVE VEN0-PORRETCAP        TO X372M006-PORRETCAP-S     (XN-I)        
+           MOVE VEN0-IMPRETCAP        TO X372M006-IMPRETCAP-S (XN-I)            
+           MOVE VEN0-IMPLIQCAP        TO X372M006-IMPLIQCAP-S     (XN-I)        
+           MOVE VEN0-FECIMPRECAP      TO X372M006-FECIMPRECAP-S (XN-I)          
+           MOVE VEN0-FECPAGRET                                                  
+                                    TO X372M006-FECPAGRET-S (XN-I)              
+           MOVE VEN0-IMPCOMP1         TO X372M006-IMPCOMP1-S      (XN-I)        
+           MOVE VEN0-FECPAGCOMP1      TO X372M006-FECPAGCOMP1-S   (XN-I)        
+           MOVE VEN0-FECEMICOMP1      TO X372M006-FECEMICOMP1-S   (XN-I)        
+           MOVE VEN0-TIPIMPUESTCOMP1                                            
+                                    TO X372M006-TIPIMPUESTCOMP1-S (XN-I)        
+           MOVE VEN0-IMPRTOINTCOMP1   TO X372M006-IMPRTOINTCOMP1-S(XN-I)        
+           MOVE VEN0-IMPREDPRICOMP1   TO X372M006-IMPREDPRICOMP1-S(XN-I)        
+           MOVE VEN0-IREDTRANCOMP1    TO X372M006-IREDTRANCOMP1-S (XN-I)        
+           MOVE VEN0-IRTONETCOMP1     TO X372M006-IRTONETCOMP1-S  (XN-I)        
+           MOVE VEN0-PORRETCOMP1      TO X372M006-PORRETCOMP1-S   (XN-I)        
+           MOVE VEN0-IRETCOMP1        TO X372M006-IRETCOMP1-S     (XN-I)        
+           MOVE VEN0-ILIQCOMP1        TO X372M006-ILIQCOMP1-S     (XN-I)        
+           MOVE VEN0-FECIMPRECOMP1    TO X372M006-FECIMPRECOMP1-S (XN-I)        
+           MOVE VEN0-FECPAGRETCOM1    TO X372M006-FECPAGRETCOM1-S(XN-I)         
+           MOVE VEN0-IMPCOMP2         TO X372M006-IMPCOMP2-S      (XN-I)        
+           MOVE VEN0-FECEMICOMP2      TO X372M006-FECEMICOMP2-S   (XN-I)        
+           MOVE VEN0-FECPAGCOMP2      TO X372M006-FECPAGCOMP2-S   (XN-I)        
+           MOVE VEN0-TIPIMPUESTCOMP2                                            
+                                    TO X372M006-TIPIMPUESTCOMP2-S (XN-I)        
+           MOVE VEN0-IMPRTOINTCOMP2   TO X372M006-IMPRTOINTCOMP2-S(XN-I)        
+           MOVE VEN0-IMPREDPRICOMP2   TO X372M006-IMPREDPRICOMP2-S(XN-I)        
+           MOVE VEN0-IREDTRANCOMP2    TO X372M006-IREDTRANCOMP2-S (XN-I)        
+           MOVE VEN0-IRTONETCOMP2     TO X372M006-IRTONETCOMP2-S  (XN-I)        
+           MOVE VEN0-PORRETCOMP2      TO X372M006-PORRETCOMP2-S   (XN-I)        
+           MOVE VEN0-IRETCOMP2        TO X372M006-IRETCOMP2-S     (XN-I)        
+           MOVE VEN0-ILIQCOMP2        TO X372M006-ILIQCOMP2-S     (XN-I)        
+           MOVE VEN0-FECIMPRECOMP2    TO X372M006-FECIMPRECOMP2-S (XN-I)        
+           MOVE VEN0-FECPAGRETCOM2    TO X372M006-FECPAGRETCOM2-S (XN-I)        
+      * MU-2017-BDGI-R-V-INI                                                    
+      *     MOVE VEN0-CODCOA1          TO X372M006-CODCOA1-S      (XN-I)        
+      *     MOVE VEN0-PORCOA1          TO X372M006-PORCOA1-S      (XN-I)        
+606664*     MOVE VEN0-IMPCOA1          TO X372M006-IMPCOA1-S      (XN-I)        
+      *     MOVE VEN0-CODCOA2          TO X372M006-CODCOA2-S      (XN-I)        
+      *     MOVE VEN0-PORCOA2          TO X372M006-PORCOA2-S      (XN-I)        
+606664*     MOVE VEN0-IMPCOA2          TO X372M006-IMPCOA2-S      (XN-I)        
+      *     MOVE VEN0-CODCOA3          TO X372M006-CODCOA3-S      (XN-I)        
+      *     MOVE VEN0-PORCOA3          TO X372M006-PORCOA3-S      (XN-I)        
+606664*     MOVE VEN0-IMPCOA3          TO X372M006-IMPCOA3-S      (XN-I)        
+      *     MOVE VEN0-CODCOA4          TO X372M006-CODCOA4-S      (XN-I)        
+      *     MOVE VEN0-PORCOA4          TO X372M006-PORCOA4-S      (XN-I)        
+606664*     MOVE VEN0-IMPCOA4          TO X372M006-IMPCOA4-S      (XN-I)        
+      *     MOVE VEN0-CODCOA5          TO X372M006-CODCOA5-S      (XN-I)        
+      *     MOVE VEN0-PORCOA5          TO X372M006-PORCOA5-S      (XN-I)        
+606664*     MOVE VEN0-IMPCOA5          TO X372M006-IMPCOA5-S      (XN-I)        
+      *     MOVE VEN0-CODCOA6          TO X372M006-CODCOA6-S      (XN-I)        
+      *     MOVE VEN0-PORCOA6          TO X372M006-PORCOA6-S      (XN-I)        
+606664*     MOVE VEN0-IMPCOA6          TO X372M006-IMPCOA6-S      (XN-I)        
+      * MU-2017-BDGI-R-V-FIN                                                    
+           MOVE VEN0-PAGOTOT          TO X372M006-PAGOTOT-S       (XN-I)        
+           MOVE VEN0-SBDGICAP         TO X372M006-SBDGICAP-S      (XN-I)        
+           MOVE VEN0-FECBDGICAP       TO X372M006-FECBDGICAP-S    (XN-I)        
+           MOVE VEN0-SBDGICOMP1       TO X372M006-SBDGICOMP1-S    (XN-I)        
+           MOVE VEN0-FECBDGICOMP1     TO X372M006-FECBDGICOMP1-S  (XN-I)        
+           MOVE VEN0-SBDGICOMP2       TO X372M006-SBDGICOMP2-S    (XN-I)        
+           MOVE VEN0-FECBDGICOMP2     TO X372M006-FECBDGICOMP2-S  (XN-I)        
+           MOVE VEN0-CUSUARIO         TO X372M006-CUSUARIO-S      (XN-I)        
+           MOVE VEN0-GOBSERVACION     TO X372M006-GOBSERVACION-S  (XN-I)        
+606673     MOVE VEN0-FMODIFICACION    TO X372M006-FECMODIFICA-S   (XN-I)        
+      * MU-2017-BDGI-R-V-INI                                                    
+           MOVE VEN0-EXIMIDO          TO X372M006-EXIMIDO-S       (XN-I)        
+           MOVE VEN0-KDOMCOM          TO X372M006-KDOMCOM-S       (XN-I)        
+      *                                                                         
+           PERFORM 5100-CONSULTA-MCOA                                           
+      *                                                                         
+      * MU-2017-BDGI-R-V-FIN                                                    
+           .                                                                    
+      * MU-2017-BDGI-R-V-INI                                                    
+      *********************************************************                 
+       5100-CONSULTA-MCOA.                                                      
+      *********************************************************                 
+      *                                                                         
+           MOVE 'C'                           TO X372MCOA-OPERACION-E           
+           MOVE VEN0-ANIO                     TO X372MCOA-ANIO-E                
+           MOVE VEN0-KEXPEDIENTE              TO X372MCOA-KEXPEDIENTE-E         
+           MOVE ZEROES                        TO X372MCOA-NCOA-E                
+      *                                                                         
+           CALL WS-B372MCOA   USING WS-X372MCOA.                                
+      *                                                                         
+           EVALUATE X372MCOA-RETORNO-S                                          
+      *                                                                         
+              WHEN LT-RETURN-OK                                                 
+      *                                                                         
+                 MOVE X372MCOA-COASEGUROS-OCCURS-S                              
+                   TO X372M006-COASEGUROS-OCCURS-S (XN-I)                       
+      *                                                                         
+                 PERFORM VARYING XN-M FROM 1 BY 1                               
+                     UNTIL XN-M > X372MCOA-COASEGUROS-OCCURS-S                  
+      *                                                                         
+                     MOVE X372MCOA-CODCOA-S (XN-M)                              
+                              TO X372M006-CODCOA-S (XN-I, XN-M)                 
+                     MOVE X372MCOA-PORCOA-S (XN-M)                              
+                              TO X372M006-PORCOA-S (XN-I, XN-M)                 
+                     MOVE X372MCOA-IMPCOA-S (XN-M)                              
+                              TO X372M006-IMPCOA-S (XN-I, XN-M)                 
+                     MOVE X372MCOA-IMPRTOINTEGRCOA-S (XN-M)                     
+                              TO X372M006-IMPRTOINTEGRCOA-S(XN-I, XN-M)         
+                     MOVE X372MCOA-IMPREDPRICOA-S (XN-M)                        
+                              TO X372M006-IMPREDPRICOA-S (XN-I, XN-M)           
+                     MOVE X372MCOA-IMPREDTRANCOA-S (XN-M)                       
+                              TO X372M006-IMPREDTRANCOA-S (XN-I, XN-M)          
+                     MOVE X372MCOA-IMPRTONETOCOA-S (XN-M)                       
+                              TO X372M006-IMPRTONETOCOA-S (XN-I, XN-M)          
+                     MOVE X372MCOA-IMPRETCOA-S (XN-M)                           
+                              TO X372M006-IMPRETCOA-S (XN-I, XN-M)              
+                     MOVE X372MCOA-IMPCOMPENSATCOA-S (XN-M)                     
+                              TO X372M006-IMPCOMPENSATCOA-S (XN-I, XN-M)        
+                 END-PERFORM                                                    
+      *                                                                         
+              WHEN LT-RETURN-ERR-NOTFND                                         
+      *                                                                         
+                 CONTINUE                                                       
+      *                                                                         
+              WHEN OTHER                                                        
+      *                                                                         
+                 SET  ERROR-GRAVE TO TRUE                                       
+                 MOVE X372MCOA-RETORNO-S  TO X372M006-CRETORNO-S                
+                 MOVE X372MCOA-GNOMPROG-S TO X372M006-GNOMPROG-S                
+                 MOVE                                                           
+                     'ERROR AL LLAMAR A LA TB372CCV0 - PARRAFO 5100'            
+                   TO X372M006-GERROR-S                                         
+      *                                                                         
+           END-EVALUATE.                                                        
+      *                                                                         
+      * MU-2017-BDGI-R-V-FIN                                                    
+      *********************************************************                 
+       8000-RECIBIR-ENTRADA.                                                    
+      *********************************************************                 
+      *MOVEMOS LOS DATOS DE ENTRADA A LAS VARIABLES DE LA DCLGEN                
+
+           MOVE X372M006-FECHADESDE-E       TO WS-FECHADESDE                    
+           MOVE X372M006-FECHAHASTA-E       TO WS-FECHAHASTA                    
+           MOVE X372M006-ANT-ANO-E          TO WS-ANT-ANO                       
+           MOVE X372M006-ANT-CENTIDAD-E     TO WS-ANT-CENTIDAD                  
+           MOVE X372M006-ANT-KEXPEDIENTE-E  TO WS-ANT-KEXPEDIENTE               
+           MOVE X372M006-ANT-KMODALIDAD-E   TO WS-ANT-KMOD                      
+           MOVE X372M006-KEXPED-DESDE-E     TO WS-KEP-EXP-DESDE                 
+           MOVE X372M006-KEXPED-HASTA-E     TO WS-KEP-EXP-HASTA                 
+           MOVE X372M006-KANIO-DESDE-E      TO WS-ANO-EXP-DESDE                 
+           MOVE X372M006-KANIO-HASTA-E      TO WS-ANO-EXP-HASTA.                
+      *D*                                                                       
+      *    DISPLAY '------------- B372M008 ----------------------'              
+      *    DISPLAY 'WS-FECHADESDE          ' WS-FECHADESDE                      
+      *    DISPLAY 'WS-FECHAHASTA          ' WS-FECHAHASTA                      
+      *    DISPLAY 'WS-ANT-ANO             ' WS-ANT-ANO                         
+      *    DISPLAY 'WS-ANT-CENTIDAD        ' WS-ANT-CENTIDAD                    
+      *    DISPLAY 'WS-ANT-KEXPEDIENTE     ' WS-ANT-KEXPEDIENTE                 
+      *    DISPLAY 'WS-ANT-KMOD            ' WS-ANT-KMOD                        
+      *    DISPLAY 'WS-KEP-EXP-DESDE       ' WS-KEP-EXP-DESDE                   
+      *    DISPLAY 'WS-KEP-EXP-HASTA       ' WS-KEP-EXP-HASTA                   
+      *    DISPLAY 'WS-ANO-EXP-DESDE       ' WS-ANO-EXP-DESDE                   
+      *    DISPLAY 'WS-ANO-EXP-HASTA.      ' WS-ANO-EXP-HASTA.                  
+      *F*                                                                       
+
+      **************************************************************            
+      * 9000-FINAL.                                                *            
+      **************************************************************            
+       9000-FINAL.                                                              
+
+           GOBACK.                                                              

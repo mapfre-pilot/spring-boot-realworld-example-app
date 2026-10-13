@@ -1,0 +1,40 @@
+      ******************************************************************00010000
+      *                      COPY  X372VT19                            *00020006
+      *                                                                *00030000
+      *          CONSULTA DE CARTERA RESCATES (FOXPRO)                 *00040001
+      *  ------------------------------------------------------------  *00050009
+      * FECHA DE CREACION:  JUNIO 2012                                 *00051010
+      ******************************************************************00060000
+       05 X372VT19.                                                     00070006
+          07 X372VT19-DATOS-CABECERA.                                   00080006
+             09 X372VT19-KSERVICIO-C        PIC X(08).                  00090006
+             09 X372VT19-CCANAL-C           PIC 9(02).                  00100006
+             09 X372VT19-KEMPRESA-C         PIC X(03).                  00110006
+             09 X372VT19-KDEPARTA-C         PIC X(03).                  00120006
+             09 X372VT19-KUSUARIO-C         PIC X(10).                  00130006
+             09 X372VT19-KCADISTR-C         PIC X(01).                  00140006
+             09 X372VT19-KFILTRO-C          PIC X(02).                  00150006
+             09 X372VT19-FILLER-C           PIC X(17).                  00160006
+          07 X372VT19-E.                                                00170006
+             09 X372VT19-POLIZA-E           PIC X(10).                  00180006
+             09 X372VT19-SUBPOLIZA-E        PIC X(4).                   00190006
+             09 X372VT19-CERTIFICADO-E      PIC X(6).                   00200006
+          07 X372VT19-S.                                                00240006
+             09 X372VT19-ANIOPOL-S          PIC X(4).                   00250006
+             09 X372VT19-RAMO-S             PIC X(3).                   00260006
+             09 X372VT19-POLIZA-S           PIC X(10).                  00270006
+             09 X372VT19-SUBPOLIZA-S        PIC X(4).                   00271006
+             09 X372VT19-SITUACION-S        PIC X(8).                   00272006
+             09 X372VT19-MODALIDAD-S        PIC X(3).                   00273006
+             09 X372VT19-FEFECTO-S          PIC X(8).                   00274006
+             09 X372VT19-FANULACION-S       PIC X(8).                   00275006
+             09 X372VT19-REGIONAL-S         PIC X(2).                   00275107
+             09 X372VT19-DURACION-S         PIC X(8).                   00276006
+             09 X372VT19-CANAL-S            PIC X(2).                   00277006
+             09 X372VT19-CENTIDAD-S         PIC X(4).                   00277106
+             09 X372VT19-OFICINA-S          PIC X(4).                   00278006
+             09 X372VT19-TOMADOR-S          PIC X(60).                  00279006
+             09 X372VT19-NIF1-S             PIC X(10).                  00279106
+             09 X372VT19-CRETORNO-S         PIC X(2).                   00280006
+             09 X372VT19-GERROR-S           PIC X(100).                 00290008
+             09 X372VT19-GNOMPROG-S         PIC X(8).                   00300006

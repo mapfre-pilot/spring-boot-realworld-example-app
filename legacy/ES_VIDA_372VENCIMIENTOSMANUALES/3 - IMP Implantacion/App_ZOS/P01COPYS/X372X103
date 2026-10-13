@@ -1,0 +1,41 @@
+      ******************************************************************00010000
+      *                                                                *00020000
+      * COPY:              X362X101,    PROGRAMA: B362J006             *00030000
+      * APLICACION:        RESCATES MANUALES                           *00040000
+      * DESCRIPCION:       COPY DE LOS DATOS ECONÓMICOS (BDGI)         *00050000
+      * FECHA DE CREACION: 01-06-2012                                  *00060000
+      * AUTOR :            EVERIS                                      *00070000
+      *                                                                *00080000
+      ******************************************************************00090000
+       07 X372X103-IRPF.                                                00100001
+          09 X372X103-IRPF-NUM-MODELOV               PIC  X(03).        00110001
+          09 X372X103-IRPF-TIPO-INGRESO              PIC  X(01).        00120001
+          09 X372X103-IRPF-CLAVE-PERCEPCION          PIC  X(01).        00130001
+          09 X372X103-IRPF-SBCLV-PERCEPCION          PIC  X(02).        00140001
+          09 X372X103-IRPF-IBRTPREST-IINDE           PIC S9(12)V9(02).  00150001
+          09 X372X103-IRPF-PRIMAS-PAGADAS            PIC S9(12)V9(02).  00160001
+          09 X372X103-IRPF-PRIM-IMPUTADAS            PIC S9(12)V9(02).  00170001
+          09 X372X103-IRPF-REND-INTEGRO              PIC S9(12)V9(02).  00180001
+          09 X372X103-IRPF-IRREDUCCION-1             PIC S9(12)V9(02).  00190001
+          09 X372X103-IRPF-IRREDUCCION-2             PIC S9(12)V9(02).  00200001
+          09 X372X103-IRPF-IRREDUCCION-3             PIC S9(12)V9(02).  00210001
+          09 X372X103-IRPF-IRREDUCCION-4             PIC S9(12)V9(02).  00220001
+          09 X372X103-IRPF-IRREDUCCION-5             PIC S9(12)V9(02).  00230001
+          09 X372X103-IRPF-BASE-RETENCION            PIC S9(12)V9(02).  00240001
+          09 X372X103-IRPF-PRETENCION                PIC  9(03)V9(02).  00250001
+          09 X372X103-IRPF-IRETENCION                PIC S9(12)V9(02).  00260001
+          09 X372X103-IRPF-CUENTA-RETENCION          PIC  9(10).        00270001
+          09 X372X103-IRPF-CUENTA-GASTO              PIC  9(10).        00280001
+          09 X372X103-IRPF-SCEUTA-MELILLA            PIC  X(01).        00290001
+          09 X372X103-IRPF-ANYODEVENGO               PIC  9(04).        00300001
+          09 X372X103-IRPF-MEDIADOR                  PIC  X(01).        00310001
+          09 X372X103-IRPF-CLAVE-CODIGO              PIC  9(01).        00311001
+          09 X372X103-IRPF-COD-EMISOR                PIC  X(12).        00320001
+          09 X372X103-IRPF-TIPO-PAGO                 PIC  9(01).        00330001
+          09 X372X103-IRPF-TCOD-CUENT-VALOR          PIC  X(01).        00340001
+          09 X372X103-IRPF-COD-CUENT-VALORS          PIC  X(20).        00350001
+          09 X372X103-IRPF-SPENDIENTE                PIC  X(01).        00360001
+          09 X372X103-IRPF-COD-PAIS-TERCERO          PIC  9(03).        00370001
+          09 X372X103-IRPF-SJUST-RESIDENCIA          PIC  X(01).        00380001
+          09 X372X103-IRPF-PAGO-PRV-REALIZ           PIC  X(01).        00390001
+                                                                        00400000

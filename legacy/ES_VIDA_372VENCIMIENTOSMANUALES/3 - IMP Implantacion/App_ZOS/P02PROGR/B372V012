@@ -1,0 +1,393 @@
+      *RETRIEVAL.                                                               
+      *-----------------------                                                  
+       IDENTIFICATION DIVISION.                                                 
+      *-----------------------                                                  
+      *                                                                         
+       PROGRAM-ID. B372V012.                                                    
+      *                                                                         
+      ******************************************************************        
+      *  APLICACION   : RESCATES MANUALES (FOXPRO)                     *        
+      *  ANALISTA     : EVERIS                                         *        
+      *  PROGRAMADOR  : EVERIS                                         *        
+      *  FECHA        : JUNIO 2017                                     *        
+      *  TIPO PROGRAMA: COBOL-CICS                                     *        
+      *  DESCRIPCION  : OBTENCION CUADRO COASEGURO DE LA POLIZA        *        
+      ******************************************************************        
+      *PARAMETROS DE ENTRADA:                                                   
+      ******************************************************************        
+      *   -X372VT12-ENTRADA-E: COPY DE ENTRADA DE DATOS                         
+      *                                                                         
+      ******************************************************************        
+      *PARAMETROS DE SALIDA:                                                    
+      ******************************************************************        
+      *   -X372VT12-SALIDA-S : COPY DE SALIDA DE DATOS                          
+      ******************************************************************        
+      *                                                                         
+      ******************************************************************        
+      *MODULOS UTILIZADOS:                                                      
+      ******************************************************************        
+      *                                                                         
+      * VA761030 : SERVICIO DE COASEGURADORES POLIZA                            
+      *                                                                         
+      ******************************************************************        
+      *                                                                         
+      ******************************************************************        
+      * CODIGO DE ERRORES                                                       
+      ******************************************************************        
+      *                                                                         
+      * X372VT12-CRETORNO-S                                                     
+      *                                                                         
+      *        '00' OPERACION CORRECTA                                          
+      *                                                                         
+      *        '01' ERROR EN LOS COASEGUROS                                     
+      *                                                                         
+      *        '02' POLIZA NO ENCONTRADA                                        
+      *                                                                         
+      *        '05' ERROR AL OBTENER CUADRO COASEGURADORA                       
+      *                                                                         
+      *        '10' NO EXISTE COASEGURADORAS PARA LA POLIZA                     
+      *                                                                         
+      *        '98' ERROR EN LLAMADA DEL MODULO DE IDMS                         
+      *                                                                         
+      *        '99' ERROR AL DEVOLVER CONTRO                                    
+      *                                                                         
+      ******************************************************************        
+      ****************************************************************          
+      *                                                              *          
+      *     CODIGOS DE RETORNO ==> RA761030-CSG-RETORNO              *          
+      *                                                              *          
+      *        '00' TERMINACION CORRECTA                            *           
+      *        '01' TERMINACION CORRECTA PERO HAY MAS COASEGURADORAS*           
+      *             QUE NO SE HAN PODIDO MOSTRAR                    *           
+      *        '10' POLIZA NO INFORMADA O INCORRECTA                *           
+      *        '11' FECHA INCORRECTA                                *           
+      *        '12' NO SE HA ENCONTRADO COASEGURADORA ABRIDORA PARA *           
+      *             LA POLIZA DE ENTRADA                            *           
+      *        '20' POLIZA NO EXISTE EN COASEGURO                   *           
+      *        '21' POLIZA SIN COASEGURO EN LA FECHA INDICADA       *           
+      *        '22' POLIZA SIN CUADRO DE COASEGURO                  *           
+      *        '23' COASEGURADORA NO EXISTE EN RB65074              *           
+      *                                                              *          
+      ****************************************************************          
+      *--------------------                                                     
+       ENVIRONMENT DIVISION.                                                    
+      *---------------------                                                    
+      *                                                                         
+       CONFIGURATION SECTION.                                                   
+        SPECIAL-NAMES.                                                          
+            DECIMAL-POINT IS COMMA.                                             
+      *                                                                         
+       INPUT-OUTPUT SECTION.                                                    
+       FILE-CONTROL.                                                            
+      *                                                                         
+      *-------------                                                            
+       DATA DIVISION.                                                           
+      *--------------                                                           
+      *                                                                         
+       FILE SECTION.                                                            
+      *-------------                                                            
+      *                                                                         
+      *************************                                                 
+       WORKING-STORAGE SECTION.                                                 
+      *************************                                                 
+      *                                                                         
+         01 XN-INDICES.                                                         
+            03 XN-M                 PIC 9(02).                                  
+      *                                                                         
+        01 VARIABLES.                                                   00960000
+           03 FILLER                PIC X(17) VALUE 'INICIO DE WORKING'.00960000
+           03 WS-VA761030           PIC X(08) VALUE 'VA761030'.                 
+           03 B000Y011              PIC X(08) VALUE 'B000Y011'.                 
+           03 FILLER                PIC X(17) VALUE 'FINAL  DE WORKING'.00960000
+      *                                                                         
+           03 WS-FECHA-SIS.                                                     
+              05 WS-FECHA-SISTEMA.                                              
+                 10 WS-ANO-HOY      PIC 9(4)  VALUE ZEROS.                      
+                 10 WS-MES-HOY      PIC 9(2)  VALUE ZEROS.                      
+                 10 WS-DIA-HOY      PIC 9(2)  VALUE ZEROS.                      
+              05 WS-HORA.                                                       
+                 15 WS-HORR-HOY     PIC 9(02) VALUE ZEROS.                      
+                 15 WS-MINU-HOY     PIC 9(02) VALUE ZEROS.                      
+                 15 WS-SEGU-HOY     PIC 9(02) VALUE ZEROS.                      
+                 15 WS-MSEG-HOY     PIC 9(03) VALUE ZEROS.                      
+              05 WS-RESTO           PIC X(04) VALUE SPACES.                     
+      *                                                                         
+          03 WS-KPOLIZA.                                                        
+              05 WS-POLIZA          PIC X(07) VALUE ZEROS.                      
+              05 WS-SUBPOL          PIC X(04) VALUE ZEROS.                      
+      *                                                                         
+          03 WS-TOTAL.                                                          
+              05 WS-TOT-POR         PIC 9(03)V9(03) COMP-3.                     
+              05 WS-TOT-IND         PIC 9.                                      
+      *                                                                         
+       01 COPYS.                                                                
+          03 WS-PARAMETRO.                                                      
+             COPY R000X000.                                                     
+             COPY R000X001.                                                     
+      *                                                                         
+      *COPYS COBOL.                                                             
+      *   RA761030.                                                             
+             COPY RA761030.                                                     
+      *                                                                         
+       01 SW-SWITCH.                                                            
+          03 SW-ERRORES                PIC XX VALUE '00'.                       
+             88 NO-ERROR                      VALUE '00'.                       
+             88 ERROR-GRAVE                   VALUE '01'.                       
+      *                                                                         
+      *****************                                                         
+       LINKAGE SECTION.                                                         
+      *****************                                                         
+       01 DFHCOMMAREA.                                                          
+           COPY R000X000.                                                       
+           03 COMMAREA.                                                         
+               COPY X372VT12.                                                   
+      *                                                                         
+      **************************************                                    
+       PROCEDURE DIVISION USING DFHCOMMAREA.                                    
+      **************************************                                    
+      *                                                                         
+           PERFORM 1000-INICIO.                                                 
+      *                                                                         
+           PERFORM 2000-PROCESO.                                                
+      *                                                                         
+           PERFORM 9000-FIN.                                                    
+      *                                                                         
+      ******************************************************************        
+      *1000-INICIO.                                                             
+      ******************************************************************        
+       1000-INICIO.                                                             
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372V012: 1000-INICIO'                                      
+      *F*                                                                       
+      *                                                                         
+           EXEC CICS                                                            
+                IGNORE CONDITION ERROR                                          
+           END-EXEC.                                                            
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372V012: SALIDA CICS'                                      
+DSPLYS*    DISPLAY 'EIBRESP: ' EIBRESP                                          
+      *F*                                                                       
+      *                                                                         
+           IF EIBRESP NOT = DFHRESP(NORMAL)                                     
+      *                                                                         
+      *D*                                                                       
+DSPLYS*       DISPLAY 'DENTRO EIBRESP'                                          
+      *F*                                                                       
+              MOVE  'B372V012'  TO  X372VT12-GNOMPROG-S                         
+              MOVE  '98'        TO  X372VT12-CRETORNO-S                         
+              MOVE  'ERROR LLAMADA CICS'                                        
+                                TO  X372VT12-GERROR-S                           
+
+           END-IF                                                               
+      *                                                                         
+           INITIALIZE WS-TOTAL                                                  
+      *                                                                         
+           MOVE '00'                   TO X372VT12-CRETORNO-S                   
+           MOVE 'B372V012'             TO X372VT12-GNOMPROG-S                   
+      *                                                                         
+           MOVE FUNCTION CURRENT-DATE  TO WS-FECHA-SISTEMA                      
+      *                                                                         
+           PERFORM 1100-VALIDACION-ENTRADA                                      
+      *                                                                         
+           .                                                                    
+      ******************************************************************        
+      *1100-VALIDACION-ENTRADA.                                                 
+      ******************************************************************        
+       1100-VALIDACION-ENTRADA.                                                 
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372V012: 1100-VALIDACION-ENTRADA'                          
+      *F*                                                                       
+           IF (X372VT12-OPERACION-E) NOT EQUAL 'C1'                             
+      *                                                                         
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE '02'                                                         
+               TO  X372VT12-CRETORNO-S                                          
+              MOVE 'EL CAMPO POLIZA ES OBLIGATORIO'                             
+               TO  X372VT12-GERROR-S                                            
+              MOVE 'B372V012'                                                   
+               TO  X372VT12-GNOMPROG-S                                          
+      *                                                                         
+              PERFORM 9000-FIN                                                  
+      *                                                                         
+           END-IF                                                               
+      *                                                                         
+           IF (X372VT12-KPOLIZA-E) EQUAL SPACES OR LOW-VALUES                   
+      *                                                                         
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE '01'                                                         
+               TO  X372VT12-CRETORNO-S                                          
+              MOVE 'EL CAMPO POLIZA ES OBLIGATORIO'                             
+               TO  X372VT12-GERROR-S                                            
+              MOVE 'B372V012'                                                   
+               TO  X372VT12-GNOMPROG-S                                          
+      *                                                                         
+              PERFORM 9000-FIN                                                  
+      *                                                                         
+           END-IF                                                               
+           .                                                                    
+      *                                                                         
+      ******************************************************************        
+      *2000-PROCESO.                                                            
+      ******************************************************************        
+       2000-PROCESO.                                                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372V012: 2000-PROCESO'                                     
+      *F*                                                                       
+      *                                                                         
+           INITIALIZE RA761030                                                  
+                      WS-PARAMETRO                                              
+      *                                                                         
+           MOVE X372VT12-KPOLIZA-E(4:7)     TO WS-POLIZA                        
+           MOVE X372VT12-NSUBPOLIZA-E       TO WS-SUBPOL                        
+           MOVE WS-KPOLIZA                  TO RA761030-KPOLSUB                 
+           MOVE WS-FECHA-SIS                TO RA761030-FCUADROCOA              
+           MOVE SPACES                      TO RA761030-CSG-AREAS               
+
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'WS-POLIZA: '            WS-POLIZA                           
+DSPLYS*    DISPLAY 'WS-SUBPOL: '            WS-SUBPOL                           
+DSPLYS*    DISPLAY 'RA761030-KPOLSUB: '     RA761030-KPOLSUB                    
+DSPLYS*    DISPLAY 'RA761030-FCUADROCOA: '  RA761030-FCUADROCOA                 
+DSPLYS*    DISPLAY 'RA761030-CSG-AREAS: '   RA761030-CSG-AREAS                  
+      *                                                                         
+      *F*                                                                       
+           MOVE R000X000    OF DFHCOMMAREA                                      
+                                  TO R000X000         OF WS-PARAMETRO           
+           MOVE '00'              TO CAB-RESULTADO    OF WS-PARAMETRO           
+           MOVE 'IDMS'            TO CAB-COD-LIBRERIA OF WS-PARAMETRO           
+           MOVE 'VA761030'        TO CAB-COD-INTERFAZ OF WS-PARAMETRO           
+           MOVE 'N'               TO CAB-ACTUALIZA    OF WS-PARAMETRO           
+           MOVE LENGTH OF RA761030                                              
+                                  TO CAB-LONG-DATOS   OF WS-PARAMETRO           
+           MOVE RA761030          TO R000X001         OF WS-PARAMETRO           
+
+           PERFORM ADAPTADOR-SALIDA                                             
+      *D*                                                                       
+DSPLYS*    DISPLAY 'SALGO ADAPTADOR-SALIDA-VALIDAR'                             
+      *F*                                                                       
+      *                                                                         
+           MOVE R000X001    OF WS-PARAMETRO TO RA761030                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'RA761030-CSG-RETORNO: '   RA761030-CSG-RETORNO              
+DSPLYS*    DISPLAY 'RA761030: '               RA761030                          
+      *F*                                                                       
+      *                                                                         
+           IF RA761030-CSG-RETORNO NOT = '00' AND NOT = '21'                    
+      *                                                                         
+              SET  ERROR-GRAVE TO TRUE                                          
+      *                                                                         
+              INITIALIZE  X372VT12-SALIDA                                       
+      *                                                                         
+              MOVE '05'                                                         
+                TO  X372VT12-CRETORNO-S                                         
+              MOVE 'ERROR AL OBTENER CUADRO COASEGURADORA'                      
+                TO  X372VT12-GERROR-S                                           
+              MOVE 'VA761030'                                                   
+                TO  X372VT12-GNOMPROG-S                                         
+      *                                                                         
+           ELSE                                                                 
+      *                                                                         
+              IF RA761030-CSG-RETORNO EQUAL '00'                                
+      *                                                                         
+                 PERFORM VARYING WS-TOT-IND FROM 1 BY 1                         
+                           UNTIL WS-TOT-IND > 6                                 
+      *                                                                         
+                    COMPUTE WS-TOT-POR = WS-TOT-POR +                           
+                                         RA761030-PCOASE(WS-TOT-IND)            
+      *                                                                         
+      *D*                                                                       
+DSPLYS*     DISPLAY 'COA' WS-TOT-IND ': ' RA761030-KCOASE(WS-TOT-IND)           
+DSPLYS*     DISPLAY 'POA' WS-TOT-IND ': ' RA761030-PCOASE(WS-TOT-IND)           
+      *F*                                                                       
+                 END-PERFORM                                                    
+      *                                                                         
+      *D*                                                                       
+DSPLYS*          DISPLAY 'PORCENTAJE: '        WS-TOT-POR                       
+      *F*                                                                       
+      *                                                                         
+                 IF WS-TOT-POR NOT = ZEROS                                      
+                    IF WS-TOT-POR = 100                                         
+      *                                                                         
+                      PERFORM VARYING XN-M FROM 1 BY 1                          
+                         UNTIL XN-M > 6                                         
+                            OR RA761030-KCOASE (XN-M) EQUAL TO ZEROS            
+
+                          MOVE RA761030-KSG-COASE-DGS (XN-M)                    
+                            TO X372VT12-CODCOA-S (XN-M)                         
+                          MOVE RA761030-PCOASE   (XN-M)                         
+                            TO X372VT12-PORCOA-S (XN-M)                         
+                          MOVE XN-M                                             
+                            TO X372VT12-COASEGUROS-OCCURS-S                     
+
+                       END-PERFORM                                              
+
+                    ELSE                                                        
+      *                                                                         
+                       SET  ERROR-GRAVE TO  TRUE                                
+                       MOVE '01'        TO  X372VT12-CRETORNO-S                 
+                       MOVE 'ERROR EN LOS COASEGUROS'                           
+                                        TO  X372VT12-GERROR-S                   
+                       MOVE 'VA761030'  TO  X372VT12-GNOMPROG-S                 
+      *                                                                         
+                    END-IF                                                      
+                 END-IF                                                         
+              END-IF                                                            
+              IF RA761030-CSG-RETORNO EQUAL '21'                                
+      *                                                                         
+                 INITIALIZE  X372VT12-SALIDA                                    
+      *                                                                         
+                    MOVE '10'           TO  X372VT12-CRETORNO-S                 
+                    MOVE 'NO EXISTE COASEGURADORAS PARA LA POLIZA '             
+                                        TO  X372VT12-GERROR-S                   
+                    MOVE 'VA761030'     TO  X372VT12-GNOMPROG-S                 
+      *                                                                         
+              END-IF                                                            
+           END-IF                                                               
+           .                                                                    
+      ******************************************************************        
+       ADAPTADOR-SALIDA.                                                        
+      *----------------*                                                        
+      *                                                                         
+           EXEC CICS                                                    00014500
+              LINK PROGRAM (B000Y011)                                   00014500
+              COMMAREA (WS-PARAMETRO)                                   00014500
+              LENGTH (LENGTH OF WS-PARAMETRO)                           00014500
+           END-EXEC.                                                    00014500
+
+           IF EIBRESP NOT = DFHRESP(NORMAL)                                     
+
+
+              MOVE  'B372VT12'  TO  X372VT12-GNOMPROG-S                         
+              MOVE  '98'        TO  X372VT12-CRETORNO-S                         
+              MOVE  'ERROR EN LLAMADA DEL MODULO DE IDMS'                       
+                                TO  X372VT12-GERROR-S                           
+              PERFORM 9000-FIN                                                  
+
+           END-IF                                                               
+           .                                                                    
+      *                                                                         
+      ******************************************************************        
+      *9000-FIN.                                                                
+      ******************************************************************        
+       9000-FIN.                                                                
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY '9000-FIN'                                                   
+      *F*                                                                       
+           EXEC CICS                                                    00048300
+                RETURN                                                  00048400
+           END-EXEC.                                                    00048500
+      *                                                                         
+           IF EIBRESP NOT = DFHRESP(NORMAL)                                     
+      *                                                                         
+              MOVE  'B372VT12'  TO  X372VT12-GNOMPROG-S                         
+              MOVE  '99'        TO  X372VT12-CRETORNO-S                         
+              MOVE  'ERROR AL DEVOLVER CONTROL'                                 
+                                TO  X372VT12-GERROR-S                           
+      *                                                                         
+           END-IF                                                               
+           .                                                                    

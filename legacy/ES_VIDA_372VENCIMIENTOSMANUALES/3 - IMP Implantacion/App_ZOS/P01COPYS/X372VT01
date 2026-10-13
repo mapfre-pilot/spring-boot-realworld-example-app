@@ -1,0 +1,175 @@
+      ******************************************************************        
+      **INV: A372VENM                                                           
+      ******************************************************************        
+      *                      COPY  X372VT01                            *        
+      *                                                                *        
+      *          MANTENIMIENTO TABLA DE RESCATES (FOXPRO)              *        
+      *   --------------------------------------------------------     *        
+      * FECHA DE CREACION:  JUNIO 2012                                 *        
+      ******************************************************************        
+      *                                                                *        
+      * PETICION    : MU-2016-006664       BUSCAR <<606664>            *        
+      * AUTOR       : INDRA                                            *        
+      * FECHA       : MARZO 2016                                       *        
+      * DESCRIPCION : SE GUARDA EN BBDD EL IMPORTE DE CADA COASEGURO   *        
+      *                                                                *        
+      ******************************************************************        
+      *                                                                *        
+      * PETICION    : MU-2016-006673       BUSCAR <<606673>            *        
+      * AUTOR       : INDRA                                            *        
+      * FECHA       : MARZO 2016                                       *        
+      * DESCRIPCION : SE GUARDA EN BBDD EL KDOMICILIO DE LOS           *        
+      *               BENEFICIARIOS                                    *        
+      *                                                                *        
+      ******************************************************************        
+      ******************************************************************        
+      *                                                                *        
+      * MODIFICACION: MU-2017-BDGI-R-V                                 *        
+      * PROGRAMADOR : EVERIS                                           *        
+      * FECHA       : JUNIO   2017                                     *        
+      * DESCRIPCION : SE ELIMINAN LOS ANTIGUOS CAMPOS REFERENTES A     *        
+      *               COASEGURO(CODIGO, PORCENTAJE E IMPORTE) POR      *        
+      *               ESTRUCTURA NUEVA                                 *        
+      * MU-2017-BDGI-R-V-INI                                           *        
+      * MU-2017-BDGI-R-V-FIN                                           *        
+      *                                                                *        
+      ******************************************************************        
+          05 X372VT01.                                                          
+             10 X372VT01-DATOS-CABECERA.                                        
+                15 X372VT01-KSERVICIO-C          PIC X(08).                     
+                15 X372VT01-CCANAL-C             PIC 9(02).                     
+                15 X372VT01-KEMPRESA-C           PIC X(03).                     
+                15 X372VT01-KDEPARTA-C           PIC X(03).                     
+                15 X372VT01-KUSUARIO-C           PIC X(10).                     
+                15 X372VT01-KCADISTR-C           PIC X(01).                     
+                15 X372VT01-KFILTRO-C            PIC X(02).                     
+                15 X372VT01-FILLER-C             PIC X(17).                     
+
+             10 X372VT01-ENTRADA.                                               
+                15 X372VT01-OPERACION-E         PIC X(02).                      
+                15 X372VT01-ANIO-E              PIC 9(04).                      
+                15 X372VT01-KEXPEDIENTE-E       PIC 9(10).                      
+                15 X372VT01-KRAMO-E             PIC X(03).                      
+                15 X372VT01-ANIOPOL-E           PIC X(04).                      
+                15 X372VT01-KPOLIZA-E           PIC X(10).                      
+                15 X372VT01-NSUBPOLIZA-E        PIC S9(04).                     
+                15 X372VT01-KCERTIFICADO-E      PIC 9(06).                      
+                15 X372VT01-KMODALIDAD-E        PIC 9(05).                      
+                15 X372VT01-CCANALCAMP-E        PIC X(02).                      
+                15 X372VT01-CENTIDAD-E          PIC X(04).                      
+                15 X372VT01-FECEFECTO-E         PIC X(08).                      
+                15 X372VT01-KDURACION-E         PIC 9(02).                      
+                15 X372VT01-FECEMISION-E        PIC X(08).                      
+                15 X372VT01-CCARTERA-E          PIC X(03).                      
+                15 X372VT01-SREASEGURO-E        PIC X(01).                      
+                15 X372VT01-REGIONAL-E          PIC X(02).                      
+                15 X372VT01-LUGARENVIO-E        PIC X(02).                      
+                15 X372VT01-KOFICINA-E          PIC X(04).                      
+                15 X372VT01-IPENDIENTE-E        PIC S9(11)V9(2).                
+                15 X372VT01-CTIPOPERS1-E        PIC X(01).                      
+                15 X372VT01-SRESIDENTE1-E       PIC X(01).                      
+                15 X372VT01-NIF1-E              PIC X(10).                      
+                15 X372VT01-KPERSONA1-E         PIC 9(09).                      
+606673          15 X372VT01-KDOMICILIO1-E       PIC 9(9).                       
+                15 X372VT01-IMPCAPITAL-E        PIC S9(11)V9(2).                
+                15 X372VT01-IMPBENEFICIOS-E     PIC S9(11)V9(2).                
+                15 X372VT01-FECPAGOCAPITAL-E   PIC X(08).                       
+                15 X372VT01-IMPANTICIPO-E      PIC S9(11)V9(2).                 
+                15 X372VT01-IMPINTEPEND-E      PIC S9(11)V9(2).                 
+                15 X372VT01-FECVENCIMICAP-E    PIC X(08).                       
+                15 X372VT01-TIPIMPUESTCAP-E    PIC X(02).                       
+                15 X372VT01-IMPRTOINTEGRCAP-E  PIC S9(11)V9(2).                 
+                15 X372VT01-IMPREDPRICAP-E     PIC S9(11)V9(2).                 
+                15 X372VT01-IMPREDTRANCAP-E    PIC S9(11)V9(2).                 
+                15 X372VT01-IMPCOMPENSATORIA-E PIC S9(11)V9(2).                 
+                15 X372VT01-IMPRTONETOCAP-E    PIC S9(11)V9(2).                 
+                15 X372VT01-PORRETCAP-E        PIC S9(3)V9(2).                  
+                15 X372VT01-IMPRETCAP-E        PIC S9(11)V9(2).                 
+                15 X372VT01-IMPLIQCAP-E        PIC S9(11)V9(2).                 
+                15 X372VT01-FECIMPRECAP-E      PIC X(8).                        
+                15 X372VT01-FECPAGRET-E        PIC X(8).                        
+                15 X372VT01-IMPCOMP1-E         PIC S9(11)V9(2).                 
+                15 X372VT01-FECEMICOMP1-E      PIC X(8).                        
+                15 X372VT01-FECPAGCOMP1-E      PIC X(8).                        
+                15 X372VT01-TIPIMPUESTCOMP1-E  PIC X(2).                        
+                15 X372VT01-IMPRTOINTCOMP1-E   PIC S9(11)V9(2).                 
+                15 X372VT01-IMPREDPRICOMP1-E   PIC S9(11)V9(2).                 
+                15 X372VT01-IREDTRANCOMP1-E    PIC S9(11)V9(2).                 
+                15 X372VT01-IRTONETCOMP1-E     PIC S9(11)V9(2).                 
+                15 X372VT01-PORRETCOMP1-E      PIC S9(3)V9(2).                  
+                15 X372VT01-IRETCOMP1-E        PIC S9(11)V9(2).                 
+                15 X372VT01-ILIQCOMP1-E        PIC S9(11)V9(2).                 
+                15 X372VT01-FECIMPRECOMP1-E    PIC X(08).                       
+                15 X372VT01-FECPAGRETCOM1-E    PIC X(08).                       
+                15 X372VT01-IMPCOMP2-E         PIC S9(11)V9(2).                 
+                15 X372VT01-FECEMICOMP2-E      PIC X(8).                        
+                15 X372VT01-FECPAGCOMP2-E      PIC X(8).                        
+                15 X372VT01-TIPIMPUESTCOMP2-E  PIC X(2).                        
+                15 X372VT01-IMPRTOINTCOMP2-E   PIC S9(11)V9(2).                 
+                15 X372VT01-IMPREDPRICOMP2-E   PIC S9(11)V9(2).                 
+                15 X372VT01-IREDTRANCOMP2-E    PIC S9(11)V9(2).                 
+                15 X372VT01-IRTONETCOMP2-E     PIC S9(11)V9(2).                 
+                15 X372VT01-PORRETCOMP2-E      PIC S9(3)V9(2).                  
+                15 X372VT01-IRETCOMP2-E        PIC S9(11)V9(2).                 
+                15 X372VT01-ILIQCOMP2-E        PIC S9(11)V9(2).                 
+                15 X372VT01-FECIMPRECOMP2-E    PIC X(08).                       
+                15 X372VT01-FECPAGRETCOM2-E    PIC X(08).                       
+      * MU-2017-BDGI-R-V-INI                                                    
+      *          15 X372VT01-CODCOA1-E          PIC X(7).                       
+      *          15 X372VT01-PORCOA1-E          PIC S9(3)V9(2).                 
+606664*          15 X372VT01-IMPCOA1-E          PIC S9(11)V9(2).                
+      *          15 X372VT01-CODCOA2-E          PIC X(7).                       
+      *          15 X372VT01-PORCOA2-E          PIC S9(3)V9(2).                 
+606664*          15 X372VT01-IMPCOA2-E          PIC S9(11)V9(2).                
+      *          15 X372VT01-CODCOA3-E          PIC X(7).                       
+      *          15 X372VT01-PORCOA3-E          PIC S9(3)V9(2).                 
+606664*          15 X372VT01-IMPCOA3-E          PIC S9(11)V9(2).                
+      *          15 X372VT01-CODCOA4-E          PIC X(7).                       
+      *          15 X372VT01-PORCOA4-E          PIC S9(3)V9(2).                 
+606664*          15 X372VT01-IMPCOA4-E          PIC S9(11)V9(2).                
+      *          15 X372VT01-CODCOA5-E          PIC X(7).                       
+      *          15 X372VT01-PORCOA5-E          PIC S9(3)V9(2).                 
+606664*          15 X372VT01-IMPCOA5-E          PIC S9(11)V9(2).                
+      *          15 X372VT01-CODCOA6-E          PIC X(7).                       
+      *          15 X372VT01-PORCOA6-E          PIC S9(3)V9(2).                 
+606664*          15 X372VT01-IMPCOA6-E          PIC S9(11)V9(2).                
+                15 X372VT01-COASEGUROS-OCCURS-E   PIC 9(1).                     
+                15 X372VT01-COASEGUROS-E       OCCURS 6.                        
+                   20 X372VT01-CODCOA-E           PIC X(07).                    
+                   20 X372VT01-PORCOA-E           PIC S9(3)V9(6).               
+                   20 X372VT01-IMPCOA-E           PIC S9(11)V9(2).              
+                   20 X372VT01-IMPRTOINTEGRCOA-E  PIC S9(11)V9(2).              
+                   20 X372VT01-IMPREDPRICOA-E     PIC S9(11)V9(2).              
+                   20 X372VT01-IMPREDTRANCOA-E    PIC S9(11)V9(2).              
+                   20 X372VT01-IMPRTONETOCOA-E    PIC S9(11)V9(2).              
+                   20 X372VT01-IMPRETCOA-E        PIC S9(11)V9(2).              
+                   20 X372VT01-IMPCOMPENSATCOA-E  PIC S9(11)V9(2).              
+      * MU-2017-BDGI-R-V-FIN                                                    
+                15 X372VT01-PAGOTOT-E          PIC X(1).                        
+                15 X372VT01-SBDGICAP-E         PIC X(1).                        
+                15 X372VT01-FECBDGICAP-E       PIC X(8).                        
+                15 X372VT01-SBDGICOMP1-E       PIC X(1).                        
+                15 X372VT01-FECBDGICOMP1-E     PIC X(8).                        
+                15 X372VT01-SBDGICOMP2-E       PIC X(1).                        
+                15 X372VT01-FECBDGICOMP2-E     PIC X(8).                        
+                15 X372VT01-GOBSERVACION-E     PIC X(240).                      
+                15 X372VT01-STIPSITUACION-E    PIC X(2).                        
+                15 X372VT01-FANUALACION-E      PIC X(8).                        
+      * MU-2015-041869 NUEVO CAMPO ANIOFISCAL                                   
+                15 X372VT01-ANIOFISCAL-E       PIC 9(04).                       
+606673          15 X372VT01-FECMODIFICA-E      PIC X(8).                        
+      * MU-2017-BDGI-R-V-INI                                                    
+                15 X372VT01-EXIMIDO-E          PIC X(01).                       
+                15 X372VT01-KDOMCOM-E          PIC S9(9)V.                      
+      * MU-2017-BDGI-R-V-FIN                                                    
+
+             10 X372VT01-SALIDA.                                                
+                15 X372VT01-ANIO-S               PIC 9(4).                      
+                15 X372VT01-KEXPEDIENTE-S        PIC 9(10).                     
+                15 X372VT01-IMPREDPRICAP-S       PIC S9(11)V9(2).               
+                15 X372VT01-IMPREDTRANCAP-S      PIC S9(11)V9(2).               
+                15 X372VT01-IMPRETCAP-S          PIC S9(11)V9(2).               
+                15 X372VT01-IMPRTONETOCAP-S      PIC S9(11)V9(2).               
+                15 X372VT01-CRETORNO-S           PIC X(02).                     
+                15 X372VT01-GERROR-S             PIC X(100).                    
+                15 X372VT01-GNOMPROG-S           PIC X(08).                     

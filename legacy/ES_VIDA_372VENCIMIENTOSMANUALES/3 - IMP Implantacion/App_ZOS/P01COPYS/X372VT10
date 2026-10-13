@@ -1,0 +1,66 @@
+      ******************************************************************00010018
+      *                      COPY  X372VT10                            *00020042
+      *                                                                *00030010
+      *         EMISION DE INFORMES Y DOCMENTACION DE INFORMES         *00040036
+      *         VENCIMIENTOS MANUALES (FOXPRO)                         *00041042
+      * -------------------------------------------------------------  *00050049
+      * FECHA DE CREACION:  JUNIO 2012                                 *00051050
+      ******************************************************************00060010
+       05 X372VT10.                                                     00070043
+          07 X372VT10-DATOS-CABECERA.                                   00080043
+             09 X372VT10-KSERVICIO-C        PIC X(08).                  00090043
+             09 X372VT10-CCANAL-C           PIC 9(02).                  00100043
+             09 X372VT10-KEMPRESA-C         PIC X(03).                  00110043
+             09 X372VT10-KDEPARTA-C         PIC X(03).                  00120043
+             09 X372VT10-KUSUARIO-C         PIC X(10).                  00130043
+             09 X372VT10-KCADISTR-C         PIC X(01).                  00140043
+             09 X372VT10-KFILTRO-C          PIC X(02).                  00150043
+             09 X372VT10-FILLER-C           PIC X(17).                  00160043
+                                                                        00170043
+          07 X372VT10-E.                                                00180043
+             09 X372VT10-TIPOEMI-E          PIC X(02).                  00190043
+             09 X372VT10-ANIODESDE-E        PIC 9(04).                  00200043
+             09 X372VT10-ANIOHASTA-E        PIC 9(04).                  00210043
+             09 X372VT10-EXPEDIDESDE-E      PIC 9(10).                  00220043
+             09 X372VT10-EXPEDIHASTA-E      PIC 9(10).                  00230043
+             09 X372VT10-FECEMISION-E       PIC X(08).                  00240044
+             09 X372VT10-FECCALCULO-E       PIC X(08).                  00241048
+             09 X372VT10-FECEMIDESDE-E      PIC X(08).                  00250043
+             09 X372VT10-FECEMIHASTA-E      PIC X(08).                  00251043
+             09 X372VT10-FECPAGDESDE-E      PIC X(08).                  00252043
+             09 X372VT10-FECPAGHASTA-E      PIC X(08).                  00253043
+                                                                        00270043
+          07 X372VT10-S.                                                00280043
+             09 X372VT10-REGISTROS-OCC      OCCURS 50.                  00290043
+                11 X372VT10-ANIO-S             PIC X(4).                00300043
+                11 X372VT10-KEXPEDIENTE-S      PIC X(10).               00310043
+                11 X372VT10-KRAMO-S            PIC X(03).               00320043
+                11 X372VT10-ANIOPOL-S          PIC X(04).               00330043
+                11 X372VT10-KPOLIZA-S          PIC X(10).               00340043
+                11 X372VT10-REGIONAL-S         PIC X(30).               00350043
+                11 X372VT10-KOFICINA-S         PIC X(40).               00360043
+                11 X372VT10-KMODALIDAD-S       PIC X(05).               00370043
+                11 X372VT10-FECDESDELIT-S      PIC X(24).               00380043
+                11 X372VT10-FECLIQUIDALIT-S    PIC X(24).               00390043
+                11 X372VT10-ANOEJERCICIO-S     PIC X(04).               00400046
+                11 X372VT10-IMPPREST-S         PIC X(18).               00410043
+                11 X372VT10-IMPLITERAL-S       PIC X(80).               00420043
+                11 X372VT10-IMPBENEFICIOS-S    PIC X(18).               00430043
+                11 X372VT10-IMPANTICIPO-S      PIC X(18).               00440043
+                11 X372VT10-IMPINTEPENDP-S     PIC X(18).               00450043
+                11 X372VT10-RETCUENTA-S        PIC X(40).               00460045
+                11 X372VT10-IMPRETENC-S        PIC X(18).               00470043
+                11 X372VT10-IMPLIQUID-S        PIC X(18).               00480043
+                11 X372VT10-FECEMISIONLIT-S    PIC X(24).               00490043
+                11 X372VT10-NOMBREAPELL-S      PIC X(42).               00500043
+                11 X372VT10-NIF-S              PIC X(10).               00510043
+                11 X372VT10-DOMICILIO-S        PIC X(70).               00520043
+                11 X372VT10-CODPOSTAL-S        PIC X(05).               00530043
+                11 X372VT10-POBLACION-S        PIC X(30).               00540043
+                11 X372VT10-PROVINCIA-S        PIC X(21).               00550043
+                11 X372VT10-TIPOEMSION-S       PIC X(02).               00560043
+                11 X372VT10-TIPIMPUEST-S       PIC X(02).               00570043
+                11 X372VT10-TIPOCOMPL-S        PIC X(01).               00580043
+             09 X372VT10-CRETORNO-S           PIC X(2).                 00590043
+             09 X372VT10-GERROR-S             PIC X(100).               00600047
+             09 X372VT10-GNOMPROG-S           PIC X(8).                 00610043

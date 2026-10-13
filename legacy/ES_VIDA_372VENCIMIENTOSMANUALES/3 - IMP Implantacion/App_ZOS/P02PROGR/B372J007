@@ -1,0 +1,553 @@
+       IDENTIFICATION DIVISION.                                                 
+      *                                                                         
+        PROGRAM-ID.                                                             
+                   B372J007.                                                    
+      ******************************************************************        
+      * EVERIS                                                         *        
+      * APLICACION ...: RESCATES Y VENCIMIENTOS                        *        
+      * DATE-WRITTEN..:  JUlIO 2012                                    *        
+      ******************************************************************        
+      *                                                                *        
+      *   BREVE DESCRIPCION DEL PROGRAMA :MODULO QUE PERMITE LA CARGA  *        
+      *   DE FICHEROS PARA PERMITIR SU ALTA O ACTULIZACION             *        
+      *   DE EXPEDIENTES                                               *        
+      *                                                                *        
+      *   PROGRAMA LANZADOR DE PRUEBAS :B372VT05                       *        
+      *                                                                *        
+      *   RECIBE COMO ENTRADA: FICHERO DE ENTRADA                      *        
+      *                                                                *        
+      ******************************************************************        
+      * PARÁMETROS:                                                    *        
+      *                                                                *        
+      *   - SYS001: FICHERO DE ENTRADA 1.                              *        
+      *             FICHERO DE CARGA DE DATOS DE COMPLEMENTARIO        *        
+      *                                                                *        
+      *   - SYS003: FICHERO DE SALIDA 2.                               *        
+      *             FICHERO DE INFORME SALIDA                          *        
+      *================================================================*        
+      *                                                                         
+       ENVIRONMENT DIVISION.                                                    
+      *====================>                                                    
+        CONFIGURATION SECTION.                                                  
+         SPECIAL-NAMES. DECIMAL-POINT IS COMMA.                                 
+      *                                                                         
+       INPUT-OUTPUT SECTION.                                                    
+         FILE-CONTROL.                                                          
+      *                                                                         
+             SELECT FICH-ENT        ASSIGN TO SYS001                            
+             ORGANIZATION IS SEQUENTIAL                                         
+             ACCESS MODE  IS SEQUENTIAL.                                        
+
+             SELECT FICH-SAL        ASSIGN TO SYS002                            
+             ORGANIZATION IS SEQUENTIAL                                         
+             ACCESS MODE  IS SEQUENTIAL.                                        
+      *                                                                         
+
+      *                                                                         
+       DATA DIVISION.                                                           
+      *=============>                                                           
+        FILE SECTION.                                                           
+      *->                                                                       
+        FD   FICH-ENT                                                           
+             LABEL RECORD STANDARD                                              
+             RECORDING MODE IS F                                                
+             BLOCK CONTAINS 0 RECORDS.                                          
+        01   RTO-FICH-ENT        PIC X(350).                                    
+      *->                                                                       
+        FD   FICH-SAL                                                           
+             RECORDING MODE  F                                                  
+             LABEL RECORDS  ARE STANDARD.                                       
+        01   RTO-FICH-SAL        PIC X(140).                                    
+
+      *->                                                                       
+       WORKING-STORAGE SECTION.                                                 
+      *->                                                                       
+       01  SW-VARS-WORKING.                                                     
+          03 FILLER              PIC X(17)  VALUE                               
+               'INICIO DE WORKING'.                                             
+      *->                                                                       
+      *-> SWITCHS                                                               
+      *->                                                                       
+          03 SWITCHES.                                                          
+             05 SW-FIN-PROCESO       PIC X(01)  VALUE 'N'.                      
+                88 FIN-PROCESO                  VALUE 'S'.                      
+                88 NO-FIN-PROCESO               VALUE 'N'.                      
+
+             05 SW-ESCRITURA         PIC XX     VALUE '00'.                     
+                88 NO-ESCRITURA                 VALUE '00'.                     
+                88 SI-ESCRITURA                 VALUE '01'.                     
+
+             05 SW-ERROR-GRAVE       PIC X(01)  VALUE 'N'.                      
+                88 ERROR-GRAVE                  VALUE 'S'.                      
+                88 NO-ERROR                     VALUE 'N'.                      
+
+             05 SW-FICH-ENT          PIC 9(1)   VALUE 0.                        
+                88 SW-FIN-FICH-ENT              VALUE 1.                        
+                88 SW-INI-FICH-ENT              VALUE 0.                        
+
+      *->                                                                       
+      *-> CONSTANTE                                                             
+      *->                                                                       
+          03 WS-ZEROES               PIC 9(1)V9(2) VALUE 0,00.                  
+
+      *->                                                                       
+      *-> FECHA ACTUAL                                                          
+      *->                                                                       
+          03 WS-FECHA-ACTUAL.                                                   
+             05 WS-FECHA.                                                       
+                07 WS-ANO                   PIC 9(04).                          
+                07 WS-MES                   PIC 9(02).                          
+                07 WS-DIA                   PIC 9(02).                          
+             05 WS-TIEMPO.                                                      
+                07 WS-HORA                  PIC 9(02).                          
+                07 WS-MINUTOS               PIC 9(02).                          
+                07 WS-SEGUNDOS              PIC 9(02).                          
+                07 WS-CENTESIMAS            PIC 9(02).                          
+      *->                                                                       
+      *-> INDICES                                                               
+      *->                                                                       
+
+      *->                                                                       
+      *-> VARIABLES.                                                            
+      *->                                                                       
+      **** CONTADORES                                                           
+            03 CT-LINEA                  PIC 9(3)   VALUE ZEROS.                
+            03 AUX-LINEA                 PIC 9(3)   VALUE ZEROS.                
+            03 CT-PAGE                   PIC 9(4)   VALUE ZEROS.                
+
+      **** CABECERAS FICH-INF                                                   
+
+           03 CAB-INTRO.                                                        
+              05 FILLER         PIC X(01)  VALUE SPACES.                        
+              05 FILLER         PIC X      VALUE '['.                           
+              05 CB-INTRO-DIA   PIC 9(2)   VALUE  ZEROS.                        
+              05 FILLER         PIC X      VALUE '-'.                           
+              05 CB-INTRO-MES   PIC 9(2)   VALUE  ZEROS.                        
+              05 FILLER         PIC X      VALUE '-'.                           
+              05 CB-INTRO-ANO   PIC 9(4)   VALUE  ZEROS.                        
+              05 FILLER         PIC X      VALUE ']'.                           
+              05 FILLER         PIC X(99)  VALUE SPACES.                        
+              05 FILLER         PIC X(9)   VALUE '   PAG.: '.                   
+              05 CB-INTRO-PAG   PIC ZZZ.                                        
+
+           03 CAB-INTRO-1.                                                      
+              05 FILLER       PIC X(01)  VALUE SPACES.                          
+              05 FILLER       PIC X(16)  VALUE 'MAPFRE VIDA     '.              
+
+           03 CAB-INTRO-2.                                                      
+              05 FILLER       PIC X(01)  VALUE SPACES.                          
+              05 FILLER       PIC X(16)  VALUE 'VENCIMIENTOS    '.              
+
+
+           03 CAB-TITULO-1.                                                     
+              05 FILLER         PIC X(43)  VALUE SPACES.                        
+              05 FILLER         PIC X(25)                                       
+                  VALUE 'COMPLEMENTARIOS RECIBIDOS'.                            
+
+           03 CAB-TITULO-1-SUBRAYADO.                                           
+              05 FILLER       PIC X(33)  VALUE SPACES.                          
+              05 FILLER       PIC X(41)  VALUE ALL '_'.                         
+
+           03 CAB-TITULO-1-SUBTITULO.                                           
+              05 FILLER       PIC X(33)  VALUE SPACES.                          
+              05 FILLER       PIC X(15)  VALUE '(Ordenado por'.                 
+              05 FILLER       PIC X(09)  VALUE 'póliza + '.                     
+              05 FILLER       PIC X(18)  VALUE 'año + Expediente) '.            
+
+           03 CAB-TITULO-2.                                                     
+              05 FILLER       PIC X(10)  VALUE SPACES.                          
+              05 FILLER       PIC X(06)  VALUE 'Póliza'.                        
+              05 FILLER       PIC X(05)  VALUE SPACES.                          
+              05 FILLER       PIC X(03)  VALUE 'Año'.                           
+              05 FILLER       PIC X(02)  VALUE SPACES.                          
+              05 FILLER       PIC X(06)  VALUE 'Expte '.                        
+              05 FILLER       PIC X(05)  VALUE SPACES.                          
+              05 FILLER       PIC X(06)  VALUE 'F.vto.'.                        
+              05 FILLER       PIC X(05)  VALUE SPACES.                          
+              05 FILLER       PIC X(10)  VALUE '1er compl.'.                    
+              05 FILLER       PIC X(12)  VALUE SPACES.                          
+              05 FILLER       PIC X(10)  VALUE '2er compl.'.                    
+              05 FILLER       PIC X(12)  VALUE SPACES.                          
+              05 FILLER       PIC X(05)  VALUE 'Error'.                         
+
+           03 CAB-TITULO-2-SUBRAYADO.                                           
+              05 FILLER       PIC X(10)  VALUE SPACES.                          
+              05 FILLER       PIC X(10)  VALUE ALL '_'.                         
+              05 FILLER       PIC X(01)  VALUE SPACES.                          
+              05 FILLER       PIC X(4)  VALUE ALL '_'.                          
+              05 FILLER       PIC X(1)   VALUE SPACES.                          
+              05 FILLER       PIC X(10)  VALUE ALL '_'.                         
+              05 FILLER       PIC X(1)   VALUE SPACES.                          
+              05 FILLER       PIC X(10)  VALUE ALL '_'.                         
+              05 FILLER       PIC X(1)   VALUE SPACES.                          
+              05 FILLER       PIC X(21)  VALUE ALL '_'.                         
+              05 FILLER       PIC X(1)   VALUE SPACES.                          
+              05 FILLER       PIC X(21)  VALUE ALL '_'.                         
+              05 FILLER       PIC X(1)   VALUE SPACES.                          
+              05 FILLER       PIC X(21)  VALUE ALL '_'.                         
+              05 FILLER       PIC X(1)   VALUE SPACES.                          
+      *                                                                         
+           03 LIN-DETALLE.                                                      
+              05 FILLER           PIC X(10)  VALUE SPACES.                      
+              05 DE-POLIZA        PIC X(10).                                    
+              05 FILLER           PIC X(01)  VALUE SPACES.                      
+              05 DE-ANIO          PIC X(04).                                    
+              05 FILLER           PIC X(01)  VALUE SPACES.                      
+              05 DE-EXPED         PIC X(10).                                    
+              05 FILLER           PIC X(01)  VALUE SPACES.                      
+              05 DE-FECVEN        PIC X(10).                                    
+              05 FILLER           PIC X(04)  VALUE SPACES.                      
+              05 DE-COMPL1        PIC  ZZZ.ZZZ.ZZZ.ZZ9,99  VALUE ZEROS.         
+              05 FILLER           PIC X(04)  VALUE SPACES.                      
+              05 DE-COMPL2        PIC  ZZZ.ZZZ.ZZZ.ZZ9,99  VALUE ZEROS.         
+              05 FILLER           PIC X(04)  VALUE SPACES.                      
+              05 DE-ERROR         PIC  ZZZ.ZZZ.ZZZ.ZZ9,99  VALUE ZEROS.         
+
+           03 LIN-DETALLE-TOTAL.                                                
+              05 FILLER          PIC X(51)  VALUE SPACES.                       
+              05 DE-COMPL1-TO    PIC  ZZZ.ZZZ.ZZZ.ZZ9,99  VALUE ZEROS.          
+              05 FILLER          PIC X(04)  VALUE SPACES.                       
+              05 DE-COMPL2-TO    PIC  ZZZ.ZZZ.ZZZ.ZZ9,99  VALUE ZEROS.          
+              05 FILLER          PIC X(04)  VALUE SPACES.                       
+              05 DE-ERROR-TO     PIC  ZZZ.ZZZ.ZZZ.ZZ9,99  VALUE ZEROS.          
+
+           03 LIN-NUMERO-TOTAL.                                                 
+              05 FILLER          PIC X(48)  VALUE SPACES.                       
+              05 FILLER          PIC X(06)  VALUE 'Total '.                     
+              05 DE-NUM-COMPL1   PIC ZZ9.                                       
+              05 FILLER          PIC X(13)  VALUE SPACES.                       
+              05 FILLER          PIC X(06)  VALUE 'Total '.                     
+              05 DE-NUM-COMPL2   PIC ZZ9.                                       
+              05 FILLER          PIC X(13)  VALUE SPACES.                       
+              05 FILLER          PIC X(06)  VALUE 'Total '.                     
+              05 DE-NUM-ERROR    PIC ZZ9.                                       
+
+           03 LIN-DETALLE-TOTAL-SUBRAYADO.                                      
+              05 FILLER       PIC X(48)  VALUE SPACES.                          
+              05 FILLER       PIC X(21)  VALUE ALL '_'.                         
+              05 FILLER       PIC X(1)   VALUE SPACES.                          
+              05 FILLER       PIC X(21)  VALUE ALL '_'.                         
+              05 FILLER       PIC X(1)   VALUE SPACES.                          
+              05 FILLER       PIC X(21)  VALUE ALL '_'.                         
+
+           03 FECHA-AUX.                                                        
+              05 DIA-AUX      PIC X(02).                                        
+              05 FILLER       PIC X(01)  VALUE ALL '/'.                         
+              05 MES-AUX      PIC X(02).                                        
+              05 FILLER       PIC X(01)  VALUE ALL '/'.                         
+              05 ANIO-AUX     PIC X(04).                                        
+              05 FILLER       PIC X(01)  VALUE ALL '/'.                         
+      *                                                                         
+           03 TOTALES.                                                          
+              05 COMP1-TO        PIC S9(11)V9(2).                               
+              05 COMP2-TO        PIC S9(11)V9(2).                               
+              05 ERROR-TO        PIC S9(11)V9(2).                               
+              05 CT-COMPL1       PIC 9(03).                                     
+              05 CT-COMPL2       PIC 9(03).                                     
+              05 CT-ERRORES      PIC 9(03).                                     
+
+
+           03 LINEA-BLANCO.                                                     
+              05 FILLER       PIC X(64)  VALUE SPACES.                          
+
+
+      *->                                                                       
+      *-> LLAMADAS                                                              
+      *->                                                                       
+
+       01 WS-MODULOS.                                                           
+          03 B372N007              PIC X(08) VALUE 'B372N007'.                  
+
+
+       01 WS-COPYS.                                                             
+
+      *** ESTRUCTURA DEL FICHERO DE ENTRADA                                     
+          03 WS-REG-ENT.                                                        
+             05 WS-POLIZA-S         PIC X(10).                                  
+             05 WS-ANIO-S           PIC 9(04).                                  
+             05 WS-KEXPEDIENTE-S    PIC 9(10).                                  
+             05 WS-FECVENCIMICAP-S  PIC X(08).                                  
+             05 WS-IMPORTE-S        PIC 9(11)V9(2).                             
+             05 WS-TIPOIMPORTE-S    PIC X(01).                                  
+
+      *** ESTRUCTURA DEL FICHERO DE SALIDA DE ALTAS                             
+          03 WS-REG-MODIF.                                                      
+             05  WS-FECHA-ESC      PIC X(08).                                   
+             05  FILLER            PIC X(13) VALUE 'EXPEDT LEIDOS'.             
+             05  WS-LEIDOS         PIC 9(03).                                   
+             05  FILLER            PIC X(18) VALUE 'EXPEDT MODIFICADOS'.        
+             05  WS-MODIF          PIC 9(03).                                   
+             05  FILLER            PIC X(17) VALUE 'EXPEDT DE ERRORES'.         
+             05  WS-ERRORES        PIC 9(03).                                   
+
+      * COPYS DE MODULOS                                                        
+          03 WS-X372N007.                                                       
+             COPY X372N007.                                                     
+      *                                                                         
+       01  LT-FIN-WORKING.                                                      
+          03 FILLER                 PIC X(16)  VALUE                            
+             'FINAL DE WORKING'.                                                
+
+
+       PROCEDURE DIVISION.                                                      
+      *==================>                                                      
+      *                                                                         
+       PRINCIPAL  SECTION.                                                      
+      *====================                                                     
+      *                                                                         
+           PERFORM 1000-INICIO                                                  
+
+           PERFORM 2000-PROCESO                                                 
+
+           PERFORM 5000-FINAL                                                   
+      *                                                                         
+           CONTINUE.                                                            
+
+       F-PRINCIPAL.                                                             
+
+           GOBACK.                                                              
+
+      ******************************************************************        
+       1000-INICIO.                                                             
+      ******************************************************************        
+
+           PERFORM 1100-ABRIR-FICHEROS                                          
+           PERFORM 1200-INICIAR-VARIABLES                                       
+            .                                                                   
+
+      ******************************************************************        
+      * 1100-ABRIR-FICHEROS.                                           *        
+      ******************************************************************        
+
+      * ABRIMOS LOS FICHEROS TANTO EL DE ENTRADA COMO EL DE SALIDA              
+       1100-ABRIR-FICHEROS.                                                     
+
+           OPEN INPUT   FICH-ENT                                                
+           SET SW-INI-FICH-ENT TO TRUE                                          
+           SET NO-ERROR        TO TRUE                                          
+           SET SI-ESCRITURA    TO TRUE                                          
+
+           OPEN OUTPUT  FICH-SAL.                                               
+
+      ******************************************************************        
+      * 1200-INICIAR-VARIABLES.                                        *        
+      ******************************************************************        
+
+      * INICIALIZAOMS LAS VARIABLES                                             
+       1200-INICIAR-VARIABLES.                                                  
+
+           INITIALIZE WS-COPYS                                                  
+               REPLACING ALPHANUMERIC DATA BY SPACES                            
+                              NUMERIC DATA BY ZEROS                             
+
+           MOVE FUNCTION CURRENT-DATE TO WS-FECHA-ACTUAL                        
+
+           MOVE WS-ANO                   TO CB-INTRO-ANO                        
+           MOVE WS-MES                   TO CB-INTRO-MES                        
+           MOVE WS-DIA                   TO CB-INTRO-DIA                        
+
+           INITIALIZE TOTALES                                                   
+           INITIALIZE LIN-DETALLE-TOTAL                                         
+
+           MOVE 0 TO CT-COMPL1                                                  
+           MOVE 0 TO CT-COMPL2                                                  
+           MOVE 0 TO CT-ERRORES                                                 
+
+           MOVE 0 TO CT-COMPL1                                                  
+           MOVE 0 TO CT-COMPL2                                                  
+           MOVE 0 TO CT-ERRORES                                                 
+
+           MOVE 0 TO CT-LINEA                                                   
+           MOVE 1 TO CT-PAGE                                                    
+           .                                                                    
+
+      ******************************************************************        
+       2000-PROCESO.                                                            
+      ******************************************************************        
+
+      * INICIALIZAMOS EL PROCESO CON LA LECTURA DEL FICHERO                     
+           PERFORM 2001-LEER-REGISTRO                                           
+
+           PERFORM UNTIL SW-FIN-FICH-ENT                                        
+              PERFORM 4000-ESCRIBIR-INFORME                                     
+              PERFORM 2001-LEER-REGISTRO                                        
+
+           END-PERFORM                                                          
+
+            .                                                                   
+
+      ******************************************************************        
+       2001-LEER-REGISTRO.                                                      
+      ******************************************************************        
+
+      * LECTURA DEL FICHERO AÑADIENDO UNO AL CONTADOR DE LECTURA                
+           READ FICH-ENT INTO WS-REG-ENT                                        
+             AT END                                                             
+                SET SW-FIN-FICH-ENT TO TRUE                                     
+           END-READ                                                             
+              .                                                                 
+
+
+      ******************************************************************        
+       4000-ESCRIBIR-INFORME.                                                   
+      ******************************************************************        
+
+           INITIALIZE LIN-DETALLE                                               
+
+           INITIALIZE FECHA-AUX                                                 
+           MOVE WS-FECVENCIMICAP-S(1:4)    TO ANIO-AUX                          
+           MOVE WS-FECVENCIMICAP-S(5:2)    TO MES-AUX                           
+           MOVE WS-FECVENCIMICAP-S(7:2)    TO DIA-AUX                           
+
+           MOVE FECHA-AUX                  TO DE-FECVEN                         
+
+
+           PERFORM 4100-ESCRIBIR-LINEA                                          
+            .                                                                   
+
+      ******************************************************************        
+       4100-ESCRIBIR-LINEA.                                                     
+      ******************************************************************        
+
+           IF CT-LINEA EQUAL 0 OR CT-LINEA > 58                                 
+              MOVE 0 TO CT-LINEA                                                
+              PERFORM 4110-IMPRIMIR-INTRO                                       
+              ADD 1 TO CT-PAGE                                                  
+           END-IF                                                               
+
+           MOVE WS-POLIZA-S            TO DE-POLIZA                             
+           MOVE WS-ANIO-S              TO DE-ANIO                               
+           MOVE WS-KEXPEDIENTE-S       TO DE-EXPED                              
+
+           EVALUATE WS-TIPOIMPORTE-S                                            
+
+              WHEN '1'                                                          
+
+                 MOVE WS-IMPORTE-S           TO DE-COMPL1                       
+                 MOVE WS-ZEROES              TO DE-COMPL2                       
+                 MOVE WS-ZEROES              TO DE-ERROR                        
+                 ADD 1                       TO CT-COMPL1                       
+                 ADD WS-IMPORTE-S            TO COMP1-TO                        
+
+              WHEN '2'                                                          
+
+                 MOVE WS-ZEROES              TO DE-COMPL1                       
+                 MOVE WS-IMPORTE-S           TO DE-COMPL2                       
+                 MOVE WS-ZEROES              TO DE-ERROR                        
+                 ADD 1                       TO CT-COMPL2                       
+                 ADD WS-IMPORTE-S            TO COMP2-TO                        
+
+              WHEN 'A'                                                          
+
+                 MOVE WS-IMPORTE-S           TO DE-COMPL1                       
+                 MOVE WS-IMPORTE-S           TO DE-COMPL2                       
+                 MOVE WS-ZEROES              TO DE-ERROR                        
+                 ADD 1                       TO CT-COMPL1                       
+                 ADD 1                       TO CT-COMPL2                       
+                 ADD WS-IMPORTE-S            TO COMP1-TO                        
+                 ADD WS-IMPORTE-S            TO COMP2-TO                        
+
+              WHEN 'E'                                                          
+
+                 MOVE WS-ZEROES              TO DE-COMPL1                       
+                 MOVE WS-ZEROES              TO DE-COMPL2                       
+                 MOVE WS-IMPORTE-S           TO DE-ERROR                        
+                 ADD 1                       TO CT-ERRORES                      
+                 ADD WS-IMPORTE-S            TO ERROR-TO                        
+      *D*                                                                       
+      *    DISPLAY 'CT-ERRORES         ' CT-ERRORES                             
+      *    DISPLAY 'CT-COMPL2          ' CT-COMPL2                              
+      *    DISPLAY 'DE-ERROR           ' DE-ERROR                               
+      *    DISPLAY 'WS-ZEROES          ' WS-ZEROES                              
+      *F*                                                                       
+
+           END-EVALUATE                                                         
+
+      * IMPRIMIR-LINEA-DETALLE.                                                 
+           MOVE LIN-DETALLE TO RTO-FICH-SAL                                     
+           WRITE RTO-FICH-SAL AFTER ADVANCING 1 LINE                            
+           ADD   1  TO  CT-LINEA                                                
+                       .                                                        
+
+      ******************************************************************        
+       4110-IMPRIMIR-INTRO.                                                     
+      ******************************************************************        
+
+           MOVE CT-PAGE TO CB-INTRO-PAG.                                        
+
+           MOVE CAB-INTRO   TO RTO-FICH-SAL.                                    
+           WRITE RTO-FICH-SAL AFTER ADVANCING 1 LINES.                          
+           ADD 1 TO CT-LINEA.                                                   
+
+           MOVE CAB-INTRO-1 TO RTO-FICH-SAL.                                    
+           WRITE RTO-FICH-SAL AFTER ADVANCING 1 LINES.                          
+           ADD 1 TO CT-LINEA.                                                   
+
+           MOVE CAB-INTRO-2 TO RTO-FICH-SAL.                                    
+           WRITE RTO-FICH-SAL AFTER ADVANCING 1 LINES.                          
+           ADD 1 TO CT-LINEA.                                                   
+
+           MOVE CAB-TITULO-1 TO RTO-FICH-SAL.                                   
+           WRITE RTO-FICH-SAL AFTER ADVANCING 1 LINES.                          
+           ADD 1 TO CT-LINEA.                                                   
+
+           MOVE CAB-TITULO-1-SUBRAYADO TO RTO-FICH-SAL.                         
+           WRITE RTO-FICH-SAL AFTER ADVANCING 1 LINES.                          
+           ADD 1 TO CT-LINEA.                                                   
+
+           MOVE CAB-TITULO-1-SUBTITULO TO RTO-FICH-SAL.                         
+           WRITE RTO-FICH-SAL AFTER ADVANCING 1 LINES.                          
+           ADD 1 TO CT-LINEA.                                                   
+
+           MOVE LINEA-BLANCO TO RTO-FICH-SAL.                                   
+           WRITE RTO-FICH-SAL AFTER ADVANCING 1 LINES.                          
+           ADD 1 TO CT-LINEA.                                                   
+
+           MOVE CAB-TITULO-2 TO RTO-FICH-SAL.                                   
+           WRITE RTO-FICH-SAL AFTER ADVANCING 1 LINES.                          
+           ADD 1 TO CT-LINEA.                                                   
+
+           MOVE CAB-TITULO-2-SUBRAYADO TO RTO-FICH-SAL.                         
+           WRITE RTO-FICH-SAL AFTER ADVANCING 1 LINES.                          
+           ADD 1 TO CT-LINEA.                                                   
+
+           MOVE LINEA-BLANCO TO RTO-FICH-SAL.                                   
+           WRITE RTO-FICH-SAL AFTER ADVANCING 1 LINES.                          
+           ADD 1 TO CT-LINEA.                                                   
+
+      ******************************************************************        
+       4200-MOVER-TOTALES.                                                      
+      ******************************************************************        
+      * MOVEMOS LOS TOTALES A LAS MASCARAS                                      
+           MOVE COMP1-TO       TO DE-COMPL1-TO                                  
+           MOVE COMP2-TO       TO DE-COMPL2-TO                                  
+           MOVE ERROR-TO       TO DE-ERROR-TO                                   
+
+           MOVE CT-COMPL1      TO DE-NUM-COMPL1                                 
+           MOVE CT-COMPL2      TO DE-NUM-COMPL2                                 
+           MOVE CT-ERRORES     TO DE-NUM-ERROR                                  
+              .                                                                 
+
+      ******************************************************************        
+       4300-IMPRIMIR-TOTALES.                                                   
+      ******************************************************************        
+           MOVE LIN-DETALLE-TOTAL-SUBRAYADO TO RTO-FICH-SAL.                    
+           WRITE RTO-FICH-SAL AFTER ADVANCING 1 LINES.                          
+           ADD 1 TO CT-LINEA.                                                   
+           MOVE LIN-DETALLE-TOTAL TO RTO-FICH-SAL.                              
+           WRITE RTO-FICH-SAL AFTER ADVANCING 1 LINES.                          
+           ADD 1 TO CT-LINEA.                                                   
+           MOVE LIN-NUMERO-TOTAL  TO RTO-FICH-SAL.                              
+           WRITE RTO-FICH-SAL AFTER ADVANCING 1 LINES.                          
+           ADD 1 TO CT-LINEA.                                                   
+
+      ******************************************************************        
+       5000-FINAL.                                                              
+      ******************************************************************        
+
+           PERFORM 4200-MOVER-TOTALES                                           
+           PERFORM 4300-IMPRIMIR-TOTALES                                        
+
+      * CIERRE DE LOS FICHEROS UTILIZADOS                                       
+           CLOSE FICH-ENT                                                       
+           CLOSE FICH-SAL.                                                      

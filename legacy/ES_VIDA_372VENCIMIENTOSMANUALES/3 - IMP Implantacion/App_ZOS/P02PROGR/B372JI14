@@ -1,0 +1,2714 @@
+      *RETRIEVAL                                                                
+      ******************************************************************        
+       IDENTIFICATION DIVISION.                                                 
+       PROGRAM-ID. B372JI14.                                                    
+      ******************************************************************        
+      **INV: A372VENM                                                           
+      ******************************************************************        
+      *PROGRAMADOR: EVERIS.                                            *        
+      *DATE-WRITTEN.  JUNIO 2012.                                      *        
+      ******************************************************************        
+      *                                                                *        
+      *   DESCRIPCION DEL PROGRAMA :                                   *        
+      *      M”DULO QUE SE ENCARGA DE GENERAR EL FICHERO DE "DATOS DE  *        
+      *      IDENTIFICACI”N DE TERCEROS" Y EL DE "DATOS AUXILIARES     *        
+      *      PARA EL MODELO 190"                                       *        
+      *                                                                *        
+      *****************************************************************         
+      ******************************************************************        
+      *                                                                *        
+      * PROGRAMADOR : EVERIS                                           *        
+      * FECHA       : OCTUBRE 2017                                     *        
+      * DESCRIPCION : ENVIO A BDGI DE RESCATES Y VENCIMIENTOS          *        
+      *****************************************************************         
+       ENVIRONMENT DIVISION.                                                    
+        CONFIGURATION SECTION.                                                  
+        SPECIAL-NAMES.                                                          
+           DECIMAL-POINT IS COMMA.                                              
+       INPUT-OUTPUT SECTION.                                                    
+       FILE-CONTROL.                                                            
+      *                                                                         
+      * DECLARACION FICHERO DE ENTRADA DE LA TBALA DATOS-ECON                   
+           SELECT DATOS-ECON                                                    
+           ASSIGN TO SYS001                                                     
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL                                            
+           FILE STATUS IS ST-FICHECO.                                           
+
+
+      * DECLARACION FICHERO DE SALIDA DONDE TENEMOS LA INFORMACI”N PARA         
+      * LA IDENTIFICACI”N DE TERCEROS Y LOS DATOS AUXILIARES PARA EL            
+      * MODELO 190                                                              
+           SELECT FIC-D3                                                        
+           ASSIGN TO SYS012                                                     
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL.                                           
+
+      * DECLARACION FICHERO DE SALIDA DONDE TENEMOS LA INFORMACI”N PARA         
+      * LA IDENTIFICACI”N DE TERCEROS Y LOS DATOS AUXILIARES PARA EL            
+      * MODELO 190                                                              
+           SELECT FIC-M190                                                      
+           ASSIGN TO SYS013                                                     
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL.                                           
+
+      * FICHERO ERRORES VALIDACION                                              
+           SELECT ERRORVAL                                                      
+           ASSIGN TO ERRORVAL                                                   
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL.                                           
+      *                                                                         
+      ******************************************************************        
+      *                  DATA DIVISION                                 *        
+      ******************************************************************        
+       DATA DIVISION.                                                           
+       FILE SECTION.                                                            
+
+      *       ∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑                                          
+      *       ∑∑∑FICHEROS DE ENTRADA∑∑                                          
+      *       ∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑                                          
+      * DECLARACION FICHERO DE ENTRADA  DATOS-ECON                              
+       FD DATOS-ECON                                                            
+             BLOCK CONTAINS 0 RECORDS                                           
+             RECORDING MODE IS F                                                
+             LABEL RECORDS ARE STANDARD.                                        
+       01 REGOUT01 PIC X(451).                                                  
+
+      *       ∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑                                          
+      *       ∑∑∑FICHEROS DE SALIDA∑∑∑                                          
+      *       ∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑∑                                          
+      * DECLARACION ESTRUCTURA FICHEROS DE SALIDA DE LA BDGI:                   
+       FD FIC-D3                                                                
+             BLOCK CONTAINS 0 RECORDS                                           
+             RECORDING MODE IS F                                                
+             LABEL RECORDS ARE STANDARD.                                        
+       01 REGOUT12 PIC X(534).                                                  
+
+       FD FIC-M190                                                              
+             BLOCK CONTAINS 0 RECORDS                                           
+             RECORDING MODE IS F                                                
+             LABEL RECORDS ARE STANDARD.                                        
+       01 REGOUT13 PIC X(192).                                                  
+
+      * FICHERO ERRORES VALIDACION                                              
+       FD ERRORVAL                                                              
+           BLOCK CONTAINS 0 RECORDS                                             
+           RECORDING MODE IS F                                                  
+           LABEL RECORDS ARE STANDARD.                                          
+       01 REG-ERRORVAL                 PIC X(266).                              
+
+      ******************************************************************        
+      *                  WORKING-STORAGE SECTION                       *        
+      ******************************************************************        
+       WORKING-STORAGE SECTION.                                                 
+
+      * LITERALES                                                               
+        01 LT-LITERALES.                                                        
+           03 LT-SI-COASEGUR                 PIC X(02) VALUE '42'.              
+           03 LT-NO-COASEGUR                 PIC X(02) VALUE '12'.              
+           03 LT-OPER-NO-COA                 PIC X(02) VALUE 'VN'.              
+           03 LT-TIPO-TERCERO-FISICA         PIC X(01) VALUE 'F'.               
+           03 LT-TIPO-TERCERO-JURIDICA       PIC X(01) VALUE 'J'.               
+
+      ***       CANAL DE COMERCIALIZACION                                       
+           03 CN-CANAL-COMERCIALIZACION.                                        
+              05 CN-CANAL-AGENCIAL           PIC 9(05) VALUE 1.                 
+              05 CN-CANAL-BANCA-SEGURO       PIC 9(05) VALUE 20.                
+              05 CN-CANAL-MUSINI             PIC 9(05) VALUE 30.                
+              05 CN-CANAL-MUSINI-VIDA        PIC 9(05) VALUE 40.                
+              05 CN-CANAL-AGENCIAL-MV        PIC X(02) VALUE 'MV'.              
+              05 CN-CANAL-BANCA-SEGURO-CM    PIC X(02) VALUE 'CM'.              
+              05 CN-CANAL-MUSINI-M0          PIC X(02) VALUE 'M0'.              
+           03 LT-MODO-DAT-FISC-PER           PIC X(02) VALUE 'C3'.              
+           03 LT-MODO-ASCEN-DESCEND-M004     PIC X(02) VALUE 'C1'.              
+           03 LT-NUM-OCCURS-MAIL             PIC 9(02) VALUE 50.                
+           03 LT-NUM-OCCURS-PDA-M004         PIC 9(02) VALUE 50.                
+
+           03 LT-RETURN-OK                   PIC X(05) VALUE '00000'.           
+           03 LT-ERROR-NOT-FND               PIC X(05) VALUE '00003'.           
+
+           03 LT-SIN-DISCAPACIDAD            PIC X(02) VALUE '00'.              
+           03 LT-DISC-SUP-33-INF-65          PIC X(02) VALUE '33'.              
+           03 LT-DISC-SUP-65                 PIC X(02) VALUE '65'.              
+      ***        SITUACION 1 : SOLTERO CON HIJOS                                
+           03 CN-SITUACION-01                PIC X(02) VALUE '01'.              
+      ***        SITACION  2 : CASADO  ....                                     
+           03 CN-SITUACION-02                PIC X(02) VALUE '02'.              
+      ***        SITACION  3 : SOLTERO ....                                     
+           03 CN-SITUACION-03                PIC X(02) VALUE '03'.              
+
+           03 LT-DESCENDIENTE                PIC X(02) VALUE 'DE'.              
+           03 LT-VALUE-SI                    PIC X(01) VALUE 'S'.               
+           03 WS-AUXNACIMIEN                 PIC X(8) VALUE '00000101'.         
+
+        01 CN-CONSTANTES.                                                       
+           03 CN-INDICES.                                                       
+              05 CN-MAX                      PIC 9(02) VALUE 10.                
+
+           03 CN-EDADES.                                                        
+              05 CN-EDAD-3                   PIC 9(03) VALUE 3.                 
+              05 CN-EDAD-16                  PIC 9(03) VALUE 16.                
+              05 CN-EDAD-18                  PIC 9(03) VALUE 18.                
+              05 CN-EDAD-25                  PIC 9(03) VALUE 25.                
+              05 CN-EDAD-65                  PIC 9(03) VALUE 65.                
+              05 CN-EDAD-75                  PIC 9(03) VALUE 75.                
+              05 CN-EDAD-14                  PIC 9(14) VALUE 14.                
+
+           03 CN-K2SITUACION.                                                   
+              05 CN-ACTIVO                   PIC X(02) VALUE '03'.              
+
+           03 LT-COASEGURADORA.                                                 
+              05 LT-MAVI-COASEGURO           PIC X(05) VALUE 'C0511'.           
+
+           03 LT-MODELO-347                  PIC X(03) VALUE '347'.             
+           03 LT-MODELO-190                  PIC X(03) VALUE '190'.             
+           03 LT-MODELO-180                  PIC X(03) VALUE '180'.             
+           03 LT-MODELO-188                  PIC X(03) VALUE '188'.             
+           03 LT-MODELO-296                  PIC X(03) VALUE '296'.             
+
+           03 LT-COD-PAIS-ESPANA             PIC 9(03) VALUE 011.               
+           03 LT-COD-PAIS-ESPANA-BDGI        PIC 9(03) VALUE 011.               
+
+
+      * SWITCHES                                                                
+       01 SW-SWITCH.                                                            
+          03 SW-TIPO-POLIZA                  PIC X(02) VALUE SPACES.            
+             88 SW-POL-INDIVID                         VALUE 'IN'.              
+             88 SW-POL-COL-AGRUP                       VALUE 'CA'.              
+             88 SW-POL-COL-NOAGRUP                     VALUE 'CN'.              
+          03 SW-MARCA-EMISION             PIC X(01) VALUE SPACES.               
+             88 SW-MARCA-EMISION-X                     VALUE 'X'.               
+             88 SW-MARCA-EMISION-VACIA                 VALUE ' '.               
+      *                                                                         
+          03 SW-TIPO-VIA                  PIC X(02) VALUE SPACES.               
+             88 SW-TIPO-VIA-OK VALUE 'AD' , 'AL' , 'AP' , 'AR' , 'AV' ,         
+                 'AY' , 'ES' , 'EX', 'FC' , 'GL' , 'GR' , 'GV' , 'PS',          
+                 'PT' , 'PU' , 'PZ', 'QT' , 'RB' , 'BJ' , 'BL' , 'BO',          
+                 'BR' , 'CG' , 'CH', 'CJ' , 'CL' , 'CM' , 'CN' , 'CO',          
+                 'CR' , 'CS' , 'CT', 'ED' , 'EN' , 'ER' , 'HT' , 'JR',          
+                 'LD' , 'LG' , 'ME', 'ML' , 'MS' , 'MT' , 'MU' , 'MZ',          
+                 'PA' , 'PB' , 'PD', 'PG' , 'PJ' , 'PQ' , 'PR' , 'RC',          
+                 'RD' , 'RM' , 'RP', 'RR' , 'RU' , 'SA' , 'SB' , 'SC',          
+                 'SD' , 'SL' , 'TN', 'TO' , 'TR' , 'UR' , 'VI' , 'VP'.          
+             88 SW-TIPO-VIA-ERROR                      VALUE SPACES.            
+      *                                                                         
+          03 SW-ERROR-TER                 PIC X(01) VALUE SPACES.               
+             88 SW-NO-ERROR-TER                        VALUE 'N'.               
+             88 SW-SI-ERROR-TER                        VALUE 'S'.               
+          03 SW-NIFREP                       PIC X(01) VALUE SPACES.            
+             88 SW-NIFREP-NOTFOUND                     VALUE 'N'.               
+             88 SW-NIFREP-OK                           VALUE 'S'.               
+          03 SW-ERRORES  PIC X(2) VALUE '00'.                                   
+             88 LEVE              VALUE '02'.                                   
+             88 ERROR-GRAVE       VALUE '01'.                                   
+             88 NO-ERROR          VALUE '00'.                                   
+
+          03 SW-FIN-FICIN                    PIC X(01) VALUE SPACES.            
+             88 NO-FIN-FICIN                           VALUE 'N'.               
+             88 SI-FIN-FICIN                           VALUE 'S'.               
+
+          03 SW-FIN-REG                      PIC X(01) VALUE SPACES.            
+             88 NO-FIN-REG                             VALUE 'N'.               
+             88 SI-FIN-REG                             VALUE 'S'.               
+
+          03 SW-ENCONTRADO-MAIL              PIC X(01) VALUE SPACES.            
+             88 NO-ENCONTRADO-MAIL                     VALUE 'N'.               
+             88 SI-ENCONTRADO-MAIL                     VALUE 'S'.               
+
+          03 SW-INFO-DOM-CORRESP             PIC X(01) VALUE SPACES.            
+             88 NO-INFO-DOM-CORRESP                    VALUE 'N'.               
+             88 SI-INFO-DOM-CORRESP                    VALUE 'S'.               
+
+          03 SW-INFO-DOM-FISC                PIC X(01) VALUE SPACES.            
+             88 NO-INFO-DOM-FISC                       VALUE 'N'.               
+             88 SI-INFO-DOM-FISC                       VALUE 'S'.               
+
+          03 SW-EXISTE-FNACIMIENTO           PIC X(01) VALUE SPACES.            
+             88 SI-EXISTE                              VALUE 'S'.               
+             88 NO-EXISTE                              VALUE 'N'.               
+
+      *   FLAG QUE NOS INDICA SI EXISTEN COSEGURADORAS                          
+          03 SW-COASEG     PIC X(01) VALUE 'N'.                                 
+             88 NO-PRIMER-COASEGUR   VALUE 'N'.                                 
+             88 SI-PRIMER-COASEGUR   VALUE 'S'.                                 
+
+      *   FLAG QUE NOS INDICA SI EXISTEN COSEGURADORAS                          
+          03 SW-COASEG     PIC X(01) VALUE 'N'.                                 
+             88 NO-COASEGUR          VALUE 'N'.                                 
+             88 SI-COASEGUR          VALUE 'S'.                                 
+
+      *   FLAG QUE NOS INDICA SI HEMOS TERMINADO DE LEER EL FICHERO ECO         
+          03 SW-FIN-ECO    PIC X(01) VALUE 'N'.                                 
+             88 NO-FIN-ECO           VALUE 'N'.                                 
+             88 SI-FIN-ECO           VALUE 'S'.                                 
+
+      *   FLAG QUE NOS INDICA SI HEMOS ENCONTRADO UN REGISTRO                   
+          03 SW-ENCONTRADO PIC X(01) VALUE 'N'.                                 
+             88 NO-ENCONTRADO        VALUE 'N'.                                 
+             88 SI-ENCONTRADO        VALUE 'S'.                                 
+
+          03 SW-PAIS                         PIC X(01) VALUE SPACES.            
+             88 SI-PAIS                                VALUE 'S'.               
+             88 NO-PAIS                                VALUE 'N'.               
+
+      * -------                                                                 
+      * INDICES                                                                 
+      * -------                                                                 
+       01 XN-INDICES.                                                           
+          03 XN-I                       PIC 9(05) VALUE ZEROES.                 
+          03 XN-L                       PIC 9(02) VALUE ZEROES.                 
+          03 XN-M                       PIC 9(02) VALUE ZEROES.                 
+
+       01 CABECERAS.                                                            
+           03 WS-CAB-ERRAVAL.                                                   
+              05 FILLER   PIC X(10) VALUE 'INCIDENCIA'.                         
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 FILLER   PIC X(11) VALUE 'DESCRIPCION'.                        
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 FILLER   PIC X(04) VALUE 'ANIO'.                               
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 FILLER   PIC X(10) VALUE 'EXPEDIENTE'.                         
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 FILLER   PIC X(06) VALUE 'POLIZA'.                             
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 FILLER   PIC X(09) VALUE 'SUBPOLIZA'.                          
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 FILLER   PIC X(11) VALUE 'CERTIFICADO'.                        
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 FILLER   PIC X(07) VALUE 'FICHERO'.                            
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 FILLER   PIC X(11) VALUE 'CAMPO'.                              
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 FILLER   PIC X(14) VALUE 'VALOR CAMPO'.                        
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 FILLER   PIC X(08) VALUE 'PROGRAMA'.                           
+              05 FILLER   PIC X     VALUE ';'.                                  
+      *                                                                         
+
+      * ---------                                                               
+      * VARIABLES                                                               
+      * ---------                                                               
+
+       01 WS-VARIABLES.                                                         
+          03 WS-REFERENCIA-DOC-NUM      PIC 9(6).                               
+          03 WS-REFERENCIA-DOC-TXT REDEFINES                                    
+                WS-REFERENCIA-DOC-NUM   PIC X(6).                               
+          03 WS-PORC-COA-DECI           PIC S9(3)V9(6).                         
+      * CONTROL DE FICHEROS                                                     
+          03 ST-FICHECO             PIC X(2) VALUE SPACES.                      
+
+      *   VBLE TEMPORAL QUE UTILIZAREMOS PARA DETERMINAR SI LA PERSONA          
+      *   ES MENOR DE EDAD                                                      
+          03 WS-TMPFANAC                 PIC 9(04).                             
+          03 WS-ANACIMIENTO              PIC 9(4).                              
+
+      *   VBLE TEMPORAL DONDE TENDREMOS EL NIF DE LA PERSONA QUE ESTAMOS        
+      *   TRATANDO                                                              
+          03 WS-TMP-NUM-IDENT              PIC X(20).                           
+      *                                                                         
+      *   VBLE TEMPORAL DONDE TENDREMOS EL KPERSONA                             
+          03 WS-TMP-KPERSONA            PIC S9(9).                              
+
+      *   VBLE TEMPORAL DONDE TENDREMOS EL TIPO DE IMPUESTO                     
+          03 WS-TMP-K2TIPOIMP           PIC X(02).                              
+
+      *   VBLES UTILIZADAS PARA LA GENERACI”N DEL FICHERO CON LOS DATOS         
+      *   AUXILIARES DEL MODELO 190                                             
+          03 WS-NUM-DESCEND                PIC 9(02) VALUE ZEROES.              
+          03 WS-NUM-ASCEND                 PIC 9(01) VALUE ZEROES.              
+
+      *   VBLES UTILIZADAS PARA RECUPERAR LA INFORMACI”N DE LOS DATOS           
+      *   FISCALES, ASÕ COMO PARA LOS ASCENDIENTES, DESCENDIENTES Y             
+      *   EL IMPORTE DE REDUCCI”N                                               
+          03 WS-TMP-K2COMPANIA             PIC X(05) VALUE SPACES.              
+          03 WS-TMP-KPERSOTOM              PIC 9(09) VALUE ZEROES.              
+
+
+      *   ESTRUCTURA TEMPORAL DONDE LEEREMOS LOS DOMICILIOS                     
+          03 WS-TMP-DATOS-DIRECC.                                               
+             05 WS-TMP-TIP-VIA    PIC X(02).                                    
+             05 WS-TMP-NOM-VIA    PIC X(40).                                    
+             05 WS-TMP-NUM-VIA    PIC X(10).                                    
+             05 WS-TMP-COM-DIR    PIC X(25).                                    
+             05 WS-TMP-CODPOST    PIC 9(05).                                    
+             05 WS-TMP-LOCALID    PIC X(40).                                    
+             05 WS-TMP-CODPROV    PIC 9(02).                                    
+             05 WS-TMP-CODPAIS    PIC 9(03).                                    
+             05 WS-TMP-CODPOST-EX PIC X(20).                                    
+
+      * SE COMPLETA EL CAMPO CON CEROS                                          
+          03 WS-TIPODOC.                                                        
+             05 FILLER                  PIC X(4) VALUE ALL '0'.                 
+             05 WS-TIPODOC-POLIZA       PIC X(10).                              
+             05 WS-TIPODOC-SUBPOLIZA    PIC X(4).                               
+             05 WS-TIPODOC-CERTIFICADO  PIC X(6).                               
+
+      *   -----------------------------------------                             
+      *                                       -----                             
+      *   ESTRUCTURA AUXILIARES                                                 
+      *                                       -----                             
+      *   -----------------------------------------                             
+          03 WS-DATOS-ECONOMICOS.                                               
+             05 WS-DATECO-SIMPUESTO               PIC X(01).                    
+             05 WS-DATECO-COD-SISTEMA             PIC X(02).                    
+             05 WS-DATECO-COD-OPERACION           PIC X(02).                    
+             05 WS-DATECO-COD-SOCIEDAD            PIC X(04).                    
+             05 WS-DATECO-AEJERCICIO              PIC 9(04).                    
+             05 WS-DATECO-MEJERCICIO              PIC 9(02).                    
+             05 WS-DATECO-PROV-FISCAL             PIC 9(02).                    
+             05 WS-DATECO-NIF-TERCEROS            PIC X(20).                    
+             05 WS-DATECO-COD-MONEDA              PIC X(03).                    
+             05 WS-DATECO-FDOCUMENTO              PIC 9(08).                    
+             05 WS-DATECO-TIPO-DOC                PIC X(02).                    
+             05 WS-DATECO-REFEREN-DOC             PIC X(24).                    
+
+          03 WS-FACT.                                                           
+             05 WS-FACT-TIPO-OPERACION   PIC  X(02).                            
+             05 WS-FACT-ITOTAL-FACTURA   PIC S9(12)V9(02).                      
+             05 WS-FACT-IBASE-IMPONIBLE  PIC S9(12)V9(02).                      
+             05 WS-FACT-TIPO-IMPUESTO    PIC  X(04).                            
+             05 WS-FACT-TIPO-IVA         PIC  X(01).                            
+             05 WS-FACT-SBGR-IVA-SOPORT  PIC  9(02).                            
+             05 WS-FACT-INDIC-IVA-SAP    PIC  X(02).                            
+             05 WS-FACT-PIMPUESTO        PIC  9(03)V9(02).                      
+             05 WS-FACT-IIMPUESTO        PIC S9(12)V9(02).                      
+             05 WS-FACT-NUM-ASIENTO-DOC  PIC  9(10).                            
+             05 WS-FACT-NUM-SERIE        PIC  9(01).                            
+             05 WS-FACT-CUENTA-CONTABLE  PIC  9(10).                            
+             05 WS-FACT-COD-EDIFICIO     PIC  9(12).                            
+             05 WS-FACT-REF-CATAST-CCOA  PIC  X(25).                            
+
+          03 WS-IRPF.                                                           
+             05 WS-IRPF-NUM-MODELOV               PIC  X(03).                   
+             05 WS-IRPF-TIPO-INGRESO              PIC  X(01).                   
+             05 WS-IRPF-CLAVE-PERCEPCION          PIC  X(01).                   
+             05 WS-IRPF-SBCLV-PERCEPCION          PIC  X(02).                   
+             05 WS-IRPF-IBRTPREST-IINDE           PIC S9(12)V9(02).             
+             05 WS-IRPF-PRIMAS-PAGADAS            PIC S9(12)V9(02).             
+             05 WS-IRPF-PRIM-IMPUTADAS            PIC S9(12)V9(02).             
+             05 WS-IRPF-REND-INTEGRO              PIC S9(12)V9(02).             
+             05 WS-IRPF-IRREDUCCION-1             PIC S9(12)V9(02).             
+             05 WS-IRPF-IRREDUCCION-2             PIC S9(12)V9(02).             
+             05 WS-IRPF-IRREDUCCION-3             PIC S9(12)V9(02).             
+             05 WS-IRPF-IRREDUCCION-4             PIC S9(12)V9(02).             
+             05 WS-IRPF-IRREDUCCION-5             PIC S9(12)V9(02).             
+             05 WS-IRPF-BASE-RETENCION            PIC S9(12)V9(02).             
+             05 WS-IRPF-PRETENCION                PIC  9(03)V9(02).             
+             05 WS-IRPF-IRETENCION                PIC S9(12)V9(02).             
+             05 WS-IRPF-CUENTA-RETENCION          PIC  9(10).                   
+             05 WS-IRPF-CUENTA-GASTO              PIC  9(10).                   
+             05 WS-IRPF-SCEUTA-MELILLA            PIC  X(01).                   
+             05 WS-IRPF-ANYODEVENGO               PIC  9(04).                   
+             05 WS-IRPF-MEDIADOR                  PIC  X(01).                   
+             05 WS-IRPF-CLAVE-CODIGO              PIC  9(01).                   
+             05 WS-IRPF-COD-EMISOR                PIC  X(12).                   
+             05 WS-IRPF-TIPO-PAGO                 PIC  9(01).                   
+             05 WS-IRPF-TCOD-CUENT-VALOR          PIC  X(01).                   
+             05 WS-IRPF-COD-CUENT-VALORS          PIC  X(20).                   
+             05 WS-IRPF-SPENDIENTE                PIC  X(01).                   
+             05 WS-IRPF-COD-PAIS-TERCERO          PIC  9(03).                   
+             05 WS-IRPF-SJUST-RESIDENCIA          PIC  X(01).                   
+             05 WS-IRPF-PAGO-PRV-REALIZ           PIC  X(01).                   
+             05 WS-IRPF-KCALCFISC                 PIC  9(12).                   
+
+          03 WS-DATOS-ID3OS-ENTRADA.                                            
+             05 WS-DATOS-IDENT-TERCEROS.                                        
+                07 WS-DAT3OS-SISTEMA      PIC X(02).                            
+                07 WS-DAT3OS-FECHA        PIC 9(08).                            
+                07 WS-DAT3OS-NUM-IDENT    PIC X(20).                            
+                07 WS-DAT3OS-TIPO-3O      PIC X(01).                            
+                07 WS-DAT3OS-NOMBR-3O     PIC X(40).                            
+                07 WS-DAT3OS-1ER-APEL     PIC X(20).                            
+                07 WS-DAT3OS-2O-APEL      PIC X(20).                            
+                07 WS-DAT3OS-DOM-CORRESP.                                       
+                   09 WS-DAT3OS-TIP-VIA-C    PIC X(02).                         
+                   09 WS-DAT3OS-NOM-VIA-C    PIC X(40).                         
+                   09 WS-DAT3OS-NUM-VIA-C    PIC X(10).                         
+                   09 WS-DAT3OS-COM-DIR-C    PIC X(25).                         
+                   09 WS-DAT3OS-CODPOST-C    PIC 9(05).                         
+                   09 WS-DAT3OS-LOCALID-C    PIC X(40).                         
+                   09 WS-DAT3OS-CODPROV-C    PIC 9(02).                         
+                   09 WS-DAT3OS-CODPAIS-C    PIC 9(03).                         
+                07 WS-DAT3OS-DOM-FISCAL.                                        
+                   09 WS-DAT3OS-TIP-VIA-F    PIC X(02).                         
+                   09 WS-DAT3OS-NOM-VIA-F    PIC X(40).                         
+                   09 WS-DAT3OS-NUM-VIA-F    PIC X(10).                         
+                   09 WS-DAT3OS-COM-DIR-F    PIC X(25).                         
+                   09 WS-DAT3OS-CODPOST-F    PIC 9(05).                         
+                   09 WS-DAT3OS-LOCALID-F    PIC X(40).                         
+                   09 WS-DAT3OS-CODPROV-F    PIC 9(02).                         
+                   09 WS-DAT3OS-CODPAIS-F    PIC 9(03).                         
+                07 WS-DAT3OS-EMAIL           PIC X(30).                         
+                07 WS-DAT3OS-NID-REP         PIC X(09).                         
+                07 WS-DAT3OS-COD-SOCIE       PIC X(04).                         
+                07 WS-DAT3OS-COD-EXT         PIC X(12).                         
+                07 WS-DAT3OS-CODPST-EX       PIC X(20).                         
+                07 WS-DAT3OS-OPCIONALES.                                        
+                   09 WS-DAT3OS-SIMPRENTA    PIC X(01).                         
+                   09 WS-DAT3OS-GOBSERVACION PIC X(50).                         
+                   09 WS-DAT3OS-SBLOQUEO     PIC X(01).                         
+                   09 WS-DAT3OS-CUSUBLOQUEO  PIC X(30).                         
+                   09 WS-DAT3OS-FBLOQUEO     PIC X(08).                         
+                07 WS-DAT3OS-ANACIMIENTO     PIC 9(4).                          
+
+      *   FECHA DEL SISTEMA                                                     
+          03 WS-FECHA-SIS.                                                      
+             05 WS-FECHA.                                                       
+                07 WS-ANO                PIC 9(04).                             
+                07 WS-MES                PIC 9(02).                             
+                07 WS-DIA                PIC 9(02).                             
+             05 WS-TIEMPO.                                                      
+                07 WS-HORA               PIC 9(02).                             
+                07 WS-MINUTOS            PIC 9(02).                             
+                07 WS-SEGUNDOS           PIC 9(02).                             
+                07 WS-CENTESIMAS         PIC 9(02).                             
+             05 FILLER                   PIC 9(05).                             
+
+      *                                                                         
+      *   VARIALBES                                                             
+      *                                                                         
+          03 WS-LETRA1                   PIC X(01).                             
+          03 WS-LETRA2                   PIC X(01).                             
+          03 WS-ESPACIOS                 PIC 9(02).                             
+          03 WS-CODPOST                  PIC 9(05).                             
+          03 WS-CODPOST-TXT REDEFINES WS-CODPOST   PIC X(05).                   
+          03 WS-ANO-ACTUALIZ             PIC 9(04).                             
+          03 WS-CHAR-FECHA               PIC X(08).                             
+          03 WS-CATASTRAL                PIC X(25).                             
+          03 WS-MODALIDAD                PIC X(05).                             
+          03 WS-KDOMICILIO               PIC S9(9) VALUE ZEROES.                
+          03 WS-FAUX                     PIC 9(8)  VALUE ZEROES.                
+          03 WS-FAUX-DOMI                PIC 9(8)  VALUE ZEROES.                
+
+      *                                                                         
+      ** CONSTANTES NUMERICAS                                                   
+      *                                                                         
+       01 WS-CONSTANTES.                                                        
+          03 CTE-50                      PIC 9(02) VALUE 50.                    
+          03 CT-C                        PIC X(01) VALUE 'C'.                   
+          03 CT-H                        PIC X(01) VALUE 'H'.                   
+          03 CT-P                        PIC X(01) VALUE 'P'.                   
+          03 CT-R                        PIC X(01) VALUE 'R'.                   
+          03 CT-S                        PIC X(01) VALUE 'S'.                   
+          03 CT-C1                       PIC X(02) VALUE 'C1'.                  
+          03 CT-C2                       PIC X(02) VALUE 'C2'.                  
+          03 CT-H2                       PIC X(02) VALUE 'H2'.                  
+          03 CT-RETURN-OK                PIC X(05) VALUE '00000'.               
+
+      *   -------                                                               
+      *   MODULOS                                                               
+      *   -------                                                               
+       01 WS-MODULOS.                                                           
+          03 WS-B160N200                    PIC X(08) VALUE 'B160N200'.         
+          03 WS-B160N315                    PIC X(08) VALUE 'B160N315'.         
+          03 WS-B160M002                    PIC X(08) VALUE 'B160M002'.         
+          03 WS-B160M004                    PIC X(08) VALUE 'B160M004'.         
+          03 WS-B160M006                    PIC X(08) VALUE 'B160M006'.         
+          03 WS-B586M501                    PIC X(08) VALUE 'B586M501'.         
+          03 WS-B960M010                    PIC X(08) VALUE 'B960M010'.         
+          03 WS-B960M007                    PIC X(08) VALUE 'B960M007'.         
+          03 WS-VA962052                    PIC X(08) VALUE 'VA962052'.         
+          03 WS-B620N074                    PIC X(08) VALUE 'B620N074'.         
+          03 WS-B620NI50                    PIC X(08) VALUE 'B620NI50'.         
+          03 WS-B372MCOA                    PIC X(08) VALUE 'B372MCOA'.         
+
+
+       LOCAL-STORAGE SECTION.                                                   
+      *   -----                                                                 
+      *   COPYS                                                                 
+      *   -----                                                                 
+
+       01 WS-COPYS.                                                             
+          03 WS-X160M002.                                                       
+             COPY X160M002.                                                     
+             COPY X160N000.                                                     
+
+          03 WS-X160M006.                                                       
+             COPY X160M006.                                                     
+             COPY X160N000.                                                     
+
+          03 WS-X160M004.                                                       
+             COPY X160M004.                                                     
+             COPY X160N000.                                                     
+
+          03 WS-X160N315.                                                       
+             COPY X160N315.                                                     
+             COPY X160N000.                                                     
+
+          03 WS-X362J006.                                                       
+             COPY X362X101.                                                     
+             COPY X362X102.                                                     
+             COPY X362X103.                                                     
+             07 WS-FILLER.                                                      
+                09 WS-RESTO-FILLER     PIC X(10) VALUE SPACES.                  
+             07 WS-ANIO-TEC            PIC 9(4).                                
+             07 WS-KEXPEDIENTE-TEC     PIC 9(10).                               
+             07 WS-TIPO-TEC            PIC X(2) VALUE SPACES.                   
+             07 WS-FECHA-TEC           PIC X(8) VALUE SPACES.                   
+
+          03 WS-X362X104.                                                       
+             COPY X362X104.                                                     
+
+          03 WS-X362X105.                                                       
+             COPY X362X105.                                                     
+             07 WS-ANIO-AUX            PIC 9(4).                                
+             07 WS-KEXPEDIENTE-AUX     PIC 9(10).                               
+             07 WS-TIPO-AUX            PIC X(2) VALUE SPACES.                   
+             07 WS-FECHA-AUX           PIC X(8) VALUE SPACES.                   
+
+      *SLB                                                                      
+          03 WS-X620M001.                                                       
+             COPY X620M001.                                                     
+             COPY R960T001.                                                     
+
+      *SLB                                                                      
+      **  UTILIZADADAS PARA OBTENER LA MODALIDAD                                
+      *                                                                         
+          03 WS-X586M501.                                                       
+             COPY X586M501.                                                     
+             COPY X586N000.                                                     
+
+          03 WS-X960M010.                                                       
+             COPY X960M010.                                                     
+             COPY R960T001.                                                     
+
+          03 WS-X960M007.                                                       
+             COPY X960M007.                                                     
+             COPY R960T001.                                                     
+
+          03 WS-X372MCOA.                                                       
+             COPY X372MCOA.                                                     
+          03 WS-X620N074.                                                       
+             COPY X620M074.                                                     
+           03 WS-COPY-ERRVAL.                                                   
+              05 ERRVAL-INCIDENCIA             PIC  X(05).                      
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 ERRVAL-DESCRIPCION            PIC  X(60).                      
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 ERRVAL-ANIO                 PIC X(04).                         
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 ERRVAL-KEXPEDIENTE           PIC 9(10).                        
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 ERRVAL-KPOLIZA               PIC X(10).                        
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 ERRVAL-NSUBPOLIZA            PIC X(04).                        
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 ERRVAL-KCERTIFICADO          PIC 9(06).                        
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 ERRVAL-FICHERO              PIC X(08).                         
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 ERRVAL-CAMPO                PIC X(20).                         
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 ERRVAL-VALOR-CAMPO          PIC X(20).                         
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 ERRVAL-PROGRAMA             PIC X(08).                         
+              05 FILLER   PIC X     VALUE ';'.                                  
+              05 FILLER   PIC X(96) VALUE SPACES.                               
+              05 ERRVAL-COD-SOCIEDAD         PIC X(04).                         
+
+          COPY RD400116.                                                        
+          02 RD400116-ANIO        PIC 9(4).                                     
+          02 RD400116-EXPEDIENTE  PIC 9(10).                                    
+          02 RD400116-K2TIPOIMP   PIC X(2).                                     
+
+        COPY IDMS RECORD RA961052.                                              
+      *************************************************************             
+       PROCEDURE DIVISION.                                                      
+      *************************************************************             
+           PERFORM 1000-INICIO.                                                 
+      *                                                                         
+      *    SE GENERAN LAS QUERYS DE LA TABLAS DE CONTRATACION PARA              
+      *    LAS SOLICITUDES QUE SE ENCUENTREN EN LA TABLA DE PETICIONES          
+           IF NOT ERROR-GRAVE                                                   
+                 PERFORM 2000-PROCESO                                           
+           END-IF.                                                              
+      *                                                                         
+           PERFORM 10000-FIN.                                                   
+      *                                                                         
+      **************************************************************            
+       1000-INICIO.                                                             
+      **************************************************************            
+
+           INITIALIZE WS-VARIABLES.                                             
+           INITIALIZE SW-SWITCH.                                                
+           SET NO-FIN-ECO TO TRUE.                                              
+           SET NO-ERROR   TO TRUE.                                              
+           MOVE FUNCTION CURRENT-DATE TO WS-FECHA-SIS.                          
+
+           INITIALIZE RA961052.                                                 
+           MOVE 'A'       TO RA961052-COPERACION.                               
+           CALL WS-VA962052   USING RA961052.                                   
+
+      **************************************************************            
+       2000-PROCESO.                                                            
+      **************************************************************            
+
+
+           PERFORM 3000-RECOGER-DATOS-ENTRADA.                                  
+           PERFORM 4000-PROCESAR-BDGI UNTIL SI-FIN-ECO.                         
+           PERFORM 9000-CERRAR-FIC-ENTRADA.                                     
+
+
+      **************************************************************            
+       3000-RECOGER-DATOS-ENTRADA.                                              
+      **************************************************************            
+      *    ABRIMOS LOS FICHEROS DE ENTRADA                                      
+           OPEN INPUT DATOS-ECON.                                               
+      *    ABRIMOS LOS FICHEROS DE SALIDA                                       
+           OPEN OUTPUT FIC-D3.                                                  
+           OPEN OUTPUT FIC-M190.                                                
+           OPEN OUTPUT ERRORVAL.                                                
+
+           PERFORM 3005-LEER-INFO-VEN0                                          
+           .                                                                    
+
+      **************************************************************            
+       3005-LEER-INFO-VEN0.                                                     
+      **************************************************************            
+      *D*                                                                       
+      *    DISPLAY ' ANIO '  WS-VEN-ANIO                                        
+      *    DISPLAY ' EXPEDIENTE ' WS-VEN-KEXPEDIENTE                            
+      *F*                                                                       
+           INITIALIZE RD400116.                                                 
+           READ DATOS-ECON INTO RD400116                                        
+           AT END                                                               
+                 SET SI-FIN-ECO TO TRUE                                         
+           END-READ.                                                            
+
+           INITIALIZE WS-TMP-K2TIPOIMP                                          
+           MOVE RD400116-ANIO         TO WS-ANIO-TEC                            
+                                         WS-ANIO-AUX.                           
+           MOVE RD400116-EXPEDIENTE   TO WS-KEXPEDIENTE-TEC                     
+                                         WS-KEXPEDIENTE-AUX.                    
+
+
+      **************************************************************            
+       4000-PROCESAR-BDGI.                                                      
+      **************************************************************            
+           INITIALIZE WS-TMP-KPERSONA                                           
+
+           PERFORM 4005-CONSULTA-B620NI50                                       
+
+           IF NO-FIN-REG                                                        
+              PERFORM 5000-GEN-FIC-DAT-ID-TERCEROS                              
+              PERFORM 6000-VOLCAR-REGISTRO                                      
+              PERFORM 7400-VALIDA-FIC-TERCEROS                                  
+              PERFORM 4007-CONSULTAR-COASEGURO                                  
+              PERFORM 4010-EVA-COASEGURADORA                                    
+              IF RD400116-CMODELO EQUAL '190'                                   
+                 PERFORM 7000-GEN-FIC-DAT-AUX-M190                              
+              END-IF                                                            
+           END-IF                                                               
+
+           PERFORM 3005-LEER-INFO-VEN0                                          
+           .                                                                    
+
+      ***************************************************************           
+      *4005-CONSULTA-B620NI50.                                                  
+      ***************************************************************           
+      * RECUPERAMOS EL KPERSONA                                     *           
+      ***************************************************************           
+       4005-CONSULTA-B620NI50.                                                  
+
+           INITIALIZE WS-X620M001                                               
+
+           SET NO-FIN-REG  TO TRUE                                              
+
+           MOVE 'C'        TO X620M001-CLAVE                                    
+
+           IF RD400116-CSOCIEDAD EQUAL 'A365'                                   
+              MOVE 20      TO X620M001-COMPANIA                                 
+           ELSE                                                                 
+              MOVE 10      TO X620M001-COMPANIA                                 
+           END-IF                                                               
+
+           MOVE RD400116-CIDENTIFICACION (1:10)                                 
+                           TO X620M001-CIDENTIFICA-E                            
+
+           CALL WS-B620NI50 USING WS-X620M001.                                  
+
+           IF R960T001-KRETORNO OF WS-X620M001 NOT = ZEROES                     
+              SET SI-FIN-REG               TO TRUE                              
+
+              MOVE 'B372JI14'              TO ERRVAL-PROGRAMA                   
+              MOVE 'B620NI50'              TO ERRVAL-FICHERO                    
+              MOVE  RD400116-ANIO          TO ERRVAL-ANIO                       
+              MOVE  RD400116-EXPEDIENTE    TO ERRVAL-KEXPEDIENTE                
+              MOVE  RD400116-KPOLIZA       TO ERRVAL-KPOLIZA                    
+              MOVE  RD400116-NSUBPOLIZA    TO ERRVAL-NSUBPOLIZA                 
+              MOVE  RD400116-NCERTIFICADO  TO ERRVAL-KCERTIFICADO               
+              MOVE  RD400116-CSOCIEDAD     TO ERRVAL-COD-SOCIEDAD               
+
+              WRITE REG-ERRORVAL FROM WS-COPY-ERRVAL                            
+           ELSE                                                                 
+              IF X620M001-KPERSONA-S(1) EQUAL ZEROES                            
+                 SET SI-FIN-REG               TO TRUE                           
+
+                 MOVE 'B372JI14'             TO ERRVAL-PROGRAMA                 
+                 MOVE 'B620NI50'             TO ERRVAL-FICHERO                  
+                 MOVE 'GRAVE'                TO ERRVAL-INCIDENCIA               
+                 MOVE 'TIPO DE TERCERO'      TO ERRVAL-CAMPO                    
+                 MOVE X620M001-KPERSONA-S(1) TO ERRVAL-VALOR-CAMPO              
+                 MOVE 'VALOR FISICA(F) O JURIDICA(J)'                           
+                                             TO ERRVAL-DESCRIPCION              
+
+                 WRITE REG-ERRORVAL FROM WS-COPY-ERRVAL                         
+              ELSE                                                              
+                 MOVE X620M001-KPERSONA-S(1) TO WS-TMP-KPERSONA                 
+           END-IF                                                               
+           .                                                                    
+
+      **************************************************************            
+       4007-CONSULTAR-COASEGURO.                                                
+      **************************************************************            
+      * MONTAMOS LA LLAMADA AL PGM B372MCOA CON OPERACION 'C'                   
+      * Y SIN INFORMAR EL NCOA                                                  
+
+           INITIALIZE WS-X372MCOA                                               
+
+           MOVE 'C'                 TO  X372MCOA-OPERACION-E                    
+           MOVE RD400116-ANIO       TO  X372MCOA-ANIO-E                         
+           MOVE RD400116-EXPEDIENTE TO  X372MCOA-KEXPEDIENTE-E                  
+
+           CALL WS-B372MCOA        USING WS-X372MCOA.                           
+
+           EVALUATE X372MCOA-RETORNO-S                                          
+               WHEN LT-RETURN-OK                                                
+               WHEN LT-ERROR-NOT-FND                                            
+                    CONTINUE                                                    
+               WHEN OTHER                                                       
+                    SET ERROR-GRAVE TO TRUE                                     
+           END-EVALUATE.                                                        
+
+      **************************************************************            
+       4010-EVA-COASEGURADORA.                                                  
+      **************************************************************            
+
+           INITIALIZE WS-CATASTRAL                                              
+
+           SET NO-COASEGUR           TO TRUE                                    
+
+           IF X372MCOA-CODCOA-S(1) NOT EQUAL SPACES OR                          
+              X372MCOA-CODCOA-S(2) NOT EQUAL SPACES OR                          
+              X372MCOA-CODCOA-S(3) NOT EQUAL SPACES OR                          
+              X372MCOA-CODCOA-S(4) NOT EQUAL SPACES OR                          
+              X372MCOA-CODCOA-S(5) NOT EQUAL SPACES OR                          
+              X372MCOA-CODCOA-S(6) NOT EQUAL SPACES                             
+
+              SET SI-COASEGUR        TO TRUE                                    
+           END-IF                                                               
+
+
+           IF SI-COASEGUR                                                       
+              MOVE LT-SI-COASEGUR    TO WS-DATECO-COD-SISTEMA                   
+              MOVE RD400116-CSISTEMA TO WS-DAT3OS-SISTEMA                       
+           ELSE                                                                 
+              MOVE LT-NO-COASEGUR    TO WS-DATECO-COD-SISTEMA                   
+              MOVE RD400116-CSISTEMA TO WS-DAT3OS-SISTEMA                       
+              MOVE LT-OPER-NO-COA    TO WS-DATECO-COD-OPERACION                 
+      * SI NO TIENE COASEGURADORA SE INFORMA CON EL CODIGO DE MAPFRE            
+              MOVE LT-MAVI-COASEGURO TO WS-CATASTRAL                            
+           END-IF.                                                              
+
+      **************************************************************            
+      *5000-GEN-FIC-DAT-ID-TERCEROS.                                            
+      **************************************************************            
+       5000-GEN-FIC-DAT-ID-TERCEROS.                                            
+
+           INITIALIZE WS-DATOS-ID3OS-ENTRADA.                                   
+
+      * SE MUEVE 19991201 PARA QUE BDGI NO INTERPRETE QUE HAY CAMBIO DE         
+      * DOMICILIO YA QUE EL QUE RECUPERAMOS PUEDE NO SER EL ACTUAL              
+           MOVE '19991201'              TO WS-DAT3OS-FECHA                      
+
+           MOVE RD400116-CSISTEMA       TO WS-DAT3OS-SISTEMA                    
+
+      *    INVOCAMOS AL M”DULO ENCARGADO DE RECUPERARNOS EL CORREO              
+      *    ELECTR”NICO PARA LA PERSONA                                          
+      *    PERFORM 5025-RECUPERA-EMAIL.                                         
+           MOVE SPACES                  TO WS-DAT3OS-EMAIL                      
+
+      *    INVOCAMOS AL B160N200 PARA RECUPERAR LOS DOMICILIO PERSONAL          
+           PERFORM 5100-RECUPERA-DOMIC-PERSONA                                  
+
+      *    INVOCAMOS AL M”DULO ENCARGADO DE RECUPERARNOS LA INFORMACI”N         
+      *    CORRESPONDIENTE A NUESTRO KBENEFICIARIO                              
+           PERFORM 5050-RECUPERA-DAT-PERSONA                                    
+
+           PERFORM 5155-INFO-FICHEROS.                                          
+
+      **************************************************************            
+       5025-RECUPERA-EMAIL.                                                     
+      **************************************************************            
+           INITIALIZE WS-X160N315                                               
+
+           MOVE WS-FECHA        TO WS-CHAR-FECHA                                
+           MOVE WS-CHAR-FECHA   TO X160N315-FECHA-E                             
+           MOVE 'C4'            TO X160N315-CMODO-E                             
+           MOVE WS-TMP-KPERSONA TO X160N315-KPERSONA-E                          
+
+           CALL WS-B160N315  USING WS-X160N315.                                 
+
+           IF X160N000-CRETORNO-S OF WS-X160N315 = ZEROES                       
+                 MOVE 1 TO XN-I                                                 
+                 SET NO-ENCONTRADO-MAIL TO TRUE                                 
+                 PERFORM UNTIL X160N315-PEM-KEMAIL-S(XN-I) = ZEROES             
+                            OR XN-I > LT-NUM-OCCURS-MAIL                        
+                            OR SI-ENCONTRADO-MAIL                               
+
+                         IF X160N315-PEM-SPREFERENTE-S(XN-I) = 'S'              
+                             MOVE X160N315-PEM-GEMAIL-S(XN-I)(1:30)             
+                                TO WS-DAT3OS-EMAIL                              
+
+      *                      INSTRUCCI”N PARA SALIR DEL BUCLE                   
+                             SET SI-ENCONTRADO-MAIL TO TRUE                     
+                         END-IF                                                 
+                         ADD 1 TO XN-I                                          
+                 END-PERFORM                                                    
+
+      *          SI NO HAY NINGÈN MAIL PREFERENTE, COGEMOS EL PRIMERO           
+                 IF NO-ENCONTRADO-MAIL                                          
+                       MOVE X160N315-PEM-GEMAIL-S(1)(1:30)                      
+                         TO WS-DAT3OS-EMAIL                                     
+                 END-IF                                                         
+           ELSE                                                                 
+                 IF X160N000-CRETORNO-S OF WS-X160N315 NOT EQUAL                
+                    LT-ERROR-NOT-FND                                            
+                       SET ERROR-GRAVE TO TRUE                                  
+                 END-IF                                                         
+           END-IF.                                                              
+
+
+      **************************************************************            
+       5050-RECUPERA-DAT-PERSONA.                                               
+      **************************************************************            
+           INITIALIZE WS-X160N315                                               
+           INITIALIZE WS-TMP-NUM-IDENT                                          
+
+           MOVE 'C1'            TO X160N315-CMODO-E                             
+           MOVE WS-TMP-KPERSONA TO X160N315-KPERSONA-E                          
+           MOVE WS-FECHA        TO X160N315-FECHA-E                             
+
+           CALL WS-B160N315 USING WS-X160N315                                   
+
+           IF X160N000-CRETORNO-S OF WS-X160N315 = ZEROES                       
+
+      **   DATOS DE PERSONAS                                                    
+
+              MOVE X160N315-PPE-CTIPOPERS-S   (1)(1:1)                          
+                TO WS-DAT3OS-TIPO-3O                                            
+              MOVE X160N315-PPE-GNOMBRELARGO-S(1)(1:40)                         
+                TO WS-DAT3OS-NOMBR-3O                                           
+
+      ***        SOLO SE MOVERAN LOS APELLIDOS PARA PERSONAS FISICAS            
+              IF WS-DAT3OS-TIPO-3O = LT-TIPO-TERCERO-FISICA                     
+                 MOVE X160N315-PPE-GAPELLIDO1-S (1)(1:20)                       
+                   TO WS-DAT3OS-1ER-APEL                                        
+                 MOVE X160N315-PPE-GAPELLIDO2-S (1)(1:20)                       
+                   TO WS-DAT3OS-2O-APEL                                         
+              END-IF                                                            
+
+              PERFORM 5600-RECUPERAR-FNACIMIENTO                                
+
+              IF NO-EXISTE                                                      
+                 MOVE X160N315-PPE-FNACIMIENTO-S(1)(1:4)                        
+                   TO WS-TMPFANAC                                               
+                 MOVE X160N315-PPE-FNACIMIENTO-S(1)(1:4)                        
+                   TO WS-ANACIMIENTO                                            
+              ELSE                                                              
+                 IF X160M002-NANONAC-S(1) = ZEROES                              
+                    OR X160M002-NANONAC-S(1) = SPACES                           
+                    OR X160M002-NANONAC-S(1) = LOW-VALUES                       
+                    MOVE X160N315-PPE-FNACIMIENTO-S(1)(1:4)                     
+                      TO WS-TMPFANAC                                            
+                    MOVE X160N315-PPE-FNACIMIENTO-S(1)(1:4)                     
+                      TO WS-ANACIMIENTO                                         
+                 ELSE                                                           
+                    MOVE X160M002-NANONAC-S(1)                                  
+                      TO WS-TMPFANAC                                            
+                    MOVE X160M002-NANONAC-S(1)                                  
+                      TO WS-ANACIMIENTO                                         
+                 END-IF                                                         
+              END-IF                                                            
+
+              PERFORM 5052-CONSULTA-TB586POL0                                   
+
+              IF WS-ANO - WS-TMPFANAC < CN-EDAD-18                              
+                 PERFORM 5051-CONSULTAR-REPRESENTANTE                           
+              ELSE                                                              
+      **         REPRESENTANTE LEGAL A ESPACIOS                                 
+                 MOVE SPACES                                                    
+                   TO WS-DAT3OS-NID-REP                                         
+              END-IF                                                            
+
+              MOVE RD400116-CIDENTIFICACION TO WS-DAT3OS-NUM-IDENT              
+           ELSE                                                                 
+               SET  ERROR-GRAVE TO TRUE                                         
+           END-IF.                                                              
+
+      **************************************************************            
+       5052-CONSULTA-TB586POL0.                                                 
+      **************************************************************            
+           INITIALIZE WS-X586M501                                               
+
+           MOVE '1'                         TO X586M501-NMODO-E                 
+           MOVE RD400116-KPOLIZA            TO X586M501-KPOLIZA-E               
+           MOVE RD400116-NSUBPOLIZA         TO X586M501-KSUBPOLIZA-E            
+           CALL WS-B586M501 USING WS-X586M501                                   
+           .                                                                    
+
+      **************************************************************            
+      * 5051-CONSULTAR-REPRESENTANTE                               *            
+      **************************************************************            
+      *                                                                         
+       5051-CONSULTAR-REPRESENTANTE.                                            
+
+           INITIALIZE WS-X620N074                                               
+
+           MOVE 'C'               TO X620M074-CLAVE                             
+           MOVE WS-TMP-KPERSONA   TO X620M074-KPERSONA-E                        
+           MOVE WS-FECHA          TO WS-CHAR-FECHA                              
+           MOVE WS-CHAR-FECHA     TO X620M074-FECHA-E                           
+
+           CALL WS-B620N074  USING WS-X620N074                                  
+
+           EVALUATE X620M074-CRETORNO-S OF WS-X620N074                          
+      *       SI RETORNO OK --> RECUPERAR NIF REP LEGAL                         
+              WHEN '00'                                                         
+                 PERFORM 5055-MOVER-RELACIONES                                  
+      *       SI RETORNO 02 --> NO ENCONTRADO --> CONTINUAR                     
+              WHEN '02'                                                         
+                 CONTINUE                                                       
+              WHEN OTHER                                                        
+                 SET  ERROR-GRAVE TO TRUE                                       
+           END-EVALUATE.                                                        
+
+      *************************************************************             
+      * RECUPERACION DE REPRESENTANTE LEGAL                                     
+      *************************************************************             
+       5055-MOVER-RELACIONES.                                                   
+      *                                                                         
+             SET SW-NIFREP-NOTFOUND    TO TRUE                                  
+      *                                                                         
+      *      AHORA RECORREMOS EN ORDEN INVERSO EL OCCURS DEVUELTO               
+      *      POR B620N074 PARA QUEDARNOS CON EL REPRESENTANTE LEGAL             
+      *      MAS RECIENTE DADO DE ALTA EN PRESONAS                              
+      *                                                                         
+             PERFORM VARYING XN-I FROM 10                                       
+             BY -1 UNTIL XN-I < 1  OR SW-NIFREP-OK                              
+                IF  X620M074-KPERSONA-S (XN-I) NOT EQUAL ZEROES                 
+                AND (((X620M074-CRELACION-S(XN-I) = 'RP'                        
+                 OR    X620M074-CRELACION-S(XN-I) = 'PA')                       
+                AND    X620M074-FANULACION-S(XN-I) = '99991231' ))              
+                  SET SW-NIFREP-OK          TO TRUE                             
+      *                                                                         
+                  IF X620M074-CIDENTIFICA-DEP-S(XN-I)(10:1) = SPACE             
+                     MOVE X620M074-CIDENTIFICA-DEP-S(XN-I)(1:9)                 
+                       TO WS-DAT3OS-NID-REP(1:9)                                
+                  ELSE                                                          
+                     MOVE X620M074-CIDENTIFICA-DEP-S(XN-I)(2:9)                 
+                       TO WS-DAT3OS-NID-REP(1:9)                                
+                  END-IF                                                        
+               END-IF                                                           
+             END-PERFORM.                                                       
+
+      **************************************************************            
+       5100-RECUPERA-DOMIC-PERSONA.                                             
+      **************************************************************            
+
+           PERFORM 5105-RECUPERA-DOMIC-FISCAL.                                  
+
+           PERFORM 5110-RECUPERA-DOMIC-COMUNICA.                                
+
+      *** SI NO TENEMOS EL DOMICILIO DE CORRESPONDENCIA, SE CONSIDERA           
+      *** SE CONSIDERA QUE ES EL MISMO QUE EL PARTICULAR                        
+           IF NO-INFO-DOM-CORRESP                                               
+              MOVE WS-DAT3OS-DOM-FISCAL                                         
+                TO WS-DAT3OS-DOM-CORRESP                                        
+           END-IF.                                                              
+
+
+      **************************************************************            
+       5105-RECUPERA-DOMIC-FISCAL.                                              
+      **************************************************************            
+           INITIALIZE WS-X160N315.                                              
+
+           MOVE 99999999                TO WS-FAUX-DOMI                         
+
+      * SI TENEMOS INFORMADO EL IDENTIFICADOR DEL DOMICLIO, CONSULTAMOS         
+      * EL HISTORICO, POR SI FUE BORRADO, EN CASO CONTRARIO, CONSULTAMOS        
+      * CONSULTAMOS LOS DOMICILIOS ACTUALES                                     
+           IF WS-KDOMICILIO EQUAL ZEROES OR SPACES                              
+              MOVE WS-FECHA             TO X160N315-FECHA-E                     
+              MOVE CT-C2                TO X160N315-CMODO-E                     
+              MOVE CT-C                 TO X160N315-PDO-DOMICILIO-CL            
+              MOVE WS-TMP-KPERSONA      TO X160N315-KPERSONA-E                  
+           ELSE                                                                 
+              MOVE WS-FECHA             TO X160N315-FECHA-E                     
+              MOVE CT-H2                TO X160N315-CMODO-E                     
+              MOVE CT-H                 TO X160N315-PDO-DOMICILIO-CL            
+              MOVE WS-TMP-KPERSONA      TO X160N315-KPERSONA-E                  
+           END-IF                                                               
+
+           CALL WS-B160N315 USING WS-X160N315                                   
+
+           IF X160N000-CRETORNO-S OF WS-X160N315 NOT = ZEROES                   
+              SET ERROR-GRAVE           TO TRUE                                 
+           ELSE                                                                 
+              IF WS-KDOMICILIO EQUAL ZEROES OR SPACES                           
+                 SET NO-INFO-DOM-FISC       TO TRUE                             
+                 MOVE ZEROS TO XN-L                                             
+                 PERFORM VARYING XN-I FROM 1 BY 1                               
+                     UNTIL XN-I > CN-MAX                                        
+                        OR X160N315-PDO-KDOMICILIO-S(XN-I) = ZEROES             
+                        OR X160N315-PDO-KPERSONA-S  (XN-I) = ZEROES             
+                        OR SI-INFO-DOM-FISC                                     
+      * SI EL DOMICILIO ES DE PRESTACIONES Y NO ES BANCARIO TIENE               
+      * PREFERECIA                                                              
+                    IF X160N315-PDO-CTIPODOM-S(XN-I) = CT-R                     
+                         AND X160N315-PDO-SFISCAL-S(XN-I) NOT = CT-S            
+                       MOVE XN-I        TO XN-L                                 
+                       SET SI-INFO-DOM-FISC TO TRUE                             
+                    ELSE                                                        
+                       IF X160N315-PDO-CTIPODOM-S(XN-I) = CT-P                  
+                          MOVE XN-I     TO XN-L                                 
+                          SET SI-INFO-DOM-FISC TO TRUE                          
+                       END-IF                                                   
+                    END-IF                                                      
+                 END-PERFORM                                                    
+              ELSE                                                              
+                 SET NO-INFO-DOM-FISC       TO TRUE                             
+                 PERFORM VARYING XN-I FROM 1 BY 1                               
+                       UNTIL XN-I > CTE-50                                      
+                       OR X160N315-PDO-KDOMICILIO-S(XN-I) = ZEROES              
+                       OR X160N315-PDO-KPERSONA-S  (XN-I) = ZEROES              
+                    IF WS-KDOMICILIO EQUAL                                      
+                         X160N315-PDO-KDOMICILIO-S(XN-I)                        
+                         AND X160N315-PDO-FANULACION-S(XN-I) IS NUMERIC         
+
+                       MOVE  X160N315-PDO-FANULACION-S(XN-I) TO WS-FAUX         
+      * SI LA FECHA DE ANULACION DEL DOMICILIO QUE ESTAMOS TRATANDO             
+      * ES MENOR QUE LA FECHA DE ANULACION DEL DOMICILIO QUE TENEMOS            
+      * GUARDADO SE MODIFICA                                                    
+                       IF RD400116-FDOCUMENTO < WS-FAUX                         
+                            AND WS-FAUX < WS-FAUX-DOMI                          
+                          MOVE WS-FAUX TO WS-FAUX-DOMI                          
+                          MOVE XN-I    TO XN-L                                  
+                          SET SI-INFO-DOM-FISC TO TRUE                          
+                       END-IF                                                   
+                    END-IF                                                      
+                 END-PERFORM                                                    
+              END-IF                                                            
+           END-IF                                                               
+
+           IF SW-INFO-DOM-FISC EQUAL 'S'                                        
+              MOVE XN-L                TO XN-I                                  
+
+              PERFORM 5150-INFO-ESTRUC-DOMICILIO                                
+
+              MOVE WS-TMP-DATOS-DIRECC TO WS-DAT3OS-DOM-FISCAL                  
+              MOVE WS-TMP-CODPOST-EX   TO WS-DAT3OS-CODPST-EX                   
+           ELSE                                                                 
+              SET ERROR-GRAVE          TO TRUE                                  
+           END-IF                                                               
+           .                                                                    
+
+      **************************************************************            
+       5110-RECUPERA-DOMIC-COMUNICA.                                            
+      **************************************************************            
+           INITIALIZE WS-X160N315.                                              
+
+           SET NO-INFO-DOM-CORRESP    TO TRUE.                                  
+
+           MOVE 'C2'                  TO X160N315-CMODO-E.                      
+           MOVE 'C'                   TO X160N315-PDO-DOMICILIO-CL.             
+           MOVE WS-TMP-KPERSONA       TO X160N315-KPERSONA-E.                   
+           MOVE WS-FECHA              TO WS-CHAR-FECHA.                         
+           MOVE WS-CHAR-FECHA         TO X160N315-FECHA-E.                      
+
+           CALL WS-B160N315 USING WS-X160N315.                                  
+
+           IF X160N000-CRETORNO-S OF WS-X160N315 = ZEROES                       
+             SET NO-INFO-DOM-CORRESP    TO TRUE                                 
+             PERFORM VARYING XN-I FROM 1 BY 1                                   
+                     UNTIL XN-I > CN-MAX                                        
+                        OR X160N315-PDO-KDOMICILIO-S(XN-I) = ZEROES             
+                        OR X160N315-PDO-KPERSONA-S  (XN-I) = ZEROES             
+                        OR SI-INFO-DOM-CORRESP                                  
+                 IF X160N315-PDO-CTIPODOM-S(XN-I) = 'M'                         
+                    SET SI-INFO-DOM-CORRESP TO TRUE                             
+
+                    PERFORM 5150-INFO-ESTRUC-DOMICILIO                          
+
+                    MOVE WS-TMP-DATOS-DIRECC                                    
+                      TO WS-DAT3OS-DOM-CORRESP                                  
+
+                    IF WS-DAT3OS-CODPST-EX = SPACES                             
+                       MOVE WS-TMP-CODPOST-EX                                   
+                         TO WS-DAT3OS-CODPST-EX                                 
+                    END-IF                                                      
+                 END-IF                                                         
+             END-PERFORM                                                        
+
+           ELSE                                                                 
+              SET ERROR-GRAVE TO TRUE                                           
+           END-IF.                                                              
+
+      **************************************************************            
+       5150-INFO-ESTRUC-DOMICILIO.                                              
+      **************************************************************            
+           INITIALIZE WS-TMP-DATOS-DIRECC.                                      
+
+      * SE BUSCA EN TABLAS ESPECIALES CORRESPONDENCIA TIPO VIA                  
+           PERFORM 7900-OBTENER-TABLA-ESPECIAL                                  
+
+           MOVE X160N315-PDO-GDOMICILIO-S (XN-I)(1:40)                          
+             TO WS-TMP-NOM-VIA.                                                 
+           MOVE X160N315-PDO-GNUMVIA-S(XN-I)                                    
+             TO WS-TMP-NUM-VIA.                                                 
+           MOVE X160N315-PDO-GDOMIRESTO-S(XN-I) (1:40)                          
+             TO WS-TMP-COM-DIR                                                  
+           MOVE X160N315-PDO-GPOBLACION-S(XN-I)                                 
+             TO WS-TMP-LOCALID.                                                 
+
+           IF X160N315-PDO-CPAIS-S(XN-I) (1:3) = LT-COD-PAIS-ESPANA             
+              SET SI-PAIS TO TRUE                                               
+              MOVE LT-COD-PAIS-ESPANA-BDGI                                      
+                TO WS-TMP-CODPAIS                                               
+           ELSE                                                                 
+             PERFORM 7902-CONSULTA-PAIS                                         
+             IF NO-PAIS                                                         
+                MOVE LT-COD-PAIS-ESPANA-BDGI                                    
+                  TO WS-TMP-CODPAIS                                             
+             ELSE                                                               
+                MOVE X160N315-PDO-CPAIS-S (XN-I) (1:3)                          
+                  TO WS-TMP-CODPAIS                                             
+             END-IF                                                             
+           END-IF                                                               
+
+           IF X160N315-PDO-CPAIS-S(XN-I) (1:3) = LT-COD-PAIS-ESPANA             
+           AND SI-PAIS                                                          
+            MOVE X160N315-PDO-CCODPOST-S (XN-I)       TO WS-TMP-CODPOST         
+            MOVE X160N315-PDO-CPROVINCIA-S(XN-I)(1:2) TO WS-TMP-CODPROV         
+              IF WS-TMP-LOCALID EQUAL SPACES                                    
+                 EVALUATE WS-TMP-CODPOST(1:2)                                   
+                   WHEN '01'                                                    
+                      MOVE 'ALAVA'       TO  WS-TMP-LOCALID                     
+                   WHEN '02'                                                    
+                      MOVE 'ALBACETE'    TO  WS-TMP-LOCALID                     
+                   WHEN '03'                                                    
+                      MOVE 'ALICANTE'    TO  WS-TMP-LOCALID                     
+                   WHEN '04'                                                    
+                      MOVE 'ALMERIA'     TO  WS-TMP-LOCALID                     
+                   WHEN '05'                                                    
+                      MOVE 'AVILA'       TO  WS-TMP-LOCALID                     
+                   WHEN '06'                                                    
+                      MOVE 'BADAJOZ'     TO  WS-TMP-LOCALID                     
+                   WHEN '07'                                                    
+                      MOVE 'BALEARES'    TO  WS-TMP-LOCALID                     
+                   WHEN '08'                                                    
+                      MOVE 'BARCELONA'   TO  WS-TMP-LOCALID                     
+                   WHEN '09'                                                    
+                      MOVE 'BURGOS'      TO  WS-TMP-LOCALID                     
+                   WHEN '10'                                                    
+                      MOVE 'CACERES'     TO  WS-TMP-LOCALID                     
+                   WHEN '11'                                                    
+                      MOVE 'CADIZ'       TO  WS-TMP-LOCALID                     
+                   WHEN '12'                                                    
+                      MOVE 'CASTELLON'   TO  WS-TMP-LOCALID                     
+                   WHEN '13'                                                    
+                      MOVE 'CIUDAD REAL' TO  WS-TMP-LOCALID                     
+                   WHEN '14'                                                    
+                      MOVE 'COROBA'      TO  WS-TMP-LOCALID                     
+                   WHEN '15'                                                    
+                      MOVE 'LA CORU—A'   TO  WS-TMP-LOCALID                     
+                   WHEN '16'                                                    
+                      MOVE 'CUENCA'      TO  WS-TMP-LOCALID                     
+                   WHEN '17'                                                    
+                      MOVE 'GIRONA'      TO  WS-TMP-LOCALID                     
+                   WHEN '18'                                                    
+                      MOVE 'GRANADA'     TO  WS-TMP-LOCALID                     
+                   WHEN '19'                                                    
+                      MOVE 'GUADALAJARA' TO  WS-TMP-LOCALID                     
+                   WHEN '20'                                                    
+                      MOVE 'GUIPUZCOA'   TO  WS-TMP-LOCALID                     
+                   WHEN '21'                                                    
+                      MOVE 'HUELVA'      TO  WS-TMP-LOCALID                     
+                   WHEN '22'                                                    
+                      MOVE 'HUESCA'      TO  WS-TMP-LOCALID                     
+                   WHEN '23'                                                    
+                      MOVE 'JAEN'        TO  WS-TMP-LOCALID                     
+                   WHEN '24'                                                    
+                      MOVE 'LEON'        TO  WS-TMP-LOCALID                     
+                   WHEN '25'                                                    
+                      MOVE 'LLEIDA'      TO  WS-TMP-LOCALID                     
+                   WHEN '26'                                                    
+                      MOVE 'LA RIOJA'    TO  WS-TMP-LOCALID                     
+                   WHEN '27'                                                    
+                      MOVE 'LUGO'        TO  WS-TMP-LOCALID                     
+                   WHEN '28'                                                    
+                      MOVE 'MADRID'      TO  WS-TMP-LOCALID                     
+                   WHEN '29'                                                    
+                      MOVE 'MALAGA'      TO  WS-TMP-LOCALID                     
+                   WHEN '30'                                                    
+                      MOVE 'MURCIA'      TO  WS-TMP-LOCALID                     
+                   WHEN '31'                                                    
+                      MOVE 'NAVARRA'     TO  WS-TMP-LOCALID                     
+                   WHEN '32'                                                    
+                      MOVE 'ORENSE'      TO  WS-TMP-LOCALID                     
+                   WHEN '33'                                                    
+                      MOVE 'ASTURIAS'    TO  WS-TMP-LOCALID                     
+                   WHEN '34'                                                    
+                      MOVE 'PALENCIA'    TO  WS-TMP-LOCALID                     
+                   WHEN '35'                                                    
+                      MOVE 'LAS PALMAS'  TO  WS-TMP-LOCALID                     
+                   WHEN '36'                                                    
+                      MOVE 'PONTEVEDRA'  TO  WS-TMP-LOCALID                     
+                   WHEN '37'                                                    
+                      MOVE 'SALAMANCA'   TO  WS-TMP-LOCALID                     
+                   WHEN '38'                                                    
+                      MOVE 'TENERIFE'    TO  WS-TMP-LOCALID                     
+                   WHEN '39'                                                    
+                      MOVE 'CANTABRIA'   TO  WS-TMP-LOCALID                     
+                   WHEN '40'                                                    
+                      MOVE 'SEGOVIA'     TO  WS-TMP-LOCALID                     
+                   WHEN '41'                                                    
+                      MOVE 'SEVILLA'     TO  WS-TMP-LOCALID                     
+                   WHEN '42'                                                    
+                      MOVE 'SORIA'       TO  WS-TMP-LOCALID                     
+                   WHEN '43'                                                    
+                      MOVE 'TARRAGONA'   TO  WS-TMP-LOCALID                     
+                   WHEN '44'                                                    
+                      MOVE 'TERUEL'      TO  WS-TMP-LOCALID                     
+                   WHEN '45'                                                    
+                      MOVE 'TOLEDO'      TO  WS-TMP-LOCALID                     
+                   WHEN '46'                                                    
+                      MOVE 'VALENCIA'    TO  WS-TMP-LOCALID                     
+                   WHEN '47'                                                    
+                      MOVE 'VALLADOLID'  TO  WS-TMP-LOCALID                     
+                   WHEN '48'                                                    
+                      MOVE 'VIZCAYA'     TO  WS-TMP-LOCALID                     
+                   WHEN '49'                                                    
+                      MOVE 'ZAMORA'      TO  WS-TMP-LOCALID                     
+                   WHEN '50'                                                    
+                      MOVE 'ZARAGOZA'    TO  WS-TMP-LOCALID                     
+                   WHEN '51'                                                    
+                      MOVE 'CEUTA'       TO  WS-TMP-LOCALID                     
+                   WHEN '52'                                                    
+                      MOVE 'MELILLA'     TO  WS-TMP-LOCALID                     
+                 END-EVALUATE                                                   
+
+                 MOVE WS-TMP-CODPOST(1:2) TO WS-DATECO-PROV-FISCAL              
+
+                 IF WS-TMP-CODPOST(1:2) > '52'                                  
+                    IF WS-TMP-CODPOST(1:2)  EQUAL '99'                          
+                       MOVE '28'          TO WS-DATECO-PROV-FISCAL              
+                    END-IF                                                      
+                 END-IF                                                         
+              END-IF                                                            
+           ELSE                                                                 
+      * PROVINCIA FISCAL NO INFORMADA CORRECTAMENTE                             
+             IF SI-PAIS                                                         
+                COMPUTE WS-TMP-CODPOST = 99000 + WS-TMP-CODPAIS                 
+                MOVE 99 TO WS-TMP-CODPROV                                       
+
+      *  SE MUEVE EL CÛDIGO POSTAL DEL EXTRANJERO                               
+                MOVE X160N315-PDO-CCODPOST-EXT-S(XN-I)                          
+                  TO WS-TMP-CODPOST-EX                                          
+
+             ELSE                                                               
+                MOVE '99'                                                       
+                  TO WS-TMP-CODPROV                                             
+                MOVE '001'                                                      
+                  TO WS-TMP-CODPAIS                                             
+             END-IF                                                             
+           END-IF.                                                              
+           MOVE WS-TMP-CODPOST(1:2) TO WS-DATECO-PROV-FISCAL.                   
+
+      **************************************************************            
+       5155-INFO-FICHEROS.                                                      
+      **************************************************************            
+
+           MOVE RD400116-CSOCIEDAD   TO WS-DAT3OS-COD-SOCIE                     
+           MOVE SPACES               TO WS-DAT3OS-COD-EXT                       
+           MOVE SPACES               TO WS-DAT3OS-OPCIONALES                    
+
+      * SE INFORMA EL AÒO DE NACIMIENTO DEL CONTRIBUYENTE                       
+      *    MOVE ZEROS                      TO WS-DAT3OS-ANACIMIENTO.            
+           MOVE X160N315-PPE-FNACIMIENTO-S(1)(1:4)                              
+             TO WS-DAT3OS-ANACIMIENTO.                                          
+
+           IF WS-DAT3OS-ANACIMIENTO IS NOT NUMERIC                              
+              MOVE ZEROS     TO WS-DAT3OS-ANACIMIENTO                           
+           END-IF.                                                              
+
+
+      **************************************************************            
+      * 5600-RECUPERAR-FNACIMIENTO.                               *             
+      **************************************************************            
+       5600-RECUPERAR-FNACIMIENTO.                                              
+           INITIALIZE WS-X160M002                                               
+
+           SET NO-EXISTE        TO TRUE                                         
+           MOVE 'C6'            TO X160M002-CMODO-E                             
+           MOVE WS-TMP-KPERSONA TO X160M002-KPERSONA-E                          
+           MOVE WS-FECHA        TO X160M002-FVIGENCIA-E                         
+
+           CALL WS-B160M002 USING WS-X160M002                                   
+
+           IF X160N000-CRETORNO-S OF WS-X160M002 = ZEROES                       
+             SET SI-EXISTE      TO TRUE                                         
+           ELSE                                                                 
+             IF X160N000-CRETORNO-S OF WS-X160M002 = '00003'                    
+                SET NO-EXISTE   TO TRUE                                         
+             ELSE                                                               
+                SET ERROR-GRAVE TO TRUE                                         
+             END-IF                                                             
+           END-IF.                                                              
+
+
+      **************************************************************            
+      * 5800-DOS-BENEFICIARIO.                                                  
+      **************************************************************            
+      *                                                                         
+       5800-DOS-BENEFICIARIO.                                                   
+
+           COMPUTE X362X103-IRPF-IBRTPREST-IINDE =                              
+                   X362X103-IRPF-IBRTPREST-IINDE / 2.                           
+
+           IF X362X103-IRPF-PRIMAS-PAGADAS NOT EQUAL ZEROS                      
+              COMPUTE X362X103-IRPF-PRIMAS-PAGADAS  =                           
+                   X362X103-IRPF-PRIMAS-PAGADAS  / 2                            
+           END-IF.                                                              
+
+           IF X362X103-IRPF-REND-INTEGRO NOT EQUAL ZEROS                        
+              COMPUTE X362X103-IRPF-REND-INTEGRO  =                             
+                   X362X103-IRPF-REND-INTEGRO  / 2                              
+           END-IF.                                                              
+
+           IF X362X103-IRPF-IRREDUCCION-1 NOT EQUAL ZEROS                       
+              COMPUTE X362X103-IRPF-IRREDUCCION-1 =                             
+                  X362X103-IRPF-IRREDUCCION-1  / 2                              
+           END-IF.                                                              
+
+           IF X362X103-IRPF-IRREDUCCION-2 NOT EQUAL ZEROS                       
+              COMPUTE X362X103-IRPF-IRREDUCCION-2 =                             
+                  X362X103-IRPF-IRREDUCCION-2  / 2                              
+           END-IF.                                                              
+
+           IF X362X103-IRPF-IRREDUCCION-3 NOT EQUAL ZEROS                       
+              COMPUTE X362X103-IRPF-IRREDUCCION-3 =                             
+                  X362X103-IRPF-IRREDUCCION-3  / 2                              
+           END-IF.                                                              
+
+           IF X362X103-IRPF-IRREDUCCION-4 NOT EQUAL ZEROS                       
+              COMPUTE X362X103-IRPF-IRREDUCCION-4 =                             
+                  X362X103-IRPF-IRREDUCCION-4  / 2                              
+           END-IF.                                                              
+
+           IF X362X103-IRPF-IRREDUCCION-5 NOT EQUAL ZEROS                       
+              COMPUTE X362X103-IRPF-IRREDUCCION-5 =                             
+                  X362X103-IRPF-IRREDUCCION-5  / 2                              
+           END-IF.                                                              
+
+           IF X362X103-IRPF-BASE-RETENCION NOT EQUAL ZEROS                      
+              COMPUTE X362X103-IRPF-BASE-RETENCION =                            
+                  X362X103-IRPF-BASE-RETENCION / 2                              
+           END-IF.                                                              
+
+           IF X362X103-IRPF-IRETENCION NOT EQUAL ZEROS                          
+              COMPUTE X362X103-IRPF-IRETENCION =                                
+                  X362X103-IRPF-IRETENCION / 2                                  
+           END-IF.                                                              
+
+      **************************************************************            
+      * 5900-PORCENTAJE-COASEGURADO.                                            
+      **************************************************************            
+       5900-PORCENTAJE-COASEGURADO.                                             
+
+      *    SE INCLUYE LA VARIABLE DE % COASEGURO WS-PORC-COA-DECI               
+      *    PARA QUE HAGA LOS REC¡LCULOS CON TODOS LOS DECIMALES.                
+
+      * INFORMAR DESDE IMPCOA                                                   
+           MOVE X372MCOA-IMPCOA-S(XN-M)                                         
+                TO X362X103-IRPF-IBRTPREST-IINDE                                
+      * INFORMAR DESDE IMPRTOINTEGRCOA                                          
+           IF X362X103-IRPF-REND-INTEGRO NOT EQUAL ZEROS                        
+               MOVE X372MCOA-IMPRTOINTEGRCOA-S (XN-M)                           
+                   TO X362X103-IRPF-REND-INTEGRO                                
+           END-IF.                                                              
+
+           IF X362X103-IRPF-PRIMAS-PAGADAS NOT EQUAL ZEROS                      
+              COMPUTE X362X103-IRPF-PRIMAS-PAGADAS  =                           
+              X362X103-IRPF-IBRTPREST-IINDE -                                   
+              X362X103-IRPF-REND-INTEGRO                                        
+           END-IF.                                                              
+
+           IF X362X103-IRPF-IRREDUCCION-1 NOT EQUAL ZEROS                       
+              COMPUTE X362X103-IRPF-IRREDUCCION-1 =                             
+                 (X362X103-IRPF-IRREDUCCION-1  * WS-PORC-COA-DECI)              
+                   / 100                                                        
+           END-IF.                                                              
+
+           IF X362X103-IRPF-IRREDUCCION-2 NOT EQUAL ZEROS                       
+              COMPUTE X362X103-IRPF-IRREDUCCION-2 =                             
+                  (X362X103-IRPF-IRREDUCCION-2  * WS-PORC-COA-DECI)             
+                   / 100                                                        
+           END-IF.                                                              
+
+           IF X362X103-IRPF-IRREDUCCION-3 NOT EQUAL ZEROS                       
+              COMPUTE X362X103-IRPF-IRREDUCCION-3 =                             
+                 (X362X103-IRPF-IRREDUCCION-3  * WS-PORC-COA-DECI)              
+                   / 100                                                        
+           END-IF.                                                              
+
+           IF X362X103-IRPF-IRREDUCCION-4 NOT EQUAL ZEROS                       
+              COMPUTE X362X103-IRPF-IRREDUCCION-4 =                             
+                 (X362X103-IRPF-IRREDUCCION-4  * WS-PORC-COA-DECI)              
+                   / 100                                                        
+           END-IF.                                                              
+
+           IF X362X103-IRPF-IRREDUCCION-5 NOT EQUAL ZEROS                       
+              COMPUTE X362X103-IRPF-IRREDUCCION-5 =                             
+                 (X362X103-IRPF-IRREDUCCION-5  * WS-PORC-COA-DECI)              
+                   / 100                                                        
+           END-IF.                                                              
+
+      * INFORMAR DESDE IMPRTOINTEGRCOA                                          
+           IF X362X103-IRPF-BASE-RETENCION NOT EQUAL ZEROS                      
+      *         MOVE X372MCOA-IMPRTOINTEGRCOA-S (XN-M)                          
+      *             TO X362X103-IRPF-BASE-RETENCION                             
+               MOVE X372MCOA-IMPRTONETOCOA-S (XN-M)                             
+                   TO X362X103-IRPF-BASE-RETENCION                              
+           END-IF.                                                              
+
+      *    SE RECALCULA EL IMPORTE DE LA RETENCION PARA ENVIO A BDGI            
+      *    CON LA BASE DE RETENCI”N                                             
+      * INFORMAR DESDE IMPRETCOA                                                
+           IF X362X103-IRPF-IRETENCION NOT EQUAL ZEROS                          
+              MOVE X372MCOA-IMPRETCOA-S  (XN-M)                                 
+                 TO X362X103-IRPF-IRETENCION                                    
+           END-IF.                                                              
+
+      **************************************************************            
+       6000-VOLCAR-REGISTRO.                                                    
+      **************************************************************            
+
+           MOVE RD400116-ANIO         TO WS-ANIO-TEC                            
+                                         WS-ANIO-AUX                            
+           MOVE RD400116-EXPEDIENTE   TO WS-KEXPEDIENTE-TEC                     
+                                         WS-KEXPEDIENTE-AUX                     
+
+           MOVE WS-FECHA-SIS          TO WS-FECHA-TEC                           
+                                         WS-FECHA-AUX                           
+
+           IF SW-POL-INDIVID OR SW-POL-COL-AGRUP                                
+               MOVE '000000'          TO WS-REFERENCIA-DOC-TXT                  
+           ELSE                                                                 
+               MOVE RD400116-NCERTIFICADO  TO WS-REFERENCIA-DOC-NUM             
+           END-IF                                                               
+
+           MOVE RD400116-KPOLIZA      TO WS-TIPODOC-POLIZA                      
+           MOVE RD400116-NSUBPOLIZA   TO WS-TIPODOC-SUBPOLIZA                   
+           MOVE WS-REFERENCIA-DOC-TXT TO WS-TIPODOC-CERTIFICADO                 
+
+           MOVE WS-TIPODOC            TO WS-DATECO-REFEREN-DOC                  
+
+           MOVE WS-DATOS-ECONOMICOS   TO X362X101-DATOS-ECONOMICOS              
+           MOVE WS-FACT               TO X362X102-FACTURAS                      
+           MOVE WS-IRPF               TO X362X103-IRPF                          
+
+           PERFORM 6100-VERIFICAR-DATOS.                                        
+
+           MOVE WS-DATOS-ID3OS-ENTRADA                                          
+             TO X362X104-DATOS-ID3OS-ENTRADA.                                   
+
+      **************************************************************            
+       6100-VERIFICAR-DATOS.                                                    
+      **************************************************************            
+      * VERIFICACION DE DATOS OBLIGATORIOS EN EL FICHERO DE TERCERO             
+           IF WS-DAT3OS-CODPAIS-C EQUAL ZEROS                                   
+              MOVE 11                    TO WS-DAT3OS-CODPAIS-C                 
+           END-IF.                                                              
+
+           IF WS-DAT3OS-CODPAIS-F EQUAL ZEROS                                   
+              MOVE 11                    TO WS-DAT3OS-CODPAIS-F                 
+           END-IF.                                                              
+
+           IF WS-DAT3OS-TIP-VIA-C EQUAL SPACES                                  
+              MOVE 'CL'                  TO WS-DAT3OS-TIP-VIA-C                 
+           END-IF.                                                              
+
+           IF WS-DAT3OS-NOM-VIA-C EQUAL SPACES                                  
+              MOVE 'DESCONOCIDA'         TO WS-DAT3OS-NOM-VIA-C                 
+           END-IF.                                                              
+
+
+           IF WS-DAT3OS-LOCALID-C EQUAL SPACES                                  
+              MOVE 'DESCONOCIDA'         TO WS-DAT3OS-LOCALID-C                 
+           END-IF.                                                              
+
+      * INFORMAMOS POR DEFECTO EL COD-PROV CORRESP                              
+           IF WS-DAT3OS-CODPROV-C EQUAL ZEROS                                   
+              IF WS-DAT3OS-CODPAIS-C = 11                                       
+                 MOVE 28                    TO WS-DAT3OS-CODPROV-C              
+              ELSE                                                              
+                 MOVE 99                    TO WS-DAT3OS-CODPROV-C              
+              END-IF                                                            
+           END-IF                                                               
+      *                                                               *         
+      * INFORMAMOS POR DEFECTO EL COD-PROV FISCAL                               
+           IF WS-DAT3OS-CODPROV-F EQUAL ZEROS                                   
+              IF WS-DAT3OS-CODPAIS-F = 11                                       
+                 MOVE 28                    TO WS-DAT3OS-CODPROV-F              
+              ELSE                                                              
+                 MOVE 99                    TO WS-DAT3OS-CODPROV-F              
+              END-IF                                                            
+           END-IF                                                               
+      * INFORMAMOS POR DEFECTO EL COD-POSTAL FISCAL                             
+           IF WS-DAT3OS-CODPOST-F EQUAL ZEROS                                   
+              IF WS-DAT3OS-CODPAIS-F = 11                                       
+                 MOVE 28000                 TO WS-DAT3OS-CODPOST-F              
+              ELSE                                                              
+                 MOVE 0 TO  WS-CODPOST                                          
+                 COMPUTE WS-CODPOST = 99000 + WS-DAT3OS-CODPAIS-F               
+                 MOVE WS-CODPOST           TO WS-DAT3OS-CODPOST-F               
+                 MOVE 0 TO  WS-CODPOST                                          
+              END-IF                                                            
+           END-IF.                                                              
+      * INFORMAMOS POR DEFECTO EL COD-POSTAL  CORRESP                           
+           IF WS-DAT3OS-CODPOST-C EQUAL ZEROS                                   
+              IF WS-DAT3OS-CODPAIS-C = 11                                       
+                 MOVE 28000                 TO WS-DAT3OS-CODPOST-C              
+              ELSE                                                              
+                 MOVE 0 TO  WS-CODPOST                                          
+                 COMPUTE WS-CODPOST = 99000 + WS-DAT3OS-CODPAIS-C               
+                 MOVE WS-CODPOST           TO WS-DAT3OS-CODPOST-C               
+                 MOVE 0 TO  WS-CODPOST                                          
+              END-IF                                                            
+           END-IF.                                                              
+      * INFORMAMOS POR DEFECTO EL COD-POSTAL EXTRANJERO                         
+           IF WS-DAT3OS-CODPST-EX  EQUAL SPACES                                 
+           AND WS-DAT3OS-CODPAIS-C NOT EQUAL  11                                
+                 MOVE 0 TO  WS-CODPOST                                          
+                 COMPUTE WS-CODPOST = 99000 + WS-DAT3OS-CODPAIS-C               
+                 MOVE WS-CODPOST-TXT       TO WS-DAT3OS-CODPOST-C               
+                 MOVE 0 TO  WS-CODPOST                                          
+           END-IF.                                                              
+
+           IF WS-DAT3OS-TIP-VIA-F EQUAL SPACES                                  
+              MOVE 'CL'                  TO WS-DAT3OS-TIP-VIA-F                 
+           END-IF.                                                              
+
+           IF WS-DAT3OS-NOM-VIA-F EQUAL SPACES                                  
+              MOVE 'DESCONOCIDA'         TO WS-DAT3OS-NOM-VIA-F                 
+           END-IF.                                                              
+
+
+           IF WS-DAT3OS-LOCALID-F EQUAL SPACES                                  
+              MOVE 'DESCONOCIDA'         TO WS-DAT3OS-LOCALID-F                 
+           END-IF.                                                              
+
+      **************************************************************            
+       7000-GEN-FIC-DAT-AUX-M190.                                               
+      **************************************************************            
+
+      *    M…TODO ENCARGADO DE RECOGER LA INFORMACI”N PARA EL MOD 190           
+           MOVE 1      TO XN-I.                                                 
+           MOVE ZEROES TO WS-NUM-DESCEND.                                       
+           MOVE ZEROES TO WS-NUM-ASCEND.                                        
+           MOVE RD400116-CIDENTIFICACION TO X362X105-M190-NID-3O                
+
+           INITIALIZE X362X105-DATOS-AUXM190-ENTRADA.                           
+           PERFORM 7025-GET-DATOS-FISCALES-PERS.                                
+           PERFORM 7028-OBTENER-IMPORTES-ANUALES.                               
+           PERFORM 7100-GET-ASCEND-DESCEND.                                     
+           PERFORM 7200-INFO-X362X105.                                          
+
+           IF RD400116-CSISTEMA(2:1) EQUAL '7'                                  
+               MOVE 'RE' TO WS-TIPO-AUX                                         
+           ELSE                                                                 
+               MOVE 'VE' TO WS-TIPO-AUX                                         
+           END-IF                                                               
+
+      ***  ESCRIBIMOS EN EL FICHERO DE IDENTIFICACIÛN DE TERCEROS               
+           WRITE REGOUT13  FROM WS-X362X105.                                    
+      **************************************************************            
+       7400-VALIDA-FIC-TERCEROS.                                                
+      **************************************************************            
+           SET SW-NO-ERROR-TER        TO TRUE                                   
+           SET SW-MARCA-EMISION-VACIA TO TRUE                                   
+
+      * CALCULAMOS LA EDAD POR SI FUERA MENOR                                   
+           INITIALIZE  WS-COPY-ERRVAL                                           
+      *                                                                         
+           MOVE 'B372JI14'           TO ERRVAL-PROGRAMA                         
+           MOVE 'TERCEROS'           TO ERRVAL-FICHERO                          
+      * VALIDACIONES  FECHA NACIMIENTO                                          
+           IF  WS-DAT3OS-ANACIMIENTO EQUAL ZEROES                               
+           AND WS-DAT3OS-TIPO-3O = 'F'                                          
+                 SET SW-SI-ERROR-TER TO TRUE                                    
+      *                                                                         
+                 MOVE 'GRAVE' TO ERRVAL-INCIDENCIA                              
+                 MOVE 'ANIO NACIMIENTO'      TO ERRVAL-CAMPO                    
+                 MOVE WS-DAT3OS-ANACIMIENTO TO ERRVAL-VALOR-CAMPO               
+                 MOVE 'ANIO NACIMIENTO NO INFORMADO'                            
+                                     TO ERRVAL-DESCRIPCION                      
+      *                                                                         
+                 PERFORM 7450-GRABA-ERROR-VALID-TERCER                          
+           END-IF                                                               
+      * VALIDACIONES  DOMICILIO                                                 
+      *      VALIDACIONES  COD PAIS CORRESP                                     
+      *    SI  PAIS ESPA—A                                                      
+
+           IF WS-DAT3OS-CODPAIS-C = 11                                          
+      *    VALIDAMOS QUE EL COD POSTAL CORRESP  NO SEA EL CARGADO POR           
+      *       DEFECTO                                                           
+             IF  WS-DAT3OS-CODPOST-C = 28000                                    
+                 SET SW-MARCA-EMISION-X  TO TRUE                                
+             END-IF                                                             
+      *    VALIDAMOS QUE EL COD PROVINCIA ESTE COMPRENDIDO ENTRE 1 Y 52         
+             IF  WS-DAT3OS-CODPROV-C > 0                                        
+             AND WS-DAT3OS-CODPROV-C < 53                                       
+                 CONTINUE                                                       
+             ELSE                                                               
+                 SET SW-SI-ERROR-TER TO TRUE                                    
+      *                                                                         
+                 MOVE 'GRAVE' TO ERRVAL-INCIDENCIA                              
+                 MOVE 'COD PROV CORESP'    TO ERRVAL-CAMPO                      
+                 MOVE WS-DAT3OS-CODPROV-C  TO ERRVAL-VALOR-CAMPO                
+                 MOVE 'COD PROV CORRESP INCORRECTO PARA ESPANIA'                
+                                           TO ERRVAL-DESCRIPCION                
+      *                                                                         
+                 PERFORM 7450-GRABA-ERROR-VALID-TERCER                          
+             END-IF                                                             
+           ELSE                                                                 
+      *      PAIS EXTRANJERO                                                    
+      *    VALIDAMOS QUE EL COD PROVINCIA SEA 99                                
+             IF  WS-DAT3OS-CODPROV-C NOT EQUAL 99                               
+                 MOVE 'GRAVE'              TO ERRVAL-INCIDENCIA                 
+                 MOVE 'COD PROV CORESP'    TO ERRVAL-CAMPO                      
+                 MOVE WS-DAT3OS-CODPROV-C  TO ERRVAL-VALOR-CAMPO                
+                 MOVE 'COD PROV CORRESP DEBE SER 99 PARA PAIS EXTRANJ'          
+                                           TO ERRVAL-DESCRIPCION                
+      *                                                                         
+                 PERFORM 7450-GRABA-ERROR-VALID-TERCER                          
+             END-IF                                                             
+      *    VALIDAMOS QUE EL COD POSTAL CORRESP EMPIECE TENGA FORMATO            
+      *       99 + XXXX (DONDE XXX ES COD-PAIS)                                 
+             COMPUTE WS-CODPOST = 99000 + WS-DAT3OS-CODPAIS-C                   
+      *                                                                         
+             IF  WS-DAT3OS-CODPOST-C NOT EQUAL WS-CODPOST                       
+                 MOVE 'GRAVE'              TO ERRVAL-INCIDENCIA                 
+                 MOVE 'COD POSTAL CORESP'  TO ERRVAL-CAMPO                      
+                 MOVE WS-DAT3OS-CODPOST-C  TO ERRVAL-VALOR-CAMPO                
+                 MOVE 'COD POST CORR DEBE SER 99 + XXX (XXX = COD PAIS)'        
+                                           TO ERRVAL-DESCRIPCION                
+      *                                                                         
+                 PERFORM 7450-GRABA-ERROR-VALID-TERCER                          
+             END-IF                                                             
+      *    VALIDAMOS QUE EL COD POSTAL EXTRANJ EMPIECE TENGA FORMATO            
+      *       99 + XXXX (DONDE XXX ES COD-PAIS)                                 
+             IF  WS-DAT3OS-CODPST-EX NOT EQUAL WS-CODPOST                       
+                 MOVE 'GRAVE'              TO ERRVAL-INCIDENCIA                 
+                 MOVE 'COD POSTAL EXTRAN'  TO ERRVAL-CAMPO                      
+                 MOVE WS-DAT3OS-CODPST-EX  TO ERRVAL-VALOR-CAMPO                
+                 MOVE 'COD POST EXTR DEBE SER 99 + XXX (XXX = COD PAIS)'        
+                                           TO ERRVAL-DESCRIPCION                
+      *       MOVEMOS 99999 POR DEFECTO Y ACTIVAMOS MARCA DE NO EMISION         
+                 MOVE 99999 TO X362X104-DAT3OS-CODPST-EX                        
+      *                                                                         
+                 SET SW-MARCA-EMISION-X    TO TRUE                              
+      *                                                                         
+                 PERFORM 7450-GRABA-ERROR-VALID-TERCER                          
+             END-IF                                                             
+           END-IF                                                               
+
+      *      VALIDACIONES  COD PAIS FISCAL                                      
+      *    SI  PAIS ESPA—A                                                      
+           IF WS-DAT3OS-CODPAIS-F = 11                                          
+      *    VALIDAMOS QUE EL COD PROVINCIA ESTE COMPRENDIDO ENTRE 1 Y 52         
+             IF  WS-DAT3OS-CODPROV-F > 0                                        
+             AND WS-DAT3OS-CODPROV-F < 53                                       
+                 CONTINUE                                                       
+             ELSE                                                               
+                 SET SW-SI-ERROR-TER TO TRUE                                    
+      *                                                                         
+                 MOVE 'GRAVE'              TO ERRVAL-INCIDENCIA                 
+                 MOVE 'COD PROV FISCAL'    TO ERRVAL-CAMPO                      
+                 MOVE WS-DAT3OS-CODPROV-F  TO ERRVAL-VALOR-CAMPO                
+                 MOVE 'COD PROV FISCAL  INCORRECTO PARA ESPANIA'                
+                                           TO ERRVAL-DESCRIPCION                
+      *                                                                         
+                 PERFORM 7450-GRABA-ERROR-VALID-TERCER                          
+             END-IF                                                             
+           ELSE                                                                 
+      *      PAIS EXTRANJERO                                                    
+      *    VALIDAMOS QUE EL COD PROVINCIA SEA 99                                
+             IF  WS-DAT3OS-CODPROV-F NOT EQUAL 99                               
+                 MOVE 'GRAVE'              TO ERRVAL-INCIDENCIA                 
+                 MOVE 'COD PROV FISCAL'    TO ERRVAL-CAMPO                      
+                 MOVE WS-DAT3OS-CODPROV-F  TO ERRVAL-VALOR-CAMPO                
+                 MOVE 'COD PROV FISCAL DEBE SER 99 PARA PAIS EXTRANJ'           
+                                           TO ERRVAL-DESCRIPCION                
+      *                                                                         
+                 PERFORM 7450-GRABA-ERROR-VALID-TERCER                          
+             END-IF                                                             
+      *    VALIDAMOS QUE EL COD POSTAL FISCAL EMPIECE TENGA FORMATO             
+      *       99 + XXXX (DONDE XXX ES COD-PAIS)                                 
+             COMPUTE WS-CODPOST = 99000 + WS-DAT3OS-CODPAIS-F                   
+      *                                                                         
+             IF  WS-DAT3OS-CODPOST-F NOT EQUAL WS-CODPOST                       
+                 MOVE 'GRAVE'              TO ERRVAL-INCIDENCIA                 
+                 MOVE 'COD POSTAL FISCAL'  TO ERRVAL-CAMPO                      
+                 MOVE WS-DAT3OS-CODPOST-F  TO ERRVAL-VALOR-CAMPO                
+                 MOVE 'COD POST FISC DEBE SER 99 + XXX (XXX = COD PAIS)'        
+                                           TO ERRVAL-DESCRIPCION                
+      *                                                                         
+                 PERFORM 7450-GRABA-ERROR-VALID-TERCER                          
+             END-IF                                                             
+           END-IF                                                               
+      *                                                                         
+      *      VALIDACIONES  TIPO VIA CORRESP                                     
+
+           SET SW-TIPO-VIA-ERROR     TO TRUE                                    
+      *                                                                         
+           MOVE  WS-DAT3OS-TIP-VIA-C TO SW-TIPO-VIA                             
+      *                                                                         
+           IF SW-TIPO-VIA-OK                                                    
+              CONTINUE                                                          
+           ELSE                                                                 
+              SET SW-SI-ERROR-TER       TO TRUE                                 
+      *                                                                         
+              MOVE 'LEVE '              TO ERRVAL-INCIDENCIA                    
+              MOVE 'TIPO VIA CORESP'    TO ERRVAL-CAMPO                         
+              MOVE WS-DAT3OS-TIP-VIA-C  TO ERRVAL-VALOR-CAMPO                   
+              MOVE 'TIPO VIA DOM CORRESP. INCORRECTA'                           
+                                        TO ERRVAL-DESCRIPCION                   
+      *     INFORMAMOS EL VALOR POR 'CL' POR DEFECTO                            
+              MOVE 'CL'                 TO X362X104-DAT3OS-TIP-VIA-C            
+      *                                                                         
+              SET SW-MARCA-EMISION-X    TO TRUE                                 
+      *                                                                         
+              PERFORM 7450-GRABA-ERROR-VALID-TERCER                             
+           END-IF                                                               
+      *      VALIDACIONES  TIPO VIA FISCAL                                      
+           SET SW-TIPO-VIA-ERROR     TO TRUE                                    
+      *                                                                         
+           MOVE  WS-DAT3OS-TIP-VIA-F TO SW-TIPO-VIA                             
+      *                                                                         
+           IF SW-TIPO-VIA-OK                                                    
+              CONTINUE                                                          
+           ELSE                                                                 
+              SET SW-SI-ERROR-TER      TO TRUE                                  
+      *                                                                         
+              MOVE 'LEVE '             TO ERRVAL-INCIDENCIA                     
+              MOVE 'TIPO VIA FISCAL'   TO ERRVAL-CAMPO                          
+              MOVE WS-DAT3OS-TIP-VIA-F TO ERRVAL-VALOR-CAMPO                    
+              MOVE 'TIPO VIA DOM FISCAL INCORRECTA'                             
+                                       TO ERRVAL-DESCRIPCION                    
+      *     INFORMAMOS EL VALOR POR 'CL' POR DEFECTO                            
+              MOVE 'CL'                TO X362X104-DAT3OS-TIP-VIA-F             
+      *                                                                         
+              PERFORM 7450-GRABA-ERROR-VALID-TERCER                             
+           END-IF                                                               
+      * VALIDACIONES  PERSONAS FISICAS                                          
+           IF  WS-DAT3OS-TIPO-3O = LT-TIPO-TERCERO-FISICA                       
+      *        ***   VALIDACIONES NIF ******                                    
+      *  SI LA PERSONA ES FISICA EL DOCUM DEBE EMPEZAR POR NUMERO (DNI)         
+      *  O  L,M,K,X,Y Y Z (NIF)                                                 
+             MOVE  WS-DAT3OS-NUM-IDENT(1:1) TO WS-LETRA1                        
+      *                                                                         
+             IF WS-LETRA1 = '1' OR WS-LETRA1 = '2'                              
+             OR WS-LETRA1 = '3' OR WS-LETRA1 = '4'                              
+             OR WS-LETRA1 = '5' OR WS-LETRA1 = '6'                              
+             OR WS-LETRA1 = '7' OR WS-LETRA1 = '8'                              
+             OR WS-LETRA1 = '9' OR WS-LETRA1 = '0'                              
+             OR WS-LETRA1 = 'L' OR WS-LETRA1 = 'M'                              
+             OR WS-LETRA1 = 'K' OR WS-LETRA1 = 'X'                              
+             OR WS-LETRA1 = 'Y' OR WS-LETRA1 = 'Z'                              
+      *         PRIMERA LETRA OK                                                
+                CONTINUE                                                        
+      * VALIDACIONES PARA NIF EMPIECE POR K (MENOR DE 14 —OS)                   
+                IF WS-LETRA1 = 'K'                                              
+                  EVALUATE TRUE                                                 
+      *             EVALUAMOS QUE NO SEA MAYOR                                  
+                    WHEN WS-ANO - WS-DAT3OS-ANACIMIENTO < CN-EDAD-14            
+                      SET SW-SI-ERROR-TER       TO TRUE                         
+      *                                                                         
+                      MOVE 'GRAVE'              TO ERRVAL-INCIDENCIA            
+                      MOVE 'NIF DE TERCERO'     TO ERRVAL-CAMPO                 
+                      MOVE  WS-DAT3OS-NUM-IDENT TO ERRVAL-VALOR-CAMPO           
+                      MOVE 'SI EDAD > 14 EL NIF NO PUEDE EMPEZAR POR K'         
+                                                TO ERRVAL-DESCRIPCION           
+      *                                                                         
+                      PERFORM 7450-GRABA-ERROR-VALID-TERCER                     
+      *             EVALUAMOS QUE EL NIF DEL REPRES  VENGA INFORMADO            
+                    WHEN WS-DAT3OS-NID-REP EQUAL SPACES OR LOW-VALUES           
+                      SET SW-SI-ERROR-TER        TO TRUE                        
+      *                                                                         
+                      MOVE 'GRAVE'               TO ERRVAL-INCIDENCIA           
+                      MOVE 'NIF DE REPRES LEGAL' TO ERRVAL-CAMPO                
+                      MOVE  WS-DAT3OS-NID-REP    TO ERRVAL-VALOR-CAMPO          
+                      MOVE 'SI EDAD MENOR 14 , DEBE HABER UN NIF REPRES'        
+                                                 TO ERRVAL-DESCRIPCION          
+      *                                                                         
+                      PERFORM 7450-GRABA-ERROR-VALID-TERCER                     
+      *             EVALUAMOS NIF DEL REPRES <> NIF TERCERO                     
+                    WHEN WS-DAT3OS-NID-REP EQUAL WS-DAT3OS-NUM-IDENT            
+                      SET SW-SI-ERROR-TER        TO TRUE                        
+      *                                                                         
+                      MOVE 'GRAVE'               TO ERRVAL-INCIDENCIA           
+                      MOVE 'NIF DE REPRES LEGAL' TO ERRVAL-CAMPO                
+                      MOVE  WS-DAT3OS-NID-REP    TO ERRVAL-VALOR-CAMPO          
+                      MOVE 'NIF DE TERCERO DEBER DISTINTO DE NIF REPRES'        
+                                                 TO ERRVAL-DESCRIPCION          
+      *                                                                         
+                      PERFORM 7450-GRABA-ERROR-VALID-TERCER                     
+                  END-EVALUATE                                                  
+                END-IF                                                          
+      * VALIDACIONES PARA NIF EMPIECE POR L O M (NO RESIDENTE)                  
+                IF WS-LETRA1 = 'L' OR WS-LETRA1 = 'M'                           
+      *             EVALUAMOS QUE EL PAIS DE RESIDENCIA NO SEA ESPA—A           
+                    IF WS-DAT3OS-CODPAIS-F = 11                                 
+                      SET SW-SI-ERROR-TER       TO TRUE                         
+      *                                                                         
+                      MOVE 'GRAVE'              TO ERRVAL-INCIDENCIA            
+                      MOVE 'COD PAIS FISCAL'    TO ERRVAL-CAMPO                 
+                      MOVE  WS-DAT3OS-CODPAIS-F TO ERRVAL-VALOR-CAMPO           
+                      MOVE 'PAIS=SPAIN PERO NIF NO RESIDENTE(L O M)'            
+                                                TO ERRVAL-DESCRIPCION           
+      *                                                                         
+                      PERFORM 7450-GRABA-ERROR-VALID-TERCER                     
+                     END-IF                                                     
+      *             SOLO SE PERMITE NIF NO RESIDENTE PARA LOS MODELOS           
+      *             296 Y 347                                                   
+                    IF  WS-IRPF-NUM-MODELOV  NOT EQUAL LT-MODELO-296            
+                    AND WS-IRPF-NUM-MODELOV  NOT EQUAL LT-MODELO-347            
+                      SET SW-SI-ERROR-TER       TO TRUE                         
+      *                                                                         
+                      MOVE 'GRAVE'              TO ERRVAL-INCIDENCIA            
+                      MOVE 'NIF DE TERCERO'     TO ERRVAL-CAMPO                 
+                      MOVE  WS-DAT3OS-NUM-IDENT TO ERRVAL-VALOR-CAMPO           
+                      MOVE 'NIF NO RESIDENTE(L O M) Y MODELO <> 296,347'        
+                                                TO ERRVAL-DESCRIPCION           
+      *                                                                         
+                      PERFORM 7450-GRABA-ERROR-VALID-TERCER                     
+                    END-IF                                                      
+                END-IF                                                          
+             ELSE                                                               
+      *         PRIMERA LETRA INCORRECTA                                        
+                SET SW-SI-ERROR-TER        TO TRUE                              
+      *                                                                         
+                MOVE 'GRAVE'               TO ERRVAL-INCIDENCIA                 
+                MOVE 'NIF DE TERCERO'      TO ERRVAL-CAMPO                      
+                MOVE  WS-DAT3OS-NUM-IDENT  TO ERRVAL-VALOR-CAMPO                
+                MOVE '1RA LETRA NIF/DNI INCORR PARA PERS FISICA'                
+                                           TO ERRVAL-DESCRIPCION                
+      *                                                                         
+                PERFORM 7450-GRABA-ERROR-VALID-TERCER                           
+             END-IF                                                             
+      *        ***   VALIDACIONES NOMBRE TERCERO ****                           
+      *      ***   VALIDACIONES NOMBRE TERCERO ****                             
+             MOVE  WS-DAT3OS-NOMBR-3O(1:1) TO WS-LETRA1                         
+      *  SI ES PERSONA FISICA  EL NOMBRE NO PUEDE EMPEZAR CON ESPACIO           
+      *  EN BLANCO                                                              
+             IF WS-LETRA1 = ' '                                                 
+      *         PRIMERA LETRA INCOREECTA                                        
+                SET SW-SI-ERROR-TER TO TRUE                                     
+      *                                                                         
+                MOVE 'GRAVE' TO ERRVAL-INCIDENCIA                               
+                MOVE 'NOMBRE DE TERCERO' TO ERRVAL-CAMPO                        
+                MOVE  WS-DAT3OS-NOMBR-3O TO ERRVAL-VALOR-CAMPO                  
+                MOVE '1RA LETRA NOMBRE PERS FISICA INCORRECTA'                  
+                                        TO ERRVAL-DESCRIPCION                   
+      *                                                                         
+                PERFORM 7450-GRABA-ERROR-VALID-TERCER                           
+             END-IF                                                             
+      *      ***   VALIDACIONES APELLIDO 1 *********                            
+             MOVE  WS-DAT3OS-1ER-APEL(1:1) TO WS-LETRA1                         
+             MOVE  WS-DAT3OS-1ER-APEL(2:1) TO WS-LETRA2                         
+      *  SI ES PERSONA FISICA LOS 2 PRIMEROS CARACT DEL APELLIDO1 HAN           
+      *  DE SER ALFABETICOS                                                     
+             IF WS-LETRA1 IS NOT ALPHABETIC                                     
+                   SET SW-SI-ERROR-TER TO TRUE                                  
+      *                                                                         
+                   MOVE 'GRAVE' TO ERRVAL-INCIDENCIA                            
+                   MOVE 'PRIMER APELLIDO  ' TO ERRVAL-CAMPO                     
+                   MOVE  WS-DAT3OS-1ER-APEL TO ERRVAL-VALOR-CAMPO               
+                   MOVE '1ER CARACTER DEL APELL1 DEBE SER ALFABETICO'           
+                                        TO ERRVAL-DESCRIPCION                   
+      *                                                                         
+                   PERFORM 7450-GRABA-ERROR-VALID-TERCER                        
+             END-IF                                                             
+             IF WS-LETRA2 IS NOT ALPHABETIC                                     
+                   SET SW-SI-ERROR-TER TO TRUE                                  
+      *                                                                         
+                   MOVE 'GRAVE' TO ERRVAL-INCIDENCIA                            
+                   MOVE 'PRIMER APELLIDO  ' TO ERRVAL-CAMPO                     
+                   MOVE  WS-DAT3OS-1ER-APEL TO ERRVAL-VALOR-CAMPO               
+                   MOVE '2DO CARACTER DEL APELL1 DEBE SER ALFABETICO'           
+                                        TO ERRVAL-DESCRIPCION                   
+      *                                                                         
+                   PERFORM 7450-GRABA-ERROR-VALID-TERCER                        
+             END-IF                                                             
+      *  SI ES PERSONA FISICA EL APELLIDO DEBE TENR UNA LONG. MAYOR DE 2        
+             MOVE ZEROES TO WS-ESPACIOS                                         
+             INSPECT WS-DAT3OS-1ER-APEL TALLYING WS-ESPACIOS                    
+             FOR ALL SPACES                                                     
+      *                                                                         
+             IF WS-ESPACIOS > 17                                                
+                   SET SW-SI-ERROR-TER TO TRUE                                  
+      *                                                                         
+                   MOVE 'GRAVE' TO ERRVAL-INCIDENCIA                            
+                   MOVE 'PRIMER APELLIDO  ' TO ERRVAL-CAMPO                     
+                   MOVE  WS-DAT3OS-1ER-APEL TO ERRVAL-VALOR-CAMPO               
+                   MOVE 'EL APELL1 DEBE TENER MAS DE 2 CARACTERES'              
+                                        TO ERRVAL-DESCRIPCION                   
+      *                                                                         
+                   PERFORM 7450-GRABA-ERROR-VALID-TERCER                        
+             END-IF                                                             
+      *      ***   VALIDACIONES APELLIDO 2 *********                            
+             MOVE  WS-DAT3OS-2O-APEL(1:1) TO WS-LETRA1                          
+             MOVE  WS-DAT3OS-2O-APEL(2:1) TO WS-LETRA2                          
+      *  SI ES PERSONA FISICA LOS 2 PRIMEROS CARACT DEL APELLIDO2 HAN           
+      *  DE SER ALFABETICOS, SI ESTE VIENE INFORMADO                            
+             IF WS-LETRA1 IS NOT ALPHABETIC                                     
+             AND WS-DAT3OS-2O-APEL NOT EQUAL SPACES AND LOW-VALUES              
+                   SET SW-SI-ERROR-TER TO TRUE                                  
+      *                                                                         
+                   MOVE 'GRAVE' TO ERRVAL-INCIDENCIA                            
+                   MOVE 'SEGUNDO APELLIDO  ' TO ERRVAL-CAMPO                    
+                   MOVE  WS-DAT3OS-2O-APEL TO ERRVAL-VALOR-CAMPO                
+                   MOVE '1ER CARACTER DEL APELL2 DEBE SER ALFABETICO'           
+                                        TO ERRVAL-DESCRIPCION                   
+      *                                                                         
+                   PERFORM 7450-GRABA-ERROR-VALID-TERCER                        
+             END-IF                                                             
+             IF WS-LETRA2 IS NOT ALPHABETIC                                     
+             AND WS-DAT3OS-2O-APEL NOT EQUAL SPACES AND LOW-VALUES              
+                   SET SW-SI-ERROR-TER TO TRUE                                  
+      *                                                                         
+                   MOVE 'GRAVE' TO ERRVAL-INCIDENCIA                            
+                   MOVE 'SEGUNDO APELLIDO  ' TO ERRVAL-CAMPO                    
+                   MOVE  WS-DAT3OS-2O-APEL TO ERRVAL-VALOR-CAMPO                
+                   MOVE '2DO CARACTER DEL APELL2 DEBE SER ALFABETICO'           
+                                        TO ERRVAL-DESCRIPCION                   
+      *                                                                         
+                   PERFORM 7450-GRABA-ERROR-VALID-TERCER                        
+             END-IF                                                             
+           ELSE                                                                 
+             IF WS-DAT3OS-TIPO-3O = 'J'                                         
+      *  SI LA PERSONA ES JURIDICA EL NIF DEBE EMPEZAR POR                      
+      *  UNA LETRA DISTINTA DE L,M,K,X,Y Y Z                                    
+                MOVE  WS-DAT3OS-NUM-IDENT(1:1) TO WS-LETRA1                     
+      *                                                                         
+                IF WS-LETRA1 = 'A' OR WS-LETRA1 = 'B'                           
+                OR WS-LETRA1 = 'C' OR WS-LETRA1 = 'D'                           
+                OR WS-LETRA1 = 'E' OR WS-LETRA1 = 'F'                           
+                OR WS-LETRA1 = 'G' OR WS-LETRA1 = 'H'                           
+                OR WS-LETRA1 = 'I' OR WS-LETRA1 = 'J'                           
+                OR WS-LETRA1 = 'K' OR WS-LETRA1 = 'N'                           
+                OR WS-LETRA1 = 'O' OR WS-LETRA1 = 'P'                           
+                OR WS-LETRA1 = 'O' OR WS-LETRA1 = 'P'                           
+                OR WS-LETRA1 = 'Q' OR WS-LETRA1 = 'R'                           
+                OR WS-LETRA1 = 'S' OR WS-LETRA1 = 'T'                           
+                OR WS-LETRA1 = 'U' OR WS-LETRA1 = 'V'                           
+                OR WS-LETRA1 = 'W'                                              
+      *         PRIMERA LETRA OK                                                
+                   CONTINUE                                                     
+                ELSE                                                            
+      *         PRIMERA LETRA INCOREECTA                                        
+                   SET SW-SI-ERROR-TER TO TRUE                                  
+      *                                                                         
+                   MOVE 'GRAVE' TO ERRVAL-INCIDENCIA                            
+                   MOVE 'NIF DE TERCERO' TO ERRVAL-CAMPO                        
+                   MOVE  WS-DAT3OS-NUM-IDENT TO ERRVAL-VALOR-CAMPO              
+                   MOVE '1RA LETRA NIF INCORRECTA PARA PERS JURIDICA'           
+                                        TO ERRVAL-DESCRIPCION                   
+      *                                                                         
+                   PERFORM 7450-GRABA-ERROR-VALID-TERCER                        
+                END-IF                                                          
+      *      ***   VALIDACIONES NOMBRE TERCERO ****                             
+                MOVE  WS-DAT3OS-NOMBR-3O(1:1) TO WS-LETRA1                      
+      *  SI ES PERSONA JURIDICA EL NOMBRE NO PUEDE EMPEZAR CON BLANCO,          
+      *  NI CON '.' NI CON ',' NI CON '*'                                       
+                IF WS-LETRA1 = ' ' OR WS-LETRA1 = '.'                           
+                OR WS-LETRA1 = ',' OR WS-LETRA1 = '*'                           
+      *         PRIMERA LETRA INCOREECTA                                        
+                   SET SW-SI-ERROR-TER TO TRUE                                  
+      *                                                                         
+                   MOVE 'GRAVE' TO ERRVAL-INCIDENCIA                            
+                   MOVE 'NOMBRE DE TERCERO' TO ERRVAL-CAMPO                     
+                   MOVE  WS-DAT3OS-NOMBR-3O TO ERRVAL-VALOR-CAMPO               
+                   MOVE '1RA LETRA NOMBRE PERS JURIDICA INCORRECTA'             
+                                        TO ERRVAL-DESCRIPCION                   
+      *                                                                         
+                   PERFORM 7450-GRABA-ERROR-VALID-TERCER                        
+                END-IF                                                          
+      *      ***   VALIDACIONES APELLIDO 1 *********                            
+      *  SI ES PERSONA JURIDICA EL APELLIDO1 DEBE ESTAR VACIO                   
+                IF  WS-DAT3OS-1ER-APEL  NOT EQUAL SPACES                        
+                AND WS-DAT3OS-1ER-APEL  NOT EQUAL LOW-VALUES                    
+                   SET SW-SI-ERROR-TER TO TRUE                                  
+      *                                                                         
+                   MOVE 'GRAVE' TO ERRVAL-INCIDENCIA                            
+                   MOVE 'PRIMER APELLIDO  ' TO ERRVAL-CAMPO                     
+                   MOVE  WS-DAT3OS-1ER-APEL TO ERRVAL-VALOR-CAMPO               
+                   MOVE 'SI PERS JURIDICA, APELLIDO1 = VACIO'                   
+                                        TO ERRVAL-DESCRIPCION                   
+      *                                                                         
+                   PERFORM 7450-GRABA-ERROR-VALID-TERCER                        
+                END-IF                                                          
+      *      ***   VALIDACIONES APELLIDO 2 *********                            
+      *  SI ES PERSONA JURIDICA EL APELLIDO2 DEBE ESTAR VACIO                   
+                IF  WS-DAT3OS-2O-APEL   NOT EQUAL SPACES                        
+                AND WS-DAT3OS-2O-APEL   NOT EQUAL LOW-VALUES                    
+                   SET SW-SI-ERROR-TER TO TRUE                                  
+      *                                                                         
+                   MOVE 'GRAVE' TO ERRVAL-INCIDENCIA                            
+                   MOVE 'SEGUNDO APELLIDO  ' TO ERRVAL-CAMPO                    
+                   MOVE  WS-DAT3OS-2O-APEL  TO ERRVAL-VALOR-CAMPO               
+                   MOVE 'SI PERS JURIDICA, APELLIDO2 = VACIO'                   
+                                        TO ERRVAL-DESCRIPCION                   
+      *                                                                         
+                   PERFORM 7450-GRABA-ERROR-VALID-TERCER                        
+                END-IF                                                          
+             ELSE                                                               
+                SET SW-SI-ERROR-TER TO TRUE                                     
+      *                                                                         
+                   MOVE 'GRAVE' TO ERRVAL-INCIDENCIA                            
+                   MOVE 'TIPO DE TERCERO' TO ERRVAL-CAMPO                       
+                   MOVE  WS-DAT3OS-TIPO-3O TO ERRVAL-VALOR-CAMPO                
+                   MOVE 'VALOR FISICA(F) O JURIDICA(J)'                         
+                                           TO ERRVAL-DESCRIPCION                
+      *                                                                         
+                   PERFORM 7450-GRABA-ERROR-VALID-TERCER                        
+             END-IF                                                             
+           END-IF                                                               
+      *                                                                         
+           IF WS-DAT3OS-NUM-IDENT(7:3) = ' 1R'                                  
+           OR WS-DAT3OS-NUM-IDENT(1:2) = '1R'                                   
+           OR WS-DAT3OS-NUM-IDENT = 'A28229599'                                 
+           OR WS-DAT3OS-NUM-IDENT = 'A80434699'                                 
+              SET SW-SI-ERROR-TER TO TRUE                                       
+      *                                                                         
+              MOVE 'GRAVE' TO ERRVAL-INCIDENCIA                                 
+              MOVE 'NIF DE TERCERO' TO ERRVAL-CAMPO                             
+              MOVE  WS-DAT3OS-NUM-IDENT TO ERRVAL-VALOR-CAMPO                   
+              MOVE 'NIF DE TERCERO INCORRECTO'                                  
+                                   TO ERRVAL-DESCRIPCION                        
+      *                                                                         
+                   PERFORM 7450-GRABA-ERROR-VALID-TERCER                        
+           END-IF                                                               
+      *                                                                         
+
+      *    AQUI SERA DONDE GRABEMOS EL FICHERO DE TERCEROS                      
+           IF SW-MARCA-EMISION-X                                                
+               MOVE 'X'           TO  X362X104-DAT3OS-SIMPRENTA                 
+               MOVE 'FALTA INFORMACION ORIGEN'                                  
+                                  TO X362X104-DAT3OS-GOBSERVACION               
+      * AHORA RESTAMOS 2 A—OS A LA FECHA DE ACTUALIZACION                       
+              MOVE X362X104-DAT3OS-FECHA(1:4) TO WS-ANO-ACTUALIZ                
+      *                                                                         
+              COMPUTE WS-ANO-ACTUALIZ = WS-ANO-ACTUALIZ - 2                     
+      *                                                                         
+              MOVE WS-ANO-ACTUALIZ       TO X362X104-DAT3OS-FECHA(1:4)          
+           END-IF                                                               
+
+           MOVE RD400116-CIDENTIFICACION TO X362X104-DAT3OS-NUM-IDENT           
+      *                                                                         
+           WRITE REGOUT12      FROM WS-X362X104.                                
+      **************************************************************            
+       7450-GRABA-ERROR-VALID-TERCER.                                           
+      **************************************************************            
+      *                                                                         
+           MOVE 'B372JI14'              TO ERRVAL-PROGRAMA                      
+           MOVE 'TERCEROS'              TO ERRVAL-FICHERO                       
+           MOVE  WS-ANIO-TEC            TO ERRVAL-ANIO                          
+           MOVE  WS-KEXPEDIENTE-TEC     TO ERRVAL-KEXPEDIENTE                   
+           MOVE  RD400116-KPOLIZA       TO ERRVAL-KPOLIZA                       
+           MOVE  RD400116-NSUBPOLIZA    TO ERRVAL-NSUBPOLIZA                    
+           MOVE  RD400116-NCERTIFICADO  TO ERRVAL-KCERTIFICADO                  
+           MOVE  RD400116-CSOCIEDAD     TO ERRVAL-COD-SOCIEDAD                  
+      *                                                                         
+           IF SW-SI-ERROR-TER                                                   
+      ***  ESCRIBIMOS EN EL FICHERO DE ERROR DE TERCEROS                        
+              WRITE REG-ERRORVAL FROM WS-COPY-ERRVAL                            
+           END-IF                                                               
+      *                                                                         
+           SET SW-NO-ERROR-TER     TO TRUE                                      
+      *                                                                         
+           INITIALIZE  WS-COPY-ERRVAL                                           
+      *                                                                         
+           .                                                                    
+
+      **************************************************************            
+       7025-GET-DATOS-FISCALES-PERS.                                            
+      **************************************************************            
+           INITIALIZE WS-X160M002.                                              
+           MOVE LT-MODO-DAT-FISC-PER TO X160M002-CMODO-E.                       
+           MOVE WS-TMP-KPERSONA      TO X160M002-KPERSONA-E.                    
+           MOVE ZEROES               TO X160M002-KPERSOTOM-E.                   
+           MOVE WS-FECHA             TO X160M002-FVIGENCIA-E.                   
+
+           IF RD400116-CSOCIEDAD EQUAL 'A365'                                   
+              MOVE '   20'           TO X160M002-K2COMPANIA-E                   
+           ELSE                                                                 
+              MOVE '   10'           TO X160M002-K2COMPANIA-E                   
+           END-IF                                                               
+
+           CALL WS-B160M002 USING WS-X160M002.                                  
+
+           IF X160N000-CRETORNO-S OF WS-X160M002 = ZEROES     OR                
+              X160N000-CRETORNO-S OF WS-X160M002 = LT-ERROR-NOT-FND             
+
+      ***  TIPO DE CONTRATO                                                     
+
+              MOVE 0 TO X362X105-M190-TIP-RELAC                                 
+
+      **   DISCAPACIDAD                                                         
+              EVALUATE X160M002-K2GRADODISC-S(1)                                
+                    WHEN LT-SIN-DISCAPACIDAD                                    
+                         MOVE ZEROES TO X362X105-M190-DISCAPAC                  
+                    WHEN LT-DISC-SUP-33-INF-65                                  
+                         IF X160M002-K2SITUACION-S(1) NOT = CN-ACTIVO           
+                               MOVE 1 TO X362X105-M190-DISCAPAC                 
+                         ELSE                                                   
+                               MOVE 2 TO X362X105-M190-DISCAPAC                 
+                         END-IF                                                 
+                    WHEN LT-DISC-SUP-65                                         
+                         MOVE 3 TO X362X105-M190-DISCAPAC                       
+                    WHEN OTHER                                                  
+                         MOVE ZEROES TO X362X105-M190-DISCAPAC                  
+              END-EVALUATE                                                      
+
+      **   SITUACION FAMILIAR                                                   
+              EVALUATE X160M002-K2SITFAM-S (1)                                  
+                    WHEN CN-SITUACION-01                                        
+                         MOVE 1      TO X362X105-M190-SIT-FAMI                  
+                    WHEN CN-SITUACION-02                                        
+                         MOVE 2      TO X362X105-M190-SIT-FAMI                  
+      **   IDENTIFICADOR DE CÛNYUGE                                             
+
+                         IF X160M002-CNIFCONYUGE-S(1)(10:1)= SPACE              
+                            MOVE X160M002-CNIFCONYUGE-S(1)(1:9)                 
+                              TO X362X105-M190-NIF-CONYU                        
+                         ELSE                                                   
+                            MOVE X160M002-CNIFCONYUGE-S(1)(2:9)                 
+                              TO X362X105-M190-NIF-CONYU                        
+                         END-IF                                                 
+
+                    WHEN CN-SITUACION-03                                        
+                         MOVE 3      TO X362X105-M190-SIT-FAMI                  
+                    WHEN OTHER                                                  
+                         MOVE 3      TO X362X105-M190-SIT-FAMI                  
+              END-EVALUATE                                                      
+
+      **   ANUALIDADES POR ALIMENTOS                                            
+              COMPUTE X362X105-M190-ANU-ALIMENT ROUNDED =                       
+                      X160M002-IANUALALIM-S(1)                                  
+              IF SI-COASEGUR                                                    
+                 COMPUTE X362X105-M190-ANU-ALIMENT =                            
+                         (X362X105-M190-ANU-ALIMENT * WS-PORC-COA-DECI)         
+                         / 100                                                  
+              END-IF                                                            
+
+      ***  GASTOS                                                               
+              MOVE ZEROS         TO X362X105-M190-GASTOS                        
+
+      **   PENSION CÛNYUGE                                                      
+              COMPUTE X362X105-M190-PENS-CONYU ROUNDED =                        
+                      X160M002-IPENSIONCOM-S(1)                                 
+              IF SI-COASEGUR                                                    
+                 COMPUTE X362X105-M190-PENS-CONYU =                             
+                         (X362X105-M190-PENS-CONYU * WS-PORC-COA-DECI)          
+                         / 100                                                  
+              END-IF                                                            
+
+      **   PROLONGA LA VIDA LABORAL                                             
+              MOVE ZEROES TO X362X105-M190-PR-ACTLAB                            
+
+      **   MOVILIDAD GEOGRAFICA                                                 
+              MOVE ZEROES TO X362X105-M190-MOV-GEOG                             
+
+           ELSE                                                                 
+              SET ERROR-GRAVE TO TRUE                                           
+           END-IF.                                                              
+
+           MOVE WS-IRPF-IRREDUCCION-4 TO X362X105-M190-REDUCCION.               
+           IF SI-COASEGUR                                                       
+              COMPUTE X362X105-M190-REDUCCION  =                                
+                     (X362X105-M190-REDUCCION  * WS-PORC-COA-DECI)              
+                      / 100                                                     
+           END-IF.                                                              
+
+      **************************************************************            
+       7028-OBTENER-IMPORTES-ANUALES.                                           
+      **************************************************************            
+           INITIALIZE WS-X160M006.                                              
+
+           MOVE 'C1'                 TO X160M006-CMODO-E.                       
+           MOVE WS-TMP-KPERSONA      TO X160M006-KPERSONA-E.                    
+           IF RD400116-CSOCIEDAD EQUAL 'A365'                                   
+              MOVE '   20'           TO X160M006-K2COMPANIA-E                   
+           ELSE                                                                 
+              MOVE '   10'           TO X160M006-K2COMPANIA-E                   
+           END-IF                                                               
+           MOVE ZEROES               TO X160M006-KPERSOTOM-E.                   
+           MOVE WS-TMP-K2TIPOIMP     TO X160M006-K2TIPOIMP-E.                   
+           MOVE WS-FECHA             TO X160M006-FVIGENCIA-E.                   
+
+      **   KSECIMPUESTO SE CONSIDERA EN UN PRINCIPI SIEMPRE 1                   
+           MOVE 1                    TO X160M006-KSECIMPUESTO-E.                
+
+           CALL WS-B160M006 USING WS-X160M006.                                  
+
+           IF X160M006-MINORADO-S(1) NOT = SPACES                               
+              MOVE '1' TO X362X105-VIVIENDO-HABITUAL                            
+           ELSE                                                                 
+              MOVE '0' TO X362X105-VIVIENDO-HABITUAL                            
+           END-IF                                                               
+
+           IF X160N000-CRETORNO-S OF WS-X160M006 NOT = ZEROES                   
+                 SET ERROR-GRAVE TO TRUE                                        
+           END-IF.                                                              
+
+      **************************************************************            
+       7100-GET-ASCEND-DESCEND.                                                 
+      **************************************************************            
+           INITIALIZE WS-X160M004.                                              
+
+           MOVE LT-MODO-ASCEN-DESCEND-M004 TO X160M004-CMODO-E.                 
+           MOVE WS-TMP-KPERSONA            TO X160M004-KPERSONA-E.              
+           IF RD400116-CSOCIEDAD EQUAL 'A365'                                   
+              MOVE '   20'           TO X160M004-K2COMPANIA-E                   
+           ELSE                                                                 
+              MOVE '   10'           TO X160M004-K2COMPANIA-E                   
+           END-IF                                                               
+           MOVE ZEROES                     TO X160M004-KPERSOTOM-E.             
+           MOVE WS-FECHA                   TO X160M004-FVIGENCIA-E.             
+
+           CALL WS-B160M004 USING WS-X160M004.                                  
+
+           IF X160N000-CRETORNO-S OF WS-X160M004 = ZEROES                       
+              PERFORM 7105-TRATAR-ASCEND-DESCEND                                
+           ELSE                                                                 
+              IF X160N000-CRETORNO-S OF WS-X160M004 NOT = '00003'               
+                 SET ERROR-GRAVE TO TRUE                                        
+              ELSE                                                              
+      * SI NO TIENE DESCENDIENTE EL COMPUTO DE HIJO DEBE SER CERO               
+                 MOVE '0'    TO X362X105-COMPUTO-1HIJO                          
+                                X362X105-COMPUTO-2HIJO                          
+                                X362X105-COMPUTO-3HIJO                          
+              END-IF                                                            
+           END-IF.                                                              
+
+
+      **************************************************************            
+       7105-TRATAR-ASCEND-DESCEND.                                              
+      **************************************************************            
+
+           MOVE 1 TO XN-I.                                                      
+           PERFORM UNTIL XN-I > X160M004-SPDA0-OCCUR-S                          
+                      OR XN-I > LT-NUM-OCCURS-PDA-M004                          
+
+                 IF X160M004-K2FAMILIAR-S(XN-I) = LT-DESCENDIENTE               
+                       PERFORM 7120-TRATAR-DESCENDENTES                         
+                       PERFORM 7110-TRATAR-EDADES-DESCEND                       
+                       PERFORM 7115-TRATAR-DISCAPACID-DESCEND                   
+                 ELSE                                                           
+                       MOVE '0'    TO X362X105-COMPUTO-1HIJO                    
+                                      X362X105-COMPUTO-2HIJO                    
+                                      X362X105-COMPUTO-3HIJO                    
+
+                       PERFORM 7140-TRATAR-DISCAPACID-ASCEND                    
+                       PERFORM 7145-TRATAR-EDADES-ASCEND                        
+                 END-IF                                                         
+                 ADD 1 TO XN-I                                                  
+           END-PERFORM.                                                         
+
+
+      **************************************************************            
+       7110-TRATAR-EDADES-DESCEND.                                              
+      **************************************************************            
+           MOVE X160M004-FNACIMIENTO-S(XN-I)(1:4) TO WS-TMPFANAC.               
+
+           IF WS-ANO - WS-TMPFANAC <= CN-EDAD-3                                 
+                 ADD 1 TO X362X105-M190-D-M3                                    
+                 IF X160M004-SENTERO-S(XN-I) = LT-VALUE-SI                      
+                       ADD 1 TO X362X105-M190-D-M3-ENT                          
+                       MOVE ZERO TO X362X105-M190-NHIJOS                        
+                 END-IF                                                         
+           ELSE                                                                 
+                 IF  WS-ANO - WS-TMPFANAC > CN-EDAD-3                           
+                 AND WS-ANO - WS-TMPFANAC < CN-EDAD-16                          
+                       MOVE ZERO TO X362X105-M190-D-MA3-M16                     
+                       MOVE ZERO TO X362X105-M190-NHIJOS                        
+                 ELSE                                                           
+                       IF  WS-ANO - WS-TMPFANAC >= CN-EDAD-16                   
+                       AND WS-ANO - WS-TMPFANAC <  CN-EDAD-25                   
+                             MOVE ZERO TO X362X105-M190-D-MA16-M25              
+                             MOVE ZERO TO X362X105-M190-NHIJOS                  
+                       END-IF                                                   
+                 END-IF                                                         
+
+      *          CALCULAMOS EL NÈMERO RESTANTE DE DESCENDIENTES Y EL            
+      *          NÈMERO RESTANTES DE DESCENDIENTES POR ENTERO                   
+                 IF WS-ANO - WS-TMPFANAC <= CN-EDAD-25                          
+                 OR X160M004-K2GDISCAP-S(XN-I) NOT =                            
+                    LT-SIN-DISCAPACIDAD                                         
+                       ADD 1 TO X362X105-M190-REST-DESC                         
+                       MOVE ZERO TO X362X105-M190-NHIJOS                        
+
+                 IF X160M004-SENTERO-S(XN-I) = LT-VALUE-SI                      
+                       ADD 1 TO X362X105-M190-RST-DESC-E                        
+                 END-IF                                                         
+           END-IF.                                                              
+
+
+      **************************************************************            
+       7115-TRATAR-DISCAPACID-DESCEND.                                          
+      **************************************************************            
+           EVALUATE X160M004-K2GDISCAP-S(XN-I)                                  
+                 WHEN LT-DISC-SUP-33-INF-65                                     
+                       ADD 1 TO X362X105-M190-DD-MA33-M65                       
+
+                       IF X160M004-SENTERO-S(XN-I) = LT-VALUE-SI                
+                          ADD 1 TO X362X105-M190-DD-MA33-M65-E                  
+
+                          IF X160M004-SMOVREDUC-S(XN-I) = LT-VALUE-SI           
+                             ADD 1 TO X362X105-M190-DD-3365-MR-E                
+                          END-IF                                                
+                       END-IF                                                   
+      **               TIENE MOVILIDAD REDUCIDA                                 
+                       IF X160M004-SMOVREDUC-S(XN-I) = LT-VALUE-SI              
+                              ADD 1 TO X362X105-M190-DD-MA33-M65-MR             
+                       END-IF                                                   
+
+                 WHEN LT-DISC-SUP-65                                            
+                       ADD 1 TO X362X105-M190-DD-MA65                           
+
+                       IF X160M004-SENTERO-S(XN-I) = LT-VALUE-SI                
+                              ADD 1 TO X362X105-M190-DD-MA65-ENT                
+                       END-IF                                                   
+           END-EVALUATE.                                                        
+
+      **************************************************************            
+      *7120-TRATAR-DESCENDENTES                                                 
+      **************************************************************            
+       7120-TRATAR-DESCENDENTES.                                                
+
+           IF X160M004-KFAMILIAR-S(XN-I) = 1                                    
+      *D*                                                                       
+      *    DISPLAY 'FAMILIAR 1----'                                             
+      *F*                                                                       
+
+              IF X160M004-SENTERO-S(XN-I) = 'S'                                 
+      *D*                                                                       
+      *    DISPLAY 'SENTERO SI-'                                                
+      *F*                                                                       
+                 MOVE '1' TO X362X105-COMPUTO-1HIJO                             
+              ELSE                                                              
+      *D*                                                                       
+      *    DISPLAY 'SENTERO NO-'                                                
+      *F*                                                                       
+                 MOVE '2' TO X362X105-COMPUTO-1HIJO                             
+              END-IF                                                            
+
+           ELSE                                                                 
+      *D*                                                                       
+      *    DISPLAY 'FAMILIAR 2----'                                             
+      *F*                                                                       
+              IF X160M004-KFAMILIAR-S(XN-I) = 2                                 
+
+                 IF X160M004-SENTERO-S(XN-I) = 'S'                              
+      *D*                                                                       
+      *    DISPLAY 'SENTERO SI-'                                                
+      *F*                                                                       
+                    MOVE '1' TO X362X105-COMPUTO-2HIJO                          
+                 ELSE                                                           
+      *D*                                                                       
+      *    DISPLAY 'SENTERO NO-'                                                
+      *F*                                                                       
+                    MOVE '2' TO X362X105-COMPUTO-2HIJO                          
+                 END-IF                                                         
+              ELSE                                                              
+      *D*                                                                       
+      *    DISPLAY 'FAMILIAR 3----'                                             
+      *F*                                                                       
+
+                 IF X160M004-KFAMILIAR-S(XN-I) = 3                              
+
+                    IF X160M004-SENTERO-S(XN-I) = 'S'                           
+      *D*                                                                       
+      *    DISPLAY 'SENTERO SI-'                                                
+      *F*                                                                       
+                       MOVE '1' TO X362X105-COMPUTO-3HIJO                       
+                    ELSE                                                        
+      *D*                                                                       
+      *    DISPLAY 'SENTERO NO-'                                                
+      *F*                                                                       
+                       MOVE '2' TO X362X105-COMPUTO-3HIJO                       
+                 END-IF                                                         
+              END-IF                                                            
+           END-IF.                                                              
+
+      **************************************************************            
+       7140-TRATAR-DISCAPACID-ASCEND.                                           
+      **************************************************************            
+      *D*                                                                       
+      *    DISPLAY '--------------------------------------'.                    
+      *    DISPLAY 'B160J303-6140:TRATAR-DISCAPACID-ASCEND'.                    
+      *    DISPLAY '--------------------------------------'.                    
+      *F*                                                                       
+           EVALUATE X160M004-K2GDISCAP-S(XN-I)                                  
+                 WHEN LT-DISC-SUP-33-INF-65                                     
+                       ADD 1 TO X362X105-M190-AD-MA33-M65                       
+
+                       IF X160M004-SENTERO-S(XN-I) = LT-VALUE-SI                
+                          ADD 1 TO X362X105-M190-AD-MA33-M65-E                  
+
+                          IF X160M004-SMOVREDUC-S(XN-I) = LT-VALUE-SI           
+                             ADD 1 TO X362X105-M190-AD-3365-MR-E                
+                          END-IF                                                
+                       END-IF                                                   
+
+                       IF X160M004-SMOVREDUC-S(XN-I) = LT-VALUE-SI              
+                              ADD 1 TO X362X105-M190-AD-MA33-M65-MR             
+                       END-IF                                                   
+                 WHEN LT-DISC-SUP-65                                            
+                       ADD 1 TO X362X105-M190-AD-MA65                           
+
+                       IF X160M004-SENTERO-S(XN-I) = LT-VALUE-SI                
+                              ADD 1 TO X362X105-M190-AD-MA65-ENT                
+                       END-IF                                                   
+           END-EVALUATE.                                                        
+
+
+      **************************************************************            
+       7145-TRATAR-EDADES-ASCEND.                                               
+      **************************************************************            
+      *D*                                                                       
+      *    DISPLAY '----------------------------------'.                        
+      *    DISPLAY 'B160J303-6145:TRATAR-EDADES-ASCEND'.                        
+      *    DISPLAY '----------------------------------'.                        
+      *F*                                                                       
+           MOVE X160M004-FNACIMIENTO-S(XN-I)(1:4) TO WS-TMPFANAC.               
+
+           IF WS-ANO - WS-TMPFANAC < CN-EDAD-75                                 
+                 ADD 1 TO X362X105-M190-A-M75                                   
+                 IF X160M004-SENTERO-S(XN-I) = LT-VALUE-SI                      
+                       ADD 1 TO X362X105-M190-A-M75-ENT                         
+                 END-IF                                                         
+           ELSE                                                                 
+                 IF  WS-ANO - WS-TMPFANAC >= CN-EDAD-75                         
+                       ADD 1 TO X362X105-M190-A-MA75                            
+
+                       IF X160M004-SENTERO-S(XN-I) = LT-VALUE-SI                
+                             ADD 1 TO X362X105-M190-A-MA75-ENT                  
+                       END-IF                                                   
+                 END-IF                                                         
+           END-IF.                                                              
+
+
+      **************************************************************            
+       7200-INFO-X362X105.                                                      
+      **************************************************************            
+      *D*                                                                       
+      *    DISPLAY '---------------------------'.                               
+      *    DISPLAY 'B160J303-6500:INFO-X362X105'.                               
+      *    DISPLAY '---------------------------'.                               
+      *F*                                                                       
+           MOVE RD400116-CSOCIEDAD         TO X362X105-M190-SOCIEDAD.           
+VE2   * INFORMAMOS EL A—O DE EJECRICIO CONNEL EJRCICIO REAL                     
+VE2   * DE LA INFORMACION QUE SE ENVIO EN SU DIA                                
+VE2   *    MOVE '1999'                     TO X362X105-M190-AEJERC.             
+VE2        MOVE RD400116-FAEJERCICIO       TO X362X105-M190-AEJERC.             
+
+           IF SI-COASEGUR                                                       
+              MOVE WS-FACT-REF-CATAST-CCOA TO X362X105-M190-COD-COASEG          
+           ELSE                                                                 
+              MOVE LT-MAVI-COASEGURO       TO X362X105-M190-COD-COASEG          
+           END-IF.                                                              
+           IF X362X105-M190-COD-COASEG EQUAL SPACES                             
+              MOVE LT-MAVI-COASEGURO       TO X362X105-M190-COD-COASEG          
+           END-IF.                                                              
+           MOVE RD400116-CSISTEMA          TO X362X105-M190-SIST-GEST.          
+           MOVE WS-DATECO-PROV-FISCAL      TO X362X105-M190-CL-AEAT.            
+
+      *ADMINISTRACION DE HACIENDA - PROVINCIA FISCAL                            
+           IF WS-DATECO-PROV-FISCAL NOT = '01' AND                              
+              WS-DATECO-PROV-FISCAL NOT = '20' AND                              
+              WS-DATECO-PROV-FISCAL NOT = '48' AND                              
+              WS-DATECO-PROV-FISCAL NOT = '31' THEN                             
+                 MOVE '28' TO X362X105-M190-CL-AEAT                             
+           END-IF.                                                              
+
+      ***  IDENTIFICADOR DEL TERCERO PARA MODELO AUXILIAR                       
+           MOVE RD400116-CIDENTIFICACION TO X362X105-M190-NID-3O.               
+
+
+           PERFORM 7905-RECUPERAR-FNACIMIENTO.                                  
+      ***  FECHA EN LA CUAL GRAVAMOS LOS DATOS                                  
+            IF NO-EXISTE                                                        
+                MOVE WS-FECHA     TO X362X105-M190-FOBT-DATOS                   
+                MOVE X160N315-PPE-FNACIMIENTO-S(1)                              
+                  TO X362X105-M190-FNACIMIENTO                                  
+            ELSE                                                                
+              IF X160M002-NANONAC-S(1) = ZEROES                                 
+               OR X160M002-NANONAC-S(1) = SPACES                                
+               OR X160M002-NANONAC-S(1) = LOW-VALUES                            
+                  MOVE WS-FECHA     TO X362X105-M190-FOBT-DATOS                 
+                  MOVE X160N315-PPE-FNACIMIENTO-S(1)                            
+                    TO X362X105-M190-FNACIMIENTO                                
+              ELSE                                                              
+                IF X160N315-PPE-FNACIMIENTO-S(1) = SPACES                       
+                 OR X160N315-PPE-FNACIMIENTO-S(1) = '00000000'                  
+                    MOVE WS-FECHA     TO X362X105-M190-FOBT-DATOS               
+                    MOVE X160M002-NANONAC-S(1)                                  
+                      TO WS-AUXNACIMIEN(1:4)                                    
+      *COLOCAMOS LA FECHA DE NACIMIENTO A LA IZQUIERDA NO A LA DERECHA          
+                    MOVE  WS-AUXNACIMIEN                                        
+                      TO X362X105-M190-FNACIMIENTO                              
+                ELSE                                                            
+                   MOVE WS-FECHA     TO X362X105-M190-FOBT-DATOS                
+                   MOVE X160N315-PPE-FNACIMIENTO-S(1)                           
+                     TO X362X105-M190-FNACIMIENTO                               
+                END-IF                                                          
+              END-IF                                                            
+            END-IF                                                              
+
+VE2   *    MOVEMOS UNA FECHA FICTICIA ANTIGUA                                   
+VE2        MOVE  '19991201' TO X362X105-M190-FOBT-DATOS                         
+      **   ASIGNACIÛN AÒO DE DEVENGO                                            
+           MOVE RD400116-FAEJERCICIO-DEVENGO                                    
+                                    TO X362X105-M190-EJ-DEVENGO.                
+
+      **************************************************************            
+      * 7900-OBTENER-TABLA-ESPECIAL                                *            
+      **************************************************************            
+      *                                                                         
+       7900-OBTENER-TABLA-ESPECIAL.                                             
+      *D*                                                                       
+      *    DISPLAY 'B160J303: 3301-OBTENER-TABLA-ESPECIAL' .                    
+      *F*                                                                       
+           INITIALIZE WS-X960M010.                                              
+           MOVE 'C'                         TO X960M010-CLAVE-E.                
+           MOVE '06231'                     TO X960M010-K1TAB-E.                
+           MOVE X160N315-PDO-CTIPOVIA-S (XN-I) (1:3)                            
+             TO X960M010-KCLAVE-E(1:5).                                         
+           MOVE WS-FECHA                    TO X960M010-FECHA-E.                
+
+           CALL WS-B960M010      USING   WS-X960M010.                           
+
+           IF R960T001-KRETORNO OF WS-X960M010 = '00'                           
+              MOVE X960M010-ATO0-NVALOR-S(1) TO WS-TMP-TIP-VIA                  
+           ELSE                                                                 
+              MOVE X160N315-PDO-CTIPOVIA-S(XN-I)(1:2) TO WS-TMP-TIP-VIA         
+           END-IF.                                                              
+
+      **************************************************************            
+      * 7901-LLAMADA-VA962052.                                     *            
+      **************************************************************            
+      *                                                                         
+       7901-LLAMADA-VA962052.                                                   
+      *D*                                                                       
+      *    DISPLAY 'B362J010: 7900-OBTENER-TABLA-ESPECIAL' .                    
+      *F*                                                                       
+            INITIALIZE RA961052                                                 
+            IF RD400116-CSOCIEDAD EQUAL 'A365'                                  
+               MOVE '   20'           TO RA961052-CEMPRESA                      
+            ELSE                                                                
+               MOVE '   10'           TO RA961052-CEMPRESA                      
+            END-IF                                                              
+            MOVE RD400116-CMODELO           TO RA961052-CMODAL5                 
+            MOVE SPACES                     TO RA961052-COPCION                 
+
+            CALL WS-VA962052   USING RA961052                                   
+
+            IF RA961052-CRETORNO = '00'                                         
+               MOVE RA961052-KMODALSAP(1:1)                                     
+                 TO WS-IRPF-COD-CUENT-VALORS(1:1)                               
+            END-IF.                                                             
+      * MU-2017-BDGI-R-V-INIV7                                                  
+            IF WS-IRPF-COD-CUENT-VALORS(1:1) EQUAL SPACES                       
+               MOVE '0'       TO WS-IRPF-COD-CUENT-VALORS(1:1)                  
+            END-IF                                                              
+      * MU-2017-BDGI-R-V-FINV7                                                  
+
+            MOVE RD400116-CMODELO                                               
+              TO WS-MODALIDAD.                                                  
+            MOVE WS-MODALIDAD(3:3)                                              
+              TO WS-IRPF-COD-CUENT-VALORS(2:3).                                 
+
+      ***************************************************************           
+      *7902-CONSULTA-PAIS.                                                      
+      ***************************************************************           
+      * COMPROBAMOS SI EL PAIS EN LA TABLA EN LA TABLA 01164,       *           
+      ***************************************************************           
+       7902-CONSULTA-PAIS.                                                      
+      *D*                                                                       
+      *    DISPLAY 'B372JI14- SE LLAMA AL B960M007'.                            
+      *F*                                                                       
+
+            INITIALIZE WS-X960M007.                                             
+            MOVE '01164'                 TO X960M007-ATT0-K1TAB-E               
+                                            OF WS-X960M007.                     
+            MOVE X160N315-PDO-CPAIS-S(XN-I) (1:3)                               
+              TO X960M007-ATT0-K2TAB-E      OF WS-X960M007.                     
+            MOVE '830'                   TO X960M007-AET0-K1IDIOMA-E            
+                                            OF WS-X960M007.                     
+            MOVE 'ES'                    TO X960M007-AET0-K2IDIOMA-E            
+                                            OF WS-X960M007.                     
+
+            CALL WS-B960M007 USING WS-X960M007.                                 
+
+            IF R960T001-KRETORNO OF WS-X960M007 EQUAL TO ZEROES                 
+              MOVE 'S'                   TO SW-PAIS                             
+            ELSE                                                                
+              MOVE 'N'                   TO SW-PAIS                             
+            END-IF.                                                             
+
+
+      **************************************************************            
+      * 7905-RECUPERAR-FNACIMIENTO.                               *             
+      **************************************************************            
+       7905-RECUPERAR-FNACIMIENTO.                                              
+
+           INITIALIZE WS-X160M002.                                              
+
+           SET NO-EXISTE TO TRUE                                                
+           MOVE 'C6'                 TO X160M002-CMODO-E.                       
+           MOVE WS-TMP-KPERSONA      TO X160M002-KPERSONA-E.                    
+           MOVE WS-FECHA             TO X160M002-FVIGENCIA-E.                   
+
+           CALL WS-B160M002 USING WS-X160M002.                                  
+           IF X160N000-CRETORNO-S OF WS-X160M002 = ZEROES                       
+             SET SI-EXISTE TO TRUE                                              
+           ELSE                                                                 
+             IF X160N000-CRETORNO-S OF WS-X160M002 = '00003'                    
+                SET NO-EXISTE TO TRUE                                           
+             ELSE                                                               
+               SET ERROR-GRAVE TO TRUE                                          
+             END-IF                                                             
+           END-IF.                                                              
+
+      **************************************************************            
+       9000-CERRAR-FIC-ENTRADA.                                                 
+      **************************************************************            
+      *    CERRAMOS LOS FICHEROS                                                
+           CLOSE DATOS-ECON FIC-D3 FIC-M190.                                    
+           CLOSE  ERRORVAL.                                                     
+
+           INITIALIZE RA961052.                                                 
+           MOVE 'C'   TO RA961052-COPERACION.                                   
+           CALL WS-VA962052   USING RA961052.                                   
+
+           CONTINUE.                                                            
+
+      **************************************************************            
+       10000-FIN.                                                               
+      **************************************************************            
+
+           GOBACK.                                                              

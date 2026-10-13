@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<servicios>
+	<servicio nombre_web="B372VT10ImpresionInformesVen">
+<!-- Control  de cabeceras -->
+	        <parametro  nombre_web="KSERVICIO-C"  	tipo="X"    longitud="08"       dir="ES"    ocurr="1"/> 
+	        <parametro  nombre_web="CCANAL-C"		tipo="9"    longitud="02"       dir="ES"    ocurr="1"/> 
+	        <parametro  nombre_web="KEMPRESA-C"  	tipo="X"    longitud="03"       dir="ES"    ocurr="1"/> 
+	        <parametro  nombre_web="KDEPARTA-C"  	tipo="X"    longitud="03"       dir="ES"    ocurr="1"/> 
+	        <parametro  nombre_web="KUSUARIO-C"  	tipo="X"    longitud="10"       dir="ES"    ocurr="1"/> 
+	        <parametro  nombre_web="KCADISTR-C"  	tipo="X"    longitud="01"       dir="ES"    ocurr="1"/> 
+	        <parametro  nombre_web="KFILTRO-C"  	tipo="X"    longitud="02"       dir="ES"    ocurr="1"/> 
+	        <parametro  nombre_web="FILLER-C"  		tipo="X"    longitud="17"       dir="ES"    ocurr="1"/> 
+	
+	
+<!-- inicio parametros entrada   -->
+			<parametro nombre_web="TIPOEMI-E" 	        	 tipo="X" dir="ES" ocurr="1" longitud="02"/>
+			<parametro nombre_web="ANIODESDE-E" 	       	 tipo="9" dir="ES" ocurr="1" longitud="04"/>
+			<parametro nombre_web="ANIOHASTA-E"  		     tipo="9" dir="ES" ocurr="1" longitud="04"/>
+			<parametro nombre_web="EXPEDIDESDE-E"  		     tipo="9" dir="ES" ocurr="1" longitud="10"/>
+			<parametro nombre_web="EXPEDIHASTA-E"     		 tipo="9" dir="ES" ocurr="1" longitud="10"/>
+			<parametro nombre_web="FECEMISION-E"      		 tipo="X" dir="ES" ocurr="1" longitud="08"/>
+			<parametro nombre_web="FECCALCULO-E"      		 tipo="X" dir="ES" ocurr="1" longitud="08"/>
+			<parametro nombre_web="FECEMIDESDE-E"   		 tipo="X" dir="ES" ocurr="1" longitud="08"/>
+			<parametro nombre_web="FECEMIHASTA-E"            tipo="X" dir="ES" ocurr="1" longitud="08"/>
+			<parametro nombre_web="FECPAGDESDE-E"    		 tipo="X" dir="ES" ocurr="1" longitud="08"/>
+			<parametro nombre_web="FECPAGHASTA-E"    		 tipo="X" dir="ES" ocurr="1" longitud="08"/>
+					 
+<!-- inicio parametros salida   -->
+<parametro nombre_web="REGISTROS-OCC-S" 	    dir="S"  ocurr="50">    
+			    <parametro nombre_web="ANIO-S"  			tipo="X" dir="S" ocurr="1" longitud="4"/>    
+                <parametro nombre_web="KEXPEDIENTE-S"  		tipo="X" dir="S" ocurr="1" longitud="10"/> 
+                <parametro nombre_web="KRAMO-S"  			tipo="X" dir="S" ocurr="1" longitud="03"/> 
+                <parametro nombre_web="ANIOPOL-S"  			tipo="X" dir="S" ocurr="1" longitud="04"/> 
+                <parametro nombre_web="KPOLIZA-S"  			tipo="X" dir="S" ocurr="1" longitud="10"/> 
+                <parametro nombre_web="REGIONAL-S"  		tipo="X" dir="S" ocurr="1" longitud="30"/>
+                <parametro nombre_web="KOFICINA-S"   		tipo="X" dir="S" ocurr="1" longitud="40"/>
+                <parametro nombre_web="KMODALIDAD-S"  		tipo="X" dir="S" ocurr="1" longitud="5"/>    
+                <parametro nombre_web="FECDESDELIT-S"   	tipo="X" dir="S" ocurr="1" longitud="24"/>
+                <parametro nombre_web="FECLIQUIDALIT-S"  	tipo="X" dir="S" ocurr="1" longitud="24"/>
+                <parametro nombre_web="ANOEJERCICIO-S"  	tipo="X" dir="S" ocurr="1" longitud="04"/>
+                <parametro nombre_web="IMPPREST-S"  		tipo="X" dir="S" ocurr="1" longitud="18"/>
+                <parametro nombre_web="IMPLITERAL-S"  		tipo="X" dir="S" ocurr="1" longitud="80"/> 
+                <parametro nombre_web="IMPBENEFICIOS-S"  	tipo="X" dir="S" ocurr="1" longitud="18"/>
+                <parametro nombre_web="IMPANTICIPO-S"  		tipo="X" dir="S" ocurr="1" longitud="18"/>
+                <parametro nombre_web="IMPINTEPENDP-S"  	tipo="X" dir="S" ocurr="1" longitud="18"/>
+                <parametro nombre_web="RETCUENTA-S" 		tipo="X" dir="S" ocurr="1" longitud="40"/>
+                <parametro nombre_web="IMPRETENC-S" 		tipo="X" dir="S" ocurr="1" longitud="18"/>
+                <parametro nombre_web="IMPLIQUID-S" 		tipo="X" dir="S" ocurr="1" longitud="18"/>
+                <parametro nombre_web="FECEMISIONLIT-S"  	tipo="X" dir="S" ocurr="1" longitud="24"/>
+                <parametro nombre_web="NOMBREAPELL-S"  		tipo="X" dir="S" ocurr="1" longitud="42"/>
+                <parametro nombre_web="NIF-S"  		        tipo="X" dir="S" ocurr="1" longitud="10"/>    
+                <parametro nombre_web="DOMICILIO-S"  		tipo="X" dir="S" ocurr="1" longitud="70"/>       
+                <parametro nombre_web="CODPOSTAL-S"  		tipo="X" dir="S" ocurr="1" longitud="05"/>  
+                <parametro nombre_web="POBLACION-S"  		tipo="X" dir="S" ocurr="1" longitud="30"/>        
+                <parametro nombre_web="PROVINCIA-S" 		tipo="X" dir="S" ocurr="1" longitud="21"/>                
+                <parametro nombre_web="TIPOEMSION-S"  		tipo="X" dir="S" ocurr="1" longitud="02"/>
+                <parametro nombre_web="TIPIMPUEST-S"  		tipo="X" dir="S" ocurr="1" longitud="02"/>
+                <parametro nombre_web="TIPOCOMPL-S" 	    tipo="X" dir="S" ocurr="1" longitud="01"/>   
+          </parametro>
+			<parametro nombre_web="CRETORNO-S" 	    tipo="X" dir="S" ocurr="1" longitud="2"/>
+			<parametro nombre_web="GERROR-S"	    tipo="X" dir="S" ocurr="1" longitud="100"/>
+			<parametro nombre_web="GNOMPROG-S"	    tipo="X" dir="S" ocurr="1" longitud="8"/>
+			            
+	</servicio>
+</servicios>

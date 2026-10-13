@@ -1,0 +1,946 @@
+      *RETRIEVAL                                                                
+      ******************************************************************        
+       IDENTIFICATION DIVISION.                                                 
+       PROGRAM-ID. B372JI18.                                                    
+      ******************************************************************        
+      * APLICACIÓN.....: RESCATES Y VENCIMIENTOS                       *        
+      * ANALISTA.......: EVERIS                                        *        
+      * PROGRAMADOR....: EVERIS                                        *        
+      * FECHA DE REALLIZACIÓN: 31/07/17.                               *        
+      *                                                                *        
+      * DESCRIPCIÓN:                                                   *        
+      *   ------------------------------------------------------------ *        
+      *  | GENERACION FICHERO RECLAMACIÓN SEGURO                      |*        
+      *   ------------------------------------------------------------ *        
+      *                                                                *        
+      ******************************************************************        
+      * MODIFICACION: MU-2017-BDGI-R-V                                 *        
+      * PROGRAMADOR : EVERIS                                           *        
+      * FECHA       : 18/09/2017                                                
+      * DESCRIPCION : SE AÑADE AÑO/EXPEDIENTE AL FICHERO DE SALIDA Y   *        
+      * SE DIFERENCIA ENTRE ALTA Y BAJA                                *        
+      *                                                                *        
+      ******************************************************************        
+      *                                                                *        
+      * MODIFICACION: MU-2017-BDGI-R-V2                                *        
+      * PROGRAMADOR : EVERIS                                           *        
+      * FECHA       : 24/10/2017                                                
+      * DESCRIPCION : SE CORRIGEN LOS IMPORTES "IMPORTE ABONAR" Y      *        
+      *               "BASE IMP"                                       *        
+      *                                                                *        
+      ******************************************************************        
+      /                                                                         
+       ENVIRONMENT DIVISION.                                                    
+        CONFIGURATION SECTION.                                                  
+        SPECIAL-NAMES.                                                          
+           DECIMAL-POINT IS COMMA.                                              
+       INPUT-OUTPUT SECTION.                                                    
+       FILE-CONTROL.                                                            
+      * FICHERO DE REGISTROS DE ENTRADA                                         
+           SELECT FICH-ENT                                                      
+           ASSIGN TO SYS001                                                     
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL.                                           
+      *                                                                         
+      * FICHERO DE REGISTROS DE SALIDA                                          
+           SELECT FICH-SAL                                                      
+           ASSIGN TO SYS002                                                     
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL.                                           
+      *                                                                         
+      * FICHERO DE ERRORES                                                      
+           SELECT ERRORVAL                                                      
+           ASSIGN TO ERRORVAL                                                   
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL.                                           
+      *                                                                         
+      ******************************************************************        
+      *                  DATA DIVISION                                 *        
+      ******************************************************************        
+      *                                                                         
+       DATA DIVISION.                                                           
+      *                                                                         
+       FILE SECTION.                                                            
+       FD FICH-ENT                                                              
+             BLOCK CONTAINS 0 RECORDS                                           
+             RECORDING MODE IS F                                                
+             LABEL RECORDS ARE STANDARD.                                        
+       01 REG-ENT PIC X(449).                                                   
+      *                                                                         
+       FD FICH-SAL                                                              
+             BLOCK CONTAINS 0 RECORDS                                           
+             RECORDING MODE IS F                                                
+             LABEL RECORDS ARE STANDARD.                                        
+      *MU-2017-BDGI-R-V-INI                                                     
+      * 01 REG-SAL PIC X(406).                                                  
+       01 REG-SAL PIC X(410).                                                   
+      *MU-2017-BDGI-R-V-FIN                                                     
+      *                                                                         
+       FD ERRORVAL                                                              
+           BLOCK CONTAINS 0 RECORDS                                             
+           RECORDING MODE IS F                                                  
+           LABEL RECORDS ARE STANDARD.                                          
+       01 REG-ERRORVAL                 PIC X(266).                              
+      *                                                                         
+      ******************************************************************        
+      *                  WORKING-STORAGE SECTION                       *        
+      ******************************************************************        
+      *                                                                         
+       WORKING-STORAGE SECTION.                                                 
+      *                                                                         
+       01 FILLER.                                                               
+          03 FILLER PIC X(40) VALUE 'INICIO WORKING-STORAGE SECTION'.           
+      *                                                                         
+      ** SWITCH                                                                 
+          03 SW-ERRORES              PIC X(02) VALUE SPACES.                    
+             88 NO-ERROR                       VALUE '00'.                      
+             88 ERROR-GRAVE                    VALUE '01'.                      
+      *                                                                         
+          03 SW-FICH-ENT             PIC X(02) VALUE SPACES.                    
+             88 SW-INI-FICH-ENT                VALUE '00'.                      
+             88 SW-FIN-FICH-ENT                VALUE '01'.                      
+      *                                                                         
+          03 SW-ENCUENTRA-POL        PIC X(01) VALUE SPACES.                    
+             88 ENCONTRADA                     VALUE 'S'.                       
+             88 NO-ENCONTRADA                  VALUE 'N'.                       
+      *                                                                         
+      ** FECHA DEL SISTEMA                                                      
+          03 WS-FECHA-ACTUAL.                                                   
+             05 WS-FECHA.                                                       
+                07 WS-ANO            PIC 9(04) VALUE ZEROS.                     
+                07 WS-MES            PIC 9(02) VALUE ZEROS.                     
+                07 WS-DIA            PIC 9(02) VALUE ZEROS.                     
+      *                                                                         
+      ** CONTADORES                                                             
+      *                                                                         
+      ** INDICES                                                                
+      **                                                                        
+      *                                                                         
+      *   -------                                                               
+      *   MODULOS                                                               
+      *   -------                                                               
+          03 WS-MODULOS.                                                        
+             05 WS-B160N315            PIC X(08) VALUE 'B160N315'.              
+             05 WS-B372M004            PIC X(08) VALUE 'B372M004'.              
+      *                                                                         
+      ****************************************************                      
+      ** LITERALES                                                              
+      ****************************************************                      
+          03 LT-LITERALES.                                                      
+             05 LT-ERRORES-RETORNO.                                             
+      *         LITERAL NO HAY ERRORES                                          
+                07 LT-RETURN-OK             PIC X(5) VALUE '00'.                
+      *         ERROR EN MODO                                                   
+                07 LT-RETURN-ERR-MODO       PIC X(5) VALUE '01'.                
+      *         ERROR FALTAN DATOS INFORMADOS                                   
+                07 LT-RETURN-ERR-DATINFO    PIC X(5) VALUE '02'.                
+      *         ERROR REGISTRO NO ENCONTRADO                                    
+                07 LT-RETURN-ERR-NOTFND     PIC X(5) VALUE '03'.                
+      *         ERROR REGISTRO CLAVE DUPLICADA                                  
+                07 LT-RETURN-ERR-CLVDUPLI   PIC X(5) VALUE '04'.                
+      *         ERROR EN ACCESO A BASE DE DATOS                                 
+                07 LT-RETURN-ERR-OTHER      PIC X(5) VALUE '99'.                
+      *                                                                         
+      **********************************************************                
+      ** VARIABLES                                                              
+      **********************************************************                
+      *                                                                         
+      ** VARIABLES AUXILIARES                                                   
+      *                                                                         
+          03 WS-AUX-IMPUESTO            PIC X(02).                              
+          03 WS-AUX-FORALIDAD           PIC 9(02).                              
+          03 WS-AUX-TIPO-DOC            PIC X(02).                              
+      *                                                                         
+      **********************************************************                
+      ** VARIABLE DE FICHERO DE SALIDA                                          
+      **********************************************************                
+      *MU-2017-BDGI-R-V-INI                                                     
+      *    03 WS-REG-SALIDA              PIC X(406).                            
+          03 WS-REG-SALIDA              PIC X(410).                             
+      *MU-2017-BDGI-R-V-FIN                                                     
+      **********************************************************                
+      ** ESTRUCTURA FICHERO SALIDA                                              
+      **********************************************************                
+          03 WS-SALIDA.                                                         
+             05 WS-SAL-POLIZA           PIC X(10).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-SUBPOLIZA        PIC ---9.                               
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-ADHESION         PIC 9(06).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-ASEGURADO.                                               
+                07 WS-SAL-ASEGURADO-NOM    PIC X(25).                           
+                07 WS-SAL-ASEGURADO-APE1   PIC X(25).                           
+                07 WS-SAL-ASEGURADO-APE2   PIC X(25).                           
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-TIPNIFASEGURADO  PIC X(02) VALUE '00'.                   
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-NIFASEGURADO     PIC X(10).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-SECURESERVA      PIC X(02) VALUE '00'.                   
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-RESERVA          PIC X(01) VALUE '0'.                    
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-SECUPAGOS        PIC X(02) VALUE '00'.                   
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-TIPNIFPERCEPTOR  PIC X(02) VALUE '00'.                   
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-NIFPERCEPTOR     PIC X(10).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-FPAGO            PIC X(08).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-PERCEPTOR.                                               
+                07 WS-SAL-GNOMBRELARGO     PIC X(75).                           
+                07 WS-SAL-GAPELLIDO1       PIC X(25).                           
+                07 WS-SAL-GAPELLIDO2       PIC X(25).                           
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-MONEDA           PIC X(01) VALUE '1'.                    
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-BRUTO            PIC ----.---.--9,99.                    
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-TIPORETENCION    PIC X(02).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-FORALIDAD        PIC 9(02).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-TIPOPAGO         PIC 9(01).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-COASEGURO        PIC X(25).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-RETENCION        PIC ----.---.--9,99.                    
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-BASE-IMPONIBLE   PIC ----.---.--9,99.                    
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-IMPORTE-ABONAR   PIC ---.---.--9,99.                     
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+      *MU-2017-BDGI-R-V-INI                                                     
+      *       05 WS-SAL-EXPEDIENTE       PIC 9(10).                             
+             05 WS-SAL-EXPEDIENTE       PIC 9(14).                              
+      *MU-2017-BDGI-R-V-INI                                                     
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-FCOMUNICACION    PIC X(08).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-FOCURRENCIA      PIC X(08).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-TIPO-MOV         PIC X(01) VALUE 'A'.                    
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-TIPO-REG         PIC X(01) VALUE 'P'.                    
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-TIPO-PREST       PIC X(02).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SAL-REPERCUTIDO      PIC X(01) VALUE 'S'.                    
+      **********************************************************                
+      ** ESTRUCTURA FICHERO ERRORES                                             
+      **********************************************************                
+          03 WS-COPY-ERRVAL.                                                    
+             05 ERRVAL-INCIDENCIA             PIC  X(05).                       
+             05 FILLER   PIC X     VALUE ';'.                                   
+             05 ERRVAL-DESCRIPCION            PIC  X(60).                       
+             05 FILLER   PIC X     VALUE ';'.                                   
+             05 ERRVAL-ANIO                   PIC X(04).                        
+             05 FILLER   PIC X     VALUE ';'.                                   
+             05 ERRVAL-KEXPEDIENTE            PIC 9(10).                        
+             05 FILLER   PIC X     VALUE ';'.                                   
+             05 ERRVAL-KPOLIZA                PIC X(10).                        
+             05 FILLER   PIC X     VALUE ';'.                                   
+             05 ERRVAL-NSUBPOLIZA             PIC X(04).                        
+             05 FILLER   PIC X     VALUE ';'.                                   
+             05 ERRVAL-KCERTIFICADO           PIC 9(06).                        
+             05 FILLER   PIC X     VALUE ';'.                                   
+             05 ERRVAL-FICHERO                PIC X(08).                        
+             05 FILLER   PIC X     VALUE ';'.                                   
+             05 ERRVAL-CAMPO                  PIC X(20).                        
+             05 FILLER   PIC X     VALUE ';'.                                   
+             05 ERRVAL-VALOR-CAMPO            PIC X(20).                        
+             05 FILLER   PIC X     VALUE ';'.                                   
+             05 ERRVAL-PROGRAMA               PIC X(08).                        
+             05 FILLER   PIC X     VALUE ';'.                                   
+             05 FILLER   PIC X(96) VALUE SPACES.                                
+             05 ERRVAL-COD-SOCIEDAD           PIC X(04).                        
+      *                                                                         
+      ********   CABECERAS DEL LISTADO   *************************              
+      *  CABECERA                                                               
+          03 WS-CABECERA.                                                       
+             05 FILLER   PIC X(07) VALUE ' POLIZA'.                             
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(09) VALUE 'SUBPOLIZA'.                           
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(08) VALUE 'ADHESION'.                            
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(09) VALUE 'ASEGURADO'.                           
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(13) VALUE 'TIPO NIF ASEG'.                       
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(13) VALUE 'NIF ASEGURADO'.                       
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(12) VALUE 'SECUENCIA P1'.                        
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(07) VALUE 'RESERVA'.                             
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(12) VALUE 'SECUENCIA P2'.                        
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(13) VALUE 'TIPO NIF PERC'.                       
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(13) VALUE 'NIF PERCEPTOR'.                       
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(10) VALUE 'FECHA PAGO'.                          
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(09) VALUE 'PERCEPTOR'.                           
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(06) VALUE 'MONEDA'.                              
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(13) VALUE 'IMPORTE BRUTO'.                       
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(14) VALUE 'TIPO RETENCION'.                      
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(09) VALUE 'FORALIDAD'.                           
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(09) VALUE 'TIPO PAGO'.                           
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(13) VALUE 'CIA COASEGURO'.                       
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(09) VALUE 'RETENCION'.                           
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(08) VALUE 'BASE IMP'.                            
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(15) VALUE 'IMPORTE ABONADO'.                     
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(09) VALUE 'NUM EXPTE'.                           
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(11) VALUE 'FECHA COMUN'.                         
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(11) VALUE 'FECHA OCURR'.                         
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(08) VALUE 'TIPO A/B'.                            
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(14) VALUE 'TIPO REG R/P/G'.                      
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(15) VALUE 'TIPO PRESTACION'.                     
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(11) VALUE 'REPERCUTIDO'.                         
+             05 FILLER   PIC X(66) VALUE SPACES.                                
+      *                                                                         
+      *--------                                                                 
+      *   COPYS FICHERO ENTRADA                                                 
+      *--------                                                                 
+      *                                                                         
+          03 WS-X372J018.                                                       
+             COPY X362X101.                                                     
+             COPY X362X102.                                                     
+             COPY X362X103.                                                     
+             07 FILLER           PIC X(12)  VALUE SPACES.                       
+             07 WS-ANIO          PIC 9(4).                                      
+             07 WS-KEXPEDIENTE   PIC 9(10).                                     
+      *                                                                         
+      *--------                                                                 
+      *   COPYS MODULOS                                                         
+      *--------                                                                 
+          03 WS-X160N315.                                                       
+             COPY X160N315.                                                     
+             COPY X160N000.                                                     
+          03 WS-X372M004.                                                       
+             COPY X372M004.                                                     
+      *                                                                         
+       01 WS-VR042534            PIC X(08) VALUE 'VR042534'.                    
+       01 WS-VA542100            PIC X(08) VALUE 'VA542100'.                    
+       01 WS-VA862160            PIC X(08) VALUE 'VA862160'.                    
+      * --> COPY DE FICHERO DE LA RUTINA VR042534                               
+      *                                                                         
+           COPY RR041534.                                                       
+      *** COPYS IDMS                                                            
+      *                                                                         
+      *** COPYS IDMS                                                            
+       COPY IDMS RECORD RA541100.                                               
+       COPY IDMS RECORD RA761030.                                               
+       COPY IDMS RECORD RA861160.                                               
+      *************************************************************             
+       PROCEDURE DIVISION.                                                      
+      *************************************************************             
+      *                                                                         
+           PERFORM 1000-INICIO                                                  
+      *                                                                         
+           PERFORM 2000-PROCESO                                                 
+             UNTIL SW-FIN-FICH-ENT                                              
+      *                                                                         
+           PERFORM 9000-FINAL                                                   
+      *                                                                         
+           GOBACK.                                                              
+      *                                                                         
+      *****************************************************************         
+      *1000-INICIO.                                                   *         
+      *****************************************************************         
+      *                                                                         
+       1000-INICIO.                                                             
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372JI18: 1000-INICIO'                                      
+      *F*                                                                       
+      *                                                                         
+           PERFORM 1100-ABRIR-AREAS                                             
+      *                                                                         
+           INITIALIZE  WS-REG-SALIDA                                            
+                       WS-SALIDA                                                
+                       WS-X372M004                                              
+                       WS-X160N315                                              
+                       WS-AUX-IMPUESTO                                          
+                       WS-AUX-FORALIDAD                                         
+                       WS-AUX-TIPO-DOC                                          
+      *                                                                         
+           OPEN INPUT  FICH-ENT                                                 
+               OUTPUT  FICH-SAL                                                 
+                       ERRORVAL                                                 
+      *                                                                         
+      ***  FECHA DEL DIA                                                        
+           MOVE FUNCTION CURRENT-DATE TO WS-FECHA                               
+      *                                                                         
+           SET SW-INI-FICH-ENT TO TRUE                                          
+           SET NO-ERROR        TO TRUE                                          
+      *                                                                         
+      ***  LECTURA PRIMER REGISTRO                                              
+           PERFORM 8000-READ-FICH-ENT                                           
+      *                                                                         
+           IF NOT SW-FIN-FICH-ENT                                               
+      *D*                                                                       
+DSPLYS*       DISPLAY 'B372JI18: CARGA CABECERA'                                
+      *T*                                                                       
+      *                                                                         
+      ***     ESCRIBE CABECERA EN FICHERO                                       
+              MOVE WS-CABECERA TO WS-REG-SALIDA                                 
+      *                                                                         
+              PERFORM 7000-ESCRIBIR-SALIDA                                      
+      *                                                                         
+           END-IF                                                               
+      *                                                                         
+           .                                                                    
+      *                                                                         
+      ********************************************************                  
+      *1100-ABRIR-AREAS                                                         
+      *     APERTURA ENTORNO IDMS                                               
+      ********************************************************                  
+      *                                                                         
+       1100-ABRIR-AREAS.                                                        
+      *                                                                         
+      *D*                                                                       
+      *    DISPLAY 'B372JI18: ABRIR-AREAS'                                      
+      *F*                                                                       
+           INITIALIZE RA541100                                                  
+      *                                                                         
+           MOVE 'A' TO RA541100-CSG-AREAS                                       
+      *                                                                         
+           CALL WS-VA542100 USING RA541100                                      
+      *                                                                         
+           .                                                                    
+      *                                                                         
+      *****************************************************************         
+      *2000-PROCESO.                                                  *         
+      *****************************************************************         
+      *                                                                         
+       2000-PROCESO.                                                            
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372JI18: 2000-PROCESO'                                     
+      *T*                                                                       
+           INITIALIZE    WS-REG-SALIDA                                          
+                         WS-SALIDA                                              
+      *                                                                         
+           SET NO-ERROR  TO TRUE                                                
+      *                                                                         
+      ***  DATOS QUE VIENEN DE LA ENTRADA                                       
+      *                                                                         
+      ***  INFORMAMOS CON LITERALES ALGUNOS CAMPOS DE SALIDA                    
+           MOVE  '00'      TO  WS-SAL-TIPNIFASEGURADO                           
+           MOVE  '00'      TO  WS-SAL-SECURESERVA                               
+           MOVE  '0'       TO  WS-SAL-RESERVA                                   
+           MOVE  '00'      TO  WS-SAL-SECUPAGOS                                 
+           MOVE  '00'      TO  WS-SAL-TIPNIFPERCEPTOR                           
+           MOVE  '1'       TO  WS-SAL-MONEDA                                    
+           MOVE  'A'       TO  WS-SAL-TIPO-MOV                                  
+           MOVE  'P'       TO  WS-SAL-TIPO-REG                                  
+           MOVE  'S'       TO  WS-SAL-REPERCUTIDO                               
+
+      ***  BUCLE PRINCIPAL                                                      
+           PERFORM 3000-OBTENER-EXPEDIENTE                                      
+           IF NO-ERROR                                                          
+              PERFORM 3100-OBTENER-DATOS-PERCEPTOR                              
+           END-IF                                                               
+           IF NO-ERROR                                                          
+              PERFORM 3200-OBTENER-DATOS-TOMADOR                                
+           END-IF                                                               
+           PERFORM 8000-READ-FICH-ENT                                           
+      *                                                                         
+           .                                                                    
+      *                                                                         
+      **************************************************************            
+      *3000-OBTENER-EXPEDIENTE                                     *            
+      **************************************************************            
+      *                                                                         
+       3000-OBTENER-EXPEDIENTE.                                                 
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372JI18: 3000-OBTENER-EXPEDIENTE'                          
+      *T*                                                                       
+      *                                                                         
+           INITIALIZE X372M004-S                                                
+      *                                                                         
+      ***  CONSULTA A LA TABLA TB372VEN0 CON LLAMADA AL B372M004                
+           MOVE 'CI'             TO  X372M004-OPERACION-E                       
+           MOVE WS-ANIO          TO  X372M004-ANIO-E                            
+           MOVE WS-KEXPEDIENTE   TO  X372M004-KEXPEDIENTE-E                     
+      *                                                                         
+           CALL WS-B372M004 USING  WS-X372M004.                                 
+      *                                                                         
+           EVALUATE X372M004-CRETORNO-S                                         
+      *                                                                         
+              WHEN ZEROS                                                        
+      *                                                                         
+      ***        POLIZA, SUBPOLIZA, ADHESION Y FECHA PAGO                       
+                 MOVE X372M004-KPOLIZA-S        (1)                             
+                                          TO WS-SAL-POLIZA                      
+                 MOVE X372M004-NSUBPOLIZA-S     (1)                             
+                                          TO WS-SAL-SUBPOLIZA                   
+                 MOVE X372M004-KCERTIFICADO-S   (1)                             
+                                          TO WS-SAL-ADHESION                    
+                 MOVE X372M004-FECPAGOCAPITAL-S (1)                             
+                                          TO WS-SAL-FPAGO                       
+      *                                                                         
+      ***        IMPORTE BRUTO                                                  
+                 MOVE X362X103-IRPF-IBRTPREST-IINDE                             
+                                          TO WS-SAL-BRUTO                       
+      *                                                                         
+      ***        TIPORETENCION                                                  
+                 IF X372M004-TIPIMPUESTCAP-S (1) EQUAL '34'                     
+                  AND (X372M004-TIPIMPUESTCOMP1-S (1) NOT EQUAL '34'            
+                  AND  X372M004-TIPIMPUESTCOMP1-S (1) NOT EQUAL SPACES)         
+      *                                                                         
+                    MOVE X372M004-TIPIMPUESTCOMP1-S (1)                         
+                                          TO WS-AUX-IMPUESTO                    
+      *                                                                         
+                 ELSE                                                           
+      *                                                                         
+                    MOVE X372M004-TIPIMPUESTCAP-S (1)                           
+                                          TO WS-AUX-IMPUESTO                    
+      *                                                                         
+                 END-IF                                                         
+      *                                                                         
+                 EVALUATE WS-AUX-IMPUESTO                                       
+      *                                                                         
+                    WHEN '11'                                                   
+                       MOVE '03' TO WS-SAL-TIPORETENCION                        
+      *                                                                         
+                    WHEN '12'                                                   
+                       MOVE '05' TO WS-SAL-TIPORETENCION                        
+      *                                                                         
+                    WHEN '22'                                                   
+                       MOVE '07' TO WS-SAL-TIPORETENCION                        
+      *                                                                         
+                    WHEN '41'                                                   
+                       MOVE '10' TO WS-SAL-TIPORETENCION                        
+      *                                                                         
+                    WHEN '42'                                                   
+                       MOVE '08' TO WS-SAL-TIPORETENCION                        
+      *                                                                         
+                    WHEN OTHER                                                  
+                       MOVE '00' TO WS-SAL-TIPORETENCION                        
+      *                                                                         
+                 END-EVALUATE                                                   
+      *                                                                         
+      ***        FORALIDAD                                                      
+      ***        00 TERRITORIO COMUN                                            
+      ***        01 ALAVA                                                       
+      ***        20 GUIPUZCUA                                                   
+      ***        31 NAVARRA                                                     
+      ***        48 VIZCAYA                                                     
+      ***        99 EXTRANJERO                                                  
+                 MOVE X362X101-DATECO-PROV-FISCAL                               
+                                   TO WS-AUX-FORALIDAD                          
+      *                                                                         
+                 EVALUATE WS-AUX-FORALIDAD                                      
+      *                                                                         
+                    WHEN '01'                                                   
+                    WHEN '20'                                                   
+                    WHEN '31'                                                   
+                    WHEN '48'                                                   
+                    WHEN '99'                                                   
+      *                                                                         
+                       MOVE WS-AUX-FORALIDAD                                    
+                                 TO WS-SAL-FORALIDAD                            
+      *                                                                         
+                    WHEN OTHER                                                  
+      *                                                                         
+                       MOVE '00' TO WS-SAL-FORALIDAD                            
+      *                                                                         
+                 END-EVALUATE                                                   
+      *                                                                         
+      * TIPOPAGO                                                                
+      * 000 SI NO SE HA REALIZADO PAGO                                          
+      * 001 SOLO TIENE PAGOS DE RENTAS                                          
+      * 002 TIENE UN PAGO QUE NO ES DE RENTAS (CAPITAL, BENEFICIOS)             
+                 MOVE X362X103-IRPF-TIPO-PAGO                                   
+                                          TO WS-SAL-TIPOPAGO                    
+      *                                                                         
+      **         COASEGURADORA                                                  
+                 MOVE X362X102-FACT-REF-CATAST-CCOA                             
+                                          TO WS-SAL-COASEGURO                   
+      *                                                                         
+      ***        RETENCION                                                      
+                 MOVE X362X103-IRPF-IRETENCION                                  
+                                          TO WS-SAL-RETENCION                   
+      *                                                                         
+      ***        BASE IMPONIBLE                                                 
+OJO   *MU-2017-BDGI-R-V2INI                                                     
+      *           MOVE X362X102-FACT-IBASE-IMPONIBLE                            
+                 MOVE X362X103-IRPF-BASE-RETENCION                              
+OJO   *MU-2017-BDGI-R-V2FIN                                                     
+                                          TO WS-SAL-BASE-IMPONIBLE              
+      *                                                                         
+      ***        IMPORTE ABONAR                                                 
+                 COMPUTE WS-SAL-IMPORTE-ABONAR =                                
+OJO   *MU-2017-BDGI-R-V2INI                                                     
+      *                   X372M004-IMPCAPITAL-S    (1) +                        
+      *                   X372M004-IMPBENEFICIOS-S (1)                          
+                      X362X103-IRPF-IBRTPREST-IINDE -                           
+                      X362X103-IRPF-IRETENCION                                  
+OJO   *MU-2017-BDGI-R-V2FIN                                                     
+      *                                                                         
+      **         NUMERO EXPEDIENTE                                              
+      *MU-2017-BDGI-R-V-INI                                                     
+      *           MOVE WS-KEXPEDIENTE      TO WS-SAL-EXPEDIENTE                 
+                  MOVE ZEROES              TO WS-SAL-EXPEDIENTE                 
+                  STRING WS-ANIO                                                
+                         WS-KEXPEDIENTE                                         
+                  DELIMITED BY SIZE                                             
+                  INTO WS-SAL-EXPEDIENTE                                        
+      *MU-2017-BDGI-R-V-FIN                                                     
+      *                                                                         
+      ***        FECHA COMUNICACION                                             
+                 MOVE X372M004-FECEMISION-S (1)                                 
+                                          TO WS-SAL-FCOMUNICACION               
+      *                                                                         
+      ***        FECHA OCURRENCIA                                               
+                 MOVE X372M004-FECPAGOCAPITAL-S (1)                             
+                                          TO WS-SAL-FOCURRENCIA                 
+      *                                                                         
+      ***        TIPO PRESTACION                                                
+      ***        30-VENCIMIENTO PAGO PPAL                                       
+      ***        31-VENCIMIENTO PAGO COMPLEMENTARIO                             
+                 MOVE X362X101-DATECO-TIPO-DOC                                  
+                                          TO WS-AUX-TIPO-DOC                    
+      *                                                                         
+      *MU-2017-BDGI-R-V-INI                                                     
+      *           EVALUATE WS-AUX-TIPO-DOC                                      
+      *                                                                         
+      *              WHEN 'PP'                                                  
+      *              WHEN 'NP'                                                  
+      *                                                                         
+      *                 MOVE '30'   TO WS-SAL-TIPO-PREST                        
+      *                                                                         
+      *              WHEN 'PC'                                                  
+      *                                                                         
+      *                 MOVE '31'   TO WS-SAL-TIPO-PREST                        
+      *                                                                         
+      *              WHEN OTHER                                                 
+      *                                                                         
+      *                 MOVE '30'   TO WS-SAL-TIPO-PREST                        
+      *                                                                         
+      *           END-EVALUATE                                                  
+      *                                                                         
+                IF X372M004-FECPAGOCAPITAL-S (1) GREATER THAN '20030100'        
+                    MOVE '30' TO WS-SAL-TIPO-PREST                              
+                ELSE                                                            
+      *                                                                         
+                  IF X372M004-FECPAGCOMP1-S (1) GREATER THAN '20030100'         
+                  OR  X372M004-FECPAGCOMP2-S (1) GREATER THAN '20030100'        
+                    MOVE '31' TO WS-SAL-TIPO-PREST                              
+                  END-IF                                                        
+                END-IF                                                          
+      *                                                                         
+      *MU-2017-BDGI-R-V-FIN                                                     
+              WHEN OTHER                                                        
+      *                                                                         
+                 MOVE 'GRAVE'      TO ERRVAL-INCIDENCIA                         
+                 MOVE X372M004-GERROR-S   TO ERRVAL-DESCRIPCION                 
+                 MOVE X372M004-CRETORNO-S TO ERRVAL-VALOR-CAMPO                 
+                 SET ERROR-GRAVE   TO TRUE                                      
+
+                 PERFORM 7010-GRABA-ERROR                                       
+      *                                                                         
+           END-EVALUATE                                                         
+           .                                                                    
+      *                                                                         
+      **************************************************************            
+      *3100-OBTENER-DATOS-PERCEPTOR                                *            
+      **************************************************************            
+      *                                                                         
+       3100-OBTENER-DATOS-PERCEPTOR.                                            
+      *                                                                         
+           INITIALIZE X160N315-S                                                
+      *                                                                         
+      ***  CONSULTA A PERSONAS CON LLAMADA AL B160N315                          
+           MOVE 'C1'                     TO  X160N315-CMODO-E                   
+           MOVE X372M004-KPERSONA1-S (1) TO  X160N315-KPERSONA-E                
+      *                                                                         
+           CALL WS-B160N315 USING  WS-X160N315                                  
+      *                                                                         
+           EVALUATE X160N000-CRETORNO-S                                         
+      *                                                                         
+              WHEN  ZEROS                                                       
+      *                                                                         
+      ***        NIF PERCEPTOR                                                  
+                 MOVE X160N315-PPE-CIDENTIFICA-S  (1)                           
+                                   TO WS-SAL-NIFPERCEPTOR                       
+      *                                                                         
+      ***        PERCEPTOR                                                      
+                 MOVE X160N315-PPE-GNOMBRELARGO-S (1)                           
+                                   TO WS-SAL-GNOMBRELARGO                       
+                 MOVE X160N315-PPE-GAPELLIDO1-S   (1)                           
+                                   TO WS-SAL-GAPELLIDO1                         
+                 MOVE X160N315-PPE-GAPELLIDO2-S   (1)                           
+                                   TO WS-SAL-GAPELLIDO2                         
+      *                                                                         
+      ***        NIF PERCEPTOR                                                  
+                 MOVE X160N315-PPE-CIDENTIFICA-S  (1)                           
+                                   TO WS-SAL-NIFPERCEPTOR                       
+      *                                                                         
+              WHEN OTHER                                                        
+      *                                                                         
+                 MOVE 'GRAVE'      TO ERRVAL-INCIDENCIA                         
+                 MOVE X160N000-GDESCRIPCION-S TO ERRVAL-DESCRIPCION             
+                 MOVE X160N000-CRETORNO-S     TO ERRVAL-VALOR-CAMPO             
+                 SET ERROR-GRAVE   TO TRUE                                      
+
+                 PERFORM 7010-GRABA-ERROR                                       
+           END-EVALUATE                                                         
+      *                                                                         
+           .                                                                    
+      *                                                                         
+      **************************************************************            
+      *3200-OBTENER-DATOS-TOMADOR                                  *            
+      **************************************************************            
+      *                                                                         
+       3200-OBTENER-DATOS-TOMADOR.                                              
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372JI18: 3200-OBTENER-DATOS-TOMADOR'                       
+      *T*                                                                       
+      *                                                                         
+           SET NO-ENCONTRADA  TO TRUE                                           
+      *                                                                         
+           INITIALIZE RA541100                                                  
+      *                                                                         
+      *    INFORMA POLIZA Y SUBPOL PARA BUSQUEDA EN CARTERA                     
+           MOVE X372M004-KPOLIZA-S(1) (4:7) TO  RA541100-KSG-POLIZA             
+           MOVE X372M004-NSUBPOLIZA-S (1)   TO  RA541100-KSG-SUBPOL             
+      *                                                                         
+      ***  LANZAMOS BUSQUEDA EN CARTERA CON VA542100                            
+           CALL WS-VA542100 USING RA541100.                                     
+      *                                                                         
+           EVALUATE RA541100-CSG-RETORNO                                        
+      *                                                                         
+      ***    POLIZA ENCONTRADA                                                  
+             WHEN ZEROS                                                         
+      *                                                                         
+               SET ENCONTRADA  TO TRUE                                          
+      *                                                                         
+      *D*                                                                       
+DSPLYS*        DISPLAY '*************************'                              
+DSPLYS*        DISPLAY 'VA542100 POLIZA COLECTIVA ENCONTRADA'                   
+DSPLYS*        DISPLAY '*************************'                              
+      *F*                                                                       
+               MOVE RA541100-GSG-RAZON TO WS-SAL-ASEGURADO                      
+               MOVE RA541100-GSG-DI    TO WS-SAL-NIFASEGURADO                   
+      *                                                                         
+      ***    LA POLIZA NO ESTA EN CARTERA LA BUSCO EN IDMS                      
+             WHEN  '99'                                                         
+      *                                                                         
+               INITIALIZE RA861160                                              
+      *                                                                         
+               MOVE X372M004-KPOLIZA-S(1) (4:7) TO  RA861160-KSG-POLIZA         
+               MOVE X372M004-NSUBPOLIZA-S (1)   TO  RA861160-KSG-SUBPOL         
+               MOVE 'CR'                TO RA861160-CSG-ORIGEN                  
+               MOVE 'T'                 TO RA861160-CCOL-CONTROL                
+      *                                                                         
+               CALL WS-VA862160 USING RA861160                                  
+      *                                                                         
+      *                                                                         
+               IF RA861160-CSG-RETORNO EQUAL ZEROS                              
+      *D*                                                                       
+DSPLYS*        DISPLAY '*************************'                              
+DSPLYS*        DISPLAY 'VA862160 POLIZA COLECTIVA ENCONTRADA'                   
+DSPLYS*        DISPLAY '*************************'                              
+      *F*                                                                       
+      *                                                                         
+                  SET ENCONTRADA  TO TRUE                                       
+      *                                                                         
+                  MOVE RA861160-GSG-RAZON TO WS-SAL-ASEGURADO                   
+      *                                                                         
+                  IF RA861160-GSG-RAZON EQUAL SPACES                            
+      *                                                                         
+                     MOVE RA861160-GSG-NOMBRE                                   
+                       TO WS-SAL-ASEGURADO-NOM                                  
+                     MOVE RA861160-GSG-APE1                                     
+                       TO WS-SAL-ASEGURADO-APE1                                 
+                     MOVE RA861160-GSG-APE2                                     
+                       TO WS-SAL-ASEGURADO-APE2                                 
+      *                                                                         
+                  END-IF                                                        
+      *                                                                         
+               END-IF                                                           
+      *                                                                         
+      ***    POLIZA COLECTIVA NO ENCONTRADA                                     
+             WHEN OTHER                                                         
+      *D*                                                                       
+DSPLYS*        DISPLAY '*************************'                              
+DSPLYS*        DISPLAY 'NO ES POLIZA COLECTIVA'                                 
+DSPLYS*        DISPLAY '*************************'                              
+      *T*                                                                       
+      *                                                                         
+               CONTINUE                                                         
+      *                                                                         
+           END-EVALUATE                                                         
+      *                                                                         
+           IF NO-ENCONTRADA                                                     
+      *                                                                         
+              INITIALIZE RR041534                                               
+      *                                                                         
+              MOVE ZEROS                         TO RR041534-CRETORNO           
+              MOVE SPACES                        TO RR041534-COPERACION         
+              MOVE X372M004-KPOLIZA-S(1)         TO RR041534-KPOLIZA            
+
+              CALL WS-VR042534                USING RR041534                    
+      *                                                                         
+              IF RR041534-CRETORNO EQUAL  ZEROES                                
+      *D*                                                                       
+DSPLYS*          DISPLAY '*************************'                            
+DSPLYS*          DISPLAY 'VR042534 POLIZA INDIVIDUAL ENCONTRADA'                
+DSPLYS*          DISPLAY '*************************'                            
+      *T*                                                                       
+      *                                                                         
+                 SET  ENCONTRADA TO TRUE                                        
+      *                                                                         
+                 MOVE RR041534-GDNITOM(1)                                       
+                      TO WS-SAL-NIFASEGURADO                                    
+                 MOVE RR041534-GNNOMBRETOM(1)                                   
+                      TO WS-SAL-ASEGURADO-NOM                                   
+                 MOVE RR041534-GNAPE1TOM(1)                                     
+                      TO WS-SAL-ASEGURADO-APE1                                  
+                 MOVE RR041534-GNAPE2TOM(1)                                     
+                      TO WS-SAL-ASEGURADO-APE2                                  
+              ELSE                                                              
+      *                                                                         
+                 MOVE 'LEVE '      TO ERRVAL-INCIDENCIA                         
+                 MOVE 'ERROR EN LA LLAMA VR042534 '                             
+                                        TO ERRVAL-DESCRIPCION                   
+                 MOVE RR041534-CRETORNO TO ERRVAL-VALOR-CAMPO                   
+                 SET NO-ENCONTRADA  TO TRUE                                     
+
+                 PERFORM 7010-GRABA-ERROR                                       
+      *                                                                         
+              END-IF                                                            
+           END-IF                                                               
+      *                                                                         
+           PERFORM 5000-MOVER-SALIDA                                            
+           PERFORM 7000-ESCRIBIR-SALIDA                                         
+      *                                                                         
+           .                                                                    
+      *                                                                         
+      *****************************************************************         
+      * 5000-MOVER-SALIDA                                             *         
+      *****************************************************************         
+      *                                                                         
+       5000-MOVER-SALIDA.                                                       
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372JI18: 5000-MOVER-SALIDA'                                
+      *T*                                                                       
+      ***  INFORMAMOS CON LITERALES CAMPOS DE SALIDA CON VALOR FIJO             
+           MOVE  '00'      TO  WS-SAL-TIPNIFASEGURADO                           
+           MOVE  '00'      TO  WS-SAL-SECURESERVA                               
+           MOVE  '0'       TO  WS-SAL-RESERVA                                   
+           MOVE  '00'      TO  WS-SAL-SECUPAGOS                                 
+           MOVE  '00'      TO  WS-SAL-TIPNIFPERCEPTOR                           
+           MOVE  '1'       TO  WS-SAL-MONEDA                                    
+      *MU-2017-BDGI-R-V-INI                                                     
+      *     MOVE  'A'       TO  WS-SAL-TIPO-MOV                                 
+           IF X362X103-IRPF-IBRTPREST-IINDE LESS ZEROES                         
+              MOVE  'B'       TO  WS-SAL-TIPO-MOV                               
+           ELSE                                                                 
+              MOVE  'A'       TO  WS-SAL-TIPO-MOV                               
+           END-IF                                                               
+      *MU-2017-BDGI-R-V-FIN                                                     
+           MOVE  'P'       TO  WS-SAL-TIPO-REG                                  
+           MOVE  'S'       TO  WS-SAL-REPERCUTIDO                               
+      *                                                                         
+           MOVE  WS-SALIDA   TO WS-REG-SALIDA                                   
+           .                                                                    
+      *                                                                         
+      *****************************************************************         
+      * 7000-ESCRIBIR-SALIDA                                          *         
+      *****************************************************************         
+      *                                                                         
+       7000-ESCRIBIR-SALIDA.                                                    
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372JI18: 7000-ESCRIBIR-SALIDA'                             
+      *F*                                                                       
+           WRITE REG-SAL     FROM WS-REG-SALIDA                                 
+      *                                                                         
+           .                                                                    
+      *                                                                         
+      **************************************************************            
+       7010-GRABA-ERROR.                                                        
+      **************************************************************            
+      *                                                                         
+           MOVE 'B372JI18'              TO ERRVAL-PROGRAMA                      
+           MOVE 'ERRORES '              TO ERRVAL-FICHERO                       
+           MOVE  WS-ANIO                TO ERRVAL-ANIO                          
+           MOVE  WS-KEXPEDIENTE         TO ERRVAL-KEXPEDIENTE                   
+           MOVE  WS-SAL-POLIZA          TO ERRVAL-KPOLIZA                       
+           MOVE  WS-SAL-SUBPOLIZA       TO ERRVAL-NSUBPOLIZA                    
+           MOVE  WS-SAL-ADHESION        TO ERRVAL-KCERTIFICADO                  
+      *                                                                         
+      ***  ESCRIBIMOS EN EL FICHERO DE ERROR                                    
+           WRITE REG-ERRORVAL FROM WS-COPY-ERRVAL                               
+      *                                                                         
+           INITIALIZE  WS-COPY-ERRVAL                                           
+      *                                                                         
+           .                                                                    
+      *****************************************************************         
+        8000-READ-FICH-ENT.                                                     
+      *****************************************************************         
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372JI18: 8000-READ-FICH-ENT'                               
+      *F*                                                                       
+           READ FICH-ENT INTO WS-X372J018                                       
+             AT END                                                             
+                SET SW-FIN-FICH-ENT TO TRUE                                     
+           END-READ                                                             
+      *                                                                         
+           .                                                                    
+      *                                                                         
+      *****************************************************************         
+       9000-FINAL.                                                              
+      *****************************************************************         
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372JI18: 9000-FINAL'                                       
+      *F*                                                                       
+           CLOSE FICH-ENT.                                                      
+           CLOSE FICH-SAL                                                       
+                 ERRORVAL                                                       
+      *                                                                         
+           PERFORM 9100-CERRAR-AREAS                                            
+      *                                                                         
+           GOBACK.                                                              
+      *                                                                         
+      ********************************************************                  
+      *9100-CERRAR-AREAS                                                        
+      *     CIERRE ENTORNO IDMS                                                 
+      ********************************************************                  
+       9100-CERRAR-AREAS.                                                       
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372JI18: CERRAR-AREAS'                                     
+      *F*                                                                       
+      *                                                                         
+           INITIALIZE RA541100                                                  
+      *                                                                         
+           MOVE 'C' TO RA541100-CSG-AREAS                                       
+      *                                                                         
+           CALL WS-VA542100 USING RA541100                                      
+      *                                                                         
+           .                                                                    

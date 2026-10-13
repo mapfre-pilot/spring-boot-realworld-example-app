@@ -1,0 +1,231 @@
+      ******************************************************************        
+       IDENTIFICATION DIVISION.                                                 
+       PROGRAM-ID. B372N006.                                                    
+      ******************************************************************        
+      *                                                                         
+      * APLICACION....:VENCIMIENTOS MANUALES (FOXPRO)                           
+      * ANALISTA......:EVERIS                                                   
+      * PROGRAMADOR...:EVERIS                                                   
+      * FECHA DE REALIZACION: JUNIO 2012.                                       
+      *                                                                         
+      * DESCRIPCIÓN DEL PROGRAMA :INSERCION PETICION DESCARGA DE BDGI           
+      ******************************************************************        
+      *                                                                         
+      ******************************************************************        
+      *                  ENVIRONMENT DIVISION                                   
+      ******************************************************************        
+       ENVIRONMENT DIVISION.                                                    
+       CONFIGURATION SECTION.                                                   
+       SPECIAL-NAMES.                                                           
+           DECIMAL-POINT IS COMMA.                                              
+      ******************************************************************        
+      *                  DATA DIVISION                                 *        
+      ******************************************************************        
+       DATA DIVISION.                                                           
+      ******************************************************************        
+      *                  WORKING-STORAGE SECTION                       *        
+      ******************************************************************        
+       WORKING-STORAGE SECTION.                                                 
+
+      *   CONTROL DE ERRORES DEL PROGRAMA                                       
+       01 SW-SWITCH.                                                            
+          03 SW-ERRORES                PIC XX VALUE '00'.                       
+             88 NO-ERROR                      VALUE '00'.                       
+             88 ERROR-GRAVE                   VALUE '01'.                       
+
+       01 LT-LITERALES.                                                         
+          03 LT-ERRORES-RETORNO.                                                
+      *         LITERAL NO HAY ERRORES                                          
+             05 LT-RETURN-OK             PIC X(2) VALUE '00'.                   
+      *         ERROR EN MODO                                                   
+             05 LT-RETURN-ERR-MODO       PIC X(2) VALUE '02'.                   
+      *         ERROR FALTAN DATOS INFORMADOS                                   
+             05 LT-RETURN-ERR-DATINFO    PIC X(2) VALUE '03'.                   
+      *         ERROR REGISTRO NO ENCONTRADO                                    
+             05 LT-RETURN-ERR-NOTFND     PIC X(2) VALUE '04'.                   
+      *         ERROR REGISTRO CLAVE DUPLICADA                                  
+             05 LT-RETURN-ERR-CLVDUPLI   PIC X(2) VALUE '05'.                   
+      *         ERROR REGISTRO YA EXISTENTE                                     
+             05 LT-RETURN-ERR-REGDUPLI   PIC X(2) VALUE '06'.                   
+      *         ERROR EN ACCESO A BASE DE DATOS                                 
+             05 LT-RETURN-ERR-OTHER      PIC X(2) VALUE '99'.                   
+
+             05 WS-B362M007              PIC X(8) VALUE 'B362M007'.             
+      **  FECHA DEL SISTEMA                                                     
+          03 WS-FECHA-SIS.                                                      
+             05 WS-FECHA.                                                       
+                07 WS-ANO                   PIC 9(04).                          
+                07 WS-MES                   PIC 9(02).                          
+                07 WS-DIA                   PIC 9(02).                          
+             05 WS-TIEMPO.                                                      
+                07 WS-HORA                  PIC 9(02).                          
+                07 WS-MINUTOS               PIC 9(02).                          
+                07 WS-SEGUNDOS              PIC 9(02).                          
+                07 WS-CENTESIMAS            PIC 9(02).                          
+             05 FILLER                      PIC 9(05).                          
+
+           03 WS-CRITERIOS2.                                                    
+             05 WS-TABLA                     PIC X(03) VALUE SPACES.            
+              05 FILLER                      PIC X(01) VALUE ';'.               
+              05 WS-EJERCICIO.                                                  
+                 07 WS-ANIOEJERCICIO            PIC X(04).                      
+                 07 WS-MESEJERCICIO             PIC X(02).                      
+              05 FILLER                      PIC X(01) VALUE ';'.               
+              05 WS-FECINICIO                PIC X(08).                         
+              05 FILLER                      PIC X(01) VALUE ';'.               
+              05 WS-FECFINAL                 PIC X(08).                         
+
+          03 WS-X362M007.                                                       
+             COPY X362M007.                                                     
+
+      ******************************************************************        
+       LINKAGE SECTION.                                                         
+      ******************************************************************        
+       01 DFHCOMMAREA.                                                          
+           COPY X372VT06.                                                       
+      *************************************************************             
+       PROCEDURE DIVISION USING DFHCOMMAREA.                                    
+      *************************************************************             
+           PERFORM 1000-INICIO.                                                 
+
+           IF NOT ERROR-GRAVE                                                   
+              PERFORM 2000-PROCESO                                              
+           END-IF.                                                              
+
+           PERFORM 9000-FIN.                                                    
+
+      ********************************************************                  
+      *1000-INICIO.                                                             
+      ********************************************************                  
+       1000-INICIO.                                                             
+
+           MOVE '00'    TO X372VT06-CRETORNO-S                                  
+
+           MOVE FUNCTION CURRENT-DATE TO WS-FECHA-SIS                           
+
+           IF NO-ERROR                                                          
+
+                PERFORM 1200-VALIDAR-ENTRADA                                    
+
+           END-IF                                                               
+           .                                                                    
+      ***************************************************************           
+       1200-VALIDAR-ENTRADA.                                                    
+      ***************************************************************           
+
+      * VALIDACION DEL CAMPO AÑO DE EJERCICIO                                   
+           IF X372VT06-ANIOEJER-E = ZEROES                                      
+
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE LT-RETURN-ERR-MODO    TO X372VT06-CRETORNO-S                 
+              MOVE 'EL CAMPO AÑO DE EJERCICIO ES OBLIGATORIO'                   
+                                         TO X372VT06-GERROR-S                   
+              MOVE 'B372N006'            TO X372VT06-GNOMPROG-S                 
+
+           END-IF                                                               
+
+      * VALIDACION DEL CAMPO MES DE EJERCICIO                                   
+           IF X372VT06-MESEJER-E = ZEROES                                       
+
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE LT-RETURN-ERR-MODO    TO X372VT06-CRETORNO-S                 
+              MOVE 'EL CAMPO MES DE EJERCICIO ES OBLIGATORIO'                   
+                                         TO X372VT06-GERROR-S                   
+              MOVE 'B372N006'            TO X372VT06-GNOMPROG-S                 
+
+           END-IF                                                               
+
+      * VALIDACION DEL CAMPO FECHA INICIAL DE BDGI                              
+           IF X372VT06-FECHAINICIAL-BDGI-E = SPACES                             
+
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE LT-RETURN-ERR-MODO    TO X372VT06-CRETORNO-S                 
+              MOVE 'EL CAMPO FECHA INICIO ES OBLIGATORIA'                       
+                                         TO X372VT06-GERROR-S                   
+              MOVE 'B372N006'            TO X372VT06-GNOMPROG-S                 
+
+           END-IF                                                               
+
+      * VALIDACION DEL CAMPO FECHA FINAL DE BDGI                                
+           IF X372VT06-FECHAFINAL-BDGI-E = SPACES                               
+
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE LT-RETURN-ERR-MODO    TO X372VT06-CRETORNO-S                 
+              MOVE 'EL CAMPO FECHA FIN ES OBLIGATORIA'                          
+                                         TO X372VT06-GERROR-S                   
+              MOVE 'B372N006'            TO X372VT06-GNOMPROG-S                 
+
+           END-IF                                                               
+
+      * VALIDACION DEL CAMPO FECHA FINAL MAYOR QUE LA FECHA INICIAL             
+           IF X372VT06-FECHAFINAL-BDGI-E < X372VT06-FECHAINICIAL-BDGI-E         
+
+              SET  ERROR-GRAVE TO TRUE                                          
+              MOVE LT-RETURN-ERR-MODO    TO X372VT06-CRETORNO-S                 
+              MOVE 'EL CAMPO FECHA FIN DEBE SER MAYOR QUE EL CAMPO FECHA        
+      -            ' INICIO'                                                    
+                                         TO X372VT06-GERROR-S                   
+              MOVE 'B372N006'            TO X372VT06-GNOMPROG-S                 
+
+           END-IF                                                               
+
+           .                                                                    
+
+
+      ***************************************************************           
+       2000-PROCESO.                                                            
+      ***************************************************************           
+
+           PERFORM 2100-MOVER-DATOS-ENTRADA.                                    
+
+
+      ***************************************************************           
+       2100-MOVER-DATOS-ENTRADA.                                                
+      ***************************************************************           
+           INITIALIZE WS-X362M007.                                              
+           MOVE 'D1'                        TO X362M007-OPERACION-E             
+           MOVE 'BV'                        TO  X362M007-CTIPOINFORME-E         
+
+           CALL WS-B362M007 USING WS-X362M007                                   
+
+           IF X362M007-CRETORNO-S EQUAL '00' OR                                 
+              X362M007-CRETORNO-S EQUAL '03'                                    
+
+              MOVE 'I1'    TO X362M007-OPERACION-E                              
+
+              MOVE 16                     TO X362M007-KPETINFORME-E             
+              MOVE 'BV'                   TO X362M007-CTIPOINFORME-E            
+              MOVE X372VT06-ANIOEJER-E    TO WS-ANIOEJERCICIO                   
+              MOVE X372VT06-MESEJER-E     TO WS-MESEJERCICIO                    
+              MOVE X372VT06-FECHAINICIAL-BDGI-E                                 
+                TO WS-FECINICIO                                                 
+              MOVE X372VT06-FECHAFINAL-BDGI-E                                   
+                TO WS-FECFINAL                                                  
+              MOVE WS-CRITERIOS2          TO X362M007-GCRITERIO2-E              
+              MOVE X372VT06-KUSUARIO-C    TO X362M007-CUSUARIO-E                
+              MOVE WS-FECHA               TO X362M007-FALTA-E                   
+
+              CALL WS-B362M007 USING WS-X362M007                                
+      *D*                                                                       
+      *    DISPLAY ' X362M007-CRETORNO-S ' X362M007-CRETORNO-S                  
+      *F*                                                                       
+
+              IF X362M007-CRETORNO-S NOT EQUAL '00'                             
+                 MOVE X362M007-CRETORNO-S    TO X372VT06-CRETORNO-S             
+                 MOVE X362M007-GNOMPROG-S    TO X372VT06-GNOMPROG-S             
+                 MOVE X362M007-GERROR-S      TO X372VT06-GERROR-S               
+              END-IF                                                            
+           ELSE                                                                 
+              SET ERROR-GRAVE  TO TRUE                                          
+              MOVE X362M007-CRETORNO-S    TO X372VT06-CRETORNO-S                
+              MOVE X362M007-GNOMPROG-S    TO X372VT06-GNOMPROG-S                
+              MOVE X362M007-GERROR-S      TO X372VT06-GERROR-S                  
+
+           END-IF                                                               
+           CONTINUE.                                                            
+
+      ***************************************************************           
+      *9000-FIN.                                                                
+      ***************************************************************           
+       9000-FIN.                                                                
+           GOBACK.                                                              

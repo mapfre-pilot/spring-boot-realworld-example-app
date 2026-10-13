@@ -1,0 +1,943 @@
+      ******************************************************************        
+       IDENTIFICATION DIVISION.                                                 
+       PROGRAM-ID. B372J017.                                                    
+      ******************************************************************        
+      * APLICACI”N.....: RESCATES Y VENCIMIENTOS                       *        
+      * ANALISTA.......: EVERIS                                        *        
+      * PROGRAMADOR....: EVERIS                                        *        
+      * FECHA DE REALLIZACI”N: 17/07/17.                               *        
+      *                                                                *        
+      * DESCRIPCION:                                                   *        
+      *   ------------------------------------------------------------ *        
+      *  | CUADRO RESUMEN DATOS ECONOMICOS AGENCIAL                   |*        
+      *   ------------------------------------------------------------ *        
+      *                                                                *        
+      ******************************************************************        
+       ENVIRONMENT DIVISION.                                                    
+
+       CONFIGURATION SECTION.                                                   
+
+       SPECIAL-NAMES.                                                           
+           DECIMAL-POINT IS COMMA.                                              
+
+       INPUT-OUTPUT SECTION.                                                    
+
+       FILE-CONTROL.                                                            
+      * FICHERO DE REGISTROS ENTRADA                                            
+           SELECT FICH-ENT                                                      
+           ASSIGN TO SYS001                                                     
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL.                                           
+
+      * FICHERO DE REGISTROS SALIDA                                             
+           SELECT FICH-SAL                                                      
+           ASSIGN TO SYS002                                                     
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL.                                           
+
+      ******************************************************************        
+      *                  DATA DIVISION                                 *        
+      ******************************************************************        
+
+       DATA DIVISION.                                                           
+
+       FILE SECTION.                                                            
+       FD FICH-ENT                                                              
+             BLOCK CONTAINS 0 RECORDS                                           
+             RECORDING MODE IS F                                                
+             LABEL RECORDS ARE STANDARD.                                        
+       01 REG-ENT PIC X(449).                                                   
+
+       FD FICH-SAL                                                              
+             BLOCK CONTAINS 0 RECORDS                                           
+             RECORDING MODE IS F                                                
+             LABEL RECORDS ARE STANDARD.                                        
+       01 REG-SAL PIC X(166).                                                   
+      *                                                                         
+      ******************************************************************        
+      *                  WORKING-STORAGE SECTION                       *        
+      ******************************************************************        
+
+       WORKING-STORAGE SECTION.                                                 
+
+       01 FILLER.                                                               
+          03 FILLER PIC X(40) VALUE 'INICIO WORKING-STORAGE SECTION'.           
+
+      **** VARIABLES PARA TRATAMIENTO DE FECHAS                                 
+
+          03 WS-DATE.                                                           
+             05 WS-FECHA.                                                       
+                07 WS-ANO              PIC 9(4) VALUE ZEROS.                    
+                07 WS-MES              PIC 9(2) VALUE ZEROS.                    
+                07 WS-DIA              PIC 9(2) VALUE ZEROS.                    
+
+      ** SWITCH                                                                 
+
+          03 SW-FICH-ENT               PIC X(2) VALUE SPACES.                   
+             88 SW-INI-FICH-ENT                 VALUE '00'.                     
+             88 SW-FIN-FICH-ENT                 VALUE '01'.                     
+
+      ** CONTADORES                                                             
+
+          03 WS-CONTADORES.                                                     
+             05 WS-CONT-REG            PIC 9(03).                               
+             05 WS-CONT-REG-DET        PIC 9(03).                               
+             05 WS-CONT-REG-OP-MO      PIC 9(03).                               
+             05 WS-CONT-REG-OP         PIC 9(03).                               
+             05 WS-CONT-REG-SIST       PIC 9(03).                               
+             05 WS-CONT-REG-EJER       PIC 9(03).                               
+             05 WS-LEIDOS              PIC 9(03).                               
+             05 WS-INSERTADOS          PIC 9(03).                               
+             05 WS-NO-INSERTADOS       PIC 9(03).                               
+
+      ****************************************************                      
+      ** LITERALES                                                              
+      ****************************************************                      
+
+      *  VARIABLES DE FICHERO                                                   
+          03 WS-REG-SALIDA             PIC X(166).                              
+
+
+      ********   CABECERAS DEL LISTADO   *************************              
+          03 CAB-1.                                                             
+             05 FILLER        PIC X      VALUE SPACES.                          
+             05 FILLER        PIC X(11)  VALUE 'MAPFRE VIDA'.                   
+             05 FILLER        PIC X(35)  VALUE SPACES.                          
+             05 FILLER        PIC X(20)  VALUE 'RESUMEN FICHERO DATO'.          
+             05 FILLER        PIC X(20)  VALUE 'S ECONOMICOS DE BDGI'.          
+             05 FILLER        PIC X(2)   VALUE SPACES.                          
+             05 CB-DIA1       PIC 9(2)   VALUE ZEROS.                           
+             05 FILLER        PIC X      VALUE '-'.                             
+             05 CB-MES1       PIC 9(2)   VALUE ZEROS.                           
+             05 FILLER        PIC X      VALUE '-'.                             
+             05 CB-ANO1       PIC 9(4)   VALUE ZEROS.                           
+             05 FILLER        PIC X(38)  VALUE SPACES.                          
+
+          03 CAB-2.                                                             
+             05 FILLER        PIC X      VALUE SPACES.                          
+             05 FILLER        PIC X(8)   VALUE 'B372J017'.                      
+             05 FILLER        PIC X(38)  VALUE SPACES.                          
+             05 FILLER        PIC X(40)  VALUE ALL '-'.                         
+             05 FILLER        PIC X(41)  VALUE SPACES.                          
+
+          03 CAB-3.                                                             
+             05 FILLER        PIC X(01)  VALUE SPACES.                          
+
+          03 CAB-4.                                                             
+             05 FILLER        PIC X(15)  VALUE SPACES.                          
+             05 FILLER        PIC X(01)  VALUE SPACES.                          
+             05 FILLER        PIC X(13)  VALUE ALL '_'.                         
+             05 FILLER        PIC X(01)  VALUE SPACES.                          
+             05 FILLER        PIC X(08)  VALUE ALL '_'.                         
+             05 FILLER        PIC X(01)  VALUE SPACES.                          
+             05 FILLER        PIC X(07)  VALUE ALL '_'.                         
+             05 FILLER        PIC X(01)  VALUE SPACES.                          
+             05 FILLER        PIC X(06)  VALUE ALL '_'.                         
+             05 FILLER        PIC X(01)  VALUE SPACES.                          
+             05 FILLER        PIC X(09)  VALUE ALL '_'.                         
+             05 FILLER        PIC X(01)  VALUE SPACES.                          
+             05 FILLER        PIC X(10)  VALUE ALL '_'.                         
+             05 FILLER        PIC X(01)  VALUE SPACES.                          
+             05 FILLER        PIC X(19)  VALUE ALL '_'.                         
+             05 FILLER        PIC X(01)  VALUE SPACES.                          
+             05 FILLER        PIC X(19)  VALUE ALL '_'.                         
+             05 FILLER        PIC X(01)  VALUE SPACES.                          
+             05 FILLER        PIC X(19)  VALUE ALL '_'.                         
+             05 FILLER        PIC X(01)  VALUE SPACES.                          
+             05 FILLER        PIC X(12)  VALUE ALL '_'.                         
+             05 FILLER        PIC X(01)  VALUE SPACES.                          
+             05 FILLER        PIC X(17)  VALUE ALL '_'.                         
+             05 FILLER        PIC X(01)  VALUE SPACES.                          
+
+          03 CAB-5.                                                             
+             05 FILLER        PIC X(166)  VALUE ALL '-'.                        
+
+          03 CAB-6.                                                             
+             05 FILLER        PIC X(166) VALUE ALL '='.                         
+
+      *  CABECERA                                                               
+
+          03 WS-CABECERA.                                                       
+             05 FILLER   PIC X(15) VALUE SPACES.                                
+             05 FILLER   PIC X(01) VALUE ' '.                                   
+             05 FILLER   PIC X(13) VALUE 'A—O EJERCICIO'.                       
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(08) VALUE 'MES EJER'.                            
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(07) VALUE 'SISTEMA'.                             
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(06) VALUE 'MODELO'.                              
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(09) VALUE 'OPERACION'.                           
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(10) VALUE 'N∫REGISTRO'.                          
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(19) VALUE ' IMPORTE PRESTACION'.                 
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(19) VALUE '   IMPORTE  BASE   '.                 
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(19) VALUE ' IMPORTE RETENCION '.                 
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(12) VALUE 'CUENTA GASTO'.                        
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+             05 FILLER   PIC X(17) VALUE 'CUENTA RETENCION'.                    
+             05 FILLER   PIC X(01) VALUE ';'.                                   
+
+      ** ESTRUCTURA FICHEROS                                                    
+
+          03 WS-SALIDA.                                                         
+             05 WS-TEXTO-CAB            PIC X(15) VALUE SPACES.                 
+             05 FILLER                  PIC X(01) VALUE ' '.                    
+             05 WS-SALIDA-ANIO-EJE      PIC X(13).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SALIDA-MES-EJE       PIC X(08).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SALIDA-SISTEMA       PIC X(07).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SALIDA-MODELO        PIC X(06).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SALIDA-OPERACION     PIC X(09).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SALIDA-NUMREG        PIC ---------9.                         
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SALIDA-IPRESTACION   PIC ----.---.---.--9,99.                
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SALIDA-BASE          PIC ----.---.---.--9,99.                
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SALIDA-IRETENCION    PIC ----.---.---.--9,99.                
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SALIDA-CTA-GASTO     PIC X(12).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+             05 WS-SALIDA-CTA-RETENCION PIC X(17).                              
+             05 FILLER                  PIC X(01) VALUE ';'.                    
+
+      ** VARIABLES CLAVE DE ENTRADA                                             
+
+          03 CLAVES.                                                            
+             05 CLAVE-ENT.                                                      
+                   10 WS-ANIO-EJE-ENT              PIC X(04).                   
+                   10 WS-MES-EJE-ENT               PIC X(02).                   
+                   10 WS-DATECO-COD-SISTEMA-ENT    PIC X(02).                   
+                   10 WS-IRPF-NUM-MODELOV-ENT      PIC X(03).                   
+                   10 WS-DATECO-COD-OPERACION-ENT  PIC X(02).                   
+                   10 WS-IRPF-CUENTA-GASTO-ENT     PIC 9(10).                   
+                   10 WS-IRPF-CUENTA-RETENCION-ENT PIC 9(10).                   
+             05 CLAVE-ANT.                                                      
+                   10 WS-ANIO-EJE-ANT              PIC X(04).                   
+                   10 WS-MES-EJE-ANT               PIC X(02).                   
+                   10 WS-DATECO-COD-SISTEMA-ANT    PIC X(02).                   
+                   10 WS-IRPF-NUM-MODELOV-ANT      PIC X(03).                   
+                   10 WS-DATECO-COD-OPERACION-ANT  PIC X(02).                   
+                   10 WS-IRPF-CUENTA-GASTO-ANT     PIC 9(10).                   
+                   10 WS-IRPF-CUENTA-RETENCION-ANT PIC 9(10).                   
+             05 SUBCLAVE-OP-MO-ENT.                                             
+      *MU-2017-BDGI-R-V-INI 2018-01-08                                          
+                   10 WS-ANO-OP-MO-ENT             PIC X(04).                   
+      *MU-2017-BDGI-R-V-FIN 2018-01-08                                          
+                   10 WS-MES-OP-MO-ENT             PIC X(02).                   
+                   10 WS-SUBCLA-OP-MO-SISTEMA-ENT  PIC X(02).                   
+                   10 WS-SUBCLA-MODELOV-ENT        PIC X(03).                   
+                   10 WS-SUBCLA-OP-MO-OPERACI-ENT  PIC X(02).                   
+                   10 WS-OP-MO-CUENT-GASTO-ENT     PIC 9(10).                   
+                   10 WS-OP-MO-CUENT-RETENCION-ENT PIC 9(10).                   
+             05 SUBCLAVE-OP-MO-ANT.                                             
+      *MU-2017-BDGI-R-V-INI 2018-01-08                                          
+                   10 WS-ANO-OP-MO-ANT             PIC X(04).                   
+      *MU-2017-BDGI-R-V-FIN 2018-01-08                                          
+                   10 WS-MES-OP-MO-ANT             PIC X(02).                   
+                   10 WS-SUBCLA-OP-MO-SISTEMA-ANT  PIC X(02).                   
+                   10 WS-SUBCLA-MODELOV-ANT        PIC X(03).                   
+                   10 WS-SUBCLA-OP-MO-OPERACI-ANT  PIC X(02).                   
+                   10 WS-OP-MO-CUENT-GASTO-ANT     PIC 9(10).                   
+                   10 WS-OP-MO-CUENT-RETENCION-ANT PIC 9(10).                   
+             05 SUBCLAVE-OP-ENT.                                                
+                   10 WS-SUBCLA-SISTEMA-ENT        PIC X(02).                   
+                   10 WS-SUBCLA-OPERACION-ENT      PIC X(02).                   
+             05 SUBCLAVE-OP-ANT.                                                
+                   10 WS-SUBCLA-SISTEMA-ANT        PIC X(02).                   
+                   10 WS-SUBCLA-OPERACION-ANT      PIC X(02).                   
+
+      *  TOTALES                                                                
+
+          03 WS-TOTALES.                                                        
+             05 WS-TOT-IBRTPREST-CLAVE    PIC S9(12)V9(02).                     
+             05 WS-TOT-IBRTPREST-SIST     PIC S9(12)V9(02).                     
+             05 WS-TOT-IBRTPREST-OP-MO    PIC S9(12)V9(02).                     
+             05 WS-TOT-IBRTPREST-OP       PIC S9(12)V9(02).                     
+             05 WS-TOT-IBRTPREST-EJER     PIC S9(12)V9(02).                     
+             05 WS-TOT-BASE-CLAVE         PIC S9(12)V9(02).                     
+             05 WS-TOT-BASE-SIST          PIC S9(12)V9(02).                     
+             05 WS-TOT-BASE-OP-MO         PIC S9(12)V9(02).                     
+             05 WS-TOT-BASE-OP            PIC S9(12)V9(02).                     
+             05 WS-TOT-BASE-EJER          PIC S9(12)V9(02).                     
+             05 WS-TOT-IRETEN-CLAVE       PIC S9(12)V9(02).                     
+             05 WS-TOT-IRETEN-SIST        PIC S9(12)V9(02).                     
+             05 WS-TOT-IRETEN-OP-MO       PIC S9(12)V9(02).                     
+             05 WS-TOT-IRETEN-OP          PIC S9(12)V9(02).                     
+             05 WS-TOT-IRETEN-EJER        PIC S9(12)V9(02).                     
+
+      *  AUXILIARES                                                             
+
+          03 WS-AUXI.                                                           
+             05 WS-TIPO-LINEA             PIC X(05) VALUE SPACES.               
+             05 WS-TIPO-OP-MO             PIC X(05) VALUE 'OP-MO'.              
+             05 WS-TIPO-OPE               PIC X(05) VALUE 'OPERA'.              
+             05 WS-TIPO-SIS               PIC X(05) VALUE 'SISTE'.              
+             05 WS-TIPO-EJE               PIC X(05) VALUE 'EJERC'.              
+             05 WS-TIPO-ULT               PIC X(05) VALUE 'ULTIM'.              
+
+      *COPY ENTRADA                                                             
+
+          03 WS-X372J017.                                                       
+             COPY X372X101.                                                     
+             COPY X372X102.                                                     
+             COPY X372X103.                                                     
+             07 FILLER                 PIC X(12) VALUE SPACES.                  
+             07 WS-ANIO-TEC            PIC 9(04).                               
+             07 WS-KEXPEDIENTE-TEC     PIC 9(10).                               
+
+      *************************************************************             
+      *PROCEDURE DIVISION.                                                      
+      *************************************************************             
+
+       PROCEDURE DIVISION.                                                      
+
+           PERFORM 1000-INICIO                                                  
+
+           PERFORM 2000-PROCESO                                                 
+             UNTIL SW-FIN-FICH-ENT                                              
+
+           PERFORM 9000-FINAL                                                   
+
+           GOBACK.                                                              
+
+      *****************************************************************         
+      * 1000-INICIO.                                                  *         
+      *****************************************************************         
+       1000-INICIO.                                                             
+
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372J017: 1000-INICIO'.                                     
+      *F*                                                                       
+
+           INITIALIZE  WS-X372J017                                              
+                       WS-SALIDA                                                
+                       WS-CONTADORES                                            
+                       WS-TOTALES                                               
+                       CLAVES                                                   
+
+           SET SW-INI-FICH-ENT   TO TRUE                                        
+
+      **** ACEPTAR FECHA DEL SISTEMA.                                           
+           MOVE FUNCTION CURRENT-DATE TO WS-DATE                                
+
+           MOVE WS-ANO     TO CB-ANO1                                           
+           MOVE WS-MES     TO CB-MES1                                           
+           MOVE WS-DIA     TO CB-DIA1                                           
+
+      **** APERTURA DE FICHEROS                                                 
+           OPEN INPUT  FICH-ENT                                                 
+               OUTPUT  FICH-SAL                                                 
+
+      ***  LECTURA PRIMER REGISTRO                                              
+           PERFORM 8000-READ-FICH-ENT                                           
+
+           IF NOT SW-FIN-FICH-ENT                                               
+
+      ***  AÒO Y MES DEL EJERCICIO                                              
+      *       MOVE X372X101-DATECO-AEJERCICIO TO CB-ACIERRE1                    
+      *       MOVE X372X101-DATECO-MEJERCICIO TO CB-MCIERRE1                    
+
+      **** CARGA DE CABECERAS EN FICHERO                                        
+              MOVE CAB-1       TO WS-REG-SALIDA                                 
+
+              PERFORM 7000-ESCRIBIR-SALIDA                                      
+
+              MOVE CAB-2       TO WS-REG-SALIDA                                 
+
+              PERFORM 7000-ESCRIBIR-SALIDA                                      
+
+              MOVE CAB-3       TO WS-REG-SALIDA                                 
+
+              PERFORM 7000-ESCRIBIR-SALIDA                                      
+
+              MOVE WS-CABECERA TO WS-REG-SALIDA                                 
+
+              PERFORM 7000-ESCRIBIR-SALIDA                                      
+
+              MOVE CAB-4       TO WS-REG-SALIDA                                 
+
+              PERFORM 7000-ESCRIBIR-SALIDA                                      
+
+           END-IF                                                               
+           MOVE HIGH-VALUES TO WS-ANIO-EJE-ANT                                  
+      *MU-2017-BDGI-R-V-INI 2018-01-08                                          
+                               WS-ANO-OP-MO-ANT                                 
+      *MU-2017-BDGI-R-V-FIN 2018-01-08                                          
+           .                                                                    
+
+      *****************************************************************         
+      * 2000-PROCESO.                                                 *         
+      *****************************************************************         
+       2000-PROCESO.                                                            
+
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372J017: 2000-PROCESO'                                     
+      *T*                                                                       
+
+           INITIALIZE CLAVE-ENT                                                 
+
+           ADD  1     TO WS-LEIDOS                                              
+
+      * INFORMAMOS LA CLAVE DE ENTRADA                                          
+
+           MOVE X372X101-DATECO-AEJERCICIO TO WS-ANIO-EJE-ENT                   
+      *MU-2017-BDGI-R-V-INI 2018-01-08                                          
+                                              WS-ANO-OP-MO-ENT                  
+      *MU-2017-BDGI-R-V-FIN 2018-01-08                                          
+           MOVE X372X101-DATECO-MEJERCICIO TO WS-MES-EJE-ENT                    
+           MOVE X372X101-DATECO-MEJERCICIO TO WS-MES-OP-MO-ENT                  
+
+           MOVE X372X101-DATECO-COD-SISTEMA                                     
+             TO WS-DATECO-COD-SISTEMA-ENT                                       
+                WS-SUBCLA-OP-MO-SISTEMA-ENT                                     
+                WS-SUBCLA-SISTEMA-ENT                                           
+
+           MOVE X372X103-IRPF-NUM-MODELOV                                       
+             TO WS-IRPF-NUM-MODELOV-ENT                                         
+                WS-SUBCLA-MODELOV-ENT                                           
+
+           MOVE X372X101-DATECO-COD-OPERACION                                   
+             TO WS-DATECO-COD-OPERACION-ENT                                     
+                WS-SUBCLA-OP-MO-OPERACI-ENT                                     
+                WS-SUBCLA-OPERACION-ENT                                         
+
+           MOVE X372X103-IRPF-CUENTA-GASTO                                      
+             TO WS-IRPF-CUENTA-GASTO-ENT                                        
+                WS-OP-MO-CUENT-GASTO-ENT                                        
+
+           MOVE X372X103-IRPF-CUENTA-RETENCION                                  
+             TO WS-IRPF-CUENTA-RETENCION-ENT                                    
+                WS-OP-MO-CUENT-RETENCION-ENT                                    
+
+      * SI LA CLAVE-ENT ES IGUAL SUMAREMOS LOS 3 IMPORTES                       
+
+           PERFORM 2010-CLAVE-ENT-ANT                                           
+
+      * SI OPERACION Y MODELO SON IGUALES SUMAREMOS LOS 3 IMPORTS               
+
+           PERFORM 2020-CLAVE-OPER-MODE                                         
+
+      * SUMATORIO DE OPERACION-SISTEMA                                          
+
+           PERFORM 2030-CLAVE-OPERACION                                         
+
+      * SI COD-SISTEMA ES IGUAL SUMAREMOS LOS 3 IMPORTS                         
+
+           PERFORM 2040-CLAVE-SISTEMA                                           
+
+      * SI EL AÒO DE EJERCICIO ES IGUAL SUMAREMOS LOS 3 IMPORTS                 
+
+           PERFORM 2050-CLAVE-EJERCICIO                                         
+
+      * ACTUALIZAMOS CONTADORES DESPUES DE GRABAR SALIDA                        
+           ADD  1   TO WS-CONT-REG-DET                                          
+           ADD  1   TO WS-CONT-REG-OP-MO                                        
+           ADD  1   TO WS-CONT-REG-OP                                           
+           ADD  1   TO WS-CONT-REG-SIST                                         
+           ADD  1   TO WS-CONT-REG-EJER                                         
+
+      * GUARDAMOS LA CLAVE DE ENTRADA Y LA SUBCLAVE OPERACION                   
+           MOVE WS-ANIO-EJE-ENT  TO WS-ANIO-EJE-ANT                             
+      *MU-2017-BDGI-R-V-INI 2018-01-08                                          
+                                    WS-ANO-OP-MO-ENT                            
+      *MU-2017-BDGI-R-V-FIN 2018-01-08                                          
+           MOVE WS-MES-EJE-ENT   TO WS-MES-EJE-ANT                              
+           MOVE WS-MES-OP-MO-ENT TO WS-MES-OP-MO-ANT                            
+
+           MOVE WS-DATECO-COD-SISTEMA-ENT                                       
+             TO WS-DATECO-COD-SISTEMA-ANT                                       
+                WS-SUBCLA-OP-MO-SISTEMA-ANT                                     
+                WS-SUBCLA-SISTEMA-ANT                                           
+
+           MOVE WS-IRPF-NUM-MODELOV-ENT                                         
+             TO WS-IRPF-NUM-MODELOV-ANT                                         
+                WS-SUBCLA-MODELOV-ANT                                           
+
+           MOVE WS-DATECO-COD-OPERACION-ENT                                     
+             TO WS-DATECO-COD-OPERACION-ANT                                     
+                WS-SUBCLA-OP-MO-OPERACI-ANT                                     
+                WS-SUBCLA-OPERACION-ANT                                         
+
+           MOVE WS-IRPF-CUENTA-GASTO-ENT                                        
+             TO WS-IRPF-CUENTA-GASTO-ANT                                        
+                WS-OP-MO-CUENT-GASTO-ANT                                        
+
+           MOVE WS-IRPF-CUENTA-RETENCION-ENT                                    
+             TO WS-IRPF-CUENTA-RETENCION-ANT                                    
+                WS-OP-MO-CUENT-RETENCION-ANT                                    
+      *MU-2017-BDGI-R-V-INI 2018-01-08                                          
+           MOVE CLAVE-ENT          TO CLAVE-ANT                                 
+           MOVE SUBCLAVE-OP-MO-ENT TO SUBCLAVE-OP-MO-ANT                        
+           MOVE SUBCLAVE-OP-ENT    TO SUBCLAVE-OP-ANT                           
+      *MU-2017-BDGI-R-V-FIN 2018-01-08                                          
+           PERFORM 8000-READ-FICH-ENT                                           
+
+      * ULTIMO REGISTRO                                                         
+
+           PERFORM 2060-ULTIMO-REG-FICH                                         
+           .                                                                    
+
+      *****************************************************************         
+      * 2010-CLAVE-ENT-ANT                                            *         
+      *****************************************************************         
+       2010-CLAVE-ENT-ANT.                                                      
+
+           IF CLAVE-ENT  EQUAL  CLAVE-ANT                                       
+            OR WS-LEIDOS EQUAL 1                                                
+      * SUMA DE INDEMNIZACION O PRESTACION CUANDO LA CLAVE                      
+               COMPUTE WS-TOT-IBRTPREST-CLAVE        =                          
+                       WS-TOT-IBRTPREST-CLAVE        +                          
+                       X372X103-IRPF-IBRTPREST-IINDE                            
+
+      * SUMA DE LA BASE DE RETENCION                                            
+               COMPUTE WS-TOT-BASE-CLAVE             =                          
+                       WS-TOT-BASE-CLAVE             +                          
+                       X372X103-IRPF-BASE-RETENCION                             
+
+      * SUMA DEL IMPORTE DE RETENCION                                           
+               COMPUTE WS-TOT-IRETEN-CLAVE           =                          
+                       WS-TOT-IRETEN-CLAVE           +                          
+                       X372X103-IRPF-IRETENCION                                 
+           ELSE                                                                 
+
+               MOVE WS-TOT-IBRTPREST-CLAVE  TO WS-SALIDA-IPRESTACION            
+               MOVE WS-TOT-BASE-CLAVE       TO WS-SALIDA-BASE                   
+               MOVE WS-TOT-IRETEN-CLAVE     TO WS-SALIDA-IRETENCION             
+               MOVE SPACES                  TO WS-TEXTO-CAB                     
+               MOVE WS-CONT-REG-DET         TO WS-CONT-REG                      
+               MOVE ZEROS                   TO WS-CONT-REG-DET                  
+
+               MOVE X372X103-IRPF-IBRTPREST-IINDE                               
+                 TO WS-TOT-IBRTPREST-CLAVE                                      
+           END-IF                                                               
+           .                                                                    
+
+      *****************************************************************         
+      * 2020-CLAVE-OPER-MODE                                          *         
+      *****************************************************************         
+       2020-CLAVE-OPER-MODE.                                                    
+
+      *D*                                                                       
+DSPLYS*    DISPLAY ' ************ 2020-CLAVE-OPER-MODE ******'                  
+DSPLYS*    DISPLAY ' **SUBCLAVE-OP-MO-ENT : ' SUBCLAVE-OP-MO-ENT                
+DSPLYS*    DISPLAY ' **SUBCLAVE-OP-MO-ANT : ' SUBCLAVE-OP-MO-ANT                
+      *T*                                                                       
+
+           IF SUBCLAVE-OP-MO-ENT EQUAL SUBCLAVE-OP-MO-ANT                       
+            OR WS-LEIDOS EQUAL 1                                                
+      * SUMA DE INDEMNIZACION O PRESTACION CUANDO LA CLAVE                      
+               COMPUTE WS-TOT-IBRTPREST-OP-MO          =                        
+                       WS-TOT-IBRTPREST-OP-MO          +                        
+                       X372X103-IRPF-IBRTPREST-IINDE                            
+
+      * SUMA DE LA BASE DE RETENCION                                            
+               COMPUTE WS-TOT-BASE-OP-MO             =                          
+                       WS-TOT-BASE-OP-MO             +                          
+                       X372X103-IRPF-BASE-RETENCION                             
+
+      * SUMA DEL IMPORTE DE RETENCION                                           
+               COMPUTE WS-TOT-IRETEN-OP-MO           =                          
+                       WS-TOT-IRETEN-OP-MO           +                          
+                       X372X103-IRPF-IRETENCION                                 
+           ELSE                                                                 
+               MOVE WS-TOT-IBRTPREST-OP-MO TO WS-SALIDA-IPRESTACION             
+               MOVE WS-TOT-BASE-OP-MO      TO WS-SALIDA-BASE                    
+               MOVE WS-TOT-IRETEN-OP-MO    TO WS-SALIDA-IRETENCION              
+               MOVE WS-CONT-REG-OP-MO      TO WS-CONT-REG                       
+               MOVE WS-TIPO-OP-MO          TO WS-TIPO-LINEA                     
+
+               PERFORM 5000-MOVER-SALIDA                                        
+               PERFORM 7000-ESCRIBIR-SALIDA                                     
+
+               MOVE ZEROES    TO WS-CONT-REG-OP-MO                              
+               MOVE ZEROES    TO WS-TOT-IBRTPREST-OP-MO                         
+               MOVE ZEROES    TO WS-TOT-BASE-OP-MO                              
+               MOVE ZEROES    TO WS-TOT-IRETEN-OP-MO                            
+
+               MOVE X372X103-IRPF-IBRTPREST-IINDE                               
+                 TO WS-TOT-IBRTPREST-OP-MO                                      
+               MOVE X372X103-IRPF-BASE-RETENCION                                
+                 TO WS-TOT-BASE-OP-MO                                           
+               MOVE X372X103-IRPF-IRETENCION                                    
+                 TO WS-TOT-IRETEN-OP-MO                                         
+           END-IF                                                               
+           .                                                                    
+
+      *****************************************************************         
+      * 2030-CLAVE-OPERACION                                          *         
+      *****************************************************************         
+       2030-CLAVE-OPERACION.                                                    
+
+      *D*                                                                       
+DSPLYS*    DISPLAY ' ************ 2030-CLAVE-OPERACION ******'                  
+      *T*                                                                       
+
+           IF (SUBCLAVE-OP-ENT EQUAL SUBCLAVE-OP-ANT                            
+               OR WS-LEIDOS EQUAL 1) AND                                        
+              (WS-ANIO-EJE-ENT EQUAL WS-ANIO-EJE-ANT                            
+               OR WS-ANIO-EJE-ANT EQUAL HIGH-VALUES)                            
+      * SUMA DE INDEMNIZACION O PRESTACION CUANDO LA CLAVE                      
+               COMPUTE WS-TOT-IBRTPREST-OP             =                        
+                       WS-TOT-IBRTPREST-OP             +                        
+                       X372X103-IRPF-IBRTPREST-IINDE                            
+
+      * SUMA DE LA BASE DE RETENCION                                            
+               COMPUTE WS-TOT-BASE-OP                =                          
+                       WS-TOT-BASE-OP                +                          
+                       X372X103-IRPF-BASE-RETENCION                             
+
+      * SUMA DEL IMPORTE DE RETENCION                                           
+               COMPUTE WS-TOT-IRETEN-OP              =                          
+                       WS-TOT-IRETEN-OP              +                          
+                       X372X103-IRPF-IRETENCION                                 
+           ELSE                                                                 
+               MOVE WS-TOT-IBRTPREST-OP TO WS-SALIDA-IPRESTACION                
+               MOVE WS-TOT-BASE-OP      TO WS-SALIDA-BASE                       
+               MOVE WS-TOT-IRETEN-OP    TO WS-SALIDA-IRETENCION                 
+               MOVE CAB-5               TO WS-REG-SALIDA                        
+
+               PERFORM 7000-ESCRIBIR-SALIDA                                     
+
+               MOVE 'TOTAL OPERACION'   TO WS-TEXTO-CAB                         
+               MOVE WS-CONT-REG-OP      TO WS-CONT-REG                          
+               MOVE WS-TIPO-OPE         TO WS-TIPO-LINEA                        
+
+               PERFORM 5000-MOVER-SALIDA                                        
+               PERFORM 7000-ESCRIBIR-SALIDA                                     
+
+               MOVE CAB-5               TO WS-REG-SALIDA                        
+
+               PERFORM 7000-ESCRIBIR-SALIDA                                     
+
+               MOVE ZEROES              TO WS-CONT-REG-OP                       
+               MOVE ZEROES              TO WS-TOT-IBRTPREST-OP                  
+               MOVE ZEROES              TO WS-TOT-BASE-OP                       
+               MOVE ZEROES              TO WS-TOT-IRETEN-OP                     
+
+               MOVE X372X103-IRPF-IBRTPREST-IINDE                               
+                 TO WS-TOT-IBRTPREST-OP                                         
+               MOVE X372X103-IRPF-BASE-RETENCION                                
+                 TO WS-TOT-BASE-OP                                              
+               MOVE X372X103-IRPF-IRETENCION                                    
+                 TO WS-TOT-IRETEN-OP                                            
+           END-IF                                                               
+           .                                                                    
+
+      *****************************************************************         
+      * 2040-CLAVE-SISTEMA                                            *         
+      *****************************************************************         
+       2040-CLAVE-SISTEMA.                                                      
+
+      *D*                                                                       
+DSPLYS*    DISPLAY ' ************ 2040-CLAVE-SISTEMA *******'                   
+      *T*                                                                       
+
+           IF (WS-DATECO-COD-SISTEMA-ENT EQUAL                                  
+               WS-DATECO-COD-SISTEMA-ANT                                        
+              OR WS-LEIDOS EQUAL 1) AND                                         
+              (WS-ANIO-EJE-ENT EQUAL WS-ANIO-EJE-ANT                            
+               OR WS-ANIO-EJE-ANT EQUAL HIGH-VALUES)                            
+      * SUMA DE INDEMNIZACION O PRESTACION CUANDO LA CLAVE                      
+               COMPUTE WS-TOT-IBRTPREST-SIST         =                          
+                       WS-TOT-IBRTPREST-SIST         +                          
+                       X372X103-IRPF-IBRTPREST-IINDE                            
+
+      * SUMA DE LA BASE DE RETENCION                                            
+               COMPUTE WS-TOT-BASE-SIST              =                          
+                       WS-TOT-BASE-SIST              +                          
+                       X372X103-IRPF-BASE-RETENCION                             
+
+      * SUMA DEL IMPORTE DE RETENCION                                           
+               COMPUTE WS-TOT-IRETEN-SIST            =                          
+                       WS-TOT-IRETEN-SIST            +                          
+                       X372X103-IRPF-IRETENCION                                 
+           ELSE                                                                 
+               MOVE WS-TOT-IBRTPREST-SIST TO WS-SALIDA-IPRESTACION              
+               MOVE WS-TOT-BASE-SIST      TO WS-SALIDA-BASE                     
+               MOVE WS-TOT-IRETEN-SIST    TO WS-SALIDA-IRETENCION               
+               MOVE 'TOTAL SISTEMA'       TO WS-TEXTO-CAB                       
+               MOVE WS-CONT-REG-SIST      TO WS-CONT-REG                        
+               MOVE WS-TIPO-SIS           TO WS-TIPO-LINEA                      
+
+               PERFORM 5000-MOVER-SALIDA                                        
+               PERFORM 7000-ESCRIBIR-SALIDA                                     
+
+               MOVE CAB-6            TO WS-REG-SALIDA                           
+
+               PERFORM 7000-ESCRIBIR-SALIDA                                     
+
+               MOVE ZEROS            TO WS-CONT-REG-SIST                        
+               MOVE ZEROS            TO WS-TOT-IBRTPREST-SIST                   
+               MOVE ZEROS            TO WS-TOT-BASE-SIST                        
+               MOVE ZEROS            TO WS-TOT-IRETEN-SIST                      
+
+               MOVE X372X103-IRPF-IBRTPREST-IINDE                               
+                 TO WS-TOT-IBRTPREST-SIST                                       
+               MOVE X372X103-IRPF-BASE-RETENCION                                
+                 TO WS-TOT-BASE-SIST                                            
+               MOVE X372X103-IRPF-IRETENCION                                    
+                 TO WS-TOT-IRETEN-SIST                                          
+           END-IF                                                               
+           .                                                                    
+
+      *****************************************************************         
+      * 2050-CLAVE-EJERCICIO                                          *         
+      *****************************************************************         
+       2050-CLAVE-EJERCICIO.                                                    
+
+           IF WS-ANIO-EJE-ENT EQUAL WS-ANIO-EJE-ANT                             
+            OR WS-LEIDOS EQUAL 1                                                
+      * SUMA DE INDEMNIZACION O PRESTACION CUANDO LA CLAVE                      
+               COMPUTE WS-TOT-IBRTPREST-EJER         =                          
+                       WS-TOT-IBRTPREST-EJER         +                          
+                       X372X103-IRPF-IBRTPREST-IINDE                            
+
+      * SUMA DE LA BASE DE RETENCION                                            
+               COMPUTE WS-TOT-BASE-EJER              =                          
+                       WS-TOT-BASE-EJER              +                          
+                       X372X103-IRPF-BASE-RETENCION                             
+
+      * SUMA DEL IMPORTE DE RETENCION                                           
+               COMPUTE WS-TOT-IRETEN-EJER            =                          
+                       WS-TOT-IRETEN-EJER            +                          
+                       X372X103-IRPF-IRETENCION                                 
+           ELSE                                                                 
+               MOVE SPACES                TO WS-REG-SALIDA                      
+
+               PERFORM 7000-ESCRIBIR-SALIDA                                     
+
+               MOVE WS-TOT-IBRTPREST-EJER TO WS-SALIDA-IPRESTACION              
+               MOVE WS-TOT-BASE-EJER      TO WS-SALIDA-BASE                     
+               MOVE WS-TOT-IRETEN-EJER    TO WS-SALIDA-IRETENCION               
+               MOVE WS-CONT-REG-EJER      TO WS-CONT-REG                        
+               MOVE 'TOTAL EJERCICIO'     TO WS-TEXTO-CAB                       
+               MOVE WS-TIPO-EJE           TO WS-TIPO-LINEA                      
+
+               PERFORM 5000-MOVER-SALIDA                                        
+               PERFORM 7000-ESCRIBIR-SALIDA                                     
+
+               MOVE SPACES            TO WS-REG-SALIDA                          
+
+               PERFORM 7000-ESCRIBIR-SALIDA                                     
+
+               MOVE ZEROES            TO WS-TOT-IBRTPREST-EJER                  
+               MOVE ZEROES            TO WS-TOT-BASE-EJER                       
+               MOVE ZEROES            TO WS-TOT-IRETEN-EJER                     
+               MOVE ZEROES            TO WS-CONT-REG-EJER                       
+
+               MOVE X372X103-IRPF-IBRTPREST-IINDE                               
+                 TO WS-TOT-IBRTPREST-EJER                                       
+               MOVE X372X103-IRPF-BASE-RETENCION                                
+                 TO WS-TOT-BASE-EJER                                            
+               MOVE X372X103-IRPF-IRETENCION                                    
+                 TO WS-TOT-IRETEN-EJER                                          
+
+               MOVE CAB-5                  TO WS-REG-SALIDA                     
+
+               PERFORM 7000-ESCRIBIR-SALIDA                                     
+      *MU-2017-BDGI-R-V-INI 2018-01-08                                          
+               INITIALIZE WS-CONT-REG                                           
+               INITIALIZE WS-CONT-REG-DET                                       
+               INITIALIZE WS-CONT-REG-OP-MO                                     
+               INITIALIZE WS-CONT-REG-OP                                        
+               INITIALIZE WS-CONT-REG-SIST                                      
+               INITIALIZE WS-CONT-REG-EJER                                      
+      *MU-2017-BDGI-R-V-FIN 2018-01-08                                          
+           END-IF                                                               
+           .                                                                    
+
+      *****************************************************************         
+      * 2060-ULTIMO-REG-FICH                                          *         
+      *****************************************************************         
+       2060-ULTIMO-REG-FICH.                                                    
+
+           IF SW-FIN-FICH-ENT                                                   
+
+              MOVE WS-TOT-IBRTPREST-CLAVE TO WS-SALIDA-IPRESTACION              
+              MOVE WS-TOT-BASE-CLAVE      TO WS-SALIDA-BASE                     
+              MOVE WS-TOT-IRETEN-CLAVE    TO WS-SALIDA-IRETENCION               
+              MOVE SPACES                 TO WS-TEXTO-CAB                       
+              MOVE WS-CONT-REG-DET        TO WS-CONT-REG                        
+              MOVE WS-TOT-IBRTPREST-OP-MO TO WS-SALIDA-IPRESTACION              
+              MOVE WS-TOT-BASE-OP-MO      TO WS-SALIDA-BASE                     
+              MOVE WS-TOT-IRETEN-OP-MO    TO WS-SALIDA-IRETENCION               
+              MOVE WS-CONT-REG-OP-MO      TO WS-CONT-REG                        
+              MOVE WS-TIPO-ULT            TO WS-TIPO-LINEA                      
+
+              PERFORM 5000-MOVER-SALIDA                                         
+              PERFORM 7000-ESCRIBIR-SALIDA                                      
+
+
+              MOVE CAB-5             TO WS-REG-SALIDA                           
+
+              PERFORM 7000-ESCRIBIR-SALIDA                                      
+
+              MOVE 'TOTAL OPERACION' TO WS-TEXTO-CAB                            
+              MOVE WS-CONT-REG-OP    TO WS-CONT-REG                             
+
+              MOVE WS-TOT-IBRTPREST-OP                                          
+                TO WS-SALIDA-IPRESTACION                                        
+              MOVE WS-TOT-BASE-OP                                               
+                TO WS-SALIDA-BASE                                               
+              MOVE WS-TOT-IRETEN-OP                                             
+                TO WS-SALIDA-IRETENCION                                         
+
+              MOVE WS-TIPO-OPE       TO WS-TIPO-LINEA                           
+
+              PERFORM 5000-MOVER-SALIDA                                         
+              PERFORM 7000-ESCRIBIR-SALIDA                                      
+
+              MOVE CAB-5             TO WS-REG-SALIDA                           
+
+              PERFORM 7000-ESCRIBIR-SALIDA                                      
+
+              MOVE WS-TOT-IBRTPREST-SIST TO WS-SALIDA-IPRESTACION               
+              MOVE WS-TOT-BASE-SIST      TO WS-SALIDA-BASE                      
+              MOVE WS-TOT-IRETEN-SIST    TO WS-SALIDA-IRETENCION                
+              MOVE 'TOTAL SISTEMA'       TO WS-TEXTO-CAB                        
+              MOVE WS-CONT-REG-SIST      TO WS-CONT-REG                         
+              MOVE WS-TIPO-SIS           TO WS-TIPO-LINEA                       
+
+              PERFORM 5000-MOVER-SALIDA                                         
+              PERFORM 7000-ESCRIBIR-SALIDA                                      
+
+              MOVE CAB-6             TO WS-REG-SALIDA                           
+
+              PERFORM 7000-ESCRIBIR-SALIDA                                      
+
+              MOVE SPACES            TO WS-REG-SALIDA                           
+
+              PERFORM 7000-ESCRIBIR-SALIDA                                      
+
+              MOVE WS-TOT-IBRTPREST-EJER TO WS-SALIDA-IPRESTACION               
+              MOVE WS-TOT-BASE-EJER      TO WS-SALIDA-BASE                      
+              MOVE WS-TOT-IRETEN-EJER    TO WS-SALIDA-IRETENCION                
+              MOVE WS-CONT-REG-EJER      TO WS-CONT-REG                         
+              MOVE 'TOTAL EJERCICIO'     TO WS-TEXTO-CAB                        
+              MOVE WS-TIPO-EJE           TO WS-TIPO-LINEA                       
+
+              PERFORM 5000-MOVER-SALIDA                                         
+              PERFORM 7000-ESCRIBIR-SALIDA                                      
+
+              MOVE SPACES            TO WS-REG-SALIDA                           
+
+              PERFORM 7000-ESCRIBIR-SALIDA                                      
+           END-IF                                                               
+           .                                                                    
+
+      *****************************************************************         
+      * 5000-MOVER-SALIDA                                             *         
+      *****************************************************************         
+       5000-MOVER-SALIDA.                                                       
+
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372J017: 5000-MOVER-SALIDA'                                
+      *F*                                                                       
+
+           EVALUATE WS-TIPO-LINEA                                               
+                WHEN WS-TIPO-OP-MO                                              
+                WHEN WS-TIPO-ULT                                                
+                     MOVE WS-ANIO-EJE-ANT                                       
+                       TO WS-SALIDA-ANIO-EJE(10:4)                              
+                     MOVE WS-MES-EJE-ANT                                        
+                       TO WS-SALIDA-MES-EJE(7:2)                                
+                     MOVE WS-DATECO-COD-SISTEMA-ANT                             
+                       TO WS-SALIDA-SISTEMA(6:2)                                
+                     MOVE WS-IRPF-NUM-MODELOV-ANT                               
+                       TO WS-SALIDA-MODELO(4:3)                                 
+                     MOVE WS-DATECO-COD-OPERACION-ANT                           
+                       TO WS-SALIDA-OPERACION                                   
+                     MOVE WS-IRPF-CUENTA-GASTO-ANT                              
+                       TO WS-SALIDA-CTA-GASTO(3:10)                             
+                     MOVE WS-IRPF-CUENTA-RETENCION-ANT                          
+                       TO WS-SALIDA-CTA-RETENCION(8:10)                         
+                WHEN WS-TIPO-OPE                                                
+                     MOVE WS-DATECO-COD-OPERACION-ANT                           
+                       TO WS-SALIDA-OPERACION                                   
+                     MOVE SPACES        TO WS-SALIDA-ANIO-EJE                   
+                     MOVE SPACES        TO WS-SALIDA-MES-EJE                    
+                     MOVE SPACES        TO WS-SALIDA-SISTEMA                    
+                     MOVE SPACES        TO WS-SALIDA-MODELO                     
+                     MOVE SPACES        TO WS-SALIDA-CTA-GASTO                  
+                     MOVE SPACES        TO WS-SALIDA-CTA-RETENCION              
+                WHEN WS-TIPO-SIS                                                
+                     MOVE WS-DATECO-COD-SISTEMA-ANT                             
+                       TO WS-SALIDA-SISTEMA(6:2)                                
+                     MOVE SPACES        TO WS-SALIDA-ANIO-EJE                   
+                     MOVE SPACES        TO WS-SALIDA-MES-EJE                    
+                     MOVE SPACES        TO WS-SALIDA-OPERACION                  
+                     MOVE SPACES        TO WS-SALIDA-CTA-GASTO                  
+                     MOVE SPACES        TO WS-SALIDA-CTA-RETENCION              
+                     MOVE SPACES        TO WS-SALIDA-ANIO-EJE                   
+                     MOVE SPACES        TO WS-SALIDA-MES-EJE                    
+                WHEN WS-TIPO-EJE                                                
+                     MOVE WS-ANIO-EJE-ANT                                       
+                       TO WS-SALIDA-ANIO-EJE(10:4)                              
+                     MOVE SPACES        TO WS-SALIDA-MES-EJE                    
+                     MOVE SPACES        TO WS-SALIDA-SISTEMA                    
+                     MOVE SPACES        TO WS-SALIDA-MODELO                     
+                     MOVE SPACES        TO WS-SALIDA-OPERACION                  
+                     MOVE SPACES        TO WS-SALIDA-CTA-GASTO                  
+                     MOVE SPACES        TO WS-SALIDA-CTA-RETENCION              
+           END-EVALUATE                                                         
+
+           MOVE WS-CONT-REG  TO WS-SALIDA-NUMREG                                
+           MOVE WS-SALIDA    TO WS-REG-SALIDA                                   
+           .                                                                    
+
+      *****************************************************************         
+      * 7000-ESCRIBIR-SALIDA                                          *         
+      *      ESCRIBIMOS FICHERO DE SALIDA                             *         
+      *****************************************************************         
+       7000-ESCRIBIR-SALIDA.                                                    
+
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372J017: 7000-ESCRIBIR-SALIDA.'                            
+      *F*                                                                       
+           WRITE REG-SAL     FROM WS-REG-SALIDA                                 
+
+      *D*                                                                       
+DSPLYS*    DISPLAY ' ESCRIBE  WS-REG-SALIDA : ' WS-REG-SALIDA                   
+      *T*                                                                       
+           MOVE SPACES TO WS-TEXTO-CAB                                          
+           INITIALIZE  WS-REG-SALIDA                                            
+           .                                                                    
+
+      *****************************************************************         
+      * 8000-READ-FICH-ENT.                                                     
+      *****************************************************************         
+        8000-READ-FICH-ENT.                                                     
+
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372J017: 8000-READ-FICH-ENT'                               
+      *F*                                                                       
+
+           READ FICH-ENT INTO WS-X372J017                                       
+             AT END                                                             
+                SET SW-FIN-FICH-ENT TO TRUE                                     
+           END-READ                                                             
+
+           .                                                                    
+
+      *****************************************************************         
+      * 9000-FINAL.                                                             
+      *****************************************************************         
+       9000-FINAL.                                                              
+
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372J017: 9000-FINAL'                                       
+      *F*                                                                       
+           CLOSE FICH-ENT.                                                      
+           CLOSE FICH-SAL.                                                      
+           GOBACK.                                                              

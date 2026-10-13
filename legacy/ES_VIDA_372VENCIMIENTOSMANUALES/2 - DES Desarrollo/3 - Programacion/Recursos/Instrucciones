@@ -1,0 +1,6 @@
+En esta carpeta se almacenarán en local los fuentes
+y compilados de los impresos de docPath, debiendo adecuar
+las opciones de compilación a las rutas del proyecto.
+
+Se versionarán ambas partes del formulario, tanto las
+plantillas como los binarios, en su respectiva carpeta.

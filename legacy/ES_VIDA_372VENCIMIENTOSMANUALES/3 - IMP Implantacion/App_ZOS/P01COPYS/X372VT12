@@ -1,0 +1,46 @@
+      ******************************************************************00010000
+      **INV: A372VENM                                                   00020000
+      ******************************************************************00030000
+      *                      COPY  X372VT12                            *00040000
+      *                                                                *00050000
+      *          MANTENIMIENTO TABLA DE RESCATES (FOXPRO)              *00060000
+      *                                                                *00070000
+      ******************************************************************00080000
+      ******************************************************************00090000
+      *                                                                *00100000
+      * MODIFICACION: MU-2017-BDGI-R-V                                 *00110000
+      * PROGRAMADOR : EVERIS                                           *00120000
+      * FECHA       : JUNIO   2017                                     *00130000
+      * DESCRIPCION : ENVIO A BDGI DE RESCATES Y VENCIMIENTOS          *00140000
+      * MU-2017-BDGI-R-V-INI                                           *00150000
+      * MU-2017-BDGI-R-V-FIN                                           *00160000
+      *                                                                *00170000
+      ******************************************************************00180000
+          05 X372VT12.                                                  00190000
+             10 X372VT12-ENTRADA.                                       00200000
+                15 X372VT12-OPERACION-E          PIC X(02).             00210000
+                15 X372VT12-KPOLIZA-E            PIC X(10).             00220000
+                15 X372VT12-NSUBPOLIZA-E         PIC 9(4).              00230000
+             10 X372VT12-SALIDA.                                        00240000
+      * MU-2017-BDGI-R-V-INI                                            00250000
+      *          15 X372VT12-CODCOA1-S          PIC X(7).               00260000
+      *          15 X372VT12-PORCOA1-S          PIC S9(3)V9(2).         00270000
+      *          15 X372VT12-CODCOA2-S          PIC X(7).               00280000
+      *          15 X372VT12-PORCOA2-S          PIC S9(3)V9(2).         00290000
+      *          15 X372VT12-CODCOA3-S          PIC X(7).               00300000
+      *          15 X372VT12-PORCOA3-S          PIC S9(3)V9(2).         00310000
+      *          15 X372VT12-CODCOA4-S          PIC X(7).               00320000
+      *          15 X372VT12-PORCOA4-S          PIC S9(3)V9(2).         00330000
+      *          15 X372VT12-CODCOA5-S          PIC X(7).               00340000
+      *          15 X372VT12-PORCOA5-S          PIC S9(3)V9(2).         00350000
+      *          15 X372VT12-CODCOA6-S          PIC X(7).               00360000
+      *          15 X372VT12-PORCOA6-S          PIC S9(3)V9(2).         00370000
+                15 X372VT12-COASEGUROS-OCCURS-S  PIC 9(1).              00380000
+                15 X372VT12-COASEGUROS-S       OCCURS 6.                00390000
+                   20 X372VT12-CODCOA-S          PIC X(07).             00400000
+                   20 X372VT12-PORCOA-S          PIC S9(3)V9(6).        00410000
+      * MU-2017-BDGI-R-V-FIN                                            00420000
+             10 X372VT12-RETORNO.                                       00430000
+                15 X372VT12-CRETORNO-S           PIC X(02).             00440000
+                15 X372VT12-GERROR-S             PIC X(100).            00450000
+                15 X372VT12-GNOMPROG-S           PIC X(08).             00460000

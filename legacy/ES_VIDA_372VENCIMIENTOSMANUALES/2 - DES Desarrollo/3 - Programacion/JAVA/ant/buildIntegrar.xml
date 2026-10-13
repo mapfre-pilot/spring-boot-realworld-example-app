@@ -1,0 +1,282 @@
+<?xml version="1.0"?>
+<project name="MAVISA_372VENCIMIENTOSMANUALES_INST" default="all" basedir=".">
+
+	<property file="buildIntegrar.properties" />
+	<property name="compile.debug" value="true" />
+	<property name="desa.project" value="${workspace}${desa.web.repository}" />
+	<property name="desa.ear.project" value="${workspace}${desa.ear.repository}" />
+
+	<property name="desa.project.resources.servicios" value="${desa.project}/Servicios" />
+	<property name="desa.project.resources.funcionalidades" value="${desa.project}/Funcionalidades" />
+	<property name="desa.project.resources.formspath" value="${desa.project}/FormulariosImpresion" />	
+	
+	<property name="head.web.project" value="${workspace}${head.repository}/2 - DES Desarrollo/3 - Programacion/JAVA/${web.project.name}" />
+	<property name="head.ear.project" value="${workspace}${head.repository}/2 - DES Desarrollo/3 - Programacion/JAVA/${ear.project.name}" />
+		
+	<property name="head.implantacion.ear" value="${workspace}${head.repository}/3 - IMP Implantacion/JAVA" />	
+		
+	<property name="inst.project.formspath" value="${workspace}${inst.repository}/2 - DES Desarrollo/3 - Programacion/JAVA/${web.project.name}/FormulariosImpresion" />
+
+	<property name="inst.implantacion.resources.servicios" value="${workspace}${inst.repository}/3 - IMP Implantacion/Recursos/Servicios" />
+	<property name="inst.implantacion.resources.formspath" value="${workspace}${inst.repository}/3 - IMP Implantacion/Recursos/sgdd/FormsPath/MAVISA" />
+	<property name="inst.implantacion.resources.funcionalidades" value="${workspace}${inst.repository}/3 - IMP Implantacion/Recursos/Funcionalidades" />
+
+	<property name="project.web" value="${head.web.project}" />
+	<property name="project.ear" value="${head.ear.project}" />
+	<property name="src" value="${project.web}/Java Source" />
+	<property name="web" value="${project.web}/Web Content" />
+
+	<property name="build.classes" value="${project.web}/Web Content/WEB-INF/classes" />
+
+	<target name="all" depends="integrarProyectoFromDesaToHead,construirEAR,integrarProyectoFromHeadToInst" />		
+	<target name="allAndFormsPath" depends="integrarProyectoFromDesaToHead,construirEAR,integrarFormsPathFromDesaToHead,integrarProyectoFromHeadToInst,integrarFormsPathFromHeadToInst" />
+		
+	<target name="clear">
+		<delete includeemptydirs="true">
+			<fileset dir="${build.classes}">
+				<exclude name="**/CVS/*" />
+			</fileset>
+		</delete>
+		<mkdir dir="${build.classes}" />
+	</target>
+
+	<target name="deleteWARFile">
+		<delete>
+			<fileset dir="${project.ear}">
+				<exclude name="**/CVS/*" />
+				<exclude name="**/META-INF/*" />
+				<exclude name="**/*.xml" />
+				<exclude name="**/META-INF/ibmconfig/*" />
+				<exclude name="**/*.doc" />
+				<exclude name="**/build.*" />
+				<exclude name="**/.settings/*" />
+				<exclude name="**/.project" />
+			</fileset>
+		</delete>
+	</target>
+
+	<target name="deleteEARFile">
+		<delete>
+			<fileset dir="${head.implantacion.ear}">
+				<exclude name="**/CVS/*" />
+				<exclude name="**/build.*" />
+				<exclude name="**/*.doc" />
+			</fileset>
+		</delete>
+	</target>
+	
+	<!-- Para Construir el proyecto -->
+	<target name="build" depends="clear" description="Compila los .java">
+		<path id="compile.classpath">
+			<fileset dir="${server.lib}">
+				<include name="**/*.jar" />
+			</fileset>
+			<fileset dir="${jre.lib}">
+				<include name="**/*.jar" />
+			</fileset>
+			<fileset dir="${workspace}${path.struts}">			
+				<include name="*.jar" />
+			</fileset>
+			<fileset dir="${workspace}${path.customtags}">			
+				<include name="*.jar" />
+			</fileset>				
+			<fileset dir="${workspace}${path.sharedlibs0}">			
+				<include name="*.jar" />
+			</fileset>
+			<fileset dir="${workspace}${path.sharedlibs1}">			
+				<include name="*.jar" />
+			</fileset>			
+			<fileset dir="${arquitectura.lib}">
+				<include name="*.jar" />
+			</fileset>
+			<fileset dir="${arquitectura.comunes}">
+				<include name="*.jar" />
+			</fileset>
+		</path>
+		<echo message="${compile.classpath}">
+		</echo>
+		<javac destdir="${build.classes}" debug="${compile.debug}" executable="${jdk.lib}/bin/javac.exe">
+			<src path="${src}" />
+			<classpath refid="compile.classpath" />
+		</javac>
+		<copy todir="${build.classes}">
+			<fileset dir="${src}" casesensitive="yes">
+				<include name="**/*.properties" />
+			</fileset>
+		</copy>
+	</target>
+
+	<!-- Para crear el WAR -->
+	<target name="construirWAR" depends="build,deleteWARFile">
+		<jar jarfile="${head.ear.project}/${warfile.name}" basedir="${web}" />
+	</target>
+	<!-- Para crear el EAR -->
+	<target name="construirEAR" depends="construirWAR,deleteEARFile">
+		<jar jarfile="${head.implantacion.ear}/${earfile.name}" basedir="${project.ear}" />
+	</target>
+	<!-- Para crear el JAR -->
+	<target name="construirJAR" depends="build">
+		<jar jarfile="${head.implantacion.jar}/${jarfile.name}" basedir="${build.classes}/" >
+			<exclude name="**/actions/*.class"/>
+		</jar>			
+	</target>
+	
+	<target name="integrarProyectoFromDesaToHead">
+		<delete>
+			<fileset dir="${head.web.project}" casesensitive="yes">
+				<exclude name="**/CVS/*" />
+				<exclude name="**/*.qdf" />
+				<exclude name="**/*.QFS" />
+			</fileset>
+			<fileset dir="${head.ear.project}" casesensitive="yes">
+				<exclude name="**/CVS/*" />
+				<exclude name="**/META-INF/*" />
+				<exclude name="**/*.xml" />
+				<exclude name="**/META-INF/ibmconfig/*" />
+				<exclude name="**/.settings/*" />
+				<exclude name="**/.project" />
+			</fileset>
+			<fileset dir="${head.implantacion.ear}" casesensitive="yes">
+				<exclude name="**/CVS/*" />
+				<exclude name="**/*.doc" />
+			</fileset>
+		</delete>		
+		<copy todir="${head.web.project}">
+			<fileset dir="${desa.project}" casesensitive="yes">
+				<exclude name="**/CVS/*" />
+				<exclude name="**/*.qdf" />
+				<exclude name="**/*.QFS" />
+			</fileset>
+		</copy>
+		<copy todir="${head.ear.project}">
+			<fileset dir="${desa.ear.project}" casesensitive="yes">
+				<exclude name="**/CVS/*" />
+				<exclude name="**/*.qdf" />
+				<exclude name="**/*.QFS" />
+				<exclude name="**/META-INF/" />
+				<exclude name="**/.settings/" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="integrarProyectoFromHeadToInst">
+		<delete>
+			<fileset dir="${workspace}${inst.repository}" casesensitive="yes">
+				<exclude name="**/CVS/*" />
+				<exclude name="**/*.txt" />
+				<exclude name="**/*.doc" />
+				<exclude name="**/*.qdf" />
+				<exclude name="**/*.QFS" />
+				<exclude name="**/ant/*" />
+				<exclude name="**/1 - DEF Definicion/*" />
+				<exclude name="**/4 - GFC Gestion de Configuracion/*" />
+				<exclude name="**/3 - IMP Implantacion/Recursos/Instrucciones" />
+				<exclude name="**/3 - IMP Implantacion/*.xls" />
+				<exclude name="**/.mapfreProject" />
+				<exclude name="**/.project" />
+			</fileset>
+			<fileset dir="${inst.implantacion.resources.servicios}" casesensitive="yes">
+				<exclude name="**/CVS/*" />
+			</fileset>
+			<fileset dir="${inst.implantacion.resources.funcionalidades}" casesensitive="yes">
+				<exclude name="**/CVS/*" />
+			</fileset>
+		</delete>
+		<copy todir="${workspace}${inst.repository}">
+			<fileset dir="${workspace}${head.repository}" casesensitive="yes">
+				<exclude name="**/CVS/*" />
+				<exclude name="**/*.txt" />
+				<exclude name="**/*.doc" />
+				<exclude name="**/2 - DES Desarrollo/1 - Analisis/*" />
+				<exclude name="**/2 - DES Desarrollo/2 - Disenio/*" />
+				<exclude name="**/2 - DES Desarrollo/3 - Programacion/Recursos/" />
+				<exclude name="**/2 - DES Desarrollo/4 - Pruebas de Desarrollo/" />
+				<exclude name="**/1 - DEF Definicion/*" />
+				<exclude name="**/4 - GFC Gestion de Configuracion/" />
+				<exclude name="**/3 - IMP Implantacion/DB2/" />
+				<exclude name="**/3 - IMP Implantacion/Operativa Batch/" />
+				<exclude name="**/3 - IMP Implantacion/Recursos/Instrucciones" />
+				<exclude name="**/3 - IMP Implantacion/*.xls" />
+				<exclude name="**/.mapfreProject" />
+				<exclude name="**/.project" />
+				<exclude name="**/EstructuraBase.eap" />
+				<exclude name="**/Servicios" />
+			</fileset>
+		</copy>
+		<copy todir="${inst.implantacion.resources.servicios}">
+			<fileset dir="${desa.project.resources.servicios}" casesensitive="yes">
+				<exclude name="**/CVS/*" />
+			</fileset>
+		</copy>
+		<copy todir="${inst.implantacion.resources.funcionalidades}">
+			<fileset dir="${desa.project.resources.funcionalidades}" casesensitive="yes">
+				<exclude name="**/CVS/*" />
+			</fileset>
+		</copy>
+	</target>					
+	
+	<target name="integrarJARFromHeadToComun" >			
+		<copy todir="${workspace}${repository.aplicativo.comunes}">
+			<fileset dir="${head.implantacion.ear}" casesensitive="yes">
+				<include name="**/${jarfile.name}"/>
+				<exclude name="**/CVS/*" />
+				<exclude name="**/*.doc" />
+			</fileset>
+		</copy>
+		<copy todir="${arquitectura.comunes}">
+			<fileset dir="${head.implantacion.ear}" casesensitive="yes">
+				<include name="**/${jarfile.name}"/>
+				<exclude name="**/CVS/*" />
+				<exclude name="**/*.doc" />
+			</fileset>
+		</copy>
+	</target>
+	<target name="integrarJARFromHeadToMapfreVidaComun" >			
+		<copy todir="${workspace}${repository.comunes}">
+			<fileset dir="${head.implantacion.ear}" casesensitive="yes">
+				<include name="**/${jarfile.name}"/>
+				<exclude name="**/CVS/*" />
+				<exclude name="**/*.doc" />
+			</fileset>
+		</copy>
+	</target>	
+
+	<target name="integrarFormsPathFromDesaToHead">
+			<delete>				
+				<fileset dir="${head.web.project}/FormulariosImpresion" casesensitive="yes">
+					<exclude name="**/CVS/*" />
+				</fileset>						
+			</delete>
+		
+			<copy todir="${head.web.project}/FormulariosImpresion">
+				<fileset dir="${desa.project.resources.formspath}" casesensitive="yes">
+					<exclude name="**/CVS/*" />
+				</fileset>
+			</copy>								
+		</target>
+	
+	<target name="integrarFormsPathFromHeadToInst">
+		<delete>
+			<fileset dir="${inst.project.formspath}" casesensitive="yes">
+				<exclude name="**/CVS/*" />
+			</fileset>			
+			<fileset dir="${inst.implantacion.resources.formspath}" casesensitive="yes">
+				<exclude name="**/CVS/*" />
+			</fileset>									
+		</delete>
+		
+		<copy todir="${inst.project.formspath}">
+			<fileset dir="${head.web.project}/FormulariosImpresion" casesensitive="yes">
+				<exclude name="**/CVS/*" />
+			</fileset>
+		</copy>
+		<copy todir="${inst.implantacion.resources.formspath}">			
+			<fileset dir="${head.web.project}/FormulariosImpresion" casesensitive="yes">
+				<exclude name="**/CVS/*" />
+			</fileset>
+		</copy>		
+	</target>
+
+
+</project>
+

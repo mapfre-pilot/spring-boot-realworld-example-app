@@ -1,0 +1,812 @@
+       IDENTIFICATION DIVISION.                                                 
+       PROGRAM-ID. B372KA75.                                                    
+      *****************************************************************         
+      *                                                               *         
+      * APLICACION....: REPOSITORIO RESCATES VENCIMIENTOS MAPFRE VIDA *         
+      * DESCRIPCIÓN...: DESCOMPRESIÓN TABLA RESCATES (T372VEN0)       *         
+      * CONSTRUCCION .: EVERIS                                        *         
+      * FECHA DE REALIZACION: JULIO - 2017                            *         
+      *                                                               *         
+      *****************************************************************         
+      * DESCOMPRESIÓN DATOS RESCATES (T372VEN0)                       *         
+      *****************************************************************         
+      *****************************************************************         
+      *                                                                         
+       ENVIRONMENT DIVISION.                                                    
+       CONFIGURATION SECTION.                                                   
+      *                                                                         
+       SPECIAL-NAMES.                                                           
+           DECIMAL-POINT IS COMMA.                                              
+      *                                                                         
+       INPUT-OUTPUT SECTION.                                                    
+       FILE-CONTROL.                                                            
+           SELECT FICH-VEN0 ASSIGN SYS001.                                      
+           SELECT FICH-OUT  ASSIGN SYS002.                                      
+           SELECT FICH-ERR  ASSIGN SYS003.                                      
+      *                                                                         
+      *****************************************************************         
+      *                  DATA DIVISION                                          
+      *****************************************************************         
+      *                                                                         
+       DATA DIVISION.                                                           
+      *                                                                         
+       FILE SECTION.                                                            
+       FD  FICH-VEN0                                                            
+           BLOCK CONTAINS 0 RECORDS                                             
+           RECORDING MODE IS F                                                  
+           LABEL RECORDS ARE STANDARD.                                          
+       01  REG-VEN0 PIC X(695).                                                 
+      *                                                                         
+       FD  FICH-OUT                                                             
+           BLOCK CONTAINS 0 RECORDS                                             
+           RECORDING MODE IS F                                                  
+           LABEL RECORDS ARE STANDARD.                                          
+       01  REG-OUT  PIC X(1580).                                                
+       FD  FICH-ERR                                                             
+           BLOCK CONTAINS 0 RECORDS                                             
+           RECORDING MODE IS F                                                  
+           LABEL RECORDS ARE STANDARD.                                          
+       01  REG-ERR  PIC X(110).                                                 
+      *                                                                         
+      *****************************************************************         
+      *                  WORKING-STORAGE SECTION                                
+      *****************************************************************         
+      *                                                                         
+       WORKING-STORAGE SECTION.                                                 
+       01  FILLER.                                                              
+           03 FILLER PIC X(40) VALUE 'INICIO WORKING-STORAGE SECTION'.          
+      *                                                                         
+      * SWITCH                                                                  
+       01  WS-SWITCH.                                                           
+           03 SW-FICH-VEN0               PIC X(2) VALUE SPACES.                 
+              88 SW-NO-FIN-FICH-VEN0              VALUE '00'.                   
+              88 SW-SI-FIN-FICH-VEN0              VALUE '01'.                   
+      *                                                                         
+       01  WS-WARIABLES.                                                        
+           03 WS-FECHA-PROCESO.                                                 
+              05 APROCESO              PIC 9(4) VALUE ZEROS.                    
+              05 MPROCESO              PIC 9(2) VALUE ZEROS.                    
+              05 DPROCESO              PIC 9(2) VALUE ZEROS.                    
+      *                                                                         
+       01  CONTADORES.                                                          
+           03 CT-LEIDOS-VEN0            PIC 9(9) VALUE ZEROS.                   
+           03 CT-GRABADOS               PIC 9(9) VALUE ZEROS.                   
+           03 CT-ERRORES                PIC 9(9) VALUE ZEROS.                   
+      *                                                                         
+       01  WS-TABLAS.                                                           
+      * TABLA DE RESCATES                                                       
+           03 DCLTB372VEN0.                                                     
+             05 VEN0-ANIO           PIC S9(4)V USAGE COMP-3.                    
+             05 VEN0-KEXPEDIENTE    PIC S9(10)V USAGE COMP-3.                   
+             05 VEN0-KRAMO          PIC X(3).                                   
+             05 VEN0-ANIOPOL        PIC X(4).                                   
+             05 VEN0-KPOLIZA        PIC X(10).                                  
+             05 VEN0-NSUBPOLIZA     PIC S9(4)V USAGE COMP-3.                    
+             05 VEN0-KCERTIFICADO   PIC S9(6)V USAGE COMP-3.                    
+             05 VEN0-KMODALIDAD     PIC S9(5)V USAGE COMP-3.                    
+             05 VEN0-CCANALCAMP     PIC X(2).                                   
+             05 VEN0-CENTIDAD       PIC X(4).                                   
+             05 VEN0-FECEFECTO      PIC X(8).                                   
+             05 VEN0-KDURACION      PIC S9(2)V USAGE COMP-3.                    
+             05 VEN0-FECEMISION     PIC X(8).                                   
+             05 VEN0-CCARTERA       PIC X(3).                                   
+             05 VEN0-SREASEGURO     PIC X(1).                                   
+             05 VEN0-REGIONAL       PIC X(2).                                   
+             05 VEN0-LUGARENVIO     PIC X(2).                                   
+             05 VEN0-KOFICINA       PIC X(4).                                   
+             05 VEN0-IPENDIENTE     PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-CTIPOPERS1     PIC X(1).                                   
+             05 VEN0-SRESIDENTE1    PIC X(1).                                   
+             05 VEN0-NIF1           PIC X(10).                                  
+             05 VEN0-KPERSONA1      PIC S9(9)V USAGE COMP-3.                    
+             05 VEN0-IMPCAPITAL     PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-IMPBENEFICIOS  PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-FECPAGOCAPITAL PIC X(8).                                   
+             05 VEN0-IMPANTICIPO    PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-IMPINTEPEND    PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-FECVENCIMICAP  PIC X(8).                                   
+             05 VEN0-TIPIMPUESTCAP  PIC X(2).                                   
+             05 VEN0-IMPRTOINTEGRCAP PIC S9(11)V9(2) USAGE COMP-3.              
+             05 VEN0-IMPREDPRICAP   PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-IMPREDTRANCAP  PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-IMPCOMPENSATORIA PIC S9(11)V9(2) USAGE COMP-3.             
+             05 VEN0-IMPRTONETOCAP  PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-PORRETCAP      PIC S9(3)V9(2) USAGE COMP-3.                
+             05 VEN0-IMPRETCAP      PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-IMPLIQCAP      PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-FECIMPRECAP    PIC X(8).                                   
+             05 VEN0-FECPAGRET      PIC X(8).                                   
+             05 VEN0-IMPCOMP1       PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-FECPAGCOMP1    PIC X(8).                                   
+             05 VEN0-FECEMICOMP1    PIC X(8).                                   
+             05 VEN0-TIPIMPUESTCOMP1 PIC X(2).                                  
+             05 VEN0-IMPRTOINTCOMP1 PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-IMPREDPRICOMP1 PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-IREDTRANCOMP1  PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-IRTONETCOMP1   PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-PORRETCOMP1    PIC S9(3)V9(2) USAGE COMP-3.                
+             05 VEN0-IRETCOMP1      PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-ILIQCOMP1      PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-FECIMPRECOMP1  PIC X(8).                                   
+             05 VEN0-FECPAGRETCOM1  PIC X(8).                                   
+             05 VEN0-IMPCOMP2       PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-FECPAGCOMP2    PIC X(8).                                   
+             05 VEN0-FECEMICOMP2    PIC X(8).                                   
+             05 VEN0-TIPIMPUESTCOMP2 PIC X(2).                                  
+             05 VEN0-IMPRTOINTCOMP2 PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-IMPREDPRICOMP2 PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-IREDTRANCOMP2  PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-IRTONETCOMP2   PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-PORRETCOMP2    PIC S9(3)V9(2) USAGE COMP-3.                
+             05 VEN0-IRETCOMP2      PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-ILIQCOMP2      PIC S9(11)V9(2) USAGE COMP-3.               
+             05 VEN0-FECIMPRECOMP2  PIC X(8).                                   
+             05 VEN0-FECPAGRETCOM2  PIC X(8).                                   
+             05 VEN0-PAGOTOT        PIC X(1).                                   
+             05 VEN0-CUSUARIO       PIC X(8).                                   
+             05 VEN0-SBDGICAP       PIC X(1).                                   
+             05 VEN0-FECBDGICAP     PIC X(8).                                   
+             05 VEN0-SBDGICOMP1     PIC X(1).                                   
+             05 VEN0-FECBDGICOMP1   PIC X(8).                                   
+             05 VEN0-SBDGICOMP2     PIC X(1).                                   
+             05 VEN0-FECBDGICOMP2   PIC X(8).                                   
+             05 VEN0-GOBSERVACION   PIC X(255).                                 
+             05 VEN0-ANIOFISCAL     PIC S9(4)V USAGE COMP-3.                    
+             05 VEN0-KDOMICILIO1    PIC S9(9)V USAGE COMP-3.                    
+             05 VEN0-FECMODIFICA    PIC X(8).                                   
+             05 VEN0-EXIMIDO        PIC X(1).                                   
+             05 VEN0-KDOMCOM        PIC S9(9)V USAGE COMP-3.                    
+
+       01 WS-ERRORES.                                                           
+          03 RETORNO-S          PIC X(02).                                      
+          03 ERROR-S            PIC X(100).                                     
+          03 GNOMPROG-S         PIC X(08).                                      
+      *                                                                         
+      *****************************************************                     
+      ** SWITCH **                                                              
+      *****************************************************                     
+          03 SW-SWITCH.                                                         
+             05 SW-ERROR-DB2   PIC S9(3)  VALUE  0.                             
+                88 DB2-OK                 VALUE  0.                             
+                88 DB2-NOTFND             VALUE +100.                           
+                88 DB2-DUPLICADO          VALUE -803.                           
+                88 DB2-SELECTDUP          VALUE -811.                           
+
+             05 SW-PRIMERA-LECTURA        PIC X  VALUE '0'.                     
+                88 NO-PRIMERA-LECTURA            VALUE '1'.                     
+                88 PRIMERA-LECTURA               VALUE '0'.                     
+
+      *****************************************************                     
+      *   CONTROL PARA SABER SI EL CURSOR SE HA ABIERTO   *                     
+      *****************************************************                     
+
+             05 SW-CURSOR-ABIERTO         PIC X  VALUE '0'.                     
+                88 NO-CURSOR-OK                  VALUE '1'.                     
+                88 CURSOR-OK                     VALUE '0'.                     
+      ****************************************************                      
+      *   CONTROL DE ERRORES DEL PROGRAMA                                       
+      ****************************************************                      
+             05 SW-ERRORES                PIC XX VALUE '00'.                    
+                88 NO-ERROR                      VALUE '00'.                    
+                88 ERROR-GRAVE                   VALUE '01'.                    
+
+      ****************************************************                      
+      ** LITERALES                                                              
+      ****************************************************                      
+          03 LT-LITERALES.                                                      
+
+             05 LT-MODOS-ENTRADA.                                               
+                07 LT-MODO-ALTA       PIC X(1)   VALUE 'A'.                     
+                07 LT-MODO-BAJA       PIC X(1)   VALUE 'B'.                     
+                07 LT-MODO-MODIF      PIC X(1)   VALUE 'M'.                     
+                07 LT-MODO-CONSULTA   PIC X(1)   VALUE 'C'.                     
+                07 LT-MODO-REGULA     PIC X(2)   VALUE 'R'.                     
+
+             05 LT-ERRORES-RETORNO.                                             
+      *         LITERAL NO HAY ERRORES                                          
+                07 LT-RETURN-OK             PIC X(5) VALUE '00'.                
+      *         ERROR EN MODO                                                   
+                07 LT-RETURN-ERR-MODO       PIC X(5) VALUE '01'.                
+      *         ERROR FALTAN DATOS INFORMADOS                                   
+                07 LT-RETURN-ERR-DATINFO    PIC X(5) VALUE '02'.                
+      *         ERROR REGISTRO NO ENCONTRADO                                    
+                07 LT-RETURN-ERR-NOTFND     PIC X(5) VALUE '03'.                
+      *         ERROR REGISTRO CLAVE DUPLICADA                                  
+                07 LT-RETURN-ERR-CLVDUPLI   PIC X(5) VALUE '04'.                
+      *         ERROR EN ACCESO A BASE DE DATOS                                 
+                07 LT-RETURN-ERR-OTHER      PIC X(5) VALUE '99'.                
+      ****************************************************                      
+      ** CONTADORES Y CONSTANTES                                                
+      ****************************************************                      
+          03 XN-CONTADORES.                                                     
+             05 XN-I                  PIC 9(2).                                 
+
+          03 CN-CONSTANTES.                                                     
+             05 CN-RES-MAX            PIC 9(1) VALUE 6.                         
+
+          03 XN-SQLCODE               PIC X(2).                                 
+      ****************************************************                      
+      ** AREA DE COMUNICACION CON DB2                                           
+      ****************************************************                      
+            EXEC SQL INCLUDE SQLCA     END-EXEC.                                
+            EXEC SQL INCLUDE T372CCV0  END-EXEC.                                
+
+      ******************************************************************        
+      *CURSOR PARA RECUPERAR LISTADO COMPLETO DE EXPEDIENTES DE RESCATE         
+      ******************************************************************        
+           EXEC SQL DECLARE C1 CURSOR FOR                                       
+           SELECT CCV0_ANIO            ,                                        
+                  CCV0_KEXPEDIENTE     ,                                        
+                  CCV0_NCOA            ,                                        
+                  CCV0_CODCOA          ,                                        
+                  CCV0_PORCOA          ,                                        
+                  CCV0_IMPCOA          ,                                        
+                  CCV0_IMPRTOINTEGRCOA ,                                        
+                  CCV0_IMPREDPRICOA    ,                                        
+                  CCV0_IMPREDTRANCOA   ,                                        
+                  CCV0_IMPRTONETOCOA   ,                                        
+                  CCV0_IMPRETCOA       ,                                        
+                  CCV0_IMPCOMPENSATCOA                                          
+                FROM TB372CCV0                                                  
+                WHERE    CCV0_ANIO        = :CCV0-ANIO                          
+                  AND    CCV0_KEXPEDIENTE = :CCV0-KEXPEDIENTE                   
+                  AND    CCV0_NCOA        >= :CCV0-NCOA                         
+             ORDER BY CCV0_ANIO,                                                
+                      CCV0_KEXPEDIENTE,                                         
+                      CCV0_NCOA                                                 
+           END-EXEC.                                                            
+
+      * REGISTRO DE SALIDA (RESCATES DESCOMPRIMIDA)                             
+          COPY X372PS19.                                                        
+      *                                                                         
+       01  FILLER.                                                              
+          03 FILLER PIC X(40) VALUE 'FINAL WORKING-STORAGE SECTION'.            
+      *                                                                         
+      *************************************************************             
+       PROCEDURE DIVISION.                                                      
+      *************************************************************             
+      *                                                                         
+           PERFORM 1000-INICIO                                                  
+      *                                                                         
+           PERFORM 2000-PROCESO                                                 
+             UNTIL SW-SI-FIN-FICH-VEN0                                          
+      *                                                                         
+           PERFORM 9000-FINAL                                                   
+      *                                                                         
+           .                                                                    
+      *                                                                         
+      *****************************************************************         
+      * 1000-INICIO.                                                            
+      *****************************************************************         
+       1000-INICIO.                                                             
+      *                                                                         
+           OPEN INPUT  FICH-VEN0                                                
+                OUTPUT FICH-OUT FICH-ERR                                        
+      *                                                                         
+           SET SW-NO-FIN-FICH-VEN0          TO TRUE                             
+      *                                                                         
+           MOVE FUNCTION CURRENT-DATE       TO WS-FECHA-PROCESO                 
+      *                                                                         
+           INITIALIZE DCLTB372VEN0                                              
+                      REPLACING ALPHANUMERIC BY SPACES                          
+                                     NUMERIC BY ZEROS                           
+           INITIALIZE SAL19S-VENCIMIENTOS                                       
+                      REPLACING ALPHANUMERIC BY SPACES                          
+                                     NUMERIC BY ZEROS                           
+      *                                                                         
+           PERFORM 2100-LEER-FICH-VEN0                                          
+      *                                                                         
+           .                                                                    
+      *                                                                         
+      *****************************************************************         
+      * 2000-PROCESO.                                                           
+      *****************************************************************         
+       2000-PROCESO.                                                            
+      *                                                                         
+           PERFORM 2200-MOVER-VEN0                                              
+      *                                                                         
+           PERFORM 3000-ESCRIBIR-SALIDA                                         
+      *                                                                         
+           PERFORM 2100-LEER-FICH-VEN0                                          
+      *                                                                         
+           .                                                                    
+      *                                                                         
+      *****************************************************************         
+      * 2100-LEER-FICH-VEN0                                                     
+      *****************************************************************         
+       2100-LEER-FICH-VEN0.                                                     
+      *                                                                         
+           READ FICH-VEN0 INTO DCLTB372VEN0                                     
+             AT END                                                             
+                SET SW-SI-FIN-FICH-VEN0     TO TRUE                             
+      *                                                                         
+             NOT AT END                                                         
+                ADD 1                       TO CT-LEIDOS-VEN0                   
+           END-READ                                                             
+      *                                                                         
+           .                                                                    
+      *                                                                         
+      *****************************************************************         
+      * 2200-MOVER-VEN0                                                         
+      *****************************************************************         
+       2200-MOVER-VEN0.                                                         
+      *                                                                         
+           IF VEN0-ANIO IS NOT NUMERIC                                          
+              MOVE ZEROS                  TO SAL19S-ANIO                        
+           ELSE                                                                 
+              MOVE VEN0-ANIO              TO SAL19S-ANIO                        
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-KEXPEDIENTE IS NOT NUMERIC                                   
+              MOVE ZEROS                  TO SAL19S-KEXPEDIENTE                 
+           ELSE                                                                 
+              MOVE VEN0-KEXPEDIENTE       TO SAL19S-KEXPEDIENTE                 
+           END-IF                                                               
+      *                                                                         
+           MOVE VEN0-KRAMO                TO SAL19S-KRAMO                       
+           MOVE VEN0-ANIOPOL              TO SAL19S-ANIOPOL                     
+           MOVE VEN0-KPOLIZA              TO SAL19S-KPOLIZA                     
+      *                                                                         
+           IF VEN0-NSUBPOLIZA IS NOT NUMERIC                                    
+              MOVE ZEROS                  TO SAL19S-NSUBPOLIZA                  
+           ELSE                                                                 
+              MOVE VEN0-NSUBPOLIZA        TO SAL19S-NSUBPOLIZA                  
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-KCERTIFICADO IS NOT NUMERIC                                  
+              MOVE ZEROS                  TO SAL19S-KCERTIFICADO                
+           ELSE                                                                 
+              MOVE VEN0-KCERTIFICADO      TO SAL19S-KCERTIFICADO                
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-KMODALIDAD IS NOT NUMERIC                                    
+              MOVE ZEROS                  TO SAL19S-KMODALIDAD                  
+           ELSE                                                                 
+              MOVE VEN0-KMODALIDAD        TO SAL19S-KMODALIDAD                  
+           END-IF                                                               
+      *                                                                         
+           MOVE VEN0-CCANALCAMP           TO SAL19S-CCANALCAMP                  
+           MOVE VEN0-CENTIDAD             TO SAL19S-CENTIDAD                    
+           MOVE VEN0-FECEFECTO            TO SAL19S-FECEFECTO                   
+      *                                                                         
+           IF VEN0-KDURACION IS NOT NUMERIC                                     
+              MOVE ZEROS                  TO SAL19S-KDURACION                   
+           ELSE                                                                 
+              MOVE VEN0-KDURACION         TO SAL19S-KDURACION                   
+           END-IF                                                               
+      *                                                                         
+           MOVE VEN0-FECEMISION           TO SAL19S-FECEMISION                  
+           MOVE VEN0-CCARTERA             TO SAL19S-CCARTERA                    
+           MOVE VEN0-SREASEGURO           TO SAL19S-SREASEGURO                  
+           MOVE VEN0-REGIONAL             TO SAL19S-REGIONAL                    
+           MOVE VEN0-LUGARENVIO           TO SAL19S-LUGARENVIO                  
+           MOVE VEN0-KOFICINA             TO SAL19S-KOFICINA                    
+      *                                                                         
+           IF VEN0-IPENDIENTE IS NOT NUMERIC                                    
+              MOVE ZEROS                  TO SAL19S-IPENDIENTE                  
+           ELSE                                                                 
+              MOVE VEN0-IPENDIENTE        TO SAL19S-IPENDIENTE                  
+           END-IF                                                               
+      *                                                                         
+           MOVE VEN0-CTIPOPERS1           TO SAL19S-CTIPOPERS1                  
+           MOVE VEN0-SRESIDENTE1          TO SAL19S-SRESIDENTE1                 
+           MOVE VEN0-NIF1                 TO SAL19S-NIF1                        
+      *                                                                         
+           IF VEN0-KPERSONA1 IS NOT NUMERIC                                     
+              MOVE ZEROS                  TO SAL19S-KPERSONA1                   
+           ELSE                                                                 
+              MOVE VEN0-KPERSONA1         TO SAL19S-KPERSONA1                   
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-IMPCAPITAL IS NOT NUMERIC                                    
+              MOVE ZEROS                  TO SAL19S-IMPCAPITAL                  
+           ELSE                                                                 
+              MOVE VEN0-IMPCAPITAL        TO SAL19S-IMPCAPITAL                  
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-IMPBENEFICIOS IS NOT NUMERIC                                 
+              MOVE ZEROS                  TO SAL19S-IMPBENEFICIOS               
+           ELSE                                                                 
+              MOVE VEN0-IMPBENEFICIOS     TO SAL19S-IMPBENEFICIOS               
+           END-IF                                                               
+      *                                                                         
+           MOVE VEN0-FECPAGOCAPITAL       TO SAL19S-FECPAGOCAPITAL              
+      *                                                                         
+           IF VEN0-IMPANTICIPO IS NOT NUMERIC                                   
+              MOVE ZEROS                  TO SAL19S-IMPANTICIPO                 
+           ELSE                                                                 
+              MOVE VEN0-IMPANTICIPO       TO SAL19S-IMPANTICIPO                 
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-IMPINTEPEND IS NOT NUMERIC                                   
+              MOVE ZEROS                  TO SAL19S-IMPINTEPEND                 
+           ELSE                                                                 
+              MOVE VEN0-IMPINTEPEND       TO SAL19S-IMPINTEPEND                 
+           END-IF                                                               
+      *                                                                         
+           MOVE VEN0-FECVENCIMICAP        TO SAL19S-FECVENCIMICAP               
+           MOVE VEN0-TIPIMPUESTCAP        TO SAL19S-TIPIMPUESTCAP               
+      *                                                                         
+           IF VEN0-IMPRTOINTEGRCAP IS NOT NUMERIC                               
+              MOVE ZEROS                  TO SAL19S-IMPRTOINTEGRCAP             
+           ELSE                                                                 
+              MOVE VEN0-IMPRTOINTEGRCAP   TO SAL19S-IMPRTOINTEGRCAP             
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-IMPREDPRICAP IS NOT NUMERIC                                  
+              MOVE ZEROS                  TO SAL19S-IMPREDPRICAP                
+           ELSE                                                                 
+              MOVE VEN0-IMPREDPRICAP      TO SAL19S-IMPREDPRICAP                
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-IMPREDTRANCAP IS NOT NUMERIC                                 
+              MOVE ZEROS                  TO SAL19S-IMPREDTRANCAP               
+           ELSE                                                                 
+              MOVE VEN0-IMPREDTRANCAP     TO SAL19S-IMPREDTRANCAP               
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-IMPCOMPENSATORIA IS NOT NUMERIC                              
+              MOVE ZEROS                  TO SAL19S-IMPCOMPENSATORIA            
+           ELSE                                                                 
+              MOVE VEN0-IMPCOMPENSATORIA  TO SAL19S-IMPCOMPENSATORIA            
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-IMPRTONETOCAP IS NOT NUMERIC                                 
+              MOVE ZEROS                  TO SAL19S-IMPRTONETOCAP               
+           ELSE                                                                 
+              MOVE VEN0-IMPRTONETOCAP     TO SAL19S-IMPRTONETOCAP               
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-PORRETCAP IS NOT NUMERIC                                     
+              MOVE ZEROS                  TO SAL19S-PORRETCAP                   
+           ELSE                                                                 
+              MOVE VEN0-PORRETCAP         TO SAL19S-PORRETCAP                   
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-IMPRETCAP IS NOT NUMERIC                                     
+              MOVE ZEROS                  TO SAL19S-IMPRETCAP                   
+           ELSE                                                                 
+              MOVE VEN0-IMPRETCAP         TO SAL19S-IMPRETCAP                   
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-IMPLIQCAP IS NOT NUMERIC                                     
+              MOVE ZEROS                  TO SAL19S-IMPLIQCAP                   
+           ELSE                                                                 
+              MOVE VEN0-IMPLIQCAP         TO SAL19S-IMPLIQCAP                   
+           END-IF                                                               
+      *                                                                         
+           MOVE VEN0-FECIMPRECAP          TO SAL19S-FECIMPRECAP                 
+           MOVE VEN0-FECPAGRET            TO SAL19S-FECPAGRET                   
+      *                                                                         
+           IF VEN0-IMPCOMP1 IS NOT NUMERIC                                      
+              MOVE ZEROS                  TO SAL19S-IMPCOMP1                    
+           ELSE                                                                 
+              MOVE VEN0-IMPCOMP1          TO SAL19S-IMPCOMP1                    
+           END-IF                                                               
+      *                                                                         
+           MOVE VEN0-FECPAGCOMP1          TO SAL19S-FECPAGCOMP1                 
+           MOVE VEN0-FECEMICOMP1          TO SAL19S-FECEMICOMP1                 
+           MOVE VEN0-TIPIMPUESTCOMP1      TO SAL19S-TIPIMPUESTCOMP1             
+      *                                                                         
+           IF VEN0-IMPRTOINTCOMP1 IS NOT NUMERIC                                
+              MOVE ZEROS                  TO SAL19S-IMPRTOINTCOMP1              
+           ELSE                                                                 
+              MOVE VEN0-IMPRTOINTCOMP1    TO SAL19S-IMPRTOINTCOMP1              
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-IMPREDPRICOMP1 IS NOT NUMERIC                                
+              MOVE ZEROS                  TO SAL19S-IMPREDPRICOMP1              
+           ELSE                                                                 
+              MOVE VEN0-IMPREDPRICOMP1    TO SAL19S-IMPREDPRICOMP1              
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-IREDTRANCOMP1 IS NOT NUMERIC                                 
+              MOVE ZEROS                  TO SAL19S-IREDTRANCOMP1               
+           ELSE                                                                 
+              MOVE VEN0-IREDTRANCOMP1     TO SAL19S-IREDTRANCOMP1               
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-IRTONETCOMP1 IS NOT NUMERIC                                  
+              MOVE ZEROS                  TO SAL19S-IRTONETCOMP1                
+           ELSE                                                                 
+              MOVE VEN0-IRTONETCOMP1      TO SAL19S-IRTONETCOMP1                
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-PORRETCOMP1 IS NOT NUMERIC                                   
+              MOVE ZEROS                  TO SAL19S-PORRETCOMP1                 
+           ELSE                                                                 
+              MOVE VEN0-PORRETCOMP1       TO SAL19S-PORRETCOMP1                 
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-IRETCOMP1 IS NOT NUMERIC                                     
+              MOVE ZEROS                  TO SAL19S-IRETCOMP1                   
+           ELSE                                                                 
+              MOVE VEN0-IRETCOMP1         TO SAL19S-IRETCOMP1                   
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-ILIQCOMP1 IS NOT NUMERIC                                     
+              MOVE ZEROS                  TO SAL19S-ILIQCOMP1                   
+           ELSE                                                                 
+              MOVE VEN0-ILIQCOMP1         TO SAL19S-ILIQCOMP1                   
+           END-IF                                                               
+      *                                                                         
+           MOVE VEN0-FECIMPRECOMP1        TO SAL19S-FECIMPRECOMP1               
+           MOVE VEN0-FECPAGRETCOM1        TO SAL19S-FECPAGRETCOM1               
+      *                                                                         
+           IF VEN0-IMPCOMP2 IS NOT NUMERIC                                      
+              MOVE ZEROS                  TO SAL19S-IMPCOMP2                    
+           ELSE                                                                 
+              MOVE VEN0-IMPCOMP2          TO SAL19S-IMPCOMP2                    
+           END-IF                                                               
+      *                                                                         
+           MOVE VEN0-FECPAGCOMP2          TO SAL19S-FECPAGCOMP2                 
+           MOVE VEN0-FECEMICOMP2          TO SAL19S-FECEMICOMP2                 
+           MOVE VEN0-TIPIMPUESTCOMP2      TO SAL19S-TIPIMPUESTCOMP2             
+      *                                                                         
+           IF VEN0-IMPRTOINTCOMP2 IS NOT NUMERIC                                
+              MOVE ZEROS                  TO SAL19S-IMPRTOINTCOMP2              
+           ELSE                                                                 
+              MOVE VEN0-IMPRTOINTCOMP2    TO SAL19S-IMPRTOINTCOMP2              
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-IMPREDPRICOMP2 IS NOT NUMERIC                                
+              MOVE ZEROS                  TO SAL19S-IMPREDPRICOMP2              
+           ELSE                                                                 
+              MOVE VEN0-IMPREDPRICOMP2    TO SAL19S-IMPREDPRICOMP2              
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-IREDTRANCOMP2 IS NOT NUMERIC                                 
+              MOVE ZEROS                  TO SAL19S-IREDTRANCOMP2               
+           ELSE                                                                 
+              MOVE VEN0-IREDTRANCOMP2     TO SAL19S-IREDTRANCOMP2               
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-IRTONETCOMP2 IS NOT NUMERIC                                  
+              MOVE ZEROS                  TO SAL19S-IRTONETCOMP2                
+           ELSE                                                                 
+              MOVE VEN0-IRTONETCOMP2      TO SAL19S-IRTONETCOMP2                
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-PORRETCOMP2 IS NOT NUMERIC                                   
+              MOVE ZEROS                  TO SAL19S-PORRETCOMP2                 
+           ELSE                                                                 
+              MOVE VEN0-PORRETCOMP2       TO SAL19S-PORRETCOMP2                 
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-IRETCOMP2 IS NOT NUMERIC                                     
+              MOVE ZEROS                  TO SAL19S-IRETCOMP2                   
+           ELSE                                                                 
+              MOVE VEN0-IRETCOMP2         TO SAL19S-IRETCOMP2                   
+           END-IF                                                               
+      *                                                                         
+           IF VEN0-ILIQCOMP2 IS NOT NUMERIC                                     
+              MOVE ZEROS                  TO SAL19S-ILIQCOMP2                   
+           ELSE                                                                 
+              MOVE VEN0-ILIQCOMP2         TO SAL19S-ILIQCOMP2                   
+           END-IF                                                               
+      *                                                                         
+           MOVE VEN0-FECIMPRECOMP2        TO SAL19S-FECIMPRECOMP2               
+           MOVE VEN0-FECPAGRETCOM2        TO SAL19S-FECPAGRETCOM2               
+      *                                                                         
+           MOVE VEN0-PAGOTOT              TO SAL19S-PAGOTOT                     
+           MOVE VEN0-CUSUARIO             TO SAL19S-CUSUARIO                    
+           MOVE VEN0-SBDGICAP             TO SAL19S-SBDGICAP                    
+           MOVE VEN0-FECBDGICAP           TO SAL19S-FECBDGICAP                  
+           MOVE VEN0-SBDGICOMP1           TO SAL19S-SBDGICOMP1                  
+           MOVE VEN0-FECBDGICOMP1         TO SAL19S-FECBDGICOMP1                
+           MOVE VEN0-SBDGICOMP2           TO SAL19S-SBDGICOMP2                  
+           MOVE VEN0-FECBDGICOMP2         TO SAL19S-FECBDGICOMP2                
+           MOVE VEN0-EXIMIDO              TO SAL19S-EXIMIDO                     
+           IF VEN0-KDOMCOM IS NOT NUMERIC                                       
+              MOVE ZEROS                  TO SAL19S-KDOMCOM                     
+           ELSE                                                                 
+              MOVE VEN0-KDOMCOM           TO SAL19S-KDOMCOM                     
+           END-IF                                                               
+           MOVE VEN0-GOBSERVACION         TO SAL19S-GOBSERVACION                
+           MOVE SPACES                    TO SAL19S-CCODPOST                    
+                                             SAL19S-FANULACION                  
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'SE MUEVEN LOS CAMPOS DE LA VEN0'                            
+      *F*                                                                       
+           PERFORM 2250-CONSULTA-COASEGURO                                      
+           .                                                                    
+      *                                                                         
+      *****************************************************************         
+      * 2250-CONSULTA-COASEGURO                                                 
+      *****************************************************************         
+       2250-CONSULTA-COASEGURO.                                                 
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372KA70: 2250-CONSULTA-COASEGURO'                          
+      *F*                                                                       
+
+      *MOVEMOS LOS CAMPOS DEL FICHERO ENTRADA VEN0 A LA DCLGEN CCV0             
+           MOVE VEN0-ANIO        TO CCV0-ANIO                                   
+           MOVE VEN0-KEXPEDIENTE TO CCV0-KEXPEDIENTE                            
+           MOVE ZEROES           TO CCV0-NCOA                                   
+      *D*                                                                       
+DSPLYS*    DISPLAY 'MOVER A DCLGEN'                                             
+DSPLYS*    DISPLAY 'CCV0-ANIO :' CCV0-ANIO                                      
+DSPLYS*    DISPLAY 'CCV0-KEXPEDIENTE :' CCV0-KEXPEDIENTE                        
+DSPLYS*    DISPLAY 'CCV0-NCOA : ' CCV0-NCOA                                     
+      *F*                                                                       
+      *INICIALIZAMOS LOS SWITCH DEL CONTROL DE CURSOR                           
+
+           SET PRIMERA-LECTURA TO TRUE.                                         
+           SET NO-CURSOR-OK    TO TRUE.                                         
+
+      *ABRIMOS EL CURSOR                                                        
+
+      *    IF NOT ERROR-GRAVE                                                   
+              PERFORM 2255-ABRIR-CURSOR                                         
+      *    END-IF.                                                              
+
+           MOVE 1 TO XN-I                                                       
+           PERFORM 2260-LEER-FILA                                               
+                   UNTIL DB2-NOTFND                                             
+                   OR XN-I > CN-RES-MAX                                         
+
+      *SI EL CURSOR SE ABRIO CORRECTAMENTE SE CIERRA                            
+
+           IF CURSOR-OK                                                         
+              PERFORM 2265-CERRAR-CURSOR                                        
+           END-IF.                                                              
+
+      ********************************************************                  
+       2255-ABRIR-CURSOR.                                                       
+      ******************************************************************        
+
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372KA70: 2255-ABRIR-CURSOR'                                
+      *F*                                                                       
+           EXEC SQL OPEN C1 END-EXEC.                                           
+           MOVE SQLCODE TO SW-ERROR-DB2.                                        
+      *D*                                                                       
+DSPLYS*    DISPLAY 'SQLCODE: ' SQLCODE                                          
+      *F*                                                                       
+           IF NOT DB2-OK                                                        
+              SET ERROR-GRAVE                 TO TRUE                           
+              MOVE '99'                       TO RETORNO-S                      
+              MOVE 'ERROR AL ABRIR CURSOR C1' TO ERROR-S                        
+              MOVE 'B372KA70'                 TO GNOMPROG-S                     
+              PERFORM 4000-ESCRIBIR-ERRORES                                     
+           ELSE                                                                 
+              SET CURSOR-OK   TO TRUE                                           
+           END-IF.                                                              
+
+      ***************************************************************           
+       2260-LEER-FILA.                                                          
+      ******************************************************************        
+
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372KA70: 2260-LEER-FILA'                                   
+      *F*                                                                       
+            EXEC SQL                                                            
+                  FETCH C1                                                      
+                  INTO :CCV0-ANIO            ,                                  
+                       :CCV0-KEXPEDIENTE     ,                                  
+                       :CCV0-NCOA            ,                                  
+                       :CCV0-CODCOA          ,                                  
+                       :CCV0-PORCOA          ,                                  
+                       :CCV0-IMPCOA          ,                                  
+                       :CCV0-IMPRTOINTEGRCOA ,                                  
+                       :CCV0-IMPREDPRICOA    ,                                  
+                       :CCV0-IMPREDTRANCOA   ,                                  
+                       :CCV0-IMPRTONETOCOA   ,                                  
+                       :CCV0-IMPRETCOA       ,                                  
+                       :CCV0-IMPCOMPENSATCOA                                    
+            END-EXEC.                                                           
+
+            MOVE SQLCODE TO SW-ERROR-DB2.                                       
+      *D*                                                                       
+DSPLYS*    DISPLAY 'SQLCODE: ' SQLCODE                                          
+      *F*                                                                       
+            IF DB2-OK                                                           
+              SET NO-PRIMERA-LECTURA TO TRUE                                    
+              PERFORM 2600-MOVER-SALIDA                                         
+            END-IF                                                              
+            .                                                                   
+      **************************************************************            
+       2265-CERRAR-CURSOR.                                                      
+      **************************************************************            
+
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372KA70: 2265-CERRAR-CURSOR'                               
+      *F*                                                                       
+           EXEC SQL CLOSE C1 END-EXEC.                                          
+           MOVE SQLCODE TO SW-ERROR-DB2.                                        
+           IF NOT DB2-OK                                                        
+              SET ERROR-GRAVE                   TO TRUE                         
+              MOVE '99'                         TO RETORNO-S                    
+              MOVE 'ERROR AL CERRAR CURSOR L1 ' TO ERROR-S                      
+              MOVE 'B372KA70'                   TO GNOMPROG-S                   
+              PERFORM 4000-ESCRIBIR-ERRORES                                     
+           END-IF                                                               
+
+           .                                                                    
+      *********************************************************                 
+       2600-MOVER-SALIDA.                                                       
+      *********************************************************                 
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372KA70: 2600-MOVER-SALIDA'                                
+      *F*                                                                       
+           ADD 1                      TO XN-I                                   
+           MOVE CCV0-CODCOA           TO SAL19S-CODCOA        (XN-I)            
+           MOVE CCV0-PORCOA           TO SAL19S-PORCOA        (XN-I)            
+           MOVE CCV0-IMPCOA           TO SAL19S-IMPCOA        (XN-I)            
+           MOVE CCV0-IMPRTOINTEGRCOA  TO SAL19S-IMPRTOINTEGRCOA (XN-I)          
+           MOVE CCV0-IMPREDPRICOA     TO SAL19S-IMPREDPRICOA  (XN-I)            
+           MOVE CCV0-IMPREDTRANCOA    TO SAL19S-IMPREDTRANCOA (XN-I)            
+           MOVE CCV0-IMPRTONETOCOA    TO SAL19S-IMPRTONETOCOA (XN-I)            
+           MOVE CCV0-IMPRETCOA        TO SAL19S-IMPRETCOA     (XN-I)            
+           MOVE CCV0-IMPCOMPENSATCOA  TO SAL19S-IMPCOMPENSATCOA (XN-I)          
+      *D*                                                                       
+DSPLYS*    DISPLAY 'MOVER-SALIDA'                                               
+DSPLYS*    DISPLAY 'CCV0-CODCOA' SAL19S-CODCOA        (XN-I)                    
+DSPLYS*    DISPLAY 'CCV0-PORCOA' SAL19S-PORCOA        (XN-I)                    
+DSPLYS*    DISPLAY 'CCV0-IMPCOA' SAL19S-IMPCOA        (XN-I)                    
+DSPLYS*    DISPLAY 'CCV0-IMPRTOINTEGRCOA' SAL19S-IMPRTOINTEGRCOA (XN-I)         
+DSPLYS*    DISPLAY 'CCV0-IMPREDPRICOA' SAL19S-IMPREDPRICOA  (XN-I)              
+DSPLYS*    DISPLAY 'CCV0-IMPREDTRANCOA' SAL19S-IMPREDTRANCOA (XN-I)             
+DSPLYS*    DISPLAY 'CCV0-IMPRTONETOCOA' SAL19S-IMPRTONETOCOA (XN-I)             
+DSPLYS*    DISPLAY 'CCV0-IMPRETCOA' SAL19S-IMPRETCOA     (XN-I)                 
+DSPLYS*    DISPLAY 'CCV0-IMPCOMPENSATCOA' SAL19S-IMPCOMPENSATCOA (XN-I)         
+      *F*                                                                       
+           .                                                                    
+
+      *****************************************************************         
+      * 3000-ESCRIBIR-SALIDA                                                    
+      *****************************************************************         
+       3000-ESCRIBIR-SALIDA.                                                    
+      *D*                                                                       
+DSPLYS*    DISPLAY 'SE MUEVEN LOS CAMPOS DE LA SAL18'                           
+      *F*                                                                       
+      *                                                                         
+           WRITE REG-OUT  FROM SAL19S-VENCIMIENTOS                              
+           ADD 1                         TO CT-GRABADOS                         
+      *                                                                         
+           INITIALIZE SAL19S-VENCIMIENTOS                                       
+                      REPLACING ALPHANUMERIC BY SPACES                          
+                                     NUMERIC BY ZEROS                           
+      *                                                                         
+           .                                                                    
+      *                                                                         
+      *****************************************************************         
+      * 4000-ESCRIBIR-ERRORES                                                   
+      *****************************************************************         
+       4000-ESCRIBIR-ERRORES.                                                   
+      *                                                                         
+           WRITE REG-ERR  FROM WS-ERRORES                                       
+           ADD 1                         TO CT-ERRORES                          
+      *                                                                         
+           INITIALIZE SAL19S-VENCIMIENTOS                                       
+                      REPLACING ALPHANUMERIC BY SPACES                          
+                                     NUMERIC BY ZEROS                           
+      *                                                                         
+           .                                                                    
+      *                                                                         
+      *****************************************************************         
+      * 9000-FINAL.                                                             
+      *****************************************************************         
+      *                                                                         
+       9000-FINAL.                                                              
+      *B*                                                                       
+      *    DISPLAY '****************************************'                   
+      *    DISPLAY '**         PROGRAMA B490JA70          **'                   
+      *    DISPLAY '****************************************'                   
+      *    DISPLAY ' FECHA DE EJECUCION: ' WS-FECHA-PROCESO                     
+      *    DISPLAY '****************************************'                   
+      *    DISPLAY ' REG. LEIDOS T372VEN0 ....... ' CT-LEIDOS-VEN0              
+      *    DISPLAY ' REG. RESCATES GRABADOS ..... ' CT-GRABADOS                 
+      *    DISPLAY ' REG. RESCATES ERRONEOS ..... ' CT-ERRORES                  
+      *    DISPLAY '****************************************'                   
+      *F*                                                                       
+           CLOSE FICH-VEN0                                                      
+                 FICH-OUT                                                       
+                 FICH-ERR                                                       
+      *                                                                         
+           .                                                                    
+      *                                                                         
+           GOBACK.                                                              
+      *                                                                         
+      *****************************************************************         

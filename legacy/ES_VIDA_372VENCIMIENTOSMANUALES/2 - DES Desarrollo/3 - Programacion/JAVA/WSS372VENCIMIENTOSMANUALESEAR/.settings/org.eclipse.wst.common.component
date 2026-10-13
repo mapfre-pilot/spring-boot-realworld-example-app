@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="WSS372VENCIMIENTOSMANUALESEAR">
+        <wb-resource deploy-path="/" source-path="/"/>
+        <dependent-module deploy-path="/" archiveName="372VENCIMIENTOSMANUALES.war" handle="module:/resource/WSS372VENCIMIENTOSMANUALES/WSS372VENCIMIENTOSMANUALES">
+            <dependent-object>WebModule_1744373543418</dependent-object>
+            <dependency-type>uses</dependency-type>
+        </dependent-module>        
+    </wb-module>
+</project-modules>

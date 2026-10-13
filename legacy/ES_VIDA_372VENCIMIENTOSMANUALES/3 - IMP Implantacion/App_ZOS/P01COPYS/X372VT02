@@ -1,0 +1,32 @@
+      ******************************************************************00010017
+      *                      COPY  X372VT02                            *00020017
+      *                                                                *00030017
+      *          MANTENIMIENTO Y CONSULTA VARIABLES DE SISTEMA         *00040017
+      *                  VENCIMIENTOS FOXPRO                           *00050017
+      * -------------------------------------------------------------- *00051019
+      * FECHA DE CREACION:  JUNIO-2012                                 *00052021
+      ******************************************************************00060017
+          05 X372VT02.                                                  00070017
+             10 X372VT02-DATOS-CABECERA.                                00080017
+                15 X372VT02-KSERVICIO-C          PIC X(08).             00090017
+                15 X372VT02-CCANAL-C             PIC 9(02).             00100017
+                15 X372VT02-KEMPRESA-C           PIC X(03).             00110017
+                15 X372VT02-KDEPARTA-C           PIC X(03).             00120017
+                15 X372VT02-KUSUARIO-C           PIC X(10).             00130017
+                15 X372VT02-KCADISTR-C           PIC X(01).             00140017
+                15 X372VT02-KFILTRO-C            PIC X(02).             00150017
+                15 X372VT02-FILLER-C             PIC X(17).             00160017
+                                                                        00170017
+             10 X372VT02-ENTRADA.                                       00180017
+                15 X372VT02-OPERACION-E          PIC X(02).             00190017
+                15 X372VT02-TABLA-E              PIC X(02).             00200017
+                15 X372VT02-ANIO-E               PIC 9(04).             00210017
+                15 X372VT02-EXPEDIENTE-E         PIC 9(10).             00220017
+                                                                        00230017
+             10 X372VT02-SALIDA.                                        00240017
+                15 X372VT02-ANIO-S               PIC 9(04).             00250017
+                15 X372VT02-EXPEDIENTE-S         PIC 9(10).             00260017
+                15 X372VT02-CRETORNO-S           PIC X(02).             00270017
+                15 X372VT02-GERROR-S             PIC X(100).            00280018
+                15 X372VT02-GNOMPROG-S           PIC X(08).             00290017
+                                                                       00300017

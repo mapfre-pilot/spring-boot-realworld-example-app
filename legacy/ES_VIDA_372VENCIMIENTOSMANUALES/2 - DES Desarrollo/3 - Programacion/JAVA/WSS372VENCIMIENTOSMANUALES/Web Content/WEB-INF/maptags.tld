@@ -1,0 +1,2789 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE taglib PUBLIC "-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN" "http://java.sun.com/j2ee/dtds/web-jsptaglibrary_1_1.dtd">
+<taglib>
+	<tlibversion>1.0</tlibversion>
+	<jspversion>1.1</jspversion>
+	<shortname>mapfre</shortname>
+	<uri></uri>
+	<!--
+	-->
+	<tag>
+		<name>body</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.BodyTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>accessKey</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Posicionamiento foco por pulsación caracter</description> -->
+		</attribute>
+		<attribute>
+			<name>background</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>bgColor</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Color de fondo</description> -->
+		</attribute>
+		<attribute>
+			<name>bgProperties</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedades de fondo</description> -->
+		</attribute>
+		<attribute>
+			<name>bottonMargin</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Margen inferior</description> -->
+		</attribute>
+		<attribute>
+			<name>styleClass</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Estilo aplicado a body (class)</description> -->
+		</attribute>
+		<attribute>
+			<name>disabled</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Desactiva el elemento si es true</description> -->
+		</attribute>
+		<attribute>
+			<name>hideFocus</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Oculta el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>leftMargin</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Margen izquierdo</description> -->
+		</attribute>
+		<attribute>
+			<name>noWrap</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>rightMargin</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Margen derecho</description> -->
+		</attribute>
+		<attribute>
+			<name>scroll</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica si se permite scroll</description> -->
+		</attribute>
+		<!--		<attribute>
+			<name>style</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			</attribute>-->
+		<attribute>
+			<name>tabIndex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Orden en tabulación</description> -->
+		</attribute>
+		<attribute>
+			<name>text</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>title</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a title de html</description> -->
+		</attribute>
+		<attribute>
+			<name>topMargin</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Margen superior</description> -->
+		</attribute>
+		<attribute>
+			<name>onLoad</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Código JS en la carga de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>onUnload</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Código JS al salir de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>onKeydown</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Código JS al pulsar una tecla</description> -->
+		</attribute>		
+		<attribute>
+			<name>onKeyup</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Código JS al soltar una tecla</description> -->
+		</attribute>		
+		<attribute>
+			<name>transition</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica si se debe mostrar el panel con el mensaje de espera</description> -->
+		</attribute>
+		<attribute>
+			<name>style</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>'version0.1' indica estilo actual (defecto);'version1.0' indica estilo Majadahonda</description> -->
+		</attribute>
+	</tag>
+
+	<tag>
+		<name>label</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.LabelTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>width</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Ancho con el que se representará la etiqueta. Ej width="30px" o width="10%"</description> -->
+		</attribute>
+		<attribute>
+			<name>align</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Alineamiento horizontal. Valores posibles: center, left, right</description> -->
+		</attribute>
+		<attribute>
+			<name>markAsReq</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica si la etiqueta incluirá la marca de obligatoriedad. Valores aceptados 'true' / 'false' (defecto)</description> -->
+		</attribute>		
+		<attribute>
+			<name>emLevel</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nivel de énfasis con el que se representará la etiqueta. Valores aceptados: 0 - normal. 1 - enfatizado</description> -->
+		</attribute>		
+		<attribute>
+			<name>style</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>'version0.1' indica estilo actual (defecto);'version1.0' indica estilo Majadahonda</description> -->
+		</attribute>
+		<attribute>
+			<name>id</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente al atributo 'id' en HTML</description> -->
+		</attribute>
+	</tag>
+
+	<tag>
+		<name>alertSupport</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.AlertSupportTag</tagclass>
+		<bodycontent>empty</bodycontent>
+	</tag>
+
+	<tag>
+		<name>localSupport</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.LocalSupportTag</tagclass>
+		<bodycontent>empty</bodycontent>
+	</tag>
+
+	<tag>
+		<name>postIt</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.PostItTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>id</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente al id del tag de html</description> -->
+		</attribute>
+		<attribute>
+			<name>name</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean, si no existe property se considerará dato simple</description> -->
+		</attribute>
+		<attribute>
+			<name>property</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedad del bean indicado en name. Si no se indica name se refiere a la propiedad del bean actionForm</description> -->
+		</attribute>
+		<attribute>
+			<name>top</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde la parte superior de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>left</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde el marge izquierdo de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>zindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el índice de superposicion con respecto a otros elementos de la página</description> -->
+		</attribute>
+	</tag>
+
+	<tag>
+		<name>date</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.InputDateTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>name</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del dato en el formulario</description> -->
+		</attribute>
+		<attribute>
+			<name>top</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde la parte superior de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>left</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde el marge izquierdo de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>zindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el índice de superposicion con respecto a otros elementos de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>description</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Descripcion del campo</description> -->
+		</attribute>
+		<attribute>
+			<name>calendar</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica si se muestra el icono para acceder al calendario. Acepta valores 'true' o 'false'. Si no se indica nada se considera 'false'</description> -->
+		</attribute>
+		<attribute>
+			<name>separator</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica si se muestra el carácter separador entre los distintos campos de la fecha</description> -->
+		</attribute>
+		<attribute>
+			<name>dayValue</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Valor por defecto para la caja de texto del día</description> -->
+		</attribute>
+		<attribute>
+			<name>monthValue</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Valor por defecto para la caja de texto del mes</description> -->
+		</attribute>
+		<attribute>
+			<name>yearValue</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Valor por defecto para la caja de texto del año</description> -->
+		</attribute>
+		<attribute>
+			<name>srcName</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean para obtener valor inicial</description> -->
+		</attribute>
+		<attribute>
+			<name>srcProperty</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedad del bean para obtener valor inicial</description> -->
+		</attribute>
+		<attribute>
+			<name>format</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>formato de visualización del control</description> -->
+		</attribute>
+		<attribute>
+			<name>targetFormat</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>formato en el que se enviará el dato en el formulario</description> -->
+		</attribute>
+		<attribute>
+			<name>srcFormat</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>formato que se utilizará para interpretar la fecha indicada con srcName/srcProperty en caso de que esta sea de tipo String </description> -->
+		</attribute>
+		<attribute>
+			<name>yearDigits</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>indica el número de chars disponibles para el año. Sólo se aceptan los valores: 2 y 4</description> -->
+		</attribute>
+		<attribute>
+			<name>locale</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>locale que se usará para el formato de visualización</description> -->
+		</attribute>
+		<attribute>
+			<name>disabled</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Desactiva el elemento si es true</description> -->
+		</attribute>
+		<attribute>
+			<name>readonly</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>De solo lectura si es true</description> -->
+		</attribute>
+		<attribute>
+			<name>onfocus</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando coge el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>onblur</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pierde el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>tabindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Orden de tabulación del elemento dentro de la página</description> -->
+		</attribute>
+	</tag>
+
+	<tag>
+		<name>ccc</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.CccTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>nameBanco</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>clave del Banco en la cuenta ccc</description> -->
+		</attribute>
+		<attribute>
+			<name>nameSucursal</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>clave de la Sucursal en la cuenta ccc</description> -->
+		</attribute>
+		<attribute>
+			<name>nameControl</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>dígito de control en la cuenta ccc</description> -->
+		</attribute>
+		<attribute>
+			<name>nameCuenta</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>clave de la cuenta bancaria en la cuenta ccc</description> -->
+		</attribute>
+		<attribute>
+			<name>top</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde la parte superior de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>left</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde el marge izquierdo de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>zindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el índice de superposicion con respecto a otros elementos de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>disable</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Desactiva el elemento si es true</description> -->
+		</attribute>
+		<attribute>
+			<name>readonly</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>De solo lectura si es true</description> -->
+		</attribute>
+		<attribute>
+			<name>tabindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Orden en tabulación</description> -->
+		</attribute>
+		<attribute>
+			<name>onblur</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pierde el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>onfocus</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando coge el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>onchange</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando cambia de valor</description> -->
+		</attribute>
+		<attribute>
+			<name>onclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se hace un simple clic</description> -->
+		</attribute>
+		<attribute>
+			<name>ondblclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se hace un doble clic</description> -->
+		</attribute>
+		<attribute>
+			<name>name</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean, si no existe property se considerará dato simple</description> -->
+		</attribute>
+		<attribute>
+			<name>propertyBanco</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>propiedad del bean Banco en ccc</description> -->
+		</attribute>
+		<attribute>
+			<name>propertySucursal</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>propiedad del bean Sucursal en ccc</description> -->
+		</attribute>
+		<attribute>
+			<name>propertyControl</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>propiedad del bean del dígito de Control en ccc</description> -->
+		</attribute>
+		<attribute>
+			<name>propertyCuenta</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>propiedad del bean Cuenta en ccc</description> -->
+		</attribute>
+		<attribute>
+			<name>valueBanco</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>valor por defecto para Banco en ccc</description> -->
+		</attribute>
+		<attribute>
+			<name>valueSucursal</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>valor por defecto para Sucursal en ccc</description> -->
+		</attribute>
+		<attribute>
+			<name>valueControl</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>valor por defecto para dígito Control en ccc</description> -->
+		</attribute>
+		<attribute>
+			<name>valueCuenta</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>valor por defecto para Cuenta en ccc</description> -->
+		</attribute>
+		<attribute>
+			<name>accesskey</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Posicionamiento foco por pulsacion caracter</description> -->
+		</attribute>
+		<attribute>
+			<name>title</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a title de html</description> -->
+		</attribute>
+		<attribute>
+			<name>style</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>'version0.1' indica estilo actual (defecto);'version1.0' indica estilo Majadahonda</description> -->
+		</attribute>
+	</tag>
+
+	<tag>
+		<name>text</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.TextTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>accesskey</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Posicionamiento foco por pulsación caracter</description> -->
+		</attribute>
+		<attribute>
+			<name>alt</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a alt de html</description> -->
+		</attribute>
+		<attribute>
+			<name>altKey</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a altKey de html</description> -->
+		</attribute>
+		<attribute>
+			<name>disabled</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Desactiva el elemento si es true</description> -->
+		</attribute>
+		<attribute>
+			<name>indexed</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica si el dato asociado se obtiene a partir del índice de iteración indicado por la etiqueta <logic:iterate></description> -->			
+		</attribute>
+		<attribute>
+			<name>maxlength</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Cadena con un máximo de caracteres</description> -->
+		</attribute>
+		<attribute>
+			<name>name</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean, si no existe property se considerará dato simple</description> -->
+		</attribute>
+		<attribute>
+			<name>onblur</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pierde el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>onchange</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando cambia de valor</description> -->
+		</attribute>
+		<attribute>
+			<name>onclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se hace un simple clic</description> -->
+		</attribute>
+		<attribute>
+			<name>ondblclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se hace un doble clic</description> -->
+		</attribute>
+		<attribute>
+			<name>onfocus</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando coge el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeydown</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pulsa pulsa una tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeypress</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pulsa cualquier tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeyup</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se suelta la tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>onmousedown</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pulsa el botón del ratón</description> -->
+		</attribute>
+		<attribute>
+			<name>onmousemove</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando mueve el ratón</description> -->
+		</attribute>
+		<attribute>
+			<name>onmouseout</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando el ratón sale del elemento</description> -->
+		</attribute>
+		<attribute>
+			<name>onmouseover</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando el ratón está sobre el elem</description> -->
+		</attribute>
+		<attribute>
+			<name>onmouseup</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se suelta el botón del ratón</description> -->
+		</attribute>
+		<attribute>
+			<name>property</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedad del bean indicado en name. Si no se indica name se refiere a la propiedad del bean actionForm</description> -->
+		</attribute>
+		<attribute>
+			<name>readonly</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>De solo lectura si es true</description> -->
+		</attribute>
+		<attribute>
+			<name>size</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Tamaño del objeto</description> -->
+		</attribute>
+		<attribute>
+			<name>tabindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Orden en tabulación</description> -->
+		</attribute>
+		<attribute>
+			<name>title</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a title de html</description> -->
+		</attribute>
+		<attribute>
+			<name>titleKey</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>clave usada para 'title' dentro del paquete de recursos indicado con el atributo 'bundle'</description> -->
+		</attribute>
+		<attribute>
+			<name>value</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Valor por defecto</description> -->
+		</attribute>
+		<attribute>
+			<name>top</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde la parte superior de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>left</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde el marge izquierdo de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>zindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el índice de superposicion con respecto a otros elementos de la pagina</description> -->
+		</attribute>
+		<attribute>
+			<name>fmt</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>expresión de formato a utilizar</description> -->
+		</attribute>
+		<attribute>
+			<name>id</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente al id del tag de html</description> -->
+		</attribute>
+		<attribute>
+			<name>style</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>'version0.1' indica estilo actual (defecto);'version1.0' indica estilo Majadahonda</description> -->
+		</attribute>
+		<attribute>
+			<name>textAlign</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>alineación del texto de la caja. Valores aceptados: 'left', 'right', 'center', 'justify'</description> -->
+		</attribute>
+		<attribute>
+			<name>width</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Ancho con el que se representará la caja de texto. Ej width="30px" o width="10%"</description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>validation</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.ValidationTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>rule</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Regla de validación a aplicar</description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>radioSiNo</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.RadioSiNoTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>top</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde la parte superior de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>left</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde el marge izquierdo de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>zindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el índice de superposición con respecto a otros elementos de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>accesskey</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Posicionamiento foco por pulsación caracter</description> -->
+		</attribute>
+		<attribute>
+			<name>alt</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a alt de html</description> -->
+		</attribute>
+		<attribute>
+			<name>disabled</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Desactiva el elemento si es true</description> -->
+		</attribute>
+		<attribute>
+			<name>name</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean, si no existe property se considerará dato simple</description> -->
+		</attribute>
+		<attribute>
+			<name>onblur</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pierde el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>onchange</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando cambia de valor</description> -->
+		</attribute>
+		<attribute>
+			<name>onclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se hace un simple clic</description> -->
+		</attribute>
+		<attribute>
+			<name>ondblclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se hace un doble clic</description> -->
+		</attribute>
+		<attribute>
+			<name>onfocus</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando coge el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeydown</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pulsa una tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeypress</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pulsa cualquier tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeyup</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se suelta la tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>property</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>propiedad del actionForm si no existe name, propiedad del bean name si existe</description> -->
+		</attribute>
+		<attribute>
+			<name>tabindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Orden en tabulacion</description> -->
+		</attribute>
+		<attribute>
+			<name>title</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a title de html</description> -->
+		</attribute>
+		<attribute>
+			<name>value</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Valor por defecto</description> -->
+		</attribute>
+		<attribute>
+			<name>idName</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>id</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente al id del tag de html</description> -->
+		</attribute>
+		<attribute>
+			<name>style</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>'version0.1' indica estilo actual (defecto);'version1.0' indica estilo Majadahonda</description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>button</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.ButtonTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>top</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde la parte superior de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>left</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde el marge izquierdo de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>zindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el índice de superposicion con respecto a otros elementos de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>name</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean, si no existe property se considerará dato simple</description> -->
+		</attribute>
+		<attribute>
+			<name>locale</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Localizacion (idioma mas localizacion geográfica)</description> -->
+		</attribute>
+		<attribute>
+			<name>accesskey</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Posicionamiento foco por pulsación caracter</description> -->
+		</attribute>
+		<attribute>
+			<name>alt</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a alt de html</description> -->
+		</attribute>
+		<attribute>
+			<name>bundle</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el paquete de recursos usado por los atributos de internacionalización</description> -->
+		</attribute>
+		<attribute>
+			<name>disabled</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Desactiva el elemento si es true</description> -->
+		</attribute>
+		<attribute>
+			<name>onblur</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pierde el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>onchange</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando cambia de valor</description> -->
+		</attribute>
+		<attribute>
+			<name>onclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se hace un simple clic</description> -->
+		</attribute>
+		<attribute>
+			<name>ondblclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se hace un doble clic</description> -->
+		</attribute>
+		<attribute>
+			<name>onfocus</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando coge el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeydown</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pulsa una tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeypress</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pulsa cualquier tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeyup</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se suelta la tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>property</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedad del bean indicado en name. Si no se indica name se refiere a la propiedad del bean actionForm</description> -->
+		</attribute>
+		<attribute>
+			<name>estilo</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Valores posibles:pequeño, mediano(defecto)y grande</description> -->
+		</attribute>
+		<attribute>
+			<name>tabindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Orden en tabulación</description> -->
+		</attribute>
+		<attribute>
+			<name>title</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a title de html</description> -->
+		</attribute>
+		<attribute>
+			<name>style</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>'version0.1' indica estilo actual (defecto);'version1.0' indica estilo Majadahonda</description> -->
+		</attribute>
+		<attribute>
+			<name>enabledWhen</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>El botón se mostrará habilitado sólo cuando el usuario contenga la funcionalidad indicada. Se pueden indicar una o más funcionalidades, separadas por ';'. Ej: ...enabledWhen="IN000CTSamples:alta.clientes;IN000CTSamples:gestor.altas"...</description> -->
+		</attribute>
+		<attribute>
+			<name>visibleWhen</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>El botón se mostrará sólo cuando el usuario contenga la funcionalidad indicada. Se pueden indicar una o más funcionalidades, separadas por ';'. Ej: ...visibleWhen="IN000CTSamples:alta.clientes;IN000CTSamples:gestor.altas"...</description> -->
+		</attribute>		
+	</tag>
+	
+	<tag>
+		<name>contextualButton</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.ContextualButtonTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>top</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde la parte superior de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>left</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde el marge izquierdo de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>zindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el índice de superposicion con respecto a otros elementos de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>name</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean, si no existe property se considerará dato simple</description> -->
+		</attribute>
+		<attribute>
+			<name>locale</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Localizacion (idioma mas localizacion geográfica)</description> -->
+		</attribute>
+		<attribute>
+			<name>accesskey</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Posicionamiento foco por pulsación caracter</description> -->
+		</attribute>
+		<attribute>
+			<name>alt</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a alt de html</description> -->
+		</attribute>
+		<attribute>
+			<name>altKey</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a altKey de html</description> -->
+		</attribute>
+		<attribute>
+			<name>bundle</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el paquete de recursos usado por los atributos de internacionalización</description> -->
+		</attribute>
+		<attribute>
+			<name>disabled</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Desactiva el elemento si es true</description> -->
+		</attribute>
+		<attribute>
+			<name>onblur</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pierde el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>onchange</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando cambia de valor</description> -->
+		</attribute>
+		<attribute>
+			<name>onclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se hace un simple clic</description> -->
+		</attribute>
+		<attribute>
+			<name>ondblclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se hace un doble clic</description> -->
+		</attribute>
+		<attribute>
+			<name>onfocus</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando coge el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeydown</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pulsa una tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeypress</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pulsa cualquier tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeyup</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se suelta la tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>property</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedad del bean indicado en name. Si no se indica name se refiere a la propiedad del bean actionForm</description> -->
+		</attribute>
+		<attribute>
+			<name>tabindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Orden en tabulación</description> -->
+		</attribute>
+		<attribute>
+			<name>title</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a title de html</description> -->
+		</attribute>
+		<attribute>
+			<name>titleKey</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>clave usada para 'title' dentro del paquete de recursos indicado con el atributo 'bundle'</description> -->
+		</attribute>
+		<attribute>
+			<name>style</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>'version1.0' indica estilo Mutua. Nota: este control no admite 'version0.1'</description> -->
+		</attribute>
+		<attribute>
+			<name>enabledWhen</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>El botón se mostrará habilitado sólo cuando el usuario contenga la funcionalidad indicada. Se pueden indicar una o más funcionalidades, separadas por ';'. Ej: ...enabledWhen="IN000CTSamples:alta.clientes;IN000CTSamples:gestor.altas"...</description> -->
+		</attribute>
+		<attribute>
+			<name>visibleWhen</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>El botón se mostrará sólo cuando el usuario contenga la funcionalidad indicada. Se pueden indicar una o más funcionalidades, separadas por ';'. Ej: ...visibleWhen="IN000CTSamples:alta.clientes;IN000CTSamples:gestor.altas"...</description> -->
+		</attribute>		
+	</tag>
+	
+	<tag>
+		<name>radio</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.RadioTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>top</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde la parte superior de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>left</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde el marge izquierdo de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>zindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el índice de superposicion con respecto a otros elementos de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>accesskey</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Posicionamiento foco por pulsación caracter</description> -->
+		</attribute>
+		<attribute>
+			<name>alt</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a alt de html</description> -->
+		</attribute>
+		<attribute>
+			<name>altKey</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a altKey de html</description> -->
+		</attribute>
+		<attribute>
+			<name>disabled</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Desactiva el elemento si es true</description> -->
+		</attribute>
+		<attribute>
+			<name>name</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean, si no existe property se considerará dato simple</description> -->
+		</attribute>
+		<attribute>
+			<name>onblur</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pierde el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>onchange</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando cambia de valor</description> -->
+		</attribute>
+		<attribute>
+			<name>onclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se hace un simple clic</description> -->
+		</attribute>
+		<attribute>
+			<name>ondblclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se hace un doble clic</description> -->
+		</attribute>
+		<attribute>
+			<name>onfocus</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando coge el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeydown</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pulsa una tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeypress</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pulsa cualquier tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeyup</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se suelta la tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>property</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedad del bean indicado en name. Si no se indica name se refiere a la propiedad del bean actionForm</description> -->
+		</attribute>
+		<attribute>
+			<name>tabindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Orden en tabulación</description> -->
+		</attribute>
+		<attribute>
+			<name>title</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a title de html</description> -->
+		</attribute>
+		<attribute>
+			<name>value</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Valor por defecto</description> -->
+		</attribute>
+		<attribute>
+			<name>idName</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>id</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente al id del tag de html</description> -->
+		</attribute>
+		<attribute>
+			<name>style</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>'version0.1' indica estilo actual (defecto);'version1.0' indica estilo Majadahonda</description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>checkbox</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.CheckBoxTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>top</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde la parte superior de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>left</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde el marge izquierdo de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>zindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el índice de superposicion con respecto a otros elementos de la pagina</description> -->
+		</attribute>
+		<attribute>
+			<name>accesskey</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Posicionamiento foco por pulsacion caracter</description> -->
+		</attribute>
+		<attribute>
+			<name>alt</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a alt de html</description> -->
+		</attribute>
+		<attribute>
+			<name>disabled</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Desactiva el elemento si es true</description> -->
+		</attribute>
+		<attribute>
+			<name>name</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean, si no existe property se considerará dato simple</description> -->
+		</attribute>
+		<attribute>
+			<name>onblur</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pierde el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>onchange</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando cambia de valor</description> -->
+		</attribute>
+		<attribute>
+			<name>onclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se hace un simple clic</description> -->
+		</attribute>
+		<attribute>
+			<name>ondblclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se hace un doble clic</description> -->
+		</attribute>
+		<attribute>
+			<name>onfocus</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando coge el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeydown</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pulsa una tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeypress</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pulsa cualquier tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeyup</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se suelta la tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>onmousedown</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pulsa el botón del ratón</description> -->
+		</attribute>
+		<attribute>
+			<name>onmousemove</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando mueve el ratón </description> -->
+		</attribute>
+		<attribute>
+			<name>onmouseout</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando el ratón sale del elemento</description> -->
+		</attribute>
+		<attribute>
+			<name>onmouseover</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando el ratón está sobre el elem</description> -->
+		</attribute>
+		<attribute>
+			<name>onmouseup</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se suelta el botón del ratón</description> -->
+		</attribute>
+		<attribute>
+			<name>property</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedad del bean indicado en name. Si no se indica name se refiere a la propiedad del bean actionForm</description> -->
+		</attribute>
+		<attribute>
+			<name>tabindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Orden en tabulacion</description> -->
+		</attribute>
+		<attribute>
+			<name>title</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a title de html</description> -->
+		</attribute>
+		<attribute>
+			<name>value</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Valor por defecto</description> -->
+		</attribute>
+		<attribute>
+			<name>id</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente al id del tag de html</description> -->
+		</attribute>
+		<attribute>
+			<name>style</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>'version0.1' indica estilo actual (defecto);'version1.0' indica estilo Majadahonda</description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>table</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.table.TableTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>tablename</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Identificador unico de la tabla. No debe usarse el mismo identificador para distintas tablas</description> -->
+		</attribute>
+		<attribute>
+			<name>name</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean, si no existe property se considerará dato simple</description> -->
+		</attribute>
+		<attribute>
+			<name>property</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedad del bean indicado en name. Si no se indica name se refiere a la propiedad del bean actionForm</description> -->
+		</attribute>
+		<attribute>
+			<name>dataProvider</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>En caso de que los datos a mostrar NO provengan de una Lista en memoria, se indicará en este atributo el nombre completo de la clase DataProvider</description> -->
+		</attribute>
+		<attribute>
+			<name>pagesize</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el numero de registros máximo que se mostrará en cada página</description> -->
+		</attribute>
+		<attribute>
+			<name>pagesInBlock</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el número de páginas que forman un bloque de datos (datos que maneja la tabla en memoria al tiempo)</description> -->
+		</attribute>
+		<attribute>
+			<name>height</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Alto en pixeles. Si es tabla y ocupa más de este espacio, se añadira automaticamente una barra de scroll vertical a la derecha.</description> -->
+		</attribute>
+		<attribute>
+			<name>top</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde la parte superior de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>left</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde el marge izquierdo de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>zindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el índice de superposicion con respecto a otros elementos de la pagina</description> -->
+		</attribute>
+		<attribute>
+			<name>var</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre de la variable establecida en el contexto de página que representa cada elemento de la lista que se esta representando. Si no se indica este atributo, el nombre de esta variable es row.</description> -->
+		</attribute>
+		<attribute>
+			<name>style</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>'version0.1' indica estilo actual (defecto);'version1.0' indica estilo Majadahonda</description> -->
+		</attribute>
+		<attribute>
+			<name>width</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Ancho de la tabla, puede indicarse mediante píxeles e.j. width="100" o mediante porcentaje e.j. width="15%" </description> -->
+		</attribute>
+		<attribute>
+			<name>onkeydown</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description> evento de pulsacion de tecla sobre la tabla; sólo tiene sentido cuando la tabla contiene elementos de entrada</description> -->
+		</attribute> 
+		<attribute> 
+			<name>startonpage</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>página de datos inicial que se mostrará cuando la tabla se pinte por primera vez</description> -->
+		</attribute>
+		
+	</tag>
+	
+	<tag>
+		<name>orderedTable</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.table.OrderedTableTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>onrowclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento disparado al hacer click sobre una fila</description> -->
+		</attribute>
+		<attribute>
+			<name>onrowselect</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento disparado al seleccionar una fila</description> -->
+		</attribute>
+		<attribute>
+			<name>onrowdeselect</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento disparado al deseleccionar una fila</description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>column</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.table.ColumnTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>width</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Ancho de la columna, puede indicarse mediante píxeles e.j. width="100" o mediante porcentaje e.j. width="15%" </description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>selectColumn</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.table.SelectColumnTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>width</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Ancho de la columna, puede indicarse mediante píxeles e.j. width="100" o mediante porcentaje e.j. width="15%" </description> -->
+		</attribute>
+		<attribute>
+			<name>type</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Tipo de seleccion permitida: single o múltiple</description> -->
+		</attribute>
+		<attribute>
+			<name>hidden</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica si se muestra la columna con la checkbox o radio</description> -->
+		</attribute>
+		<attribute>
+			<name>onrowclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento disparado al hacer click sobre una fila</description> -->
+		</attribute>
+		<attribute>
+			<name>onrowselect</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento disparado al seleccionar una fila</description> -->
+		</attribute>
+		<attribute>
+			<name>onrowdeselect</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento disparado al deseleccionar una fila</description> -->
+		</attribute>
+		<attribute>
+			<name>name</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean que contiene las filas seleccionadas inicialmente</description> -->
+		</attribute>
+		<attribute>
+			<name>property</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre de la propiedad del bean que contiene las filas seleccionadas inicialmente</description> -->
+		</attribute>
+		<attribute>
+			<name>lockedName</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean que contiene las filas que no se puede alterar su estado seleccionable</description> -->
+		</attribute>
+		<attribute>
+			<name>lockedProperty</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre de la propiedad del bean que contiene las filas que no se puede alterar su estado seleccionable</description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>columnHeader</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.table.ColumnHeadTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>align</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Alineamiento horizontal</description> -->
+		</attribute>
+		<attribute>
+			<name>valign</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Alineamiento vertical</description> -->
+		</attribute>
+		<attribute>
+			<name>colspan</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Número de columnas por el que se expandirá la cabecera actual</description> -->
+		</attribute>
+		<attribute>
+			<name>skip</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica si la esta celda actual de cabecera no se pintará (después de uso de colspan en alguna cabecera previa). Valor por defecto false.</description> -->
+		</attribute>		
+	</tag>
+	
+	<tag>
+		<name>columnContent</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.table.ColumnContentTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>align</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Alineamiento horizontal</description> -->
+		</attribute>
+		<attribute>
+			<name>valign</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Alineamiento vertical</description> -->
+		</attribute>
+		<attribute>
+			<name>cellpadding</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Espacio entre borde y contenido de la celda</description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>columnId</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.table.ColumnIdTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+	</tag>
+
+	<tag>
+		<name>tableCaption</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.table.TableCaptionTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+	</tag>
+	
+	<tag>
+		<name>tableNavigation</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.table.TableNavigationTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>position</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica la posición en la que se mostrará la información de navegación. Valores admitidos: top (defecto);bottom.</description> -->
+		</attribute>
+		<attribute>
+			<name>summary</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica si se muestra la información de los registros mostrados y del total de registros disponible (si es que se dispone de ella)</description> -->
+		</attribute>
+		<attribute>
+			<name>onchangepage</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento que se lanza entre página y página</description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>keepValue</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.table.KeepValueTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>elementId</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el identificador del elemento html del cual se conservarán los valores en edición mientras se pagina por la tabla.</description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>columnsGroup</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.table.ColumnsGroupTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>width</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Ancho del área en el que se mostrarán las columnas agrupadas. El ancho debe ser relativo. Ej. '60%'"</description> -->
+		</attribute>
+	</tag>
+
+	<tag>
+		<name>editor</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.rte.EditorTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>name</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean, si no existe property se considerará dato simple</description> -->
+		</attribute>
+		<attribute>
+			<name>property</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedad del bean indicado en name. Si no se indica name se refiere a la propiedad del bean actionForm</description> -->
+		</attribute>
+		<attribute>
+			<name>top</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde la parte superior de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>left</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde el marge izquierdo de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>zindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el índice de superposicion con respecto a otros elementos de la pagina</description> -->
+		</attribute>
+		<attribute>
+			<name>width</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Ancho en pixeles</description> -->
+		</attribute>
+		<attribute>
+			<name>height</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Alto en pixeles. Si es tabla y ocupa más de este espacio, se añadira automaticamente una barra de scroll vertical a la derecha.</description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>calendario</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.CalendarTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>formato</name>
+			<required>false</required>
+			<!--description>Validación de los siguientes formatos: fecha larga y fecha corta</description> -->
+		</attribute>
+		<attribute>
+			<name>destino</name>
+			<required>false</required>
+			<!--description>Código del país a usar que afectará al orden de los campos en pantalla:'es' para día, mes y año, 'en' para mes, día y año, 'locale' según el usuario tenga definido en el locale de su equipo. Esto exige que luego el programa que implemente esta posibilidad analice el locale del sistema para guardar la coherencia apropiada con el resto de datos de la aplicación </description> -->
+		</attribute>
+		<attribute>
+			<name>top</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde la parte superior de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>left</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde el marge izquierdo de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>zindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el índice de superposicion con respecto a otros elementos de la pagina</description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>select</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.select.SelectTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>top</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde la parte superior de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>left</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde el marge izquierdo de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>zindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el índice de superposicion con respecto a otros elementos de la pagina</description> -->
+		</attribute>
+		<attribute>
+			<name>alt</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a alt de html</description> -->
+		</attribute>
+		<attribute>
+			<name>altKey</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a altKey de html</description> -->
+		</attribute>
+		<attribute>
+			<name>bundle</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el paquete de recursos usado por los atributos de internacionalización</description> -->
+		</attribute>
+		<attribute>
+			<name>disabled</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Desactiva el elemento si es true</description> -->
+		</attribute>
+		<attribute>
+			<name>indexed</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica si el dato asociado se obtiene a partir del índice de iteración indicado por la etiqueta <logic:iterate></description> -->
+		</attribute>
+		<attribute>
+			<name>multiple</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>El valor 'true' indica que el elemento permite selección múltiple</description> -->
+		</attribute>
+		<attribute>
+			<name>name</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean, si no existe property se considerará dato simple</description> -->
+		</attribute>
+		<attribute>
+			<name>onblur</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pierde el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>onchange</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando cambia de valor</description> -->
+		</attribute>
+		<attribute>
+			<name>onclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se hace un simple clic</description> -->
+		</attribute>
+		<attribute>
+			<name>ondblclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se hace un doble clic</description> -->
+		</attribute>
+		<attribute>
+			<name>onfocus</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando coge el foco</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeydown</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pulsa una tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeypress</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pulsa cualquier tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>onkeyup</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se suelta la tecla</description> -->
+		</attribute>
+		<attribute>
+			<name>onmousedown</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando pulsa el botón del ratón</description> -->
+		</attribute>
+		<attribute>
+			<name>onmousemove</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando mueve el ratón</description> -->
+		</attribute>
+		<attribute>
+			<name>onmouseout</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando el ratón sale del elemento</description> -->
+		</attribute>
+		<attribute>
+			<name>onmouseover</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando el ratón está sobre el elemento</description> -->
+		</attribute>
+		<attribute>
+			<name>onmouseup</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Evento cuando se suelta el botón del ratón</description> -->
+		</attribute>
+		<attribute>
+			<name>property</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedad del bean indicado en name. Si no se indica name se refiere a la propiedad del bean actionForm</description> -->
+		</attribute>
+		<attribute>
+			<name>style</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>'version0.1' indica estilo actual (defecto);'version1.0' indica estilo Majadahonda</description> -->
+		</attribute>
+		<attribute>
+			<name>tabindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Orden en tabulación</description> -->
+		</attribute>
+		<attribute>
+			<name>size</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Tamaño del objeto</description> -->
+		</attribute>
+		<attribute>
+			<name>title</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente a title de html</description> -->
+		</attribute>
+		<attribute>
+			<name>titleKey</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>clave usada para 'title' dentro del paquete de recursos indicado con el atributo 'bundle'</description> -->
+		</attribute>
+		<attribute>
+			<name>value</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Valor por defecto</description> -->
+		</attribute>
+		<attribute>
+			<name>showcode</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica si se desea visualizar el código y la descripción</description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>option</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.select.OptionTag</tagclass>
+		<attribute>
+			<name>bundle</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el paquete de recursos usado por los atributos de internacionalización</description> -->
+		</attribute>
+		<attribute>
+			<name>disabled</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Desactiva el elemento si es true</description> -->
+		</attribute>
+		<attribute>
+			<name>key</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Clave del texto que se mostrará en la opción. Dicha clave se buscará en el resource bundle u¡indicado mediante el atributo 'bundle'</description> -->
+		</attribute>
+		<attribute>
+			<name>locale</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>locale que se usará para el formato de visualización</description> -->
+		</attribute>
+		<attribute>
+			<name>value</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Valor de la opción elegida</description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>options</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.select.OptionsTag</tagclass>
+		<bodycontent>empty</bodycontent>
+		<attribute>
+			<name>collection</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean que contiene la colección de opciones</description> -->
+		</attribute>
+		<attribute>
+			<name>filter</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>El valor 'false' indica que la comparación de values no es 'case sensitive'</description> -->
+		</attribute>
+		<attribute>
+			<name>labelName</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean que contendrá la coleccion de las etiquetas de cada opción</description> -->
+		</attribute>
+		<attribute>
+			<name>labelProperty</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedad del bean que contendrá la coleccion de las etiquetas de cada opción</description> -->
+		</attribute>
+		<attribute>
+			<name>name</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean, si no existe property se considerará dato simple</description> -->
+		</attribute>
+		<attribute>
+			<name>property</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedad del bean indicado en name. Si no se indica name se refiere a la propiedad del bean actionForm</description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>optionsCollection</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.select.OptionsCollectionTag</tagclass>
+		<bodycontent>empty</bodycontent>
+		<attribute>
+			<name>filter</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>El valor 'false' indica que la comparación de values no es 'case sensitive'</description> -->
+		</attribute>
+		<attribute>
+			<name>label</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedad de cada elemento de la colección que se usara para obtener cada descripción</description> -->
+		</attribute>
+		<attribute>
+			<name>name</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean donde se obtendrán las opciones, si no existe property se considerará dato simple</description> -->
+		</attribute>
+		<attribute>
+			<name>property</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedad del bean indicado en name. Si no se indica name se refiere a la propiedad del bean actionForm</description> -->
+		</attribute>
+		<attribute>
+			<name>value</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedad de los beans de donde se obtendran los valores de cada opción.</description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>optionsJs</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.select.OptionsJsTag</tagclass>
+		<bodycontent>empty</bodycontent>
+		<attribute>
+			<name>tablename</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Identificador unico de la tabla. No debe usarse el mismo identificador para distintas tablas</description> -->
+		</attribute>
+		<attribute>
+			<name>lang</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>texto que se añadirá al atributo 'tablename' para referenciar al array JS que de define en cada fichero Javascript</description> -->
+		</attribute>
+		<attribute>
+			<name>type</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>texto que se añadirá a los atributos 'tablename' y 'type' para referenciar al array JS que de define en cada fichero Javascript</description> -->
+		</attribute>
+		<attribute>
+			<name>orderby</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>indica si queremos que las opciones se presenten ordenadas. 'text' ordena por el texto de cada opción y 'value' indica que se ordenará según el valor</description> -->
+		</attribute>
+		<attribute>
+			<name>dir</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Dirección de la ordenación: 'asc' ascendente; 'des' descendente</description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>defaultOption</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.select.DefaultOptionTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+	</tag>	
+	
+	<tag>
+		<name>tabbed-pane</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.tabbedpane.TabbedPaneTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>name</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del componente. Debe ser único en la página</description> -->
+		</attribute>
+		<attribute>
+			<name>width</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Ancho del panel, puede indicarse mediante píxeles e.j. width="100" o mediante porcentaje e.j. width="15%" </description> -->
+		</attribute>
+		<attribute>
+			<name>height</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Alto del panel, puede indicarse mediante píxeles e.j. width="100" o mediante porcentaje e.j. width="15%" </description> -->
+		</attribute>
+		<attribute>
+			<name>displayAs</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Permite que una pestaña de segundo nivel, pueda tener la apariencia de primer nivel. El único valor permitido por ahora es 'level1'</description> -->
+		</attribute>
+	</tag>	
+	
+	<tag>
+		<name>pane</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.tabbedpane.PaneTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>selected</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica si el panel debe ser el seleccionado por defecto</description> -->
+		</attribute>		
+		<attribute>
+			<name>onclick</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Código javascript lanzado cuando se haga click sobre la pestaña del panel</description> -->
+		</attribute>
+		<attribute>
+			<name>onchange</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Código javascript que se lanzará cuando se cambie de panel</description> -->
+		</attribute>		
+	</tag>	
+	
+	<tag>
+		<name>pane-label</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.tabbedpane.PaneLabelTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+	</tag>
+	
+	<tag>
+		<name>pane-content</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.tabbedpane.PaneContentTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>href</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>URL con el contenido del panel</description> -->
+		</attribute>		
+		<attribute>
+			<name>framed</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica si el contenido se enmarca en una area con borde y distinto color de fondo.</description> -->
+		</attribute>		
+	</tag>	
+	
+	<tag>
+		<name>group-box</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.GroupBoxTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>name</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Identificador del elemento dentro de la página</description> -->
+		</attribute>		
+		<attribute>
+			<name>layout</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Tipo de caja a representar. Valores admitidos: line, dashed, solid o collapsible.</description> -->
+		</attribute>		
+		<attribute>
+			<name>colorLevel</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Color con el que se representará la caja de agrupación. Valores admitidos: 1 (defecto) y 2.</description> -->
+		</attribute>
+		<attribute>
+			<name>indentLevel</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nivel de indentación con el que se pintará la caja. El valor indicado debe ser un número entero mayor o igual a 0 (defecto).</description> -->
+		</attribute>
+		<attribute>
+			<name>collapsed</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Cuando se indique un tipo de caja colapsable, indica el estado inicial. El valor true indica que la caja se representará inicialmente colapsada. Valor por defecto: false.</description> -->
+		</attribute>
+		<attribute>
+			<name>title</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Titulo de la caja de agrupación</description> -->
+		</attribute>	
+		<attribute>
+			<name>titleKey</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Clave de la propiedad con el mensaje a mostrar como título en el ResourceBundle</description> -->
+		</attribute>	
+		<attribute>
+			<name>bundle</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del ResourceBundle para las propiedades multiidioma</description> -->
+		</attribute>
+		<attribute>
+			<name>locale</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Locale a usar para las propiedades multiidioma</description> -->
+		</attribute>						
+		<attribute>
+			<name>width</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Ancho con el que se representará la caja de agrupación. El ancho se puede especificar de la misma manera que se especifica en HTML (ej. width="100px" o width="80%")</description> -->
+		</attribute>						
+		<attribute>
+			<name>height</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Alto con el que se representará la caja de agrupación. El alto se puede especificar de la misma manera que se especifica en HTML (ej. height="100px" o height="80%")</description> -->
+		</attribute>						
+		<attribute>
+			<name>top</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde la parte superior de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>left</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde el marge izquierdo de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>zindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el índice de superposicion con respecto a otros elementos de la página</description> -->
+		</attribute>
+	</tag>
+		
+	<tag>
+		<name>group-box-title</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.GroupBoxTitleTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>width</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>ancho del area reservada para el titulo</description> -->
+		</attribute>
+	</tag> 
+
+	<tag>
+		<name>group-box-title-ext</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.GroupBoxTitleExtTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>width</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>ancho del area reservada para la extension del titulo</description> -->
+		</attribute>
+	</tag> 
+	
+	<tag>
+		<name>outputText</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.OutputTextTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>top</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde la parte superior de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>left</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde el marge izquierdo de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>zindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el índice de superposicion con respecto a otros elementos de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>fmt</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>expresión de formato a utilizar</description> -->
+		</attribute>
+		<attribute>
+			<name>width</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Ancho con el que se representará el texto a mostrar. Ej width="30px" o width="10%"</description> -->
+		</attribute>
+		<attribute>
+			<name>align</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Alineamiento horizontal. Valores posibles: center, left, right</description> -->
+		</attribute>		
+		<attribute>
+			<name>bundle</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el paquete de recursos usado por los atributos de internacionalización</description> -->
+		</attribute>
+		<attribute>
+			<name>filter</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Si se establece el valor 'true', se filtran aquelloos caracterés sensibles al lenguaje HTML</description> -->
+		</attribute>
+		<attribute>
+			<name>format</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Cadena con la representacion de formato con el que se escribirá el texto (según java.text.FormatMessage)</description> -->
+		</attribute>
+		<attribute>
+			<name>formatKey</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Clave para localizar la cadena de formato a utilizar en caso de i18n</description> -->
+		</attribute>
+		<attribute>
+			<name>ignore</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Si se establece el valor 'true' y el dato referenciado no se encuentra, no se escribe nada. En caso contrario se lanza excepción. </description> -->			
+		</attribute>
+		<attribute>
+			<name>locale</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>locale que se usará para el formato de visualización</description> -->
+		</attribute>
+		<attribute>
+			<name>name</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean, si no existe property se considerará dato simple</description> -->
+		</attribute>
+		<attribute>
+			<name>property</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedad del bean indicado en name. Si no se indica name se refiere a la propiedad del bean actionForm</description> -->
+		</attribute>
+		<attribute>
+			<name>scope</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Ámbito donde se buscará el dato indicado. Valores posibles, 'page', 'request', 'session' o 'application'</description> -->
+		</attribute>
+		<attribute>
+			<name>id</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Equivalente al atributo 'id' en HTML</description> -->
+		</attribute>		
+	</tag>
+	
+	<tag>
+		<name>setStyle</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.SetStyleTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>style</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>'version0.1' indica estilo actual (defecto);'version1.0' indica estilo Majadahonda</description> -->
+		</attribute>
+	</tag>
+	<tag>
+		<name>tablecode</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.TableCodeTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>tablename</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre de la tabla general</description> -->
+		</attribute>
+		<attribute>
+			<name>lang</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Idioma (opcional). En caso de no indicarse, se tomara el idioma de usuario</description> -->
+		</attribute>
+		<attribute>
+			<name>type</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Tipo de descripción; 'l' para larga, 'c' para corta</description> -->
+		</attribute>
+		<attribute>
+			<name>code</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Código de la tabla a mostrar</description> -->
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>rowSelector</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.rowselector.RowSelectorTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>tablename</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Identificador unico de la tabla. No debe usarse el mismo identificador para distintas tablas</description> -->
+		</attribute>
+		<attribute>
+			<name>name</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean, si no existe property se considerará dato simple</description> -->
+		</attribute>
+		<attribute>
+			<name>property</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedad del bean indicado en name. Si no se indica name se refiere a la propiedad del bean actionForm</description> -->
+		</attribute>
+		<attribute>
+			<name>dataProvider</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>En caso de que los datos a mostrar NO provengan de una Lista en memoria, se indicará en este atributo el nombre completo de la clase DataProvider</description> -->
+		</attribute>
+		<attribute>
+			<name>subsetName</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre del bean, si no existe property se considerará dato simple</description> -->
+		</attribute>
+		<attribute>
+			<name>subsetProperty</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Propiedad del bean indicado en name. Si no se indica name se refiere a la propiedad del bean actionForm</description> -->
+		</attribute>
+		<attribute>
+			<name>subsetDataProvider</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>En caso de que los datos a mostrar NO provengan de una Lista en memoria, se indicará en este atributo el nombre completo de la clase DataProvider</description> -->
+		</attribute>
+		<attribute>
+			<name>subsetOrderable</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>En caso de que los datos a mostrar NO provengan de una Lista en memoria, se indicará en este atributo el nombre completo de la clase DataProvider</description> -->
+		</attribute>
+		<!--
+			<attribute>
+			<name>pagesize</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			</attribute>
+			<attribute>
+			<name>pagesInBlock</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			</attribute>
+		-->
+		<attribute>
+			<name>height</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Alto en pixeles. Si es tabla y ocupa más de este espacio, se añadira automaticamente una barra de scroll vertical a la derecha.</description> -->
+		</attribute>
+		<attribute>
+			<name>top</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde la parte superior de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>left</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>posicionamiento absoluto en píxeles desde el marge izquierdo de la página</description> -->
+		</attribute>
+		<attribute>
+			<name>zindex</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica el índice de superposicion con respecto a otros elementos de la pagina</description> -->
+		</attribute>
+		<attribute>
+			<name>var</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Nombre de la variable establecida en el contexto de página que representa cada elemento de la lista que se esta representando. Si no se indica este atributo, el nombre de esta variable es row.</description> -->
+		</attribute>
+		<attribute>
+			<name>width</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Ancho de la tabla, puede indicarse mediante píxeles e.j. width="100" o mediante porcentaje e.j. width="15%" </description> -->
+		</attribute>
+
+	</tag>
+
+	<tag>
+		<name>rsColumn</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.rowselector.RsColumnTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>width</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Ancho de la columna, puede indicarse mediante píxeles e.j. width="100" o mediante porcentaje e.j. width="15%" </description> -->
+		</attribute>
+	</tag>
+
+	<tag>
+		<name>rsColumnHeader</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.rowselector.RsColumnHeadTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>align</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Alineamiento horizontal</description> -->
+		</attribute>
+		<attribute>
+			<name>valign</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Alineamiento vertical</description> -->
+		</attribute>
+		<attribute>
+			<name>colspan</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Número de columnas por el que se expandirá la cabecera actual</description> -->
+		</attribute>
+		<attribute>
+			<name>skip</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Indica si la esta celda actual de cabecera no se pintará (después de uso de colspan en alguna cabecera previa). Valor por defecto false.</description> -->
+		</attribute>
+	</tag>
+
+	<tag>
+		<name>rsColumnContent</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.rowselector.RsColumnContentTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+		<attribute>
+			<name>align</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Alineamiento horizontal</description> -->
+		</attribute>
+		<attribute>
+			<name>valign</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Alineamiento vertical</description> -->
+		</attribute>
+		<attribute>
+			<name>cellpadding</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<!--description>Espacio entre borde y contenido de la celda</description> -->
+		</attribute>
+	</tag>
+	<tag>
+		<name>rsRowId</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.rowselector.RowIdTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+	</tag>
+	<tag>
+		<name>rsTableCaption</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.rowselector.rsTableCaptionTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+	</tag>
+	<tag>
+		<name>rsSubsetTableCaption</name>
+		<tagclass>mapfre.wss000arquitect.jsp.etiquetas.rowselector.rsSubsetTableCaptionTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+	</tag>
+</taglib>

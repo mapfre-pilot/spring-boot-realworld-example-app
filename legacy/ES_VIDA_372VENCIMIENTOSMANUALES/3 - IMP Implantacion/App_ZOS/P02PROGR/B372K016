@@ -1,0 +1,379 @@
+      ******************************************************************        
+      **INV: A372VENM                                                           
+      ******************************************************************        
+       IDENTIFICATION DIVISION.                                                 
+       PROGRAM-ID. B372K016.                                                    
+      ******************************************************************        
+      * ANALISTA:    INDRA                                             *        
+      * PROGRAMADOR: INDRA                                             *        
+      * DATE-WRITTEN.  MAYO  2017                                      *        
+      * DESCRIPCION:                                                   *        
+      *  ------------------------------------------------------------  *        
+      *                                                                *        
+      * RECIBE UN FICHERO DE ENTRADA CON LOS VENCIMIENTOS              *        
+      *                                                                *        
+      * OBTIENE UN FICHERO DE SALIDA CON LOS REGISTROS TRATADOS Y      *        
+      * OTRO CON LOS ÛREGISTROS RECHAZADOS                             *        
+      ******************************************************************        
+      *                                                                         
+      * TB372VEN0    TABLA DE VENCIMIENTOS MANUALES                             
+      *                                                                         
+      ******************************************************************        
+       ENVIRONMENT DIVISION.                                                    
+
+
+       CONFIGURATION SECTION.                                                   
+          SPECIAL-NAMES.                                                        
+           DECIMAL-POINT IS COMMA.                                              
+
+       INPUT-OUTPUT SECTION.                                                    
+       FILE-CONTROL.                                                            
+      * FICHEROS DE ENTRADA                                                     
+           SELECT FICH-ENTRADA                                                  
+           ASSIGN TO SYS001                                                     
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL.                                           
+
+      * FICHERO DE SALIDA                                                       
+           SELECT FICH-TRATADOS                                                 
+           ASSIGN TO SYS002                                                     
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL.                                           
+
+      * FICHERO DE PETICIONES                                                   
+           SELECT FICH-ERRORES                                                  
+           ASSIGN TO SYS003                                                     
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL.                                           
+
+
+
+       DATA DIVISION.                                                           
+
+       FILE SECTION.                                                            
+
+       FD  FICH-ENTRADA                                                         
+           LABEL RECORDS OMITTED                                                
+           RECORDING MODE IS F.                                                 
+           COPY SAPASTON.                                                       
+
+       FD  FICH-TRATADOS                                                        
+           LABEL RECORDS OMITTED                                                
+           RECORDING MODE IS F.                                                 
+       01  RTRATADOS              PIC X(80).                                    
+
+       FD  FICH-ERRORES                                                         
+           LABEL RECORDS OMITTED                                                
+           RECORDING MODE IS F.                                                 
+       01  RERRORES               PIC X(250).                                   
+
+       WORKING-STORAGE SECTION.                                                 
+       01 FILLER.                                                               
+          03 FILLER PIC X(40) VALUE 'INICIO WORKING-STORAGE SECTION'.           
+
+          03 SW-SWITCH.                                                         
+             05 SW-ERROR-DB2   PIC S9(3)  VALUE  0.                             
+                88 DB2-OK                 VALUE  0.                             
+                88 DB2-NOTFND             VALUE +100.                           
+                88 DB2-DUPLICADO          VALUE -803.                           
+                88 DB2-SELECTDUP          VALUE -811.                           
+
+          03 FIN-FICH             PIC X(1) VALUE  SPACES.                       
+             88 S-FIN-FICH                 VALUE 'S'.                           
+             88 N-FIN-FICH                 VALUE 'N'.                           
+
+          03 REG-TRATADOS.                                                      
+             05 RT-ANIO           PIC 9(04)        VALUE 0.                     
+             05 RT-EXPEDIENTE     PIC 9(10)        VALUE 0.                     
+             05 RT-KPOLIZA        PIC 9(10)        VALUE 0.                     
+             05 RT-NSUBPOLIZA     PIC 9(4)         VALUE 0.                     
+             05 RT-KCERTIFICADO   PIC 9(6)         VALUE 0.                     
+             05 RT-MODALIDAD      PIC X(4)         VALUE ' '.                   
+             05 RT-FECHA-PAGO     PIC 9(8)         VALUE 0.                     
+AGO17        05 RT-DH             PIC X(1)         VALUE ' '.                   
+             05 RT-IMPORTE        PIC 9(12)V9(02)  VALUE 0.                     
+             05 RT-CECO           PIC 9(4)         VALUE 0.                     
+AGO17 **     05 RT-FILLER         PIC X(16)        VALUE ' '.                   
+AGO17        05 RT-FILLER         PIC X(15)        VALUE ' '.                   
+
+          03 REG-ERRORES.                                                       
+             05 RE-SOCIEDAD       PIC X(4)         VALUE ' '.                   
+             05 RE-FECHA          PIC 9(8)         VALUE 0.                     
+             05 RE-MODALIDAD      PIC X(4)         VALUE ' '.                   
+AGO17        05 RE-DH             PIC X(1)         VALUE ' '.                   
+             05 RE-IMPORTE        PIC 9(12)V9(02)  VALUE 0.                     
+             05 RE-DIFIMP1        PIC 9(12)V9(02)  VALUE 0.                     
+             05 RE-CECO           PIC 9(4)         VALUE 0.                     
+             05 RE-CONCEPTO       PIC X(50)        VALUE ' '.                   
+             05 RE-CUENTA         PIC 9(10)        VALUE 0.                     
+             05 RE-OBSERV         PIC X(25)        VALUE ' '.                   
+             05 RE-TIPO           PIC X(33)        VALUE ' '.                   
+AGO17 **     05 RE-FILLER         PIC X(56)        VALUE ' '.                   
+AGO17        05 RE-FILLER         PIC X(55)        VALUE ' '.                   
+
+      **                                                                        
+      ** VARIABLES                                                              
+      **                                                                        
+          03 REG-VARIABLES.                                                     
+             05 WS-POLIZA               PIC 9(10)  VALUE 0.                     
+             05 WS-TEXTO1               PIC X(10)  VALUE ' '.                   
+             05 WS-TEXTO2               PIC X(10)  VALUE ' '.                   
+             05 WS-EXPDTE               PIC 9(10)  VALUE 0.                     
+             05 WS-EXPDTE-2             PIC 9(10)  VALUE 0.                     
+             05 I                       PIC 99     VALUE 0.                     
+             05 WS-CONTADOR             PIC 99     VALUE 0.                     
+             05 WS-ANIO                 PIC 9999   VALUE 0.                     
+             05 WS-ANIO-MAS1            PIC 9999   VALUE 0.                     
+             05 WS-ANIO-MAS2            PIC 9999   VALUE 0.                     
+             05 WS-ANIO-MENOS1          PIC 9999   VALUE 0.                     
+             05 WS-ANIO-MENOS2          PIC 9999   VALUE 0.                     
+             05 WS-IMPORTE              PIC 9(13)V99  VALUE 0.                  
+             05 WS-DIFIMP1              PIC 9(13)V99  VALUE 0.                  
+
+      **                                                                        
+      ** FECHA DEL SISTEMA                                                      
+      **                                                                        
+          03 WS-FECHA-ACTUAL.                                                   
+             05 WS-FECHA.                                                       
+                07 WS-ANO                   PIC 9(04).                          
+                07 WS-MES                   PIC 9(02).                          
+                07 WS-DIA                   PIC 9(02).                          
+             05 WS-TIEMPO.                                                      
+                07 WS-HORA                  PIC 9(02).                          
+                07 WS-MINUTOS               PIC 9(02).                          
+                07 WS-SEGUNDOS              PIC 9(02).                          
+                07 WS-CENTESIMAS            PIC 9(02).                          
+             05 FILLER                      PIC 9(05).                          
+
+      **                                                                        
+      ** AREA DE COMUNICACION CON DB2                                           
+      **                                                                        
+            EXEC SQL INCLUDE SQLCA     END-EXEC.                                
+            EXEC SQL INCLUDE T372VEN0  END-EXEC.                                
+
+          03 FILLER PIC X(40) VALUE 'FINAL WORKING-STORAGE SECTION'.            
+
+      *************************************************************             
+      * PROCEDURE DIVISION                                        *             
+      *************************************************************             
+      *                                                                         
+       PROCEDURE DIVISION.                                                      
+
+           PERFORM 1000-INICIO.                                                 
+           PERFORM 2000-PROCESO                                                 
+             UNTIL S-FIN-FICH.                                                  
+           PERFORM 9000-FINAL.                                                  
+
+      ********************************************************                  
+      * 1000-INICIO                                          *                  
+      ********************************************************                  
+      *                                                                         
+       1000-INICIO.                                                             
+           OPEN INPUT  FICH-ENTRADA                                             
+                OUTPUT FICH-TRATADOS, FICH-ERRORES                              
+           PERFORM LEER-ENTRADA.                                                
+
+      ********************************************************                  
+      * 2000-PROCESO.                                        *                  
+      ********************************************************                  
+      *                                                                         
+       2000-PROCESO.                                                            
+
+           MOVE ZEROS        TO WS-DIFIMP1                                      
+           PERFORM BUSCA-POLIZA                                                 
+      *B*                                                                       
+      *       DISPLAY 'WS-POLIZA     ' WS-POLIZA.                               
+      *       DISPLAY 'WS-EXPDTE     ' WS-EXPDTE.                               
+      *F*                                                                       
+           PERFORM ACCESO-VENCIMIENTO                                           
+           IF SQLCODE = 0                                                       
+              COMPUTE WS-IMPORTE =                                              
+              VEN0-IMPCAPITAL + VEN0-IMPBENEFICIOS                              
+              IF (IMP-DOC-T2-SAP = WS-IMPORTE)                                  
+      **  LO PIDE LA USUARIA QUE LO QUITEMOS                                    
+      **         (IMP-DOC-T2-SAP = VEN0-IMPLIQCAP)                              
+                 IF VEN0-FECPAGOCAPITAL = ' '                                   
+                    PERFORM ACTUALIZAR-FECHA                                    
+                    PERFORM ESCRIBIR-TRATADOS                                   
+                 ELSE                                                           
+                    MOVE 'F.PAGO EN B.D ' TO RE-OBSERV                          
+                    MOVE VEN0-FECPAGOCAPITAL  TO RE-OBSERV(15:8)                
+                    PERFORM ESCRIBIR-ERRORES                                    
+                 END-IF                                                         
+                 IF VEN0-KMODALIDAD =  400                                      
+                    PERFORM ACTUALIZAR-MODALIDAD                                
+                    PERFORM ESCRIBIR-TRATADOS                                   
+                 END-IF                                                         
+              ELSE                                                              
+                 COMPUTE WS-DIFIMP1 =                                           
+                 IMP-DOC-T2-SAP - WS-IMPORTE                                    
+                 MOVE 'DIFERENCIA EN IMPORTE' TO RE-OBSERV                      
+                 PERFORM ESCRIBIR-ERRORES                                       
+           ELSE                                                                 
+              MOVE 'VENCIMIENTO NO ENCONTRADO' TO RE-OBSERV                     
+              PERFORM ESCRIBIR-ERRORES                                          
+           END-IF.                                                              
+
+           PERFORM LEER-ENTRADA.                                                
+
+      ********************************************************                  
+      * BUSCA-POLIZA.                                        *                  
+      ********************************************************                  
+      *                                                                         
+       BUSCA-POLIZA.                                                            
+           UNSTRING  CONCEPT-T2-SAP  DELIMITED BY ' '                           
+              INTO   WS-POLIZA    WS-TEXTO1 WS-TEXTO2.                          
+           MOVE AA-CONT-T2-SAP TO WS-ANIO                                       
+           WS-ANIO-MAS1 WS-ANIO-MAS2                                            
+           WS-ANIO-MENOS1 WS-ANIO-MENOS2                                        
+           ADD 1 TO  WS-ANIO-MAS1                                               
+           ADD 2 TO  WS-ANIO-MAS2                                               
+           SUBTRACT  1 FROM  WS-ANIO-MENOS1                                     
+           SUBTRACT  2 FROM  WS-ANIO-MENOS2                                     
+           IF WS-TEXTO1(1:4) = WS-ANIO OR                                       
+              WS-TEXTO1(1:4) = WS-ANIO-MAS1  OR                                 
+              WS-TEXTO1(1:4) = WS-ANIO-MAS2  OR                                 
+              WS-TEXTO1(1:4) = WS-ANIO-MENOS1  OR                               
+              WS-TEXTO1(1:4) = WS-ANIO-MENOS2                                   
+              MOVE 0 TO WS-CONTADOR                                             
+              INSPECT FUNCTION REVERSE (WS-TEXTO1)                              
+              TALLYING WS-CONTADOR FOR LEADING SPACES                           
+              COMPUTE I = 6 - WS-CONTADOR                                       
+              MOVE  WS-TEXTO1(5:I) TO WS-EXPDTE                                 
+           ELSE                                                                 
+              MOVE 0 TO WS-CONTADOR                                             
+              INSPECT FUNCTION REVERSE (WS-TEXTO1)                              
+              TALLYING WS-CONTADOR FOR LEADING SPACES                           
+              COMPUTE I = 6 - WS-CONTADOR                                       
+              MOVE  WS-TEXTO1(5:I) TO WS-EXPDTE                                 
+              MOVE 0 TO WS-CONTADOR                                             
+              INSPECT FUNCTION REVERSE (WS-TEXTO1)                              
+              TALLYING WS-CONTADOR FOR LEADING SPACES                           
+              COMPUTE I = 10 - WS-CONTADOR                                      
+              MOVE  WS-TEXTO1(1:I) TO WS-EXPDTE                                 
+              IF WS-EXPDTE(7:4) = WS-ANIO OR                                    
+                 WS-EXPDTE(7:4) = WS-ANIO-MAS1  OR                              
+                 WS-EXPDTE(7:4) = WS-ANIO-MAS2  OR                              
+                 WS-EXPDTE(7:4) = WS-ANIO-MENOS1  OR                            
+                 WS-EXPDTE(7:4) = WS-ANIO-MENOS2                                
+                 MOVE WS-EXPDTE(1:6) TO WS-EXPDTE-2                             
+                 MOVE WS-EXPDTE-2    TO WS-EXPDTE                               
+           END-IF.                                                              
+      ******************************************************************        
+      * ACCESO-VENCIMIENTO.                                                     
+      ******************************************************************        
+       ACCESO-VENCIMIENTO.                                                      
+
+           MOVE WS-POLIZA      TO VEN0-KPOLIZA                                  
+           MOVE WS-EXPDTE      TO VEN0-KEXPEDIENTE                              
+      *B*                                                                       
+      *       DISPLAY 'WS-POLIZA VEN ' WS-POLIZA                                
+      *       DISPLAY 'IMPORTE       ' IMP-DOC-T2-SAP                           
+      *F*                                                                       
+           EXEC SQL                                                             
+                SELECT VEN0_ANIO,                                               
+                       VEN0_KPOLIZA,                                            
+                       VEN0_NSUBPOLIZA,                                         
+                       VEN0_KCERTIFICADO,                                       
+                       VEN0_IMPCAPITAL,                                         
+                       VEN0_IMPBENEFICIOS,                                      
+                       VEN0_IMPLIQCAP,                                          
+                       VEN0_FECPAGOCAPITAL,                                     
+                       VEN0_KMODALIDAD,                                         
+                       VEN0_KEXPEDIENTE                                         
+                INTO  :VEN0-ANIO,                                               
+                      :VEN0-KPOLIZA,                                            
+                      :VEN0-NSUBPOLIZA,                                         
+                      :VEN0-KCERTIFICADO,                                       
+                      :VEN0-IMPCAPITAL,                                         
+                      :VEN0-IMPBENEFICIOS,                                      
+                      :VEN0-IMPLIQCAP,                                          
+                      :VEN0-FECPAGOCAPITAL,                                     
+                      :VEN0-KMODALIDAD,                                         
+                      :VEN0-KEXPEDIENTE                                         
+                FROM TB372VEN0                                                  
+                WHERE VEN0_KPOLIZA      = :VEN0-KPOLIZA                         
+                AND   VEN0_KEXPEDIENTE  = :VEN0-KEXPEDIENTE                     
+           END-EXEC.                                                            
+
+
+      ******************************************************************        
+      * ACTUALIZAR-FECHA.                                                       
+      ******************************************************************        
+       ACTUALIZAR-FECHA.                                                        
+
+           MOVE F-CONTABIL-T2-SAP    TO VEN0-FECPAGOCAPITAL                     
+             EXEC SQL                                                           
+               UPDATE TB372VEN0                                                 
+                 SET VEN0_FECPAGOCAPITAL   = :VEN0-FECPAGOCAPITAL               
+               WHERE VEN0_KPOLIZA          = :VEN0-KPOLIZA                      
+                AND  VEN0_KEXPEDIENTE      = :VEN0-KEXPEDIENTE                  
+             END-EXEC.                                                          
+
+
+      ******************************************************************        
+      * ACTUALIZAR-MODALIDAD                                                    
+      ******************************************************************        
+       ACTUALIZAR-MODALIDAD.                                                    
+
+           MOVE MODALID-T2-SAP    TO VEN0-KMODALIDAD                            
+             EXEC SQL                                                           
+               UPDATE TB372VEN0                                                 
+                 SET VEN0_KMODALIDAD       = :VEN0-KMODALIDAD                   
+               WHERE VEN0_KPOLIZA          = :VEN0-KPOLIZA                      
+                AND  VEN0_KEXPEDIENTE      = :VEN0-KEXPEDIENTE                  
+             END-EXEC.                                                          
+
+
+      ******************************************************************        
+      * LEER-ENTRADA                                                            
+      ******************************************************************        
+       LEER-ENTRADA.                                                            
+
+           READ FICH-ENTRADA                                                    
+             AT END MOVE 'S' TO FIN-FICH.                                       
+
+      ******************************************************************        
+      * ESCRIBIR-TRATADOS.                                                      
+      ******************************************************************        
+       ESCRIBIR-TRATADOS.                                                       
+
+           MOVE VEN0-ANIO          TO RT-ANIO                                   
+           MOVE VEN0-KEXPEDIENTE   TO RT-EXPEDIENTE                             
+           MOVE VEN0-KPOLIZA       TO RT-KPOLIZA                                
+           MOVE VEN0-NSUBPOLIZA    TO RT-NSUBPOLIZA                             
+           MOVE VEN0-KCERTIFICADO  TO RT-KCERTIFICADO                           
+           MOVE MODALID-T2-SAP     TO RT-MODALIDAD                              
+           MOVE F-CONTABIL-T2-SAP  TO RT-FECHA-PAGO                             
+AGO17      MOVE DEB-HAB-T2-SAP     TO RT-DH                                     
+           MOVE IMP-DOC-T2-SAP     TO RT-IMPORTE                                
+           MOVE OF-CONT-RO-T2-SAP  TO RT-CECO                                   
+           MOVE 'VENCIMIENTOS'     TO RT-FILLER                                 
+           WRITE RTRATADOS FROM REG-TRATADOS.                                   
+
+      ******************************************************************        
+      * ESCRIBIR-ERRORES.                                                       
+      ******************************************************************        
+       ESCRIBIR-ERRORES.                                                        
+
+           MOVE SOCIEDAD-T2-SAP     TO RE-SOCIEDAD                              
+           MOVE F-CONTABIL-T2-SAP   TO RE-FECHA                                 
+           MOVE MODALID-T2-SAP      TO RE-MODALIDAD                             
+AGO17      MOVE DEB-HAB-T2-SAP      TO RE-DH                                    
+           MOVE IMP-DOC-T2-SAP      TO RE-IMPORTE                               
+           MOVE WS-DIFIMP1          TO RE-DIFIMP1                               
+           MOVE OF-CONT-RO-T2-SAP   TO RE-CECO                                  
+           MOVE CONCEPT-T2-SAP      TO RE-CONCEPTO                              
+           MOVE CTA-CTBLE-T2-SAP    TO RE-CUENTA                                
+           MOVE 'VENCIMIENTOS'      TO RE-TIPO                                  
+           WRITE RERRORES  FROM REG-ERRORES.                                    
+
+      **************************************************************            
+      * 9000-FINAL.                                                *            
+      **************************************************************            
+
+       9000-FINAL.                                                              
+
+           CLOSE       FICH-ENTRADA                                             
+                       FICH-TRATADOS  FICH-ERRORES                              
+           GOBACK.                                                              

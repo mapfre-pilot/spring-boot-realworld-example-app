@@ -1,0 +1,1312 @@
+      ******************************************************************        
+       IDENTIFICATION DIVISION.                                                 
+       PROGRAM-ID. B372K001.                                                    
+      ******************************************************************        
+      * APLICACIÓN.....: RESCATES Y VENCIMIENTOS                       *        
+      * ANALISTA.......: EVERIS                                        *        
+      * PROGRAMADOR....: EVERIS                                        *        
+      * FECHA DE REALLIZACIÓN: 11/06/17.                               *        
+      *                                                                *        
+      * DESCRIPCIÓN:                                                   *        
+      *   ------------------------------------------------------------ *        
+      *  | CONSULTA DE EXPEDIENTES DE VENCIMIENTOS                    |*        
+      *   ------------------------------------------------------------ *        
+      *                                                                *        
+      ******************************************************************        
+       ENVIRONMENT DIVISION.                                                    
+      *                                                                         
+       CONFIGURATION SECTION.                                                   
+      *                                                                         
+       SPECIAL-NAMES.                                                           
+           DECIMAL-POINT IS COMMA.                                              
+      *                                                                         
+       INPUT-OUTPUT SECTION.                                                    
+      *                                                                         
+       FILE-CONTROL.                                                            
+      * FICHERO DE REGISTROS DE TB372VEN0                                       
+           SELECT FICH-ENT                                                      
+           ASSIGN TO SYS001                                                     
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL.                                           
+
+      * FICHERO DE REGISTROS                                                    
+           SELECT FICH-SAL                                                      
+           ASSIGN TO SYS002                                                     
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL.                                           
+
+      * FICHERO DE ERRORES                                                      
+           SELECT FICH-ERR                                                      
+           ASSIGN TO SYS003                                                     
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL.                                           
+
+      ******************************************************************        
+      *                  DATA DIVISION                                 *        
+      ******************************************************************        
+      *                                                                         
+       DATA DIVISION.                                                           
+
+       FILE SECTION.                                                            
+       FD FICH-ENT                                                              
+             BLOCK CONTAINS 0 RECORDS                                           
+             RECORDING MODE IS F                                                
+             LABEL RECORDS ARE STANDARD.                                        
+       01 REG-ENT PIC X(435).                                                   
+
+       FD FICH-SAL                                                              
+             BLOCK CONTAINS 0 RECORDS                                           
+             RECORDING MODE IS F                                                
+             LABEL RECORDS ARE STANDARD.                                        
+       01 REG-SAL PIC X(449).                                                   
+
+       FD FICH-ERR                                                              
+             BLOCK CONTAINS 0 RECORDS                                           
+             RECORDING MODE IS F                                                
+             LABEL RECORDS ARE STANDARD.                                        
+       01 REG-ERR PIC X(449).                                                   
+      *                                                                         
+      ******************************************************************        
+      *                  WORKING-STORAGE SECTION                       *        
+      ******************************************************************        
+      *                                                                         
+       WORKING-STORAGE SECTION.                                                 
+
+       01 FILLER.                                                               
+          03 FILLER PIC X(40) VALUE 'INICIO WORKING-STORAGE SECTION'.           
+
+      **                                                                        
+      ** SWITCH                                                                 
+      **                                                                        
+          03 SW-ERRORES              PIC X(2) VALUE SPACES.                     
+             88 NO-ERROR                      VALUE '00'.                       
+             88 ERROR-GRAVE                   VALUE '01'.                       
+
+          03 SW-FICH-ENT             PIC X(2) VALUE SPACES.                     
+             88 SW-INI-FICH-ENT               VALUE '00'.                       
+             88 SW-FIN-FICH-ENT               VALUE '01'.                       
+
+          03 LT-SQLCODE.                                                        
+             05 DB2-OK               PIC S9(03) VALUE  0.                       
+             05 DB2-NOTFND           PIC S9(03) VALUE +100.                     
+             05 DB2-DUPLICADO        PIC S9(03) VALUE -803.                     
+             05 DB2-SELECTDUP        PIC S9(03) VALUE -811.                     
+      **                                                                        
+      ** CONTADORES                                                             
+      **                                                                        
+          03 WS-CONTADORES.                                                     
+             05 WS-LEIDOS-ENT          PIC 9(07).                               
+             05 WS-INSERTADOS          PIC 9(07).                               
+             05 WS-NO-INSERTADOS       PIC 9(07).                               
+      *                                                                         
+      ****************************************************                      
+      ** LITERALES                                                              
+      ****************************************************                      
+          03 LT-LITERALES.                                                      
+             05 LT-ERRORES-RETORNO.                                             
+      *         LITERAL NO HAY ERRORES                                          
+                07 LT-RETURN-OK             PIC X(5) VALUE '00'.                
+      *         ERROR EN MODO                                                   
+                07 LT-RETURN-ERR-MODO       PIC X(5) VALUE '01'.                
+      *         ERROR FALTAN DATOS INFORMADOS                                   
+                07 LT-RETURN-ERR-DATINFO    PIC X(5) VALUE '02'.                
+      *         ERROR REGISTRO NO ENCONTRADO                                    
+                07 LT-RETURN-ERR-NOTFND     PIC X(5) VALUE '03'.                
+      *         ERROR REGISTRO CLAVE DUPLICADA                                  
+                07 LT-RETURN-ERR-CLVDUPLI   PIC X(5) VALUE '04'.                
+      *         ERROR EN ACCESO A BASE DE DATOS                                 
+                07 LT-RETURN-ERR-OTHER      PIC X(5) VALUE '99'.                
+      **                                                                        
+      ** VARIABLES PREDEFINIDAS PARA TABLA                                      
+      **                                                                        
+          03 WS-VEN-EXIMIDO         PIC X(1)   VALUE 'N'.                       
+          03 WS-VEN-KDOMCOM         PIC S9(9)V VALUE ZEROES.                    
+      **                                                                        
+      **                                                                        
+      ** ESTRUCTURA FICHEROS                                                    
+      **                                                                        
+      *                                                                         
+      ** ESTRUCTURA FICHEROS ERRORES                                            
+          03 WS-REG-ERROR.                                                      
+             05 POLIZA-ERR             PIC 9(10).                               
+             05 SUBPOL-ERR             PIC 9(04).                               
+             05 RETORNO-S              PIC X(5).                                
+             05 GNOMPROG-S             PIC X(8).                                
+             05 ERROR-S                PIC X(60).                               
+
+      *                                                                         
+      *COPY ENTRADA                                                             
+       COPY RD400116.                                                           
+      *                                                                         
+      *COPY SALIDADA                                                            
+       01 SALIDA.                                                               
+          03 WS-SAL-RD400116        PIC X(435).                                 
+          03 WS-SAL-ANIO            PIC 9(4).                                   
+          03 WS-SAL-KEXPEDIENTE     PIC 9(10).                                  
+
+      ****************************************************                      
+      ** AREA DE COMUNICACION CON DB2                                           
+      ****************************************************                      
+            EXEC SQL INCLUDE SQLCA     END-EXEC.                                
+            EXEC SQL INCLUDE T372VEN0  END-EXEC.                                
+
+      *************************************************************             
+       PROCEDURE DIVISION.                                                      
+      *************************************************************             
+
+           PERFORM 1000-INICIO                                                  
+
+           PERFORM 2000-PROCESO                                                 
+             UNTIL SW-FIN-FICH-ENT                                              
+
+           PERFORM 9000-FINAL                                                   
+
+           GOBACK.                                                              
+
+
+      *****************************************************************         
+      * 1000-INICIO.                                                  *         
+      *****************************************************************         
+      *                                                                         
+       1000-INICIO.                                                             
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 1000-INICIO'                                      
+      *F*                                                                       
+           INITIALIZE  RD400116                                                 
+                       WS-SAL-ANIO                                              
+                       WS-SAL-KEXPEDIENTE                                       
+                       WS-REG-ERROR                                             
+      *                                                                         
+           SET NO-ERROR TO TRUE                                                 
+      *                                                                         
+           OPEN INPUT  FICH-ENT                                                 
+               OUTPUT  FICH-SAL                                                 
+                       FICH-ERR                                                 
+      ***  LECTURA ANTICIPADA                                                   
+           PERFORM 8000-READ-FICH-ENT                                           
+           .                                                                    
+
+      *****************************************************************         
+      * 2000-PROCESO.                                                 *         
+      *****************************************************************         
+      *                                                                         
+       2000-PROCESO.                                                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 2000-PROCESO'                                     
+      *T*                                                                       
+           SET NO-ERROR TO TRUE                                                 
+      *                                                                         
+           PERFORM 3100-CONSULTA-TABLA-VEN0                                     
+           IF NO-ERROR                                                          
+              PERFORM 7000-ESCRIBIR-SALIDA                                      
+           END-IF                                                               
+           PERFORM 8000-READ-FICH-ENT                                           
+      *                                                                         
+           .                                                                    
+      *                                                                         
+      **************************************************************            
+       3100-CONSULTA-TABLA-VEN0.                                                
+      **************************************************************            
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-CONSULTA-TABLA-VEN0'                         
+      *T*                                                                       
+      *                                                                         
+           MOVE RD400116-KPOLIZA        TO VEN0-KPOLIZA                         
+           MOVE RD400116-NSUBPOLIZA     TO VEN0-NSUBPOLIZA                      
+           MOVE RD400116-NCERTIFICADO   TO VEN0-KCERTIFICADO                    
+           MOVE RD400116-FDOCUMENTO     TO VEN0-FECVENCIMICAP                   
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: RD400116-KPOLIZA: '                               
+DSPLYS*                                           RD400116-KPOLIZA              
+DSPLYS*    DISPLAY 'B372K001: RD400116-NSUBPOLIZA: '                            
+DSPLYS*                                           RD400116-NSUBPOLIZA           
+DSPLYS*    DISPLAY 'B372K001: RD400116-FDOCUMENTO: '                            
+DSPLYS*                                           RD400116-FDOCUMENTO           
+      *T*                                                                       
+            EXEC SQL                                                            
+                SELECT                                                          
+                       VEN0_ANIO                                                
+                      ,VEN0_KEXPEDIENTE                                         
+                INTO                                                            
+                      :VEN0-ANIO                                                
+                     ,:VEN0-KEXPEDIENTE                                         
+                FROM TB372VEN0                                                  
+               WHERE   VEN0_KPOLIZA          = :VEN0-KPOLIZA                    
+                 AND   VEN0_NSUBPOLIZA       = :VEN0-NSUBPOLIZA                 
+                 AND   VEN0_FECVENCIMICAP    = :VEN0-FECVENCIMICAP              
+                 AND   VEN0_KCERTIFICADO     = :VEN0-KCERTIFICADO               
+                 AND   VEN0_FECBDGICAP       <> ''                              
+            END-EXEC.                                                           
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-CONSULTA-TABLA-VEN0->SQLCODE: '              
+DSPLYS*             SQLCODE                                                     
+      *F*                                                                       
+      *                                                                         
+              EVALUATE SQLCODE                                                  
+      *                                                                         
+                WHEN DB2-OK                                                     
+      *                                                                         
+                     PERFORM 5000-MOVER-SALIDA                                  
+      *                                                                         
+                WHEN DB2-SELECTDUP                                              
+                      PERFORM 3150-SELECT2-VEN0-CAP                             
+                WHEN DB2-NOTFND                                                 
+                      PERFORM 3170-SELECT4-VEN0-CAP                             
+                WHEN OTHER                                                      
+      *                                                                         
+                     SET  ERROR-GRAVE        TO TRUE                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-ERROR->WHEN OTHER'                           
+DSPLYS*    DISPLAY 'B372K001: POLIZA-ERR: '       POLIZA-ERR                    
+DSPLYS*    DISPLAY 'B372K001: SUBPOL-ERR: '       SUBPOL-ERR                    
+DSPLYS*    DISPLAY 'B372K001: VEN0-ANIO: '        VEN0-ANIO                     
+DSPLYS*    DISPLAY 'B372K001: VEN0-KEXPEDIENTE: ' VEN0-KEXPEDIENTE              
+      *F*                                                                       
+                     MOVE VEN0-KPOLIZA       TO POLIZA-ERR                      
+                     MOVE VEN0-NSUBPOLIZA    TO SUBPOL-ERR                      
+                     MOVE LT-RETURN-ERR-OTHER                                   
+                       TO RETORNO-S                                             
+                     MOVE ' ERROR AL OBTENER LOS EXPEDIENTES'                   
+                       TO ERROR-S                                               
+                     MOVE 'B362K001'                                            
+                       TO GNOMPROG-S                                            
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3100'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+      *                                                                         
+              END-EVALUATE                                                      
+           .                                                                    
+      *                                                                         
+      **************************************************************            
+       3150-SELECT2-VEN0-CAP.                                                   
+      **************************************************************            
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3150-SELECT2-VEN0-CAP'                            
+      *T*                                                                       
+      *                                                                         
+           MOVE RD400116-KPOLIZA        TO VEN0-KPOLIZA                         
+           MOVE RD400116-NSUBPOLIZA     TO VEN0-NSUBPOLIZA                      
+           MOVE RD400116-NCERTIFICADO   TO VEN0-KCERTIFICADO                    
+           MOVE RD400116-FDOCUMENTO     TO VEN0-FECVENCIMICAP                   
+           MOVE RD400116-EPRESTACION    TO VEN0-IMPCAPITAL                      
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: RD400116-KPOLIZA: '                               
+DSPLYS*                                           RD400116-KPOLIZA              
+DSPLYS*    DISPLAY 'B372K001: RD400116-NSUBPOLIZA: '                            
+DSPLYS*                                           RD400116-NSUBPOLIZA           
+DSPLYS*    DISPLAY 'B372K001: RD400116-FDOCUMENTO: '                            
+DSPLYS*                                           RD400116-FDOCUMENTO           
+      *T*                                                                       
+            EXEC SQL                                                            
+                SELECT                                                          
+                       VEN0_ANIO                                                
+                      ,VEN0_KEXPEDIENTE                                         
+                INTO                                                            
+                      :VEN0-ANIO                                                
+                     ,:VEN0-KEXPEDIENTE                                         
+                FROM TB372VEN0                                                  
+               WHERE   VEN0_KPOLIZA          = :VEN0-KPOLIZA                    
+                 AND   VEN0_NSUBPOLIZA       = :VEN0-NSUBPOLIZA                 
+                 AND   VEN0_FECVENCIMICAP    = :VEN0-FECVENCIMICAP              
+                 AND   VEN0_KCERTIFICADO     = :VEN0-KCERTIFICADO               
+                 AND   VEN0_IMPCAPITAL       = :VEN0-IMPCAPITAL                 
+                 AND   VEN0_FECBDGICAP       <> ''                              
+            END-EXEC.                                                           
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-CONSULTA-TABLA-VEN0->SQLCODE: '              
+DSPLYS*             SQLCODE                                                     
+      *F*                                                                       
+      *                                                                         
+              EVALUATE SQLCODE                                                  
+      *                                                                         
+                WHEN DB2-OK                                                     
+      *                                                                         
+                     PERFORM 5000-MOVER-SALIDA                                  
+      *                                                                         
+                WHEN DB2-SELECTDUP                                              
+                   PERFORM 3155-SELECT3-VEN0-CAP                                
+      *                                                                         
+                WHEN DB2-NOTFND                                                 
+                   PERFORM 3157-SELECT7-VEN0-CAP                                
+      *                                                                         
+                WHEN OTHER                                                      
+      *                                                                         
+                     SET  ERROR-GRAVE        TO TRUE                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-ERROR->WHEN OTHER'                           
+DSPLYS*    DISPLAY 'B372K001: POLIZA-ERR: '       POLIZA-ERR                    
+DSPLYS*    DISPLAY 'B372K001: SUBPOL-ERR: '       SUBPOL-ERR                    
+DSPLYS*    DISPLAY 'B372K001: VEN0-ANIO: '        VEN0-ANIO                     
+DSPLYS*    DISPLAY 'B372K001: VEN0-KEXPEDIENTE: ' VEN0-KEXPEDIENTE              
+      *F*                                                                       
+                     MOVE VEN0-KPOLIZA       TO POLIZA-ERR                      
+                     MOVE VEN0-NSUBPOLIZA    TO SUBPOL-ERR                      
+                     MOVE LT-RETURN-ERR-OTHER                                   
+                       TO RETORNO-S                                             
+                     MOVE ' ERROR AL OBTENER LOS EXPEDIENTES'                   
+                       TO ERROR-S                                               
+                     MOVE 'B372K001'                                            
+                       TO GNOMPROG-S                                            
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3150'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+      *                                                                         
+              END-EVALUATE                                                      
+           .                                                                    
+      *                                                                         
+      **************************************************************            
+       3155-SELECT3-VEN0-CAP.                                                   
+      **************************************************************            
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K002: 3155-SELECT3-VEN0-CAP'                            
+      *T*                                                                       
+      *                                                                         
+           MOVE RD400116-KPOLIZA        TO VEN0-KPOLIZA                         
+           MOVE RD400116-NSUBPOLIZA     TO VEN0-NSUBPOLIZA                      
+           MOVE RD400116-FDOCUMENTO     TO VEN0-FECVENCIMICAP                   
+           MOVE RD400116-CIDENTIFICACION TO VEN0-NIF1                           
+           MOVE RD400116-EPRESTACION    TO VEN0-IMPCAPITAL                      
+           MOVE RD400116-NCERTIFICADO   TO VEN0-KCERTIFICADO                    
+      *                                                                         
+             EXEC SQL                                                           
+                 SELECT                                                         
+                        VEN0_ANIO                                               
+                       ,VEN0_KEXPEDIENTE                                        
+                       ,VEN0_KPOLIZA                                            
+                       ,VEN0_NSUBPOLIZA                                         
+
+                 INTO                                                           
+                        :VEN0-ANIO                                              
+                       ,:VEN0-KEXPEDIENTE                                       
+                       ,:VEN0-KPOLIZA                                           
+                       ,:VEN0-NSUBPOLIZA                                        
+                 FROM TB372VEN0                                                 
+                WHERE   VEN0_KPOLIZA          = :VEN0-KPOLIZA                   
+                  AND   VEN0_NSUBPOLIZA       = :VEN0-NSUBPOLIZA                
+                  AND   VEN0_KCERTIFICADO     = :VEN0-KCERTIFICADO              
+                  AND   VEN0_FECVENCIMICAP    = :VEN0-FECVENCIMICAP             
+                   AND ( VEN0_NIF1             = :VEN0-NIF1                     
+                   OR    VEN0_NIF1             = '0' || :VEN0-NIF1 )            
+                  AND   VEN0_IMPCAPITAL       = :VEN0-IMPCAPITAL                
+                  AND   VEN0_FECBDGICAP       <> ''                             
+             END-EXEC.                                                          
+      *                                                                         
+              EVALUATE SQLCODE                                                  
+      *                                                                         
+                WHEN DB2-OK                                                     
+      *                                                                         
+                     PERFORM 5000-MOVER-SALIDA                                  
+      *                                                                         
+                WHEN OTHER                                                      
+      *                                                                         
+                      SET  ERROR-GRAVE        TO TRUE                           
+                      MOVE VEN0-KPOLIZA       TO POLIZA-ERR                     
+                      MOVE VEN0-NSUBPOLIZA    TO SUBPOL-ERR                     
+                      MOVE LT-RETURN-ERR-OTHER                                  
+                        TO RETORNO-S                                            
+                     MOVE ' ERROR AL OBTENER LOS EXPEDIENTES'                   
+                       TO ERROR-S                                               
+                     MOVE ' B372K001'                                           
+                       TO GNOMPROG-S                                            
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3155'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+      *                                                                         
+              END-EVALUATE                                                      
+            .                                                                   
+      **************************************************************            
+       3157-SELECT7-VEN0-CAP.                                                   
+      **************************************************************            
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3157-SELECT7-VEN0-CAP'                            
+      *T*                                                                       
+      *                                                                         
+           MOVE RD400116-KPOLIZA        TO VEN0-KPOLIZA                         
+           MOVE RD400116-NSUBPOLIZA     TO VEN0-NSUBPOLIZA                      
+           MOVE RD400116-FDOCUMENTO     TO VEN0-FECVENCIMICAP                   
+           MOVE RD400116-CIDENTIFICACION TO VEN0-NIF1                           
+           MOVE RD400116-EPRESTACION    TO VEN0-IMPCAPITAL                      
+           MOVE RD400116-NCERTIFICADO   TO VEN0-KCERTIFICADO                    
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: RD400116-KPOLIZA: '                               
+DSPLYS*                                           RD400116-KPOLIZA              
+DSPLYS*    DISPLAY 'B372K001: RD400116-NSUBPOLIZA: '                            
+DSPLYS*                                           RD400116-NSUBPOLIZA           
+DSPLYS*    DISPLAY 'B372K001: RD400116-FDOCUMENTO: '                            
+DSPLYS*                                           RD400116-FDOCUMENTO           
+      *T*                                                                       
+             EXEC SQL                                                           
+                 SELECT                                                         
+                        VEN0_ANIO                                               
+                       ,VEN0_KEXPEDIENTE                                        
+                       ,VEN0_KPOLIZA                                            
+                       ,VEN0_NSUBPOLIZA                                         
+
+                 INTO                                                           
+                        :VEN0-ANIO                                              
+                       ,:VEN0-KEXPEDIENTE                                       
+                       ,:VEN0-KPOLIZA                                           
+                       ,:VEN0-NSUBPOLIZA                                        
+                 FROM TB372VEN0                                                 
+                WHERE   VEN0_KPOLIZA          = :VEN0-KPOLIZA                   
+                  AND   VEN0_NSUBPOLIZA       = :VEN0-NSUBPOLIZA                
+                  AND   VEN0_KCERTIFICADO     = :VEN0-KCERTIFICADO              
+                   AND ( VEN0_NIF1             = :VEN0-NIF1                     
+                   OR    VEN0_NIF1             = '0' || :VEN0-NIF1 )            
+                  AND   VEN0_FECBDGICAP       <> ''                             
+             END-EXEC.                                                          
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-CONSULTA-TABLA-VEN0->SQLCODE: '              
+DSPLYS*             SQLCODE                                                     
+      *F*                                                                       
+      *                                                                         
+              EVALUATE SQLCODE                                                  
+      *                                                                         
+                WHEN DB2-OK                                                     
+      *                                                                         
+                     PERFORM 5000-MOVER-SALIDA                                  
+      *                                                                         
+                WHEN DB2-SELECTDUP                                              
+                     PERFORM 3159-SELECT11-VEN0-CAP                             
+                WHEN DB2-NOTFND                                                 
+                     SET  ERROR-GRAVE        TO TRUE                            
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3157'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+                WHEN OTHER                                                      
+      *                                                                         
+                     SET  ERROR-GRAVE        TO TRUE                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-ERROR->WHEN OTHER'                           
+DSPLYS*    DISPLAY 'B372K001: POLIZA-ERR: '       POLIZA-ERR                    
+DSPLYS*    DISPLAY 'B372K001: SUBPOL-ERR: '       SUBPOL-ERR                    
+DSPLYS*    DISPLAY 'B372K001: VEN0-ANIO: '        VEN0-ANIO                     
+DSPLYS*    DISPLAY 'B372K001: VEN0-KEXPEDIENTE: ' VEN0-KEXPEDIENTE              
+      *F*                                                                       
+                     MOVE VEN0-KPOLIZA       TO POLIZA-ERR                      
+                     MOVE VEN0-NSUBPOLIZA    TO SUBPOL-ERR                      
+                     MOVE LT-RETURN-ERR-OTHER                                   
+                       TO RETORNO-S                                             
+                     MOVE ' ERROR AL OBTENER LOS EXPEDIENTES'                   
+                       TO ERROR-S                                               
+                     MOVE 'B372K001'                                            
+                       TO GNOMPROG-S                                            
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3157'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+      *                                                                         
+              END-EVALUATE                                                      
+           .                                                                    
+      *                                                                         
+      **************************************************************            
+       3159-SELECT11-VEN0-CAP.                                                  
+      **************************************************************            
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3157-SELECT7-VEN0-CAP'                            
+      *T*                                                                       
+      *                                                                         
+           MOVE RD400116-KPOLIZA        TO VEN0-KPOLIZA                         
+           MOVE RD400116-NSUBPOLIZA     TO VEN0-NSUBPOLIZA                      
+           MOVE RD400116-FDOCUMENTO     TO VEN0-FECVENCIMICAP                   
+           MOVE RD400116-CIDENTIFICACION TO VEN0-NIF1                           
+           MOVE RD400116-EPRESTACION    TO VEN0-IMPCAPITAL                      
+           MOVE RD400116-NCERTIFICADO   TO VEN0-KCERTIFICADO                    
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: RD400116-KPOLIZA: '                               
+DSPLYS*                                           RD400116-KPOLIZA              
+DSPLYS*    DISPLAY 'B372K001: RD400116-NSUBPOLIZA: '                            
+DSPLYS*                                           RD400116-NSUBPOLIZA           
+DSPLYS*    DISPLAY 'B372K001: RD400116-FDOCUMENTO: '                            
+DSPLYS*                                           RD400116-FDOCUMENTO           
+      *T*                                                                       
+             EXEC SQL                                                           
+                 SELECT                                                         
+                        VEN0_ANIO                                               
+                       ,VEN0_KEXPEDIENTE                                        
+                       ,VEN0_KPOLIZA                                            
+                       ,VEN0_NSUBPOLIZA                                         
+
+                 INTO                                                           
+                        :VEN0-ANIO                                              
+                       ,:VEN0-KEXPEDIENTE                                       
+                       ,:VEN0-KPOLIZA                                           
+                       ,:VEN0-NSUBPOLIZA                                        
+                 FROM TB372VEN0                                                 
+                WHERE   VEN0_KPOLIZA          = :VEN0-KPOLIZA                   
+                  AND   VEN0_NSUBPOLIZA       = :VEN0-NSUBPOLIZA                
+                  AND   VEN0_KCERTIFICADO     = :VEN0-KCERTIFICADO              
+                   AND ( VEN0_NIF1             = :VEN0-NIF1                     
+                   OR    VEN0_NIF1             = '0' || :VEN0-NIF1 )            
+                  AND   VEN0_FECBDGICAP       <> ''                             
+                  AND   SUBSTR (VEN0_GOBSERVACION , 1, 2) = 'VI'                
+             END-EXEC.                                                          
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-CONSULTA-TABLA-VEN0->SQLCODE: '              
+DSPLYS*             SQLCODE                                                     
+      *F*                                                                       
+      *                                                                         
+              EVALUATE SQLCODE                                                  
+      *                                                                         
+                WHEN DB2-OK                                                     
+      *                                                                         
+                     PERFORM 5000-MOVER-SALIDA                                  
+      *                                                                         
+                WHEN DB2-SELECTDUP                                              
+                WHEN DB2-NOTFND                                                 
+                     SET  ERROR-GRAVE        TO TRUE                            
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3159'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+                WHEN OTHER                                                      
+      *                                                                         
+                     SET  ERROR-GRAVE        TO TRUE                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-ERROR->WHEN OTHER'                           
+DSPLYS*    DISPLAY 'B372K001: POLIZA-ERR: '       POLIZA-ERR                    
+DSPLYS*    DISPLAY 'B372K001: SUBPOL-ERR: '       SUBPOL-ERR                    
+DSPLYS*    DISPLAY 'B372K001: VEN0-ANIO: '        VEN0-ANIO                     
+DSPLYS*    DISPLAY 'B372K001: VEN0-KEXPEDIENTE: ' VEN0-KEXPEDIENTE              
+      *F*                                                                       
+                     MOVE VEN0-KPOLIZA       TO POLIZA-ERR                      
+                     MOVE VEN0-NSUBPOLIZA    TO SUBPOL-ERR                      
+                     MOVE LT-RETURN-ERR-OTHER                                   
+                       TO RETORNO-S                                             
+                     MOVE ' ERROR AL OBTENER LOS EXPEDIENTES'                   
+                       TO ERROR-S                                               
+                     MOVE 'B372K001'                                            
+                       TO GNOMPROG-S                                            
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3159'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+      *                                                                         
+              END-EVALUATE                                                      
+           .                                                                    
+      **************************************************************            
+       3170-SELECT4-VEN0-CAP.                                                   
+      **************************************************************            
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3170-SELECT4-VEN0-CAP'                            
+      *T*                                                                       
+      *                                                                         
+           MOVE RD400116-KPOLIZA        TO VEN0-KPOLIZA                         
+           MOVE RD400116-NSUBPOLIZA     TO VEN0-NSUBPOLIZA                      
+           MOVE RD400116-NCERTIFICADO   TO VEN0-KCERTIFICADO                    
+           MOVE RD400116-FDOCUMENTO     TO VEN0-FECVENCIMICAP                   
+           MOVE RD400116-EPRESTACION    TO VEN0-IMPCAPITAL                      
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: RD400116-KPOLIZA: '                               
+DSPLYS*                                           RD400116-KPOLIZA              
+DSPLYS*    DISPLAY 'B372K001: RD400116-NSUBPOLIZA: '                            
+DSPLYS*                                           RD400116-NSUBPOLIZA           
+DSPLYS*    DISPLAY 'B372K001: RD400116-FDOCUMENTO: '                            
+DSPLYS*                                           RD400116-FDOCUMENTO           
+      *T*                                                                       
+            EXEC SQL                                                            
+                SELECT                                                          
+                       VEN0_ANIO                                                
+                      ,VEN0_KEXPEDIENTE                                         
+                INTO                                                            
+                      :VEN0-ANIO                                                
+                     ,:VEN0-KEXPEDIENTE                                         
+                FROM TB372VEN0                                                  
+               WHERE   VEN0_KPOLIZA          = :VEN0-KPOLIZA                    
+                 AND   VEN0_NSUBPOLIZA       = :VEN0-NSUBPOLIZA                 
+                 AND   VEN0_FECVENCIMICAP    = :VEN0-FECVENCIMICAP              
+                 AND   VEN0_KCERTIFICADO     = :VEN0-KCERTIFICADO               
+                 AND   VEN0_IMPCAPITAL       = :VEN0-IMPCAPITAL                 
+                 AND   VEN0_FECBDGICAP       <> ''                              
+            END-EXEC.                                                           
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-CONSULTA-TABLA-VEN0->SQLCODE: '              
+DSPLYS*             SQLCODE                                                     
+      *F*                                                                       
+      *                                                                         
+              EVALUATE SQLCODE                                                  
+      *                                                                         
+                WHEN DB2-OK                                                     
+      *                                                                         
+                     PERFORM 5000-MOVER-SALIDA                                  
+      *                                                                         
+                WHEN DB2-SELECTDUP                                              
+                   PERFORM 3175-SELECT6-VEN0-CAP                                
+                WHEN DB2-NOTFND                                                 
+                   PERFORM 3200-SELECT5-VEN0-CAP                                
+                WHEN OTHER                                                      
+      *                                                                         
+                     SET  ERROR-GRAVE        TO TRUE                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-ERROR->WHEN OTHER'                           
+DSPLYS*    DISPLAY 'B372K001: POLIZA-ERR: '       POLIZA-ERR                    
+DSPLYS*    DISPLAY 'B372K001: SUBPOL-ERR: '       SUBPOL-ERR                    
+DSPLYS*    DISPLAY 'B372K001: VEN0-ANIO: '        VEN0-ANIO                     
+DSPLYS*    DISPLAY 'B372K001: VEN0-KEXPEDIENTE: ' VEN0-KEXPEDIENTE              
+      *F*                                                                       
+                     MOVE VEN0-KPOLIZA       TO POLIZA-ERR                      
+                     MOVE VEN0-NSUBPOLIZA    TO SUBPOL-ERR                      
+                     MOVE LT-RETURN-ERR-OTHER                                   
+                       TO RETORNO-S                                             
+                     MOVE ' ERROR AL OBTENER LOS EXPEDIENTES'                   
+                       TO ERROR-S                                               
+                     MOVE 'B372K001'                                            
+                       TO GNOMPROG-S                                            
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3170'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+      *                                                                         
+              END-EVALUATE                                                      
+           .                                                                    
+      *                                                                         
+      **************************************************************            
+       3175-SELECT6-VEN0-CAP.                                                   
+      **************************************************************            
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3175-SELECT6-VEN0-CAP'                            
+      *T*                                                                       
+      *                                                                         
+           MOVE RD400116-KPOLIZA        TO VEN0-KPOLIZA                         
+           MOVE RD400116-NSUBPOLIZA     TO VEN0-NSUBPOLIZA                      
+           MOVE RD400116-CIDENTIFICACION TO VEN0-NIF1                           
+           MOVE RD400116-NCERTIFICADO   TO VEN0-KCERTIFICADO                    
+           MOVE RD400116-FDOCUMENTO     TO VEN0-FECVENCIMICAP                   
+           MOVE RD400116-EPRESTACION    TO VEN0-IMPCAPITAL                      
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: RD400116-KPOLIZA: '                               
+DSPLYS*                                           RD400116-KPOLIZA              
+DSPLYS*    DISPLAY 'B372K001: RD400116-NSUBPOLIZA: '                            
+DSPLYS*                                           RD400116-NSUBPOLIZA           
+DSPLYS*    DISPLAY 'B372K001: RD400116-FDOCUMENTO: '                            
+DSPLYS*                                           RD400116-FDOCUMENTO           
+      *T*                                                                       
+             EXEC SQL                                                           
+                 SELECT                                                         
+                        VEN0_ANIO                                               
+                       ,VEN0_KEXPEDIENTE                                        
+                       ,VEN0_KPOLIZA                                            
+                       ,VEN0_NSUBPOLIZA                                         
+
+                 INTO                                                           
+                        :VEN0-ANIO                                              
+                       ,:VEN0-KEXPEDIENTE                                       
+                       ,:VEN0-KPOLIZA                                           
+                       ,:VEN0-NSUBPOLIZA                                        
+                 FROM TB372VEN0                                                 
+                WHERE   VEN0_KPOLIZA          = :VEN0-KPOLIZA                   
+                  AND   VEN0_NSUBPOLIZA       = :VEN0-NSUBPOLIZA                
+                  AND   VEN0_KCERTIFICADO     = :VEN0-KCERTIFICADO              
+                   AND ( VEN0_NIF1             = :VEN0-NIF1                     
+                   OR    VEN0_NIF1             = '0' || :VEN0-NIF1 )            
+                  AND   VEN0_IMPCAPITAL       = :VEN0-IMPCAPITAL                
+                  AND   VEN0_FECBDGICAP       <> ''                             
+             END-EXEC.                                                          
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-CONSULTA-TABLA-VEN0->SQLCODE: '              
+DSPLYS*             SQLCODE                                                     
+      *F*                                                                       
+      *                                                                         
+              EVALUATE SQLCODE                                                  
+      *                                                                         
+                WHEN DB2-OK                                                     
+      *                                                                         
+                     PERFORM 5000-MOVER-SALIDA                                  
+                WHEN DB2-SELECTDUP                                              
+                WHEN DB2-NOTFND                                                 
+
+                     SET  ERROR-GRAVE        TO TRUE                            
+      *              DISPLAY 'B372K001: 3175 - DUPLICADO:' VEN0-KPOLIZA         
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3175'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+                WHEN OTHER                                                      
+      *                                                                         
+                     SET  ERROR-GRAVE        TO TRUE                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-ERROR->WHEN OTHER'                           
+DSPLYS*    DISPLAY 'B372K001: POLIZA-ERR: '       POLIZA-ERR                    
+DSPLYS*    DISPLAY 'B372K001: SUBPOL-ERR: '       SUBPOL-ERR                    
+DSPLYS*    DISPLAY 'B372K001: VEN0-ANIO: '        VEN0-ANIO                     
+DSPLYS*    DISPLAY 'B372K001: VEN0-KEXPEDIENTE: ' VEN0-KEXPEDIENTE              
+      *F*                                                                       
+                     MOVE VEN0-KPOLIZA       TO POLIZA-ERR                      
+                     MOVE VEN0-NSUBPOLIZA    TO SUBPOL-ERR                      
+                     MOVE LT-RETURN-ERR-OTHER                                   
+                       TO RETORNO-S                                             
+                     MOVE ' ERROR AL OBTENER LOS EXPEDIENTES'                   
+                       TO ERROR-S                                               
+                     MOVE 'B372K001'                                            
+                       TO GNOMPROG-S                                            
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3175'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+      *                                                                         
+              END-EVALUATE                                                      
+           .                                                                    
+      *                                                                         
+      **************************************************************            
+       3200-SELECT5-VEN0-CAP.                                                   
+      **************************************************************            
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3200-SELECT5-VEN0-CAP'                            
+      *T*                                                                       
+      *                                                                         
+           MOVE RD400116-KPOLIZA        TO VEN0-KPOLIZA                         
+           MOVE RD400116-NSUBPOLIZA     TO VEN0-NSUBPOLIZA                      
+           MOVE RD400116-NCERTIFICADO   TO VEN0-KCERTIFICADO                    
+           MOVE RD400116-FDOCUMENTO     TO VEN0-FECVENCIMICAP                   
+           MOVE RD400116-EPRESTACION    TO VEN0-IMPCAPITAL                      
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: RD400116-KPOLIZA: '                               
+DSPLYS*                                           RD400116-KPOLIZA              
+DSPLYS*    DISPLAY 'B372K001: RD400116-NSUBPOLIZA: '                            
+DSPLYS*                                           RD400116-NSUBPOLIZA           
+DSPLYS*    DISPLAY 'B372K001: RD400116-FDOCUMENTO: '                            
+DSPLYS*                                           RD400116-FDOCUMENTO           
+      *T*                                                                       
+            EXEC SQL                                                            
+                SELECT                                                          
+                       VEN0_ANIO                                                
+                      ,VEN0_KEXPEDIENTE                                         
+                INTO                                                            
+                      :VEN0-ANIO                                                
+                     ,:VEN0-KEXPEDIENTE                                         
+                FROM TB372VEN0                                                  
+               WHERE   VEN0_KPOLIZA          = :VEN0-KPOLIZA                    
+                 AND   VEN0_NSUBPOLIZA       = :VEN0-NSUBPOLIZA                 
+                 AND   VEN0_FECVENCIMICAP    = :VEN0-FECVENCIMICAP              
+                 AND   VEN0_KCERTIFICADO     = :VEN0-KCERTIFICADO               
+                 AND   VEN0_FECBDGICAP       <> ''                              
+            END-EXEC.                                                           
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-CONSULTA-TABLA-VEN0->SQLCODE: '              
+DSPLYS*             SQLCODE                                                     
+      *F*                                                                       
+      *                                                                         
+              EVALUATE SQLCODE                                                  
+      *                                                                         
+                WHEN DB2-OK                                                     
+      *                                                                         
+                     PERFORM 5000-MOVER-SALIDA                                  
+      *                                                                         
+                WHEN DB2-NOTFND                                                 
+      *                                                                         
+                     PERFORM 3250-SELECT8-VEN0-CAP                              
+      *                                                                         
+                WHEN OTHER                                                      
+      *                                                                         
+                     SET  ERROR-GRAVE        TO TRUE                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-ERROR->WHEN OTHER'                           
+DSPLYS*    DISPLAY 'B372K001: POLIZA-ERR: '       POLIZA-ERR                    
+DSPLYS*    DISPLAY 'B372K001: SUBPOL-ERR: '       SUBPOL-ERR                    
+DSPLYS*    DISPLAY 'B372K001: VEN0-ANIO: '        VEN0-ANIO                     
+DSPLYS*    DISPLAY 'B372K001: VEN0-KEXPEDIENTE: ' VEN0-KEXPEDIENTE              
+      *F*                                                                       
+                     MOVE VEN0-KPOLIZA       TO POLIZA-ERR                      
+                     MOVE VEN0-NSUBPOLIZA    TO SUBPOL-ERR                      
+                     MOVE LT-RETURN-ERR-OTHER                                   
+                       TO RETORNO-S                                             
+                     MOVE ' ERROR AL OBTENER LOS EXPEDIENTES'                   
+                       TO ERROR-S                                               
+                     MOVE 'B372K001'                                            
+                       TO GNOMPROG-S                                            
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3200'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+      *                                                                         
+              END-EVALUATE                                                      
+           .                                                                    
+      **************************************************************            
+       3250-SELECT8-VEN0-CAP.                                                   
+      **************************************************************            
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3250-SELECT8-VEN0-CAP'                            
+      *T*                                                                       
+      *                                                                         
+           MOVE RD400116-KPOLIZA        TO VEN0-KPOLIZA                         
+           MOVE RD400116-NSUBPOLIZA     TO VEN0-NSUBPOLIZA                      
+           MOVE RD400116-NCERTIFICADO   TO VEN0-KCERTIFICADO                    
+           MOVE RD400116-FDOCUMENTO     TO VEN0-FECVENCIMICAP                   
+           MOVE RD400116-EPRESTACION    TO VEN0-IMPCAPITAL                      
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: RD400116-KPOLIZA: '                               
+DSPLYS*                                           RD400116-KPOLIZA              
+DSPLYS*    DISPLAY 'B372K001: RD400116-NSUBPOLIZA: '                            
+DSPLYS*                                           RD400116-NSUBPOLIZA           
+DSPLYS*    DISPLAY 'B372K001: RD400116-FDOCUMENTO: '                            
+DSPLYS*                                           RD400116-FDOCUMENTO           
+      *T*                                                                       
+            EXEC SQL                                                            
+                SELECT                                                          
+                       VEN0_ANIO                                                
+                      ,VEN0_KEXPEDIENTE                                         
+                INTO                                                            
+                      :VEN0-ANIO                                                
+                     ,:VEN0-KEXPEDIENTE                                         
+                FROM TB372VEN0                                                  
+               WHERE   VEN0_KPOLIZA          = :VEN0-KPOLIZA                    
+                 AND   VEN0_NSUBPOLIZA       = :VEN0-NSUBPOLIZA                 
+                 AND   VEN0_KCERTIFICADO     = :VEN0-KCERTIFICADO               
+                 AND   VEN0_FECBDGICAP       <> ''                              
+            END-EXEC.                                                           
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-CONSULTA-TABLA-VEN0->SQLCODE: '              
+DSPLYS*             SQLCODE                                                     
+      *F*                                                                       
+      *                                                                         
+              EVALUATE SQLCODE                                                  
+      *                                                                         
+                WHEN DB2-OK                                                     
+      *                                                                         
+                     PERFORM 5000-MOVER-SALIDA                                  
+      *                                                                         
+                WHEN DB2-SELECTDUP                                              
+                     PERFORM 3255-SELECT9-VEN0-CAP                              
+      *         WHEN DB2-NOTFND                                                 
+      *              SET  ERROR-GRAVE        TO TRUE                            
+      *              MOVE RD400116            TO WS-SAL-RD400116                
+      *              MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+      *              MOVE '3250'       TO WS-SAL-ANIO                           
+      *              PERFORM 7500-ESCRIBIR-ERRORES                              
+                WHEN DB2-NOTFND                                                 
+                     PERFORM 3252-SELECT10-VEN0-CAP                             
+                WHEN OTHER                                                      
+      *                                                                         
+                     SET  ERROR-GRAVE        TO TRUE                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-ERROR->WHEN OTHER'                           
+DSPLYS*    DISPLAY 'B372K001: POLIZA-ERR: '       POLIZA-ERR                    
+DSPLYS*    DISPLAY 'B372K001: SUBPOL-ERR: '       SUBPOL-ERR                    
+DSPLYS*    DISPLAY 'B372K001: VEN0-ANIO: '        VEN0-ANIO                     
+DSPLYS*    DISPLAY 'B372K001: VEN0-KEXPEDIENTE: ' VEN0-KEXPEDIENTE              
+      *F*                                                                       
+                     MOVE VEN0-KPOLIZA       TO POLIZA-ERR                      
+                     MOVE VEN0-NSUBPOLIZA    TO SUBPOL-ERR                      
+                     MOVE LT-RETURN-ERR-OTHER                                   
+                       TO RETORNO-S                                             
+                     MOVE ' ERROR AL OBTENER LOS EXPEDIENTES'                   
+                       TO ERROR-S                                               
+                     MOVE 'B372K001'                                            
+                       TO GNOMPROG-S                                            
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3250'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+      *                                                                         
+              END-EVALUATE                                                      
+           .                                                                    
+      *                                                                         
+      **************************************************************            
+       3252-SELECT10-VEN0-CAP.                                                  
+      **************************************************************            
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3252-SELECT8-VEN0-CAP'                            
+      *T*                                                                       
+      *                                                                         
+           MOVE RD400116-KPOLIZA        TO VEN0-KPOLIZA                         
+           MOVE RD400116-NSUBPOLIZA     TO VEN0-NSUBPOLIZA                      
+           MOVE RD400116-NCERTIFICADO   TO VEN0-KCERTIFICADO                    
+           MOVE RD400116-CIDENTIFICACION TO VEN0-NIF1                           
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: RD400116-KPOLIZA: '                               
+DSPLYS*                                           RD400116-KPOLIZA              
+DSPLYS*    DISPLAY 'B372K001: RD400116-NSUBPOLIZA: '                            
+DSPLYS*                                           RD400116-NSUBPOLIZA           
+DSPLYS*    DISPLAY 'B372K001: RD400116-FDOCUMENTO: '                            
+DSPLYS*                                           RD400116-FDOCUMENTO           
+      *T*                                                                       
+            EXEC SQL                                                            
+                SELECT                                                          
+                       VEN0_ANIO                                                
+                      ,VEN0_KEXPEDIENTE                                         
+                INTO                                                            
+                      :VEN0-ANIO                                                
+                     ,:VEN0-KEXPEDIENTE                                         
+                FROM TB372VEN0                                                  
+               WHERE   VEN0_KPOLIZA          = :VEN0-KPOLIZA                    
+                 AND   VEN0_NSUBPOLIZA       = :VEN0-NSUBPOLIZA                 
+                 AND   VEN0_KCERTIFICADO     = :VEN0-KCERTIFICADO               
+                 AND ( VEN0_NIF1             = :VEN0-NIF1                       
+                 OR    VEN0_NIF1             = '0' || :VEN0-NIF1 )              
+            END-EXEC.                                                           
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-CONSULTA-TABLA-VEN0->SQLCODE: '              
+DSPLYS*             SQLCODE                                                     
+      *F*                                                                       
+      *                                                                         
+              EVALUATE SQLCODE                                                  
+      *                                                                         
+                WHEN DB2-OK                                                     
+      *                                                                         
+                     PERFORM 5000-MOVER-SALIDA                                  
+      *                                                                         
+                WHEN DB2-SELECTDUP                                              
+                     SET  ERROR-GRAVE        TO TRUE                            
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3252'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+                WHEN DB2-NOTFND                                                 
+                     PERFORM 3253-SELECT11-VEN0-CAP                             
+                WHEN OTHER                                                      
+      *                                                                         
+                     SET  ERROR-GRAVE        TO TRUE                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-ERROR->WHEN OTHER'                           
+DSPLYS*    DISPLAY 'B372K001: POLIZA-ERR: '       POLIZA-ERR                    
+DSPLYS*    DISPLAY 'B372K001: SUBPOL-ERR: '       SUBPOL-ERR                    
+DSPLYS*    DISPLAY 'B372K001: VEN0-ANIO: '        VEN0-ANIO                     
+DSPLYS*    DISPLAY 'B372K001: VEN0-KEXPEDIENTE: ' VEN0-KEXPEDIENTE              
+      *F*                                                                       
+                     MOVE VEN0-KPOLIZA       TO POLIZA-ERR                      
+                     MOVE VEN0-NSUBPOLIZA    TO SUBPOL-ERR                      
+                     MOVE LT-RETURN-ERR-OTHER                                   
+                       TO RETORNO-S                                             
+                     MOVE ' ERROR AL OBTENER LOS EXPEDIENTES'                   
+                       TO ERROR-S                                               
+                     MOVE 'B372K001'                                            
+                       TO GNOMPROG-S                                            
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3252'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+      *                                                                         
+              END-EVALUATE                                                      
+           .                                                                    
+      *                                                                         
+      **************************************************************            
+       3253-SELECT11-VEN0-CAP.                                                  
+      **************************************************************            
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3253-SELECT8-VEN0-CAP'                            
+      *T*                                                                       
+      *                                                                         
+           MOVE RD400116-KPOLIZA        TO VEN0-KPOLIZA                         
+           MOVE RD400116-NSUBPOLIZA     TO VEN0-NSUBPOLIZA                      
+           MOVE RD400116-NCERTIFICADO   TO VEN0-KCERTIFICADO                    
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: RD400116-KPOLIZA: '                               
+DSPLYS*                                           RD400116-KPOLIZA              
+DSPLYS*    DISPLAY 'B372K001: RD400116-NSUBPOLIZA: '                            
+DSPLYS*                                           RD400116-NSUBPOLIZA           
+DSPLYS*    DISPLAY 'B372K001: RD400116-FDOCUMENTO: '                            
+DSPLYS*                                           RD400116-FDOCUMENTO           
+      *T*                                                                       
+            EXEC SQL                                                            
+                SELECT                                                          
+                       VEN0_ANIO                                                
+                      ,VEN0_KEXPEDIENTE                                         
+                INTO                                                            
+                      :VEN0-ANIO                                                
+                     ,:VEN0-KEXPEDIENTE                                         
+                FROM TB372VEN0                                                  
+               WHERE   VEN0_KPOLIZA          = :VEN0-KPOLIZA                    
+                 AND   VEN0_NSUBPOLIZA       = :VEN0-NSUBPOLIZA                 
+                 AND   VEN0_KCERTIFICADO     = :VEN0-KCERTIFICADO               
+            END-EXEC.                                                           
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-CONSULTA-TABLA-VEN0->SQLCODE: '              
+DSPLYS*             SQLCODE                                                     
+      *F*                                                                       
+      *                                                                         
+              EVALUATE SQLCODE                                                  
+      *                                                                         
+                WHEN DB2-OK                                                     
+      *                                                                         
+                     PERFORM 5000-MOVER-SALIDA                                  
+      *                                                                         
+                WHEN DB2-SELECTDUP                                              
+                WHEN DB2-NOTFND                                                 
+                     SET  ERROR-GRAVE        TO TRUE                            
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3253'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+                WHEN OTHER                                                      
+      *                                                                         
+                     SET  ERROR-GRAVE        TO TRUE                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-ERROR->WHEN OTHER'                           
+DSPLYS*    DISPLAY 'B372K001: POLIZA-ERR: '       POLIZA-ERR                    
+DSPLYS*    DISPLAY 'B372K001: SUBPOL-ERR: '       SUBPOL-ERR                    
+DSPLYS*    DISPLAY 'B372K001: VEN0-ANIO: '        VEN0-ANIO                     
+DSPLYS*    DISPLAY 'B372K001: VEN0-KEXPEDIENTE: ' VEN0-KEXPEDIENTE              
+      *F*                                                                       
+                     MOVE VEN0-KPOLIZA       TO POLIZA-ERR                      
+                     MOVE VEN0-NSUBPOLIZA    TO SUBPOL-ERR                      
+                     MOVE LT-RETURN-ERR-OTHER                                   
+                       TO RETORNO-S                                             
+                     MOVE ' ERROR AL OBTENER LOS EXPEDIENTES'                   
+                       TO ERROR-S                                               
+                     MOVE 'B372K001'                                            
+                       TO GNOMPROG-S                                            
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3253'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+      *                                                                         
+              END-EVALUATE                                                      
+           .                                                                    
+      *                                                                         
+      **************************************************************            
+       3255-SELECT9-VEN0-CAP.                                                   
+      **************************************************************            
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3250-SELECT8-VEN0-CAP'                            
+      *T*                                                                       
+      *                                                                         
+           MOVE RD400116-KPOLIZA        TO VEN0-KPOLIZA                         
+           MOVE RD400116-NSUBPOLIZA     TO VEN0-NSUBPOLIZA                      
+           MOVE RD400116-NCERTIFICADO   TO VEN0-KCERTIFICADO                    
+           MOVE RD400116-CIDENTIFICACION TO VEN0-NIF1                           
+           MOVE RD400116-FDOCUMENTO     TO VEN0-FECPAGOCAPITAL                  
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: RD400116-KPOLIZA: '                               
+DSPLYS*                                           RD400116-KPOLIZA              
+DSPLYS*    DISPLAY 'B372K001: RD400116-NSUBPOLIZA: '                            
+DSPLYS*                                           RD400116-NSUBPOLIZA           
+DSPLYS*    DISPLAY 'B372K001: RD400116-FDOCUMENTO: '                            
+DSPLYS*                                           RD400116-FDOCUMENTO           
+      *T*                                                                       
+             EXEC SQL                                                           
+                 SELECT                                                         
+                        VEN0_ANIO                                               
+                       ,VEN0_KEXPEDIENTE                                        
+                       ,VEN0_KPOLIZA                                            
+                       ,VEN0_NSUBPOLIZA                                         
+
+                 INTO                                                           
+                        :VEN0-ANIO                                              
+                       ,:VEN0-KEXPEDIENTE                                       
+                       ,:VEN0-KPOLIZA                                           
+                       ,:VEN0-NSUBPOLIZA                                        
+                 FROM TB372VEN0                                                 
+                WHERE   VEN0_KPOLIZA          = :VEN0-KPOLIZA                   
+                  AND   VEN0_NSUBPOLIZA       = :VEN0-NSUBPOLIZA                
+                  AND   VEN0_KCERTIFICADO     = :VEN0-KCERTIFICADO              
+                   AND ( VEN0_NIF1             = :VEN0-NIF1                     
+                   OR    VEN0_NIF1             = '0' || :VEN0-NIF1 )            
+                 AND   VEN0_FECBDGICAP       <> ''                              
+                 AND   VEN0_FECPAGOCAPITAL    = :VEN0-FECPAGOCAPITAL            
+             END-EXEC.                                                          
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-CONSULTA-TABLA-VEN0->SQLCODE: '              
+DSPLYS*             SQLCODE                                                     
+      *F*                                                                       
+      *                                                                         
+              EVALUATE SQLCODE                                                  
+      *                                                                         
+                WHEN DB2-OK                                                     
+      *                                                                         
+                     PERFORM 5000-MOVER-SALIDA                                  
+      *                                                                         
+                WHEN DB2-SELECTDUP                                              
+                     PERFORM 3257-SELECT10-VEN0-CAP                             
+                WHEN DB2-NOTFND                                                 
+                     SET  ERROR-GRAVE        TO TRUE                            
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3255'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+                WHEN OTHER                                                      
+      *                                                                         
+                     SET  ERROR-GRAVE        TO TRUE                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-ERROR->WHEN OTHER'                           
+DSPLYS*    DISPLAY 'B372K001: POLIZA-ERR: '       POLIZA-ERR                    
+DSPLYS*    DISPLAY 'B372K001: SUBPOL-ERR: '       SUBPOL-ERR                    
+DSPLYS*    DISPLAY 'B372K001: VEN0-ANIO: '        VEN0-ANIO                     
+DSPLYS*    DISPLAY 'B372K001: VEN0-KEXPEDIENTE: ' VEN0-KEXPEDIENTE              
+      *F*                                                                       
+                     MOVE VEN0-KPOLIZA       TO POLIZA-ERR                      
+                     MOVE VEN0-NSUBPOLIZA    TO SUBPOL-ERR                      
+                     MOVE LT-RETURN-ERR-OTHER                                   
+                       TO RETORNO-S                                             
+                     MOVE ' ERROR AL OBTENER LOS EXPEDIENTES'                   
+                       TO ERROR-S                                               
+                     MOVE 'B372K001'                                            
+                       TO GNOMPROG-S                                            
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3255'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+      *                                                                         
+              END-EVALUATE                                                      
+           .                                                                    
+      *                                                                         
+      **************************************************************            
+       3257-SELECT10-VEN0-CAP.                                                  
+      **************************************************************            
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3250-SELECT8-VEN0-CAP'                            
+      *T*                                                                       
+      *                                                                         
+           MOVE RD400116-KPOLIZA        TO VEN0-KPOLIZA                         
+           MOVE RD400116-NSUBPOLIZA     TO VEN0-NSUBPOLIZA                      
+           MOVE RD400116-NCERTIFICADO   TO VEN0-KCERTIFICADO                    
+           MOVE RD400116-CIDENTIFICACION TO VEN0-NIF1                           
+           MOVE RD400116-FDOCUMENTO     TO VEN0-FECPAGOCAPITAL                  
+           MOVE RD400116-EPRESTACION    TO VEN0-IMPCAPITAL                      
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: RD400116-KPOLIZA: '                               
+DSPLYS*                                           RD400116-KPOLIZA              
+DSPLYS*    DISPLAY 'B372K001: RD400116-NSUBPOLIZA: '                            
+DSPLYS*                                           RD400116-NSUBPOLIZA           
+DSPLYS*    DISPLAY 'B372K001: RD400116-FDOCUMENTO: '                            
+DSPLYS*                                           RD400116-FDOCUMENTO           
+      *T*                                                                       
+             EXEC SQL                                                           
+                 SELECT                                                         
+                        VEN0_ANIO                                               
+                       ,VEN0_KEXPEDIENTE                                        
+                       ,VEN0_KPOLIZA                                            
+                       ,VEN0_NSUBPOLIZA                                         
+
+                 INTO                                                           
+                        :VEN0-ANIO                                              
+                       ,:VEN0-KEXPEDIENTE                                       
+                       ,:VEN0-KPOLIZA                                           
+                       ,:VEN0-NSUBPOLIZA                                        
+                 FROM TB372VEN0                                                 
+                WHERE   VEN0_KPOLIZA          = :VEN0-KPOLIZA                   
+                  AND   VEN0_NSUBPOLIZA       = :VEN0-NSUBPOLIZA                
+                  AND   VEN0_KCERTIFICADO     = :VEN0-KCERTIFICADO              
+                   AND ( VEN0_NIF1             = :VEN0-NIF1                     
+                   OR    VEN0_NIF1             = '0' || :VEN0-NIF1 )            
+                 AND   VEN0_FECBDGICAP       <> ''                              
+                 AND   VEN0_FECPAGOCAPITAL    = :VEN0-FECPAGOCAPITAL            
+                 AND   VEN0_IMPCAPITAL        = :VEN0-IMPCAPITAL                
+             END-EXEC.                                                          
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-CONSULTA-TABLA-VEN0->SQLCODE: '              
+DSPLYS*             SQLCODE                                                     
+      *F*                                                                       
+      *                                                                         
+              EVALUATE SQLCODE                                                  
+      *                                                                         
+                WHEN DB2-OK                                                     
+      *                                                                         
+                     PERFORM 5000-MOVER-SALIDA                                  
+      *                                                                         
+                WHEN DB2-SELECTDUP                                              
+                WHEN DB2-NOTFND                                                 
+                     SET ERROR-GRAVE TO TRUE                                    
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3257'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+                WHEN OTHER                                                      
+      *                                                                         
+                     SET  ERROR-GRAVE        TO TRUE                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 3100-ERROR->WHEN OTHER'                           
+DSPLYS*    DISPLAY 'B372K001: POLIZA-ERR: '       POLIZA-ERR                    
+DSPLYS*    DISPLAY 'B372K001: SUBPOL-ERR: '       SUBPOL-ERR                    
+DSPLYS*    DISPLAY 'B372K001: VEN0-ANIO: '        VEN0-ANIO                     
+DSPLYS*    DISPLAY 'B372K001: VEN0-KEXPEDIENTE: ' VEN0-KEXPEDIENTE              
+      *F*                                                                       
+                     MOVE VEN0-KPOLIZA       TO POLIZA-ERR                      
+                     MOVE VEN0-NSUBPOLIZA    TO SUBPOL-ERR                      
+                     MOVE LT-RETURN-ERR-OTHER                                   
+                       TO RETORNO-S                                             
+                     MOVE ' ERROR AL OBTENER LOS EXPEDIENTES'                   
+                       TO ERROR-S                                               
+                     MOVE 'B372K001'                                            
+                       TO GNOMPROG-S                                            
+                     MOVE RD400116            TO WS-SAL-RD400116                
+                     MOVE SQLCODE             TO WS-SAL-KEXPEDIENTE             
+                     MOVE '3257'       TO WS-SAL-ANIO                           
+                     PERFORM 7500-ESCRIBIR-ERRORES                              
+      *                                                                         
+              END-EVALUATE                                                      
+           .                                                                    
+      *********************************************************                 
+        5000-MOVER-SALIDA.                                                      
+      *********************************************************                 
+      *                                                                         
+             MOVE RD400116            TO WS-SAL-RD400116                        
+             MOVE VEN0-ANIO           TO WS-SAL-ANIO                            
+             MOVE VEN0-KEXPEDIENTE    TO WS-SAL-KEXPEDIENTE                     
+      *                                                                         
+           .                                                                    
+      *                                                                         
+      *****************************************************************         
+      * 7000-ESCRIBIR-SALIDA                                          *         
+      *****************************************************************         
+      *                                                                         
+       7000-ESCRIBIR-SALIDA.                                                    
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 7000-ESCRIBIR-SALIDA.'                            
+      *F*                                                                       
+              WRITE REG-SAL FROM SALIDA.                                        
+
+      *****************************************************************         
+      * 7500-ESCRIBIR-SALIDA                                          *         
+      *****************************************************************         
+      *                                                                         
+       7500-ESCRIBIR-ERRORES.                                                   
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 7000-ESCRIBIR-SALIDA.'                            
+      *F*                                                                       
+              WRITE REG-ERR      FROM SALIDA.                                   
+
+      *****************************************************************         
+        8000-READ-FICH-ENT.                                                     
+      *****************************************************************         
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 8000-READ-FICH-ENT'                               
+      *F*                                                                       
+           READ FICH-ENT INTO RD400116                                          
+             AT END                                                             
+                SET SW-FIN-FICH-ENT TO TRUE                                     
+           END-READ                                                             
+           .                                                                    
+      *                                                                         
+      *****************************************************************         
+       9000-FINAL.                                                              
+      *****************************************************************         
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372K001: 9000-FINAL'.                                      
+DSPLYS*    DISPLAY 'REG.INSERTADOS : ' WS-INSERTADOS                            
+DSPLYS*    DISPLAY 'REG.LEIDOS     : ' WS-LEIDOS-ENT                            
+      *F*                                                                       
+           CLOSE FICH-ENT.                                                      
+           CLOSE FICH-SAL.                                                      
+           GOBACK.                                                              
+

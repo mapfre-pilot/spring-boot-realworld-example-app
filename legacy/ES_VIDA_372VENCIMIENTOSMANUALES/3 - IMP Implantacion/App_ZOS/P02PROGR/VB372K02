@@ -1,0 +1,378 @@
+      *RETRIEVAL.
+       IDENTIFICATION DIVISION.
+      ******************************************************************
+      **INV*A372VENM****************************************************
+      ******************************************************************
+       PROGRAM-ID.
+                  VB372K02.
+
+      *-+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+-*
+      *                                                               *
+      *                                                               *
+      *  AUTOR     : INDRA                                            *
+      *  FECHA     : NOVIEMBRE 2017                                   *
+      *  DESCRIP.  : GENARACION DEL FICHERO SAPASTON DE LOS REGISTROS *
+      *              DE LA TABLA TB372VEN0 CUYA FEHCA DE PAGO ESTA    *
+      *              SIN INFORMAR                                     *
+      *                                                               *
+      *-+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+(*)+-*
+
+       ENVIRONMENT DIVISION.
+
+       CONFIGURATION SECTION.
+         SPECIAL-NAMES. DECIMAL-POINT IS COMMA.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+
+            SELECT ENTRADA1 ASSIGN TO SYS001.
+            SELECT ENTRADA2 ASSIGN TO SYS002.
+            SELECT FICHA    ASSIGN TO SYS003.
+            SELECT SALIDA   ASSIGN TO SYS004.
+      *
+       IDMS-CONTROL SECTION.
+        PROTOCOL.
+           MODE IS BATCH-AUTOSTATUS
+           IDMS-RECORDS MANUAL.
+
+       DATA DIVISION.
+       FILE SECTION.
+
+       FD   ENTRADA1
+            LABEL RECORD STANDARD
+            RECORDING MODE IS F
+            RECORD CONTAINS 100
+            DATA RECORD IS WS-ENTRADA1
+            BLOCK 0 RECORDS.
+       01   WS-ENTRADA1.
+            05 FILLER        PIC X(100).
+
+       FD   ENTRADA2
+            LABEL RECORD STANDARD
+            RECORDING MODE IS F
+            RECORD CONTAINS 50
+            DATA RECORD IS WS-ENTRADA2
+            BLOCK 0 RECORDS.
+       01   WS-ENTRADA2.
+            05 FILLER        PIC X(50).
+
+       FD   FICHA
+            LABEL RECORD STANDARD
+            RECORDING MODE IS F
+            BLOCK CONTAINS 0 RECORDS.
+            COPY RC37000.
+
+       FD  SALIDA
+           LABEL RECORD STANDARD
+           RECORDING MODE IS F
+           BLOCK CONTAINS 0 RECORDS.
+       COPY SAPASTON.
+
+       WORKING-STORAGE SECTION.
+
+       01 FILLER.
+          03 FILLER             PIC X(17) VALUE 'INICIO DE WORKING'.
+
+          03 SW-FIN-F01                PIC X.
+             88 SI-FIN-F01             VALUE 'S'.
+             88 NO-FIN-F01             VALUE 'N'.
+
+          03 SW-FIN-F02                PIC X.
+             88 SI-FIN-F02             VALUE 'S'.
+             88 NO-FIN-F02             VALUE 'N'.
+
+          03 CT-LEIDOS-VEN             PIC 9(08) VALUE ZEROES.
+          03 CT-LEIDOS-CCV             PIC 9(08) VALUE ZEROES.
+          03 CT-SAPASTON               PIC 9(08) VALUE ZEROES.
+          03 WS-FECHA-DESDE            PIC X(08) VALUE SPACES.
+          03 WS-FECHA-HASTA            PIC X(08) VALUE SPACES.
+          03 WS-SAP-KMODALIDAD.
+             05 FILLER                 PIC X(2) VALUE 'V0'.
+             05 WS-SAP-MODALIDAD       PIC X(3).
+          03 WS-VEN0-KEXPEDIENTE       PIC X(10).
+          03 WS-VEN0-NSUBPOLIZA        PIC X(4).
+          03 WS-VEN0-KCERTIFICADO      PIC X(6).
+          03 WS-VEN0-KMODALIDAD        PIC X(4).
+          03 IMP-DEBE                  PIC 9(12)V9(02).
+          03 IMP-HABER                 PIC 9(12)V9(02).
+
+          03 LT-VA562086               PIC X(08) VALUE 'VA562086'.
+
+          03 WS-FECHA-DIA.
+             05 WS-ANO-DIA              PIC 9(04) VALUE ZEROES.
+             05 WS-MES-DIA              PIC 9(02) VALUE ZEROES.
+             05 WS-DIA-DIA              PIC 9(02) VALUE ZEROES.
+
+          03 WS-FECHA-INI.
+             05 WS-ANO-INI              PIC X(04) VALUE SPACES.
+             05 WS-MES-INI              PIC X(02) VALUE '01'.
+             05 WS-DIA-INI              PIC X(02) VALUE '01'.
+
+          03 REG-ENTRADA-VEN.
+             05 RG-VEN0-ANIO            PIC S9(4)V USAGE COMP-3.
+             05 RG-VEN0-KEXPEDIENTE     PIC S9(10)V USAGE COMP-3.
+             05 RG-VEN0-KPOLIZA         PIC X(10).
+             05 RG-VEN0-NSUBPOLIZA      PIC S9(4)V USAGE COMP-3.
+             05 RG-VEN0-KCERTIFICADO    PIC S9(6)V USAGE COMP-3.
+             05 RG-VEN0-KMODALIDAD      PIC S9(5)V USAGE COMP-3.
+             05 RG-VEN0-CCANALCAMP      PIC X(2).
+             05 RG-VEN0-FECEFECTO       PIC X(8).
+             05 RG-VEN0-KOFICINA        PIC X(4).
+             05 RG-VEN0-IMPCAPITAL      PIC S9(11)V9(2) USAGE COMP-3.
+             05 RG-VEN0-IMPBENEFICIOS   PIC S9(11)V9(2) USAGE COMP-3.
+             05 FILLER                  PIC X(14).
+
+          03 REG-ENTRADA-CCV.
+             05 RG-CCV0-ANIO            PIC S9(4)V USAGE COMP-3.
+             05 RG-CCV0-KEXPEDIENTE     PIC S9(10)V USAGE COMP-3.
+             05 RG-CCV0-IMPCOA          PIC S9(11)V9(2) USAGE COMP-3.
+             05 RG-CCV0-OK              PIC X(1).
+             05 FILLER                  PIC X(19).
+      *
+       COPY RA562086.
+      *
+           03 FILLER PIC X(40) VALUE 'FINAL WORKING-STORAGE SECTION'.
+      *
+      *****************************************************************
+      ***           P R O C E D U R E    D I V I S I O N            ***
+      *****************************************************************
+      *
+       PROCEDURE DIVISION.
+
+       PRINCIPAL.
+
+           PERFORM INICIO.
+           PERFORM PROCESO UNTIL SI-FIN-F01.
+           PERFORM FIN.
+      *
+      *****************************************************************
+      *
+      *****************************************************************
+       INICIO.
+      ********
+      *
+           OPEN INPUT ENTRADA1 ENTRADA2 FICHA
+                OUTPUT SALIDA.
+
+           INITIALIZE IMP-DEBE IMP-HABER R-ASTOS-SAP
+                      CT-LEIDOS-VEN CT-LEIDOS-CCV CT-SAPASTON.
+
+           INITIALIZE RA562086.
+           MOVE 'A' TO RA562086-COPERACION.
+           CALL LT-VA562086 USING RA562086.
+
+           SET NO-FIN-F01   TO TRUE
+           SET NO-FIN-F02   TO TRUE
+
+           PERFORM LEER-FECHA.
+           PERFORM LEER-VEN.
+           PERFORM LEER-CCV.
+
+           IF NO-FIN-F01
+              PERFORM GRABAR-REG11.
+      *
+      *****************************************************************
+      *
+      *****************************************************************
+       PROCESO.
+      *********
+      *
+           PERFORM GRABAR-REG22.
+           PERFORM LEER-VEN.
+           PERFORM LEER-CCV.
+      *
+      *****************************************************************
+       FIN.
+      *****
+      *
+           PERFORM GRABAR-REG22-TOTALES.
+           PERFORM GRABAR-REG33.
+
+           INITIALIZE RA562086.
+           MOVE 'C' TO RA562086-COPERACION.
+           CALL LT-VA562086 USING RA562086.
+
+           CLOSE SALIDA ENTRADA1 ENTRADA2.
+
+      *D*
+           DISPLAY ' * * * * * * * * * * * * * * * * * * *'.
+           DISPLAY ' *   F I N      V B 3 7 2 K 0 2      *'.
+           DISPLAY ' * * * * * * * * * * * * * * * * * * *'.
+           DISPLAY ' *  REG. LEIDOS DE VEN...: ' CT-LEIDOS-VEN.
+           DISPLAY ' *  REG. LEIDOS DE CCV...: ' CT-LEIDOS-CCV.
+           DISPLAY ' * * * * * * * * * * * * * * * * * * *'.
+           DISPLAY ' *  LINEAS EN SAPASTON...: ' CT-SAPASTON.
+           DISPLAY ' * * * * * * * * * * * * * * * * * * *'.
+      *F*
+           GOBACK.
+      *
+       LEER-FECHA.
+      *************
+      *
+           READ FICHA
+             AT END
+      *D*
+                 DISPLAY ' * * * FECHA NO INDICADA EN FICHERO FICHA'
+      *F*
+           END-READ.
+      *
+      *
+       LEER-VEN.
+      *************
+      *
+           INITIALIZE REG-ENTRADA-VEN.
+
+           READ ENTRADA1
+                AT END
+                   SET SI-FIN-F01   TO TRUE
+                NOT AT END
+                   ADD  1           TO CT-LEIDOS-VEN
+                   MOVE WS-ENTRADA1 TO REG-ENTRADA-VEN
+           END-READ.
+      *
+       LEER-CCV.
+      *************
+      *
+           INITIALIZE REG-ENTRADA-CCV.
+
+           READ ENTRADA2
+                AT END
+                   SET SI-FIN-F02   TO TRUE
+                NOT AT END
+                   ADD  1           TO CT-LEIDOS-CCV
+                   MOVE WS-ENTRADA2 TO REG-ENTRADA-CCV
+           END-READ.
+      *
+      *****************
+       GRABAR-REG11.
+      *****************
+      *
+           INITIALIZE R-ASTOS-SAP.
+
+           MOVE 'XG'          TO INTERFAC-T1-SAP.
+           MOVE '11'          TO TIPO-REG-T1-SAP.
+           MOVE '0003'        TO SOCIEDAD-T1-SAP.
+           MOVE 451           TO NUM-ASTO-T1-SAP.
+           MOVE 3             TO NUM-SERI-T1-SAP.
+           MOVE 'EUR'         TO MONEDA-T1-SAP.
+           MOVE SPACES        TO OF-CONT-RO-T1-SAP.
+           MOVE RC37000-FPROCE    TO F-CONTABIL-T1-SAP.
+
+           WRITE R-ASTOS-SAP.
+           ADD 1 TO CT-SAPASTON.
+      *
+      *****************
+       GRABAR-REG22.
+      *****************
+      *
+           INITIALIZE R-ASTOS-SAP.
+
+           MOVE '22'                      TO TIPO-REG-T2-SAP.
+           MOVE '0003'                    TO SOCIEDAD-T2-SAP.
+           MOVE 451                       TO NUM-ASTO-T2-SAP.
+           MOVE 3                         TO NUM-SERI-T2-SAP.
+           MOVE 693500                    TO CTA-CTBLE-T2-SAP.
+           MOVE 'EUR'                     TO MONEDA-T2-SAP.
+           MOVE RG-VEN0-KOFICINA          TO OF-CONT-RO-T2-SAP.
+           MOVE RG-VEN0-KOFICINA          TO CENTRO-COS-T2-SAP.
+           MOVE RC37000-FPROCE            TO F-CONTABIL-T2-SAP.
+           MOVE ZEROES                    TO ORIG-GRUP-T2-SAP.
+           MOVE ZEROES                    TO F-VALOR-T2-SAP.
+           MOVE ZEROES                    TO NUM-EMPLE-T2-SAP.
+
+           IF RG-VEN0-KMODALIDAD = 400
+
+              PERFORM BUSCAR-MOD-ORIGEN
+
+              IF RA562086-CRETORNO = ZEROS OR SPACES
+                 MOVE SPACES               TO MODALID-T2-SAP
+                 MOVE RA562086-KMOD-ORIGEN TO MODALID-T2-SAP(1:3)
+                 MOVE RA562086-KMOD-ORIGEN TO WS-SAP-MODALIDAD
+                 MOVE WS-SAP-KMODALIDAD  TO COB-GAR-T2-SAP
+              ELSE
+                 MOVE SPACES               TO COB-GAR-T2-SAP
+                 MOVE SPACES               TO MODALID-T2-SAP
+                 MOVE ZEROS                TO MODALID-T2-SAP(2:3)
+              END-IF
+           ELSE
+              MOVE RG-VEN0-KMODALIDAD TO MODALID-T2-SAP
+              MOVE MODALID-T2-SAP(2:3) TO WS-SAP-MODALIDAD
+              MOVE WS-SAP-KMODALIDAD  TO COB-GAR-T2-SAP
+           END-IF
+
+           MOVE 'VENCIMIENTOS MANUALES'   TO CONCEPT-T2-SAP.
+
+           IF RG-CCV0-OK = 'N'
+              COMPUTE IMP-DOC-T2-SAP = RG-VEN0-IMPCAPITAL +
+                                                RG-VEN0-IMPBENEFICIOS
+              MOVE IMP-DOC-T2-SAP     TO IMP-LOC-T2-SAP
+           ELSE
+              MOVE RG-CCV0-IMPCOA     TO IMP-DOC-T2-SAP
+              MOVE RG-CCV0-IMPCOA     TO IMP-LOC-T2-SAP
+           END-IF.
+
+           COMPUTE IMP-DEBE = IMP-DEBE + IMP-DOC-T2-SAP.
+           COMPUTE IMP-HABER = IMP-HABER + IMP-LOC-T2-SAP.
+
+           MOVE 'D'                TO DEB-HAB-T2-SAP.
+
+           WRITE R-ASTOS-SAP.
+           ADD 1 TO CT-SAPASTON.
+      *
+       GRABAR-REG22-TOTALES.
+      *****************
+      *
+           INITIALIZE R-ASTOS-SAP.
+      *
+           MOVE '22'                  TO TIPO-REG-T2-SAP.
+           MOVE '0003'                TO SOCIEDAD-T2-SAP.
+           MOVE 451                   TO NUM-ASTO-T2-SAP.
+           MOVE 3                     TO NUM-SERI-T2-SAP.
+           MOVE 350000                TO CTA-CTBLE-T2-SAP.
+           MOVE 'EUR'                 TO MONEDA-T2-SAP.
+           MOVE RC37000-FPROCE        TO F-CONTABIL-T2-SAP.
+           MOVE ZEROES                TO ORIG-GRUP-T2-SAP.
+           MOVE ZEROES                TO F-VALOR-T2-SAP.
+           MOVE ZEROES                TO NUM-EMPLE-T2-SAP.
+           MOVE IMP-DEBE              TO IMP-DOC-T2-SAP
+           MOVE IMP-HABER             TO IMP-LOC-T2-SAP
+           MOVE 'H'                   TO DEB-HAB-T2-SAP
+           MOVE 'VENCIMIENTOS MANUALES'   TO CONCEPT-T2-SAP.
+
+           WRITE R-ASTOS-SAP.
+           ADD 1 TO CT-SAPASTON.
+
+      *****************
+       GRABAR-REG33.
+      *****************
+      *
+           INITIALIZE R-ASTOS-SAP.
+
+           MOVE '33'                  TO TIPO-REG-T3-SAP.
+           MOVE '0003'                TO SOCIEDAD-T3-SAP.
+           MOVE 451                   TO NUM-ASTO-T3-SAP.
+           MOVE 3                     TO NUM-SERI-T3-SAP.
+           MOVE 'EUR'                 TO MONEDA-T3-SAP.
+           MOVE RG-VEN0-KOFICINA      TO OF-CONT-RO-T3-SAP.
+           MOVE RC37000-FPROCE        TO F-CONTABIL-T3-SAP.
+           MOVE IMP-DEBE              TO IMP-DEB-T3-SAP.
+           MOVE IMP-HABER             TO IMP-HAB-T3-SAP.
+
+           WRITE R-ASTOS-SAP.
+           ADD 1 TO CT-SAPASTON.
+      *
+      *****************
+       BUSCAR-MOD-ORIGEN.
+      *****************
+      *
+           INITIALIZE RA562086.
+
+           MOVE 'M'                          TO RA562086-COPERACION.
+           MOVE RG-VEN0-KPOLIZA              TO RA562086-KPOLSUB.
+           MOVE RG-VEN0-KCERTIFICADO         TO RA562086-KCERTI.
+           MOVE '101'                        TO RA562086-KBENCON.
+
+           CALL LT-VA562086 USING RA562086.
+      *
+      *****************************************************************
+      * FIN DEL PROGRAMA.
+      *****************************************************************

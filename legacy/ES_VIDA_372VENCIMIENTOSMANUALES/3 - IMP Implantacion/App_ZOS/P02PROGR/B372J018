@@ -1,0 +1,454 @@
+      *RETRIEVAL
+       IDENTIFICATION DIVISION.
+      ******************************************************************
+      **INV*A372VENM****************************************************
+      ******************************************************************
+       PROGRAM-ID. B372J018.
+
+      ***************************************************************
+      *                                                             *
+      *    APLICACION ...........: RENTAS                           *
+      *    ANALISTA .............: INDRA                            *
+      *    PROGRAMADOR ..........: INDRA                            *
+      *    FECHA DE REALIZACION .: 09/11/2017                       *
+      *    DESCRIPCION DEL PROGRAMA:                                *
+      *    CONVERSION DEL FICHERO DE ASEGURADOS SUSPENSOS, GENERADO *
+      *    EN EL PROGRAMA B586J124 AL FORMATO SAPASTON.             *
+      *                                                             *
+      *     ------------------- F I C H E R O S ------------------  *
+      *                                                             *
+      *     ENTRDA:                                                 *
+      *     - FICHERO GENERADO EN PGM B586J124                      *
+      *                                                             *
+      *     SALIDA:                                                 *
+      *                                                             *
+      *     - FICHERO CON FORMATO SAPASTON.                         *
+      *                                                             *
+      ***************************************************************
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+         SPECIAL-NAMES.
+            DECIMAL-POINT IS COMMA.
+
+       INPUT-OUTPUT SECTION.
+         FILE-CONTROL.
+            SELECT F01            ASSIGN TO SYS001.
+            SELECT F02            ASSIGN TO SYS002.
+            SELECT FICHA          ASSIGN TO SYS003.
+            SELECT F03            ASSIGN TO SYS004.
+      *
+       DATA DIVISION.
+       FILE SECTION.
+       FD  F01
+           BLOCK CONTAINS 0 RECORDS
+           LABEL RECORD STANDARD.
+       01  R01              PIC X(365).
+
+       FD  F02
+           BLOCK CONTAINS 0 RECORDS
+           LABEL RECORD STANDARD.
+           COPY SAPASTON.
+
+       FD  FICHA
+           LABEL RECORD STANDARD
+           RECORDING MODE IS F
+           BLOCK CONTAINS 0 RECORDS.
+           COPY RC37000.
+
+       FD  F03
+           BLOCK CONTAINS 0 RECORDS
+           LABEL RECORD STANDARD.
+       01  R03              PIC X(900).
+      *
+      *=================================================================
+       WORKING-STORAGE SECTION.
+      *=================================================================
+
+         01 W-FILLER.
+
+            03  WS-INICIO-DE-WORKING   PIC X(17) VALUE
+                 'INICIO DE WORKING'.
+      *
+            03 SW-FIN-001               PIC X     VALUE 'N'.
+               88 FIN-001                         VALUE 'S'.
+      *
+            03 WS-FECHA-DESDE        PIC 9(08) VALUE ZEROES.
+            03 WS-FECHA-HASTA        PIC 9(08) VALUE ZEROES.
+            03 IMP-DEBE              PIC 9(12)V9(02).
+            03 IMP-HABER             PIC 9(12)V9(02).
+
+            03 LT-VA562086           PIC X(08) VALUE 'VA562086'.
+            03 LT-VR432011           PIC X(08) VALUE 'VR432011'.
+            03 WS-X596M515.
+             COPY X596M515.
+             COPY X596N000.
+            03 WS-RR431011.
+             COPY RR431011.
+      *
+            03 WS-FECHA-DIA.
+               05 WS-ANO-DIA         PIC 9(04) VALUE ZEROES.
+               05 WS-MES-DIA         PIC 9(02) VALUE ZEROES.
+               05 WS-DIA-DIA         PIC 9(02) VALUE ZEROES.
+
+            03 WS-FECHA-INI.
+               05 WS-ANO-INI         PIC 9(04) VALUE ZEROES.
+               05 WS-MES-INI         PIC 9(02) VALUE 01.
+               05 WS-DIA-INI         PIC 9(02) VALUE 01.
+      *
+            03 WS-KMODALIDAD           PIC X(03) VALUE SPACES.
+            03 WS-PROVINCIA-ANTERIOR   PIC X(02) VALUE SPACES.
+            03 WS-SISTEMA-ANTERIOR     PIC X(04) VALUE SPACES.
+            03 WS-TABLA-ANTERIOR       PIC X(02) VALUE SPACES.
+            03 WS-DELEGA-ANTERIOR      PIC X(02) VALUE SPACES.
+            03 WS-FECHA-ANTERIOR       PIC X(08) VALUE SPACES.
+            03 WS-CERTIFICADO          PIC X(06) VALUE SPACES.
+            03 WS-IMPORTE-R            PIC 9(13)V9(02).
+            03 WS-PCOASEGURO-R         PIC 9(03)V9(02).
+            03 CT-LEIDOS               PIC 9(08) VALUE ZEROES.
+            03 CT-SAPASTON             PIC 9(08) VALUE ZEROES.
+            03 WS-SAP-KMODALIDAD.
+               05 FILLER               PIC X(2) VALUE 'V0'.
+               05 WS-SAP-MODALIDAD     PIC X(3).
+      *
+      **** FICHERO DE ENTRADA TABLA TB586BSS0 + OFICINA (SYS001)
+      *
+            03 WS-R01.
+               05 R01-EFECTO             PIC X(08) VALUE SPACES.
+               05 R01-KCOMPANIA          PIC X(05) VALUE SPACES.
+               05 R01-KCANAL             PIC 9(05) VALUE ZEROS.
+               05 R01-MOD-COMER          PIC 9(05) VALUE ZEROS.
+               05 R01-MOD-COMER-ALF REDEFINES R01-MOD-COMER PIC X(5).
+               05 R01-SISTORIG           PIC X(05) VALUE SPACES.
+               05 R01-KPOLIZA            PIC X(10) VALUE SPACES.
+               05 R01-KSUBPOL            PIC X(04) VALUE SPACES.
+               05 R01-KGRUPOEMI          PIC 9(13) VALUE ZEROS.
+               05 R01-KCERTIFICADO       PIC 9(06) VALUE ZEROS.
+               05 R01-CDESTIN            PIC 9(01) VALUE ZEROS.
+               05 R01-KDESTIN            PIC 9(03) VALUE ZEROS.
+               05 R01-NOMBRE             PIC X(50) VALUE SPACES.
+               05 R01-IMPORTE-MASC       PIC ZZZZZZZZZZZZ9,99.
+               05 R01-CCOASEGURO         PIC X(02) VALUE SPACES.
+               05 R01-PCOASEGURO         PIC ZZ9,99.
+      *        05 R01-PCOASEGURO.
+      *           07 R01-PCOASEGURO-ENT  PIC ZZ9 VALUE ZEROES.
+      *           07 R01-ESPACIO         PIC X(01) VALUE SPACES.
+      *           07 R01-PCOASEGURO-DEC  PIC 99 VALUE ZEROES.
+               05 R01-SUSPENSIONES OCCURS 3.
+                  07 R01-FINISUSPEN      PIC X(08) VALUE SPACES.
+                  07 R01-FINICOMU        PIC X(08) VALUE SPACES.
+                  07 R01-FFINSUSPEN      PIC X(08) VALUE SPACES.
+                  07 R01-FFINCOMU        PIC X(08) VALUE SPACES.
+                  07 R01-K2MOTSUSPEN     PIC X(02) VALUE SPACES.
+                  07 R01-GMOTSUSPEN      PIC X(40) VALUE SPACES.
+               05 R01-KOFICINA           PIC X(04) VALUE SPACES.
+      *
+            03 WS-R03.
+               05 R03-TB586BSS0-OFI.
+                  07 R03-EFECTO         PIC X(08) VALUE SPACES.
+                  07 R03-KCOMPANIA      PIC X(05) VALUE SPACES.
+                  07 R03-KCANAL         PIC 9(05) VALUE ZEROS.
+                  07 R03-MOD-COMER      PIC 9(05) VALUE ZEROS.
+                  07 R03-SISTORIG       PIC X(05) VALUE SPACES.
+                  07 R03-KPOLIZA        PIC X(10) VALUE SPACES.
+                  07 R03-KSUBPOL        PIC X(04) VALUE SPACES.
+                  07 R03-KGRUPOEMI      PIC 9(13) VALUE ZEROS.
+                  07 R03-KCERTIFICADO   PIC 9(06) VALUE ZEROS.
+                  07 R03-CDESTIN        PIC 9(01) VALUE ZEROS.
+                  07 R03-KDESTIN        PIC 9(03) VALUE ZEROS.
+                  07 R03-NOMBRE         PIC X(50) VALUE SPACES.
+                  07 R03-IMPORTE-MASC   PIC ZZZZZZZZZZZZ9,99.
+                  07 R03-CCOASEGURO     PIC X(02) VALUE SPACES.
+                  07 R03-PCOASEGURO     PIC ZZ9,99.
+                  07 R03-SUSPENSIONES   OCCURS 3.
+                     09 R03-FINISUSPEN  PIC X(08) VALUE SPACES.
+                     09 R03-FINICOMU    PIC X(08) VALUE SPACES.
+                     09 R03-FFINSUSPEN  PIC X(08) VALUE SPACES.
+                     09 R03-FFINCOMU    PIC X(08) VALUE SPACES.
+                     09 R03-K2MOTSUSPEN PIC X(02) VALUE SPACES.
+                     09 R03-GMOTSUSPEN  PIC X(40) VALUE SPACES.
+                  07 R03-KOFICINA       PIC X(04) VALUE SPACES.
+               05 R03-SAPASTON          PIC X(523) VALUE SPACES.
+               05 FILLER                PIC X(12) VALUE SPACES.
+      *
+         COPY RA562086.
+      *
+         01  FINAL-DE-WORKING          PIC X(16) VALUE
+              'FINAL DE WORKING'.
+
+      ******************************************************************
+       PROCEDURE DIVISION.
+      ******************************************************************
+
+      ******************************************************************
+      *               N I V E L               0                        *
+      ******************************************************************
+
+        INICIO SECTION.
+
+            PERFORM P-PROGRAMA.
+
+            PERFORM RECORRER-POLIZAS
+                    UNTIL  FIN-001.
+
+            PERFORM F-PROGRAMA.
+
+      ******************************************************************
+      *               N I V E L               1                        *
+      ******************************************************************
+      *
+      *=================================================================
+       P-PROGRAMA SECTION.
+      *=================================================================
+      *
+           OPEN INPUT F01 FICHA.
+           OPEN OUTPUT F02 F03.
+      *
+           PERFORM LEER-FECHA.
+           INITIALIZE IMP-DEBE IMP-HABER R-ASTOS-SAP.
+
+           MOVE RC37000-FPROCE        TO WS-FECHA-DIA.
+
+           COMPUTE WS-ANO-DIA =  WS-ANO-DIA - 5.
+
+           MOVE WS-ANO-DIA    TO WS-ANO-INI.
+           MOVE WS-FECHA-INI  TO WS-FECHA-DESDE.
+           MOVE WS-FECHA-DIA  TO WS-FECHA-HASTA.
+
+           INITIALIZE RA562086.
+           MOVE 'A' TO RA562086-COPERACION.
+           CALL LT-VA562086 USING RA562086.
+      *
+           PERFORM LEER-F01.
+
+           IF NOT FIN-001
+                  PERFORM MOVER-DATOS-REG11.
+
+      *
+      *=================================================================
+        RECORRER-POLIZAS SECTION.
+      *=================================================================
+      *
+           IF R01-FINISUSPEN(1) >= WS-FECHA-DESDE
+              PERFORM MOVER-DATOS-REG22.
+      *
+           PERFORM LEER-F01.
+      *
+      *=================================================================
+       F-PROGRAMA SECTION.
+      *=================================================================
+      *
+           PERFORM GRABAR-REG22-TOTALES.
+           PERFORM MOVER-DATOS-REG33.
+
+           INITIALIZE RA562086.
+           MOVE 'C' TO RA562086-COPERACION.
+           CALL LT-VA562086 USING RA562086.
+
+           CLOSE F01
+                 F02
+                 FICHA
+                 F03.
+      *D*
+           DISPLAY ' * * * * * * * * * * * * * * * * * * *'.
+           DISPLAY ' *   F I N      B 3 7 2 J 0 1 8      *'.
+           DISPLAY ' * * * * * * * * * * * * * * * * * * *'.
+           DISPLAY ' *  REG. LEIDOS..........: ' CT-LEIDOS.
+           DISPLAY ' * * * * * * * * * * * * * * * * * * *'.
+           DISPLAY ' *  LINEAS EN SAPASTON...: ' CT-SAPASTON.
+           DISPLAY ' * * * * * * * * * * * * * * * * * * *'.
+      *F*
+
+           GOBACK.
+      *
+      *****************************************************************
+      *                T R A T A M I E N T O S                        *
+      *****************************************************************
+      *
+      *****************
+        MOVER-DATOS-REG11 SECTION.
+      *****************
+      *
+           INITIALIZE R-ASTOS-SAP.
+
+           MOVE '11'           TO TIPO-REG-T1-SAP.
+           MOVE '0003'         TO SOCIEDAD-T2-SAP.
+           MOVE 450            TO NUM-ASTO-T1-SAP.
+           MOVE 3              TO NUM-SERI-T1-SAP.
+           MOVE 'EUR'          TO MONEDA-T1-SAP.
+           MOVE SPACES         TO OF-CONT-RO-T1-SAP.
+           MOVE 'XG'           TO INTERFAC-T1-SAP.
+           MOVE RC37000-FPROCE TO F-CONTABIL-T1-SAP.
+
+           WRITE R-ASTOS-SAP.
+           ADD 1 TO CT-SAPASTON.
+      *
+      *
+      *****************
+       MOVER-DATOS-REG22 SECTION.
+      *****************
+      *
+           INITIALIZE R-ASTOS-SAP.
+
+           MOVE '22'           TO TIPO-REG-T2-SAP.
+           MOVE '0003'         TO SOCIEDAD-T2-SAP.
+           MOVE 450            TO NUM-ASTO-T2-SAP.
+           MOVE 3              TO NUM-SERI-T2-SAP.
+           MOVE 693502         TO CTA-CTBLE-T2-SAP.
+           MOVE 'EUR'          TO MONEDA-T2-SAP.
+           MOVE RC37000-FPROCE TO F-CONTABIL-T2-SAP.
+           MOVE ZEROES         TO ORIG-GRUP-T2-SAP.
+           MOVE ZEROES         TO F-VALOR-T2-SAP.
+           MOVE ZEROES         TO NUM-EMPLE-T2-SAP.
+           MOVE ZEROES         TO OF-CONT-RO-T2-SAP.
+           MOVE ZEROES         TO CENTRO-COS-T2-SAP.
+
+           IF R01-MOD-COMER = 00400
+              PERFORM BUSCAR-MOD-ORIGEN
+           ELSE
+              MOVE SPACES                 TO MODALID-T2-SAP
+              MOVE R01-MOD-COMER-ALF(2:3) TO MODALID-T2-SAP(2:3)
+              MOVE R01-MOD-COMER-ALF(2:3) TO WS-SAP-MODALIDAD
+              MOVE WS-SAP-KMODALIDAD      TO COB-GAR-T2-SAP
+           END-IF
+      *
+           IF R01-KOFICINA NOT EQUAL SPACES
+              PERFORM VALIDAR-OFICINA
+           END-IF
+      *
+           MOVE 'RENTAS DB2'          TO CONCEPT-T2-SAP.
+      *
+           MOVE R01-IMPORTE-MASC TO  WS-IMPORTE-R
+           MOVE R01-PCOASEGURO   TO WS-PCOASEGURO-R
+
+           IF R01-CCOASEGURO = 'CE'
+              COMPUTE IMP-DOC-T2-SAP = WS-IMPORTE-R * WS-PCOASEGURO-R
+              MOVE IMP-DOC-T2-SAP     TO IMP-LOC-T2-SAP
+           ELSE
+              MOVE WS-IMPORTE-R       TO IMP-DOC-T2-SAP
+              MOVE WS-IMPORTE-R       TO IMP-LOC-T2-SAP
+           END-IF.
+
+           MOVE 'D'                   TO DEB-HAB-T2-SAP.
+
+           COMPUTE IMP-HABER = IMP-DOC-T2-SAP + IMP-HABER.
+           COMPUTE IMP-DEBE = IMP-DOC-T2-SAP + IMP-DEBE.
+
+           PERFORM GRABAR-SAL-COMPROB.
+
+           WRITE R-ASTOS-SAP.
+           ADD 1 TO CT-SAPASTON.
+      *
+      *
+       GRABAR-REG22-TOTALES SECTION.
+      *****************
+      *
+           INITIALIZE R-ASTOS-SAP.
+      *
+           MOVE '22'                  TO TIPO-REG-T2-SAP.
+           MOVE '0003'                TO SOCIEDAD-T2-SAP.
+           MOVE 450                   TO NUM-ASTO-T2-SAP.
+           MOVE 3                     TO NUM-SERI-T2-SAP.
+           MOVE 350010                TO CTA-CTBLE-T2-SAP.
+           MOVE 'EUR'                 TO MONEDA-T2-SAP.
+           MOVE RC37000-FPROCE        TO F-CONTABIL-T2-SAP.
+           MOVE ZEROES                TO ORIG-GRUP-T2-SAP.
+           MOVE ZEROES                TO F-VALOR-T2-SAP.
+           MOVE ZEROES                TO NUM-EMPLE-T2-SAP.
+           MOVE IMP-DEBE              TO IMP-DOC-T2-SAP
+           MOVE IMP-HABER             TO IMP-LOC-T2-SAP
+           MOVE 'H'                   TO DEB-HAB-T2-SAP
+           MOVE 'RENTAS DB2'          TO CONCEPT-T2-SAP.
+
+           WRITE R-ASTOS-SAP.
+           ADD 1 TO CT-SAPASTON.
+
+      *****************
+       MOVER-DATOS-REG33 SECTION.
+      *****************
+      *
+           INITIALIZE R-ASTOS-SAP.
+
+           MOVE '33'           TO TIPO-REG-T3-SAP.
+           MOVE '0003'         TO SOCIEDAD-T3-SAP.
+           MOVE 450            TO NUM-ASTO-T3-SAP.
+           MOVE 3              TO NUM-SERI-T3-SAP.
+           MOVE 'EUR'          TO MONEDA-T3-SAP.
+           MOVE SPACES         TO OF-CONT-RO-T3-SAP.
+           MOVE RC37000-FPROCE TO F-CONTABIL-T3-SAP.
+           MOVE IMP-DEBE       TO IMP-DEB-T3-SAP.
+           MOVE IMP-HABER      TO IMP-HAB-T3-SAP.
+
+           WRITE R-ASTOS-SAP.
+           ADD 1 TO CT-SAPASTON.
+
+      *****************
+       BUSCAR-MOD-ORIGEN SECTION.
+      *****************
+      *
+           INITIALIZE RA562086.
+
+           MOVE 'M'                  TO RA562086-COPERACION.
+           MOVE R01-KPOLIZA          TO RA562086-KPOLSUB.
+           MOVE R01-KCERTIFICADO     TO RA562086-KCERTI.
+           MOVE '101'                TO RA562086-KBENCON.
+
+           CALL LT-VA562086 USING RA562086.
+
+           IF RA562086-CRETORNO = ZEROS OR SPACES
+              MOVE SPACES               TO MODALID-T2-SAP
+              MOVE RA562086-KMOD-ORIGEN TO MODALID-T2-SAP(2:3)
+              MOVE RA562086-KMOD-ORIGEN TO WS-SAP-MODALIDAD
+              MOVE WS-SAP-KMODALIDAD  TO COB-GAR-T2-SAP
+           END-IF.
+      *
+      *****************
+       VALIDAR-OFICINA SECTION.
+      *****************
+      *
+           INITIALIZE RR431011.
+           MOVE R01-KOFICINA           TO RR431011-KOFICINA
+
+           CALL LT-VR432011 USING RR431011
+
+           IF RR431011-CRETORNO EQUAL TO '00'
+               MOVE RR431011-KOFICINA    TO OF-CONT-RO-T2-SAP
+               MOVE RR431011-KOFICINA    TO CENTRO-COS-T2-SAP
+           ELSE
+               MOVE ZEROES               TO OF-CONT-RO-T2-SAP
+               MOVE ZEROES               TO CENTRO-COS-T2-SAP
+           END-IF.
+      *
+      *****************
+       GRABAR-SAL-COMPROB SECTION.
+      *****************
+      *
+           INITIALIZE WS-R03 R03.
+
+           MOVE WS-R01             TO R03-TB586BSS0-OFI.
+           MOVE R-ASTOS-SAP        TO R03-SAPASTON.
+
+           WRITE R03        FROM WS-R03.
+      *
+      *****************************************************************
+      *                                                               *
+      *            R U T I N A S    A U X I L I A R E S               *
+      *                                                               *
+      *****************************************************************
+       LEER-FECHA SECTION.
+      *************
+      *
+           READ FICHA
+             AT END
+      *D*
+                 DISPLAY ' * * * FECHA NO INDICADA EN FICHERO FICHA'
+      *F*
+           END-READ.
+      *
+       LEER-F01 SECTION.
+      *=============
+           READ F01   INTO WS-R01
+                   AT END MOVE 'S' TO SW-FIN-001
+                NOT AT END
+                   ADD  1           TO CT-LEIDOS.
+
+      *

@@ -1,0 +1,569 @@
+      *RETRIEVAL                                                        00010000
+      ******************************************************************00020000
+       IDENTIFICATION DIVISION.                                         00030000
+       PROGRAM-ID.                                                      00040000
+                                                                        00050000
+                 B372J020.                                              00060000
+      ******************************************************************00070000
+      **INV: A372VENM                                                   00080000
+      ******************************************************************00090000
+      *    AUTOR      : INDRA                                          *00100000
+      *    FECHA      : MAYO 2026                                      *00110000
+      *    DESCRIPCION: PROGRAMA QUE RECOGE LAS LIQUIDACIONES          *00120000
+      *                 PAGADAS DE LOS VENCIMIENTOS MANUALES QUE NO    *00130000
+      *                 TENGAN ALGUNA LIQUIDACION PENDIENTE            *00140000
+      ******************************************************************00150000
+      /                                                                 00160000
+       ENVIRONMENT DIVISION.                                            00170000
+      *---------------------                                            00180000
+       CONFIGURATION SECTION.                                           00190000
+      *----------------------                                           00200000
+       SPECIAL-NAMES.                                                   00210000
+            DECIMAL-POINT IS COMMA.                                     00220000
+                                                                        00230000
+       INPUT-OUTPUT SECTION.                                            00240000
+      *---------------------                                            00250000
+       FILE-CONTROL.                                                    00260000
+      ***  FICHERO LIQUIDACIONES PAGADAS DE VENCIMIENTOS MANUALES       00270000
+            SELECT FICH-PAG ASSIGN TO SYS001.                           00280000
+                                                                        00290000
+      ***  FICHERO LIQUIDACIONES COMPLEMENTARIAS PENDIENTES DE          00300000
+      ***  VENCIMIENTOS MANUALES                                        00310000
+            SELECT FICH-PEND ASSIGN TO SYS002.                          00320000
+                                                                        00330000
+      ***  FICHERO DE LIQUIDACIONES PAGADAS QUE NO TENGAN UNA           00340000
+      ***  LIQUIDACION PENDIENTES EN VENCIMIENTOS MANUALES              00350000
+            SELECT FICH-SAL1 ASSIGN TO SYS003.                          00360000
+                                                                        00370000
+       DATA DIVISION.                                                   00380000
+      *--------------                                                   00390000
+       FILE SECTION.                                                    00400000
+       FD  FICH-PEND                                                    00410000
+           LABEL RECORDS OMITTED                                        00420000
+           RECORDING MODE IS F.                                         00430000
+       01  RLIQ-VM-PEND     PIC X(2100).                                00440000
+                                                                        00450000
+       FD  FICH-PAG                                                     00460000
+           LABEL RECORDS OMITTED                                        00470000
+           RECORDING MODE IS F.                                         00480000
+       01  RLIQ-VM-PAG      PIC X(2100).                                00490000
+                                                                        00500000
+       FD  FICH-SAL1                                                    00510000
+           LABEL RECORDS OMITTED                                        00520000
+           RECORDING MODE IS F.                                         00530000
+       01  RLIQ-PAGADAS     PIC X(2100).                                00540000
+                                                                        00550000
+       WORKING-STORAGE SECTION.                                         00560000
+      *-----------------------                                          00570000
+       01  P-FILLER.                                                    00580000
+           03  FILLER   PIC X(17)  VALUE 'INICIO-WORKING'.              00590000
+                                                                        00600000
+      **** SWICTH.                                                      00610000
+          03 SW-FIN-FICH-PEND            PIC X VALUE SPACES.            00620000
+             88 SI-FIN-FICH-PEND           VALUE 'S'.                   00630000
+             88 NO-FIN-FICH-PEND           VALUE 'N'.                   00640000
+                                                                        00650000
+          03 SW-FIN-FICH-PAG             PIC X VALUE SPACES.            00660000
+             88 SI-FIN-FICH-PAG            VALUE 'S'.                   00670000
+             88 NO-FIN-FICH-PAG            VALUE 'N'.                   00680000
+                                                                        00690000
+      **** CONTADORES.                                                  00700000
+          03 CT-LEIDOS-PEND                PIC 9(6) VALUE ZEROS.        00710000
+          03 CT-LEIDOS-PAG                 PIC 9(6) VALUE ZEROS.        00720000
+          03 CT-GRABADOS                   PIC 9(6) VALUE ZEROS.        00730000
+                                                                        00740000
+      **** VARIABLES DE TRABAJO                                         00750000
+                                                                        00760000
+          03 WS-PEND-ENTRADA2.                                          00770000
+      *     PESTAÑA GENERAL                                             00780000
+             05 WS-PEND-ANIO              PIC S9(4)V USAGE COMP-3.      00790000
+             05 WS-PEND-EXPEDIENTE        PIC S9(10)V USAGE COMP-3.     00800000
+             05 WS-PEND-KRAMO             PIC X(3)   VALUE SPACES.      00810000
+             05 WS-PEND-KPOLIZA           PIC X(10)  VALUE SPACES.      00820000
+             05 WS-PEND-KSUBPOLIZA        PIC S9(4)V USAGE COMP-3.      00830000
+             05 WS-PEND-KCERTIFICADO      PIC S9(6)V USAGE COMP-3.      00840000
+             05 WS-PEND-CCANALCAMP        PIC X(2)   VALUE SPACES.      00850000
+             05 WS-PEND-CENTIDAD          PIC X(2)   VALUE SPACES.      00860000
+             05 WS-PEND-ANIOFISCAL        PIC S9(4)V USAGE COMP-3.      00870000
+             05 WS-PEND-ANIOPOL           PIC X(4)   VALUE SPACES.      00880000
+             05 WS-PEND-KMODALIDAD        PIC S9(5)V USAGE COMP-3.      00890000
+             05 WS-PEND-SITUACION         PIC X(20)  VALUE SPACES.      00900000
+      *      05 WS-PEND-CCAUSAANUL        PIC X(2)   VALUE SPACES.      00910000
+             05 WS-PEND-FECEFECTO         PIC X(8)   VALUE SPACES.      00920000
+             05 WS-PEND-FECANULA          PIC X(8)   VALUE SPACES.      00930000
+             05 WS-PEND-FECMODIFICA       PIC X(8)   VALUE SPACES.      00940000
+             05 WS-PEND-FECEMISION        PIC X(8)   VALUE SPACES.      00950000
+             05 WS-PEND-KDURACION         PIC S9(2)V USAGE COMP-3.      00960000
+             05 WS-PEND-CCARTERA          PIC X(3)   VALUE SPACES.      00970000
+             05 WS-PEND-SREASEGURO        PIC X(1)   VALUE SPACES.      00980000
+             05 WS-PEND-PAGOTOT           PIC X(1)   VALUE SPACES.      00990000
+             05 WS-PEND-CUSUARIO          PIC X(8)   VALUE SPACES.      01000000
+             05 WS-PEND-TOMADOR.                                        01010000
+                07 WS-PEND-NOMBRE-TOM     PIC X(25)  VALUE SPACES.      01020000
+                07 WS-PEND-APELL1-TOM     PIC X(25)  VALUE SPACES.      01030000
+                07 WS-PEND-APELL2-TOM     PIC X(25)  VALUE SPACES.      01040000
+                07 WS-PEND-CASEGSEXO      PIC X(01)  VALUE SPACES.      01050000
+                07 WS-PEND-CASEGESTC      PIC X(01)  VALUE SPACES.      01060000
+                07 WS-PEND-GTELPARASE     PIC X(10)  VALUE SPACES.      01070000
+                07 WS-PEND-GTELTRAASE     PIC X(10)  VALUE SPACES.      01080000
+             05 WS-PEND-REGIONAL          PIC X(2)   VALUE SPACES.      01090000
+             05 WS-PEND-LUGARENVIO        PIC X(2)   VALUE SPACES.      01100000
+             05 WS-PEND-KOFICINA          PIC X(4)   VALUE SPACES.      01110000
+             05 WS-PEND-IPENDIENTE        PIC S9(10)V9(2) USAGE COMP-3. 01120000
+             05 WS-PEND-GOBSERVACION      PIC X(255) VALUE SPACES.      01130000
+             05 WS-PEND-VEN-MIGR          PIC X(1)   VALUE SPACES.      01140000
+             05 WS-PEND-CTIPOLIQ          PIC X(1)   VALUE SPACES.      01150000
+             05 WS-PEND-CSITULIQ          PIC X(2)   VALUE SPACES.      01160000
+      *     DATOS ECONOMICOS PRINCIPAL                                  01170000
+             05 WS-PEND-DESC-PRIN         PIC X(50)  VALUE SPACES.      01180000
+             05 WS-PEND-IMPCAPITAL        PIC S9(10)V9(2) USAGE COMP-3. 01190000
+             05 WS-PEND-IMPBENEFICIOS     PIC S9(10)V9(2) USAGE COMP-3. 01200000
+             05 WS-PEND-FECPAGOCAPITAL    PIC X(8)   VALUE SPACES.      01210000
+             05 WS-PEND-IMPANTICIPO       PIC 9(10)V9(2) USAGE COMP-3.  01220000
+             05 WS-PEND-IMPINTEPEND       PIC 9(10)V9(2) USAGE COMP-3.  01230000
+             05 WS-PEND-FECVENCIMICAP     PIC X(8)   VALUE SPACES.      01240000
+             05 WS-PEND-TIPIMPUESTCAP     PIC X(2)   VALUE SPACES.      01250000
+             05 WS-PEND-EXIMIDO           PIC X(1)   VALUE SPACES.      01260000
+             05 WS-PEND-FECIMPRECAP       PIC X(8)   VALUE SPACES.      01270000
+             05 WS-PEND-CUSUARIO-PAGCAP   PIC X(8)   VALUE SPACES.      01280000
+             05 WS-PEND-FECPAGCAPTCAP     PIC X(8)   VALUE SPACES.      01290000
+             05 WS-PEND-CUSUARIO-CAPTCAP PIC X(8)    VALUE SPACES.      01300000
+             05 WS-PEND-CFORMAPAGO-CAP    PIC X(1)   VALUE SPACES.      01310000
+             05 WS-PEND-NCHEQUE-CAP       PIC 9(10)  VALUE ZEROES.      01320000
+             05 WS-PEND-CUENTA-CAP.                                     01330000
+                07 WS-PEND-KBANCO-CAP     PIC 9(8)   VALUE ZEROES.      01340000
+                07 WS-PEND-NDIGCONT-CAP   PIC X(2)   VALUE SPACES.      01350000
+                07 WS-PEND-NCTABAN-CAP    PIC X(10)  VALUE SPACES.      01360000
+             05 WS-PEND-REF-REINVERSION   PIC X(15)  VALUE SPACES.      01370000
+      *     DATOS ECONOMICOS IRPF PRINCIPAL                             01380000
+             05 WS-PEND-DESC-IRPF-PRIN    PIC X(50)  VALUE SPACES.      01390000
+             05 WS-PEND-IMPRTOINTEGRCAP   PIC S9(10)V9(2) USAGE COMP-3. 01400000
+             05 WS-PEND-IMPREDPRICAP      PIC S9(10)V9(2) USAGE COMP-3. 01410000
+             05 WS-PEND-IMPREDTRANCAP     PIC S9(10)V9(2) USAGE COMP-3. 01420000
+             05 WS-PEND-IMPRTONETOCAP     PIC S9(10)V9(2) USAGE COMP-3. 01430000
+             05 WS-PEND-PORRETCAP         PIC S9(3)V9(2) USAGE COMP-3.  01440000
+             05 WS-PEND-IMPRETCAP         PIC S9(10)V9(2) USAGE COMP-3. 01450000
+             05 WS-PEND-FECPAGRET         PIC X(8)   VALUE SPACES.      01460000
+             05 WS-PEND-IMPCOMPENSATORIA-CAP                            01470000
+                                          PIC S9(10)V9(2) USAGE COMP-3. 01480000
+             05 WS-PEND-IMPLIQCAP         PIC S9(10)V9(2) USAGE COMP-3. 01490000
+             05 WS-PEND-FECBDGICAP        PIC X(8)   VALUE SPACES.      01500000
+             05 WS-PEND-SBDGICAP          PIC X(1)   VALUE SPACES.      01510000
+      *     DATOS ECONOMICOS COMPLEMENTARIO 1                           01520000
+             05 WS-PEND-DESC-PEND1        PIC X(50)  VALUE SPACES.      01530000
+             05 WS-PEND-IMPCOMP1          PIC S9(10)V9(2) USAGE COMP-3. 01540000
+             05 WS-PEND-FECPAGCOMP1       PIC X(8)   VALUE SPACES.      01550000
+             05 WS-PEND-FECEMICOMP1       PIC X(8)   VALUE SPACES.      01560000
+             05 WS-PEND-TIPIMPUESTCOMP1   PIC X(2)   VALUE SPACES.      01570000
+             05 WS-PEND-FECIMPRECOMP1     PIC X(8)   VALUE SPACES.      01580000
+             05 WS-PEND-CUSUARIO-PAGCOMP1 PIC X(8)   VALUE SPACES.      01590000
+             05 WS-PEND-FECPAGCAPTCOMP1   PIC X(8)   VALUE SPACES.      01600000
+             05 WS-PEND-CUSUARIO-CAPTCOMP1 PIC X(8)   VALUE SPACES.     01610000
+             05 WS-PEND-CFORMAPAGO-PEND1 PIC X(1)    VALUE SPACES.      01620000
+             05 WS-PEND-NCHEQUE-COMP1     PIC 9(10)  VALUE ZEROES.      01630000
+             05 WS-PEND-CUENTA-COMP1.                                   01640000
+                07 WS-PEND-KBANCO-COMP1   PIC 9(8)   VALUE ZEROES.      01650000
+                07 WS-PEND-NDIGCONT-COMP1 PIC X(2)   VALUE SPACES.      01660000
+                07 WS-PEND-NCTABAN-COMP1 PIC X(10)   VALUE SPACES.      01670000
+      *     DATOS ECONOMICOS IRPF COMPLEMENTARIA                        01680000
+             05 WS-PEND-DESC-IRPF-COMP1 PIC X(50)   VALUE SPACES.       01690000
+             05 WS-PEND-IMPRTOINTCOMP1   PIC S9(10)V9(2) USAGE COMP-3.  01700000
+             05 WS-PEND-IMPREDPRICOMP1   PIC S9(10)V9(2) USAGE COMP-3.  01710000
+             05 WS-PEND-IREDTRANCOMP1    PIC S9(10)V9(2) USAGE COMP-3.  01720000
+             05 WS-PEND-IRTONETCOMP1     PIC S9(10)V9(2) USAGE COMP-3.  01730000
+             05 WS-PEND-PORRETCOMP1      PIC S9(3)V9(2) USAGE COMP-3.   01740000
+             05 WS-PEND-IRETCOMP1        PIC S9(10)V9(2) USAGE COMP-3.  01750000
+             05 WS-PEND-FECPAGRETCOM1    PIC X(8)   VALUE SPACES.       01760000
+             05 WS-PEND-IMPCOMPENSATORIA-COMP1                          01770000
+                                         PIC S9(10)V9(2) USAGE COMP-3.  01780000
+             05 WS-PEND-ILIQCOMP1        PIC S9(10)V9(2) USAGE COMP-3.  01790000
+             05 WS-PEND-FECBDGICOMP1     PIC X(8)   VALUE SPACES.       01800000
+             05 WS-PEND-SBDGICOMP1       PIC X(1)   VALUE SPACES.       01810000
+      *     DATOS ECONOMICOS COMPLEMENTARIO 2                           01820000
+             05 WS-PEND-DESC-COMP2        PIC X(50)  VALUE SPACES.      01830000
+             05 WS-PEND-IMPCOMP2          PIC S9(10)V9(2) USAGE COMP-3. 01840000
+             05 WS-PEND-FECPAGCOMP2       PIC X(8)   VALUE SPACES.      01850000
+             05 WS-PEND-FECEMICOMP2       PIC X(8)   VALUE SPACES.      01860000
+             05 WS-PEND-TIPIMPUESTCOMP2   PIC X(2)   VALUE SPACES.      01870000
+             05 WS-PEND-FECIMPRECOMP2     PIC X(8)   VALUE SPACES.      01880000
+             05 WS-PEND-CUSUARIO-PAGCOMP2 PIC X(8)   VALUE SPACES.      01890000
+             05 WS-PEND-FECPAGCAPTCOMP2   PIC X(8)   VALUE SPACES.      01900000
+             05 WS-PEND-CUSUARIO-CAPTCOMP2 PIC X(8)   VALUE SPACES.     01910000
+             05 WS-PEND-CFORMAPAGO-COMP2 PIC X(1)    VALUE SPACES.      01920000
+             05 WS-PEND-NCHEQUE-COMP2     PIC 9(10)  VALUE ZEROES.      01930000
+             05 WS-PEND-CUENTA-COMP2.                                   01940000
+                07 WS-PEND-KBANCO-COMP2   PIC 9(8)   VALUE ZEROES.      01950000
+                07 WS-PEND-NDIGCONT-COMP2 PIC X(2)   VALUE SPACES.      01960000
+                07 WS-PEND-NCTABAN-COMP2 PIC X(10)   VALUE SPACES.      01970000
+      *     DATOS ECONOMICOS IRPF COMPLEMENTARIA                        01980000
+             05 WS-PEND-DESC-IRPF-COMP2 PIC X(50)   VALUE SPACES.       01990000
+             05 WS-PEND-IMPRTOINTCOMP2   PIC S9(10)V9(2) USAGE COMP-3.  02000000
+             05 WS-PEND-IMPREDPRICOMP2   PIC S9(10)V9(2) USAGE COMP-3.  02010000
+             05 WS-PEND-IREDTRANCOMP2    PIC S9(10)V9(2) USAGE COMP-3.  02020000
+             05 WS-PEND-IRTONETCOMP2     PIC S9(10)V9(2) USAGE COMP-3.  02030000
+             05 WS-PEND-PORRETCOMP2      PIC S9(3)V9(2) USAGE COMP-3.   02040000
+             05 WS-PEND-IRETCOMP2        PIC S9(10)V9(2) USAGE COMP-3.  02050000
+             05 WS-PEND-FECPAGRETCOM2    PIC X(8)   VALUE SPACES.       02060000
+             05 WS-PEND-IMPCOMPENSATORIA-COMP2                          02070000
+                                         PIC S9(10)V9(2) USAGE COMP-3.  02080000
+             05 WS-PEND-ILIQCOMP2        PIC S9(10)V9(2) USAGE COMP-3.  02090000
+             05 WS-PEND-FECBDGICOMP2     PIC X(8)   VALUE SPACES.       02100000
+             05 WS-PEND-SBDGICOMP2       PIC X(1)   VALUE SPACES.       02110000
+      *     DATOS PRIMER BENEFICIARIO                                   02120000
+             05 WS-PEND-NIF1             PIC X(10)  VALUE SPACES.       02130000
+             05 WS-PEND-KPERSONA1        PIC S9(9)V USAGE COMP-3.       02140000
+             05 WS-PEND-NOMBRE1          PIC X(150) VALUE SPACES.       02150000
+             05 WS-PEND-PRIMER-APELL1    PIC X(30)  VALUE SPACES.       02160000
+             05 WS-PEND-SEGUNDO-APELL1   PIC X(30)  VALUE SPACES.       02170000
+             05 WS-PEND-CTIPOPERS1       PIC X(1)   VALUE SPACES.       02180000
+             05 WS-PEND-SRESIDENTE1      PIC X(1)   VALUE SPACES.       02190000
+             05 WS-PEND-KDOMICILIO1      PIC S9(9)V USAGE COMP-3.       02200000
+             05 WS-PEND-KDOMCOM1         PIC S9(9)V USAGE COMP-3.       02210000
+             05 WS-PEND-DOMICILIO1.                                     02220000
+                07 WS-PEND-GDOMICILIO1   PIC X(75)  VALUE SPACES.       02230000
+                07 WS-PEND-GNUMVIA       PIC X(10)  VALUE SPACES.       02240000
+                07 WS-PEND-GDOMIRESTO    PIC X(150) VALUE SPACES.       02250000
+             05 WS-PEND-CCODPOST1        PIC X(5)   VALUE SPACES.       02260000
+             05 WS-PEND-GPOBLACION1      PIC X(60)  VALUE SPACES.       02270000
+             05 WS-PEND-CPROVINCIA1      PIC X(10)  VALUE SPACES.       02280000
+             05 WS-PEND-CPAIS1           PIC X(10)  VALUE SPACES.       02290000
+             05 WS-PEND-FNACIMIENTO1     PIC X(8)   VALUE SPACES.       02300000
+             05 WS-PEND-NIF-REPLEGAL1    PIC X(10)  VALUE SPACES.       02310000
+             05 WS-PEND-FATCA.                                          02320000
+                07 WS-PEND-CNACIONALIDAD1     PIC X(3) VALUE SPACES.    02330000
+                07 WS-PEND-CNACIONALIDAD2     PIC X(3) VALUE SPACES.    02340000
+                07 WS-PEND-CPAISNACIMIENTO    PIC X(3) VALUE SPACES.    02350000
+                07 WS-PEND-CPAISOBLIGACIONES1 PIC X(3) VALUE SPACES.    02360000
+                07 WS-PEND-CPAISOBLIGACIONES2 PIC X(3) VALUE SPACES.    02370000
+                07 WS-PEND-CPAISOBLIGACIONES3 PIC X(3) VALUE SPACES.    02380000
+                07 WS-PEND-SPAISRESIDENCIA    PIC X(3) VALUE SPACES.    02390000
+                07 WS-PEND-GPREFIJO-PAR       PIC X(3) VALUE SPACES.    02400000
+                07 WS-PEND-GPREFIJO-TRA       PIC X(3) VALUE SPACES.    02410000
+                07 WS-PEND-CPRP               PIC X(1) VALUE SPACES.    02420000
+      *     DATOS FISCALES PRIMER BENEFICIARIO                          02430000
+             05 WS-PEND-DISCAPACITADO1   PIC X(1)   VALUE SPACES.       02440000
+             05 WS-PEND-PREST-VIVIENDA1 PIC X(2)    VALUE SPACES.       02450000
+             05 WS-PEND-SITUACION-FAMI1 PIC X(20)   VALUE SPACES.       02460000
+             05 WS-PEND-NIF-CONYUGE1     PIC X(10)  VALUE SPACES.       02470000
+             05 WS-PEND-IMPCOMPENSATORIA1 PIC S9(07)V9(2) USAGE COMP-3. 02480000
+             05 WS-PEND-IMPALIMENHIJOS1 PIC S9(07)V9(2) USAGE COMP-3.   02490000
+      *                                                                 02500000
+             05 WS-PEND-FILLER           PIC X(165) VALUE SPACES.       02510000
+      *                                                                 02520000
+          03 WS-PAG-ENTRADA1.                                           02530000
+      *     PESTAÑA GENERAL                                             02540000
+             05 WS-PAG-ANIO               PIC S9(4)V USAGE COMP-3.      02550000
+             05 WS-PAG-EXPEDIENTE         PIC S9(10)V USAGE COMP-3.     02560000
+             05 WS-PAG-KRAMO              PIC X(3)   VALUE SPACES.      02570000
+             05 WS-PAG-KPOLIZA            PIC X(10)  VALUE SPACES.      02580000
+             05 WS-PAG-KSUBPOLIZA         PIC S9(4)V USAGE COMP-3.      02590000
+             05 WS-PAG-KCERTIFICADO       PIC S9(6)V USAGE COMP-3.      02600000
+             05 WS-PAG-CCANALCAMP         PIC X(2)   VALUE SPACES.      02610000
+             05 WS-PAG-CENTIDAD           PIC X(2)   VALUE SPACES.      02620000
+             05 WS-PAG-ANIOFISCAL         PIC S9(4)V USAGE COMP-3.      02630000
+             05 WS-PAG-ANIOPOL            PIC X(4)   VALUE SPACES.      02640000
+             05 WS-PAG-KMODALIDAD         PIC S9(5)V USAGE COMP-3.      02650000
+             05 WS-PAG-SITUACION          PIC X(20)  VALUE SPACES.      02660000
+      *      05 WS-PAG-CCAUSAANUL         PIC X(2)   VALUE SPACES.      02670000
+             05 WS-PAG-FECEFECTO          PIC X(8)   VALUE SPACES.      02680000
+             05 WS-PAG-FECANULA           PIC X(8)   VALUE SPACES.      02690000
+             05 WS-PAG-FECMODIFICA        PIC X(8)   VALUE SPACES.      02700000
+             05 WS-PAG-FECEMISION         PIC X(8)   VALUE SPACES.      02710000
+             05 WS-PAG-KDURACION          PIC S9(2)V USAGE COMP-3.      02720000
+             05 WS-PAG-CCARTERA           PIC X(3)   VALUE SPACES.      02730000
+             05 WS-PAG-SREASEGURO         PIC X(1)   VALUE SPACES.      02740000
+             05 WS-PAG-PAGOTOT            PIC X(1)   VALUE SPACES.      02750000
+             05 WS-PAG-CUSUARIO           PIC X(8)   VALUE SPACES.      02760000
+             05 WS-PAG-TOMADOR.                                         02770000
+                07 WS-PAG-NOMBRE-TOM      PIC X(25)  VALUE SPACES.      02780000
+                07 WS-PAG-APELL1-TOM      PIC X(25)  VALUE SPACES.      02790000
+                07 WS-PAG-APELL2-TOM      PIC X(25)  VALUE SPACES.      02800000
+                07 WS-PAG-CASEGSEXO       PIC X(01)  VALUE SPACES.      02810000
+                07 WS-PAG-CASEGESTC       PIC X(01)  VALUE SPACES.      02820000
+                07 WS-PAG-GTELPARASE      PIC X(10)  VALUE SPACES.      02830000
+                07 WS-PAG-GTELTRAASE      PIC X(10)  VALUE SPACES.      02840000
+             05 WS-PAG-REGIONAL           PIC X(2)   VALUE SPACES.      02850000
+             05 WS-PAG-LUGARENVIO         PIC X(2)   VALUE SPACES.      02860000
+             05 WS-PAG-KOFICINA           PIC X(4)   VALUE SPACES.      02870000
+             05 WS-PAG-IPENDIENTE         PIC S9(10)V9(2) USAGE COMP-3. 02880000
+             05 WS-PAG-GOBSERVACION       PIC X(255) VALUE SPACES.      02890000
+             05 WS-PAG-VEN-MIGR           PIC X(1)   VALUE SPACES.      02900000
+             05 WS-PAG-CTIPOLIQ           PIC X(1)   VALUE SPACES.      02910000
+             05 WS-PAG-CSITULIQ           PIC X(2)   VALUE SPACES.      02920000
+      *     DATOS ECONOMICOS PRINCIPAL                                  02930000
+             05 WS-PAG-DESC-PRIN          PIC X(50)  VALUE SPACES.      02940000
+             05 WS-PAG-IMPCAPITAL         PIC S9(10)V9(2) USAGE COMP-3. 02950000
+             05 WS-PAG-IMPBENEFICIOS      PIC S9(10)V9(2) USAGE COMP-3. 02960000
+             05 WS-PAG-FECPAGOCAPITAL     PIC X(8)   VALUE SPACES.      02970000
+             05 WS-PAG-IMPANTICIPO        PIC 9(10)V9(2) USAGE COMP-3.  02980000
+             05 WS-PAG-IMPINTEPEND        PIC 9(10)V9(2) USAGE COMP-3.  02990000
+             05 WS-PAG-FECVENCIMICAP      PIC X(8)   VALUE SPACES.      03000000
+             05 WS-PAG-TIPIMPUESTCAP      PIC X(2)   VALUE SPACES.      03010000
+             05 WS-PAG-EXIMIDO            PIC X(1)   VALUE SPACES.      03020000
+             05 WS-PAG-FECIMPRECAP        PIC X(8)   VALUE SPACES.      03030000
+             05 WS-PAG-CUSUARIO-PAGCAP    PIC X(8)   VALUE SPACES.      03040000
+             05 WS-PAG-FECPAGCAPTCAP      PIC X(8)   VALUE SPACES.      03050000
+             05 WS-PAG-CUSUARIO-CAPTCAP PIC X(8)     VALUE SPACES.      03060000
+             05 WS-PAG-CFORMAPAGO-CAP     PIC X(1)   VALUE SPACES.      03070000
+             05 WS-PAG-NCHEQUE-CAP        PIC 9(10)  VALUE ZEROES.      03080000
+             05 WS-PAG-CUENTA-CAP.                                      03090000
+                07 WS-PAG-KBANCO-CAP      PIC 9(8)   VALUE ZEROES.      03100000
+                07 WS-PAG-NDIGCONT-CAP    PIC X(2)   VALUE SPACES.      03110000
+                07 WS-PAG-NCTABAN-CAP     PIC X(10)  VALUE SPACES.      03120000
+             05 WS-PAG-REF-REINVERSION    PIC X(15)  VALUE SPACES.      03130000
+      *     DATOS ECONOMICOS IRPF PRINCIPAL                             03140000
+             05 WS-PAG-DESC-IRPF-PRIN     PIC X(50)  VALUE SPACES.      03150000
+             05 WS-PAG-IMPRTOINTEGRCAP    PIC S9(10)V9(2) USAGE COMP-3. 03160000
+             05 WS-PAG-IMPREDPRICAP       PIC S9(10)V9(2) USAGE COMP-3. 03170000
+             05 WS-PAG-IMPREDTRANCAP      PIC S9(10)V9(2) USAGE COMP-3. 03180000
+             05 WS-PAG-IMPRTONETOCAP      PIC S9(10)V9(2) USAGE COMP-3. 03190000
+             05 WS-PAG-PORRETCAP          PIC S9(3)V9(2) USAGE COMP-3.  03200000
+             05 WS-PAG-IMPRETCAP          PIC S9(10)V9(2) USAGE COMP-3. 03210000
+             05 WS-PAG-FECPAGRET          PIC X(8)   VALUE SPACES.      03220000
+             05 WS-PAG-IMPCOMPENSATORIA-CAP                             03230000
+                                          PIC S9(10)V9(2) USAGE COMP-3. 03240000
+             05 WS-PAG-IMPLIQCAP          PIC S9(10)V9(2) USAGE COMP-3. 03250000
+             05 WS-PAG-FECBDGICAP         PIC X(8)   VALUE SPACES.      03260000
+             05 WS-PAG-SBDGICAP           PIC X(1)   VALUE SPACES.      03270000
+      *     DATOS ECONOMICOS COMPLEMENTARIO 1                           03280000
+             05 WS-PAG-DESC-COMP1         PIC X(50)  VALUE SPACES.      03290000
+             05 WS-PAG-IMPCOMP1           PIC S9(10)V9(2) USAGE COMP-3. 03300000
+             05 WS-PAG-FECPAGCOMP1        PIC X(8)   VALUE SPACES.      03310000
+             05 WS-PAG-FECEMICOMP1        PIC X(8)   VALUE SPACES.      03320000
+             05 WS-PAG-TIPIMPUESTCOMP1    PIC X(2)   VALUE SPACES.      03330000
+             05 WS-PAG-FECIMPRECOMP1      PIC X(8)   VALUE SPACES.      03340000
+             05 WS-PAG-CUSUARIO-PAGCOMP1 PIC X(8)    VALUE SPACES.      03350000
+             05 WS-PAG-FECPAGCAPTCOMP1    PIC X(8)   VALUE SPACES.      03360000
+             05 WS-PAG-CUSUARIO-CAPTCOMP1 PIC X(8)    VALUE SPACES.     03370000
+             05 WS-PAG-CFORMAPAGO-COMP1 PIC X(1)     VALUE SPACES.      03380000
+             05 WS-PAG-NCHEQUE-COMP1      PIC 9(10)  VALUE ZEROES.      03390000
+             05 WS-PAG-CUENTA-COMP1.                                    03400000
+                07 WS-PAG-KBANCO-COMP1    PIC 9(8)   VALUE ZEROES.      03410000
+                07 WS-PAG-NDIGCONT-COMP1 PIC X(2)    VALUE SPACES.      03420000
+                07 WS-PAG-NCTABAN-COMP1 PIC X(10)    VALUE SPACES.      03430000
+      *     DATOS ECONOMICOS IRPF COMPLEMENTARIA                        03440000
+             05 WS-PAG-DESC-IRPF-COMP1 PIC X(50)    VALUE SPACES.       03450000
+             05 WS-PAG-IMPRTOINTCOMP1    PIC S9(10)V9(2) USAGE COMP-3.  03460000
+             05 WS-PAG-IMPREDPRICOMP1    PIC S9(10)V9(2) USAGE COMP-3.  03470000
+             05 WS-PAG-IREDTRANCOMP1     PIC S9(10)V9(2) USAGE COMP-3.  03480000
+             05 WS-PAG-IRTONETCOMP1      PIC S9(10)V9(2) USAGE COMP-3.  03490000
+             05 WS-PAG-PORRETCOMP1       PIC S9(3)V9(2) USAGE COMP-3.   03500000
+             05 WS-PAG-IRETCOMP1         PIC S9(10)V9(2) USAGE COMP-3.  03510000
+             05 WS-PAG-FECPAGRETCOM1     PIC X(8)   VALUE SPACES.       03520000
+             05 WS-PAG-IMPCOMPENSATORIA-COMP1                           03530000
+                                         PIC S9(10)V9(2) USAGE COMP-3.  03540000
+             05 WS-PAG-ILIQCOMP1         PIC S9(10)V9(2) USAGE COMP-3.  03550000
+             05 WS-PAG-FECBDGICOMP1      PIC X(8)   VALUE SPACES.       03560000
+             05 WS-PAG-SBDGICOMP1        PIC X(1)   VALUE SPACES.       03570000
+      *     DATOS ECONOMICOS COMPLEMENTARIO 2                           03580000
+             05 WS-PAG-DESC-COMP2         PIC X(50)  VALUE SPACES.      03590000
+             05 WS-PAG-IMPCOMP2           PIC S9(10)V9(2) USAGE COMP-3. 03600000
+             05 WS-PAG-FECPAGCOMP2        PIC X(8)   VALUE SPACES.      03610000
+             05 WS-PAG-FECEMICOMP2        PIC X(8)   VALUE SPACES.      03620000
+             05 WS-PAG-TIPIMPUESTCOMP2    PIC X(2)   VALUE SPACES.      03630000
+             05 WS-PAG-FECIMPRECOMP2      PIC X(8)   VALUE SPACES.      03640000
+             05 WS-PAG-CUSUARIO-PAGCOMP2 PIC X(8)    VALUE SPACES.      03650000
+             05 WS-PAG-FECPAGCAPTCOMP2    PIC X(8)   VALUE SPACES.      03660000
+             05 WS-PAG-CUSUARIO-CAPTCOMP2 PIC X(8)    VALUE SPACES.     03670000
+             05 WS-PAG-CFORMAPAGO-COMP2 PIC X(1)     VALUE SPACES.      03680000
+             05 WS-PAG-NCHEQUE-COMP2      PIC 9(10)  VALUE ZEROES.      03690000
+             05 WS-PAG-CUENTA-COMP2.                                    03700000
+                07 WS-PAG-KBANCO-COMP2    PIC 9(8)   VALUE ZEROES.      03710000
+                07 WS-PAG-NDIGCONT-COMP2 PIC X(2)    VALUE SPACES.      03720000
+                07 WS-PAG-NCTABAN-COMP2 PIC X(10)    VALUE SPACES.      03730000
+      *     DATOS ECONOMICOS IRPF COMPLEMENTARIA                        03740000
+             05 WS-PAG-DESC-IRPF-COMP2 PIC X(50)    VALUE SPACES.       03750000
+             05 WS-PAG-IMPRTOINTCOMP2    PIC S9(10)V9(2) USAGE COMP-3.  03760000
+             05 WS-PAG-IMPREDPRICOMP2    PIC S9(10)V9(2) USAGE COMP-3.  03770000
+             05 WS-PAG-IREDTRANCOMP2     PIC S9(10)V9(2) USAGE COMP-3.  03780000
+             05 WS-PAG-IRTONETCOMP2      PIC S9(10)V9(2) USAGE COMP-3.  03790000
+             05 WS-PAG-PORRETCOMP2       PIC S9(3)V9(2) USAGE COMP-3.   03800000
+             05 WS-PAG-IRETCOMP2         PIC S9(10)V9(2) USAGE COMP-3.  03810000
+             05 WS-PAG-FECPAGRETCOM2     PIC X(8)   VALUE SPACES.       03820000
+             05 WS-PAG-IMPCOMPENSATORIA-COMP2                           03830000
+                                         PIC S9(10)V9(2) USAGE COMP-3.  03840000
+             05 WS-PAG-ILIQCOMP2         PIC S9(10)V9(2) USAGE COMP-3.  03850000
+             05 WS-PAG-FECBDGICOMP2      PIC X(8)   VALUE SPACES.       03860000
+             05 WS-PAG-SBDGICOMP2        PIC X(1)   VALUE SPACES.       03870000
+      *     DATOS PRIMER BENEFICIARIO                                   03880000
+             05 WS-PAG-NIF1              PIC X(10)  VALUE SPACES.       03890000
+             05 WS-PAG-KPERSONA1         PIC S9(9)V USAGE COMP-3.       03900000
+             05 WS-PAG-NOMBRE1           PIC X(150) VALUE SPACES.       03910000
+             05 WS-PAG-PRIMER-APELL1     PIC X(30)  VALUE SPACES.       03920000
+             05 WS-PAG-SEGUNDO-APELL1    PIC X(30)  VALUE SPACES.       03930000
+             05 WS-PAG-CTIPOPERS1        PIC X(1)   VALUE SPACES.       03940000
+             05 WS-PAG-SRESIDENTE1       PIC X(1)   VALUE SPACES.       03950000
+             05 WS-PAG-KDOMICILIO1       PIC S9(9)V USAGE COMP-3.       03960000
+             05 WS-PAG-KDOMCOM1          PIC S9(9)V USAGE COMP-3.       03970000
+             05 WS-PAG-DOMICILIO1.                                      03980000
+                07 WS-PAG-GDOMICILIO1    PIC X(75)  VALUE SPACES.       03990000
+                07 WS-PAG-GNUMVIA        PIC X(10)  VALUE SPACES.       04000000
+                07 WS-PAG-GDOMIRESTO     PIC X(150) VALUE SPACES.       04010000
+             05 WS-PAG-CCODPOST1         PIC X(5)   VALUE SPACES.       04020000
+             05 WS-PAG-GPOBLACION1       PIC X(60)  VALUE SPACES.       04030000
+             05 WS-PAG-CPROVINCIA1       PIC X(10)  VALUE SPACES.       04040000
+             05 WS-PAG-CPAIS1            PIC X(10)  VALUE SPACES.       04050000
+             05 WS-PAG-FNACIMIENTO1      PIC X(8)   VALUE SPACES.       04060000
+             05 WS-PAG-NIF-REPLEGAL1     PIC X(10)  VALUE SPACES.       04070000
+             05 WS-PAG-FATCA.                                           04080000
+                07 WS-PAG-CNACIONALIDAD1      PIC X(3) VALUE SPACES.    04090000
+                07 WS-PAG-CNACIONALIDAD2      PIC X(3) VALUE SPACES.    04100000
+                07 WS-PAG-CPAISNACIMIENTO     PIC X(3) VALUE SPACES.    04110000
+                07 WS-PAG-CPAISOBLIGACIONES1 PIC X(3) VALUE SPACES.     04120000
+                07 WS-PAG-CPAISOBLIGACIONES2 PIC X(3) VALUE SPACES.     04130000
+                07 WS-PAG-CPAISOBLIGACIONES3 PIC X(3) VALUE SPACES.     04140000
+                07 WS-PAG-SPAISRESIDENCIA     PIC X(3) VALUE SPACES.    04150000
+                07 WS-PAG-GPREFIJO-PAR        PIC X(3) VALUE SPACES.    04160000
+                07 WS-PAG-GPREFIJO-TRA        PIC X(3) VALUE SPACES.    04170000
+                07 WS-PAG-CPRP                PIC X(1) VALUE SPACES.    04180000
+      *     DATOS FISCALES PRIMER BENEFICIARIO                          04190000
+             05 WS-PAG-DISCAPACITADO1    PIC X(1)   VALUE SPACES.       04200000
+             05 WS-PAG-PREST-VIVIENDA1 PIC X(2)     VALUE SPACES.       04210000
+             05 WS-PAG-SITUACION-FAMI1 PIC X(20)    VALUE SPACES.       04220000
+             05 WS-PAG-NIF-CONYUGE1      PIC X(10)  VALUE SPACES.       04230000
+             05 WS-PAG-IMPCOMPENSATORIA1 PIC S9(07)V9(2) USAGE COMP-3.  04240000
+             05 WS-PAG-IMPALIMENHIJOS1 PIC S9(07)V9(2) USAGE COMP-3.    04250000
+      *                                                                 04260000
+             05 WS-PAG-FILLER            PIC X(165) VALUE SPACES.       04270000
+      *                                                                 04280000
+      **                                                                04290000
+      ** COPYS MÓDULOS                                                  04300000
+      **                                                                04310000
+                                                                        04320000
+      ****                                                              04330000
+       01   FILLER            PIC X(13)  VALUE 'FINAL-WORKING'.         04340000
+                                                                        04350000
+       PROCEDURE DIVISION.                                              04360000
+      *===================                                              04370000
+      *                                                                 04380000
+      ******************************************************************04390000
+      *                                                                *04400000
+      *               N I V E L               0                        *04410000
+      *                                                                *04420000
+      ******************************************************************04430000
+                                                                        04440000
+       INICIO SECTION.                                                  04450000
+                                                                        04460000
+           PERFORM 1000-P-PROGRAMA.                                     04470000
+                                                                        04480000
+           PERFORM 2000-PROCESO.                                        04490000
+                                                                        04500000
+           PERFORM 3000-F-PROGRAMA.                                     04510000
+                                                                        04520000
+           PERFORM 10000-FIN.                                           04530000
+      /                                                                 04540000
+      ***************************************************************** 04550000
+      *                                                               * 04560000
+      *                T R A T A M I E N T O S                        * 04570000
+      *                                                               * 04580000
+      ***************************************************************** 04590000
+                                                                        04600000
+       1000-P-PROGRAMA.                                                 04610000
+      *                                                                 04620000
+      *****  ABRIMOS LOS FICHEROS.                                      04630000
+      *                                                                 04640000
+           OPEN INPUT  FICH-PEND FICH-PAG                               04650000
+           OPEN OUTPUT FICH-SAL1.                                       04660000
+                                                                        04670000
+       3000-F-PROGRAMA.                                                 04680000
+      *************                                                     04690000
+      *                                                                 04700000
+      ****   CERRAMOS LOS FICHEROS.                                     04710000
+      *                                                                 04720000
+           CLOSE FICH-PEND FICH-PAG                                     04730000
+                 FICH-SAL1.                                             04740000
+                                                                        04750000
+      ***************************************************************** 04760000
+      *                                                               * 04770000
+      *                R U T I N A S    A U X I L I A R E S           * 04780000
+      *                                                               * 04790000
+      ***************************************************************** 04800000
+      *                                                                 04810000
+       2000-PROCESO.                                                    04820000
+      ****************                                                  04830000
+                                                                        04840000
+           MOVE 'N' TO SW-FIN-FICH-PEND.                                04850000
+           MOVE 'N' TO SW-FIN-FICH-PAG.                                 04860000
+           PERFORM 2005-LEER-PEND.                                      04870000
+           PERFORM 2010-LEER-PAG.                                       04880000
+                                                                        04890000
+           PERFORM 2015-ESCRIBIR-SALIDA UNTIL SI-FIN-FICH-PAG OR        04900000
+                                              SI-FIN-FICH-PEND.         04910000
+                                                                        04920000
+           IF NO-FIN-FICH-PAG                                           04930000
+            PERFORM UNTIL SI-FIN-FICH-PAG                               04940000
+              WRITE RLIQ-PAGADAS   FROM WS-PAG-ENTRADA1                 04950000
+              ADD 1 TO CT-GRABADOS                                      04960000
+              PERFORM 2010-LEER-PAG                                     04970000
+            END-PERFORM                                                 04980000
+           END-IF.                                                      04990000
+                                                                        05000000
+      *---------------------*                                           05010000
+       2015-ESCRIBIR-SALIDA.                                            05020000
+      *---------------------*                                           05030000
+                                                                        05040000
+      *D*                                                               05050000
+           DISPLAY ' 2015-ESCRIBIR-SALIDA'                              05060000
+           DISPLAY ' WS-PEND-KPOLIZA: '  WS-PEND-KPOLIZA                05070000
+           DISPLAY ' WS-PAG-KPOLIZA: '   WS-PAG-KPOLIZA                 05080000
+      *F*                                                               05090000
+           IF WS-PAG-KPOLIZA = WS-PEND-KPOLIZA                          05100000
+              PERFORM 2010-LEER-PAG                                     05110000
+           ELSE                                                         05120000
+              IF WS-PAG-KPOLIZA > WS-PEND-KPOLIZA                       05130000
+                 PERFORM 2005-LEER-PEND                                 05140000
+              ELSE                                                      05150000
+                 IF WS-PAG-KPOLIZA < WS-PEND-KPOLIZA                    05160000
+      *D*                                                               05170000
+           DISPLAY ' ESCRIBO KPOLIZA: '   WS-PAG-KPOLIZA                05180000
+      *F*                                                               05190000
+                    WRITE RLIQ-PAGADAS   FROM WS-PAG-ENTRADA1           05200000
+                    ADD 1 TO CT-GRABADOS                                05210000
+                    PERFORM 2010-LEER-PAG                               05220000
+                 END-IF                                                 05230000
+              END-IF                                                    05240000
+           END-IF.                                                      05250000
+                                                                        05260000
+      *---------------*                                                 05270000
+       2005-LEER-PEND.                                                  05280000
+      *---------------*                                                 05290000
+                                                                        05300000
+           READ FICH-PEND INTO WS-PEND-ENTRADA2                         05310000
+                AT END MOVE 'S' TO SW-FIN-FICH-PEND                     05320000
+           END-READ.                                                    05330000
+                                                                        05340000
+           IF NO-FIN-FICH-PEND                                          05350000
+              ADD 1 TO CT-LEIDOS-PEND                                   05360000
+           END-IF.                                                      05370000
+                                                                        05380000
+      *---------------*                                                 05390000
+       2010-LEER-PAG.                                                   05400000
+      *---------------*                                                 05410000
+                                                                        05420000
+           READ FICH-PAG INTO WS-PAG-ENTRADA1                           05430000
+                AT END MOVE 'S' TO SW-FIN-FICH-PAG                      05440000
+           END-READ.                                                    05450000
+                                                                        05460000
+           IF NO-FIN-FICH-PAG                                           05470000
+              ADD 1 TO CT-LEIDOS-PAG                                    05480000
+           END-IF.                                                      05490000
+                                                                        05500000
+      ***************************************************************   05510000
+       10000-FIN.                                                       05520000
+      ***************************************************************   05530000
+                                                                        05540000
+      *D*                                                               05550000
+           DISPLAY '************************************************'   05560000
+           DISPLAY '*      RESUMEN EJECUCION PROGRAMA B372J020     *'   05570000
+           DISPLAY '************************************************'   05580000
+           DISPLAY '* REG. LEIDOS VENCIMIENTOS PAGADOS   : '            05590000
+                                                CT-LEIDOS-PAG           05600000
+           DISPLAY '* REG. LEIDOS VENCIMIENTOS PENDIENTES: '            05610000
+                                                CT-LEIDOS-PEND          05620000
+           DISPLAY '* REG. GRABADOS VENCIMIENTOS PAGADOS : '            05630000
+                                                CT-GRABADOS             05640000
+           DISPLAY '*********************************************'      05650000
+      *F*                                                               05660000
+                                                                        05670000
+           GOBACK.                                                      05680000
+                                                                        05690000

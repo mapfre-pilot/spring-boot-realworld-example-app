@@ -1,0 +1,70 @@
+<%@ taglib uri="/WEB-INF/struts-html.tld" prefix="html" %>
+<%@ taglib uri="/WEB-INF/struts-bean.tld" prefix="bean" %>
+<%@ taglib uri="/WEB-INF/struts-logic.tld" prefix="logic" %>
+<%@ taglib uri="/WEB-INF/struts-nested.tld" prefix="nested" %>
+<%@ taglib uri="/WEB-INF/maptags.tld" prefix="map" %>
+
+				<nested:define id="vectorMensajes" property="vectorMensajes" toScope="request" type="java.util.Vector"/>
+				
+				<% if ((vectorMensajes != null) && (vectorMensajes.size()>0))
+					{ %>
+						
+
+				<div class="W100 C" style="height:16px">					
+					<span class="W100 C" style="border-top: 1px solid #bdc1c4; height: 17px; vertical-align: middle; background: url(<bean:write name="<%=com.mapfre.mavisa.wss372vencimientosmanuales.config.J372J001ConstantesVen.HTTP_PATH_ARQ%>"/>/img/degradado.gif) top right;">						
+						<div class="W100" style="height: 2px; overflow: hidden;">&nbsp;</div>
+						<span style="width: expression(this.parentElement.clientWidth - 35); height: 15px; vertical-align: middle;">
+						<div class="I AutoScrollY" style="width: expression(this.parentElement.clientWidth - 1); height: 15px; vertical-align: middle; scrollbar-base-color: #CFCFCF;">
+
+					<%	int NumMsgs = vectorMensajes.size();
+						int AuxBucle = 0;
+						for (AuxBucle=0; AuxBucle<NumMsgs; AuxBucle++)
+						{
+							com.mapfre.mavisa.wss372vencimientosmanuales.utils.Msg EsteMensaje;
+							EsteMensaje = (com.mapfre.mavisa.wss372vencimientosmanuales.utils.Msg)vectorMensajes.elementAt(AuxBucle);
+
+							String stTipo = EsteMensaje.getTipo();
+							String stKeyMensaje = EsteMensaje.getKey();
+							String stMensaje = EsteMensaje.getTexto();
+							String stPrograma = EsteMensaje.getPrograma();
+							String tituloAyuda = stPrograma;
+							tituloAyuda = tituloAyuda.concat(" - ");
+							tituloAyuda = tituloAyuda.concat(stKeyMensaje);
+					
+							java.util.List listTipos = new java.util.ArrayList();
+							listTipos.add("XX");
+							listTipos.add("AA");
+							listTipos.add("II");
+							int index = listTipos.indexOf(stTipo);
+							
+							switch (index)
+							{
+								case 0:
+									%>
+										<img title="<%out.print(tituloAyuda);%>" src="<bean:write name="<%=com.mapfre.mavisa.wss372vencimientosmanuales.config.J372J001ConstantesVen.HTTP_PATH_ARQ%>"/>/img/ico_error.gif" width="12" height="12"/>&nbsp;&nbsp;<label><span><%out.print(stMensaje);%></span></label><br>
+									<%								
+									break;
+								case 1:
+									%>
+										<img title="<%out.print(tituloAyuda);%>" src="<bean:write name="<%=com.mapfre.mavisa.wss372vencimientosmanuales.config.J372J001ConstantesVen.HTTP_PATH_ARQ%>"/>/img/ico_infor_alert.gif"/>&nbsp;&nbsp;<label><span><%out.print(stMensaje);%></span></label><br>
+									<%								
+									break;
+								case 2:
+									%>
+										<img title="<%out.print(tituloAyuda);%>" src="<bean:write name="<%=com.mapfre.mavisa.wss372vencimientosmanuales.config.J372J001ConstantesVen.HTTP_PATH_ARQ%>"/>/img/ico_informacion.gif"/>&nbsp;&nbsp;<label><span><%out.print(stMensaje);%></span></label><br>
+									<%
+															
+									break;
+									
+								default :
+      								break;
+							}
+						} %>
+						</div></span>
+						<span width="5px" style="background-color: transparent;">&nbsp;</span>
+						<div class="W100" style="height: 2px; overflow: hidden;">&nbsp;</div>
+					</span>	
+				</div>
+				<%	} else { %>
+					<div class="W100 I" style="height:16px">&nbsp;</div>
+				<%	} %>

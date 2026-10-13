@@ -1,0 +1,35 @@
+      ******************************************************************00010000
+      *                                                                *00020000
+      * COPY:              X372N007                                    *00030001
+      * APLICACION:        VENCIMIENTOS FOXPRO                         *00040000
+      * DESCRIPCION:       COPY DE MODIFICACION DE COMPLEMENTARIOS     *00050000
+      * FECHA DE CREACION:  JUNIO 2012                                 *00060008
+      * AUTOR :            EVERIS                                      *00070000
+      *                                                                *00080000
+      ******************************************************************00091012
+      * MODIFICACION:                                                  *00092012
+      * --------------                                                 *00093012
+      * AUTOR: EVERIS                                                  *00094012
+      * FECHA: 22/11/2013                                              *00095012
+      * DESCRIPCION: SE MODIFICA PARA QUE EL PORCENTAJE DE 15 POR      *00096012
+      *              UN CAMPO DE ENTRADA                               *00097012
+      *                                                                *00098012
+      * BUSCAR: INC1                                                   *00099012
+      ******************************************************************00099112
+       05 X372N007.                                                     00100001
+          07 X372N007-ENTRADA.                                          00101002
+             10 X372N007-POLIZA           PIC X(10).                    00111011
+             10 X372N007-MODALIDAD        PIC X(3).                     00120009
+             10 X372N007-FVENCIMIENTO     PIC X(8).                     00130002
+             10 X372N007-BONO             PIC X(11).                    00140010
+INC1         10 X372N007-PRETENCION       PIC 9(2)V9(2).                00141012
+          07 X372N007-SALIDA.                                           00150002
+             10 X372N007-CRETORNO-S       PIC X(2).                     00160002
+             10 X372N007-GERROR-S         PIC X(70).                    00170002
+             10 X372N007-GNOMPROG-S       PIC X(8).                     00180002
+             10 X372N007-POLIZA-S         PIC X(10).                    00200002
+             10 X372N007-ANIO-S           PIC 9(04).                    00230003
+             10 X372N007-KEXPEDIENTE-S    PIC 9(10).                    00240003
+             10 X372N007-FECVENCIMICAP-S  PIC X(08).                    00250003
+             10 X372N007-IMPORTE-S        PIC 9(11)V9(2).               00260003
+             10 X372N007-TIPOIMPORTE-S    PIC X(01).                    00270004

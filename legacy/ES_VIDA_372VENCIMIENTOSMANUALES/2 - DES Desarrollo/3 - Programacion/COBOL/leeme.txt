@@ -1,0 +1,14 @@
+NO INCLUIR NADA AQUÍ DE FORMA MANUAL.
+
+En la carpeta de Programación Cobol, se incluirán en CVS los fuentes, copy, etc...
+de forma automática, en la promoción de aplicaciones, módulos, etc. usando la herramienta
+de traspasos del HOST al efecto.
+
+Al hacer checkout de un proyecto, aquí se mostrarán estos fuentes, con fines méramente
+de consulta:  consultar copys y concordancia con servicios XML, etc....
+
+En el proyecto de DESARROLLO (no el de INST.), se versionarán estos fuentes COBOL
+en el proceso de traspaso al entorno de TRANSITO/PREPRODUCCIÓN.
+
+En el proyecto de INSTALACION, se versionarán estos fuentes COBOL
+en el proceso de traspaso al entorno de PRODUCCIÓN.

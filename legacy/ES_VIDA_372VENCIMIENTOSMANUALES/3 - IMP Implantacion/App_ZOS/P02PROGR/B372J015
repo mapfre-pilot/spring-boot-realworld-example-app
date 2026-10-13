@@ -1,0 +1,2001 @@
+      *                                                                 00010000
+       IDENTIFICATION DIVISION.                                         00020000
+       PROGRAM-ID.            B372J015.                                 00030000
+      ******************************************************************00040000
+      *                                                                *00050000
+      *  ANALISTA ...:   CARLOS                                        *00060000
+      *                                                                *00070000
+      *  PROGRAMADOR.:   CARLOS                                        *00080000
+      *                                                                *00090000
+      *  FECHA DE REALIZACION : 26-11-2015                             *00100000
+      *                                                                *00110000
+      *  DESCRIPCION.:   PROGRAMA COPIA DEL B362J014, CON LA DIFERENCIA*00120000
+      *                  QUE EN VENCIMIENTOS NO SE INCLUYE LA FECHA    *00130000
+      *                  DE DOCUMENTO COMO CLAVE DE ENFRENTAMIENTO, EN *00140000
+      *                  RESCATES SI ES NECESARIO PORQUE PUEDE HABER   *00150000
+      *                  VARIOS RESCATES PARCIALES.                    *00160000
+      *                                                                *00170000
+      *                  A PARTIR DEL FICHERO DE DATOS ECONOMICOS PARA *00180000
+      *                  ENVIO A BDGI ANTERIOR, Y DEL FICHERO DE DATOS *00190000
+      *                  ECONOMICOS DEL PERIODO ACTUAL, AMBOS ORDENADOS*00200000
+      *                  POR NIF Y EXPEDIENTE, OBTIENE LOS DUPLICADOS  *00210000
+      *                  DEL FICHERO ANTERIOR QUE SE ENCUENTRAN EN EL  *00220000
+      *                  FICHERO ACTUAL                                *00230000
+      *                                                                *00240000
+      *                  SE INCLUYE UN NUEVO CAMPO DE COMPARACION, MO- *00250000
+      *                  DELO, Y ADEMAS SE INCLUYE UN NUEVO CAMPO EN S/*00260000
+      *                  QUE ES SI SE HA DETECTADO O NO CAMBIOS.       *00270000
+      *                                                                *00280000
+      *                  SI SE DETECTA UN DUPLICADO CON CAMBIOS SE GRA-*00290000
+      *                  BA EN SALIDA.                                 *00300000
+      *                                                                *00310000
+      ********************** ENTRADA / SALIDA **************************00320000
+      *                                                                *00330000
+      *  ENTRADA:                                                      *00340000
+      *                                                                *00350000
+      *      - E01 : FICHERO MAESTRO DATOS ECONOMICOS ENVIO A BDGI     *00360000
+      *              ACTUAL.                                           *00370000
+      *              (L.R. 435)                     (RD400116)         *00380000
+      *                                                                *00390000
+      *      - E02 : FICHERO MAESTRO DATOS ECONOMICOS ENVIO A BDGI     *00400000
+      *              ANTERIOR.                                         *00410000
+      *              (L.R. 435)                     (RD400116)         *00420000
+      *                                                                *00430000
+      *  SALIDA:                                                       *00440000
+      *                                                                *00450000
+      *      - S01 : FICHERO MAESTRO CON DATOS ECONOMICOS ACTUAL CON . *00460000
+      *              DULICADOS (ANTERIOR Y ACTUAL)                     *00470000
+      *              (L.R. 508)                                        *00480000
+      *                                                                *00490000
+      *      - S02 : FICHERO MAESTRO CON DATOS ECONOMICOS ANTERIOR     *00500000
+      *              CON DUPLICADOS PARA INCLUIR EN F. ACTUAL          *00510000
+      *              (L.R. 435)                                        *00520000
+      *                                                                *00530000
+      *      - S03 : FICHERO MAESTRO CON DATOS ECONOMICOS ACTUALES     *00540000
+      *              SIN DUPLICADOS PARA ENVIAR A BDGI                 *00550000
+      *              (L.R. 435)                                        *00560000
+      *                                                                *00570000
+      ******************************************************************00580000
+      *===============================================================* 00590000
+      *                                                               * 00600000
+      * PETICION    : MU-2016-000327       BUSCAR <<700327>           * 00610000
+      * AUTOR       : INDRA                                           * 00620000
+      * FECHA       : 16/01/2017                                      * 00630000
+      * DESCRIPCI”N : CAMBIO SUBCLAVE MODELO 190. ORDEN MINISTERIAL   * 00640000
+      *               HAP/1626/2016 DE 6 DE OCTUBRE.                  * 00650000
+      *                                                               * 00660000
+      ***************************************************************** 00670000
+      *  MODIFICACION                                                  *00680000
+      *  ------------                                                  *00690000
+      *  FECHA:       02-06-2017                                       *00700000
+      *  AUTORA:      EVERIS SPAIN                                     *00710000
+      *  ARTEMIS:     MU-2017-BDGI-R-V  RESCATES  Y VENCIMIENTOS       *00720000
+      *  DESCRIPCION: SE AÒADE CAMPOS ANIO Y EXPEDIENTE A LAS COPYS DE *00730000
+      *               ENTRADA Y SALIDA.                                *00740000
+      *  MU-2017-BDGI-R-V-INI 02/06/2017                               *00750000
+      *  MU-2017-BDGI-R-V-FIN 02/06/2017                               *00760000
+      ***************************************************************** 00770000
+      *  MODIFICACION                                                  *00780000
+      *  ------------                                                  *00790000
+      *  FECHA:       02-06-2017                                       *00800000
+      *  AUTORA:      EVERIS SPAIN                                     *00810000
+      *  ARTEMIS:     MU-2017-BDGI-R-V-V4                               00820000
+      *  DESCRIPCION: SE MODIFICA EL TRATAMIENTO ENTRE EXPEDIENTES EN  *00830000
+      *               VIGOR Y ANULADOS.                                *00840000
+      *  MU-2017-BDGI-R-V-V4 INI                                       *00850000
+      *  MU-2017-BDGI-R-V-V4 FIN                                       *00860000
+      ******************************************************************00870000
+      *  MODIFICACION                                                  *00880000
+      *  ------------                                                  *00890000
+      *  FECHA:       08-06-2017                                       *00900000
+      *  AUTORA:      EVERIS SPAIN                                     *00910000
+      *  ARTEMIS:     MU-2017-BDGI-R-V-V5                               00920000
+      *  DESCRIPCION: SE MODIFICA EL TRATAMIENTO DE A.EJERCICIO CON    *00930000
+      *               REGISTRO ACTUAL.                                * 00940000
+      *  MU-2017-BDGI-R-V-V5 INI                                      * 00950000
+      *  MU-2017-BDGI-R-V-V5 FIN                                      * 00960000
+      ******************************************************************00970000
+      *  MODIFICACION                                                  *00980000
+      *  ------------                                                  *00990000
+      *  FECHA:       20-09-2017                                       *01000000
+      *  AUTORA:      EVERIS SPAIN                                     *01010000
+      *  ARTEMIS:     MU-2017-BDGI-R-V-V6                              *01020000
+      *  DESCRIPCION: SE ELIMINA DEL CRUCE POLIZA,SUBPOLIZA,CERTIFICAD *01030000
+      *               Y TIPO-DOC.                                      *01040000
+      *  MU-2017-BDGI-R-V-V6 INI                                       *01050000
+      *  MU-2017-BDGI-R-V-V6 FIN                                       *01060000
+      ******************************************************************01070000
+      *  MODIFICACION                                                  *01080000
+      *  ------------                                                  *01090000
+      *  FECHA:       23-10-2017                                       *01100000
+      *  AUTORA:      EVERIS SPAIN                                     *01110000
+      *  ARTEMIS:     MU-2017-BDGI-R-V-V7                              *01120000
+      *  DESCRIPCION: SI TRATAMOS UNA ANULACION/MODIF DEL EJERCICIO EN *01130000
+      *               CURSO GRABAMOS EL A—O Y EL MES DE EJERICIO ACTUAL*01140000
+      *               Y NO EL A—O Y MES QUE SE GRABO EN CINTA          *01150000
+      *  MU-2017-BDGI-R-V-V7 INI                                       *01160000
+      *  MU-2017-BDGI-R-V-V7 FIN                                       *01170000
+      ******************************************************************01180000
+      ******************************************************************01190000
+      *  MODIFICACION                                                  *01200000
+      *  ------------                                                  *01210000
+      *  FECHA:       30-10-2017                                       *01220000
+      *  AUTORA:      EVERIS SPAIN                                     *01230000
+      *  ARTEMIS:     MU-2017-BDGI-R-V-V7                              *01240000
+      *  DESCRIPCION: VAMOS A DIFERENCICAR, AL GRABAR EN SYS005, SI EL *01250000
+      *               REG PROVIENE DE CINTA (C) O ES UN NUEVO (A)      *01260000
+      *  MU-2017-BDGI-R-V-V8 INI                                       *01270000
+      *  MU-2017-BDGI-R-V-V8 FIN                                       *01280000
+      ******************************************************************01290000
+      *                                                               * 01292001
+      * PETICION    : MU-2020-029445       BUSCAR <<029445>           * 01293001
+      * AUTOR       : INDRA                                           * 01294001
+      * FECHA       : 24/04/2020                                      * 01295001
+      * DESCRIPCI”N : MODELO 190 EXIMIDO DE RETENCI”N DEBE LLEVAR     * 01296001
+      *          ”  : CLAVE/SUBCL, L05 SE QUITAR EL” MOVER SIEMPRE 03 * 01297001
+      ***************************************************************** 01298001
+      /                                                                 01300000
+       ENVIRONMENT DIVISION.                                            01310000
+      *--------------------                                             01320000
+                                                                        01330000
+       CONFIGURATION SECTION.                                           01340000
+       SPECIAL-NAMES.                                                   01350000
+           DECIMAL-POINT IS COMMA.                                      01360000
+                                                                        01370000
+       INPUT-OUTPUT SECTION.                                            01380000
+       FILE-CONTROL.                                                    01390000
+           SELECT E01-MAEACT    ASSIGN SYS001.                          01400000
+           SELECT E02-MAEANT    ASSIGN SYS002.                          01410000
+           SELECT S01-MAESAL    ASSIGN SYS003.                          01420000
+           SELECT S02-DUPLI     ASSIGN SYS004.                          01430000
+           SELECT S03-SIN-DUPLI ASSIGN SYS005.                          01440000
+           SELECT S03-CABECERAS ASSIGN SYS006.                          01450000
+           SELECT S07-COMPLETO  ASSIGN SYS007.                          01460000
+                                                                        01470000
+      /                                                                 01480000
+       DATA DIVISION.                                                   01490000
+      *-------------                                                    01500000
+                                                                        01510000
+       FILE SECTION.                                                    01520000
+                                                                        01530000
+        FD   E01-MAEACT                                                 01540000
+             LABEL RECORD STANDARD                                      01550000
+             BLOCK CONTAINS  0 RECORDS                                  01560000
+             RECORDING MODE  F                                          01570000
+             DATA RECORD  IS R-MAEACT-E01.                              01580000
+                                                                        01590000
+        01   R-MAEACT-E01.                                              01600000
+01           03 FILLER           PIC X(017).                            01610000
+18           03 NIF-E01          PIC X(009).                            01620000
+27           03 FILLER           PIC X(028).                            01630000
+55           03 KPOLIZA-E01      PIC X(010).                            01640000
+65           03 SUBPOLIZA-E01    PIC X(004).                            01650000
+69           03 CERTIFICADO-E01  PIC X(006).                            01660000
+75           03 FILLER           PIC X(115).                            01670000
+191          03 MODELO-E01       PIC X(003).                            01680000
+194          03 FILLER           PIC X(243).                            01690000
+             03 INCIDENCIA       PIC X(005).                            01700000
+             03 DESCRIPCION      PIC X(060).                            01710000
+      *MU-2017-BDGI-R-V-INI                                             01720000
+             03 ANIO-E01         PIC 9(4).                              01730000
+             03 KXPEDIENTE-E01   PIC 9(10).                             01740000
+      *MU-2017-BDGI-R-V-FIN                                             01750000
+                                                                        01760000
+        FD   E02-MAEANT                                                 01770000
+             LABEL RECORD STANDARD                                      01780000
+             BLOCK CONTAINS  0 RECORDS                                  01790000
+             RECORDING MODE  F                                          01800000
+             DATA RECORD  IS R-MAEANT-E02.                              01810000
+                                                                        01820000
+        01   R-MAEANT-E02.                                              01830000
+01           03 FILLER           PIC X(017).                            01840000
+18           03 NIF-E02          PIC X(009).                            01850000
+27           03 FILLER           PIC X(028).                            01860000
+55           03 KPOLIZA-E02      PIC X(010).                            01870000
+65           03 SUBPOLIZA-E02    PIC X(004).                            01880000
+69           03 CERTIFICADO-E02  PIC X(006).                            01890000
+75           03 FILLER           PIC X(115).                            01900000
+191          03 MODELO-E02       PIC X(003).                            01910000
+194          03 FILLER           PIC X(243).                            01920000
+      *MU-2017-BDGI-R-V-INI                                             01930000
+             03 ANIO-E02         PIC 9(4).                              01940000
+             03 KXPEDIENTE-E02   PIC 9(10).                             01950000
+      *MU-2017-BDGI-R-V-FIN                                             01960000
+                                                                        01970000
+        FD   S01-MAESAL                                                 01980000
+             LABEL RECORD STANDARD                                      01990000
+             BLOCK CONTAINS  0 RECORDS                                  02000000
+             RECORDING MODE  F                                          02010000
+             DATA RECORD  IS R-MAESAL-S01.                              02020000
+                                                                        02030000
+        01   R-MAESAL-S01.                                              02040000
+             03 S01-TIPO         PIC X(008).                            02050000
+*******      03 S01-DATOS        PIC X(435).                            02060000
+             03 S01-DATOS        PIC X(497).                            02070000
+             03 S01-RESTO        PIC X(265).                            02080000
+                                                                        02090000
+        FD   S02-DUPLI                                                  02100000
+             LABEL RECORD STANDARD                                      02110000
+             BLOCK CONTAINS  0 RECORDS                                  02120000
+             RECORDING MODE  F                                          02130000
+             DATA RECORD  IS R-DUPLI-S02.                               02140000
+                                                                        02150000
+      *MU-2017-BDGI-R-V-INI                                             02160000
+      *  01   R-DUPLI-S02         PIC X(435).                           02170000
+        01   R-DUPLI-S02.                                               02180000
+             03 SAL-R-DUPLI-S02  PIC X(435).                            02190000
+             03 ANIO-S02         PIC 9(4)V.                             02200000
+             03 KXPEDIENTE-S02   PIC 9(10)V.                            02210000
+      *MU-2017-BDGI-R-V-FIN                                             02220000
+                                                                        02230000
+        FD   S03-SIN-DUPLI                                              02240000
+             LABEL RECORD STANDARD                                      02250000
+             BLOCK CONTAINS  0 RECORDS                                  02260000
+             RECORDING MODE  F                                          02270000
+             DATA RECORD  IS R-SIN-DUPLI-S03.                           02280000
+      *MU-2017-BDGI-R-V-INI                                             02290000
+      *  01   R-SIN-DUPLI-S03    PIC X(435).                            02300000
+        01   R-SIN-DUPLI-S03.                                           02310000
+             03 SAL-SIN-DUPLI-S      PIC X(435).                        02320000
+             03 ANIO-SIN-S03         PIC 9(4).                          02330000
+             03 KXPEDIENTE-SIN-S03   PIC 9(10).                         02340000
+      *MU-2017-BDGI-R-V-FIN                                             02350000
+                                                                        02360000
+        FD   S03-CABECERAS                                              02370000
+             LABEL RECORD STANDARD                                      02380000
+             BLOCK CONTAINS  0 RECORDS                                  02390000
+             RECORDING MODE  F                                          02400000
+             DATA RECORD  IS R-S03-CABECERAS.                           02410000
+                                                                        02420000
+        01   R-S03-CABECERAS    PIC X(754).                             02430000
+                                                                        02440000
+        FD   S07-COMPLETO                                               02450000
+             LABEL RECORD STANDARD                                      02460000
+             BLOCK CONTAINS  0 RECORDS                                  02470000
+             RECORDING MODE  F                                          02480000
+             DATA RECORD  IS REG-COMPLETO.                              02490000
+                                                                        02500000
+        01   REG-COMPLETO.                                              02510000
+             03 S07-TIPO         PIC X(008).                            02520000
+             03 S07-DATOS        PIC X(497).                            02530000
+             03 S07-REG-INCIDEN  PIC X(70).                             02540000
+             03 S07-RESTO        PIC X(220).                            02550000
+                                                                        02560000
+      /                                                                 02570000
+       WORKING-STORAGE SECTION.                                         02580000
+      *-----------------------                                          02590000
+                                                                        02600000
+       01  WS-FILLER.                                                   02610000
+           03 FILLER                   PIC X(17)           VALUE        02620000
+              'INICIO DE WORKING'.                                      02630000
+      *                                                                 02640000
+      *** SWITCHS                                                       02650000
+      *                                                                 02660000
+                                                                        02670000
+      *                                                                 02680000
+      *** INDICES                                                       02690000
+      *                                                                 02700000
+                                                                        02710000
+      *                                                                 02720000
+      *** CONTADORES                                                    02730000
+      *                                                                 02740000
+           03 CT-CONTADORES.                                            02750000
+              05 CT-LEIDOS1                  PIC 9(07) VALUE  ZEROS.    02760000
+              05 CT-LEIDOS2                  PIC 9(07) VALUE  ZEROS.    02770000
+              05 CT-NO-ENCONTRADOS-ANT       PIC 9(07) VALUE  ZEROS.    02780000
+              05 CT-NO-ENCONTRADOS-ACT       PIC 9(07) VALUE  ZEROS.    02790000
+              05 CT-GRABADOS-INF             PIC 9(07) VALUE  ZEROS.    02800000
+              05 CT-GRABADOS-DUP             PIC 9(07) VALUE  ZEROS.    02810000
+              05 CT-GRABADOS-SIN-DUP         PIC 9(07) VALUE  ZEROS.    02820000
+160216        05 CT-GRABADOS-CON-DUP         PIC 9(07) VALUE  ZEROS.    02830000
+              05 CT-GRABADOS-SIN-DUP-IGUAL   PIC 9(07) VALUE  ZEROS.    02840000
+                                                                        02850000
+      *                                                                 02860000
+      *** ACUMULADORES                                                  02870000
+      *                                                                 02880000
+             03 S01-DATOS-FORMATO.                                      02890000
+               05  FILLER                   PIC X(01) VALUE ';'.        02900000
+               05  S01-CIMPUESTOS           PIC X(01).                  02910000
+               05  FILLER                   PIC X(01) VALUE ';'.        02920000
+               05  S01-CSISTEMA             PIC X(02).                  02930000
+               05  FILLER                   PIC X(01) VALUE ';'.        02940000
+               05  S01-COPERACION           PIC X(02).                  02950000
+               05  FILLER                   PIC X(01) VALUE ';'.        02960000
+               05  S01-CSOCIEDAD            PIC X(04).                  02970000
+               05  FILLER                   PIC X(01) VALUE ';'.        02980000
+               05  S01-FAEJERCICIO          PIC 9(04).                  02990000
+               05  FILLER                   PIC X(01) VALUE ';'.        03000000
+               05  S01-FMIMPUTACION         PIC 9(02).                  03010000
+               05  FILLER                   PIC X(01) VALUE ';'.        03020000
+               05  S01-CPROVFISCAL          PIC 9(02).                  03030000
+               05  FILLER                   PIC X(01) VALUE ';'.        03040000
+               05  S01-CIDENTIFICACION PIC X(20).                       03050000
+               05  FILLER                   PIC X(01) VALUE ';'.        03060000
+               05  S01-CMONEDA              PIC X(03).                  03070000
+               05  FILLER                   PIC X(01) VALUE ';'.        03080000
+               05  S01-FDOCUMENTO.                                      03090000
+                   07  S01-ADOCUMENTO       PIC 9(4).                   03100000
+                   07  S01-MDOCUMENTO       PIC 9(2).                   03110000
+                   07  S01-DDOCUMENTO       PIC 9(2).                   03120000
+               05  FILLER                   PIC X(01) VALUE ';'.        03130000
+               05  S01-CTIPDOC              PIC X(02).                  03140000
+               05  FILLER                   PIC X(01) VALUE ';'.        03150000
+               05  S01-CREFERENCIA.                                     03160000
+                   07  S01-LIBRE            PIC X(4).                   03170000
+                   07  S01-KPOLIZA          PIC 9(10).                  03180000
+                   07  S01-NSUBPOLIZA       PIC 9(4).                   03190000
+                   07  S01-NCERTIFICADO     PIC 9(6).                   03200000
+                                                                        03210000
+               05  FILLER                   PIC X(01) VALUE ';'.        03220000
+               05  S01-DATOS-IVA.                                       03230000
+                   07  S01-COPERACIONIVA    PIC X(02).                  03240000
+                   07  FILLER               PIC X(01) VALUE ';'.        03250000
+                   07  S01-ETOTALFACTURA    PIC ---.---.--9,99.         03260000
+                   07  FILLER               PIC X(01) VALUE ';'.        03270000
+                   07  S01-EBASEIMPONIBLE   PIC ---.---.--9,99.         03280000
+                   07  FILLER               PIC X(01) VALUE ';'.        03290000
+                   07  S01-CIMPUESTO        PIC X(04).                  03300000
+                   07  FILLER               PIC X(01) VALUE ';'.        03310000
+                   07  S01-CIVA             PIC X(01).                  03320000
+                   07  FILLER               PIC X(01) VALUE ';'.        03330000
+                   07  S01-CGRUPOIVA        PIC 9(02).                  03340000
+                   07  FILLER               PIC X(01) VALUE ';'.        03350000
+                   07  S01-CINDIVASAP       PIC X(02).                  03360000
+                   07  FILLER               PIC X(01) VALUE ';'.        03370000
+                   07  S01-PIMPUESTO        PIC 999,99.                 03380000
+                   07  FILLER               PIC X(01) VALUE ';'.        03390000
+                   07  S01-EIMPUESTO        PIC ---.---.--9,99.         03400000
+                   07  FILLER               PIC X(01) VALUE ';'.        03410000
+                   07  S01-NASIENTO         PIC 9(10).                  03420000
+                   07  FILLER               PIC X(01) VALUE ';'.        03430000
+                   07  S01-NSERIE           PIC 9(01).                  03440000
+                   07  FILLER               PIC X(01) VALUE ';'.        03450000
+                   07  S01-NCTACONTABLE     PIC 9(10).                  03460000
+                   07  FILLER               PIC X(01) VALUE ';'.        03470000
+                   07  S01-CEDIFICIO        PIC 9(12).                  03480000
+                   07  FILLER               PIC X(01) VALUE ';'.        03490000
+                   07  S01-NREFCATASTRAL    PIC X(25).                  03500000
+                                                                        03510000
+               05  FILLER                   PIC X(01) VALUE ';'.        03520000
+               05  S01-DATOS-IRPF.                                      03530000
+                   07  S01-CMODELO          PIC X(03).                  03540000
+                   07  FILLER               PIC X(01) VALUE ';'.        03550000
+                   07  S01-CNATURALEZA      PIC X(01).                  03560000
+                   07  FILLER               PIC X(01) VALUE ';'.        03570000
+                   07  S01-CCLAVE           PIC X(01).                  03580000
+                   07  FILLER               PIC X(01) VALUE ';'.        03590000
+                   07  S01-CSUBCLAVE        PIC X(02).                  03600000
+                   07  FILLER               PIC X(01) VALUE ';'.        03610000
+                   07  S01-EPRESTACION      PIC ---.---.--9,99.         03620000
+                   07  FILLER               PIC X(01) VALUE ';'.        03630000
+                   07  S01-EPRIMPAGADAS     PIC ---.---.--9,99.         03640000
+                   07  FILLER               PIC X(01) VALUE ';'.        03650000
+                   07  S01-EPRIMIMPUTADAS   PIC ---.---.--9,99.         03660000
+                   07  FILLER               PIC X(01) VALUE ';'.        03670000
+                   07  S01-ERENDIMIENTO     PIC ---.---.--9,99.         03680000
+                   07  FILLER               PIC X(01) VALUE ';'.        03690000
+                   07  S01-EREDUCCION1      PIC ---.---.--9,99.         03700000
+                   07  FILLER               PIC X(01) VALUE ';'.        03710000
+                   07  S01-EREDUCCION2      PIC ---.---.--9,99.         03720000
+                   07  FILLER               PIC X(01) VALUE ';'.        03730000
+                   07  S01-EREDUCCION3      PIC ---.---.--9,99.         03740000
+                   07  FILLER               PIC X(01) VALUE ';'.        03750000
+                   07  S01-EREDUCCION4      PIC ---.---.--9,99.         03760000
+                   07  FILLER               PIC X(01) VALUE ';'.        03770000
+                   07  S01-EREDUCCION5      PIC ---.---.--9,99.         03780000
+                   07  FILLER               PIC X(01) VALUE ';'.        03790000
+                   07  S01-EBASERETENCION   PIC ---.---.--9,99.         03800000
+                   07  FILLER               PIC X(01) VALUE ';'.        03810000
+                   07  S01-PRETENCION       PIC 999,99.                 03820000
+                   07  FILLER               PIC X(01) VALUE ';'.        03830000
+                   07  S01-ERETENCION       PIC ---.---.--9,99.         03840000
+                   07  FILLER               PIC X(01) VALUE ';'.        03850000
+                   07  S01-CCTARETENCION    PIC 9(10).                  03860000
+                   07  FILLER               PIC X(01) VALUE ';'.        03870000
+                   07  S01-CCTAGASTO        PIC 9(10).                  03880000
+                   07  FILLER               PIC X(01) VALUE ';'.        03890000
+                   07  S01-CCEUTAMELILLA    PIC X(01).                  03900000
+                   07  FILLER               PIC X(01) VALUE ';'.        03910000
+                   07  S01-FAEJERCICIO-DEVENGO                          03920000
+                                            PIC 9(04).                  03930000
+               05  FILLER                   PIC X(01) VALUE ';'.        03940000
+               05  S01-DATOS-NORESIDEN.                                 03950000
+                   07  S01-GMEDIADOR        PIC X(01).                  03960000
+                   07  FILLER               PIC X(01) VALUE ';'.        03970000
+                   07  S01-GCLAVECOD        PIC X(01).                  03980000
+                   07  FILLER               PIC X(01) VALUE ';'.        03990000
+                   07  S01-GCODEMISOR       PIC X(12).                  04000000
+                   07  FILLER               PIC X(01) VALUE ';'.        04010000
+                   07  S01-CTIPOPAGO        PIC 9(01).                  04020000
+                   07  FILLER               PIC X(01) VALUE ';'.        04030000
+                   07  S01-GTIPOCOD         PIC X(01).                  04040000
+                   07  FILLER               PIC X(01) VALUE ';'.        04050000
+                   07  S01-GCODCTAVALOR     PIC X(20).                  04060000
+                   07  FILLER               PIC X(01) VALUE ';'.        04070000
+                   07  S01-GPENDIENTE       PIC X(01).                  04080000
+                   07  FILLER               PIC X(01) VALUE ';'.        04090000
+                   07  S01-CCODPAIS         PIC 9(03).                  04100000
+                   07  FILLER               PIC X(01) VALUE ';'.        04110000
+                   07  S01-GRESIDENCIA      PIC X(01).                  04120000
+                   07  FILLER               PIC X(01) VALUE ';'.        04130000
+                   07  S01-GPAGOPREVOK      PIC X(01).                  04140000
+                   07  FILLER               PIC X(01) VALUE ';'.        04150000
+                   07  S01-GCODCALCFIS      PIC X(12).                  04160000
+                                                                        04170000
+               05  FILLER                   PIC X(01) VALUE ';'.        04180000
+               05  S01-DATOS-AUXILIARES.                                04190000
+                   07  S01-SWCAMBIO         PIC X(02).                  04200000
+                                                                        04210000
+             03 S07-DATOS-INCID.                                        04220000
+               05  FILLER                   PIC X(01) VALUE ';'.        04230000
+               05  S07-INCIDENCIA           PIC X(08).                  04240000
+               05  FILLER                   PIC X(01) VALUE ';'.        04250000
+               05  S07-DESCRIPCION          PIC X(60).                  04260000
+                                                                        04270000
+             03 S07-DATOS-FORMATO.                                      04280000
+               05  FILLER                   PIC X(01) VALUE ';'.        04290000
+               05  S07-CIMPUESTOS           PIC X(01).                  04300000
+               05  FILLER                   PIC X(01) VALUE ';'.        04310000
+               05  S07-CSISTEMA             PIC X(02).                  04320000
+               05  FILLER                   PIC X(01) VALUE ';'.        04330000
+               05  S07-COPERACION           PIC X(02).                  04340000
+               05  FILLER                   PIC X(01) VALUE ';'.        04350000
+               05  S07-CSOCIEDAD            PIC X(04).                  04360000
+               05  FILLER                   PIC X(01) VALUE ';'.        04370000
+               05  S07-FAEJERCICIO          PIC 9(04).                  04380000
+               05  FILLER                   PIC X(01) VALUE ';'.        04390000
+               05  S07-FMIMPUTACION         PIC 9(02).                  04400000
+               05  FILLER                   PIC X(01) VALUE ';'.        04410000
+               05  S07-CPROVFISCAL          PIC 9(02).                  04420000
+               05  FILLER                   PIC X(01) VALUE ';'.        04430000
+               05  S07-CIDENTIFICACION PIC X(20).                       04440000
+               05  FILLER                   PIC X(01) VALUE ';'.        04450000
+               05  S07-CMONEDA              PIC X(03).                  04460000
+               05  FILLER                   PIC X(01) VALUE ';'.        04470000
+               05  S07-FDOCUMENTO.                                      04480000
+                   07  S07-ADOCUMENTO       PIC 9(4).                   04490000
+                   07  S07-MDOCUMENTO       PIC 9(2).                   04500000
+                   07  S07-DDOCUMENTO       PIC 9(2).                   04510000
+               05  FILLER                   PIC X(01) VALUE ';'.        04520000
+               05  S07-CTIPDOC              PIC X(02).                  04530000
+               05  FILLER                   PIC X(01) VALUE ';'.        04540000
+               05  S07-CREFERENCIA.                                     04550000
+                   07  S07-LIBRE            PIC X(4).                   04560000
+                   07  S07-KPOLIZA          PIC 9(10).                  04570000
+                   07  S07-NSUBPOLIZA       PIC 9(4).                   04580000
+                   07  S07-NCERTIFICADO     PIC 9(6).                   04590000
+                                                                        04600000
+               05  FILLER                   PIC X(01) VALUE ';'.        04610000
+               05  S07-DATOS-IVA.                                       04620000
+                   07  S07-COPERACIONIVA    PIC X(02).                  04630000
+                   07  FILLER               PIC X(01) VALUE ';'.        04640000
+                   07  S07-ETOTALFACTURA    PIC ---.---.--9,99.         04650000
+                   07  FILLER               PIC X(01) VALUE ';'.        04660000
+                   07  S07-EBASEIMPONIBLE   PIC ---.---.--9,99.         04670000
+                   07  FILLER               PIC X(01) VALUE ';'.        04680000
+                   07  S07-CIMPUESTO        PIC X(04).                  04690000
+                   07  FILLER               PIC X(01) VALUE ';'.        04700000
+                   07  S07-CIVA             PIC X(01).                  04710000
+                   07  FILLER               PIC X(01) VALUE ';'.        04720000
+                   07  S07-CGRUPOIVA        PIC 9(02).                  04730000
+                   07  FILLER               PIC X(01) VALUE ';'.        04740000
+                   07  S07-CINDIVASAP       PIC X(02).                  04750000
+                   07  FILLER               PIC X(01) VALUE ';'.        04760000
+                   07  S07-PIMPUESTO        PIC 999,99.                 04770000
+                   07  FILLER               PIC X(01) VALUE ';'.        04780000
+                   07  S07-EIMPUESTO        PIC ---.---.--9,99.         04790000
+                   07  FILLER               PIC X(01) VALUE ';'.        04800000
+                   07  S07-NASIENTO         PIC 9(10).                  04810000
+                   07  FILLER               PIC X(01) VALUE ';'.        04820000
+                   07  S07-NSERIE           PIC 9(01).                  04830000
+                   07  FILLER               PIC X(01) VALUE ';'.        04840000
+                   07  S07-NCTACONTABLE     PIC 9(10).                  04850000
+                   07  FILLER               PIC X(01) VALUE ';'.        04860000
+                   07  S07-CEDIFICIO        PIC 9(12).                  04870000
+                   07  FILLER               PIC X(01) VALUE ';'.        04880000
+                   07  S07-NREFCATASTRAL    PIC X(25).                  04890000
+                                                                        04900000
+               05  FILLER                   PIC X(01) VALUE ';'.        04910000
+               05  S07-DATOS-IRPF.                                      04920000
+                   07  S07-CMODELO          PIC X(03).                  04930000
+                   07  FILLER               PIC X(01) VALUE ';'.        04940000
+                   07  S07-CNATURALEZA      PIC X(01).                  04950000
+                   07  FILLER               PIC X(01) VALUE ';'.        04960000
+                   07  S07-CCLAVE           PIC X(01).                  04970000
+                   07  FILLER               PIC X(01) VALUE ';'.        04980000
+                   07  S07-CSUBCLAVE        PIC X(02).                  04990000
+                   07  FILLER               PIC X(01) VALUE ';'.        05000000
+                   07  S07-EPRESTACION      PIC ---.---.--9,99.         05010000
+                   07  FILLER               PIC X(01) VALUE ';'.        05020000
+                   07  S07-EPRIMPAGADAS     PIC ---.---.--9,99.         05030000
+                   07  FILLER               PIC X(01) VALUE ';'.        05040000
+                   07  S07-EPRIMIMPUTADAS   PIC ---.---.--9,99.         05050000
+                   07  FILLER               PIC X(01) VALUE ';'.        05060000
+                   07  S07-ERENDIMIENTO     PIC ---.---.--9,99.         05070000
+                   07  FILLER               PIC X(01) VALUE ';'.        05080000
+                   07  S07-EREDUCCION1      PIC ---.---.--9,99.         05090000
+                   07  FILLER               PIC X(01) VALUE ';'.        05100000
+                   07  S07-EREDUCCION2      PIC ---.---.--9,99.         05110000
+                   07  FILLER               PIC X(01) VALUE ';'.        05120000
+                   07  S07-EREDUCCION3      PIC ---.---.--9,99.         05130000
+                   07  FILLER               PIC X(01) VALUE ';'.        05140000
+                   07  S07-EREDUCCION4      PIC ---.---.--9,99.         05150000
+                   07  FILLER               PIC X(01) VALUE ';'.        05160000
+                   07  S07-EREDUCCION5      PIC ---.---.--9,99.         05170000
+                   07  FILLER               PIC X(01) VALUE ';'.        05180000
+                   07  S07-EBASERETENCION   PIC ---.---.--9,99.         05190000
+                   07  FILLER               PIC X(01) VALUE ';'.        05200000
+                   07  S07-PRETENCION       PIC 999,99.                 05210000
+                   07  FILLER               PIC X(01) VALUE ';'.        05220000
+                   07  S07-ERETENCION       PIC ---.---.--9,99.         05230000
+                   07  FILLER               PIC X(01) VALUE ';'.        05240000
+                   07  S07-CCTARETENCION    PIC 9(10).                  05250000
+                   07  FILLER               PIC X(01) VALUE ';'.        05260000
+                   07  S07-CCTAGASTO        PIC 9(10).                  05270000
+                   07  FILLER               PIC X(01) VALUE ';'.        05280000
+                   07  S07-CCEUTAMELILLA    PIC X(01).                  05290000
+                   07  FILLER               PIC X(01) VALUE ';'.        05300000
+                   07  S07-FAEJERCICIO-DEVENGO                          05310000
+                                            PIC 9(04).                  05320000
+               05  FILLER                   PIC X(01) VALUE ';'.        05330000
+               05  S07-DATOS-NORESIDEN.                                 05340000
+                   07  S07-GMEDIADOR        PIC X(01).                  05350000
+                   07  FILLER               PIC X(01) VALUE ';'.        05360000
+                   07  S07-GCLAVECOD        PIC X(01).                  05370000
+                   07  FILLER               PIC X(01) VALUE ';'.        05380000
+                   07  S07-GCODEMISOR       PIC X(12).                  05390000
+                   07  FILLER               PIC X(01) VALUE ';'.        05400000
+                   07  S07-CTIPOPAGO        PIC 9(01).                  05410000
+                   07  FILLER               PIC X(01) VALUE ';'.        05420000
+                   07  S07-GTIPOCOD         PIC X(01).                  05430000
+                   07  FILLER               PIC X(01) VALUE ';'.        05440000
+                   07  S07-GCODCTAVALOR     PIC X(20).                  05450000
+                   07  FILLER               PIC X(01) VALUE ';'.        05460000
+                   07  S07-GPENDIENTE       PIC X(01).                  05470000
+                   07  FILLER               PIC X(01) VALUE ';'.        05480000
+                   07  S07-CCODPAIS         PIC 9(03).                  05490000
+                   07  FILLER               PIC X(01) VALUE ';'.        05500000
+                   07  S07-GRESIDENCIA      PIC X(01).                  05510000
+                   07  FILLER               PIC X(01) VALUE ';'.        05520000
+                   07  S07-GPAGOPREVOK      PIC X(01).                  05530000
+                   07  FILLER               PIC X(01) VALUE ';'.        05540000
+                   07  S07-GCODCALCFIS      PIC X(12).                  05550000
+                                                                        05560000
+               05  FILLER                   PIC X(01) VALUE ';'.        05570000
+               05  S07-DATOS-AUXILIARES.                                05580000
+                   07  S07-SWCAMBIO         PIC X(02).                  05590000
+                                                                        05600000
+           03 WS-CAB-SYS007.                                            05610000
+              05 FILLER   PIC X(06) VALUE 'ORIGEN'.                     05620000
+              05 FILLER   PIC X     VALUE ';'.                          05630000
+              05 FILLER   PIC X(09) VALUE 'SIMPUESTO'.                  05640000
+              05 FILLER   PIC X     VALUE ';'.                          05650000
+              05 FILLER   PIC X(11) VALUE 'COD.SISTEMA'.                05660000
+              05 FILLER   PIC X     VALUE ';'.                          05670000
+              05 FILLER   PIC X(14) VALUE 'COD. OPERACION'.             05680000
+              05 FILLER   PIC X     VALUE ';'.                          05690000
+              05 FILLER   PIC X(13) VALUE 'COD. SOCIEDAD'.              05700000
+              05 FILLER   PIC X     VALUE ';'.                          05710000
+              05 FILLER   PIC X(03) VALUE 'A—O'.                        05720000
+              05 FILLER   PIC X     VALUE ';'.                          05730000
+              05 FILLER   PIC X(03) VALUE 'MES'.                        05740000
+              05 FILLER   PIC X     VALUE ';'.                          05750000
+              05 FILLER   PIC X(11) VALUE 'PROV.FISCAL'.                05760000
+              05 FILLER   PIC X     VALUE ';'.                          05770000
+              05 FILLER   PIC X(12) VALUE 'NIF TERCEROS'.               05780000
+              05 FILLER   PIC X     VALUE ';'.                          05790000
+              05 FILLER   PIC X(11) VALUE 'COD. MONEDA'.                05800000
+              05 FILLER   PIC X     VALUE ';'.                          05810000
+              05 FILLER   PIC X(12) VALUE 'F. DOCUMENTO'.               05820000
+              05 FILLER   PIC X     VALUE ';'.                          05830000
+              05 FILLER   PIC X(09) VALUE 'TIPO DOC.'.                  05840000
+              05 FILLER   PIC X     VALUE ';'.                          05850000
+              05 FILLER   PIC X(15) VALUE 'REFERENCIA DOC.'.            05860000
+              05 FILLER   PIC X     VALUE ';'.                          05870000
+              05 FILLER   PIC X(10) VALUE 'TIPO OPER.'.                 05880000
+              05 FILLER   PIC X     VALUE ';'.                          05890000
+              05 FILLER   PIC X(13) VALUE 'TOTAL FACTURA'.              05900000
+              05 FILLER   PIC X     VALUE ';'.                          05910000
+              05 FILLER   PIC X(14) VALUE 'BASE IMPONIBLE'.             05920000
+              05 FILLER   PIC X     VALUE ';'.                          05930000
+              05 FILLER   PIC X(13) VALUE 'TIPO IMPUESTO'.              05940000
+              05 FILLER   PIC X     VALUE ';'.                          05950000
+              05 FILLER   PIC X(08) VALUE 'TIPO IVA'.                   05960000
+              05 FILLER   PIC X     VALUE ';'.                          05970000
+              05 FILLER   PIC X(11) VALUE 'IVA SOPORT.'.                05980000
+              05 FILLER   PIC X     VALUE ';'.                          05990000
+              05 FILLER   PIC X(13) VALUE 'INDIC IVA SAP'.              06000000
+              05 FILLER   PIC X     VALUE ';'.                          06010000
+              05 FILLER   PIC X(13) VALUE 'PORCENT. IMP.'.              06020000
+              05 FILLER   PIC X     VALUE ';'.                          06030000
+              05 FILLER   PIC X(12) VALUE 'IMPORTE IMP.'.               06040000
+              05 FILLER   PIC X     VALUE ';'.                          06050000
+              05 FILLER   PIC X(12) VALUE 'NUM. ASIENTO'.               06060000
+              05 FILLER   PIC X     VALUE ';'.                          06070000
+              05 FILLER   PIC X(10) VALUE 'NUM. SERIE'.                 06080000
+              05 FILLER   PIC X     VALUE ';'.                          06090000
+              05 FILLER   PIC X(15) VALUE 'CUENTA CONTABLE'.            06100000
+              05 FILLER   PIC X     VALUE ';'.                          06110000
+              05 FILLER   PIC X(13) VALUE 'COD. EDIFICIO'.              06120000
+              05 FILLER   PIC X     VALUE ';'.                          06130000
+              05 FILLER   PIC X(15) VALUE 'REF CATAST CCOA'.            06140000
+              05 FILLER   PIC X     VALUE ';'.                          06150000
+              05 FILLER   PIC X(11) VALUE 'NUM. MODELO'.                06160000
+              05 FILLER   PIC X     VALUE ';'.                          06170000
+              05 FILLER   PIC X(12) VALUE 'TIPO INGRESO'.               06180000
+              05 FILLER   PIC X     VALUE ';'.                          06190000
+              05 FILLER   PIC X(16) VALUE 'CLAVE PERCEPCION'.           06200000
+              05 FILLER   PIC X     VALUE ';'.                          06210000
+              05 FILLER   PIC X(16) VALUE 'SBCLV PERCEPCION'.           06220000
+              05 FILLER   PIC X     VALUE ';'.                          06230000
+              05 FILLER   PIC X(16) VALUE 'IBRTPREST IINDEN'.           06240000
+              05 FILLER   PIC X     VALUE ';'.                          06250000
+              05 FILLER   PIC X(14) VALUE 'PRIMAS PAGADAS'.             06260000
+              05 FILLER   PIC X     VALUE ';'.                          06270000
+              05 FILLER   PIC X(16) VALUE 'PRIMAS IMPUTADAS'.           06280000
+              05 FILLER   PIC X     VALUE ';'.                          06290000
+              05 FILLER   PIC X(13) VALUE 'REND. INTEGRO'.              06300000
+              05 FILLER   PIC X     VALUE ';'.                          06310000
+              05 FILLER   PIC X(13) VALUE 'IRREDUCCION-1'.              06320000
+              05 FILLER   PIC X     VALUE ';'.                          06330000
+              05 FILLER   PIC X(13) VALUE 'IRREDUCCION-2'.              06340000
+              05 FILLER   PIC X     VALUE ';'.                          06350000
+              05 FILLER   PIC X(13) VALUE 'IRREDUCCION-3'.              06360000
+              05 FILLER   PIC X     VALUE ';'.                          06370000
+              05 FILLER   PIC X(13) VALUE 'IRREDUCCION-4'.              06380000
+              05 FILLER   PIC X     VALUE ';'.                          06390000
+              05 FILLER   PIC X(13) VALUE 'IRREDUCCION-5'.              06400000
+              05 FILLER   PIC X     VALUE ';'.                          06410000
+              05 FILLER   PIC X(14) VALUE 'BASE RETENCION'.             06420000
+              05 FILLER   PIC X     VALUE ';'.                          06430000
+              05 FILLER   PIC X(11) VALUE 'P.RETENCION'.                06440000
+              05 FILLER   PIC X     VALUE ';'.                          06450000
+              05 FILLER   PIC X(09) VALUE 'RETENCION'.                  06460000
+              05 FILLER   PIC X     VALUE ';'.                          06470000
+              05 FILLER   PIC X(16) VALUE 'CUENTA RETENCION'.           06480000
+              05 FILLER   PIC X     VALUE ';'.                          06490000
+              05 FILLER   PIC X(12) VALUE 'CUENTA GASTO'.               06500000
+              05 FILLER   PIC X     VALUE ';'.                          06510000
+              05 FILLER   PIC X(13) VALUE 'CEUTA/MELILLA'.              06520000
+              05 FILLER   PIC X     VALUE ';'.                          06530000
+              05 FILLER   PIC X(11) VALUE 'A—O DEVENGO'.                06540000
+              05 FILLER   PIC X     VALUE ';'.                          06550000
+              05 FILLER   PIC X(08) VALUE 'MEDIADOR'.                   06560000
+              05 FILLER   PIC X     VALUE ';'.                          06570000
+              05 FILLER   PIC X(12) VALUE 'CLAVE CODIGO'.               06580000
+              05 FILLER   PIC X     VALUE ';'.                          06590000
+              05 FILLER   PIC X(10) VALUE 'COD EMISOR'.                 06600000
+              05 FILLER   PIC X     VALUE ';'.                          06610000
+              05 FILLER   PIC X(09) VALUE 'TIPO PAGO'.                  06620000
+              05 FILLER   PIC X     VALUE ';'.                          06630000
+              05 FILLER   PIC X(12) VALUE 'CUENTA VALOR'.               06640000
+              05 FILLER   PIC X     VALUE ';'.                          06650000
+              05 FILLER   PIC X(16) VALUE 'COD CUENT VALORS'.           06660000
+              05 FILLER   PIC X     VALUE ';'.                          06670000
+              05 FILLER   PIC X(11) VALUE 'SPENDIENTE'.                 06680000
+              05 FILLER   PIC X     VALUE ';'.                          06690000
+              05 FILLER   PIC X(16) VALUE 'COD PAIS TERCERO'.           06700000
+              05 FILLER   PIC X     VALUE ';'.                          06710000
+              05 FILLER   PIC X(16) VALUE 'SJUST RESIDENCIA'.           06720000
+              05 FILLER   PIC X     VALUE ';'.                          06730000
+              05 FILLER   PIC X(16) VALUE 'PAGO PRV REALIZA'.           06740000
+              05 FILLER   PIC X     VALUE ';'.                          06750000
+              05 FILLER   PIC X(10) VALUE 'CODCALCFIS'.                 06760000
+              05 FILLER   PIC X     VALUE ';'.                          06770000
+              05 FILLER   PIC X(10) VALUE 'MODIFICADO'.                 06780000
+              05 FILLER   PIC X     VALUE ';'.                          06790000
+              05 FILLER   PIC X(10) VALUE 'INCIDENCIA'.                 06800000
+              05 FILLER   PIC X     VALUE ';'.                          06810000
+              05 FILLER   PIC X(11) VALUE 'DESCRIPCION'.                06820000
+                                                                        06830000
+           03 WS-CAB-SYS003.                                            06840000
+              05 FILLER   PIC X(06) VALUE 'ORIGEN'.                     06850000
+              05 FILLER   PIC X     VALUE ';'.                          06860000
+              05 FILLER   PIC X(09) VALUE 'SIMPUESTO'.                  06870000
+              05 FILLER   PIC X     VALUE ';'.                          06880000
+              05 FILLER   PIC X(11) VALUE 'COD.SISTEMA'.                06890000
+              05 FILLER   PIC X     VALUE ';'.                          06900000
+              05 FILLER   PIC X(14) VALUE 'COD. OPERACION'.             06910000
+              05 FILLER   PIC X     VALUE ';'.                          06920000
+              05 FILLER   PIC X(13) VALUE 'COD. SOCIEDAD'.              06930000
+              05 FILLER   PIC X     VALUE ';'.                          06940000
+              05 FILLER   PIC X(03) VALUE 'A—O'.                        06950000
+              05 FILLER   PIC X     VALUE ';'.                          06960000
+              05 FILLER   PIC X(03) VALUE 'MES'.                        06970000
+              05 FILLER   PIC X     VALUE ';'.                          06980000
+              05 FILLER   PIC X(11) VALUE 'PROV.FISCAL'.                06990000
+              05 FILLER   PIC X     VALUE ';'.                          07000000
+              05 FILLER   PIC X(12) VALUE 'NIF TERCEROS'.               07010000
+              05 FILLER   PIC X     VALUE ';'.                          07020000
+              05 FILLER   PIC X(11) VALUE 'COD. MONEDA'.                07030000
+              05 FILLER   PIC X     VALUE ';'.                          07040000
+              05 FILLER   PIC X(12) VALUE 'F. DOCUMENTO'.               07050000
+              05 FILLER   PIC X     VALUE ';'.                          07060000
+              05 FILLER   PIC X(09) VALUE 'TIPO DOC.'.                  07070000
+              05 FILLER   PIC X     VALUE ';'.                          07080000
+              05 FILLER   PIC X(15) VALUE 'REFERENCIA DOC.'.            07090000
+              05 FILLER   PIC X     VALUE ';'.                          07100000
+              05 FILLER   PIC X(10) VALUE 'TIPO OPER.'.                 07110000
+              05 FILLER   PIC X     VALUE ';'.                          07120000
+              05 FILLER   PIC X(13) VALUE 'TOTAL FACTURA'.              07130000
+              05 FILLER   PIC X     VALUE ';'.                          07140000
+              05 FILLER   PIC X(14) VALUE 'BASE IMPONIBLE'.             07150000
+              05 FILLER   PIC X     VALUE ';'.                          07160000
+              05 FILLER   PIC X(13) VALUE 'TIPO IMPUESTO'.              07170000
+              05 FILLER   PIC X     VALUE ';'.                          07180000
+              05 FILLER   PIC X(08) VALUE 'TIPO IVA'.                   07190000
+              05 FILLER   PIC X     VALUE ';'.                          07200000
+              05 FILLER   PIC X(11) VALUE 'IVA SOPORT.'.                07210000
+              05 FILLER   PIC X     VALUE ';'.                          07220000
+              05 FILLER   PIC X(13) VALUE 'INDIC IVA SAP'.              07230000
+              05 FILLER   PIC X     VALUE ';'.                          07240000
+              05 FILLER   PIC X(13) VALUE 'PORCENT. IMP.'.              07250000
+              05 FILLER   PIC X     VALUE ';'.                          07260000
+              05 FILLER   PIC X(12) VALUE 'IMPORTE IMP.'.               07270000
+              05 FILLER   PIC X     VALUE ';'.                          07280000
+              05 FILLER   PIC X(12) VALUE 'NUM. ASIENTO'.               07290000
+              05 FILLER   PIC X     VALUE ';'.                          07300000
+              05 FILLER   PIC X(10) VALUE 'NUM. SERIE'.                 07310000
+              05 FILLER   PIC X     VALUE ';'.                          07320000
+              05 FILLER   PIC X(15) VALUE 'CUENTA CONTABLE'.            07330000
+              05 FILLER   PIC X     VALUE ';'.                          07340000
+              05 FILLER   PIC X(13) VALUE 'COD. EDIFICIO'.              07350000
+              05 FILLER   PIC X     VALUE ';'.                          07360000
+              05 FILLER   PIC X(15) VALUE 'REF CATAST CCOA'.            07370000
+              05 FILLER   PIC X     VALUE ';'.                          07380000
+              05 FILLER   PIC X(11) VALUE 'NUM. MODELO'.                07390000
+              05 FILLER   PIC X     VALUE ';'.                          07400000
+              05 FILLER   PIC X(12) VALUE 'TIPO INGRESO'.               07410000
+              05 FILLER   PIC X     VALUE ';'.                          07420000
+              05 FILLER   PIC X(16) VALUE 'CLAVE PERCEPCION'.           07430000
+              05 FILLER   PIC X     VALUE ';'.                          07440000
+              05 FILLER   PIC X(16) VALUE 'SBCLV PERCEPCION'.           07450000
+              05 FILLER   PIC X     VALUE ';'.                          07460000
+              05 FILLER   PIC X(16) VALUE 'IBRTPREST IINDEN'.           07470000
+              05 FILLER   PIC X     VALUE ';'.                          07480000
+              05 FILLER   PIC X(14) VALUE 'PRIMAS PAGADAS'.             07490000
+              05 FILLER   PIC X     VALUE ';'.                          07500000
+              05 FILLER   PIC X(16) VALUE 'PRIMAS IMPUTADAS'.           07510000
+              05 FILLER   PIC X     VALUE ';'.                          07520000
+              05 FILLER   PIC X(13) VALUE 'REND. INTEGRO'.              07530000
+              05 FILLER   PIC X     VALUE ';'.                          07540000
+              05 FILLER   PIC X(13) VALUE 'IRREDUCCION-1'.              07550000
+              05 FILLER   PIC X     VALUE ';'.                          07560000
+              05 FILLER   PIC X(13) VALUE 'IRREDUCCION-2'.              07570000
+              05 FILLER   PIC X     VALUE ';'.                          07580000
+              05 FILLER   PIC X(13) VALUE 'IRREDUCCION-3'.              07590000
+              05 FILLER   PIC X     VALUE ';'.                          07600000
+              05 FILLER   PIC X(13) VALUE 'IRREDUCCION-4'.              07610000
+              05 FILLER   PIC X     VALUE ';'.                          07620000
+              05 FILLER   PIC X(13) VALUE 'IRREDUCCION-5'.              07630000
+              05 FILLER   PIC X     VALUE ';'.                          07640000
+              05 FILLER   PIC X(14) VALUE 'BASE RETENCION'.             07650000
+              05 FILLER   PIC X     VALUE ';'.                          07660000
+              05 FILLER   PIC X(11) VALUE 'P.RETENCION'.                07670000
+              05 FILLER   PIC X     VALUE ';'.                          07680000
+              05 FILLER   PIC X(09) VALUE 'RETENCION'.                  07690000
+              05 FILLER   PIC X     VALUE ';'.                          07700000
+              05 FILLER   PIC X(16) VALUE 'CUENTA RETENCION'.           07710000
+              05 FILLER   PIC X     VALUE ';'.                          07720000
+              05 FILLER   PIC X(12) VALUE 'CUENTA GASTO'.               07730000
+              05 FILLER   PIC X     VALUE ';'.                          07740000
+              05 FILLER   PIC X(13) VALUE 'CEUTA/MELILLA'.              07750000
+              05 FILLER   PIC X     VALUE ';'.                          07760000
+              05 FILLER   PIC X(11) VALUE 'A—O DEVENGO'.                07770000
+              05 FILLER   PIC X     VALUE ';'.                          07780000
+              05 FILLER   PIC X(08) VALUE 'MEDIADOR'.                   07790000
+              05 FILLER   PIC X     VALUE ';'.                          07800000
+              05 FILLER   PIC X(12) VALUE 'CLAVE CODIGO'.               07810000
+              05 FILLER   PIC X     VALUE ';'.                          07820000
+              05 FILLER   PIC X(10) VALUE 'COD EMISOR'.                 07830000
+              05 FILLER   PIC X     VALUE ';'.                          07840000
+              05 FILLER   PIC X(09) VALUE 'TIPO PAGO'.                  07850000
+              05 FILLER   PIC X     VALUE ';'.                          07860000
+              05 FILLER   PIC X(12) VALUE 'CUENTA VALOR'.               07870000
+              05 FILLER   PIC X     VALUE ';'.                          07880000
+              05 FILLER   PIC X(16) VALUE 'COD CUENT VALORS'.           07890000
+              05 FILLER   PIC X     VALUE ';'.                          07900000
+              05 FILLER   PIC X(11) VALUE 'SPENDIENTE'.                 07910000
+              05 FILLER   PIC X     VALUE ';'.                          07920000
+              05 FILLER   PIC X(16) VALUE 'COD PAIS TERCERO'.           07930000
+              05 FILLER   PIC X     VALUE ';'.                          07940000
+              05 FILLER   PIC X(16) VALUE 'SJUST RESIDENCIA'.           07950000
+              05 FILLER   PIC X     VALUE ';'.                          07960000
+              05 FILLER   PIC X(16) VALUE 'PAGO PRV REALIZA'.           07970000
+              05 FILLER   PIC X     VALUE ';'.                          07980000
+              05 FILLER   PIC X(10) VALUE 'CODCALCFIS'.                 07990000
+              05 FILLER   PIC X     VALUE ';'.                          08000000
+              05 FILLER   PIC X(10) VALUE 'MODIFICADO'.                 08010000
+                                                                        08020000
+           03 WS-CABECERA.                                              08030000
+              05 FILLER   PIC X(09) VALUE 'SIMPUESTO'.                  08040000
+              05 FILLER   PIC X     VALUE ';'.                          08050000
+              05 FILLER   PIC X(11) VALUE 'COD.SISTEMA'.                08060000
+              05 FILLER   PIC X     VALUE ';'.                          08070000
+              05 FILLER   PIC X(14) VALUE 'COD. OPERACION'.             08080000
+              05 FILLER   PIC X     VALUE ';'.                          08090000
+              05 FILLER   PIC X(13) VALUE 'COD. SOCIEDAD'.              08100000
+              05 FILLER   PIC X     VALUE ';'.                          08110000
+              05 FILLER   PIC X(03) VALUE 'A—O'.                        08120000
+              05 FILLER   PIC X     VALUE ';'.                          08130000
+              05 FILLER   PIC X(03) VALUE 'MES'.                        08140000
+              05 FILLER   PIC X     VALUE ';'.                          08150000
+              05 FILLER   PIC X(11) VALUE 'PROV.FISCAL'.                08160000
+              05 FILLER   PIC X     VALUE ';'.                          08170000
+              05 FILLER   PIC X(12) VALUE 'NIF TERCEROS'.               08180000
+              05 FILLER   PIC X     VALUE ';'.                          08190000
+              05 FILLER   PIC X(11) VALUE 'COD. MONEDA'.                08200000
+              05 FILLER   PIC X     VALUE ';'.                          08210000
+              05 FILLER   PIC X(12) VALUE 'F. DOCUMENTO'.               08220000
+              05 FILLER   PIC X     VALUE ';'.                          08230000
+              05 FILLER   PIC X(09) VALUE 'TIPO DOC.'.                  08240000
+              05 FILLER   PIC X     VALUE ';'.                          08250000
+              05 FILLER   PIC X(15) VALUE 'REFERENCIA DOC.'.            08260000
+              05 FILLER   PIC X     VALUE ';'.                          08270000
+              05 FILLER   PIC X(10) VALUE 'TIPO OPER.'.                 08280000
+              05 FILLER   PIC X     VALUE ';'.                          08290000
+              05 FILLER   PIC X(13) VALUE 'TOTAL FACTURA'.              08300000
+              05 FILLER   PIC X     VALUE ';'.                          08310000
+              05 FILLER   PIC X(14) VALUE 'BASE IMPONIBLE'.             08320000
+              05 FILLER   PIC X     VALUE ';'.                          08330000
+              05 FILLER   PIC X(13) VALUE 'TIPO IMPUESTO'.              08340000
+              05 FILLER   PIC X     VALUE ';'.                          08350000
+              05 FILLER   PIC X(08) VALUE 'TIPO IVA'.                   08360000
+              05 FILLER   PIC X     VALUE ';'.                          08370000
+              05 FILLER   PIC X(11) VALUE 'IVA SOPORT.'.                08380000
+              05 FILLER   PIC X     VALUE ';'.                          08390000
+              05 FILLER   PIC X(13) VALUE 'INDIC IVA SAP'.              08400000
+              05 FILLER   PIC X     VALUE ';'.                          08410000
+              05 FILLER   PIC X(13) VALUE 'PORCENT. IMP.'.              08420000
+              05 FILLER   PIC X     VALUE ';'.                          08430000
+              05 FILLER   PIC X(12) VALUE 'IMPORTE IMP.'.               08440000
+              05 FILLER   PIC X     VALUE ';'.                          08450000
+              05 FILLER   PIC X(12) VALUE 'NUM. ASIENTO'.               08460000
+              05 FILLER   PIC X     VALUE ';'.                          08470000
+              05 FILLER   PIC X(10) VALUE 'NUM. SERIE'.                 08480000
+              05 FILLER   PIC X     VALUE ';'.                          08490000
+              05 FILLER   PIC X(15) VALUE 'CUENTA CONTABLE'.            08500000
+              05 FILLER   PIC X     VALUE ';'.                          08510000
+              05 FILLER   PIC X(13) VALUE 'COD. EDIFICIO'.              08520000
+              05 FILLER   PIC X     VALUE ';'.                          08530000
+              05 FILLER   PIC X(15) VALUE 'REF CATAST CCOA'.            08540000
+              05 FILLER   PIC X     VALUE ';'.                          08550000
+              05 FILLER   PIC X(11) VALUE 'NUM. MODELO'.                08560000
+              05 FILLER   PIC X     VALUE ';'.                          08570000
+              05 FILLER   PIC X(12) VALUE 'TIPO INGRESO'.               08580000
+              05 FILLER   PIC X     VALUE ';'.                          08590000
+              05 FILLER   PIC X(16) VALUE 'CLAVE PERCEPCION'.           08600000
+              05 FILLER   PIC X     VALUE ';'.                          08610000
+              05 FILLER   PIC X(16) VALUE 'SBCLV PERCEPCION'.           08620000
+              05 FILLER   PIC X     VALUE ';'.                          08630000
+              05 FILLER   PIC X(16) VALUE 'IBRTPREST IINDEN'.           08640000
+              05 FILLER   PIC X     VALUE ';'.                          08650000
+              05 FILLER   PIC X(14) VALUE 'PRIMAS PAGADAS'.             08660000
+              05 FILLER   PIC X     VALUE ';'.                          08670000
+              05 FILLER   PIC X(16) VALUE 'PRIMAS IMPUTADAS'.           08680000
+              05 FILLER   PIC X     VALUE ';'.                          08690000
+              05 FILLER   PIC X(13) VALUE 'REND. INTEGRO'.              08700000
+              05 FILLER   PIC X     VALUE ';'.                          08710000
+              05 FILLER   PIC X(13) VALUE 'IRREDUCCION-1'.              08720000
+              05 FILLER   PIC X     VALUE ';'.                          08730000
+              05 FILLER   PIC X(13) VALUE 'IRREDUCCION-2'.              08740000
+              05 FILLER   PIC X     VALUE ';'.                          08750000
+              05 FILLER   PIC X(13) VALUE 'IRREDUCCION-3'.              08760000
+              05 FILLER   PIC X     VALUE ';'.                          08770000
+              05 FILLER   PIC X(13) VALUE 'IRREDUCCION-4'.              08780000
+              05 FILLER   PIC X     VALUE ';'.                          08790000
+              05 FILLER   PIC X(13) VALUE 'IRREDUCCION-5'.              08800000
+              05 FILLER   PIC X     VALUE ';'.                          08810000
+              05 FILLER   PIC X(14) VALUE 'BASE RETENCION'.             08820000
+              05 FILLER   PIC X     VALUE ';'.                          08830000
+              05 FILLER   PIC X(11) VALUE 'P.RETENCION'.                08840000
+              05 FILLER   PIC X     VALUE ';'.                          08850000
+              05 FILLER   PIC X(09) VALUE 'RETENCION'.                  08860000
+              05 FILLER   PIC X     VALUE ';'.                          08870000
+              05 FILLER   PIC X(16) VALUE 'CUENTA RETENCION'.           08880000
+              05 FILLER   PIC X     VALUE ';'.                          08890000
+              05 FILLER   PIC X(12) VALUE 'CUENTA GASTO'.               08900000
+              05 FILLER   PIC X     VALUE ';'.                          08910000
+              05 FILLER   PIC X(13) VALUE 'CEUTA/MELILLA'.              08920000
+              05 FILLER   PIC X     VALUE ';'.                          08930000
+              05 FILLER   PIC X(11) VALUE 'A—O DEVENGO'.                08940000
+              05 FILLER   PIC X     VALUE ';'.                          08950000
+              05 FILLER   PIC X(08) VALUE 'MEDIADOR'.                   08960000
+              05 FILLER   PIC X     VALUE ';'.                          08970000
+              05 FILLER   PIC X(12) VALUE 'CLAVE CODIGO'.               08980000
+              05 FILLER   PIC X     VALUE ';'.                          08990000
+              05 FILLER   PIC X(10) VALUE 'COD EMISOR'.                 09000000
+              05 FILLER   PIC X     VALUE ';'.                          09010000
+              05 FILLER   PIC X(09) VALUE 'TIPO PAGO'.                  09020000
+              05 FILLER   PIC X     VALUE ';'.                          09030000
+              05 FILLER   PIC X(12) VALUE 'CUENTA VALOR'.               09040000
+              05 FILLER   PIC X     VALUE ';'.                          09050000
+              05 FILLER   PIC X(16) VALUE 'COD CUENT VALORS'.           09060000
+              05 FILLER   PIC X     VALUE ';'.                          09070000
+              05 FILLER   PIC X(11) VALUE 'SPENDIENTE'.                 09080000
+              05 FILLER   PIC X     VALUE ';'.                          09090000
+              05 FILLER   PIC X(16) VALUE 'COD PAIS TERCERO'.           09100000
+              05 FILLER   PIC X     VALUE ';'.                          09110000
+              05 FILLER   PIC X(16) VALUE 'SJUST RESIDENCIA'.           09120000
+              05 FILLER   PIC X     VALUE ';'.                          09130000
+              05 FILLER   PIC X(16) VALUE 'PAGO PRV REALIZA'.           09140000
+              05 FILLER   PIC X     VALUE ';'.                          09150000
+              05 FILLER   PIC X(10) VALUE 'CODCALCFIS'.                 09160000
+                                                                        09170000
+           03 WS-SALIDA-CAB.                                            09180000
+              05 SAL-SIMPUESTO               PIC X(01).                 09190000
+              05 FILLER   PIC X     VALUE ';'.                          09200000
+              05 SAL-COD-SISTEMA             PIC X(02).                 09210000
+              05 FILLER   PIC X     VALUE ';'.                          09220000
+              05 SAL-COD-OPERACION           PIC X(02).                 09230000
+              05 FILLER   PIC X     VALUE ';'.                          09240000
+              05 SAL-COD-SOCIEDAD            PIC X(04).                 09250000
+              05 FILLER   PIC X     VALUE ';'.                          09260000
+              05 SAL-AEJERCICIO              PIC 9(04).                 09270000
+              05 FILLER   PIC X     VALUE ';'.                          09280000
+              05 SAL-MEJERCICIO              PIC 9(02).                 09290000
+              05 FILLER   PIC X     VALUE ';'.                          09300000
+              05 SAL-PROV-FISCAL             PIC 9(02).                 09310000
+              05 FILLER   PIC X     VALUE ';'.                          09320000
+              05 SAL-NIF-TERCEROS            PIC X(20).                 09330000
+              05 FILLER   PIC X     VALUE ';'.                          09340000
+              05 SAL-COD-MONEDA              PIC X(03).                 09350000
+              05 FILLER   PIC X     VALUE ';'.                          09360000
+              05 SAL-FDOCUMENTO              PIC 9(08).                 09370000
+              05 FILLER   PIC X     VALUE ';'.                          09380000
+              05 SAL-TIPO-DOC                PIC X(02).                 09390000
+              05 FILLER   PIC X     VALUE ';'.                          09400000
+              05 SAL-REFEREN-DOC             PIC X(24).                 09410000
+              05 FILLER   PIC X     VALUE ';'.                          09420000
+              05 SAL-TIPO-OPERACION   PIC  X(02).                       09430000
+              05 FILLER   PIC X     VALUE ';'.                          09440000
+              05 SAL-ITOTAL-FACTURA   PIC -.---.---.---.--9,99.         09450000
+              05 FILLER   PIC X     VALUE ';'.                          09460000
+              05 SAL-IBASE-IMPONIBLE  PIC -.---.---.---.--9,99.         09470000
+              05 FILLER   PIC X     VALUE ';'.                          09480000
+              05 SAL-TIPO-IMPUESTO    PIC  X(04).                       09490000
+              05 FILLER   PIC X     VALUE ';'.                          09500000
+              05 SAL-TIPO-IVA         PIC  X(01).                       09510000
+              05 FILLER   PIC X     VALUE ';'.                          09520000
+              05 SAL-SBGR-IVA-SOPORT  PIC  9(02).                       09530000
+              05 FILLER   PIC X     VALUE ';'.                          09540000
+              05 SAL-INDIC-IVA-SAP    PIC  X(02).                       09550000
+              05 FILLER   PIC X     VALUE ';'.                          09560000
+              05 SAL-PIMPUESTO        PIC  --9,99.                      09570000
+              05 FILLER   PIC X     VALUE ';'.                          09580000
+              05 SAL-IIMPUESTO        PIC -.---.---.---.--9,99.         09590000
+              05 FILLER   PIC X     VALUE ';'.                          09600000
+              05 SAL-NUM-ASIENTO-DOC  PIC  9(10).                       09610000
+              05 FILLER   PIC X     VALUE ';'.                          09620000
+              05 SAL-NUM-SERIE        PIC  9(01).                       09630000
+              05 FILLER   PIC X     VALUE ';'.                          09640000
+              05 SAL-CUENTA-CONTABLE  PIC  9(10).                       09650000
+              05 FILLER   PIC X     VALUE ';'.                          09660000
+              05 SAL-COD-EDIFICIO     PIC  9(12).                       09670000
+              05 FILLER   PIC X     VALUE ';'.                          09680000
+              05 SAL-REF-CATAST-CCOA  PIC  X(25).                       09690000
+              05 FILLER   PIC X     VALUE ';'.                          09700000
+              05 SAL-NUM-MODELOV               PIC  X(03).              09710000
+              05 FILLER   PIC X     VALUE ';'.                          09720000
+              05 SAL-TIPO-INGRESO              PIC  X(01).              09730000
+              05 FILLER   PIC X     VALUE ';'.                          09740000
+              05 SAL-CLAVE-PERCEPCION          PIC  X(01).              09750000
+              05 FILLER   PIC X     VALUE ';'.                          09760000
+              05 SAL-SBCLV-PERCEPCION          PIC  X(02).              09770000
+              05 FILLER   PIC X     VALUE ';'.                          09780000
+              05 SAL-IBRTPREST-IINDE  PIC -.---.---.---.--9,99.         09790000
+              05 FILLER   PIC X     VALUE ';'.                          09800000
+              05 SAL-PRIMAS-PAGADAS   PIC -.---.---.---.--9,99.         09810000
+              05 FILLER   PIC X     VALUE ';'.                          09820000
+              05 SAL-PRIM-IMPUTADAS   PIC -.---.---.---.--9,99.         09830000
+              05 FILLER   PIC X     VALUE ';'.                          09840000
+              05 SAL-REND-INTEGRO     PIC -.---.---.---.--9,99.         09850000
+              05 FILLER   PIC X     VALUE ';'.                          09860000
+              05 SAL-IRREDUCCION-1    PIC -.---.---.---.--9,99.         09870000
+              05 FILLER   PIC X     VALUE ';'.                          09880000
+              05 SAL-IRREDUCCION-2    PIC -.---.---.---.--9,99.         09890000
+              05 FILLER   PIC X     VALUE ';'.                          09900000
+              05 SAL-IRREDUCCION-3    PIC -.---.---.---.--9,99.         09910000
+              05 FILLER   PIC X     VALUE ';'.                          09920000
+              05 SAL-IRREDUCCION-4    PIC -.---.---.---.--9,99.         09930000
+              05 FILLER   PIC X     VALUE ';'.                          09940000
+              05 SAL-IRREDUCCION-5    PIC -.---.---.---.--9,99.         09950000
+              05 FILLER   PIC X     VALUE ';'.                          09960000
+              05 SAL-BASE-RETENCION   PIC -.---.---.---.--9,99.         09970000
+              05 FILLER   PIC X     VALUE ';'.                          09980000
+              05 SAL-PRETENCION       PIC --9,99.                       09990000
+              05 FILLER   PIC X     VALUE ';'.                          10000000
+              05 SAL-IRETENCION       PIC -.---.---.---.--9,99.         10010000
+              05 FILLER   PIC X     VALUE ';'.                          10020000
+              05 SAL-CUENTA-RETENCION          PIC  9(10).              10030000
+              05 FILLER   PIC X     VALUE ';'.                          10040000
+              05 SAL-CUENTA-GASTO              PIC  9(10).              10050000
+              05 FILLER   PIC X     VALUE ';'.                          10060000
+              05 SAL-SCEUTA-MELILLA            PIC  X(01).              10070000
+              05 FILLER   PIC X     VALUE ';'.                          10080000
+              05 SAL-ANYODEVENGO               PIC  9(04).              10090000
+              05 FILLER   PIC X     VALUE ';'.                          10100000
+              05 SAL-MEDIADOR                  PIC  X(01).              10110000
+              05 FILLER   PIC X     VALUE ';'.                          10120000
+              05 SAL-CLAVE-CODIGO              PIC  9(01).              10130000
+              05 FILLER   PIC X     VALUE ';'.                          10140000
+              05 SAL-COD-EMISOR                PIC  X(12).              10150000
+              05 FILLER   PIC X     VALUE ';'.                          10160000
+              05 SAL-TIPO-PAGO                 PIC  9(01).              10170000
+              05 FILLER   PIC X     VALUE ';'.                          10180000
+              05 SAL-TCOD-CUENT-VALOR          PIC  X(01).              10190000
+              05 FILLER   PIC X     VALUE ';'.                          10200000
+              05 SAL-COD-CUENT-VALORS          PIC  X(20).              10210000
+              05 FILLER   PIC X     VALUE ';'.                          10220000
+              05 SAL-SPENDIENTE                PIC  X(01).              10230000
+              05 FILLER   PIC X     VALUE ';'.                          10240000
+              05 SAL-COD-PAIS-TERCERO          PIC  9(03).              10250000
+              05 FILLER   PIC X     VALUE ';'.                          10260000
+              05 SAL-SJUST-RESIDENCIA          PIC  X(01).              10270000
+              05 FILLER   PIC X     VALUE ';'.                          10280000
+              05 SAL-PAGO-PRV-REALIZ           PIC  X(01).              10290000
+              05 FILLER   PIC X     VALUE ';'.                          10300000
+              05 SAL-CODCALCFIS                PIC  X(12).              10310000
+              05 FILLER   PIC X     VALUE ';'.                          10320000
+              05 FILLER   PIC X(174) VALUE SPACES.                      10330000
+      *                                                                 10340000
+      *** VARIABLES                                                     10350000
+      *                                                                 10360000
+           03 WS-VARIABLES.                                             10370000
+      *  MU-2017-BDGI-R-V-V8 INI                                        10380000
+              05 WS-CINTA-ACTUAL-TEMP        PIC X(1) VALUE SPACES.     10390000
+      *  MU-2017-BDGI-R-V-V8 FIN                                        10400000
+              05 WS-RD400116-MAEANT.                                    10410000
+      *** TIPO IMPUESTO / SISTEMA / OPERACION / SOCIEDAD                10420000
+                 07 WS-RD400116-MAEANT-P1    PIC X(009) VALUE SPACES.   10430000
+                 07 WS-RD400116-MAEANT-P2    PIC X(006) VALUE SPACES.   10440000
+      *** PROV.FISCAL   / NIF                                           10450000
+                 07 WS-RD400116-MAEANT-P3    PIC X(025) VALUE SPACES.   10460000
+                 07 WS-RD400116-MAEANT-P4    PIC X(008) VALUE SPACES.   10470000
+      * MU-2017-BDGI-R-V-V4 INI                                         10480000
+      *           07 WS-RD400116-MAEANT-P5    PIC X(147) VALUE SPACES.  10490000
+      *** IMPORTES DATOS ECONOMICOS                                     10500000
+      * MU-2017-BDGI-R-V-V6 INI                                         10510000
+      *           07 WS-RD400116-MAEANT-P5    PIC X(20)  VALUE SPACES.  10520000
+      *           07 FILLER                   PIC X(6)   VALUE SPACES.  10530000
+      *           07 WS-RD400116-MAEANT-P5    PIC X(6)  VALUE SPACES.   10540000
+                 07 FILLER                   PIC X(2)   VALUE SPACES.   10550000
+                 07 WS-RD400116-MAEANT-P5    PIC X(4)   VALUE SPACES.   10560000
+                 07 FILLER                   PIC X(20)  VALUE SPACES.   10570000
+                 07 WS-RD400116-MAEANT-P5-1  PIC X(121) VALUE SPACES.   10580000
+      * MU-2017-BDGI-R-V-V6 FIN                                         10590000
+      *MU-2017-BDGI-R-V-V4 FIN                                          10600000
+                 07 WS-RD400116-MAEANT-P6    PIC X(2)   VALUE SPACES.   10610000
+      *** INFO. IMPORTES COASEGURADORAS                                 10620000
+                 07 WS-RD400116-MAEANT-P7    PIC X(180) VALUE SPACES.   10630000
+                 07 WS-RD400116-MAEANT-P8    PIC X(4)   VALUE SPACES.   10640000
+      * MU-2017-BDGI-R-V-V4 INI                                         10650000
+      *           07 WS-RD400116-MAEANT-P9    PIC X(54)  VALUE SPACES.  10660000
+      *** CLAVE.COD / TIPO DE PAGO                                      10670000
+                 07 WS-RD400116-MAEANT-P9    PIC X(16)  VALUE SPACES.   10680000
+                 07 FILLER                   PIC X(1)   VALUE SPACES.   10690000
+      *** VALOR / COD.PAIS                                              10700000
+                 07 WS-RD400116-MAEANT-P10   PIC X(37)  VALUE SPACES.   10710000
+      * MU-2017-BDGI-R-V-V4 FIN                                         10720000
+      *MU-2017-BDGI-R-V-INI                                             10730000
+                 07 WS-RD400116-MAEANT-ANIO  PIC 9(4)   VALUE ZEROS.    10740000
+                 07 WS-RD400116-MAEANT-EXPE  PIC 9(10)  VALUE ZEROS.    10750000
+      *MU-2017-BDGI-R-V-FIN                                             10760000
+              05 WS-RD400116-MAEACT.                                    10770000
+      *** TIPO IMPUESTO / SISTEMA / OPERACION / SOCIEDAD                10780000
+                 07 WS-RD400116-MAEACT-P1    PIC X(009) VALUE SPACES.   10790000
+                 07 WS-RD400116-MAEACT-P2    PIC X(006) VALUE SPACES.   10800000
+      *** PROV.FISCAL   / NIF                                           10810000
+                 07 WS-RD400116-MAEACT-P3    PIC X(025) VALUE SPACES.   10820000
+                 07 WS-RD400116-MAEACT-P4    PIC X(008) VALUE SPACES.   10830000
+      * MU-2017-BDGI-R-V-V4 INI                                         10840000
+      *           07 WS-RD400116-MAEACT-P5    PIC X(147) VALUE SPACES.  10850000
+      *** IMPORTES DATOS ECONOMICOS                                     10860000
+      * MU-2017-BDGI-R-V-V6 INI                                         10870000
+      *           07 WS-RD400116-MAEACT-P5    PIC X(20)  VALUE SPACES.  10880000
+      *           07 FILLER                   PIC X(6)   VALUE SPACES.  10890000
+      *           07 WS-RD400116-MAEACT-P5    PIC X(6)   VALUE SPACES.  10900000
+                 07 FILLER                   PIC X(2)   VALUE SPACES.   10910000
+                 07 WS-RD400116-MAEACT-P5    PIC X(4)   VALUE SPACES.   10920000
+                 07 FILLER                   PIC X(20)  VALUE SPACES.   10930000
+                 07 WS-RD400116-MAEACT-P5-1  PIC X(121) VALUE SPACES.   10940000
+      * MU-2017-BDGI-R-V-V6 FIN                                         10950000
+      *MU-2017-BDGI-R-V-V4 5FIN                                         10960000
+                 07 WS-RD400116-MAEACT-P6    PIC X(2)   VALUE SPACES.   10970000
+      *** INFO. IMPORTES COASEGURADORAS                                 10980000
+                 07 WS-RD400116-MAEACT-P7    PIC X(180) VALUE SPACES.   10990000
+                 07 WS-RD400116-MAEACT-P8    PIC X(4)   VALUE SPACES.   11000000
+      * MU-2017-BDGI-R-V-V4 INI                                         11010000
+      *           07 WS-RD400116-MAEACT-P9    PIC X(54)  VALUE SPACES.  11020000
+      *** CLAVE.COD / TIPO DE PAGO                                      11030000
+                 07 WS-RD400116-MAEACT-P9    PIC X(16)  VALUE SPACES.   11040000
+                 07 FILLER                   PIC X(1)   VALUE SPACES.   11050000
+      *** VALOR / COD.PAIS                                              11060000
+                 07 WS-RD400116-MAEACT-P10   PIC X(37)  VALUE SPACES.   11070000
+      * MU-2017-BDGI-R-V4 FIN                                           11080000
+      *MU-2017-BDGI-R-V-INI                                             11090000
+                 07 WS-RD400116-MAEACT-ANIO  PIC 9(4)   VALUE ZEROS.    11100000
+                 07 WS-RD400116-MAEACT-EXPE  PIC 9(10)  VALUE ZEROS.    11110000
+      *MU-2017-BDGI-R-V-FIN                                             11120000
+                                                                        11130000
+              05 WS-FMIMPUTACION             PIC 9(02)  VALUE ZEROS.    11140000
+110216        05 WS-FAEJERCICIO              PIC 9(04)  VALUE ZEROS.    11150000
+                                                                        11160000
+      *MU-2017-BDGI-R-V-INI                                             11170000
+      *       05 WS-CLV-MENOR                PIC X(32)  VALUE SPACES.   11180000
+      *MU-2017-BDGI-R-V-V4 INI                                          11190000
+      *        05 WS-CLV-MENOR                PIC X(46)  VALUE SPACES.  11200000
+              05 WS-CLV-MENOR                PIC X(14)  VALUE SPACES.   11210000
+      *MU-2017-BDGI-R-V-V4 FIN                                          11220000
+      *MU-2017-BDGI-R-V-FIN                                             11230000
+              05 WS-CLV-MAEANT.                                         11240000
+      *MU-2017-BDGI-R-V-V4 INI                                          11250000
+      *           07 WS-MAEANT-NIF            PIC X(09)  VALUE SPACES.  11260000
+      *           07 WS-MAEANT-CLAVE.                                   11270000
+      *              09 WS-MAEANT-POLIZA      PIC X(10)  VALUE SPACES.  11280000
+      *              09 WS-MAEANT-SUBPOLIZA   PIC X(04)  VALUE SPACES.  11290000
+      *              09 WS-MAEANT-CERTIFICADO PIC X(06)  VALUE SPACES.  11300000
+      *           07 WS-MAEANT-MODELO         PIC X(03)  VALUE SPACES.  11310000
+      *MU-2017-BDGI-R-V-V4 FIN                                          11320000
+420   *MU-2017-BDGI-R-V-INI                                             11330000
+                 07 WS-ANIO-ANT              PIC 9(4)   VALUE ZEROS.    11340000
+                 07 WS-KXPEDIENTE-ANT        PIC 9(10)  VALUE ZEROS.    11350000
+      *MU-2017-BDGI-R-V-FIN                                             11360000
+              05 WS-CLV-MAEACT.                                         11370000
+      *MU-2017-BDGI-R-V-V4 INI                                          11380000
+      *           07 WS-MAEACT-NIF            PIC X(09)  VALUE SPACES.  11390000
+      *           07 WS-MAEACT-CLAVE.                                   11400000
+      *              09 WS-MAEACT-POLIZA      PIC X(10)  VALUE SPACES.  11410000
+      *              09 WS-MAEACT-SUBPOLIZA   PIC X(04)  VALUE SPACES.  11420000
+      *              09 WS-MAEACT-CERTIFICADO PIC X(06)  VALUE SPACES.  11430000
+      *           07 WS-MAEACT-MODELO         PIC X(03)  VALUE SPACES.  11440000
+      *MU-2017-BDGI-R-V-V4 FIN                                          11450000
+      *MU-2017-BDGI-R-V-INI                                             11460000
+                 07 WS-ANIO-ACT              PIC 9(4)   VALUE ZEROS.    11470000
+                 07 WS-KXPEDIENTE-ACT        PIC 9(10)  VALUE ZEROS.    11480000
+      *MU-2017-BDGI-R-V-FIN                                             11490000
+                                                                        11500000
+           03 SW-CABECERA          PIC XX     VALUE 'NO'.               11510000
+              88 SI-CABECERA                  VALUE 'SI'.               11520000
+              88 NO-CABECERA                  VALUE 'NO'.               11530000
+                                                                        11540000
+           03 SW-CAB-003           PIC XX     VALUE 'NO'.               11550000
+              88 SI-CAB-003                   VALUE 'SI'.               11560000
+              88 NO-CAB-003                   VALUE 'NO'.               11570000
+                                                                        11580000
+           03 SW-CAB-007           PIC XX     VALUE 'NO'.               11590000
+              88 SI-CAB-007                   VALUE 'SI'.               11600000
+              88 NO-CAB-007                   VALUE 'NO'.               11610000
+      * MU-2017-BDGI-R-V-V4 INI                                         11620000
+           03 SW-ANULADO           PIC XX     VALUE 'VI'.               11630000
+              88 SW-SI-ANULADO                VALUE 'AN'.               11640000
+              88 SW-NO-ANULADO                VALUE 'VI'.               11650000
+      * MU-2017-BDGI-R-V-V4 FIN                                         11660000
+      *                                                                 11670000
+      * (FORMATO DEL MAESTRO DE DATOS ECONOMICOS L.R. 435)              11680000
+      **                                                                11690000
+           COPY RD400116.                                               11700000
+      *MU-2017-BDGI-R-V-INI                                             11710000
+           02 RD400116-ANIO        PIC 9(4).                            11720000
+           02 RD400116-EXPEDIENTE  PIC 9(10).                           11730000
+      *MU-2017-BDGI-R-V-FIN                                             11740000
+                                                                        11750000
+      *                                                                 11760000
+      /                                                                 11770000
+       01  FILLER                  PIC X(16)                            11780000
+              VALUE 'FINAL DE WORKING'.                                 11790000
+                                                                        11800000
+      /                                                                 11810000
+       PROCEDURE DIVISION.                                              11820000
+      ********************                                              11830000
+                                                                        11840000
+       PRINCIPAL SECTION.                                               11850000
+      *-----------------*                                               11860000
+                                                                        11870000
+           PERFORM ABRIR-INICIALIZAR.                                   11880000
+                                                                        11890000
+           PERFORM PROCESO UNTIL WS-CLV-MENOR = HIGH-VALUES.            11900000
+                                                                        11910000
+           PERFORM CERRAR-Y-TERMINAR.                                   11920000
+                                                                        11930000
+       F-PRINCIPAL.                                                     11940000
+      *-----------*                                                     11950000
+           EXIT.                                                        11960000
+                                                                        11970000
+                                                                        11980000
+       ABRIR-INICIALIZAR SECTION.                                       11990000
+      *-------------------------*                                       12000000
+                                                                        12010000
+           OPEN INPUT  E02-MAEANT                                       12020000
+                       E01-MAEACT                                       12030000
+                OUTPUT S01-MAESAL                                       12040000
+                       S02-DUPLI                                        12050000
+                       S03-SIN-DUPLI                                    12060000
+                       S03-CABECERAS                                    12070000
+                       S07-COMPLETO.                                    12080000
+                                                                        12090000
+           PERFORM LEER-MAESTRO-ACTUAL.                                 12100000
+           PERFORM LEER-MAESTRO-ANTERIOR.                               12110000
+           PERFORM FORMAR-CLAVE-MENOR.                                  12120000
+                                                                        12130000
+       F-ABRIR-INICIALIZAR.                                             12140000
+      *-------------------*                                             12150000
+           EXIT.                                                        12160000
+                                                                        12170000
+                                                                        12180000
+       PROCESO SECTION.                                                 12190000
+      *---------------*                                                 12200000
+                                                                        12210000
+           IF WS-CLV-MAEACT = WS-CLV-MENOR                              12220000
+              IF WS-CLV-MAEANT = WS-CLV-MENOR                           12230000
+*******          DUPLICADOS - GRABAR AMBOS ****                         12240000
+                                                                        12250000
+                 IF NO-CAB-003                                          12260000
+                    SET SI-CAB-003  TO TRUE                             12270000
+                    WRITE R-MAESAL-S01 FROM WS-CAB-SYS003               12280000
+                    INITIALIZE R-MAESAL-S01                             12290000
+                 END-IF                                                 12300000
+                                                                        12310000
+                 IF NO-CAB-007                                          12320000
+                    SET SI-CAB-007  TO TRUE                             12330000
+                                                                        12340000
+                    INITIALIZE REG-COMPLETO                             12350000
+                    MOVE WS-CAB-SYS007 TO REG-COMPLETO                  12360000
+                    WRITE REG-COMPLETO                                  12370000
+                    INITIALIZE REG-COMPLETO                             12380000
+                 END-IF                                                 12390000
+                                                                        12400000
+150216           MOVE 'NO'               TO S01-SWCAMBIO                12410000
+                                                                        12420000
+                 MOVE 'ANTERIOR'         TO S01-TIPO                    12430000
+                 PERFORM MOVER-ANTERIOR-ACTUAL                          12440000
+                                                                        12450000
+      *  MU-2017-BDGI-R-V-V8 INI                                        12460000
+                 MOVE '0'                TO S01-GCODCTAVALOR(1:1)       12470000
+      *  MU-2017-BDGI-R-V-V8 FIN                                        12480000
+                 WRITE R-MAESAL-S01                                     12490000
+                 ADD 1                   TO CT-GRABADOS-INF             12500000
+                                                                        12510000
+                 INITIALIZE S07-REG-INCIDEN                             12520000
+                            S07-DATOS-INCID                             12530000
+                            REG-COMPLETO                                12540000
+      *  MU-2017-BDGI-R-V-V8 INI                                        12550000
+                 MOVE '0'                TO S01-GCODCTAVALOR(1:1)       12560000
+      *  MU-2017-BDGI-R-V-V8 FIN                                        12570000
+                 MOVE S01-DATOS-FORMATO  TO S07-DATOS                   12580000
+                 MOVE S07-DATOS-INCID    TO S07-REG-INCIDEN             12590000
+                 MOVE 'ANTERIOR'         TO S07-TIPO                    12600000
+                 WRITE REG-COMPLETO                                     12610000
+                 INITIALIZE REG-COMPLETO                                12620000
+                                                                        12630000
+                 MOVE 'ACTUAL  '         TO S01-TIPO                    12640000
+                 PERFORM MOVER-ANTERIOR-ACTUAL                          12650000
+      *  MU-2017-BDGI-R-V-V8 INI                                        12660000
+                 MOVE '0'                TO S01-GCODCTAVALOR(1:1)       12670000
+      *  MU-2017-BDGI-R-V-V8 FIN                                        12680000
+                 WRITE R-MAESAL-S01                                     12690000
+                 ADD 1                   TO CT-GRABADOS-INF             12700000
+                                                                        12710000
+                 INITIALIZE S07-REG-INCIDEN                             12720000
+                            S07-DATOS-INCID                             12730000
+                            REG-COMPLETO                                12740000
+      *  MU-2017-BDGI-R-V-V8 INI                                        12750000
+                 MOVE '0'                TO S01-GCODCTAVALOR(1:1)       12760000
+      *  MU-2017-BDGI-R-V-V8 FIN                                        12770000
+                 MOVE S01-DATOS-FORMATO  TO S07-DATOS                   12780000
+                 MOVE S07-DATOS-INCID    TO S07-REG-INCIDEN             12790000
+                 MOVE 'ACTUAL  '         TO S07-TIPO                    12800000
+                 WRITE REG-COMPLETO                                     12810000
+                 INITIALIZE REG-COMPLETO                                12820000
+                                                                        12830000
+                 PERFORM GRABAR-DUP                                     12840000
+                                                                        12850000
+150216*          GRABAMOS DUPLICADOS CON CAMBIOS EN F. SALIDA           12860000
+      ***                                                               12870000
+      *          DISPLAY 'S01-SWCAMBIO :' S01-SWCAMBIO                  12880000
+      *          DISPLAY 'NIF-E01 :' NIF-E01                            12890000
+      ***                                                               12900000
+                                                                        12910000
+150216           IF S01-SWCAMBIO = 'SI'                                 12920000
+150216              PERFORM GRABAR-ACTUAL-CON-DUPLI                     12930000
+150216           END-IF                                                 12940000
+                                                                        12950000
+                 PERFORM LEER-MAESTRO-ANTERIOR                          12960000
+                 PERFORM LEER-MAESTRO-ACTUAL                            12970000
+              ELSE                                                      12980000
+*******          POLIZA NO INFORMADA A BDGI ACTUAL                      12990000
+                 ADD 1              TO CT-NO-ENCONTRADOS-ACT            13000000
+180516           MOVE WS-RD400116-MAEACT         TO RD400116            13010000
+      *MU-2017-BDGI-R-V-V4 INI                                          13020000
+      *           PERFORM GRABAR-ACTUAL-SIN-DUPLI                       13030000
+      *                                                                 13040000
+                 IF SW-NO-ANULADO                                       13050000
+                   PERFORM GRABAR-ACTUAL-SIN-DUPLI                      13060000
+                 ELSE                                                   13070000
+                   PERFORM MOVER-ANULADO-ACTUAL                         13080000
+                 END-IF                                                 13090000
+      *MU-2017-BDGI-R-V-V4 FIN                                          13100000
+                 PERFORM LEER-MAESTRO-ACTUAL                            13110000
+              END-IF                                                    13120000
+           ELSE                                                         13130000
+*******       POLIZA INFORMADA A BDGI ANTERIOR                          13140000
+              ADD 1                 TO CT-NO-ENCONTRADOS-ANT            13150000
+              PERFORM LEER-MAESTRO-ANTERIOR                             13160000
+           END-IF.                                                      13170000
+                                                                        13180000
+           PERFORM FORMAR-CLAVE-MENOR.                                  13190000
+                                                                        13200000
+       F-PROCESO.                                                       13210000
+      *---------*                                                       13220000
+           EXIT.                                                        13230000
+                                                                        13240000
+                                                                        13250000
+       FORMAR-CLAVE-MENOR SECTION.                                      13260000
+      *--------------------------*                                      13270000
+                                                                        13280000
+           IF WS-CLV-MAEANT < WS-CLV-MAEACT                             13290000
+              MOVE WS-CLV-MAEANT  TO WS-CLV-MENOR                       13300000
+           ELSE                                                         13310000
+              MOVE WS-CLV-MAEACT  TO WS-CLV-MENOR                       13320000
+           END-IF.                                                      13330000
+                                                                        13340000
+       F-FORMAR-CLAVE-MENOR.                                            13350000
+      *--------------------*                                            13360000
+           EXIT.                                                        13370000
+                                                                        13380000
+                                                                        13390000
+       LEER-MAESTRO-ANTERIOR SECTION.                                   13400000
+      *-----------------------------*                                   13410000
+                                                                        13420000
+           READ E02-MAEANT                                              13430000
+                AT END                                                  13440000
+                   MOVE HIGH-VALUES         TO R-MAEANT-E02             13450000
+                                               WS-CLV-MAEANT            13460000
+                NOT AT END                                              13470000
+      *MU-2017-BDGI-R-V-V4 INI                                          13480000
+      *             MOVE NIF-E02             TO WS-MAEANT-NIF           13490000
+      *             MOVE KPOLIZA-E02         TO WS-MAEANT-POLIZA        13500000
+      *             MOVE SUBPOLIZA-E02       TO WS-MAEANT-SUBPOLIZA     13510000
+      *             MOVE CERTIFICADO-E02     TO WS-MAEANT-CERTIFICADO   13520000
+      *             MOVE MODELO-E02          TO WS-MAEANT-MODELO        13530000
+      *MU-2017-BDGI-R-V-V4 FIN                                          13540000
+      *MU-2017-BDGI-R-V-INI                                             13550000
+      *  MU-2017-BDGI-R-V-V8 INI                                        13560000
+                   MOVE 'C'    TO  R-MAEANT-E02(398:1)                  13570000
+      *  MU-2017-BDGI-R-V-V8 FIN                                        13580000
+                   MOVE R-MAEANT-E02        TO WS-RD400116-MAEANT       13590000
+                                                                        13600000
+                   MOVE ANIO-E02            TO WS-ANIO-ANT              13610000
+                   MOVE KXPEDIENTE-E02      TO WS-KXPEDIENTE-ANT        13620000
+      *MU-2017-BDGI-R-V-FIN                                             13630000
+      *B*                                                               13640000
+      *    DISPLAY '************ SNC08 *********************'           13650000
+      *    DISPLAY 'B372J015: ANIO-E02:' ANIO-E02                       13660000
+      *    DISPLAY '****************************************'           13670000
+      *    DISPLAY 'B372J015: KXPEDIENTE-E02:' KXPEDIENTE-E02           13680000
+      *    DISPLAY '****************************************'           13690000
+      *    DISPLAY 'B372J015: WS-RD400116-MAEACT:' WS-RD400116-MAEANT   13700000
+      *    DISPLAY '****************************************'           13710000
+      *F*                                                               13720000
+                   ADD  1                   TO CT-LEIDOS1               13730000
+           END-READ.                                                    13740000
+                                                                        13750000
+       F-LEER-MAESTRO-ANTERIOR.                                         13760000
+      *-----------------------*                                         13770000
+           EXIT.                                                        13780000
+                                                                        13790000
+       LEER-MAESTRO-ACTUAL   SECTION.                                   13800000
+      *-----------------------------*                                   13810000
+                                                                        13820000
+           READ E01-MAEACT                                              13830000
+                AT END                                                  13840000
+                   MOVE HIGH-VALUES         TO R-MAEACT-E01             13850000
+                                               WS-CLV-MAEACT            13860000
+                NOT AT END                                              13870000
+      * MU-2017-BDGI-R-V-V4 INI                                         13880000
+      *             MOVE NIF-E01             TO WS-MAEACT-NIF           13890000
+      *             MOVE KPOLIZA-E01         TO WS-MAEACT-POLIZA        13900000
+      *             MOVE SUBPOLIZA-E01       TO WS-MAEACT-SUBPOLIZA     13910000
+      *             MOVE CERTIFICADO-E01     TO WS-MAEACT-CERTIFICADO   13920000
+      *             MOVE MODELO-E01          TO WS-MAEACT-MODELO        13930000
+      * MU-2017-BDGI-R-V-V4 FIN                                         13940000
+      *  MU-2017-BDGI-R-V-V8 INI                                        13950000
+                   MOVE 'A'    TO  R-MAEACT-E01(398:1)                  13960000
+      *  MU-2017-BDGI-R-V-V8 FIN                                        13970000
+      *MU-2017-BDGI-R-V-INI                                             13980000
+                   MOVE R-MAEACT-E01(1:435) TO WS-RD400116-MAEACT       13990000
+                                                                        14000000
+                   MOVE ANIO-E01            TO WS-ANIO-ACT              14010000
+                   MOVE KXPEDIENTE-E01      TO WS-KXPEDIENTE-ACT        14020000
+                   MOVE ANIO-E01            TO WS-RD400116-MAEACT-ANIO  14030000
+                   MOVE KXPEDIENTE-E01      TO WS-RD400116-MAEACT-EXPE  14040000
+      *MU-2017-BDGI-R-V-FIN                                             14050000
+      * MU-2017-BDGI-R-V-V4 INI                                         14060000
+                   MOVE WS-RD400116-MAEACT(424:2)                       14070000
+                                            TO SW-ANULADO               14080000
+                   MOVE ZEROES TO  WS-RD400116-MAEACT(424:12)           14090000
+      * MU-2017-BDGI-R-V-V4 FIN                                         14100000
+                   ADD  1                   TO CT-LEIDOS2               14110000
+                   IF INCIDENCIA NOT EQUAL SPACES                       14120000
+                      MOVE WS-RD400116-MAEACT  TO RD400116              14130000
+                      PERFORM GRABAR-FIC-COMP                           14140000
+                   END-IF                                               14150000
+           END-READ.                                                    14160000
+                                                                        14170000
+       F-LEER-MAESTRO-ACTUAL.                                           14180000
+      *---------------------*                                           14190000
+           EXIT.                                                        14200000
+                                                                        14210000
+       GRABAR-DUP SECTION.                                              14220000
+      *------------------*                                              14230000
+                                                                        14240000
+           MOVE WS-RD400116-MAEACT          TO RD400116.                14250000
+           MOVE RD400116-FMIMPUTACION       TO WS-FMIMPUTACION.         14260000
+110216     MOVE RD400116-FAEJERCICIO        TO WS-FAEJERCICIO.          14270000
+                                                                        14280000
+           MOVE WS-RD400116-MAEANT          TO RD400116.                14290000
+      *    MOVE WS-FMIMPUTACION             TO RD400116-FMIMPUTACION.   14300000
+                                                                        14310000
+110216     IF RD400116-FAEJERCICIO < WS-FAEJERCICIO                     14320000
+110216        MOVE 12                       TO RD400116-FMIMPUTACION    14330000
+030316        IF RD400116-FAEJERCICIO-DEVENGO = ZEROS                   14340000
+030316           MOVE RD400116-FAEJERCICIO TO                           14350000
+030316                                     RD400116-FAEJERCICIO-DEVENGO 14360000
+030316        END-IF                                                    14370000
+      *  MU-2017-BDGI-R-V-V7 INI                                        14380000
+      *   SI SE ANULA O MODIFCA UN EXPEDIENTE DEL A—O ACTUAL, HAY QUE   14390000
+      *   ENVIAR A BDGI, TANTO EL POSITIVO COMO EL NEGATIVO, CON EL A—O 14400000
+      *   Y MES DEL CIERRE ACTUAL, EL QUE ESTAMOS CERRANDO              14410000
+           ELSE                                                         14420000
+                 MOVE WS-FMIMPUTACION TO RD400116-FMIMPUTACION          14430000
+                 MOVE WS-FAEJERCICIO  TO RD400116-FAEJERCICIO           14440000
+110216     END-IF.                                                      14450000
+                                                                        14460000
+029445*    IF RD400116-CMODELO = '190'                                  14470001
+029445*       MOVE '04' TO RD400116-CSUBCLAVE                           14480001
+700327*       MOVE '03' TO RD400116-CSUBCLAVE                           14490001
+029445*    END-IF                                                       14500001
+                                                                        14510000
+           COMPUTE RD400116-EPRESTACION      = RD400116-EPRESTACION     14520000
+                                             * (-1).                    14530000
+110216     COMPUTE RD400116-EPRIMIMPUTADAS   = RD400116-EPRIMIMPUTADAS  14540000
+110216                                       * (-1).                    14550000
+110216     COMPUTE RD400116-EPRIMPAGADAS     = RD400116-EPRIMPAGADAS    14560000
+110216                                       * (-1).                    14570000
+           COMPUTE RD400116-ERENDIMIENTO     = RD400116-ERENDIMIENTO    14580000
+                                             * (-1).                    14590000
+           COMPUTE RD400116-EREDUCCION1      = RD400116-EREDUCCION1     14600000
+                                             * (-1).                    14610000
+           COMPUTE RD400116-EREDUCCION2      = RD400116-EREDUCCION2     14620000
+                                             * (-1).                    14630000
+           COMPUTE RD400116-EREDUCCION3      = RD400116-EREDUCCION3     14640000
+                                             * (-1).                    14650000
+           COMPUTE RD400116-EREDUCCION4      = RD400116-EREDUCCION4     14660000
+                                             * (-1).                    14670000
+           COMPUTE RD400116-EREDUCCION5      = RD400116-EREDUCCION5     14680000
+                                             * (-1).                    14690000
+           COMPUTE RD400116-EBASERETENCION   = RD400116-EBASERETENCION  14700000
+                                             * (-1).                    14710000
+           COMPUTE RD400116-ERETENCION       = RD400116-ERETENCION      14720000
+                                             * (-1).                    14730000
+                                                                        14740000
+      *  MU-2017-BDGI-R-V-V8 INI                                        14750000
+           MOVE RD400116(398:1)        TO WS-CINTA-ACTUAL-TEMP          14760000
+           MOVE '0'                    TO RD400116(398:1)               14770000
+      *  MU-2017-BDGI-R-V-V8 FIN                                        14780000
+           WRITE R-DUPLI-S02              FROM RD400116.                14790000
+      *  MU-2017-BDGI-R-V-V8 INI                                        14800000
+           MOVE WS-CINTA-ACTUAL-TEMP   TO RD400116(398:1)               14810000
+      *  MU-2017-BDGI-R-V-V8 FIN                                        14820000
+           ADD 1                            TO CT-GRABADOS-DUP.         14830000
+                                                                        14840000
+       F-GRABAR-DUP.                                                    14850000
+      *------------*                                                    14860000
+           EXIT.                                                        14870000
+                                                                        14880000
+       GRABAR-ACTUAL-SIN-DUPLI SECTION.                                 14890000
+      *-------------------------------*                                 14900000
+                                                                        14910000
+180516     IF RD400116-FAEJERCICIO = RD400116-ADOCUMENTO                14920000
+180516        MOVE ZEROS TO RD400116-FAEJERCICIO-DEVENGO                14930000
+180516     END-IF                                                       14940000
+                                                                        14950000
+           WRITE R-SIN-DUPLI-S03          FROM RD400116.                14960000
+           ADD 1                            TO CT-GRABADOS-SIN-DUP.     14970000
+                                                                        14980000
+           PERFORM GRABAR-FIC-XLS.                                      14990000
+                                                                        15000000
+       F-GRABAR-ACTUAL-SIN-DUPLI.                                       15010000
+      *-------------------------*                                       15020000
+           EXIT.                                                        15030000
+                                                                        15040000
+160216 GRABAR-ACTUAL-CON-DUPLI SECTION.                                 15050000
+160216*-------------------------------*                                 15060000
+160216                                                                  15070000
+180516     IF RD400116-FAEJERCICIO = RD400116-ADOCUMENTO                15080000
+180516        MOVE ZEROS TO RD400116-FAEJERCICIO-DEVENGO                15090000
+180516     END-IF                                                       15100000
+                                                                        15110000
+160216     WRITE R-SIN-DUPLI-S03          FROM RD400116.                15120000
+160216     ADD 1                            TO CT-GRABADOS-CON-DUP.     15130000
+                                                                        15140000
+           PERFORM GRABAR-FIC-XLS.                                      15150000
+160216                                                                  15160000
+160216 F-GRABAR-ACTUAL-CON-DUPLI.                                       15170000
+160216*-------------------------*                                       15180000
+160216     EXIT.                                                        15190000
+                                                                        15200000
+       GRABAR-FIC-XLS SECTION.                                          15210000
+      *----------------------*                                          15220000
+                                                                        15230000
+           INITIALIZE WS-SALIDA-CAB                                     15240000
+                                                                        15250000
+           MOVE RD400116-CIMPUESTOS           TO SAL-SIMPUESTO          15260000
+           MOVE RD400116-CSISTEMA             TO SAL-COD-SISTEMA        15270000
+           MOVE RD400116-COPERACION           TO SAL-COD-OPERACION      15280000
+           MOVE RD400116-CSOCIEDAD            TO SAL-COD-SOCIEDAD       15290000
+           MOVE RD400116-FAEJERCICIO          TO SAL-AEJERCICIO         15300000
+           MOVE RD400116-FMIMPUTACION         TO SAL-MEJERCICIO         15310000
+           MOVE RD400116-CPROVFISCAL          TO SAL-PROV-FISCAL        15320000
+           MOVE RD400116-CIDENTIFICACION      TO SAL-NIF-TERCEROS       15330000
+           MOVE RD400116-CMONEDA              TO SAL-COD-MONEDA         15340000
+           MOVE RD400116-FDOCUMENTO           TO SAL-FDOCUMENTO         15350000
+           MOVE RD400116-CTIPDOC              TO SAL-TIPO-DOC           15360000
+           MOVE RD400116-CREFERENCIA          TO SAL-REFEREN-DOC        15370000
+           MOVE RD400116-COPERACIONIVA        TO SAL-TIPO-OPERACION     15380000
+           MOVE RD400116-ETOTALFACTURA        TO SAL-ITOTAL-FACTURA     15390000
+           MOVE RD400116-EBASEIMPONIBLE       TO SAL-IBASE-IMPONIBLE    15400000
+           MOVE RD400116-CIMPUESTO            TO SAL-TIPO-IMPUESTO      15410000
+           MOVE RD400116-CIVA                 TO SAL-TIPO-IVA           15420000
+           MOVE RD400116-CGRUPOIVA            TO SAL-SBGR-IVA-SOPORT    15430000
+           MOVE RD400116-CINDIVASAP           TO SAL-INDIC-IVA-SAP      15440000
+           MOVE RD400116-PIMPUESTO            TO SAL-PIMPUESTO          15450000
+           MOVE RD400116-EIMPUESTO            TO SAL-IIMPUESTO          15460000
+           MOVE RD400116-NASIENTO             TO SAL-NUM-ASIENTO-DOC    15470000
+           MOVE RD400116-NSERIE               TO SAL-NUM-SERIE          15480000
+           MOVE RD400116-NCTACONTABLE         TO SAL-CUENTA-CONTABLE    15490000
+           MOVE RD400116-CEDIFICIO            TO SAL-COD-EDIFICIO       15500000
+           MOVE RD400116-NREFCATASTRAL        TO SAL-REF-CATAST-CCOA    15510000
+           MOVE RD400116-CMODELO              TO SAL-NUM-MODELOV        15520000
+           MOVE RD400116-CNATURALEZA          TO SAL-TIPO-INGRESO       15530000
+           MOVE RD400116-CCLAVE               TO SAL-CLAVE-PERCEPCION   15540000
+           MOVE RD400116-CSUBCLAVE            TO SAL-SBCLV-PERCEPCION   15550000
+                                                                        15560000
+029445*    IF RD400116-CMODELO = '190'                                  15570001
+029445*       MOVE '04' TO SAL-SBCLV-PERCEPCION                         15580001
+700327*       MOVE '03' TO SAL-SBCLV-PERCEPCION                         15590001
+029445*    END-IF                                                       15600001
+                                                                        15610000
+           MOVE RD400116-EPRESTACION          TO SAL-IBRTPREST-IINDE    15620000
+           MOVE RD400116-EPRIMPAGADAS         TO SAL-PRIMAS-PAGADAS     15630000
+           MOVE RD400116-EPRIMIMPUTADAS       TO SAL-PRIM-IMPUTADAS     15640000
+           MOVE RD400116-ERENDIMIENTO         TO SAL-REND-INTEGRO       15650000
+           MOVE RD400116-EREDUCCION1          TO SAL-IRREDUCCION-1      15660000
+           MOVE RD400116-EREDUCCION2          TO SAL-IRREDUCCION-2      15670000
+           MOVE RD400116-EREDUCCION3          TO SAL-IRREDUCCION-3      15680000
+           MOVE RD400116-EREDUCCION4          TO SAL-IRREDUCCION-4      15690000
+           MOVE RD400116-EREDUCCION5          TO SAL-IRREDUCCION-5      15700000
+           MOVE RD400116-EBASERETENCION       TO SAL-BASE-RETENCION     15710000
+           MOVE RD400116-PRETENCION           TO SAL-PRETENCION         15720000
+           MOVE RD400116-ERETENCION           TO SAL-IRETENCION         15730000
+           MOVE RD400116-CCTARETENCION        TO SAL-CUENTA-RETENCION   15740000
+           MOVE RD400116-CCTAGASTO            TO SAL-CUENTA-GASTO       15750000
+           MOVE RD400116-CCEUTAMELILLA        TO SAL-SCEUTA-MELILLA     15760000
+           MOVE RD400116-FAEJERCICIO-DEVENGO  TO SAL-ANYODEVENGO        15770000
+           MOVE RD400116-GMEDIADOR            TO SAL-MEDIADOR           15780000
+           MOVE RD400116-GCLAVECOD            TO SAL-CLAVE-CODIGO       15790000
+           MOVE RD400116-GCODEMISOR           TO SAL-COD-EMISOR         15800000
+           MOVE RD400116-CTIPOPAGO            TO SAL-TIPO-PAGO          15810000
+           MOVE RD400116-GTIPOCOD             TO SAL-TCOD-CUENT-VALOR   15820000
+           MOVE RD400116-GCODCTAVALOR         TO SAL-COD-CUENT-VALORS   15830000
+      *  MU-2017-BDGI-R-V-V8 INI                                        15840000
+           MOVE '0'              TO SAL-COD-CUENT-VALORS(1:1)           15850000
+      *  MU-2017-BDGI-R-V-V8 FIN                                        15860000
+           MOVE RD400116-GPENDIENTE           TO SAL-SPENDIENTE         15870000
+           MOVE RD400116-CCODPAIS             TO SAL-COD-PAIS-TERCERO   15880000
+           MOVE RD400116-GRESIDENCIA          TO SAL-SJUST-RESIDENCIA   15890000
+           MOVE RD400116-GPAGOPREVOK          TO SAL-PAGO-PRV-REALIZ    15900000
+           MOVE RD400116-GCODCALCFIS          TO SAL-CODCALCFIS         15910000
+                                                                        15920000
+           IF NO-CABECERA                                               15930000
+              SET SI-CABECERA TO TRUE                                   15940000
+              WRITE R-S03-CABECERAS FROM WS-CABECERA                    15950000
+           END-IF                                                       15960000
+                                                                        15970000
+           INITIALIZE R-S03-CABECERAS                                   15980000
+                                                                        15990000
+           WRITE R-S03-CABECERAS FROM WS-SALIDA-CAB.                    16000000
+                                                                        16010000
+       F-GRABAR-FIC-XLS.                                                16020000
+      *----------------*                                                16030000
+           EXIT.                                                        16040000
+                                                                        16050000
+       GRABAR-FIC-COMP SECTION.                                         16060000
+      *----------------------*                                          16070000
+                                                                        16080000
+           IF NO-CAB-007                                                16090000
+              SET SI-CAB-007  TO TRUE                                   16100000
+                                                                        16110000
+              INITIALIZE REG-COMPLETO                                   16120000
+              MOVE WS-CAB-SYS007 TO REG-COMPLETO                        16130000
+              WRITE REG-COMPLETO                                        16140000
+              INITIALIZE REG-COMPLETO                                   16150000
+           END-IF                                                       16160000
+                                                                        16170000
+           INITIALIZE S07-DATOS-FORMATO                                 16180000
+                      S07-REG-INCIDEN                                   16190000
+                      S07-TIPO                                          16200000
+                                                                        16210000
+           MOVE 'INCIDEN '              TO S07-TIPO.                    16220000
+           MOVE RD400116-CIMPUESTOS     TO S07-CIMPUESTOS.              16230000
+           MOVE RD400116-CSISTEMA       TO S07-CSISTEMA.                16240000
+           MOVE RD400116-COPERACION     TO S07-COPERACION.              16250000
+           MOVE RD400116-CSOCIEDAD      TO S07-CSOCIEDAD.               16260000
+           MOVE RD400116-FAEJERCICIO    TO S07-FAEJERCICIO.             16270000
+           MOVE RD400116-FMIMPUTACION   TO S07-FMIMPUTACION.            16280000
+           MOVE RD400116-CPROVFISCAL    TO S07-CPROVFISCAL.             16290000
+           MOVE RD400116-CIDENTIFICACION                                16300000
+                                        TO S07-CIDENTIFICACION.         16310000
+           MOVE RD400116-CMONEDA        TO S07-CMONEDA.                 16320000
+           MOVE RD400116-FDOCUMENTO     TO S07-FDOCUMENTO.              16330000
+           MOVE RD400116-CTIPDOC        TO S07-CTIPDOC.                 16340000
+           MOVE RD400116-LIBRE          TO S07-LIBRE.                   16350000
+           MOVE RD400116-KPOLIZA        TO S07-KPOLIZA.                 16360000
+           MOVE RD400116-NSUBPOLIZA     TO S07-NSUBPOLIZA.              16370000
+           MOVE RD400116-NCERTIFICADO   TO S07-NCERTIFICADO.            16380000
+           MOVE RD400116-COPERACIONIVA  TO S07-COPERACIONIVA.           16390000
+           MOVE RD400116-ETOTALFACTURA  TO S07-ETOTALFACTURA.           16400000
+           MOVE RD400116-EBASEIMPONIBLE TO S07-EBASEIMPONIBLE.          16410000
+           MOVE RD400116-CIMPUESTO      TO S07-CIMPUESTO.               16420000
+           MOVE RD400116-CIVA           TO S07-CIVA.                    16430000
+           MOVE RD400116-CGRUPOIVA      TO S07-CGRUPOIVA.               16440000
+           MOVE RD400116-CINDIVASAP     TO S07-CINDIVASAP.              16450000
+           MOVE RD400116-PIMPUESTO      TO S07-PIMPUESTO.               16460000
+           MOVE RD400116-EIMPUESTO      TO S07-EIMPUESTO.               16470000
+           MOVE RD400116-NASIENTO       TO S07-NASIENTO.                16480000
+           MOVE RD400116-NSERIE         TO S07-NSERIE.                  16490000
+           MOVE RD400116-NCTACONTABLE   TO S07-NCTACONTABLE.            16500000
+           MOVE RD400116-CEDIFICIO      TO S07-CEDIFICIO.               16510000
+           MOVE RD400116-NREFCATASTRAL  TO S07-NREFCATASTRAL.           16520000
+           MOVE RD400116-CMODELO        TO S07-CMODELO.                 16530000
+           MOVE RD400116-CNATURALEZA    TO S07-CNATURALEZA.             16540000
+           MOVE RD400116-CCLAVE         TO S07-CCLAVE.                  16550000
+           MOVE RD400116-CSUBCLAVE      TO S07-CSUBCLAVE.               16560000
+                                                                        16570000
+029445*    IF RD400116-CMODELO = '190'                                  16580001
+029445*       MOVE '04' TO S07-CSUBCLAVE                                16590001
+700327*       MOVE '03' TO S07-CSUBCLAVE                                16600001
+029445*    END-IF                                                       16610001
+                                                                        16620000
+           MOVE RD400116-EPRESTACION    TO S07-EPRESTACION.             16630000
+           MOVE RD400116-EPRIMPAGADAS   TO S07-EPRIMPAGADAS.            16640000
+           MOVE RD400116-EPRIMIMPUTADAS TO S07-EPRIMIMPUTADAS.          16650000
+           MOVE RD400116-ERENDIMIENTO   TO S07-ERENDIMIENTO.            16660000
+           MOVE RD400116-EREDUCCION1    TO S07-EREDUCCION1.             16670000
+           MOVE RD400116-EREDUCCION2    TO S07-EREDUCCION2.             16680000
+           MOVE RD400116-EREDUCCION3    TO S07-EREDUCCION3.             16690000
+           MOVE RD400116-EREDUCCION4    TO S07-EREDUCCION4.             16700000
+           MOVE RD400116-EREDUCCION5    TO S07-EREDUCCION5.             16710000
+           MOVE RD400116-EBASERETENCION TO S07-EBASERETENCION.          16720000
+           MOVE RD400116-PRETENCION     TO S07-PRETENCION.              16730000
+           MOVE RD400116-ERETENCION     TO S07-ERETENCION.              16740000
+           MOVE RD400116-CCTARETENCION  TO S07-CCTARETENCION.           16750000
+           MOVE RD400116-CCTAGASTO      TO S07-CCTAGASTO.               16760000
+           MOVE RD400116-CCEUTAMELILLA  TO S07-CCEUTAMELILLA.           16770000
+           MOVE RD400116-FAEJERCICIO-DEVENGO                            16780000
+                                        TO S07-FAEJERCICIO-DEVENGO.     16790000
+           MOVE RD400116-GMEDIADOR      TO S07-GMEDIADOR.               16800000
+           MOVE RD400116-GCLAVECOD      TO S07-GCLAVECOD.               16810000
+           MOVE RD400116-GCODEMISOR     TO S07-GCODEMISOR.              16820000
+           MOVE RD400116-CTIPOPAGO      TO S07-CTIPOPAGO.               16830000
+           MOVE RD400116-GTIPOCOD       TO S07-GTIPOCOD.                16840000
+           MOVE RD400116-GCODCTAVALOR   TO S07-GCODCTAVALOR.            16850000
+           MOVE RD400116-GPENDIENTE     TO S07-GPENDIENTE.              16860000
+           MOVE RD400116-CCODPAIS       TO S07-CCODPAIS.                16870000
+           MOVE RD400116-GRESIDENCIA    TO S07-GRESIDENCIA.             16880000
+           MOVE RD400116-GPAGOPREVOK    TO S07-GPAGOPREVOK.             16890000
+           MOVE RD400116-GCODCALCFIS    TO S07-GCODCALCFIS.             16900000
+      *  MU-2017-BDGI-R-V-V8 INI                                        16910000
+           MOVE '0'                     TO S07-GCODCTAVALOR(1:1)        16920000
+      *  MU-2017-BDGI-R-V-V8 FIN                                        16930000
+           MOVE S07-DATOS-FORMATO       TO S07-DATOS.                   16940000
+           MOVE INCIDENCIA              TO S07-INCIDENCIA               16950000
+           MOVE DESCRIPCION             TO S07-DESCRIPCION              16960000
+           MOVE S07-DATOS-INCID         TO S07-REG-INCIDEN              16970000
+                                                                        16980000
+           WRITE REG-COMPLETO.                                          16990000
+           INITIALIZE REG-COMPLETO                                      17000000
+           .                                                            17010000
+                                                                        17020000
+       F-GRABAR-FIC-COMP.                                               17030000
+      *----------------*                                                17040000
+           EXIT.                                                        17050000
+                                                                        17060000
+       MOVER-ANTERIOR-ACTUAL SECTION.                                   17070000
+      *-----------------------------*                                   17080000
+                                                                        17090000
+           IF S01-TIPO = 'ANTERIOR'                                     17100000
+              MOVE WS-RD400116-MAEANT   TO RD400116                     17110000
+           ELSE                                                         17120000
+              MOVE WS-RD400116-MAEACT   TO RD400116                     17130000
+           END-IF.                                                      17140000
+                                                                        17150000
+           MOVE RD400116-CIMPUESTOS     TO S01-CIMPUESTOS.              17160000
+           MOVE RD400116-CSISTEMA       TO S01-CSISTEMA.                17170000
+           MOVE RD400116-COPERACION     TO S01-COPERACION.              17180000
+           MOVE RD400116-CSOCIEDAD      TO S01-CSOCIEDAD.               17190000
+           MOVE RD400116-FAEJERCICIO    TO S01-FAEJERCICIO.             17200000
+           MOVE RD400116-FMIMPUTACION   TO S01-FMIMPUTACION.            17210000
+           MOVE RD400116-CPROVFISCAL    TO S01-CPROVFISCAL.             17220000
+           MOVE RD400116-CIDENTIFICACION                                17230000
+                                        TO S01-CIDENTIFICACION.         17240000
+           MOVE RD400116-CMONEDA        TO S01-CMONEDA.                 17250000
+           MOVE RD400116-FDOCUMENTO     TO S01-FDOCUMENTO.              17260000
+           MOVE RD400116-CTIPDOC        TO S01-CTIPDOC.                 17270000
+           MOVE RD400116-LIBRE          TO S01-LIBRE.                   17280000
+           MOVE RD400116-KPOLIZA        TO S01-KPOLIZA.                 17290000
+           MOVE RD400116-NSUBPOLIZA     TO S01-NSUBPOLIZA.              17300000
+           MOVE RD400116-NCERTIFICADO   TO S01-NCERTIFICADO.            17310000
+           MOVE RD400116-COPERACIONIVA  TO S01-COPERACIONIVA.           17320000
+           MOVE RD400116-ETOTALFACTURA  TO S01-ETOTALFACTURA.           17330000
+           MOVE RD400116-EBASEIMPONIBLE TO S01-EBASEIMPONIBLE.          17340000
+           MOVE RD400116-CIMPUESTO      TO S01-CIMPUESTO.               17350000
+           MOVE RD400116-CIVA           TO S01-CIVA.                    17360000
+           MOVE RD400116-CGRUPOIVA      TO S01-CGRUPOIVA.               17370000
+           MOVE RD400116-CINDIVASAP     TO S01-CINDIVASAP.              17380000
+           MOVE RD400116-PIMPUESTO      TO S01-PIMPUESTO.               17390000
+           MOVE RD400116-EIMPUESTO      TO S01-EIMPUESTO.               17400000
+           MOVE RD400116-NASIENTO       TO S01-NASIENTO.                17410000
+           MOVE RD400116-NSERIE         TO S01-NSERIE.                  17420000
+           MOVE RD400116-NCTACONTABLE   TO S01-NCTACONTABLE.            17430000
+           MOVE RD400116-CEDIFICIO      TO S01-CEDIFICIO.               17440000
+           MOVE RD400116-NREFCATASTRAL  TO S01-NREFCATASTRAL.           17450000
+           MOVE RD400116-CMODELO        TO S01-CMODELO.                 17460000
+           MOVE RD400116-CNATURALEZA    TO S01-CNATURALEZA.             17470000
+           MOVE RD400116-CCLAVE         TO S01-CCLAVE.                  17480000
+           MOVE RD400116-CSUBCLAVE      TO S01-CSUBCLAVE.               17490000
+                                                                        17500000
+029445*    IF RD400116-CMODELO = '190'                                  17510001
+029445*       MOVE '04' TO S01-CSUBCLAVE                                17520001
+700327*       MOVE '03' TO S01-CSUBCLAVE                                17530001
+029445*     ND-IF                                                       17540001
+                                                                        17550000
+           MOVE RD400116-EPRESTACION    TO S01-EPRESTACION.             17560000
+           MOVE RD400116-EPRIMPAGADAS   TO S01-EPRIMPAGADAS.            17570000
+           MOVE RD400116-EPRIMIMPUTADAS TO S01-EPRIMIMPUTADAS.          17580000
+           MOVE RD400116-ERENDIMIENTO   TO S01-ERENDIMIENTO.            17590000
+           MOVE RD400116-EREDUCCION1    TO S01-EREDUCCION1.             17600000
+           MOVE RD400116-EREDUCCION2    TO S01-EREDUCCION2.             17610000
+           MOVE RD400116-EREDUCCION3    TO S01-EREDUCCION3.             17620000
+           MOVE RD400116-EREDUCCION4    TO S01-EREDUCCION4.             17630000
+           MOVE RD400116-EREDUCCION5    TO S01-EREDUCCION5.             17640000
+           MOVE RD400116-EBASERETENCION TO S01-EBASERETENCION.          17650000
+           MOVE RD400116-PRETENCION     TO S01-PRETENCION.              17660000
+           MOVE RD400116-ERETENCION     TO S01-ERETENCION.              17670000
+           MOVE RD400116-CCTARETENCION  TO S01-CCTARETENCION.           17680000
+           MOVE RD400116-CCTAGASTO      TO S01-CCTAGASTO.               17690000
+           MOVE RD400116-CCEUTAMELILLA  TO S01-CCEUTAMELILLA.           17700000
+           MOVE RD400116-FAEJERCICIO-DEVENGO                            17710000
+                                        TO S01-FAEJERCICIO-DEVENGO.     17720000
+           MOVE RD400116-GMEDIADOR      TO S01-GMEDIADOR.               17730000
+           MOVE RD400116-GCLAVECOD      TO S01-GCLAVECOD.               17740000
+           MOVE RD400116-GCODEMISOR     TO S01-GCODEMISOR.              17750000
+           MOVE RD400116-CTIPOPAGO      TO S01-CTIPOPAGO.               17760000
+           MOVE RD400116-GTIPOCOD       TO S01-GTIPOCOD.                17770000
+           MOVE RD400116-GCODCTAVALOR   TO S01-GCODCTAVALOR.            17780000
+           MOVE RD400116-GPENDIENTE     TO S01-GPENDIENTE.              17790000
+           MOVE RD400116-CCODPAIS       TO S01-CCODPAIS.                17800000
+           MOVE RD400116-GRESIDENCIA    TO S01-GRESIDENCIA.             17810000
+           MOVE RD400116-GPAGOPREVOK    TO S01-GPAGOPREVOK.             17820000
+           MOVE RD400116-GCODCALCFIS    TO S01-GCODCALCFIS.             17830000
+                                                                        17840000
+           IF WS-RD400116-MAEANT-P1 = WS-RD400116-MAEACT-P1 AND         17850000
+              WS-RD400116-MAEANT-P3 = WS-RD400116-MAEACT-P3 AND         17860000
+              WS-RD400116-MAEANT-P5 = WS-RD400116-MAEACT-P5 AND         17870000
+      *MU-2017-BDGI-R-V-V4 INI                                          17880000
+              WS-RD400116-MAEANT-P5-1 = WS-RD400116-MAEACT-P5-1 AND     17890000
+      *MU-2017-BDGI-R-V-V4 FIN                                          17900000
+              WS-RD400116-MAEANT-P7 = WS-RD400116-MAEACT-P7 AND         17910000
+      *  MU-2017-BDGI-R-V-V6 INI                                      * 17920000
+      *                                                                 17930000
+      *  VAMOS A COMPARAR EL EJERCICIO DE DEVENGO SIEMPRE Y CUANDO      17940000
+      *  ESTE SEA <> 0 EN LA CINTA                                      17950000
+             ((WS-RD400116-MAEANT-P8 = WS-RD400116-MAEACT-P8) OR        17960000
+               WS-RD400116-MAEANT-P8 = '0000' )          AND            17970000
+      *  MU-2017-BDGI-R-V-V6 FIN                                      * 17980000
+              WS-RD400116-MAEANT-P9 = WS-RD400116-MAEACT-P9 AND         17990000
+      * MU-2017-BDGI-R-V4 INI                                           18000000
+              WS-RD400116-MAEANT-P10 = WS-RD400116-MAEACT-P10           18010000
+              AND SW-NO-ANULADO                                         18020000
+      * MU-2017-BDGI-R-V4 FIN                                           18030000
+              MOVE 'NO'                 TO S01-SWCAMBIO                 18040000
+      *               NO HAY CAMBIO                                     18050000
+           ELSE                                                         18060000
+              MOVE 'SI'                 TO S01-SWCAMBIO                 18070000
+      *               SI HAY CAMBIO                                     18080000
+              IF S01-TIPO NOT = 'ANTERIOR'                              18090000
+      *MU-2017-BDGI-R-V-V4 INI                                          18100000
+      *           ADD   1                TO CT-GRABADOS-SIN-DUP-IGUAL   18110000
+      *MU-2017-BDGI-R-V-V4 FIN                                          18120000
+                                                                        18130000
+180516           MOVE WS-RD400116-MAEACT TO RD400116                    18140000
+      *MU-2017-BDGI-R-V-V4 INI                                          18150000
+180516*           IF RD400116-FAEJERCICIO-DEVENGO NOT = ZEROS           18160000
+180516*              MOVE RD400116-FAEJERCICIO-DEVENGO                  18170000
+180516*                                   TO RD400116-FAEJERCICIO       18180000
+180516*              MOVE 12              TO RD400116-FMIMPUTACION      18190000
+180516*           END-IF                                                18200000
+      *           PERFORM GRABAR-ACTUAL-SIN-DUPLI                       18210000
+      *                                                                 18220000
+      *                                                                 18230000
+      *MU-2017-BDGI-R-V-V5 INI                                          18240000
+      *SE VALIDA EN EL CASO DE A—O EJERC ACT SEA MAYOR QUE A—O EJERC    18250000
+      *ANTERIOR,SE INFORMA MES IMPUT 12 Y A—O EJERC ANT A A—O ACTUAL    18260000
+      *SI NO INFORMAR A—O ACTUAL Y MES ACTUAL A A—O/MES ACTUAL          18270000
+                 IF WS-RD400116-MAEANT-P2(1:4) <                        18280000
+                    WS-RD400116-MAEACT-P2(1:4)                          18290000
+                     MOVE 12 TO RD400116-FMIMPUTACION                   18300000
+                     MOVE WS-RD400116-MAEANT-P2(1:4) TO                 18310000
+                          RD400116-FAEJERCICIO                          18320000
+                 ELSE                                                   18330000
+                     MOVE WS-RD400116-MAEACT-P2(5:2) TO                 18340000
+                          RD400116-FMIMPUTACION                         18350000
+                     MOVE WS-RD400116-MAEACT-P2(1:4) TO                 18360000
+                          RD400116-FAEJERCICIO                          18370000
+                 END-IF                                                 18380000
+      *MU-2017-BDGI-R-V-V5 FIN                                          18390000
+                 IF SW-NO-ANULADO                                       18400000
+                     ADD   1      TO CT-GRABADOS-SIN-DUP-IGUAL          18410000
+      *                                                                 18420000
+                     PERFORM GRABAR-ACTUAL-SIN-DUPLI                    18430000
+                 END-IF                                                 18440000
+      *MU-2017-BDGI-R-V-V4 FIN                                          18450000
+              END-IF                                                    18460000
+           END-IF.                                                      18470000
+                                                                        18480000
+      *  MU-2017-BDGI-R-V-V8 INI                                        18490000
+           MOVE '0'                    TO S01-GCODCTAVALOR(1:1)         18500000
+      *  MU-2017-BDGI-R-V-V8 FIN                                        18510000
+           MOVE S01-DATOS-FORMATO       TO S01-DATOS.                   18520000
+                                                                        18530000
+       F-MOVER-ANTERIOR-ACTUAL.                                         18540000
+      *-----------------------*                                         18550000
+           EXIT.                                                        18560000
+      *MU-2017-BDGI-R-V-V4 INI                                          18570000
+       MOVER-ANULADO-ACTUAL SECTION.                                    18580000
+      *-----------------------------*                                   18590000
+      *D*                                                               18600000
+      *        DISPLAY ' MOVER-ANULADO-ACTUAL'                          18610000
+      *F*                                                               18620000
+      * SE INFORMA ANULACION ACTUAL EN EL CASO DE QUE NO EXISTA EN BDGI 18630000
+      * ANTERIOR                                                        18640000
+           MOVE WS-RD400116-MAEACT      TO RD400116                     18650000
+                                                                        18660000
+           MOVE 'ACTUAL  '              TO S01-TIPO                     18670000
+           MOVE RD400116-CIMPUESTOS     TO S01-CIMPUESTOS.              18680000
+           MOVE RD400116-CSISTEMA       TO S01-CSISTEMA.                18690000
+           MOVE RD400116-COPERACION     TO S01-COPERACION.              18700000
+           MOVE RD400116-CSOCIEDAD      TO S01-CSOCIEDAD.               18710000
+           MOVE RD400116-FAEJERCICIO    TO S01-FAEJERCICIO.             18720000
+           MOVE RD400116-FMIMPUTACION   TO S01-FMIMPUTACION.            18730000
+           MOVE RD400116-CPROVFISCAL    TO S01-CPROVFISCAL.             18740000
+           MOVE RD400116-CIDENTIFICACION                                18750000
+                                        TO S01-CIDENTIFICACION.         18760000
+           MOVE RD400116-CMONEDA        TO S01-CMONEDA.                 18770000
+           MOVE RD400116-FDOCUMENTO     TO S01-FDOCUMENTO.              18780000
+           MOVE RD400116-CTIPDOC        TO S01-CTIPDOC.                 18790000
+           MOVE RD400116-LIBRE          TO S01-LIBRE.                   18800000
+           MOVE RD400116-KPOLIZA        TO S01-KPOLIZA.                 18810000
+           MOVE RD400116-NSUBPOLIZA     TO S01-NSUBPOLIZA.              18820000
+           MOVE RD400116-NCERTIFICADO   TO S01-NCERTIFICADO.            18830000
+           MOVE RD400116-COPERACIONIVA  TO S01-COPERACIONIVA.           18840000
+           MOVE RD400116-ETOTALFACTURA  TO S01-ETOTALFACTURA.           18850000
+           MOVE RD400116-EBASEIMPONIBLE TO S01-EBASEIMPONIBLE.          18860000
+           MOVE RD400116-CIMPUESTO      TO S01-CIMPUESTO.               18870000
+           MOVE RD400116-CIVA           TO S01-CIVA.                    18880000
+           MOVE RD400116-CGRUPOIVA      TO S01-CGRUPOIVA.               18890000
+           MOVE RD400116-CINDIVASAP     TO S01-CINDIVASAP.              18900000
+           MOVE RD400116-PIMPUESTO      TO S01-PIMPUESTO.               18910000
+           MOVE RD400116-EIMPUESTO      TO S01-EIMPUESTO.               18920000
+           MOVE RD400116-NASIENTO       TO S01-NASIENTO.                18930000
+           MOVE RD400116-NSERIE         TO S01-NSERIE.                  18940000
+           MOVE RD400116-NCTACONTABLE   TO S01-NCTACONTABLE.            18950000
+           MOVE RD400116-CEDIFICIO      TO S01-CEDIFICIO.               18960000
+           MOVE RD400116-NREFCATASTRAL  TO S01-NREFCATASTRAL.           18970000
+           MOVE RD400116-CMODELO        TO S01-CMODELO.                 18980000
+           MOVE RD400116-CNATURALEZA    TO S01-CNATURALEZA.             18990000
+           MOVE RD400116-CCLAVE         TO S01-CCLAVE.                  19000000
+           MOVE RD400116-CSUBCLAVE      TO S01-CSUBCLAVE.               19010000
+                                                                        19020000
+029445*    IF RD400116-CMODELO = '190'                                  19030001
+029445*       MOVE '04' TO S01-CSUBCLAVE                                19040001
+029445*       MOVE '03' TO S01-CSUBCLAVE                                19050001
+029445*    END-IF                                                       19060001
+                                                                        19070000
+           MOVE RD400116-EPRESTACION    TO S01-EPRESTACION.             19080000
+           MOVE RD400116-EPRIMPAGADAS   TO S01-EPRIMPAGADAS.            19090000
+           MOVE RD400116-EPRIMIMPUTADAS TO S01-EPRIMIMPUTADAS.          19100000
+           MOVE RD400116-ERENDIMIENTO   TO S01-ERENDIMIENTO.            19110000
+           MOVE RD400116-EREDUCCION1    TO S01-EREDUCCION1.             19120000
+           MOVE RD400116-EREDUCCION2    TO S01-EREDUCCION2.             19130000
+           MOVE RD400116-EREDUCCION3    TO S01-EREDUCCION3.             19140000
+           MOVE RD400116-EREDUCCION4    TO S01-EREDUCCION4.             19150000
+           MOVE RD400116-EREDUCCION5    TO S01-EREDUCCION5.             19160000
+           MOVE RD400116-EBASERETENCION TO S01-EBASERETENCION.          19170000
+           MOVE RD400116-PRETENCION     TO S01-PRETENCION.              19180000
+           MOVE RD400116-ERETENCION     TO S01-ERETENCION.              19190000
+           MOVE RD400116-CCTARETENCION  TO S01-CCTARETENCION.           19200000
+           MOVE RD400116-CCTAGASTO      TO S01-CCTAGASTO.               19210000
+           MOVE RD400116-CCEUTAMELILLA  TO S01-CCEUTAMELILLA.           19220000
+           MOVE RD400116-FAEJERCICIO-DEVENGO                            19230000
+                                        TO S01-FAEJERCICIO-DEVENGO.     19240000
+           MOVE RD400116-GMEDIADOR      TO S01-GMEDIADOR.               19250000
+           MOVE RD400116-GCLAVECOD      TO S01-GCLAVECOD.               19260000
+           MOVE RD400116-GCODEMISOR     TO S01-GCODEMISOR.              19270000
+           MOVE RD400116-CTIPOPAGO      TO S01-CTIPOPAGO.               19280000
+           MOVE RD400116-GTIPOCOD       TO S01-GTIPOCOD.                19290000
+           MOVE RD400116-GCODCTAVALOR   TO S01-GCODCTAVALOR.            19300000
+           MOVE RD400116-GPENDIENTE     TO S01-GPENDIENTE.              19310000
+           MOVE RD400116-CCODPAIS       TO S01-CCODPAIS.                19320000
+           MOVE RD400116-GRESIDENCIA    TO S01-GRESIDENCIA.             19330000
+           MOVE RD400116-GPAGOPREVOK    TO S01-GPAGOPREVOK.             19340000
+           MOVE RD400116-GCODCALCFIS    TO S01-GCODCALCFIS.             19350000
+           MOVE 'NO'                    TO S01-SWCAMBIO                 19360000
+      *  MU-2017-BDGI-R-V-V8 INI                                        19370000
+           MOVE '0'                    TO S01-GCODCTAVALOR(1:1)         19380000
+      *  MU-2017-BDGI-R-V-V8 FIN                                        19390000
+           MOVE S01-DATOS-FORMATO       TO S01-DATOS                    19400000
+      *                                                                 19410000
+           WRITE R-MAESAL-S01.                                          19420000
+      *                                                                 19430000
+           ADD 1                   TO CT-GRABADOS-INF.                  19440000
+      *                                                                 19450000
+       F-MOVER-ANULADO-ACTUAL.                                          19460000
+      *-----------------------*                                         19470000
+           EXIT.                                                        19480000
+                                                                        19490000
+      *MU-2017-BDGI-R-V-V4 FIN                                          19500000
+       CERRAR-Y-TERMINAR SECTION.                                       19510000
+      *-------------------------*                                       19520000
+                                                                        19530000
+      *                                                                 19540000
+      *** CERRAMOS B.D. Y FICHEROS.                                     19550000
+      *                                                                 19560000
+           CLOSE E02-MAEANT                                             19570000
+                 E01-MAEACT                                             19580000
+                 S01-MAESAL                                             19590000
+                 S02-DUPLI                                              19600000
+                 S03-SIN-DUPLI                                          19610000
+                 S03-CABECERAS                                          19620000
+                 S07-COMPLETO.                                          19630000
+                                                                        19640000
+      *                                                                 19650000
+      *** DISPLAYS DE ESTADISTICAS DEL PROCESO.                         19660000
+      *                                                                 19670000
+      *B*                                                               19680000
+      *    DISPLAY '****************************************'.          19690000
+      *    DISPLAY '****** B372J015 - OBT DUP BDGI MANUALES*'.          19700000
+      *    DISPLAY '****************************************'.          19710000
+      *    DISPLAY '*                                      *'.          19720000
+      *    DISPLAY '* LEIDOS                               *'.          19730000
+      *    DISPLAY '*   + MAESTRO ANTERIOR ...: ' CT-LEIDOS1.           19740000
+      *    DISPLAY '*   + MAESTRO ACTUAL .....: ' CT-LEIDOS2.           19750000
+      *    DISPLAY '* SALIDA                               *'.          19760000
+      *    DISPLAY '*   + NO ENCONTRADAS ANT .: ' CT-NO-ENCONTRADOS-ANT.19770000
+      *    DISPLAY '*   + NO ENCONTRADAS ACT..: ' CT-NO-ENCONTRADOS-ACT.19780000
+      *    DISPLAY '*   + INFORME ............: ' CT-GRABADOS-INF.      19790000
+      *    DISPLAY '*   + DUPLICADOS .........: ' CT-GRABADOS-DUP.      19800000
+      *    DISPLAY '*   + SIN DUPLICADOS .....: ' CT-GRABADOS-SIN-DUP.  19810000
+      *    DISPLAY '*     - POR IGUALDAD .....: '                       19820000
+      *            CT-GRABADOS-SIN-DUP-IGUAL.                           19830000
+160216*    DISPLAY '*     - POR CAMBIOS DUP. .: '                       19840000
+160216*            CT-GRABADOS-CON-DUP.                                 19850000
+      *    DISPLAY '*                                      *'.          19860000
+      *    DISPLAY '****************************************'.          19870000
+      *F*                                                               19880000
+                                                                        19890000
+           GOBACK.                                                      19900000
+                                                                        19910000
+       F-CERRAR-Y-TERMINAR.                                             19920000
+      *-------------------*                                             19930000
+           EXIT.                                                        19940000

@@ -1,0 +1,639 @@
+      ******************************* (]]]) ****************************
+      *                                                                *
+      * IMPORTANTE - PROGRAMA MODIFICADO POR DECOMISADO IDMS           *
+      *                                                                *
+      * AVISAR -> LMAPLVIMA@mapfre.com                                 *
+      *                                                                *
+      ******************************************************************
+      *-----------------------
+       IDENTIFICATION DIVISION.
+      *------------------------
+
+       PROGRAM-ID. B372VT10.
+
+      ******************************************************************
+      *  APLICACION   : VENCIMIENTOS MANUALES (FOXPRO)                 *
+      *  ANALISTA     : EVERIS                                         *
+      *  PROGRAMADOR  : EVERIS                                         *
+      *  FECHA        : JUNIO 2012                                     *
+      *  TIPO PROGRAMA: COBOL-CICS                                     *
+      *  DESCRIPCION  : SERVICIO GESTOR DE LA EMISION DE FINIQUITOS    *
+      *                 E INFORMES DE VENCIMIENTOS MANUALES            *
+      ******************************************************************
+      ******************************************************************
+      *PARAMETROS DE ENTRADA:
+      ******************************************************************
+      *   -X372VT10-ENTRADA-E: COPY DE ENTRADA DE DATOS
+      *
+      ******************************************************************
+      *PARAMETROS DE SALIDA:
+      ******************************************************************
+      *   -X372VT10-SALIDA-S : COPY DE SALIDA DE DATOS
+      ******************************************************************
+
+      ******************************************************************
+      *MODULOS UTILIZADOS:
+      ******************************************************************
+      * VR431010 : SERVICIO DE NOMBRE OFICINA DE POLIZA
+      *
+      * B596M709 : MANTENIMIENTO DE AGENDAS PARA PETICION DE INFORMES
+      *
+      * B372N010 : MODULO DE NEGOCIO B372VT10
+      *
+      ******************************************************************
+
+      ******************************************************************
+      * CODIGO DE ERRORES
+      ******************************************************************
+      *
+      * X372VT10-CRETORNO-S
+      *
+      *                    '00' OPERACION CORRECTA
+      *
+      *                    '01' ERROR EN VR431010 : SERVICIO DE NOMBRE
+      *                         OFICINA DE POLIZA
+      *
+      *                    '02' ERROR EN LLAMADA AL MODULO B596M708
+      *
+      *                    '03' ERROR EN LLAMADA AL MODULO B596M709
+      *
+      *                    '98' ERROR EN LLAMADA DEL MODULO DE IDMS
+      *
+      *                    '99' ERROR AL DEVOLVER CONTRO
+      *
+      ******************************************************************
+      *****************************************************************
+      *                                                               *
+      * PETICION    : MU-2015-007512       BUSCAR <<507512>           *
+      * AUTOR       : INDRA                                           *
+      * FECHA       : 30/04/2015                                      *
+      * DESCRIPCIÓN : AÑADIR NUEVO TIPO DE INFORME, V6, PARA INFORME  *
+      *               RESUMEN POR MODALIDAD.                          *
+      *                                                               *
+      *****************************************************************
+      *                                                               *
+      * PETICION    : MU-2015-007509       BUSCAR <<507509>           *
+      * AUTOR       : INDRA                                           *
+      * FECHA       : 07/05/2015                                      *
+      * DESCRIPCIÓN : AÑADIR NUEVO TIPO DE INFORME, V7, PARA INFORME  *
+      *               PAGOS POR MODALIDAD.                            *
+      *                                                               *
+      ******************************************************************
+      * MODIFICACION.                             BUSCAR <REDTEM>     *
+      * PROYECTO    : MIGRACION DE LA RED TRERRITORIAL                *
+      * AUTOR       : INDRA                                           *
+      * FECHA       : MAYO  2023                                      *
+      * DESCRIPCIÓN : MIGRACION DE LA RED TRERRITORIAL                *
+      *****************************************************************
+      ******************************************************************
+      *  MODIFICACION:                                                 *
+      *  -------------                       <<USGIBE>>                *
+      *  PROGRAMADOR : NEORIS                                          *
+      *  FECHA       : 10/03/2026                                      *
+      *  DESCRIPCION :                                                 *
+      *             Cambiar VR431010 por B430V023                      *
+      *             Cambiar RR431010 por X4301010                      *
+      *                                                                *
+      *             Cambiar la llamada de gestor de servicios          *
+      *             por la llamada directa:                            *
+      *             Cambiar B430V003 por B430V023                      *
+      ******************************************************************
+
+      *--------------------
+       ENVIRONMENT DIVISION.
+      *---------------------
+
+       CONFIGURATION SECTION.
+        SPECIAL-NAMES.
+            DECIMAL-POINT IS COMMA.
+
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+
+      *-------------
+       DATA DIVISION.
+      *--------------
+
+       FILE SECTION.
+      *-------------
+
+      *************************
+       WORKING-STORAGE SECTION.
+      *************************
+      *
+      *
+      *  COMMAREA
+       01 WS-COMMAREA.
+             COPY R000X000.
+          03 WS-CADENA                   PIC X(08).
+
+       01 COPYS.
+          03 WS-PARAMETRO.
+             COPY R000X000.
+             COPY R000X001.
+
+      *COPYS IDMS
+      *   RR431010.
+USGIBE 01 WS-X4301010.
+USGIBE       COPY X4301010.
+
+       01 WS-VARIABLES.
+      * VARIABLES AUXILIARES CRITERIOS1
+           03 WS-CRITERIOS1.
+              05 WS-ANIO-CRIT                PIC 9(04).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-ANIODESDE                PIC X(04).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-ANIOHASTA                PIC X(04).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-EXPEDIDESDE              PIC X(10).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-EXPEDIHASTA              PIC X(10).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-FECEMISION               PIC X(08).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-FECEMIDESDE              PIC X(08).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-FECEMIHASTA              PIC X(08).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-FECPAGDESDE              PIC X(08).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-FECPAGHASTA              PIC X(08).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-FECCALCULO               PIC X(08).
+              05 FILLER                      PIC X(01) VALUE ';'.
+
+      * VARIABLES AUXILIARES PARA OFICNIA
+          03 WS-OFICINA.
+             05 WS-NUMOFICINA               PIC X(04).
+             05 FILLER                      PIC X(01) VALUE '-'.
+             05 WS-LITOFICINA               PIC X(25).
+
+      * VARIABLES AUXILIARES PARA DELEGACION
+          03 WS-DELEGACION.
+             05 WS-NUMDELEGACION            PIC X(02).
+             05 FILLER                      PIC X(01) VALUE '-'.
+             05 WS-LITDELEGACION            PIC X(25).
+
+          03 XN-A                           PIC 999 VALUE ZEROES.
+
+          03 B000Y011                       PIC X(08) VALUE 'B000Y011'.
+REDTEM    03 B430V003                       PIC X(8)  VALUE 'B430V003'.
+USGIBE    03 LT-B430V023                    PIC X(8)  VALUE 'B430V023'.
+REDTEM    03 ECICS                 PIC S9(8) USAGE IS BINARY.
+REDTEM    03 ECICS2                PIC S9(8) USAGE IS BINARY.
+REDTEM    03 XCICS                 PIC X(08) VALUE SPACES.
+REDTEM    03 XCICS2                PIC X(08) VALUE SPACES.
+
+      *   CONTROL DE ERRORES DEL PROGRAMA
+          03 SW-ERRORES              PIC X(2)   VALUE '00'.
+             88 NO-ERROR                        VALUE '00'.
+             88 ERROR-GRAVE                     VALUE '01'.
+      **
+          03 WS-TIEMP                       PIC 9(15).
+          03 WS-FECHA                       PIC X(08).
+          03 NOMBRE-CICS                    PIC X(08).
+          03 WS-BB00VIRD                    PIC X(8)  VALUE 'BB00VIRD'.
+
+      **** VARIABLE AUXILIAR PARA BUSQUEDA PETICION
+           03 WS-KPETINFORME                 PIC S9(10)V USAGE COMP-3.
+
+      *  MODULOS
+          03 WS-MODULOS.
+             05 WS-B596M708                 PIC X(8)   VALUE 'B596M708'.
+             05 WS-B596M709                 PIC X(8)   VALUE 'B596M709'.
+             05 WS-B362M007                 PIC X(8)   VALUE 'B362M007'.
+
+          03 WS-X362M007.
+             COPY X362M007.
+
+          03 WS-X362VT10.
+             COPY X362VT10.
+
+          03 WS-X596M708.
+             COPY X596M708.
+             COPY X596N000.
+
+          03 WS-X596M709.
+             COPY X596M709.
+             COPY X596N000.
+
+       01 LT-LITERALES.
+      * CONSTANTES
+          03 CT-CONSTANTES.
+             05 CT-ALFANUMERICAS.
+                07 LT-MODO-I1                 PIC X(2)  VALUE 'I1'.
+                07 LT-MODO-S2                 PIC X(2)  VALUE 'S2'.
+                07 LT-MODO-ALTA                PIC X(2)   VALUE 'A'.
+                07 CT-01                       PIC X(02) VALUE '01'.
+                07 CT-02                       PIC X(02) VALUE '02'.
+                07 CT-03                       PIC X(02) VALUE '03'.
+                07 CT-04                       PIC X(02) VALUE '04'.
+                07 CT-05                       PIC X(02) VALUE '05'.
+                07 CT-06                       PIC X(02) VALUE '06'.
+                07 CT-07                       PIC X(02) VALUE '07'.
+                07 CT-08                       PIC X(02) VALUE '08'.
+507512          07 CT-09                       PIC X(02) VALUE '09'.
+507509          07 CT-10                       PIC X(02) VALUE '10'.
+                07 CT-X                        PIC X(01) VALUE 'X'.
+                07 CT-P                        PIC X(01) VALUE 'P'.
+                07 CT-I                        PIC X(01) VALUE 'I'.
+                07 LT-0323760                  PIC X(7) VALUE '0323760'.
+                07 LT-0323761                  PIC X(7) VALUE '0323761'.
+                07 LT-0323762                  PIC X(7) VALUE '0323762'.
+                07 LT-0323768                  PIC X(7) VALUE '0323768'.
+                07 LT-0323769                  PIC X(7) VALUE '0323769'.
+
+
+        01 VARIABLES.
+           03 FILLER                PIC X(17) VALUE 'INICIO DE WORKING'.
+           03 LT-B372N010           PIC X(08) VALUE 'B372N010'.
+           03 FILLER                PIC X(17) VALUE 'FINAL  DE WORKING'.
+
+      *****************
+       LINKAGE SECTION.
+      *****************
+       01 DFHCOMMAREA.
+           COPY R000X000.
+           03 COMMAREA.
+              COPY X372VT10.
+      *
+      **************************************
+       PROCEDURE DIVISION USING DFHCOMMAREA.
+      **************************************
+
+
+           PERFORM 1000-INICIO.
+
+           PERFORM 2000-PROCESO.
+
+           PERFORM 9000-FIN.
+
+      ******************************************************************
+      *1000-INICIO.
+      ******************************************************************
+       1000-INICIO.
+
+           EXEC CICS
+              ASKTIME ABSTIME (WS-TIEMP)
+           END-EXEC
+
+           EXEC CICS
+              FORMATTIME ABSTIME(WS-TIEMP)
+              YYYYMMDD (WS-FECHA)
+           END-EXEC
+
+           EXEC CICS
+                IGNORE CONDITION ERROR
+           END-EXEC
+
+           EXEC CICS
+                ASSIGN APPLID (NOMBRE-CICS)
+           END-EXEC
+
+           MOVE '00'       TO X372VT10-CRETORNO-S.
+           MOVE 'B372VT10' TO X372VT10-GNOMPROG-S.
+
+
+      ******************************************************************
+      *2000-PROCESO.
+      ******************************************************************
+       2000-PROCESO.
+           EVALUATE X372VT10-TIPOEMI-E
+
+              WHEN CT-01
+              WHEN CT-02
+              WHEN CT-03
+
+                 PERFORM 2100-EMISION-FINIQUITOS
+
+              WHEN CT-04
+              WHEN CT-05
+              WHEN CT-06
+              WHEN CT-07
+              WHEN CT-08
+507512        WHEN CT-09
+507509        WHEN CT-10
+
+                 PERFORM 2050-VALIDAR-DATOS
+
+                 IF NO-ERROR
+                    PERFORM 2200-INSERTAR-REGISTROS
+                 END-IF
+
+                 IF NO-ERROR
+   MSZ*             PERFORM 2300-EJECUTAR-CADENA
+   MSZ              CONTINUE
+                 END-IF
+
+              WHEN OTHER
+
+                 PERFORM 2100-EMISION-FINIQUITOS
+
+           END-EVALUATE.
+
+      ***************************************************************
+       2050-VALIDAR-DATOS.
+      ***************************************************************
+      * VALIDAREMOS LOS DATOS ENTRANTES DE LA CONSULTA
+
+           CALL LT-B372N010     USING COMMAREA
+
+           IF X372VT10-CRETORNO-S NOT EQUAL '00'
+              SET ERROR-GRAVE TO TRUE
+           END-IF
+            .
+
+      ***************************************************************
+       2100-EMISION-FINIQUITOS.
+      ***************************************************************
+      * OBTENEMOS LLAMANDO AL MODULO DE CONSULTA DE VENCIMIENTOS
+      * AQUELLOS  EXPEDIENTES A EMITIR
+
+           CALL LT-B372N010     USING COMMAREA
+           SET NO-ERROR TO TRUE.
+           IF (X372VT10-CRETORNO-S EQUAL '00'  OR
+               X372VT10-CRETORNO-S EQUAL '06') AND
+              (X372VT10-TIPOEMI-E EQUAL '01' OR
+               X372VT10-TIPOEMI-E EQUAL '02' OR
+               X372VT10-TIPOEMI-E EQUAL '03')
+
+              MOVE 1 TO XN-A
+
+              PERFORM UNTIL X372VT10-KEXPEDIENTE-S(XN-A) EQUAL ZEROES
+                                                      OR EQUAL SPACES
+      *                                               OR ERROR-GRAVE
+
+      **      RELACION OFICINA/DELEGACION NUMERO CON LITERAL
+                 INITIALIZE WS-OFICINA
+                 INITIALIZE WS-DELEGACION
+
+                 MOVE X372VT10-KOFICINA-S(XN-A)
+                 TO   WS-NUMOFICINA
+
+      **      LLAMADA AL MODULO IDMS PARA LA BUSQUEDA DE LA OFICINA
+USGIBE           INITIALIZE X4301010
+USGIBE           MOVE X372VT10-KOFICINA-S(XN-A) TO X4301010-KOFICINA
+USGIBE           MOVE ZEROES                    TO X4301010-FCONSULTA
+
+                 MOVE R000X000 OF DFHCOMMAREA
+                                   TO R000X000         OF WS-PARAMETRO
+                 MOVE '00'         TO CAB-RESULTADO    OF WS-PARAMETRO
+USGIBE           MOVE 'DB2'        TO CAB-COD-LIBRERIA OF WS-PARAMETRO
+USGIBE           MOVE 'B430V023'   TO CAB-COD-INTERFAZ OF WS-PARAMETRO
+                 MOVE 'N'          TO CAB-ACTUALIZA    OF WS-PARAMETRO
+USGIBE           MOVE LENGTH OF X4301010
+                                   TO CAB-LONG-DATOS   OF WS-PARAMETRO
+USGIBE           MOVE X4301010     TO R000X001         OF WS-PARAMETRO
+
+
+REDTEM*          PERFORM ADAPTADOR-SALIDA
+REDTEM           PERFORM ADAPTADOR-SALIDA-MIG
+
+USGIBE           MOVE R000X001    OF WS-PARAMETRO TO X4301010
+
+USGIBE           IF X4301010-CRETORNO NOT EQUAL '00' AND
+                                      NOT EQUAL '05'
+                    CONTINUE
+      *             SET ERROR-GRAVE TO TRUE
+      *             MOVE '01'
+      *              TO  X372VT10-CRETORNO-S
+      *             MOVE 'ERROR EN LA CONSULTA DE OFICINA EN IDMS'
+      *              TO X372VT10-GERROR-S
+      *             MOVE 'VR411010'
+      *              TO  X372VT10-GNOMPROG-S
+                 ELSE
+
+USGIBE              MOVE X4301010-GNOMCORTO(1) TO WS-LITOFICINA
+USGIBE              MOVE X4301010-GNOMCORTO(2) TO WS-LITDELEGACION
+USGIBE              MOVE X4301010-KDIRECREG    TO WS-NUMDELEGACION
+
+      **      RELLENAMOS EL LA VARIABLE COMPLETA
+                    IF WS-LITOFICINA NOT EQUAL SPACES
+                       MOVE WS-OFICINA     TO X372VT10-KOFICINA-S(XN-A)
+                       MOVE WS-DELEGACION  TO X372VT10-REGIONAL-S(XN-A)
+                    ELSE
+                       MOVE WS-NUMOFICINA  TO X372VT10-KOFICINA-S(XN-A)
+                       MOVE WS-NUMDELEGACION
+                         TO X372VT10-REGIONAL-S(XN-A)
+                    END-IF
+
+                 END-IF
+
+                 ADD 1 TO XN-A
+
+              END-PERFORM
+
+           END-IF.
+
+      ***************************************************************
+       2200-INSERTAR-REGISTROS.
+      ***************************************************************
+      * INSERTAMOS LA PETICION DE INFORME
+      ***************************************************************
+           INITIALIZE WS-X362M007.
+           EVALUATE X372VT10-TIPOEMI-E
+
+              WHEN CT-04
+                 MOVE 'V1'                TO X362M007-CTIPOINFORME-E
+                 MOVE 11                  TO WS-KPETINFORME
+              WHEN CT-05
+                 MOVE 'V2'                TO X362M007-CTIPOINFORME-E
+                 MOVE 12                  TO WS-KPETINFORME
+              WHEN CT-06
+                 MOVE 'V3'                TO X362M007-CTIPOINFORME-E
+                 MOVE 13                  TO WS-KPETINFORME
+              WHEN CT-07
+                 MOVE 'V4'                TO X362M007-CTIPOINFORME-E
+                 MOVE 14                  TO WS-KPETINFORME
+              WHEN CT-08
+                 MOVE 'V5'                TO X362M007-CTIPOINFORME-E
+                 MOVE 15                  TO WS-KPETINFORME
+507512        WHEN CT-09
+507512           MOVE 'V7'                TO X362M007-CTIPOINFORME-E
+507512           MOVE 17                  TO WS-KPETINFORME
+507509        WHEN CT-10
+507509           MOVE 'V8'                TO X362M007-CTIPOINFORME-E
+507509           MOVE 18                  TO WS-KPETINFORME
+           END-EVALUATE
+
+           MOVE 'D1'                        TO X362M007-OPERACION-E
+
+           CALL WS-B362M007 USING WS-X362M007
+
+           IF X362M007-CRETORNO-S EQUAL '00' OR
+              X362M007-CRETORNO-S EQUAL '03'
+
+              MOVE 'I1'    TO X362M007-OPERACION-E
+
+              MOVE LT-MODO-I1             TO X362M007-OPERACION-E
+              MOVE WS-KPETINFORME         TO X362M007-KPETINFORME-E
+
+
+              INITIALIZE WS-CRITERIOS1
+
+              MOVE X372VT10-ANIODESDE-E    TO WS-ANIODESDE
+              MOVE X372VT10-ANIOHASTA-E    TO WS-ANIOHASTA
+              MOVE X372VT10-EXPEDIDESDE-E  TO WS-EXPEDIDESDE
+              MOVE X372VT10-EXPEDIHASTA-E  TO WS-EXPEDIHASTA
+              MOVE X372VT10-FECEMISION-E   TO WS-FECEMISION
+              MOVE X372VT10-FECEMIDESDE-E  TO WS-FECEMIDESDE
+              MOVE X372VT10-FECEMIHASTA-E  TO WS-FECEMIHASTA
+              MOVE X372VT10-FECPAGDESDE-E  TO WS-FECPAGDESDE
+              MOVE X372VT10-FECPAGHASTA-E  TO WS-FECPAGHASTA
+              MOVE X372VT10-FECCALCULO-E   TO WS-FECCALCULO
+      *D*
+      *       DISPLAY ' FECCALCULO ' X372VT10-FECCALCULO-E
+      *F*
+
+              MOVE WS-CRITERIOS1
+                TO X362M007-GCRITERIO1-E
+
+              MOVE WS-FECHA                TO X362M007-FALTA-E
+
+              MOVE X372VT10-KUSUARIO-C     TO X362M007-CUSUARIO-E
+
+              CALL WS-B362M007 USING WS-X362M007
+
+              IF X362M007-CRETORNO-S NOT EQUAL '00'
+                 SET ERROR-GRAVE TO TRUE
+                 MOVE 'B362VT10' TO  X362VT10-GNOMPROG-S
+                 MOVE '02'       TO  X362VT10-CRETORNO-S
+                 MOVE 'ERROR AL INSERTAR EN LA TABLA DE PETICIONES'
+                                 TO  X362VT10-GERROR-S
+              END-IF
+           ELSE
+              SET ERROR-GRAVE TO TRUE
+              MOVE 'B362VT10' TO  X362VT10-GNOMPROG-S
+              MOVE '02'       TO  X362VT10-CRETORNO-S
+              MOVE 'ERROR EN LA CONSULTA DE LA TABLA DE PETICIONES'
+                              TO  X362VT10-GERROR-S
+           END-IF.
+
+
+      ***************************************************************
+       2300-EJECUTAR-CADENA.
+      ***************************************************************
+
+      * DETERMINAMOS EN EL ENTORNO QUE ESTAMOS
+           MOVE R000X000 OF DFHCOMMAREA
+             TO R000X000 OF WS-COMMAREA
+
+           EVALUATE NOMBRE-CICS(6:1)
+               WHEN 'D'
+                  MOVE CT-X           TO WS-CADENA(1:1)
+               WHEN 'I'
+                  MOVE CT-I           TO WS-CADENA(1:1)
+               WHEN 'P'
+                  MOVE CT-P           TO WS-CADENA(1:1)
+               WHEN 'R'
+                  MOVE CT-X           TO WS-CADENA(1:1)
+           END-EVALUATE
+
+      * DETERMINAMOS LA CADENA A EJECUTAR
+
+           EVALUATE X372VT10-TIPOEMI-E
+
+              WHEN CT-03
+                  MOVE LT-0323760          TO WS-CADENA(2:7)
+
+              WHEN CT-04
+                  MOVE LT-0323760          TO WS-CADENA(2:7)
+
+              WHEN CT-05
+                 MOVE LT-0323761           TO WS-CADENA(2:7)
+
+              WHEN CT-06
+                 MOVE LT-0323762           TO WS-CADENA(2:7)
+
+              WHEN CT-07
+                 MOVE LT-0323768           TO WS-CADENA(2:7)
+
+              WHEN CT-08
+                 MOVE LT-0323769           TO WS-CADENA(2:7)
+
+           END-EVALUATE
+
+           EXEC CICS
+                LINK PROGRAM('BB00VIRD')
+                COMMAREA(WS-COMMAREA)
+                LENGTH(308)
+           END-EXEC.
+
+
+      ******************************************************************
+       ADAPTADOR-SALIDA.
+      *----------------*
+
+           EXEC CICS
+              LINK PROGRAM (B000Y011)
+              COMMAREA (WS-PARAMETRO)
+              LENGTH (LENGTH OF WS-PARAMETRO)
+           END-EXEC.
+
+           IF EIBRESP NOT = DFHRESP(NORMAL)
+
+
+              MOVE  'B372VT10'  TO  X372VT10-GNOMPROG-S
+              MOVE  '98'        TO  X372VT10-CRETORNO-S
+              MOVE  'ERROR EN LLAMADA DEL MODULO DE IDMS'
+                                TO  X372VT10-GERROR-S
+              PERFORM 9000-FIN
+
+           END-IF.
+
+           CONTINUE.
+
+      *************************************************************
+REDTEM ADAPTADOR-SALIDA-MIG.
+REDTEM*************************************************************
+REDTEM*
+REDTEM      EXEC CICS
+USGIBE           LINK PROGRAM (LT-B430V023)
+REDTEM           COMMAREA     (WS-PARAMETRO)
+REDTEM           LENGTH       (LENGTH OF WS-PARAMETRO)
+REDTEM           RESP         (ECICS)
+REDTEM           RESP2        (ECICS2)
+REDTEM      END-EXEC
+REDTEM
+REDTEM      MOVE ECICS  TO XCICS
+REDTEM      MOVE ECICS2 TO XCICS2
+REDTEM      IF EIBRESP NOT EQUAL DFHRESP(NORMAL)
+REDTEM         MOVE '88'             TO CAB-RESULTADO OF WS-PARAMETRO
+REDTEM         MOVE 'ERROR EN LINK ' TO CAB-DESCRIPCION-ERROR
+REDTEM                                       OF WS-PARAMETRO(1:14)
+USGIBE         MOVE LT-B430V023          TO CAB-DESCRIPCION-ERROR
+REDTEM                                       OF WS-PARAMETRO(15:)
+REDTEM         MOVE 'B372VT10'       TO CAB-PROGRAMA  OF DFHCOMMAREA
+REDTEM         MOVE 'ADAPTADOR-SALIDA-MIG   ' TO CAB-PARRAFO
+REDTEM                                       OF WS-PARAMETRO
+REDTEM         MOVE  'B372VT10'  TO  X372VT10-GNOMPROG-S
+REDTEM         MOVE  '98'        TO  X372VT10-CRETORNO-S
+REDTEM         MOVE  'ERROR EN LLAMADA DEL MODULO DE IDMS'
+REDTEM                          TO  X372VT10-GERROR-S
+REDTEM         PERFORM 9000-FIN
+REDTEM      ELSE
+REDTEM         CONTINUE
+REDTEM      END-IF.
+
+
+      ******************************************************************
+      *9000-FIN.
+      ******************************************************************
+       9000-FIN.
+
+           EXEC CICS
+                RETURN
+           END-EXEC.
+
+           IF EIBRESP NOT = DFHRESP(NORMAL)
+
+
+              MOVE  'B372VT10'  TO  X372VT10-GNOMPROG-S
+              MOVE  '99'        TO  X372VT10-CRETORNO-S
+              MOVE  'ERROR AL DEVOLVER CONTROL'
+                                TO  X372VT10-GERROR-S
+
+           END-IF
+           .
+

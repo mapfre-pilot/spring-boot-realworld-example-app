@@ -1,0 +1,1222 @@
+      *RETRIEVAL                                                                
+      *-----------------------                                                  
+       IDENTIFICATION DIVISION.                                                 
+      *------------------------                                                 
+
+       PROGRAM-ID. B372VT01.                                                    
+
+      ******************************************************************        
+      *  APLICACION   : VENCIMIENTOS MANUALES (FOXPRO)                 *        
+      *  ANALISTA     : EVERIS                                         *        
+      *  PROGRAMADOR  : EVERIS                                         *        
+      *  FECHA        :  JUNIO 2012.                                   *        
+      *  TIPO PROGRAMA: COBOL-CICS                                     *        
+      *  DESCRIPCION  : SERVICIO GESTOR DEL MANTENIMIENTO DE           *        
+      *                 EXPEDIENTES DE RESCATE MANUAL (FOXPRO)         *        
+      ******************************************************************        
+      *PARAMETROS DE ENTRADA:                                                   
+      ******************************************************************        
+      *   -X372VT01-ENTRADA-E: COPY DE ENTRADA DE DATOS                         
+      *                                                                         
+      ******************************************************************        
+      *PARAMETROS DE SALIDA:                                                    
+      ******************************************************************        
+      *   -X372VT01-SALIDA-S : COPY DE SALIDA DE DATOS                          
+      ******************************************************************        
+
+      ******************************************************************        
+      *MODULOS UTILIZADOS:                                                      
+      ******************************************************************        
+      * VR041534 : SERVICIO DE POLIZAS INDIVIDUALES IDMS                        
+      *                                                                         
+      * VA541100 : SERVICIO DE POLIZAS COLECTIVAS DB2/IDMS                      
+      *                                                                         
+      * B372N001 : MODULO DE NEGOCIO DE B372VT01                                
+
+      ******************************************************************        
+
+      ******************************************************************        
+      * CODIGO DE ERRORES                                                       
+      ******************************************************************        
+      *                                                                         
+      * X372VT01-CRETORNO-S                                                     
+      *                                                                         
+      *          '00' OPERACION CORRECTA                                        
+      *                                                                         
+      *          '01' ERROR EN VR041534 : SERVICIO DE POLIZAS                   
+      *               INDIVIDUALES IDM                                          
+      *                                                                         
+      *          '02' ERROR EN VA541100 : SERVICIO DE POLIZAS                   
+      *                COLECTIVAS DB2/IDMS                                      
+      *                                                                         
+      *          '98' ERROR EN LLAMADA DEL MODULO DE IDMS                       
+      *                                                                         
+      *          '99' ERROR AL DEVOLVER CONTROL                                 
+      *                                                                         
+      ******************************************************************        
+      *  MODIFICACION                                                  *        
+      *  ------------                                                  *        
+      *  FECHA:       12-06-2017                                       *        
+      *  AUTORA:      EVERIS SPAIN                                     *        
+      *  ARTEMIS:     MU-2017-BDGI-R-V  RESCATES  Y VENCIMIENTOS       *        
+      *  DESCRIPCION: SE AñADE NUEVA LLAMADA DE IDMS PARA VALIDAR      *        
+      *               COASEGURADO EXISTE EN BASE DE DATOS.             *        
+      *  MU-2017-BDGI-R-V-INI 01/06/2017                               *        
+      *  MU-2017-BDGI-R-V-FIN 01/06/2017                               *        
+      *                                                                *        
+      *  MU-2017-BDGI-R-V-INI2 31/07/2017                              *        
+      *                                                                *        
+      *    AL VALIDAR EL PROCENTAJE DE RETENCION, MODIFCAREMOS:        *        
+      *      - TOMAREMOS LA FECHA DE VENCMIM COMO FECHA PRESTACION     *        
+      *      - SOLO VALIDAREMOS EL % RETENCION PARA IMPUESTO 12 Y 22   *        
+      *      - VALIDAREMOS QUE EL PORCENTAJE INDICADO POR PANTALLA     *        
+      *        SEA ESTRICATAMENTE IGUAL AL RECUPERADO DE BBDD(B130V041)*        
+      *                                                                *        
+      *  MU-2017-BDGI-R-V-FIN2 31/07/2017                              *        
+      ******************************************************************        
+
+      *--------------------                                                     
+       ENVIRONMENT DIVISION.                                                    
+      *---------------------                                                    
+
+       CONFIGURATION SECTION.                                                   
+        SPECIAL-NAMES.                                                          
+            DECIMAL-POINT IS COMMA.                                             
+
+       INPUT-OUTPUT SECTION.                                                    
+       FILE-CONTROL.                                                            
+
+      *-------------                                                            
+       DATA DIVISION.                                                           
+      *--------------                                                           
+
+       FILE SECTION.                                                            
+      *-------------                                                            
+
+      *************************                                                 
+       WORKING-STORAGE SECTION.                                                 
+      *************************                                                 
+      *                                                                         
+      *MU-2017-BDGI-R-V-INI                                                     
+        01 SW-SWITCH.                                                           
+          03 SW-CODCOA-INFORMADO       PIC X  VALUE '0'.                        
+             88 SW-CODCOA-KO                  VALUE '0'.                        
+             88 SW-CODCOA-OK                  VALUE '1'.                        
+      *                                                                         
+          03 SW-INFO-DOM-FISC                PIC X(01) VALUE SPACES.            
+             88 NO-INFO-DOM-FISC                       VALUE 'N'.               
+             88 SI-INFO-DOM-FISC                       VALUE 'S'.               
+      *   FLAG SI EXISTE DOMICILIO DE PRESTACIONES                              
+          03 SW-INFO-DOM-R                   PIC X(01) VALUE SPACES.            
+             88 NO-INFO-DOM-R                          VALUE 'N'.               
+             88 SI-INFO-DOM-R                          VALUE 'S'.               
+      *   FLAG SI EXISTE DOMICILIO PARTICULAR                                   
+          03 SW-INFO-DOM-P                   PIC X(01) VALUE SPACES.            
+             88 NO-INFO-DOM-P                          VALUE 'N'.               
+             88 SI-INFO-DOM-P                          VALUE 'S'.               
+      *                                                                         
+          03 SW-PORCOA-INFORMADO             PIC X(01) VALUE SPACES.            
+             88 SW-PORCOA-KO                           VALUE 'N'.               
+             88 SW-PORCOA-OK                           VALUE 'S'.               
+      *                                                                         
+      *****************************************************                     
+      ** INDICE **                                                              
+      *****************************************************                     
+
+        01 XN-INDICES.                                                          
+             05 XN-I                        PIC 9(2).                           
+             05 XN-M                        PIC 9(2).                           
+             05 XN-L                        PIC 9(2).                           
+             05 X-E                         PIC 9(02) VALUE ZEROES.             
+      *                                                                         
+        01 CN-INDICES.                                                          
+           05 CN-MAX                        PIC 9(02) VALUE 10.                 
+           05 CTE-50                        PIC 9(02) VALUE 50.                 
+      *                                                                         
+        01 CT-ALFANUMERICAS.                                                    
+           03 CT-CONSULTA                   PIC X(01) VALUE 'C'.                
+           03 CT-HISTORICO                  PIC X(01) VALUE 'H'.                
+           03 CT-C2                         PIC X(02) VALUE 'C2'.               
+           03 CT-H2                         PIC X(02) VALUE 'H2'.               
+           03 CT-R                          PIC X(01) VALUE 'R'.                
+           03 CT-S                          PIC X(01) VALUE 'S'.                
+           03 CT-P                          PIC X(01) VALUE 'P'.                
+      *                                                                         
+        01 LT-MODULOS.                                                          
+           03 LT-B130V041                   PIC X(8)  VALUE 'B130V041'.         
+           03 LT-B961V0TE                   PIC X(8)  VALUE 'B961V0TE'.         
+      *                                                                         
+        01 WS-ERRORES.                                                          
+           03 WS-CRETORNO                   PIC X(2)  VALUE SPACES.             
+           03 WS-CPROGRAMA                  PIC X(8)  VALUE SPACES.             
+           03 ECICS                         PIC S9(8) USAGE IS BINARY.          
+           03 ECICS2                        PIC S9(8) USAGE IS BINARY.          
+           03 XCICS                         PIC X(08) VALUE SPACES.             
+           03 XCICS2                        PIC X(08) VALUE SPACES.             
+      *                                                                         
+      *MU-2017-BDGI-R-V-INI 2018-01-11                                          
+        01 WS-X160M026.                                                         
+           COPY X160M026.                                                       
+           COPY X160N000.                                                       
+      *MU-2017-BDGI-R-V-FIN 2018-01-11                                          
+        01 WS-X160M002.                                                         
+           COPY X160M002.                                                       
+           COPY X160N000.                                                       
+        01 WS-X160N315.                                                         
+           COPY X160N315.                                                       
+           COPY X160N000.                                                       
+        01 WS-X961V0TE.                                                         
+           COPY R000X000.                                                       
+           COPY X961V0TE.                                                       
+        01 WS-X130V041.                                                         
+         COPY R000X000.                                                         
+         COPY X130V041.                                                         
+      *                                                                         
+      *MU-2017-BDGI-R-V-FIN                                                     
+        01 VARIABLES.                                                   00960000
+           03 FILLER                PIC X(17) VALUE 'INICIO DE WORKING'.00960000
+           03 LT-B372N001           PIC X(08) VALUE 'B372N001'.                 
+           03 WS-VA541100           PIC X(08) VALUE 'VA541100'.                 
+           03 B000Y011              PIC X(08) VALUE 'B000Y011'.                 
+           03 WS-VA041527           PIC X(08) VALUE 'VA041527'.                 
+      *MU-2017-BDGI-R-V-INI                                                     
+           03 WS-VA761031           PIC X(08) VALUE 'VA761031'.                 
+           03 WS-B160M002               PIC X(08) VALUE 'B160M002'.             
+      *MU-2017-BDGI-R-V-INI 2018-01-11                                          
+           03 WS-B160M026               PIC X(08) VALUE 'B160M026'.             
+      *MU-2017-BDGI-R-V-FIN 2018-01-11                                          
+           03 WS-B160N315               PIC X(08) VALUE 'B160N315'.             
+           03 WS-KDOMICILIO             PIC S9(9) VALUE ZEROES.                 
+           03 WS-FAUX                   PIC 9(8) VALUE ZEROES.                  
+           03 WS-FAUX-DOMI              PIC 9(8) VALUE ZEROES.                  
+           03 WS-PROVINCIA                PIC X(05).                            
+           03 WS-CODPOSTAL                PIC 9(02).                            
+           03 WS-PAIS                     PIC X(03).                            
+           03 WS-KFORALIDAD               PIC 9(02).                            
+           03 WS-PORCENTAJE               PIC ZZ9,99.                           
+           03 WS-TEXTO-ERROR                 PIC X(255).                        
+           03 WS-TEXTO-RETEN                 PIC X(12).                         
+           03 WS-FECHA-SIS.                                                     
+             05 WS-FECHA.                                                       
+                07 WS-ANO                   PIC 9(04).                          
+                07 WS-MES                   PIC 9(02).                          
+                07 WS-DIA                   PIC 9(02).                          
+             05 WS-TIEMPO.                                                      
+                07 WS-HORA                  PIC 9(02).                          
+                07 WS-MINUTOS               PIC 9(02).                          
+                07 WS-SEGUNDOS              PIC 9(02).                          
+                07 WS-CENTESIMAS            PIC 9(02).                          
+             05 FILLER                      PIC 9(05).                          
+      *MU-2017-BDGI-R-V-FIN                                                     
+           03 FILLER                PIC X(17) VALUE 'FINAL  DE WORKING'.00960000
+
+          03 WS-PARAMETRO.                                                      
+             COPY R000X000.                                                     
+             COPY R000X001.                                                     
+
+      *COPYS IDMS                                                               
+
+           COPY RA041527.                                                       
+           COPY RA541100.                                                       
+           COPY RR041534.                                                       
+      *MU-2017-BDGI-R-V-INI                                                     
+           COPY IDMS RECORD RA761031.                                           
+      *MU-2017-BDGI-R-V-FIN                                                     
+
+
+      *****************                                                         
+       LINKAGE SECTION.                                                         
+      *****************                                                         
+       01 DFHCOMMAREA.                                                          
+           COPY R000X000.                                                       
+           03 COMMAREA.                                                         
+               COPY X372VT01.                                                   
+      *                                                                         
+      **************************************                                    
+       PROCEDURE DIVISION USING DFHCOMMAREA.                                    
+      **************************************                                    
+
+
+           PERFORM 1000-INICIO.                                                 
+
+           PERFORM 2000-PROCESO.                                                
+
+           PERFORM 9000-FIN.                                                    
+
+      ******************************************************************        
+      *1000-INICIO.                                                             
+      ******************************************************************        
+       1000-INICIO.                                                             
+
+           EXEC CICS                                                            
+                IGNORE CONDITION ERROR                                          
+           END-EXEC.                                                            
+
+           MOVE '00'       TO X372VT01-CRETORNO-S.                              
+           MOVE 'B372VT01' TO X372VT01-GNOMPROG-S.                              
+
+      *MU-2017-BDGI-R-V-INI                                                     
+           MOVE FUNCTION CURRENT-DATE TO WS-FECHA-SIS.                          
+      *MU-2017-BDGI-R-V-FIN                                                     
+           IF X372VT01-OPERACION-E = 'A1'                                       
+               PERFORM 1700-VALIDAR-POLIZA                                      
+           END-IF.                                                              
+
+      ******************************************************************        
+      *2000-PROCESO.                                                            
+      ******************************************************************        
+       2000-PROCESO.                                                            
+
+      *D*                                                                       
+      *     DISPLAY '***************************'                               
+      *     DISPLAY '* YACO-VT01  ENTRADA      *'                               
+      *     DISPLAY '***************************'                               
+      *     DISPLAY 'OPERACION-E        ' X372VT01-OPERACION-E                  
+      *    DISPLAY 'ANIO-E' X372VT01-ANIO-E                                     
+      *    DISPLAY 'KEXPEDIENTE-E' X372VT01-KEXPEDIENTE-E                       
+      *    DISPLAY 'EXIMIDO-E' X372VT01-EXIMIDO-E                               
+      *    DISPLAY 'KDOMCOM-E' X372VT01-KDOMCOM-E                               
+      *    DISPLAY 'CODCOA-E' X372VT01-CODCOA-E          (1)                    
+      *    DISPLAY 'CODCOA-E' X372VT01-CODCOA-E          (2)                    
+      *    DISPLAY 'PORCOA-E' X372VT01-PORCOA-E          (1)                    
+      *    DISPLAY 'PORCOA-E' X372VT01-PORCOA-E          (2)                    
+      *    DISPLAY 'IMPCOA-E' X372VT01-IMPCOA-E          (1)                    
+      *    DISPLAY 'IMPCOA-E' X372VT01-IMPCOA-E          (2)                    
+      *    DISPLAY 'IMPRTOINTEGRCOA-E' X372VT01-IMPRTOINTEGRCOA-E (1)           
+      *    DISPLAY 'IMPRTOINTEGRCOA-E' X372VT01-IMPRTOINTEGRCOA-E (2)           
+      *    DISPLAY 'IMPREDPRICOA-E' X372VT01-IMPREDPRICOA-E    (1)              
+      *    DISPLAY 'IMPREDPRICOA-E' X372VT01-IMPREDPRICOA-E    (2)              
+      *    DISPLAY 'IMPREDTRANCOA-E' X372VT01-IMPREDTRANCOA-E   (1)             
+      *    DISPLAY 'IMPREDTRANCOA-E' X372VT01-IMPREDTRANCOA-E   (2)             
+      *    DISPLAY 'IMPRTONETOCOA-E' X372VT01-IMPRTONETOCOA-E   (1)             
+      *    DISPLAY 'IMPRTONETOCOA-E' X372VT01-IMPRTONETOCOA-E   (2)             
+      *    DISPLAY 'IMPRETCOA-E' X372VT01-IMPRETCOA-E       (1)                 
+      *    DISPLAY 'IMPCOMPENSATCOA-E' X372VT01-IMPCOMPENSATCOA-E (2)           
+      *    DISPLAY 'IMPRETCOA-E' X372VT01-IMPRETCOA-E       (1)                 
+      *    DISPLAY 'IMPCOMPENSATCOA-E' X372VT01-IMPCOMPENSATCOA-E (2)           
+      *     DISPLAY 'KRAMO-E            ' X372VT01-KRAMO-E                      
+      *     DISPLAY 'ANIOPOL-E          ' X372VT01-ANIOPOL-E                    
+      *     DISPLAY 'KPOLIZA-E          ' X372VT01-KPOLIZA-E                    
+      *     DISPLAY 'NSUBPOLIZA-E       ' X372VT01-NSUBPOLIZA-E                 
+      *     DISPLAY 'KCERTIFICADO-E     ' X372VT01-KCERTIFICADO-E               
+      *     DISPLAY 'KMODALIDAD-E       ' X372VT01-KMODALIDAD-E                 
+      *     DISPLAY 'CCANALCAMP-E       ' X372VT01-CCANALCAMP-E                 
+      *     DISPLAY 'CENTIDAD-E         ' X372VT01-CENTIDAD-E                   
+      *     DISPLAY 'FECEFECTO-E        ' X372VT01-FECEFECTO-E                  
+      *     DISPLAY 'FECANULA-E         ' X372VT01-KDURACION-E                  
+      *     DISPLAY 'FECMODIFICA-E      ' X372VT01-FECEMISION-E                 
+      *     DISPLAY 'CCARTERA-E         ' X372VT01-CCARTERA-E                   
+      *     DISPLAY 'SREASEGURO-E       ' X372VT01-SREASEGURO-E                 
+      *     DISPLAY 'REGIONAL-E         ' X372VT01-REGIONAL-E                   
+      *     DISPLAY 'LUGARENVIO-E       ' X372VT01-LUGARENVIO-E                 
+      *     DISPLAY 'KOFICINA-E         ' X372VT01-KOFICINA-E                   
+      *     DISPLAY 'IPENDIENTE-E       ' X372VT01-IPENDIENTE-E                 
+      *     DISPLAY 'CTIPOPERS1-E       ' X372VT01-CTIPOPERS1-E                 
+      *     DISPLAY 'SRESIDENTE1-E      ' X372VT01-SRESIDENTE1-E                
+      *     DISPLAY 'NIF1-E             ' X372VT01-NIF1-E                       
+      *     DISPLAY 'KPERSONA1-E        ' X372VT01-KPERSONA1-E                  
+      *     DISPLAY 'IMPCAPITAL-E       ' X372VT01-IMPCAPITAL-E                 
+      *     DISPLAY 'IMPBENEFICIOS-     ' X372VT01-IMPBENEFICIOS-E              
+      *     DISPLAY 'FECPAGOCAPITAL     ' X372VT01-FECPAGOCAPITAL-E             
+      *     DISPLAY 'IMPANTICIPO-E      ' X372VT01-IMPANTICIPO-E                
+      *     DISPLAY 'IMPINTEPEND-E      ' X372VT01-IMPINTEPEND-E                
+      *     DISPLAY 'FECVENCIMICAP-E    ' X372VT01-FECVENCIMICAP-E              
+      *     DISPLAY 'TIPIMPUESTCAP--E   ' X372VT01-TIPIMPUESTCAP-E              
+      *     DISPLAY 'IMPRTOINTEGRCA     ' X372VT01-IMPRTOINTEGRCAP-E            
+      *     DISPLAY 'IMPREDPRICAP-E     ' X372VT01-IMPREDPRICAP-E               
+      *     DISPLAY 'IMPREDTRANCAP-E    ' X372VT01-IMPREDTRANCAP-E              
+      *     DISPLAY 'IMPCOMPENSATOR     ' X372VT01-IMPCOMPENSATORIA-E           
+      *     DISPLAY 'IMPRTONETOCAP-E    ' X372VT01-IMPRTONETOCAP-E              
+      *     DISPLAY 'PORRETCAP-E        ' X372VT01-PORRETCAP-E                  
+      *     DISPLAY 'IMPRETCAP-E        ' X372VT01-IMPRETCAP-E                  
+      *     DISPLAY 'IMPLIQCAP-E   P-E  ' X372VT01-IMPLIQCAP-E                  
+      *     DISPLAY 'FECIMPRECAP-E      ' X372VT01-FECIMPRECAP-E                
+      *     DISPLAY 'FECPAGRET-E   E    ' X372VT01-FECPAGRET-E                  
+      *     DISPLAY 'IMPCOMP1-E    IA-E ' X372VT01-IMPCOMP1-E                   
+      *     DISPLAY 'FECEMICOMP1-E E    ' X372VT01-FECEMICOMP1-E                
+      *     DISPLAY 'FECPAGCOMP1-E      ' X372VT01-FECPAGCOMP1-E                
+      *     DISPLAY 'TIPIMPUESTCOMP     ' X372VT01-TIPIMPUESTCOMP1-E            
+      *     DISPLAY 'IMPRTOINTCOMP1     ' X372VT01-IMPRTOINTCOMP1-E             
+      *     DISPLAY 'IMPREDPRICOMP1     ' X372VT01-IMPREDPRICOMP1-E             
+      *     DISPLAY 'IREDTRANCOMP1-     ' X372VT01-IREDTRANCOMP1-E              
+      *     DISPLAY 'IRTONETCOMP1-E     ' X372VT01-IRTONETCOMP1-E               
+      *     DISPLAY 'PORRETCOMP1-E      ' X372VT01-PORRETCOMP1-E                
+      *     DISPLAY 'IRETCOMP1-E        ' X372VT01-IRETCOMP1-E                  
+      *     DISPLAY 'ILIQCOMP1-E        ' X372VT01-ILIQCOMP1-E                  
+      *     DISPLAY 'FECIMPRECOMP1-E    ' X372VT01-FECIMPRECOMP1-E              
+      *     DISPLAY 'FECPAGRETCOM1-E    ' X372VT01-FECPAGRETCOM1-E              
+      *     DISPLAY 'IMPCOMP2-E         ' X372VT01-IMPCOMP2-E                   
+      *     DISPLAY 'FECEMICOMP2-E      ' X372VT01-FECEMICOMP2-E                
+      *     DISPLAY 'FECPAGCOMP2-E      ' X372VT01-FECPAGCOMP2-E                
+      *     DISPLAY 'TIPIMPUESTCOMP2-   ' X372VT01-TIPIMPUESTCOMP2-E            
+      *     DISPLAY 'IMPRTOINTCOMP2-E   ' X372VT01-IMPRTOINTCOMP2-E             
+      *     DISPLAY 'IMPREDPRICOMP2-E   ' X372VT01-IMPREDPRICOMP2-E             
+      *     DISPLAY 'IREDTRANCOMP2-E    ' X372VT01-IREDTRANCOMP2-E              
+      *     DISPLAY 'IRTONETCOMP2-E     ' X372VT01-IRTONETCOMP2-E               
+      *     DISPLAY 'PORRETCOMP2-E      ' X372VT01-PORRETCOMP2-E                
+      *     DISPLAY 'IRETCOMP2-E        ' X372VT01-IRETCOMP2-E                  
+      *     DISPLAY 'ILIQCOMP2-E        ' X372VT01-ILIQCOMP2-E                  
+      *     DISPLAY 'FECIMPRECOMP2-E    ' X372VT01-FECIMPRECOMP2-E              
+      *     DISPLAY 'FECPAGRETCOM2-E    ' X372VT01-FECPAGRETCOM2-E              
+      *     DISPLAY 'CODCOA1-E          ' X372VT01-CODCOA1-E                    
+      *     DISPLAY 'PORCOA1-E          ' X372VT01-PORCOA1-E                    
+      *     DISPLAY 'CODCOA2-E          ' X372VT01-CODCOA2-E                    
+      *     DISPLAY 'PORCOA2-E          ' X372VT01-PORCOA2-E                    
+      *     DISPLAY 'CODCOA3-E          ' X372VT01-CODCOA3-E                    
+      *     DISPLAY 'PORCOA3-E          ' X372VT01-PORCOA3-E                    
+      *     DISPLAY 'GOBSERVACION-E     ' X372VT01-GOBSERVACION-E               
+      *F*                                                                       
+      *MU-2017-BDGI-R-V-INI                                                     
+      *     CALL LT-B362N001     USING COMMAREA                                 
+      *                                                                         
+      * VALIDACION PORCENTAJE RETENCION PRINCIPAL                               
+      *                                                                         
+      *MU-2017-BDGI-R-V-INI 2018-01-11                                          
+           IF X372VT01-CRETORNO-S EQUAL ZEROES                                  
+      *MU-2017-BDGI-R-V-FIN 2018-01-11                                          
+      *  MU-2017-BDGI-R-V-INI2 31/07/2017                                       
+               IF X372VT01-EXIMIDO-E    = 'N'                                   
+               AND (X372VT01-TIPIMPUESTCAP-E EQUAL '22' OR '12')                
+      *  MU-2017-BDGI-R-V-FIN2 31/07/2017                                       
+                  PERFORM 2400-CONSULTAR-DATOS-FISCALES                         
+                  PERFORM 2500-CONSULTAR-DOMICILIO                              
+      *MU-2017-BDGI-R-V-INI 2018-01-11                                          
+      *            PERFORM 2300-VALIDAR-PORC-RETE-CAPIT                         
+                  PERFORM 2350-VALIDAR-PORC-RETE-CAPIT                          
+      *MU-2017-BDGI-R-V-FIN 2018-01-11                                          
+               END-IF                                                           
+      *MU-2017-BDGI-R-V-INI 2018-01-11                                          
+           END-IF                                                               
+      *MU-2017-BDGI-R-V-FIN 2018-01-11                                          
+      *                                                                         
+      * VALIDACION PORCENTAJE RETENCION COMPLEMENTARIA                          
+      *                                                                         
+      *                                                                         
+      * VALIDACION PORCENTAJE RETENCION COMPLEMENTARIA                          
+      *                                                                         
+      *MU-2017-BDGI-R-V-INI 2018-01-11                                          
+           IF X372VT01-CRETORNO-S EQUAL ZEROES                                  
+      *MU-2017-BDGI-R-V-FIN 2018-01-11                                          
+      *  MU-2017-BDGI-R-V-INI2 31/07/2017                                       
+               IF X372VT01-EXIMIDO-E    = 'N'                                   
+               AND (X372VT01-TIPIMPUESTCOMP1-E EQUAL '22' OR '12' )             
+      *  MU-2017-BDGI-R-V-FIN2 31/07/2017                                       
+      * SI EL KPERSONA ES 0 ES PQ NO LO HEMSO CONSLTADO ANTES                   
+      *MU-2017-BDGI-R-V-INI 2018-01-11                                          
+      *            IF X160M002-KPERSONA-E EQUAL ZEROES                          
+      *MU-2017-BDGI-R-V-FIN 2018-01-11                                          
+                     PERFORM 2400-CONSULTAR-DATOS-FISCALES                      
+                     PERFORM 2500-CONSULTAR-DOMICILIO                           
+      *MU-2017-BDGI-R-V-INI 2018-01-11                                          
+      *            END-IF                                                       
+      *            PERFORM 2600-VALIDAR-PORC-RETEN-COMP                         
+                  PERFORM 2650-VALIDAR-PORC-RETEN-COMP                          
+      *MU-2017-BDGI-R-V-FIN 2018-01-11 D                                        
+               END-IF                                                           
+      *MU-2017-BDGI-R-V-INI 2018-01-11                                          
+           END-IF                                                               
+      *MU-2017-BDGI-R-V-FIN 2018-01-11                                          
+      *                                                                         
+           IF X372VT01-CRETORNO-S EQUAL ZEROES                                  
+              SET SW-CODCOA-OK TO TRUE                                          
+              SET SW-PORCOA-OK TO TRUE                                          
+      *                                                                         
+              PERFORM 2100-VALIDAR-CODCOA                                       
+              PERFORM 2160-VALIDAR-PORCOA                                       
+      *                                                                         
+              IF SW-CODCOA-OK AND SW-PORCOA-OK                                  
+                 PERFORM 2200-LLAMADA-B372N001                                  
+              END-IF                                                            
+           END-IF                                                               
+      *MU-2017-BDGI-R-V-FIN                                                     
+
+
+      *D*                                                                       
+      *     DISPLAY '************** YACO RETORNO B372VT01*********'             
+      *     DISPLAY 'ANIO-S        ' X372VT01-ANIO-S                            
+      *     DISPLAY 'KEXPEDIENTE-S ' X372VT01-KEXPEDIENTE-S                     
+      *     DISPLAY 'IMPREDPRIC-S  ' X372VT01-IMPREDPRICAP-S                    
+      *     DISPLAY 'IMPREDTRAN-S  ' X372VT01-IMPREDTRANCAP-S                   
+      *     DISPLAY 'IMPRETCAP-S   ' X372VT01-IMPRETCAP-S                       
+      *     DISPLAY 'IMPRTONETO-S  ' X372VT01-IMPRTONETOCAP-S                   
+      *     DISPLAY 'CRETORNO-S    ' X372VT01-CRETORNO-S                        
+      *     DISPLAY 'GERROR-S  ' X372VT01-GERROR-S                              
+      *     DISPLAY 'GNOMPROG-S    ' X372VT01-GNOMPROG-S                        
+      *F*                                                                       
+      *D*                                                                       
+      *     DISPLAY 'ANIO-S        ' X372VT01-ANIO-S                            
+      *     DISPLAY 'KEXPEDIENTE-S ' X372VT01-KEXPEDIENTE-S                     
+      *     DISPLAY 'IMPREDPRICAP  ' X372VT01-IMPREDPRICAP-S                    
+      *     DISPLAY 'IMPREDTRANCAP ' X372VT01-IMPREDTRANCAP-S                   
+      *     DISPLAY 'IMPRETCAP-S   ' X372VT01-IMPRETCAP-S                       
+      *     DISPLAY 'COD FIS CAP   ' X372VT01-CODCALFISCAP-S                    
+      *     DISPLAY 'COD FIS COPM1 ' X372VT01-CODCALFISCOMP1-S                  
+      *     DISPLAY 'COD FIS COMP2 ' X372VT01-CODCALFISCOMP2-S                  
+      *     DISPLAY 'GNOMPROG-S ' X372VT01-GNOMPROG-S                           
+      *F*                                                                       
+            .                                                                   
+      *MU-2017-BDGI-R-V-INI                                                     
+      ***************************************************************           
+       2500-CONSULTAR-DOMICILIO.                                                
+      ***************************************************************           
+      * SERVICIO PARA DATOS DOMICILIARIOS                                       
+           INITIALIZE WS-X160N315                                               
+           INITIALIZE WS-PROVINCIA                                              
+           INITIALIZE WS-CODPOSTAL                                              
+
+           MOVE       99999999    TO WS-FAUX-DOMI                               
+      * SI TENEMOS INFORMADO EL IDENTIFICADOR DEL DOMICLIO, CONSULTAMOS         
+      * EL HISTORICO, POR SI FUE BORRADO, EN CASO CONTRARIO, CONSULTAMOS        
+      * CONSULTAMOS LOS DOMICILIOS ACTUALES                                     
+           IF WS-KDOMICILIO EQUAL ZEROES OR SPACES                              
+              MOVE WS-FECHA             TO X160N315-FECHA-E                     
+              MOVE CT-C2                TO X160N315-CMODO-E                     
+              MOVE CT-CONSULTA          TO X160N315-PDO-DOMICILIO-CL            
+              MOVE X372VT01-KPERSONA1-E TO X160N315-KPERSONA-E                  
+           ELSE                                                                 
+              MOVE WS-FECHA             TO X160N315-FECHA-E                     
+              MOVE CT-H2                TO X160N315-CMODO-E                     
+              MOVE CT-HISTORICO         TO X160N315-PDO-DOMICILIO-CL            
+              MOVE X372VT01-KPERSONA1-E TO X160N315-KPERSONA-E                  
+           END-IF                                                               
+           CALL WS-B160N315 USING WS-X160N315                                   
+           IF X160N000-CRETORNO-S OF WS-X160N315 NOT = ZEROES                   
+      *       SET ERROR-GRAVE            TO TRUE                                
+      *       SET NO-ROLLBACK            TO TRUE                                
+              MOVE '15'                  TO X372VT01-CRETORNO-S                 
+              MOVE 'B372VT01'            TO X372VT01-GNOMPROG-S                 
+              MOVE 'ERROR EN LA BUSQUEDA DE DOMICILIO EN LA BBDD.'              
+                                         TO X372VT01-GERROR-S                   
+           ELSE                                                                 
+              IF WS-KDOMICILIO EQUAL ZEROES OR SPACES                           
+                 SET NO-INFO-DOM-FISC       TO TRUE                             
+                 MOVE ZEROS TO XN-L                                             
+                 PERFORM VARYING XN-I FROM 1 BY 1                               
+                     UNTIL XN-I > X160N315-DOMICILIOS-OCURRS-S                  
+                        OR X160N315-PDO-KDOMICILIO-S(XN-I) = ZEROES             
+                        OR X160N315-PDO-KPERSONA-S  (XN-I) = ZEROES             
+                        OR SI-INFO-DOM-FISC                                     
+      * SI EL DOMICILIO ES DE PRESTACIONES Y NO ES BANCARIO TIENE               
+      * PREFERECIA                                                              
+                    IF X160N315-PDO-CTIPODOM-S(XN-I) = CT-R                     
+                         AND X160N315-PDO-SFISCAL-S(XN-I) NOT = CT-S            
+                       MOVE XN-I TO XN-L                                        
+                       SET SI-INFO-DOM-FISC TO TRUE                             
+                    ELSE                                                        
+                       IF X160N315-PDO-CTIPODOM-S(XN-I) = CT-P                  
+                          MOVE XN-I TO XN-L                                     
+                          SET SI-INFO-DOM-FISC TO TRUE                          
+                       END-IF                                                   
+                    END-IF                                                      
+                 END-PERFORM                                                    
+              ELSE                                                              
+                 SET NO-INFO-DOM-FISC       TO TRUE                             
+                 PERFORM VARYING XN-I FROM 1 BY 1                               
+                       UNTIL XN-I > CTE-50                                      
+                       OR X160N315-PDO-KDOMICILIO-S(XN-I) = ZEROES              
+                       OR X160N315-PDO-KPERSONA-S  (XN-I) = ZEROES              
+                    IF WS-KDOMICILIO EQUAL                                      
+                         X160N315-PDO-KDOMICILIO-S(XN-I)                        
+                         AND X160N315-PDO-FANULACION-S(XN-I) IS NUMERIC         
+
+                       MOVE  X160N315-PDO-FANULACION-S(XN-I) TO WS-FAUX         
+      * SI LA FECHA DE ANULACION DEL DOMICILIO QUE ESTAMOS TRATANDO             
+      * ES MENOR QUE LA FECHA DE ANULACION DEL DOMICILIO QUE TENEMOS            
+      * GUARDADO SE MODIFICA                                                    
+                       IF  X372VT01-FECMODIFICA-E  < WS-FAUX                    
+                            AND WS-FAUX < WS-FAUX-DOMI                          
+                          MOVE WS-FAUX TO WS-FAUX-DOMI                          
+                          MOVE XN-I    TO XN-L                                  
+                          SET SI-INFO-DOM-FISC TO TRUE                          
+                       END-IF                                                   
+                    END-IF                                                      
+                 END-PERFORM                                                    
+              END-IF                                                            
+           END-IF                                                               
+           IF SW-INFO-DOM-FISC EQUAL 'S'                                        
+              MOVE XN-L TO XN-I                                                 
+              IF X160N315-PDO-CPAIS-S(XN-I) (1:3) = '011'                       
+                  MOVE '011' TO        WS-PAIS                                  
+                  MOVE X160N315-PDO-CCODPOST-S(XN-I)  TO   WS-PROVINCIA         
+                  MOVE WS-PROVINCIA(1:2)              TO WS-CODPOSTAL           
+              ELSE                                                              
+                  MOVE '000' TO WS-PAIS                                         
+                  MOVE X160N315-PDO-CPAIS-S(XN-I) (1:3) TO WS-PAIS              
+                  MOVE '99' TO WS-CODPOSTAL                                     
+              END-IF                                                            
+      *       INFORMAMOS FORALIDAD                                              
+              EVALUATE WS-CODPOSTAL                                             
+                  WHEN '01'                                                     
+                  WHEN '20'                                                     
+                  WHEN '31'                                                     
+                  WHEN '48'                                                     
+                  WHEN '99'                                                     
+                      MOVE WS-CODPOSTAL TO WS-KFORALIDAD                        
+                  WHEN OTHER                                                    
+                      MOVE '28'         TO WS-KFORALIDAD                        
+              END-EVALUATE                                                      
+           ELSE                                                                 
+              MOVE '16'                  TO X372VT01-CRETORNO-S                 
+              MOVE 'B372VT01'            TO X372VT01-GNOMPROG-S                 
+              MOVE 'ERROR EN BUSQUEDA DE DOMICILIO FISCAL EN LA BBDD.'          
+                                         TO X372VT01-GERROR-S                   
+           END-IF                                                               
+           .                                                                    
+      ***************************************************************           
+       2400-CONSULTAR-DATOS-FISCALES.                                           
+      ***************************************************************           
+           INITIALIZE WS-X160M002                                               
+           MOVE 'CB'                   TO X160M002-CMODO-E                      
+           MOVE  X372VT01-KPERSONA1-E  TO X160M002-KPERSONA-E                   
+           MOVE '10'                   TO X160M002-K2COMPANIA-E                 
+           MOVE ZEROES                 TO X160M002-KPERSOTOM-E                  
+      *                                                                         
+           CALL WS-B160M002 USING WS-X160M002                                   
+           EVALUATE  X160N000-CRETORNO-S OF WS-X160M002                         
+              WHEN ZEROES                                                       
+                  CONTINUE                                                      
+              WHEN '00003'                                                      
+                  MOVE '03'               TO X160M002-K2SITUACION-S(1)          
+                  MOVE '03'               TO X160M002-K2SITFAM-S(1)             
+                  MOVE SPACES             TO X160M002-CNIFCONYUGE-S(1)          
+                  MOVE  '00'              TO X160M002-K2GRADODISC-S(1)          
+                  MOVE  'N'               TO X160M002-SMOVILIDAD-S (1)          
+                  MOVE  '03'              TO  X160M002-K2CONTRATO-S(1)          
+                  MOVE  'N'               TO  X160M002-PRESVIV-S(1)             
+              WHEN OTHER                                                        
+                MOVE '19'                 TO X372VT01-CRETORNO-S                
+                MOVE 'B160M002'           TO X372VT01-GNOMPROG-S                
+                MOVE 'ERROR EN BUSQUEDA DE DOMICILIO FISCAL EN LA BBDD.'        
+                                          TO X372VT01-GERROR-S                  
+           END-EVALUATE.                                                        
+      ***************************************************************           
+       2300-VALIDAR-PORC-RETE-CAPIT.                                            
+      ***************************************************************           
+            INITIALIZE WS-X130V041                                              
+      *                                                                         
+            MOVE 'RETEN CAPIT:' TO  WS-TEXTO-RETEN                              
+      *                                                                         
+      *  MU-2017-BDGI-R-V-INI2 31/07/2017                                       
+      *      MOVE WS-FECHA                                                      
+            MOVE X372VT01-FECVENCIMICAP-E                                       
+      *  MU-2017-BDGI-R-V-FIN2 31/07/2017                                       
+              TO X130V041-FPRESTACION-E                                         
+            MOVE X372VT01-TIPIMPUESTCAP-E                                       
+              TO X130V041-KTIPOIMP-E                                            
+            MOVE WS-KFORALIDAD                                                  
+              TO X130V041-KFORALIDAD-E                                          
+            MOVE WS-PAIS                                                        
+              TO X130V041-PAIS-E                                                
+            MOVE X372VT01-EXIMIDO-E                                             
+              TO X130V041-SEXENTO-E                                             
+            MOVE X372VT01-IMPRTONETOCAP-E                                       
+              TO X130V041-RETRIB-IRNR-E                                         
+            MOVE X160M002-K2SITUACION-S(1)                                      
+              TO X130V041-SITUPER-IRPF-E                                        
+            MOVE X372VT01-IMPRTONETOCAP-E                                       
+              TO X130V041-RETRIB-IRPF-E                                         
+            MOVE X372VT01-NIF1-E                                                
+              TO X130V041-NIF-E                                                 
+      *  MU-2017-BDGI-R-V-INI2 31/07/2017                                       
+      *      MOVE WS-FECHA(1:4)                                                 
+            MOVE X372VT01-FECVENCIMICAP-E(1:4)                                  
+      *  MU-2017-BDGI-R-V-FIN2 31/07/2017                                       
+              TO X130V041-ANOPER-E                                              
+            MOVE X160M002-K2SITFAM-S(1)  TO X130V041-SITUFAM-E                  
+            MOVE X160M002-CNIFCONYUGE-S(1)                                      
+              TO X130V041-NIFCON-E                                              
+            MOVE  X160M002-K2GRADODISC-S(1)                                     
+              TO X130V041-DISCAPER-E                                            
+            MOVE X160M002-SMOVILIDAD-S (1)                                      
+              TO X130V041-MOVILPER-E                                            
+            MOVE X160M002-K2SITUACION-S(1)                                      
+                       TO X130V041-SITUPER-E                                    
+            MOVE X160M002-K2CONTRATO-S(1)                                       
+              TO X130V041-CONTRATO-E                                            
+            MOVE X160M002-SMOVILIDAD-S(1)                                       
+              TO X130V041-MOVIL-E                                               
+            MOVE 0 TO X130V041-DES-OCCUR-E                                      
+            MOVE 0 TO X130V041-ASC-OCCUR-E                                      
+            MOVE X372VT01-IMPRTONETOCAP-E                                       
+              TO X130V041-RETRIB-E                                              
+            MOVE  X160M002-PRESVIV-S(1)                                         
+              TO X130V041-PRESVIV1-E                                            
+            MOVE 'N'   TO X130V041-REGULARIZACION-E                             
+      *                                                                         
+            MOVE R000X000 OF DFHCOMMAREA TO R000X000 OF WS-X130V041             
+
+            EXEC CICS                                                           
+                 LINK PROGRAM (LT-B130V041)                                     
+                 COMMAREA     (WS-X130V041)                                     
+                 LENGTH       (LENGTH OF WS-X130V041)                           
+                 RESP         (ECICS)                                           
+                 RESP2        (ECICS2)                                          
+            END-EXEC                                                            
+           MOVE ECICS  TO XCICS                                                 
+           MOVE ECICS2 TO XCICS2                                                
+
+           IF EIBRESP NOT EQUAL DFHRESP(NORMAL)                                 
+              MOVE '01' TO WS-CRETORNO                                          
+      *                                                                         
+              PERFORM 9100-ERROR-MULTIIDOMA                                     
+           END-IF                                                               
+      *                                                                         
+           IF X130V041-CRETORNO NOT EQUAL '00'                                  
+              PERFORM VARYING X-E FROM 1 BY 1                                   
+                UNTIL X-E > X130V041-NUM-REGISTROS                              
+                   OR X-E > 10                                                  
+              END-PERFORM                                                       
+      *                                                                         
+              MOVE X130V041-CRETORNO  TO WS-CRETORNO                            
+              MOVE X130V041-CPROGRAMA TO WS-CPROGRAMA                           
+              PERFORM 9100-ERROR-MULTIIDOMA                                     
+           ELSE                                                                 
+              PERFORM 3500-MOVER-SALIDA                                         
+           END-IF.                                                              
+      *MU-2017-BDGI-R-V-INI 2018-01-11                                          
+      **************************************************************            
+       2350-VALIDAR-PORC-RETE-CAPIT.                                            
+      **************************************************************            
+           INITIALIZE WS-X160M026.                                              
+      *                                                                         
+      * INFORMAMOS LOS CAMPOS DE ENTRADA                                        
+      *                                                                         
+           MOVE 'C2'                      TO X160M026-CMODO-E                   
+           MOVE WS-KFORALIDAD             TO X160M026-K2FORALIDAD-E             
+           MOVE X372VT01-FECVENCIMICAP-E  TO X160M026-KVIGENCIA-E               
+
+           CALL WS-B160M026  USING WS-X160M026                                  
+      *                                                                         
+           IF X160N000-CRETORNO-S OF WS-X160M026 EQUAL '00000'                  
+              IF X372VT01-PORRETCAP-E = X160M026-PRETENIRC-S(1)                 
+                 CONTINUE                                                       
+              ELSE                                                              
+                 MOVE X160M026-PRETENIRC-S(1) TO WS-PORCENTAJE                  
+                 MOVE '20'                  TO X372VT01-CRETORNO-S              
+                 MOVE 'B372VT01'            TO X372VT01-GNOMPROG-S              
+      *                                                                         
+                 IF X160M026-PRETENIRC-S(1) EQUAL ZEROES                        
+                    STRING                                                      
+                     'EL PORC DE RETEN CAP DEBE SER IGUAL A '                   
+                      WS-PORCENTAJE  ' %'                                       
+                    DELIMITED BY SIZE  INTO X372VT01-GERROR-S                   
+                 ELSE                                                           
+                    STRING                                                      
+                      'EL PORC DE RETEN CAP DEBE SER IGUAL A '                  
+                       WS-PORCENTAJE  ' %'                                      
+                    DELIMITED BY SIZE  INTO X372VT01-GERROR-S                   
+                 END-IF                                                         
+              END-IF                                                            
+           ELSE                                                                 
+              MOVE '17'                  TO X372VT01-CRETORNO-S                 
+              MOVE 'B372VT01'            TO X372VT01-GNOMPROG-S                 
+      *                                                                         
+              STRING                                                            
+                  'ERROR EN EL CALCULO DE LA RETENCION'                         
+              DELIMITED BY SIZE  INTO X372VT01-GERROR-S                         
+           END-IF.                                                              
+      *MU-2017-BDGI-R-V-FIN 2018-01-11                                          
+      *****************************************************************         
+       3500-MOVER-SALIDA .                                                      
+      *****************************************************************         
+      * DEBEMOS TRADUCIR EL CODIGO RECIBIDO DE MULTIIDIOMA                      
+      *  MU-2017-BDGI-R-V-INI2 31/07/2017                                       
+      *     IF X372VT01-PORRETCAP-E  > X130V041-PRETENCION-S                    
+           IF X372VT01-PORRETCAP-E  = X130V041-PRETENCION-S                     
+                CONTINUE                                                        
+           ELSE                                                                 
+      *  MU-2017-BDGI-R-V-FIN2 31/07/2017                                       
+                MOVE X130V041-PRETENCION-S  TO WS-PORCENTAJE                    
+                MOVE '20'                  TO X372VT01-CRETORNO-S               
+                MOVE 'B372VT01'            TO X372VT01-GNOMPROG-S               
+                STRING                                                          
+      *  MU-2017-BDGI-R-V-INI2 31/07/2017                                       
+      *               'EL PORC DE RETENC CAP NO PUEDE SER MAYOR DE '            
+                     'EL PORC DE RETEN CAP DEBE SER IGUAL A '                   
+      *  MU-2017-BDGI-R-V-FIN2 31/07/2017                                       
+                    WS-PORCENTAJE  ' %'                                         
+                DELIMITED BY SIZE  INTO X372VT01-GERROR-S                       
+      *  MU-2017-BDGI-R-V-INI2 31/07/2017                                       
+      *     ELSE                                                                
+      *         CONTINUE                                                        
+      *  MU-2017-BDGI-R-V-FIN2 31/07/2017                                       
+           END-IF                                                               
+           .                                                                    
+      *MU-2017-BDGI-R-V-INI 2018-01-11                                          
+      ***************************************************************           
+       2650-VALIDAR-PORC-RETEN-COMP.                                            
+      ***************************************************************           
+           INITIALIZE WS-X160M026.                                              
+      *                                                                         
+      * INFORMAMOS LOS CAMPOS DE ENTRADA                                        
+      *                                                                         
+           MOVE 'C2'                      TO X160M026-CMODO-E                   
+           MOVE WS-KFORALIDAD             TO X160M026-K2FORALIDAD-E             
+           MOVE X372VT01-FECVENCIMICAP-E  TO X160M026-KVIGENCIA-E               
+      *                                                                         
+           CALL WS-B160M026  USING WS-X160M026                                  
+      *                                                                         
+           IF X160N000-CRETORNO-S OF WS-X160M026 EQUAL '00000'                  
+              IF X372VT01-PORRETCOMP1-E = X160M026-PRETENIRC-S(1)               
+                 CONTINUE                                                       
+              ELSE                                                              
+                 MOVE X160M026-PRETENIRC-S(1) TO WS-PORCENTAJE                  
+                 MOVE '40'                  TO X372VT01-CRETORNO-S              
+                 MOVE 'B372VT01'            TO X372VT01-GNOMPROG-S              
+      *                                                                         
+                 IF X160M026-PRETENIRC-S(1) EQUAL ZEROES                        
+                    STRING                                                      
+                     'EL PORC DE RETEN COMP DEBE SER IGUAL A '                  
+                      WS-PORCENTAJE  ' %'                                       
+                    DELIMITED BY SIZE  INTO X372VT01-GERROR-S                   
+                 ELSE                                                           
+                    STRING                                                      
+                      'EL PORC DE RETEN COMP DEBE SER IGUAL A '                 
+                       WS-PORCENTAJE  ' %'                                      
+                    DELIMITED BY SIZE  INTO X372VT01-GERROR-S                   
+                 END-IF                                                         
+              END-IF                                                            
+           ELSE                                                                 
+              MOVE '37'                  TO X372VT01-CRETORNO-S                 
+              MOVE 'B372VT01'            TO X372VT01-GNOMPROG-S                 
+      *                                                                         
+              STRING                                                            
+                  'ERROR EN EL CALCULO DE LA RETENCION'                         
+              DELIMITED BY SIZE  INTO X372VT01-GERROR-S                         
+           END-IF.                                                              
+      *MU-2017-BDGI-R-V-FIN 2018-01-11                                          
+      ***************************************************************           
+       2600-VALIDAR-PORC-RETEN-COMP.                                            
+      ***************************************************************           
+            INITIALIZE WS-X130V041                                              
+      *                                                                         
+            MOVE 'RETEN COMPL:'         TO  WS-TEXTO-RETEN                      
+      *                                                                         
+      *  MU-2017-BDGI-R-V-INI2 31/07/2017                                       
+      *      MOVE WS-FECHA                                                      
+            MOVE X372VT01-FECVENCIMICAP-E                                       
+      *  MU-2017-BDGI-R-V-FIN2 31/07/2017                                       
+              TO X130V041-FPRESTACION-E                                         
+            MOVE X372VT01-TIPIMPUESTCOMP1-E                                     
+              TO X130V041-KTIPOIMP-E                                            
+            MOVE WS-KFORALIDAD                                                  
+              TO X130V041-KFORALIDAD-E                                          
+            MOVE WS-PAIS                                                        
+              TO X130V041-PAIS-E                                                
+            MOVE X372VT01-EXIMIDO-E                                             
+              TO X130V041-SEXENTO-E                                             
+            MOVE X372VT01-IRTONETCOMP1-E                                        
+              TO X130V041-RETRIB-IRNR-E                                         
+            MOVE X160M002-K2SITUACION-S(1)                                      
+              TO X130V041-SITUPER-IRPF-E                                        
+            MOVE X372VT01-IRTONETCOMP1-E                                        
+              TO X130V041-RETRIB-IRPF-E                                         
+            MOVE X372VT01-NIF1-E                                                
+              TO X130V041-NIF-E                                                 
+      *  MU-2017-BDGI-R-V-INI2 31/07/2017                                       
+      *      MOVE WS-FECHA(1:4)                                                 
+            MOVE X372VT01-FECVENCIMICAP-E(1:4)                                  
+      *  MU-2017-BDGI-R-V-FIN2 31/07/2017                                       
+              TO X130V041-ANOPER-E                                              
+            MOVE X160M002-K2SITFAM-S(1)  TO X130V041-SITUFAM-E                  
+            MOVE X160M002-CNIFCONYUGE-S(1)                                      
+              TO X130V041-NIFCON-E                                              
+            MOVE  X160M002-K2GRADODISC-S(1)                                     
+              TO X130V041-DISCAPER-E                                            
+            MOVE X160M002-SMOVILIDAD-S (1)                                      
+              TO X130V041-MOVILPER-E                                            
+            MOVE X160M002-K2SITUACION-S(1)                                      
+                       TO X130V041-SITUPER-E                                    
+            MOVE X160M002-K2CONTRATO-S(1)                                       
+              TO X130V041-CONTRATO-E                                            
+            MOVE X160M002-SMOVILIDAD-S(1)                                       
+              TO X130V041-MOVIL-E                                               
+            MOVE 0 TO X130V041-DES-OCCUR-E                                      
+            MOVE 0 TO X130V041-ASC-OCCUR-E                                      
+            MOVE X372VT01-IRTONETCOMP1-E                                        
+              TO X130V041-RETRIB-E                                              
+            MOVE  X160M002-PRESVIV-S(1)                                         
+              TO X130V041-PRESVIV1-E                                            
+            MOVE 'N'   TO X130V041-REGULARIZACION-E                             
+      *                                                                         
+            MOVE R000X000 OF DFHCOMMAREA TO R000X000 OF WS-X130V041             
+
+            EXEC CICS                                                           
+                 LINK PROGRAM (LT-B130V041)                                     
+                 COMMAREA     (WS-X130V041)                                     
+                 LENGTH       (LENGTH OF WS-X130V041)                           
+                 RESP         (ECICS)                                           
+                 RESP2        (ECICS2)                                          
+            END-EXEC                                                            
+           MOVE ECICS  TO XCICS                                                 
+           MOVE ECICS2 TO XCICS2                                                
+
+           IF EIBRESP NOT EQUAL DFHRESP(NORMAL)                                 
+              MOVE '01' TO WS-CRETORNO                                          
+      *                                                                         
+              PERFORM 9100-ERROR-MULTIIDOMA                                     
+           END-IF                                                               
+      *                                                                         
+           IF X130V041-CRETORNO NOT EQUAL '00'                                  
+              PERFORM VARYING X-E FROM 1 BY 1                                   
+                UNTIL X-E > X130V041-NUM-REGISTROS                              
+                   OR X-E > 10                                                  
+              END-PERFORM                                                       
+      *                                                                         
+              MOVE X130V041-CRETORNO  TO WS-CRETORNO                            
+              MOVE X130V041-CPROGRAMA TO WS-CPROGRAMA                           
+              PERFORM 9100-ERROR-MULTIIDOMA                                     
+           ELSE                                                                 
+              PERFORM 3550-MOVER-SALIDA                                         
+           END-IF.                                                              
+      *****************************************************************         
+       3550-MOVER-SALIDA.                                                       
+      *****************************************************************         
+      * DEBEMOS TRADUCIR EL CODIGO RECIBIDO DE MULTIIDIOMA                      
+      *  MU-2017-BDGI-R-V-INI2 31/07/2017                                       
+      *     IF X372VT01-PORRETCOMP1-E > X130V041-PRETENCION-S                   
+           IF X372VT01-PORRETCOMP1-E = X130V041-PRETENCION-S                    
+               CONTINUE                                                         
+           ELSE                                                                 
+      *  MU-2017-BDGI-R-V-FIN2 31/07/2017                                       
+                MOVE X130V041-PRETENCION-S  TO WS-PORCENTAJE                    
+                MOVE '20'                  TO X372VT01-CRETORNO-S               
+                MOVE 'B372VT01'            TO X372VT01-GNOMPROG-S               
+                STRING                                                          
+      *  MU-2017-BDGI-R-V-FIN2 31/07/2017                                       
+      *               'EL PORC DE RETENC COMP NO PUEDE SER MAYOR DE '           
+                     'EL PORC DE RETEN COMP DEBE SER IGUAL A '                  
+      *  MU-2017-BDGI-R-V-FIN2 31/07/2017                                       
+                    WS-PORCENTAJE  ' %'                                         
+                DELIMITED BY SIZE  INTO X372VT01-GERROR-S                       
+      *  MU-2017-BDGI-R-V-INI2 31/07/2017                                       
+      *     ELSE                                                                
+      *         CONTINUE                                                        
+      *  MU-2017-BDGI-R-V-FIN2 31/07/2017                                       
+           END-IF                                                               
+           .                                                                    
+      *****************************************************************         
+       9100-ERROR-MULTIIDOMA.                                                   
+      *****************************************************************         
+      * DEBEMOS TRADUCIR EL CODIGO RECIBIDO DE MULTIIDIOMA                      
+           INITIALIZE WS-X961V0TE                                               
+
+           MOVE 'ES'                    TO X961V0TE-CIDIOMA                     
+           MOVE WS-CPROGRAMA            TO X961V0TE-PROGRAMA(1)                 
+           MOVE WS-CRETORNO             TO X961V0TE-CODIGO(1)                   
+
+           MOVE R000X000 OF DFHCOMMAREA TO R000X000 OF WS-X961V0TE              
+
+           EXEC CICS                                                            
+                LINK PROGRAM (LT-B961V0TE)                                      
+                COMMAREA     (WS-X961V0TE)                                      
+                LENGTH       (LENGTH OF WS-X961V0TE)                            
+                RESP         (ECICS)                                            
+                RESP2        (ECICS2)                                           
+           END-EXEC.                                                            
+
+           MOVE ECICS  TO XCICS                                                 
+           MOVE ECICS2 TO XCICS2                                                
+
+           IF EIBRESP NOT EQUAL DFHRESP(NORMAL)                                 
+              MOVE '01'               TO X372VT01-CRETORNO-S                    
+              MOVE LT-B961V0TE        TO X372VT01-GNOMPROG-S                    
+              MOVE 'ERROR EN EL CICS' TO X372VT01-GERROR-S                      
+              PERFORM 9000-FIN                                                  
+           END-IF                                                               
+           IF X961V0TE-CRETORNO EQUAL ZEROES                                    
+              MOVE X130V041-CRETORNO  TO X372VT01-CRETORNO-S                    
+              MOVE X130V041-CPROGRAMA TO X372VT01-GNOMPROG-S                    
+      *                                                                         
+             IF X961V0TE-GTEXTO(1)(1:5) IS NUMERIC                              
+               MOVE FUNCTION UPPER-CASE (X961V0TE-GTEXTO(1)(6:))                
+                                       TO WS-TEXTO-ERROR                        
+               STRING WS-TEXTO-RETEN WS-TEXTO-ERROR                             
+               DELIMITED BY SIZE     INTO  X372VT01-GERROR-S                    
+             ELSE                                                               
+               MOVE FUNCTION UPPER-CASE (X961V0TE-GTEXTO(1))                    
+                                       TO WS-TEXTO-ERROR                        
+      *                                                                         
+               STRING WS-TEXTO-RETEN WS-TEXTO-ERROR                             
+               DELIMITED BY SIZE     INTO  X372VT01-GERROR-S                    
+             END-IF                                                             
+           ELSE                                                                 
+      *       INFORMAMOS EL ERROR RECIBIDO                                      
+              MOVE X961V0TE-CRETORNO  TO X372VT01-CRETORNO-S                    
+              MOVE LT-B961V0TE        TO X372VT01-GNOMPROG-S                    
+              MOVE FUNCTION UPPER-CASE (X961V0TE-GRETORNO)                      
+                                       TO WS-TEXTO-ERROR                        
+      *                                                                         
+               STRING WS-TEXTO-RETEN WS-TEXTO-ERROR                             
+               DELIMITED BY SIZE     INTO  X372VT01-GERROR-S                    
+           END-IF                                                               
+           .                                                                    
+      *MU-2017-BDGI-R-V-FIN                                                     
+      ***************************************************************           
+       1700-VALIDAR-POLIZA.                                                     
+      ***************************************************************           
+
+           IF X372VT01-NSUBPOLIZA-E EQUAL SPACES OR                             
+              X372VT01-NSUBPOLIZA-E EQUAL ZEROES                                
+
+              PERFORM  1710-VALIDAR-INDIVIDUAL                                  
+
+           ELSE                                                                 
+
+              PERFORM  1720-VALIDAR-COLECTIVO                                   
+
+           END-IF                                                               
+           .                                                                    
+      ***************************************************************           
+       1710-VALIDAR-INDIVIDUAL.                                                 
+      ***************************************************************           
+           INITIALIZE RR041534                                                  
+
+           MOVE X372VT01-KPOLIZA-E(4:7) TO RR041534-KPOLIZA                     
+           MOVE  ALL '9'                TO RR041534-FPERTECN                    
+
+           MOVE R000X000 OF DFHCOMMAREA                                         
+                                  TO R000X000         OF WS-PARAMETRO           
+           MOVE '00'              TO CAB-RESULTADO    OF WS-PARAMETRO           
+           MOVE 'IDMS'            TO CAB-COD-LIBRERIA OF WS-PARAMETRO           
+           MOVE 'VR041534'        TO CAB-COD-INTERFAZ OF WS-PARAMETRO           
+           MOVE 'N'               TO CAB-ACTUALIZA    OF WS-PARAMETRO           
+           MOVE LENGTH OF RR041534                                              
+                                  TO CAB-LONG-DATOS   OF WS-PARAMETRO           
+           MOVE RR041534          TO R000X001         OF WS-PARAMETRO           
+
+           PERFORM ADAPTADOR-SALIDA                                             
+
+           MOVE R000X001    OF WS-PARAMETRO TO RR041534                         
+
+           IF CAB-RESULTADO OF WS-PARAMETRO NOT = '00'                          
+
+              MOVE '01'                                                         
+               TO X372VT01-CRETORNO-S                                           
+              MOVE 'ERROR EN LA CONSULTA DE CARTERA DE IDMS'                    
+               TO X372VT01-GERROR-S                                             
+              MOVE 'VR041534'                                                   
+               TO  X372VT01-GNOMPROG-S                                          
+
+           END-IF                                                               
+
+           CONTINUE.                                                            
+
+      ***************************************************************           
+       1720-VALIDAR-COLECTIVO.                                                  
+      ***************************************************************           
+
+           INITIALIZE RA541100                                                  
+
+           MOVE X372VT01-KPOLIZA-E(4:7)   TO RA541100-KSG-POLIZA                
+           MOVE X372VT01-NSUBPOLIZA-E     TO RA541100-KSG-SUBPOL                
+
+           INITIALIZE WS-PARAMETRO.                                             
+           MOVE R000X000 OF DFHCOMMAREA TO R000X000    OF WS-PARAMETRO          
+           MOVE 'N'                TO CAB-ACTUALIZA    OF WS-PARAMETRO          
+           MOVE 'IDMS'             TO CAB-COD-LIBRERIA OF WS-PARAMETRO          
+           MOVE 'VA541100'         TO CAB-COD-INTERFAZ OF WS-PARAMETRO          
+           MOVE LENGTH OF RA541100 TO CAB-LONG-DATOS   OF WS-PARAMETRO          
+           MOVE RA541100           TO R000X001         OF WS-PARAMETRO          
+
+
+           PERFORM ADAPTADOR-SALIDA                                             
+
+           MOVE R000X001 OF WS-PARAMETRO TO RA541100                            
+
+      *MU-2017-BDGI-R-V-INI 27/07/2017                                          
+      *     IF RA541100-CSG-RETORNO EQUAL '00'                                  
+           IF RA541100-CSG-RETORNO NOT EQUAL '00'                               
+      *MU-2017-BDGI-R-V-FIN 27/07/2017                                          
+              MOVE '02'                                                         
+               TO X372VT01-CRETORNO-S                                           
+              MOVE 'ERROR EN LA CONSULTA DE CARTERA DE IDMS/DB2'                
+               TO X372VT01-GERROR-S                                             
+              MOVE 'B372VT01'                                                   
+               TO  X372VT01-GNOMPROG-S                                          
+
+           END-IF                                                               
+
+           CONTINUE.                                                            
+      ******************************************************************        
+       ADAPTADOR-SALIDA.                                                        
+      *----------------*                                                        
+
+           EXEC CICS                                                    00014500
+              LINK PROGRAM (B000Y011)                                   00014500
+              COMMAREA (WS-PARAMETRO)                                   00014500
+              LENGTH (LENGTH OF WS-PARAMETRO)                           00014500
+           END-EXEC.                                                    00014500
+      *D*                                                                       
+      *     DISPLAY 'ADAPTADOR-SALIDA' EIBRESP                                  
+      *F*                                                                       
+           IF EIBRESP NOT = DFHRESP(NORMAL)                                     
+
+
+              MOVE  'B372VT01'  TO  X372VT01-GNOMPROG-S                         
+              MOVE  '98'        TO  X372VT01-CRETORNO-S                         
+              MOVE  'ERROR EN LLAMADA DEL MODULO DE IDMS'                       
+                                TO  X372VT01-GERROR-S                           
+              PERFORM 9000-FIN                                                  
+
+           END-IF.                                                              
+
+           CONTINUE.                                                            
+      *MU-2017-BDGI-R-V-INI                                                     
+      ***************************************************************           
+       2100-VALIDAR-CODCOA.                                                     
+      ***************************************************************           
+      *D*                                                                       
+      *    DISPLAY '2100-VALIDAR-CODCOA'                                        
+      *F*                                                                       
+
+           INITIALIZE RA761031                                                  
+
+           PERFORM VARYING XN-I FROM 1 BY 1 UNTIL XN-I > 6                      
+           OR X372VT01-CODCOA-E(XN-I) EQUAL SPACES                              
+           OR SW-CODCOA-KO                                                      
+             IF X372VT01-CODCOA-E(XN-I) NOT EQUAL SPACES                        
+      *D*                                                                       
+      *    DISPLAY 'ENTRO POR EL IF VALIDAR CODCOA'                             
+      *    DISPLAY 'ANIO-E' X372VT01-ANIO-E                                     
+      *    DISPLAY 'KEXPEDIENTE-E' X372VT01-KEXPEDIENTE-E                       
+      *    DISPLAY 'XN-I' XN-I                                                  
+      *    DISPLAY 'CODCOA-E' X372VT01-CODCOA-E(XN-I)                           
+      *F*                                                                       
+      *                                                                         
+                SET SW-CODCOA-KO TO TRUE                                        
+      *                                                                         
+                MOVE X372VT01-CODCOA-E(XN-I)                                    
+                                        TO RA761031-KSG-COASE-DGS(1)            
+      *D*                                                                       
+      *    DISPLAY 'COASEGURO-IDMS' RA761031-KSG-COASE-DGS(1)                   
+      *F*                                                                       
+                PERFORM 2150-LLAMADA-VA761031                                   
+             END-IF                                                             
+           END-PERFORM                                                          
+           .                                                                    
+      ***************************************************************           
+       2150-LLAMADA-VA761031.                                                   
+      ***************************************************************           
+      *D*                                                                       
+      *    DISPLAY '2150-LLAMADA-VA761031'                                      
+      *F*                                                                       
+
+           INITIALIZE WS-PARAMETRO                                              
+           MOVE R000X000 OF DFHCOMMAREA TO R000X000    OF WS-PARAMETRO          
+           MOVE 'N'                TO CAB-ACTUALIZA    OF WS-PARAMETRO          
+           MOVE 'IDMS'             TO CAB-COD-LIBRERIA OF WS-PARAMETRO          
+           MOVE 'VA761032'         TO CAB-COD-INTERFAZ OF WS-PARAMETRO          
+           MOVE LENGTH OF RA761031 TO CAB-LONG-DATOS   OF WS-PARAMETRO          
+           MOVE '1'                TO RA761031-CSG-OPERACION                    
+           MOVE SPACES             TO RA761031-CSG-AREAS                        
+           MOVE RA761031      TO R000X001         OF WS-PARAMETRO               
+
+      *D*                                                                       
+      *    DISPLAY 'COASEGURO-IDMS-LLAMADA' RA761031-KSG-COASE-DGS(XN-I)        
+      *    DISPLAY 'COPY R000X000-DFHCOMMA' R000X000 OF DFHCOMMAREA             
+      *    DISPLAY 'COPY R000X001-ENTRADA' R000X001 OF WS-PARAMETRO             
+      *    DISPLAY 'CAB-ACTUALIZA' CAB-ACTUALIZA OF WS-PARAMETRO                
+      *    DISPLAY 'CAB-COD-INTERFAZ' CAB-COD-INTERFAZ OF WS-PARAMETRO          
+      *    DISPLAY 'CAB-LONG-DATOS' CAB-LONG-DATOS OF WS-PARAMETRO              
+      *    DISPLAY 'COPY DE RA761031' RA761031                                  
+      *    DISPLAY 'COPY DE LLAMADA A IDMS-RA7610' WS-PARAMETRO                 
+      *    DISPLAY 'VOY A LLAMAR ADAPTADOR-SALIDA'                              
+      *F*                                                                       
+
+           PERFORM ADAPTADOR-SALIDA                                             
+      *D*                                                                       
+      *    DISPLAY 'SALGO ADAPTADOR-SALIDA-VALIDAR'                             
+      *    DISPLAY 'COPY R000X001-SALIDA :' R000X001 OF WS-PARAMETRO            
+      *F*                                                                       
+
+           MOVE R000X001 OF WS-PARAMETRO TO RA761031                            
+      *D*                                                                       
+      *    DISPLAY 'CAB-RETORNO :' CAB-RETORNO OF WS-PARAMETRO                  
+      *    DISPLAY 'CAB-CLASE-ERROR:' CAB-CLASE-ERROR OF WS-PARAMETRO           
+      *    DISPLAY 'CAB-COD-ERROR:'        CAB-COD-ERROR OF WS-PARAMETRO        
+      *    DISPLAY 'CAB-PROGRAMA: '        CAB-PROGRAMA OF WS-PARAMETRO         
+      *    DISPLAY 'CAB-PARRAFO: '         CAB-PARRAFO OF WS-PARAMETRO          
+      *    DISPLAY 'CAB-DESCRIPCION-ERROR: ' CAB-DESCRIPCION-ERROR              
+      *                                                OF WS-PARAMETRO          
+      *    DISPLAY 'CAB-RESULTADO: ' CAB-RESULTADO OF WS-PARAMETRO              
+      *F*                                                                       
+
+           IF RA761031-CSG-RETORNO EQUAL '00'                                   
+      *D*                                                                       
+      *    DISPLAY 'RETORNO-IDMS' RA761031-CSG-RETORNO                          
+      *F*                                                                       
+              SET SW-CODCOA-OK TO TRUE                                          
+           ELSE                                                                 
+      *D*                                                                       
+      *    DISPLAY 'ENTRO POR EL ELSE'                                          
+      *    DISPLAY 'COASEGURADO PARA DISPLAY' RA761031-KSG-COASE-DGS(1)         
+      *F*                                                                       
+              MOVE RA761031-CSG-RETORNO TO X372VT01-CRETORNO-S                  
+              MOVE 'NO EXISTE LA COASEGURADORA INFORMADA '                      
+                                        TO X372VT01-GERROR-S                    
+      *D*                                                                       
+      *    DISPLAY 'MENSAJE DE ERROR' X372VT01-CRETORNO-S                       
+      *F*                                                                       
+              MOVE 'VA761032' TO X372VT01-GNOMPROG-S                            
+      *D*                                                                       
+      *     DISPLAY '************** YACO RETORNO B372VT01*********'             
+      *     DISPLAY 'CRETORNO-S    ' X372VT01-CRETORNO-S                        
+      *     DISPLAY 'GERROR-S  ' X372VT01-GERROR-S                              
+      *     DISPLAY 'GNOMPROG-S    ' X372VT01-GNOMPROG-S                        
+      *F*                                                                       
+              PERFORM 9000-FIN                                                  
+           END-IF.                                                              
+      *M                                                                        
+      ***************************************************************           
+       2160-VALIDAR-PORCOA.                                                     
+      ***************************************************************           
+      *D*                                                                       
+DSPLYS*    DISPLAY '2160-VALIDAR-PORCOA'                                        
+      *F*                                                                       
+
+           PERFORM VARYING XN-I FROM 1 BY 1 UNTIL XN-I > 6                      
+           OR X372VT01-PORCOA-E(XN-I) EQUAL ZEROES                              
+           OR SW-PORCOA-KO                                                      
+             IF X372VT01-PORCOA-E(XN-I) < 0                                     
+      *D*                                                                       
+DSPLYS*    DISPLAY 'ENTRO POR EL IF VALIDAR CODCOA'                             
+DSPLYS*    DISPLAY 'ANIO-E' X372VT01-ANIO-E                                     
+DSPLYS*    DISPLAY 'KEXPEDIENTE-E' X372VT01-KEXPEDIENTE-E                       
+DSPLYS*    DISPLAY 'XN-I' XN-I                                                  
+DSPLYS*    DISPLAY 'PORCOA-E' X372VT01-PORCOA-E(XN-I)                           
+      *F*                                                                       
+                MOVE '30' TO X372VT01-CRETORNO-S                                
+                MOVE 'REVISAR EL DISTRIBUCION DEL COASEGURO'                    
+                          TO X372VT01-GERROR-S                                  
+                SET SW-PORCOA-KO TO TRUE                                        
+             END-IF                                                             
+           END-PERFORM                                                          
+           .                                                                    
+      *                                                                         
+      ***************************************************************           
+       2200-LLAMADA-B372N001.                                                   
+      ***************************************************************           
+
+           CALL LT-B372N001     USING COMMAREA                                  
+               .                                                                
+      *MU-2017-BDGI-R-V-FIN                                                     
+      ******************************************************************        
+      *9000-FIN.                                                                
+      ******************************************************************        
+       9000-FIN.                                                                
+
+           EXEC CICS                                                    00048300
+                RETURN                                                  00048400
+           END-EXEC.                                                    00048500
+
+           IF EIBRESP NOT = DFHRESP(NORMAL)                                     
+
+
+              MOVE  'B372VT01'  TO  X372VT01-GNOMPROG-S                         
+              MOVE  '99'        TO  X372VT01-CRETORNO-S                         
+              MOVE  'ERROR AL DEVOLVER CONTROL'                                 
+                                TO  X372VT01-GERROR-S                           
+
+           END-IF                                                               
+           .                                                                    

@@ -1,0 +1,42 @@
+      ******************************************************************        
+      *                                                                *        
+      * COPY:              X372N005                                    *        
+      * APLICACION:        VENCIMIENTOS FOXPRO                         *        
+      * DESCRIPCION:       COPY DE MODIFICACION DE DATOS FISCALES      *        
+      * FECHA DE CREACION:  JUNIO 2012                                *         
+      * AUTOR :            EVERIS                                      *        
+      *                                                                *        
+      ******************************************************************        
+       05 X372N005.                                                             
+          07 X372N005-ENTRADA.                                                  
+             10 X372N005-NORDEN           PIC 9(6).                             
+             10 X372N005-POLIZA           PIC X(10).                            
+             10 X372N005-MODALIDAD        PIC X(3).                             
+             10 X372N005-MOTIVO           PIC X(1).                             
+             10 X372N005-FISCAL           PIC X(10).                            
+             10 X372N005-NPRIMAS          PIC X(5).                             
+             10 X372N005-SPRIMAS          PIC X(01).                            
+             10 X372N005-PRIMAS           PIC X(8).                             
+             10 X372N005-SGARANTIZA       PIC X(1).                             
+             10 X372N005-GARANTIZAD       PIC X(10).                            
+             10 X372N005-SEFECT           PIC X(1).                             
+             10 X372N005-EFECT            PIC X(7).                             
+             10 X372N005-IMPUESTO         PIC X(10).                            
+             10 X372N005-TRIBUTARIO       PIC X(7).                             
+             10 X372N005-SINTEGRO         PIC X(1).                             
+             10 X372N005-INTEGRO          PIC X(11).                            
+             10 X372N005-SRETENI24        PIC X(1).                             
+             10 X372N005-RETENI24         PIC X(11).                            
+             10 X372N005-SRETRENTAN       PIC X(1).                             
+             10 X372N005-RETRENTAN        PIC X(11).                            
+             10 X372N005-SNETO            PIC X(1).                             
+             10 X372N005-NETO             PIC X(11).                            
+             10 X372N005-PRETENCION       PIC X(4).                             
+             10 X372N005-SRETENIDO        PIC X(1).                             
+             10 X372N005-RETENIDO         PIC X(11).                            
+          07 X372N005-SALIDA.                                                   
+             10 X372N005-CRETORNO-S       PIC X(2).                             
+             10 X372N005-GERROR-S         PIC X(70).                            
+             10 X372N005-GNOMPROG-S       PIC X(8).                             
+             10 X372N005-RAMO-S           PIC X(3).                             
+             10 X372N005-POLIZA-S         PIC X(10).                            

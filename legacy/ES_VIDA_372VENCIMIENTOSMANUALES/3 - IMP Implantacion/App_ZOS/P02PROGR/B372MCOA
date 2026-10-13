@@ -1,0 +1,795 @@
+      ******************************************************************        
+       IDENTIFICATION DIVISION.                                                 
+       PROGRAM-ID. B372MCOA.                                                    
+      ******************************************************************        
+      **INV: A372RESM                                                           
+      ******************************************************************        
+      * APLICACIÓN.....: RESCATES Y VENCIMIENTOS                       *        
+      * ANALISTA.......: EVERIS                                        *        
+      * PROGRAMADOR....: EVERIS                                        *        
+      * FECHA DE REALLIZACIÓN: 05/06/17.                               *        
+      *                                                                *        
+      * DESCRIPCIÓN:                                                   *        
+      *   ------------------------------------------------------------ *        
+      *  | CONSULTA DE EXPEDIENTES DE VENCIMIENTOS                    |*        
+      *   ------------------------------------------------------------ *        
+      *                                                                *        
+      *  PARAMETROS:                                                   *        
+      *                                                                *        
+      *  LT-MODO-ALTA    ..'A': ALTA NUEVO EXPEDIENTE                  *        
+      *                                                                *        
+      *  LT-MODO-BAJA    ..'B': BORRADO REGISTROS TB372CCV0            *        
+      *                                                                *        
+      *  LT-MODO-MODIF   ..'M': UPDATE EXPEDIENTE EXISTENTE            *        
+      *                                                                *        
+      *  LT-MODO-CONSULTA..'C': CONSULTA EXPEDIENTE                    *        
+      *                                                                *        
+      *  LT-MODO-REGULA  ..'R': REGULARIZACION DE EXPEDIENTE           *        
+      *                                                                *        
+      ******************************************************************        
+      * TABLA DE TRABAJO *                                                      
+      ******************************************************************        
+      *                                                                         
+      * TB372CCV0    TABLA DE RESCATES                                          
+      *                                                                         
+      ******************************************************************        
+      * CODIGO DE ERRORES                                                       
+      ******************************************************************        
+      *                                                                         
+      * X372MCCV-RETORNO-S                                                      
+      *         '00' OPERACION CORRECTA                                         
+      *                                                                         
+      *         '01' ERROR EN MODO                                              
+      *                                                                         
+      *         '02' ERROR FALTAN DATOS INFORMADOS                              
+      *                                                                         
+      *         '03' ERROR REGISTRO NO ENCONTRADO                               
+      *                                                                         
+      *         '04' ERROR REGISTRO CLAVE DUPLICADA                             
+      *                                                                         
+      *         '99' ERROR EN ACCESO A BASE DE DATOS                            
+      *                                                                         
+      ******************************************************************        
+      ******************************************************************        
+      *                                                                *        
+      * MODIFICACION: MU-2017-BDGI-R-V                                 *        
+      * PROGRAMADOR : EVERIS                                           *        
+      * FECHA       : 20/09/2017                                       *        
+      * DESCRIPCION : ENVIO A BDGI DE RESCATES Y VENCIMIENTOS          *        
+      *                                                                *        
+      * MU-2017-BDGI-R-V-INI                                           *        
+      *   ANTES DE CUALQUIER ALTA/MODIF, SE BORRA SIEMPRE EL CUADRO    *        
+      *   DE COASEGURO PREVIAMENTE                                     *        
+      * MU-2017-BDGI-R-V-FIN                                           *        
+      *                                                                *        
+      ******************************************************************        
+       ENVIRONMENT DIVISION.                                                    
+
+       INPUT-OUTPUT SECTION.                                                    
+       FILE-CONTROL.                                                            
+
+       DATA DIVISION.                                                           
+       FILE SECTION.                                                            
+
+       WORKING-STORAGE SECTION.                                                 
+
+       01 FILLER.                                                               
+          03 FILLER PIC X(40) VALUE 'INICIO WORKING-STORAGE SECTION'.           
+
+      *****************************************************                     
+      ** SWITCH **                                                              
+      *****************************************************                     
+          03 SW-SWITCH.                                                         
+             05 SW-ERROR-DB2   PIC S9(3)  VALUE  0.                             
+                88 DB2-OK                 VALUE  0.                             
+                88 DB2-NOTFND             VALUE +100.                           
+                88 DB2-DUPLICADO          VALUE -803.                           
+                88 DB2-SELECTDUP          VALUE -811.                           
+
+             05 SW-PRIMERA-LECTURA        PIC X  VALUE '0'.                     
+                88 NO-PRIMERA-LECTURA            VALUE '1'.                     
+                88 PRIMERA-LECTURA               VALUE '0'.                     
+
+      *****************************************************                     
+      *   CONTROL PARA SABER SI EL CURSOR SE HA ABIERTO   *                     
+      *****************************************************                     
+
+             05 SW-CURSOR-ABIERTO         PIC X  VALUE '0'.                     
+                88 NO-CURSOR-OK                  VALUE '1'.                     
+                88 CURSOR-OK                     VALUE '0'.                     
+      ****************************************************                      
+      *   CONTROL DE ERRORES DEL PROGRAMA                                       
+      ****************************************************                      
+             05 SW-ERRORES                PIC XX VALUE '00'.                    
+                88 NO-ERROR                      VALUE '00'.                    
+                88 ERROR-GRAVE                   VALUE '01'.                    
+
+      ****************************************************                      
+      ** LITERALES                                                              
+      ****************************************************                      
+          03 LT-LITERALES.                                                      
+
+             05 LT-MODOS-ENTRADA.                                               
+                07 LT-MODO-ALTA       PIC X(1)   VALUE 'A'.                     
+                07 LT-MODO-BAJA       PIC X(1)   VALUE 'B'.                     
+                07 LT-MODO-MODIF      PIC X(1)   VALUE 'M'.                     
+                07 LT-MODO-CONSULTA   PIC X(1)   VALUE 'C'.                     
+                07 LT-MODO-REGULA     PIC X(2)   VALUE 'R'.                     
+
+             05 LT-ERRORES-RETORNO.                                             
+      *         LITERAL NO HAY ERRORES                                          
+                07 LT-RETURN-OK             PIC X(5) VALUE '00'.                
+      *         ERROR EN MODO                                                   
+                07 LT-RETURN-ERR-MODO       PIC X(5) VALUE '01'.                
+      *         ERROR FALTAN DATOS INFORMADOS                                   
+                07 LT-RETURN-ERR-DATINFO    PIC X(5) VALUE '02'.                
+      *         ERROR REGISTRO NO ENCONTRADO                                    
+                07 LT-RETURN-ERR-NOTFND     PIC X(5) VALUE '03'.                
+      *         ERROR REGISTRO CLAVE DUPLICADA                                  
+                07 LT-RETURN-ERR-CLVDUPLI   PIC X(5) VALUE '04'.                
+      *         ERROR EN ACCESO A BASE DE DATOS                                 
+                07 LT-RETURN-ERR-OTHER      PIC X(5) VALUE '99'.                
+      ****************************************************                      
+      ** CONTADORES Y CONSTANTES                                                
+      ****************************************************                      
+          03 XN-CONTADORES.                                                     
+             05 XN-I                  PIC 9(2).                                 
+             05 XN-J                  PIC 9(2).                                 
+
+          03 CN-CONSTANTES.                                                     
+             05 CN-RES-MAX            PIC 9(1) VALUE 6.                         
+
+          03 XN-SQLCODE               PIC X(2).                                 
+      ****************************************************                      
+      ** AREA DE COMUNICACION CON DB2                                           
+      ****************************************************                      
+            EXEC SQL INCLUDE SQLCA     END-EXEC.                                
+            EXEC SQL INCLUDE T372CCV0  END-EXEC.                                
+
+      ******************************************************************        
+      *CURSOR PARA RECUPERAR LISTADO COMPLETO DE EXPEDIENTES DE RESCATE         
+      ******************************************************************        
+           EXEC SQL DECLARE C1 CURSOR FOR                                       
+           SELECT CCV0_ANIO            ,                                        
+                  CCV0_KEXPEDIENTE     ,                                        
+                  CCV0_NCOA            ,                                        
+                  CCV0_CODCOA          ,                                        
+                  CCV0_PORCOA          ,                                        
+                  CCV0_IMPCOA          ,                                        
+                  CCV0_IMPRTOINTEGRCOA ,                                        
+                  CCV0_IMPREDPRICOA    ,                                        
+                  CCV0_IMPREDTRANCOA   ,                                        
+                  CCV0_IMPRTONETOCOA   ,                                        
+                  CCV0_IMPRETCOA       ,                                        
+                  CCV0_IMPCOMPENSATCOA                                          
+                FROM TB372CCV0                                                  
+                WHERE    CCV0_ANIO        = :CCV0-ANIO                          
+                  AND    CCV0_KEXPEDIENTE = :CCV0-KEXPEDIENTE                   
+                  AND    CCV0_NCOA        >= :CCV0-NCOA                         
+             ORDER BY CCV0_ANIO,                                                
+                      CCV0_KEXPEDIENTE,                                         
+                      CCV0_NCOA                                                 
+           END-EXEC.                                                            
+
+          03 FILLER PIC X(40) VALUE 'FINAL WORKING-STORAGE SECTION'.            
+
+       LINKAGE SECTION.                                                         
+       01 DFHCOMMAREA.                                                          
+             COPY X372MCOA.                                                     
+
+      *************************************************************             
+      * PROCEDURE DIVISION.                                       *             
+      *************************************************************             
+      *                                                                         
+       PROCEDURE DIVISION USING DFHCOMMAREA.                                    
+
+           PERFORM 1000-INICIO.                                                 
+
+           IF NOT ERROR-GRAVE                                                   
+              PERFORM 2000-PROCESO                                              
+           END-IF.                                                              
+
+           PERFORM 9000-FINAL.                                                  
+
+      ******************************************************************        
+      * 1000-INICIO                                                    *        
+      ******************************************************************        
+      *                                                                         
+       1000-INICIO.                                                             
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372MCOA: 1000-INICIO.'                                     
+      *F*                                                                       
+           SET  NO-ERROR     TO TRUE.                                           
+           INITIALIZE X372MCOA-S ,                                              
+                      DCLTB372CCV0.                                             
+           MOVE LT-RETURN-OK TO X372MCOA-RETORNO-S                              
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372MCOA: OPERACION ' X372MCOA-OPERACION-E                  
+      *F*                                                                       
+
+           IF X372MCOA-OPERACION-E   = SPACES                                   
+              SET ERROR-GRAVE TO TRUE                                           
+              MOVE LT-RETURN-ERR-DATINFO     TO X372MCOA-RETORNO-S              
+              MOVE 'B372MCOA'                TO X372MCOA-GNOMPROG-S             
+              MOVE 'EL CAMPO OPERACION ES OBLIGATORIO'                          
+                                             TO X372MCOA-ERROR-S                
+           END-IF.                                                              
+
+      ******************************************************************        
+      * 2000-PROCESO                                                   *        
+      ******************************************************************        
+      *                                                                         
+       2000-PROCESO.                                                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372MCOA: 2000-PROCESO'                                     
+      *F*                                                                       
+
+           EVALUATE X372MCOA-OPERACION-E                                        
+               WHEN LT-MODO-ALTA                                                
+               WHEN LT-MODO-MODIF                                               
+               WHEN LT-MODO-REGULA                                              
+      * MU-2017-BDGI-R-V-INI                                                    
+                  PERFORM 2200-PROCESO-BAJA                                     
+      * MU-2017-BDGI-R-V-FIN                                                    
+                  PERFORM VARYING XN-J FROM 1 BY 1                              
+                  UNTIL XN-J > X372MCOA-COASEGUROS-OCCURS-E                     
+                  OR X372MCOA-CODCOA-E (XN-J) = SPACES                          
+                     PERFORM 8100-INFORMAR-MODIFICA                             
+      * MU-2017-BDGI-R-V-INI                                                    
+      *               PERFORM 2200-PROCESO-BAJA                                 
+      * MU-2017-BDGI-R-V-FIN                                                    
+                     PERFORM 2100-PROCESO-ALTA                                  
+                  END-PERFORM                                                   
+               WHEN LT-MODO-BAJA                                                
+      * MU-2017-BDGI-R-V-INI                                                    
+      *            PERFORM VARYING XN-J FROM 1 BY 1                             
+      *            UNTIL XN-J > X372MCOA-COASEGUROS-OCCURS-E                    
+      *            OR X372MCOA-CODCOA-E (XN-J) = SPACES                         
+      *               PERFORM 8100-INFORMAR-MODIFICA                            
+      *               PERFORM 2200-PROCESO-BAJA                                 
+      *            END-PERFORM                                                  
+                  PERFORM 2200-PROCESO-BAJA                                     
+      * MU-2017-BDGI-R-V-FIN                                                    
+               WHEN LT-MODO-CONSULTA                                            
+                     PERFORM 2400-PROCESO-CONSULTA                              
+               WHEN OTHER                                                       
+                    SET ERROR-GRAVE TO TRUE                                     
+                    MOVE LT-RETURN-ERR-MODO TO X372MCOA-RETORNO-S               
+                    MOVE 'B372MCOA'         TO X372MCOA-GNOMPROG-S              
+                    MOVE 'EL CAMPO OPERACION ES INCORRECTO'                     
+                                            TO X372MCOA-ERROR-S                 
+           END-EVALUATE.                                                        
+
+      ******************************************************************        
+      * 2100-PROCESO-ALTA.                                             *        
+      ******************************************************************        
+      *                                                                         
+       2100-PROCESO-ALTA.                                                       
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372MCOA: PROCESO-ALTA'                                     
+      *F*                                                                       
+           EXEC SQL                                                             
+              INSERT INTO TB372CCV0                                             
+              (                                                                 
+               CCV0_ANIO             ,                                          
+               CCV0_KEXPEDIENTE      ,                                          
+               CCV0_NCOA             ,                                          
+               CCV0_CODCOA           ,                                          
+               CCV0_PORCOA           ,                                          
+               CCV0_IMPCOA           ,                                          
+               CCV0_IMPRTOINTEGRCOA  ,                                          
+               CCV0_IMPREDPRICOA     ,                                          
+               CCV0_IMPREDTRANCOA    ,                                          
+               CCV0_IMPRTONETOCOA    ,                                          
+               CCV0_IMPRETCOA        ,                                          
+               CCV0_IMPCOMPENSATCOA                                             
+              )                                                                 
+              VALUES                                                            
+              (                                                                 
+               :CCV0-ANIO            ,                                          
+               :CCV0-KEXPEDIENTE     ,                                          
+               :CCV0-NCOA            ,                                          
+               :CCV0-CODCOA          ,                                          
+               :CCV0-PORCOA          ,                                          
+               :CCV0-IMPCOA          ,                                          
+               :CCV0-IMPRTOINTEGRCOA ,                                          
+               :CCV0-IMPREDPRICOA    ,                                          
+               :CCV0-IMPREDTRANCOA   ,                                          
+               :CCV0-IMPRTONETOCOA   ,                                          
+               :CCV0-IMPRETCOA       ,                                          
+               :CCV0-IMPCOMPENSATCOA                                            
+              )                                                                 
+           END-EXEC.                                                            
+
+           MOVE SQLCODE TO SW-ERROR-DB2.                                        
+      *D*                                                                       
+DSPLYS*    DISPLAY 'SQLCODE ' SQLCODE                                           
+      *F*                                                                       
+           IF NOT DB2-OK                                                        
+
+              SET  ERROR-GRAVE TO TRUE                                          
+              IF DB2-DUPLICADO                                                  
+                 MOVE LT-RETURN-ERR-CLVDUPLI      TO X372MCOA-RETORNO-S         
+                 MOVE 'YA EXISTE UN EXPEDIENTE CON ESTE AÑO/EXPEDIENTE'         
+                                                  TO X372MCOA-ERROR-S           
+              ELSE                                                              
+                 MOVE LT-RETURN-ERR-OTHER    TO X372MCOA-RETORNO-S              
+                 MOVE SQLCODE                TO XN-SQLCODE                      
+                 MOVE 'ERROR AL INSERTAR EN TB372CCV0'                          
+                                             TO X372MCOA-ERROR-S                
+              END-IF                                                            
+           END-IF                                                               
+           .                                                                    
+      ******************************************************************        
+      * 2200-PROCESO-BAJA.                                            *         
+      ******************************************************************        
+       2200-PROCESO-BAJA.                                                       
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372MCOA: 2200-PROCESO-BAJA'                                
+      *F*                                                                       
+      * MU-2017-BDGI-R-V-INI                                                    
+           MOVE X372MCOA-ANIO-E             TO CCV0-ANIO                        
+           MOVE X372MCOA-KEXPEDIENTE-E      TO CCV0-KEXPEDIENTE                 
+      * MU-2017-BDGI-R-V-FIN                                                    
+
+           EXEC SQL                                                             
+              DELETE                                                            
+                 FROM TB372CCV0                                                 
+                 WHERE CCV0_ANIO        = :CCV0-ANIO                            
+                   AND CCV0_KEXPEDIENTE = :CCV0-KEXPEDIENTE                     
+                   AND CCV0_NCOA       >= :CCV0-NCOA                            
+           END-EXEC.                                                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'SQLCODE : ' SQLCODE                                         
+      *F*                                                                       
+
+           MOVE SQLCODE TO SW-ERROR-DB2.                                        
+           IF NOT DB2-OK AND NOT DB2-NOTFND                                     
+              SET ERROR-GRAVE TO TRUE                                           
+              MOVE LT-RETURN-ERR-OTHER  TO X372MCOA-RETORNO-S                   
+              MOVE 'B372MCOA'           TO X372MCOA-GNOMPROG-S                  
+              MOVE SQLCODE              TO XN-SQLCODE                           
+              MOVE 'ERROR AL BORRAR REGISTRO EN TB372CCV0'                      
+                                        TO X372MCOA-ERROR-S                     
+           ELSE                                                                 
+              MOVE 'SE HA ELIMINADO CORRECTAMENTE EL EXPEDIENTE'                
+                                        TO X372MCOA-ERROR-S                     
+           END-IF.                                                              
+
+      ******************************************************************        
+      * 2300-PROCESO-MODIF                                                      
+      ******************************************************************        
+       2300-PROCESO-MODIF.                                                      
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372MCOA: 2300-PROCESO-MODIF'                               
+      *F*                                                                       
+
+             EXEC SQL                                                           
+               UPDATE TB372CCV0                                                 
+                SET CCV0_ANIO             =:CCV0-ANIO            ,              
+                    CCV0_KEXPEDIENTE      =:CCV0-KEXPEDIENTE     ,              
+                    CCV0_NCOA             =:CCV0-NCOA            ,              
+                    CCV0_CODCOA           =:CCV0-CODCOA          ,              
+                    CCV0_PORCOA           =:CCV0-PORCOA          ,              
+                    CCV0_IMPCOA           =:CCV0-IMPCOA          ,              
+                    CCV0_IMPRTOINTEGRCOA  =:CCV0-IMPRTOINTEGRCOA ,              
+                    CCV0_IMPREDPRICOA     =:CCV0-IMPREDPRICOA    ,              
+                    CCV0_IMPREDTRANCOA    =:CCV0-IMPREDTRANCOA   ,              
+                    CCV0_IMPRTONETOCOA    =:CCV0-IMPRTONETOCOA   ,              
+                    CCV0_IMPRETCOA        =:CCV0-IMPRETCOA       ,              
+                    CCV0_IMPCOMPENSATCOA  =:CCV0-IMPCOMPENSATCOA                
+               WHERE CCV0_ANIO        = :CCV0-ANIO                              
+                 AND CCV0_KEXPEDIENTE = :CCV0-KEXPEDIENTE                       
+                 AND CCV0_NCOA        = :CCV0-NCOA                              
+             END-EXEC                                                           
+      *D*                                                                       
+DSPLYS*    DISPLAY 'SQLCODE : ' SQLCODE                                         
+      *F*                                                                       
+
+           MOVE SQLCODE TO SW-ERROR-DB2.                                        
+           IF NOT DB2-OK                                                        
+              SET ERROR-GRAVE TO TRUE                                           
+              IF DB2-NOTFND                                                     
+                 MOVE LT-RETURN-ERR-NOTFND TO X372MCOA-RETORNO-S                
+                 MOVE 'B372MCOA'           TO X372MCOA-GNOMPROG-S               
+                 MOVE 'NO HAY EXPEDIENTES QUE CUMPLAN CON LOS PARAMETROS        
+      -               ' INFORMADOS'                                             
+                                           TO X372MCOA-ERROR-S                  
+              ELSE                                                              
+                 MOVE LT-RETURN-ERR-OTHER  TO X372MCOA-RETORNO-S                
+                 MOVE 'B372MCOA'           TO X372MCOA-GNOMPROG-S               
+                 MOVE SQLCODE              TO XN-SQLCODE                        
+                 MOVE 'ERROR AL ACTUALIZAR EN TB372CCV0'                        
+                                           TO X372MCOA-ERROR-S                  
+              END-IF                                                            
+           ELSE                                                                 
+              MOVE 'EXPEDIENTE MODIFICADO CORRECTAMENTE'                        
+                TO X372MCOA-ERROR-S                                             
+           END-IF                                                               
+           .                                                                    
+      **************************************************************            
+      * 2400-PROCESO-CONSULTA                                      *            
+      **************************************************************            
+      *                                                                         
+       2400-PROCESO-CONSULTA.                                                   
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372MCOA: 2400-PROCESO-CONSULTA'                            
+      *F*                                                                       
+
+           PERFORM 8000-INFORMAR-CONSULTAS                                      
+           IF X372MCOA-NCOA-E = ZEROS                                           
+              PERFORM 2420-PROCESO-CURSOR                                       
+           ELSE                                                                 
+              PERFORM 2410-PROCESO-SELECT                                       
+           END-IF.                                                              
+
+      **************************************************************            
+      * 2410-PROCESO-SELECT.                                       *            
+      **************************************************************            
+      *                                                                         
+       2410-PROCESO-SELECT.                                                     
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372MCOA: 2410-PROCESO-SELECT'                              
+      *F*                                                                       
+
+            EXEC SQL                                                            
+                SELECT                                                          
+                      CCV0_ANIO             ,                                   
+                      CCV0_KEXPEDIENTE      ,                                   
+                      CCV0_NCOA             ,                                   
+                      CCV0_CODCOA           ,                                   
+                      CCV0_PORCOA           ,                                   
+                      CCV0_IMPCOA           ,                                   
+                      CCV0_IMPRTOINTEGRCOA  ,                                   
+                      CCV0_IMPREDPRICOA     ,                                   
+                      CCV0_IMPREDTRANCOA    ,                                   
+                      CCV0_IMPRTONETOCOA    ,                                   
+                      CCV0_IMPRETCOA        ,                                   
+                      CCV0_IMPCOMPENSATCOA                                      
+                INTO                                                            
+                     :CCV0-ANIO            ,                                    
+                     :CCV0-KEXPEDIENTE     ,                                    
+                     :CCV0-NCOA            ,                                    
+                     :CCV0-CODCOA          ,                                    
+                     :CCV0-PORCOA          ,                                    
+                     :CCV0-IMPCOA          ,                                    
+                     :CCV0-IMPRTOINTEGRCOA ,                                    
+                     :CCV0-IMPREDPRICOA    ,                                    
+                     :CCV0-IMPREDTRANCOA   ,                                    
+                     :CCV0-IMPRTONETOCOA   ,                                    
+                     :CCV0-IMPRETCOA       ,                                    
+                     :CCV0-IMPCOMPENSATCOA                                      
+                FROM TB372CCV0                                                  
+               WHERE   CCV0_ANIO             = :CCV0-ANIO                       
+                 AND   CCV0_KEXPEDIENTE      = :CCV0-KEXPEDIENTE                
+                 AND   CCV0_NCOA             = :CCV0-NCOA                       
+            END-EXEC.                                                           
+      *D*                                                                       
+DSPLYS*    DISPLAY 'SQLCODE : ' SQLCODE                                         
+      *F*                                                                       
+
+           MOVE SQLCODE TO SW-ERROR-DB2                                         
+
+           IF DB2-OK                                                            
+              MOVE 1 TO XN-I                                                    
+              PERFORM 5000-MOVER-SALIDA                                         
+           ELSE                                                                 
+              SET  ERROR-GRAVE TO TRUE                                          
+              EVALUATE TRUE                                                     
+                WHEN DB2-NOTFND                                                 
+                     MOVE LT-RETURN-ERR-NOTFND                                  
+                       TO X372MCOA-RETORNO-S                                    
+                     MOVE 'B372MCOA'                                            
+                       TO X372MCOA-GNOMPROG-S                                   
+                     MOVE 'NO HAY EXPEDIENTES QUE CUMPLAN LOS CRITERIOS         
+      -                   ' SELECCIONADOS'                                      
+                       TO X372MCOA-ERROR-S                                      
+                WHEN DB2-SELECTDUP                                              
+                     MOVE LT-RETURN-ERR-CLVDUPLI                                
+                       TO X372MCOA-RETORNO-S                                    
+                     MOVE 'B372MCOA'                                            
+                       TO X372MCOA-GNOMPROG-S                                   
+                     MOVE 'EXITEN MAS DE UN EXPEDIENTE CON LOS DATOS            
+      -                   ' INFORMADOS'                                         
+                       TO X372MCOA-ERROR-S                                      
+                WHEN OTHER                                                      
+                     MOVE LT-RETURN-ERR-OTHER                                   
+                       TO X372MCOA-RETORNO-S                                    
+                     MOVE 'ERROR AL OBTENER LOS EXPEDIENTES'                    
+                       TO X372MCOA-ERROR-S                                      
+                     MOVE 'B372MCOA'                                            
+                       TO  X372MCOA-GNOMPROG-S                                  
+              END-EVALUATE                                                      
+           END-IF.                                                              
+
+      *********************************************************                 
+      *2420-PROCESO-CURSOR.                                                     
+      *********************************************************                 
+      *                                                                         
+       2420-PROCESO-CURSOR.                                                     
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372MCOA: 2420-PROCESO-CURSOR'                              
+      *F*                                                                       
+
+      *INICIALIZAMOS LOS SWITCH DEL CONTROL DE CURSOR                           
+
+           SET PRIMERA-LECTURA TO TRUE.                                         
+           SET NO-CURSOR-OK    TO TRUE.                                         
+
+      *ABRIMOS EL CURSOR                                                        
+
+           IF NOT ERROR-GRAVE                                                   
+              PERFORM 2425-ABRIR-CURSOR                                         
+           END-IF.                                                              
+
+           MOVE 1 TO XN-I                                                       
+           PERFORM 2430-LEER-FILA                                               
+                   UNTIL DB2-NOTFND                                             
+                   OR ERROR-GRAVE                                               
+                   OR XN-I > CN-RES-MAX                                         
+
+      *SI EL CURSOR SE ABRIO CORRECTAMENTE SE CIERRA                            
+
+           IF CURSOR-OK                                                         
+              PERFORM 2435-CERRAR-CURSOR                                        
+           END-IF.                                                              
+
+      ********************************************************                  
+       2425-ABRIR-CURSOR.                                                       
+      ******************************************************************        
+
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372MCOA: 2425-ABRIR-CURSOR'                                
+      *F*                                                                       
+           EXEC SQL OPEN C1 END-EXEC.                                           
+           MOVE SQLCODE TO SW-ERROR-DB2.                                        
+           IF NOT DB2-OK                                                        
+      *       MOVE 'N' TO X372M004-SPAGINACION-S                                
+              SET ERROR-GRAVE                 TO TRUE                           
+              MOVE '99'                       TO X372MCOA-RETORNO-S             
+              MOVE 'ERROR AL ABRIR CURSOR C1' TO X372MCOA-ERROR-S               
+              MOVE 'B372MCOA'                 TO X372MCOA-GNOMPROG-S            
+           ELSE                                                                 
+              SET CURSOR-OK   TO TRUE                                           
+           END-IF.                                                              
+
+      ***************************************************************           
+       2430-LEER-FILA.                                                          
+      ******************************************************************        
+
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372MCOA: 2430-LEER-FILA'                                   
+      *F*                                                                       
+            EXEC SQL                                                            
+                  FETCH C1                                                      
+                  INTO :CCV0-ANIO            ,                                  
+                       :CCV0-KEXPEDIENTE     ,                                  
+                       :CCV0-NCOA            ,                                  
+                       :CCV0-CODCOA          ,                                  
+                       :CCV0-PORCOA          ,                                  
+                       :CCV0-IMPCOA          ,                                  
+                       :CCV0-IMPRTOINTEGRCOA ,                                  
+                       :CCV0-IMPREDPRICOA    ,                                  
+                       :CCV0-IMPREDTRANCOA   ,                                  
+                       :CCV0-IMPRTONETOCOA   ,                                  
+                       :CCV0-IMPRETCOA       ,                                  
+                       :CCV0-IMPCOMPENSATCOA                                    
+            END-EXEC.                                                           
+      *D*                                                                       
+DSPLYS*    DISPLAY 'SQLCODE : ' SQLCODE                                         
+      *F*                                                                       
+
+            MOVE SQLCODE TO SW-ERROR-DB2.                                       
+      *SI NO DEVUELVE NOTFND NI CERO, INFORMAMOS ERROR GRAVE                    
+            IF NOT DB2-OK AND NOT DB2-NOTFND                                    
+
+               SET ERROR-GRAVE                    TO TRUE                       
+               MOVE '99'                          TO X372MCOA-RETORNO-S         
+               MOVE 'ERROR AL CONSULTAR CURSOR C1' TO X372MCOA-ERROR-S          
+               MOVE 'B372MCOA'                    TO X372MCOA-GNOMPROG-S        
+
+            ELSE                                                                
+
+               IF DB2-OK AND XN-I <= CN-RES-MAX                                 
+      * DESPUES DE HACER LA PRIMERA LECTURA MOVEMOS NO AL SWITCH                
+                  IF PRIMERA-LECTURA                                            
+                     SET NO-PRIMERA-LECTURA TO TRUE                             
+                  END-IF                                                        
+
+      * MOVEMOS LOS REGISTROS A LA COPY DE SALIDA. INCREMENTAMOS INDICE         
+                  PERFORM 5000-MOVER-SALIDA                                     
+                  ADD 1       TO XN-I                                           
+                  MOVE ZEROES TO SW-ERROR-DB2                                   
+
+               ELSE                                                             
+      * UN SQLCODE = 100 EN LA PRIMERA LECTURA DEL CURSOR ES UN ERROR  -03      
+                  IF PRIMERA-LECTURA AND DB2-NOTFND                             
+                     SET ERROR-GRAVE TO TRUE                                    
+                     MOVE LT-RETURN-ERR-NOTFND TO X372MCOA-RETORNO-S            
+                     MOVE 'B372M004' TO X372MCOA-GNOMPROG-S                     
+                     MOVE 'NO HAY EXPEDIENTES QUE CUMPLAN LOS CRITERIOS         
+      -                   ' SELECCIONADOS'                                      
+                       TO X372MCOA-ERROR-S                                      
+                  END-IF                                                        
+
+               END-IF                                                           
+            END-IF.                                                             
+
+      **************************************************************            
+       2435-CERRAR-CURSOR.                                                      
+      **************************************************************            
+
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372MCOA: 2435-CERRAR-CURSOR'                               
+      *F*                                                                       
+           EXEC SQL CLOSE C1 END-EXEC.                                          
+           MOVE SQLCODE TO SW-ERROR-DB2.                                        
+           IF NOT DB2-OK                                                        
+              SET ERROR-GRAVE                   TO TRUE                         
+              MOVE '99'                         TO X372MCOA-RETORNO-S           
+              MOVE 'ERROR AL CERRAR CURSOR L1 ' TO X372MCOA-ERROR-S             
+              MOVE 'B372MCOA'                   TO X372MCOA-GNOMPROG-S          
+           END-IF.                                                              
+
+      *********************************************************                 
+      *2500-PROCESO-REGULA.                                                     
+      *********************************************************                 
+      *                                                                         
+       2500-PROCESO-REGULA.                                                     
+      *D*                                                                       
+DSPLYS*    DISPLAY '2500-PROCESO-REGULA'                                        
+      *F*                                                                       
+
+            EXEC SQL                                                            
+                SELECT                                                          
+                      CCV0_ANIO             ,                                   
+                      CCV0_KEXPEDIENTE      ,                                   
+                      CCV0_NCOA             ,                                   
+                      CCV0_CODCOA           ,                                   
+                      CCV0_PORCOA           ,                                   
+                      CCV0_IMPCOA           ,                                   
+                      CCV0_IMPRTOINTEGRCOA  ,                                   
+                      CCV0_IMPREDPRICOA     ,                                   
+                      CCV0_IMPREDTRANCOA    ,                                   
+                      CCV0_IMPRTONETOCOA    ,                                   
+                      CCV0_IMPRETCOA        ,                                   
+                      CCV0_IMPCOMPENSATCOA                                      
+                INTO                                                            
+                     :CCV0-ANIO            ,                                    
+                     :CCV0-KEXPEDIENTE     ,                                    
+                     :CCV0-NCOA            ,                                    
+                     :CCV0-CODCOA          ,                                    
+                     :CCV0-PORCOA          ,                                    
+                     :CCV0-IMPCOA          ,                                    
+                     :CCV0-IMPRTOINTEGRCOA ,                                    
+                     :CCV0-IMPREDPRICOA    ,                                    
+                     :CCV0-IMPREDTRANCOA   ,                                    
+                     :CCV0-IMPRTONETOCOA   ,                                    
+                     :CCV0-IMPRETCOA       ,                                    
+                     :CCV0-IMPCOMPENSATCOA                                      
+                FROM TB372CCV0                                                  
+               WHERE   CCV0_ANIO             = :CCV0-ANIO                       
+                 AND   CCV0_KEXPEDIENTE      = :CCV0-KEXPEDIENTE                
+                 AND   CCV0_NCOA             = :CCV0-NCOA                       
+            END-EXEC.                                                           
+      *D*                                                                       
+DSPLYS*    DISPLAY 'SQLCODE : ' SQLCODE                                         
+      *F*                                                                       
+
+           MOVE SQLCODE TO SW-ERROR-DB2                                         
+
+           IF DB2-OK                                                            
+              PERFORM 8100-INFORMAR-MODIFICA                                    
+              PERFORM 2300-PROCESO-MODIF                                        
+           ELSE                                                                 
+              SET  ERROR-GRAVE TO TRUE                                          
+              EVALUATE TRUE                                                     
+                WHEN DB2-NOTFND                                                 
+              PERFORM 8100-INFORMAR-MODIFICA                                    
+              PERFORM 2100-PROCESO-ALTA                                         
+                WHEN DB2-SELECTDUP                                              
+                     MOVE LT-RETURN-ERR-CLVDUPLI                                
+                       TO X372MCOA-RETORNO-S                                    
+                     MOVE 'B372MCOA'                                            
+                       TO X372MCOA-GNOMPROG-S                                   
+                     MOVE 'EXITEN MAS DE UN EXPEDIENTE CON DATOS INFOR.'        
+                       TO X372MCOA-ERROR-S                                      
+                WHEN OTHER                                                      
+                     MOVE LT-RETURN-ERR-OTHER                                   
+                       TO X372MCOA-RETORNO-S                                    
+                     MOVE 'ERROR AL OBTENER LOS EXPEDIENTES'                    
+                       TO X372MCOA-ERROR-S                                      
+                     MOVE 'B372MCOA'                                            
+                       TO  X372MCOA-GNOMPROG-S                                  
+              END-EVALUATE                                                      
+           END-IF.                                                              
+
+      *********************************************************                 
+       5000-MOVER-SALIDA.                                                       
+      *********************************************************                 
+      *    MOVE CCV0-ANIO             TO X372M004-ANIO-S          (XN-I)        
+      *    MOVE CCV0-KEXPEDIENTE      TO X372M004-KEXPEDIENTE-S   (XN-I)        
+      *    MOVE CCV0-NCOA             TO X372M004-KRAMO-S         (XN-I)        
+           MOVE XN-I                TO X372MCOA-COASEGUROS-OCCURS-S             
+           MOVE CCV0-CODCOA         TO X372MCOA-CODCOA-S        (XN-I)          
+           MOVE CCV0-PORCOA         TO X372MCOA-PORCOA-S        (XN-I)          
+           MOVE CCV0-IMPCOA         TO X372MCOA-IMPCOA-S        (XN-I)          
+           MOVE CCV0-IMPRTOINTEGRCOA                                            
+                                    TO X372MCOA-IMPRTOINTEGRCOA-S (XN-I)        
+           MOVE CCV0-IMPREDPRICOA   TO X372MCOA-IMPREDPRICOA-S  (XN-I)          
+           MOVE CCV0-IMPREDTRANCOA  TO X372MCOA-IMPREDTRANCOA-S (XN-I)          
+           MOVE CCV0-IMPRTONETOCOA  TO X372MCOA-IMPRTONETOCOA-S (XN-I)          
+           MOVE CCV0-IMPRETCOA      TO X372MCOA-IMPRETCOA-S     (XN-I)          
+           MOVE CCV0-IMPCOMPENSATCOA                                            
+                                    TO X372MCOA-IMPCOMPENSATCOA-S (XN-I)        
+      *D*                                                                       
+DSPLYS*    DISPLAY 'MOVER-SALIDA :'                                             
+DSPLYS*    DISPLAY 'CODCOA-SALIDA :'  X372MCOA-CODCOA-S        (XN-I)           
+DSPLYS*    DISPLAY 'PORCOA-SALIDA :'  X372MCOA-PORCOA-S        (XN-I)           
+DSPLYS*    DISPLAY 'IMPCOA-SALIDA :'  X372MCOA-IMPCOA-S        (XN-I)           
+DSPLYS*    DISPLAY 'IMPRTOINTEGRCOA:' X372MCOA-IMPRTOINTEGRCOA-S (XN-I)         
+DSPLYS*    DISPLAY 'IMPREDPRICOA-S:'  X372MCOA-IMPREDPRICOA-S  (XN-I)           
+DSPLYS*    DISPLAY 'IMPREDTRANCOA-S:' X372MCOA-IMPREDTRANCOA-S (XN-I)           
+DSPLYS*    DISPLAY 'IMPRTONETOCOA-S:' X372MCOA-IMPRTONETOCOA-S (XN-I)           
+DSPLYS*    DISPLAY 'IMPRETCOA-SALID:' X372MCOA-IMPRETCOA-S     (XN-I)           
+DSPLYS*    DISPLAY 'IMPCOMPENSATCOA:' X372MCOA-IMPCOMPENSATCOA-S (XN-I)         
+      *F*                                                                       
+           .                                                                    
+      *********************************************************                 
+       8000-INFORMAR-CONSULTAS.                                                 
+      *********************************************************                 
+      *MOVEMOS LOS DATOS DE ENTRADA A CONSULTAR A LA DCLGEN                     
+      *D*                                                                       
+DSPLYS*    DISPLAY 'ANIO-E            ' X372MCOA-ANIO-E                         
+DSPLYS*    DISPLAY 'KEXPEDIENTE-E     ' X372MCOA-KEXPEDIENTE-E                  
+DSPLYS*    DISPLAY 'NCOA-E            ' X372MCOA-NCOA-E                         
+      *F*                                                                       
+           MOVE X372MCOA-ANIO-E             TO CCV0-ANIO                        
+           MOVE X372MCOA-KEXPEDIENTE-E      TO CCV0-KEXPEDIENTE                 
+           MOVE X372MCOA-NCOA-E             TO CCV0-NCOA                        
+           .                                                                    
+      *********************************************************                 
+       8100-INFORMAR-MODIFICA.                                                  
+      *********************************************************                 
+      *MOVEMOS LOS DATOS DE ENTRADA A MODIFICAR A LA DCLGEN                     
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372MCOA: 8100-INFORMAR-MODIFICA'                           
+DSPLYS*    DISPLAY 'B372MCOA: XN-J' XN-J                                        
+DSPLYS*    DISPLAY 'ANIO-E            ' X372MCOA-ANIO-E                         
+DSPLYS*    DISPLAY 'KEXPEDIENTE-E     ' X372MCOA-KEXPEDIENTE-E                  
+DSPLYS*    DISPLAY 'NCOA-E            ' X372MCOA-NCOA-E                         
+DSPLYS*    DISPLAY 'CODCOA-E          ' X372MCOA-CODCOA-E (XN-J)                
+DSPLYS*    DISPLAY 'PORCOA-E          ' X372MCOA-PORCOA-E (XN-J)                
+DSPLYS*    DISPLAY 'IMPCOA-E          ' X372MCOA-IMPCOA-E (XN-J)                
+DSPLYS*    DISPLAY 'IMPRTOINTEGRCOA-E ' X372MCOA-IMPRTOINTEGRCOA-E(XN-J)        
+DSPLYS*    DISPLAY 'IMPREDPRICOA-E    ' X372MCOA-IMPREDPRICOA-E (XN-J)          
+DSPLYS*    DISPLAY 'IMPREDTRANCOA-E   ' X372MCOA-IMPREDTRANCOA-E (XN-J)         
+DSPLYS*    DISPLAY 'IMPRTONETOCOA-E   ' X372MCOA-IMPRTONETOCOA-E (XN-J)         
+DSPLYS*    DISPLAY 'IMPRETCOA-E       ' X372MCOA-IMPRETCOA-E (XN-J)             
+DSPLYS*    DISPLAY 'IMPCOMPENSTCOA-E ' X372MCOA-IMPCOMPENSATCOA-E (XN-J)        
+      *F*                                                                       
+           MOVE X372MCOA-ANIO-E             TO CCV0-ANIO                        
+           MOVE X372MCOA-KEXPEDIENTE-E      TO CCV0-KEXPEDIENTE                 
+           MOVE XN-J                        TO CCV0-NCOA                        
+           MOVE X372MCOA-CODCOA-E (XN-J)    TO CCV0-CODCOA                      
+           MOVE X372MCOA-PORCOA-E (XN-J)    TO CCV0-PORCOA                      
+           MOVE X372MCOA-IMPCOA-E (XN-J)    TO CCV0-IMPCOA                      
+           MOVE X372MCOA-IMPRTOINTEGRCOA-E (XN-J)                               
+                                            TO CCV0-IMPRTOINTEGRCOA             
+           MOVE X372MCOA-IMPREDPRICOA-E (XN-J)                                  
+                                            TO CCV0-IMPREDPRICOA                
+           MOVE X372MCOA-IMPREDTRANCOA-E (XN-J)                                 
+                                            TO CCV0-IMPREDTRANCOA               
+           MOVE X372MCOA-IMPRTONETOCOA-E (XN-J)                                 
+                                            TO CCV0-IMPRTONETOCOA               
+           MOVE X372MCOA-IMPRETCOA-E (XN-J)                                     
+                                            TO CCV0-IMPRETCOA                   
+           MOVE X372MCOA-IMPCOMPENSATCOA-E (XN-J)                               
+                                            TO CCV0-IMPCOMPENSATCOA             
+           .                                                                    
+      **************************************************************            
+      * 9000-FINAL.                                                *            
+      **************************************************************            
+       9000-FINAL.                                                              
+
+           GOBACK.                                                              

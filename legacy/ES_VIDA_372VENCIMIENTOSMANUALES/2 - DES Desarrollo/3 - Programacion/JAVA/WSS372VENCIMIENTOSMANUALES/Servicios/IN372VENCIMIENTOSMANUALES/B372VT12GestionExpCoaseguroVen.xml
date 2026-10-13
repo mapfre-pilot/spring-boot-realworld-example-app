@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- R&V Junio 2017 - CU011 - everis(RGL) -->
+<!-- Nuevo servicio para tratar coaseguradoras -->
+<servicios>
+	<servicio nombre_web="B372VT12GestionExpCoaseguroVen">
+
+
+		<!-- parametros de entrada   -->
+		<parametro  nombre_web="OPERACION-E"  	tipo="X"    longitud="2"       dir="ES"    ocurr="1"/>
+		<parametro  nombre_web="POLIZA-E"  	tipo="X"    longitud="10"       dir="ES"    ocurr="1"/>
+		<parametro  nombre_web="SUBPOLIZA-E"  		tipo="9"    longitud="4"      dir="ES"    ocurr="1"/>
+
+
+		<!-- parametros de salida   -->
+		<parametro nombre_web="NREGISTROS-S"	tipo="9" 	dir="S" 	ocurr="1" 	longitud="1"/>
+		<parametro nombre_web="CUADRO-COASEGURO-S" 	     		dir="S" 	ocurr="6" >
+			<parametro nombre_web="CODCOA-S"	tipo="X" 	dir="S" 	ocurr="1" 	longitud="7"/>
+			<parametro nombre_web="PORCOA-S"	tipo="S9" 	dir="S" 	ocurr="1" 	longitud="9" decimales="6"/>
+		</parametro>
+
+		<parametro nombre_web="CRETORNO-S" 		tipo="X" 	dir="S" 	ocurr="1" 	longitud="02"/>
+		<parametro nombre_web="GERROR-S"	    tipo="X" 	dir="S" 	ocurr="1" 	longitud="100"/>
+		<parametro nombre_web="GNOMPROG-S" 		tipo="X" 	dir="S" 	ocurr="1" 	longitud="08"/>
+
+	</servicio>
+</servicios>

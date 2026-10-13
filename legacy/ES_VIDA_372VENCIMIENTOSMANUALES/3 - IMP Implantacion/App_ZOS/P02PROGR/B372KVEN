@@ -1,0 +1,600 @@
+      ******************************************************************        
+       IDENTIFICATION DIVISION.                                                 
+       PROGRAM-ID. B372KVEN.                                                    
+      ******************************************************************        
+      * APLICACIÓN.....: RESCATES Y VENCIMIENTOS                       *        
+      * ANALISTA.......: EVERIS                                        *        
+      * PROGRAMADOR....: EVERIS                                        *        
+      * FECHA DE REALLIZACIÓN: 11/06/17.                               *        
+      *                                                                *        
+      * DESCRIPCIÓN:                                                   *        
+      *   ------------------------------------------------------------ *        
+      *  | CONSULTA DE EXPEDIENTES DE VENCIMIENTOS                    |*        
+      *   ------------------------------------------------------------ *        
+      *                                                                *        
+      ******************************************************************        
+       ENVIRONMENT DIVISION.                                                    
+      *                                                                         
+       CONFIGURATION SECTION.                                                   
+      *                                                                         
+       SPECIAL-NAMES.                                                           
+           DECIMAL-POINT IS COMMA.                                              
+      *                                                                         
+       INPUT-OUTPUT SECTION.                                                    
+      *                                                                         
+       FILE-CONTROL.                                                            
+      * FICHERO DE REGISTROS DE TB372VEN0                                       
+           SELECT FICH-ENT                                                      
+           ASSIGN TO SYS001                                                     
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL.                                           
+
+      * FICHERO DE REGISTROS                                                    
+           SELECT FICH-SAL                                                      
+           ASSIGN TO SYS002                                                     
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL.                                           
+
+      ******************************************************************        
+      *                  DATA DIVISION                                 *        
+      ******************************************************************        
+      *                                                                         
+       DATA DIVISION.                                                           
+
+       FILE SECTION.                                                            
+       FD FICH-ENT                                                              
+             BLOCK CONTAINS 0 RECORDS                                           
+             RECORDING MODE IS F                                                
+             LABEL RECORDS ARE STANDARD.                                        
+       01 REG-ENT PIC X(791).                                                   
+
+       FD FICH-SAL                                                              
+             BLOCK CONTAINS 0 RECORDS                                           
+             RECORDING MODE IS F                                                
+             LABEL RECORDS ARE STANDARD.                                        
+       01 REG-SAL PIC X(77).                                                    
+
+
+      ******************************************************************        
+      *                  WORKING-STORAGE SECTION                       *        
+      ******************************************************************        
+      *                                                                         
+       WORKING-STORAGE SECTION.                                                 
+
+       01 FILLER.                                                               
+          03 FILLER PIC X(40) VALUE 'INICIO WORKING-STORAGE SECTION'.           
+
+      **                                                                        
+      ** SWITCH                                                                 
+      **                                                                        
+          03 SW-ERRORES              PIC X(2) VALUE SPACES.                     
+             88 NO-ERROR                      VALUE '00'.                       
+             88 ERROR-GRAVE                   VALUE '01'.                       
+
+          03 SW-FICH-ENT             PIC X(2) VALUE SPACES.                     
+             88 SW-INI-FICH-ENT               VALUE '00'.                       
+             88 SW-FIN-FICH-ENT               VALUE '01'.                       
+
+          03 SW-SWITCH.                                                         
+             05 SW-ERROR-DB2   PIC S9(3)  VALUE  0.                             
+                88 DB2-OK                 VALUE  0.                             
+                88 DB2-NOTFND             VALUE +100.                           
+                88 DB2-DUPLICADO          VALUE -803.                           
+                88 DB2-SELECTDUP          VALUE -811.                           
+
+
+      **                                                                        
+      ** CONTADORES                                                             
+      **                                                                        
+          03 WS-CONTADORES.                                                     
+             05 WS-LEIDOS-ENT          PIC 9(07).                               
+             05 WS-INSERTADOS          PIC 9(07).                               
+             05 WS-NO-INSERTADOS       PIC 9(07).                               
+
+
+      ****************************************************                      
+      ** LITERALES                                                              
+      ****************************************************                      
+          03 LT-LITERALES.                                                      
+             05 LT-ERRORES-RETORNO.                                             
+      *         LITERAL NO HAY ERRORES                                          
+                07 LT-RETURN-OK             PIC X(5) VALUE '00'.                
+      *         ERROR EN MODO                                                   
+                07 LT-RETURN-ERR-MODO       PIC X(5) VALUE '01'.                
+      *         ERROR FALTAN DATOS INFORMADOS                                   
+                07 LT-RETURN-ERR-DATINFO    PIC X(5) VALUE '02'.                
+      *         ERROR REGISTRO NO ENCONTRADO                                    
+                07 LT-RETURN-ERR-NOTFND     PIC X(5) VALUE '03'.                
+      *         ERROR REGISTRO CLAVE DUPLICADA                                  
+                07 LT-RETURN-ERR-CLVDUPLI   PIC X(5) VALUE '04'.                
+      *         ERROR EN ACCESO A BASE DE DATOS                                 
+                07 LT-RETURN-ERR-OTHER      PIC X(5) VALUE '99'.                
+      **                                                                        
+      ** VARIABLES PREDEFINIDAS PARA TABLA                                      
+      **                                                                        
+          03 WS-VEN-EXIMIDO         PIC X(1)   VALUE 'N'.                       
+          03 WS-VEN-KDOMCOM         PIC S9(9)V VALUE ZEROES.                    
+
+      **                                                                        
+      ** ESTRUCTURA FICHEROS                                                    
+      **                                                                        
+
+          03 WS-REG-ENT.                                                        
+             05 WS-VEN-ANIO            PIC S9(4)V USAGE COMP-3.                 
+             05 WS-VEN-KEXPEDIENTE     PIC S9(10)V USAGE COMP-3.                
+             05 WS-VEN-KRAMO           PIC X(3).                                
+             05 WS-VEN-ANIOPOL         PIC X(4).                                
+             05 WS-VEN-KPOLIZA         PIC X(10).                               
+             05 WS-VEN-NSUBPOLIZA      PIC S9(4)V USAGE COMP-3.                 
+             05 WS-VEN-KCERTIFICADO    PIC S9(6)V USAGE COMP-3.                 
+             05 WS-VEN-KMODALIDAD      PIC S9(5)V USAGE COMP-3.                 
+             05 WS-VEN-CCANALCAMP      PIC X(2).                                
+             05 WS-VEN-CENTIDAD        PIC X(4).                                
+             05 WS-VEN-FECEFECTO       PIC X(8).                                
+             05 WS-VEN-KDURACION       PIC S9(2)V USAGE COMP-3.                 
+             05 WS-VEN-FECEMISION      PIC X(8).                                
+             05 WS-VEN-CCARTERA        PIC X(3).                                
+             05 WS-VEN-SREASEGURO      PIC X(1).                                
+             05 WS-VEN-REGIONAL        PIC X(2).                                
+             05 WS-VEN-LUGARENVIO      PIC X(2).                                
+             05 WS-VEN-KOFICINA        PIC X(4).                                
+             05 WS-VEN-IPENDIENTE      PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-CTIPOPERS1      PIC X(1).                                
+             05 WS-VEN-SRESIDENTE1     PIC X(1).                                
+             05 WS-VEN-NIF1            PIC X(10).                               
+             05 WS-VEN-KPERSONA1       PIC S9(9)V USAGE COMP-3.                 
+             05 WS-VEN-IMPCAPITAL      PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPBENEFICIOS   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECPAGOCAPITAL  PIC X(8).                                
+             05 WS-VEN-IMPANTICIPO     PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPINTEPEND     PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECVENCIMICAP   PIC X(8).                                
+             05 WS-VEN-TIPIMPUESTCAP   PIC X(2).                                
+             05 WS-VEN-IMPRTOINTEGRCAP PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPREDPRICAP    PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPREDTRANCAP   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPCOMPENSATORIA PIC S9(11)V9(2) USAGE COMP-3.           
+             05 WS-VEN-IMPRTONETOCAP   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-PORRETCAP       PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-IMPRETCAP       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPLIQCAP       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECIMPRECAP     PIC X(8).                                
+             05 WS-VEN-FECPAGRET       PIC X(8).                                
+             05 WS-VEN-IMPCOMP1        PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECPAGCOMP1     PIC X(8).                                
+             05 WS-VEN-FECEMICOMP1     PIC X(8).                                
+             05 WS-VEN-TIPIMPUESTCOMP1 PIC X(2).                                
+             05 WS-VEN-IMPRTOINTCOMP1  PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPREDPRICOMP1  PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IREDTRANCOMP1   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IRTONETCOMP1    PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-PORRETCOMP1     PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-IRETCOMP1       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-ILIQCOMP1       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECIMPRECOMP1   PIC X(8).                                
+             05 WS-VEN-FECPAGRETCOM1   PIC X(8).                                
+             05 WS-VEN-IMPCOMP2        PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECPAGCOMP2     PIC X(8).                                
+             05 WS-VEN-FECEMICOMP2     PIC X(8).                                
+             05 WS-VEN-TIPIMPUESTCOMP2 PIC X(2).                                
+             05 WS-VEN-IMPRTOINTCOMP2  PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPREDPRICOMP2  PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IREDTRANCOMP2   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IRTONETCOMP2    PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-PORRETCOMP2     PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-IRETCOMP2       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-ILIQCOMP2       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECIMPRECOMP2   PIC X(8).                                
+             05 WS-VEN-FECPAGRETCOM2   PIC X(8).                                
+             05 WS-VEN-CODCOA1         PIC X(7).                                
+             05 WS-VEN-PORCOA1         PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-CODCOA2         PIC X(7).                                
+             05 WS-VEN-PORCOA2         PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-CODCOA3         PIC X(7).                                
+             05 WS-VEN-PORCOA3         PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-CODCOA4         PIC X(7).                                
+             05 WS-VEN-PORCOA4         PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-CODCOA5         PIC X(7).                                
+             05 WS-VEN-PORCOA5         PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-CODCOA6         PIC X(7).                                
+             05 WS-VEN-PORCOA6         PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-PAGOTOT         PIC X(1).                                
+             05 WS-VEN-CUSUARIO        PIC X(8).                                
+             05 WS-VEN-SBDGICAP        PIC X(1).                                
+             05 WS-VEN-FECBDGICAP      PIC X(8).                                
+             05 WS-VEN-SBDGICOMP1      PIC X(1).                                
+             05 WS-VEN-FECBDGICOMP1    PIC X(8).                                
+             05 WS-VEN-SBDGICOMP2      PIC X(1).                                
+             05 WS-VEN-FECBDGICOMP2    PIC X(8).                                
+             05 WS-VEN-GOBSERVACION    PIC X(255).                              
+             05 WS-VEN-ANIOFISCAL      PIC S9(4)V USAGE COMP-3.                 
+             05 WS-VEN-KDOMICILIO1     PIC S9(9)V USAGE COMP-3.                 
+             05 WS-VEN-IMPCOA1         PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPCOA2         PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPCOA3         PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPCOA4         PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPCOA5         PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPCOA6         PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECMODIFICA     PIC X(8).                                
+
+          03 WS-REG-SAL.                                                        
+             05 ERROR-ANIO-S           PIC S9(4)V USAGE COMP-3.                 
+             05 ERROR-KEXPEDIENTE-S    PIC S9(10)V USAGE COMP-3.                
+             05 RETORNO-S              PIC X(5).                                
+             05 SQLCODE-S              PIC S9(3).                               
+             05 ERROR-S                PIC X(60).                               
+
+      ****************************************************                      
+      ** AREA DE COMUNICACION CON DB2                                           
+      ****************************************************                      
+            EXEC SQL INCLUDE SQLCA     END-EXEC.                                
+            EXEC SQL INCLUDE T372VEN0  END-EXEC.                                
+
+      *************************************************************             
+       PROCEDURE DIVISION.                                                      
+      *************************************************************             
+
+           PERFORM 1000-INICIO.                                                 
+
+           PERFORM 2000-PROCESO.                                                
+
+           PERFORM 9000-FINAL.                                                  
+
+
+      *****************************************************************         
+      * 1000-INICIO.                                                  *         
+      *****************************************************************         
+      *                                                                         
+       1000-INICIO.                                                             
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B362JI12: 1000-INICIO'.                                     
+      *F*                                                                       
+           INITIALIZE  WS-REG-ENT                                               
+                       WS-REG-SAL.                                              
+
+           OPEN INPUT  FICH-ENT                                                 
+                OUTPUT FICH-SAL.                                                
+
+           SET SW-INI-FICH-ENT TO TRUE.                                         
+           SET NO-ERROR TO TRUE.                                                
+
+      *****************************************************************         
+      * 2000-PROCESO.                                                 *         
+      *****************************************************************         
+      *                                                                         
+       2000-PROCESO.                                                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B362JI12: 2000-PROCESO'.                                    
+      *T*                                                                       
+
+      ***  LECTURA ANTICIPADA                                                   
+           PERFORM 8000-READ-FICH-ENT.                                          
+
+      ***  BUCLE PRINCIPAL                                                      
+           PERFORM UNTIL SW-FIN-FICH-ENT OR ERROR-GRAVE                         
+              PERFORM 8000-READ-FICH-ENT                                        
+              PERFORM 3100-INSERT-A-TABLA-VEN0                                  
+           END-PERFORM.                                                         
+      **************************************************************            
+       3000-MOVER-DATOS-DCLGEN.                                                 
+      **************************************************************            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B362JI12: 3000-EVALUACION-PORCE.'                           
+      *T*                                                                       
+           MOVE WS-VEN-ANIO             TO VEN0-ANIO                            
+           MOVE WS-VEN-KEXPEDIENTE      TO VEN0-KEXPEDIENTE                     
+           MOVE WS-VEN-KRAMO            TO VEN0-KRAMO                           
+           MOVE WS-VEN-ANIOPOL          TO VEN0-ANIOPOL                         
+           MOVE WS-VEN-KPOLIZA          TO VEN0-KPOLIZA                         
+           MOVE WS-VEN-NSUBPOLIZA       TO VEN0-NSUBPOLIZA                      
+           MOVE WS-VEN-KCERTIFICADO     TO VEN0-KCERTIFICADO                    
+           MOVE WS-VEN-KMODALIDAD       TO VEN0-KMODALIDAD                      
+           MOVE WS-VEN-CCANALCAMP       TO VEN0-CCANALCAMP                      
+           MOVE WS-VEN-CENTIDAD         TO VEN0-CENTIDAD                        
+           MOVE WS-VEN-FECEFECTO        TO VEN0-FECEFECTO                       
+           MOVE WS-VEN-KDURACION        TO VEN0-KDURACION                       
+           MOVE WS-VEN-FECEMISION       TO VEN0-FECEMISION                      
+           MOVE WS-VEN-CCARTERA         TO VEN0-CCARTERA                        
+           MOVE WS-VEN-SREASEGURO       TO VEN0-SREASEGURO                      
+           MOVE WS-VEN-REGIONAL         TO VEN0-REGIONAL                        
+           MOVE WS-VEN-LUGARENVIO       TO VEN0-LUGARENVIO                      
+           MOVE WS-VEN-KOFICINA         TO VEN0-KOFICINA                        
+           MOVE WS-VEN-IPENDIENTE       TO VEN0-IPENDIENTE                      
+           MOVE WS-VEN-CTIPOPERS1       TO VEN0-CTIPOPERS1                      
+           MOVE WS-VEN-SRESIDENTE1      TO VEN0-SRESIDENTE1                     
+           MOVE WS-VEN-NIF1             TO VEN0-NIF1                            
+           MOVE WS-VEN-KPERSONA1        TO VEN0-KPERSONA1                       
+           MOVE WS-VEN-IMPCAPITAL       TO VEN0-IMPCAPITAL                      
+           MOVE WS-VEN-IMPBENEFICIOS    TO VEN0-IMPBENEFICIOS                   
+           MOVE WS-VEN-FECPAGOCAPITAL   TO VEN0-FECPAGOCAPITAL                  
+           MOVE WS-VEN-IMPANTICIPO      TO VEN0-IMPANTICIPO                     
+           MOVE WS-VEN-IMPINTEPEND      TO VEN0-IMPINTEPEND                     
+           MOVE WS-VEN-FECVENCIMICAP    TO VEN0-FECVENCIMICAP                   
+           MOVE WS-VEN-TIPIMPUESTCAP    TO VEN0-TIPIMPUESTCAP                   
+           MOVE WS-VEN-IMPRTOINTEGRCAP  TO VEN0-IMPRTOINTEGRCAP                 
+           MOVE WS-VEN-IMPREDPRICAP     TO VEN0-IMPREDPRICAP                    
+           MOVE WS-VEN-IMPREDTRANCAP    TO VEN0-IMPREDTRANCAP                   
+           MOVE WS-VEN-IMPCOMPENSATORIA TO VEN0-IMPCOMPENSATORIA                
+           MOVE WS-VEN-IMPRTONETOCAP    TO VEN0-IMPRTONETOCAP                   
+           MOVE WS-VEN-PORRETCAP        TO VEN0-PORRETCAP                       
+           MOVE WS-VEN-IMPRETCAP        TO VEN0-IMPRETCAP                       
+           MOVE WS-VEN-IMPLIQCAP        TO VEN0-IMPLIQCAP                       
+           MOVE WS-VEN-FECIMPRECAP      TO VEN0-FECIMPRECAP                     
+           MOVE WS-VEN-FECPAGRET        TO VEN0-FECPAGRET                       
+           MOVE WS-VEN-IMPCOMP1         TO VEN0-IMPCOMP1                        
+           MOVE WS-VEN-FECPAGCOMP1      TO VEN0-FECPAGCOMP1                     
+           MOVE WS-VEN-FECEMICOMP1      TO VEN0-FECEMICOMP1                     
+           MOVE WS-VEN-TIPIMPUESTCOMP1  TO VEN0-TIPIMPUESTCOMP1                 
+           MOVE WS-VEN-IMPRTOINTCOMP1   TO VEN0-IMPRTOINTCOMP1                  
+           MOVE WS-VEN-IMPREDPRICOMP1   TO VEN0-IMPREDPRICOMP1                  
+           MOVE WS-VEN-IREDTRANCOMP1    TO VEN0-IREDTRANCOMP1                   
+           MOVE WS-VEN-IRTONETCOMP1     TO VEN0-IRTONETCOMP1                    
+           MOVE WS-VEN-PORRETCOMP1      TO VEN0-PORRETCOMP1                     
+           MOVE WS-VEN-IRETCOMP1        TO VEN0-IRETCOMP1                       
+           MOVE WS-VEN-ILIQCOMP1        TO VEN0-ILIQCOMP1                       
+           MOVE WS-VEN-FECIMPRECOMP1    TO VEN0-FECIMPRECOMP1                   
+           MOVE WS-VEN-FECPAGRETCOM1    TO VEN0-FECPAGRETCOM1                   
+           MOVE WS-VEN-IMPCOMP2         TO VEN0-IMPCOMP2                        
+           MOVE WS-VEN-FECPAGCOMP2      TO VEN0-FECPAGCOMP2                     
+           MOVE WS-VEN-FECEMICOMP2      TO VEN0-FECEMICOMP2                     
+           MOVE WS-VEN-TIPIMPUESTCOMP2  TO VEN0-TIPIMPUESTCOMP2                 
+           MOVE WS-VEN-IMPRTOINTCOMP2   TO VEN0-IMPRTOINTCOMP2                  
+           MOVE WS-VEN-IMPREDPRICOMP2   TO VEN0-IMPREDPRICOMP2                  
+           MOVE WS-VEN-IREDTRANCOMP2    TO VEN0-IREDTRANCOMP2                   
+           MOVE WS-VEN-IRTONETCOMP2     TO VEN0-IRTONETCOMP2                    
+           MOVE WS-VEN-PORRETCOMP2      TO VEN0-PORRETCOMP2                     
+           MOVE WS-VEN-IRETCOMP2        TO VEN0-IRETCOMP2                       
+           MOVE WS-VEN-ILIQCOMP2        TO VEN0-ILIQCOMP2                       
+           MOVE WS-VEN-FECIMPRECOMP2    TO VEN0-FECIMPRECOMP2                   
+           MOVE WS-VEN-FECPAGRETCOM2    TO VEN0-FECPAGRETCOM2                   
+           MOVE WS-VEN-PAGOTOT          TO VEN0-PAGOTOT                         
+           MOVE WS-VEN-CUSUARIO         TO VEN0-CUSUARIO                        
+           MOVE WS-VEN-SBDGICAP         TO VEN0-SBDGICAP                        
+           MOVE WS-VEN-FECBDGICAP       TO VEN0-FECBDGICAP                      
+           MOVE WS-VEN-SBDGICOMP1       TO VEN0-SBDGICOMP1                      
+           MOVE WS-VEN-FECBDGICOMP1     TO VEN0-FECBDGICOMP1                    
+           MOVE WS-VEN-SBDGICOMP2       TO VEN0-SBDGICOMP2                      
+           MOVE WS-VEN-FECBDGICOMP2     TO VEN0-FECBDGICOMP2                    
+           MOVE WS-VEN-GOBSERVACION     TO VEN0-GOBSERVACION                    
+           MOVE WS-VEN-ANIOFISCAL       TO VEN0-ANIOFISCAL                      
+           MOVE WS-VEN-KDOMICILIO1      TO VEN0-KDOMICILIO1                     
+           MOVE WS-VEN-FECMODIFICA      TO VEN0-FMODIFICACION                   
+           MOVE WS-VEN-EXIMIDO          TO VEN0-EXIMIDO                         
+           MOVE WS-VEN-KDOMCOM          TO VEN0-KDOMCOM                         
+           .                                                                    
+      **************************************************************            
+       3100-INSERT-A-TABLA-VEN0.                                                
+      **************************************************************            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B362JI12: 3100-EVALUAR-DATOS-MCOA.'                         
+      *T*                                                                       
+           PERFORM 3000-MOVER-DATOS-DCLGEN                                      
+
+           EXEC SQL                                                             
+              INSERT INTO TB372VEN0                                             
+           (                                                                    
+             VEN0_ANIO           ,                                              
+             VEN0_KEXPEDIENTE    ,                                              
+             VEN0_KRAMO          ,                                              
+             VEN0_ANIOPOL        ,                                              
+             VEN0_KPOLIZA        ,                                              
+             VEN0_NSUBPOLIZA     ,                                              
+             VEN0_KCERTIFICADO   ,                                              
+             VEN0_KMODALIDAD     ,                                              
+             VEN0_CCANALCAMP     ,                                              
+             VEN0_CENTIDAD       ,                                              
+             VEN0_FECEFECTO      ,                                              
+             VEN0_KDURACION      ,                                              
+             VEN0_FECEMISION     ,                                              
+             VEN0_CCARTERA       ,                                              
+             VEN0_SREASEGURO     ,                                              
+             VEN0_REGIONAL       ,                                              
+             VEN0_LUGARENVIO     ,                                              
+             VEN0_KOFICINA       ,                                              
+             VEN0_IPENDIENTE     ,                                              
+             VEN0_CTIPOPERS1     ,                                              
+             VEN0_SRESIDENTE1    ,                                              
+             VEN0_NIF1           ,                                              
+             VEN0_KPERSONA1      ,                                              
+             VEN0_IMPCAPITAL     ,                                              
+             VEN0_IMPBENEFICIOS  ,                                              
+             VEN0_FECPAGOCAPITAL ,                                              
+             VEN0_IMPANTICIPO    ,                                              
+             VEN0_IMPINTEPEND    ,                                              
+             VEN0_FECVENCIMICAP  ,                                              
+             VEN0_TIPIMPUESTCAP  ,                                              
+             VEN0_IMPRTOINTEGRCAP,                                              
+             VEN0_IMPREDPRICAP   ,                                              
+             VEN0_IMPREDTRANCAP  ,                                              
+             VEN0_IMPCOMPENSATORIA,                                             
+             VEN0_IMPRTONETOCAP  ,                                              
+             VEN0_PORRETCAP      ,                                              
+             VEN0_IMPRETCAP      ,                                              
+             VEN0_IMPLIQCAP      ,                                              
+             VEN0_FECIMPRECAP    ,                                              
+             VEN0_FECPAGRET      ,                                              
+             VEN0_IMPCOMP1       ,                                              
+             VEN0_FECPAGCOMP1    ,                                              
+             VEN0_FECEMICOMP1    ,                                              
+             VEN0_TIPIMPUESTCOMP1,                                              
+             VEN0_IMPRTOINTCOMP1 ,                                              
+             VEN0_IMPREDPRICOMP1 ,                                              
+             VEN0_IREDTRANCOMP1  ,                                              
+             VEN0_IRTONETCOMP1   ,                                              
+             VEN0_PORRETCOMP1    ,                                              
+             VEN0_IRETCOMP1      ,                                              
+             VEN0_ILIQCOMP1      ,                                              
+             VEN0_FECIMPRECOMP1  ,                                              
+             VEN0_FECPAGRETCOM1  ,                                              
+             VEN0_IMPCOMP2       ,                                              
+             VEN0_FECPAGCOMP2    ,                                              
+             VEN0_FECEMICOMP2    ,                                              
+             VEN0_TIPIMPUESTCOMP2,                                              
+             VEN0_IMPRTOINTCOMP2 ,                                              
+             VEN0_IMPREDPRICOMP2 ,                                              
+             VEN0_IREDTRANCOMP2  ,                                              
+             VEN0_IRTONETCOMP2   ,                                              
+             VEN0_PORRETCOMP2    ,                                              
+             VEN0_IRETCOMP2      ,                                              
+             VEN0_ILIQCOMP2      ,                                              
+             VEN0_FECIMPRECOMP2  ,                                              
+             VEN0_FECPAGRETCOM2  ,                                              
+             VEN0_PAGOTOT        ,                                              
+             VEN0_CUSUARIO       ,                                              
+             VEN0_SBDGICAP       ,                                              
+             VEN0_FECBDGICAP     ,                                              
+             VEN0_SBDGICOMP1     ,                                              
+             VEN0_FECBDGICOMP1   ,                                              
+             VEN0_SBDGICOMP2     ,                                              
+             VEN0_FECBDGICOMP2   ,                                              
+             VEN0_GOBSERVACION   ,                                              
+             VEN0_ANIOFISCAL     ,                                              
+             VEN0_KDOMICILIO1    ,                                              
+             VEN0_FMODIFICACION  ,                                              
+             VEN0_EXIMIDO        ,                                              
+             VEN0_KDOMCOM                                                       
+              )                                                                 
+              VALUES                                                            
+              (                                                                 
+             :VEN0-ANIO             ,                                           
+             :VEN0-KEXPEDIENTE      ,                                           
+             :VEN0-KRAMO            ,                                           
+             :VEN0-ANIOPOL          ,                                           
+             :VEN0-KPOLIZA          ,                                           
+             :VEN0-NSUBPOLIZA       ,                                           
+             :VEN0-KCERTIFICADO     ,                                           
+             :VEN0-KMODALIDAD       ,                                           
+             :VEN0-CCANALCAMP       ,                                           
+             :VEN0-CENTIDAD         ,                                           
+             :VEN0-FECEFECTO        ,                                           
+             :VEN0-KDURACION        ,                                           
+             :VEN0-FECEMISION       ,                                           
+             :VEN0-CCARTERA         ,                                           
+             :VEN0-SREASEGURO       ,                                           
+             :VEN0-REGIONAL         ,                                           
+             :VEN0-LUGARENVIO       ,                                           
+             :VEN0-KOFICINA         ,                                           
+             :VEN0-IPENDIENTE       ,                                           
+             :VEN0-CTIPOPERS1       ,                                           
+             :VEN0-SRESIDENTE1      ,                                           
+             :VEN0-NIF1             ,                                           
+             :VEN0-KPERSONA1        ,                                           
+             :VEN0-IMPCAPITAL       ,                                           
+             :VEN0-IMPBENEFICIOS    ,                                           
+             :VEN0-FECPAGOCAPITAL   ,                                           
+             :VEN0-IMPANTICIPO      ,                                           
+             :VEN0-IMPINTEPEND      ,                                           
+             :VEN0-FECVENCIMICAP    ,                                           
+             :VEN0-TIPIMPUESTCAP    ,                                           
+             :VEN0-IMPRTOINTEGRCAP  ,                                           
+             :VEN0-IMPREDPRICAP     ,                                           
+             :VEN0-IMPREDTRANCAP    ,                                           
+             :VEN0-IMPCOMPENSATORIA ,                                           
+             :VEN0-IMPRTONETOCAP    ,                                           
+             :VEN0-PORRETCAP        ,                                           
+             :VEN0-IMPRETCAP        ,                                           
+             :VEN0-IMPLIQCAP        ,                                           
+             :VEN0-FECIMPRECAP      ,                                           
+             :VEN0-FECPAGRET        ,                                           
+             :VEN0-IMPCOMP1         ,                                           
+             :VEN0-FECPAGCOMP1      ,                                           
+             :VEN0-FECEMICOMP1      ,                                           
+             :VEN0-TIPIMPUESTCOMP1  ,                                           
+             :VEN0-IMPRTOINTCOMP1   ,                                           
+             :VEN0-IMPREDPRICOMP1   ,                                           
+             :VEN0-IREDTRANCOMP1    ,                                           
+             :VEN0-IRTONETCOMP1     ,                                           
+             :VEN0-PORRETCOMP1      ,                                           
+             :VEN0-IRETCOMP1        ,                                           
+             :VEN0-ILIQCOMP1        ,                                           
+             :VEN0-FECIMPRECOMP1    ,                                           
+             :VEN0-FECPAGRETCOM1    ,                                           
+             :VEN0-IMPCOMP2         ,                                           
+             :VEN0-FECPAGCOMP2      ,                                           
+             :VEN0-FECEMICOMP2      ,                                           
+             :VEN0-TIPIMPUESTCOMP2  ,                                           
+             :VEN0-IMPRTOINTCOMP2   ,                                           
+             :VEN0-IMPREDPRICOMP2   ,                                           
+             :VEN0-IREDTRANCOMP2    ,                                           
+             :VEN0-IRTONETCOMP2     ,                                           
+             :VEN0-PORRETCOMP2      ,                                           
+             :VEN0-IRETCOMP2        ,                                           
+             :VEN0-ILIQCOMP2        ,                                           
+             :VEN0-FECIMPRECOMP2    ,                                           
+             :VEN0-FECPAGRETCOM2    ,                                           
+             :VEN0-PAGOTOT          ,                                           
+             :VEN0-CUSUARIO         ,                                           
+             :VEN0-SBDGICAP         ,                                           
+             :VEN0-FECBDGICAP       ,                                           
+             :VEN0-SBDGICOMP1       ,                                           
+             :VEN0-FECBDGICOMP1     ,                                           
+             :VEN0-SBDGICOMP2       ,                                           
+             :VEN0-FECBDGICOMP2     ,                                           
+             :VEN0-GOBSERVACION     ,                                           
+             :VEN0-ANIOFISCAL       ,                                           
+             :VEN0-KDOMICILIO1      ,                                           
+             :VEN0-FMODIFICACION    ,                                           
+             :VEN0-EXIMIDO          ,                                           
+             :VEN0-KDOMCOM                                                      
+              )                                                                 
+           END-EXEC.                                                            
+
+      *D*                                                                       
+DSPLYS*    DISPLAY 'SQLCODE ' SQLCODE                                           
+      *F*                                                                       
+           IF NOT DB2-OK                                                        
+
+              SET  ERROR-GRAVE TO TRUE                                          
+              IF DB2-DUPLICADO                                                  
+                 MOVE LT-RETURN-ERR-CLVDUPLI      TO RETORNO-S                  
+                 MOVE VEN0-ANIO                   TO ERROR-ANIO-S               
+                 MOVE VEN0-KEXPEDIENTE            TO ERROR-KEXPEDIENTE-S        
+                 MOVE 'YA EXISTE UN EXPEDIENTE CON ESTE AÑO/EXPEDIENTE'         
+                                                  TO ERROR-S                    
+                 PERFORM 7000-ESCRIBIR-SALIDA                                   
+              ELSE                                                              
+                 MOVE LT-RETURN-ERR-OTHER    TO RETORNO-S                       
+                 MOVE SQLCODE                TO SQLCODE-S                       
+
+                 MOVE 'ERROR AL INSERTAR EN TB372VEN0'                          
+                                             TO ERROR-S                         
+                 PERFORM 7000-ESCRIBIR-SALIDA                                   
+              END-IF                                                            
+           END-IF                                                               
+           .                                                                    
+      *****************************************************************         
+      * 7000-ESCRIBIR-SALIDA                                          *         
+      *****************************************************************         
+      *                                                                         
+       7000-ESCRIBIR-SALIDA.                                                    
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B362JI12: 7000-ESCRIBIR-SALIDA.'                            
+      *F*                                                                       
+              WRITE REG-SAL FROM WS-REG-SAL.                                    
+
+      *****************************************************************         
+      * 8000-READ-FICH-ENT.                                           *         
+      *****************************************************************         
+      *                                                                         
+       8000-READ-FICH-ENT.                                                      
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B362JI12: 8000-READ-FICH-ENT'.                              
+      *F*                                                                       
+           READ FICH-ENT INTO WS-REG-ENT                                        
+             AT END                                                             
+                SET SW-FIN-FICH-ENT TO TRUE                                     
+           END-READ.                                                            
+
+      *****************************************************************         
+       9000-FINAL.                                                              
+      *****************************************************************         
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B362JI12: 9000-FINAL'.                                      
+DSPLYS*    DISPLAY 'REG.INSERTADOS : ' WS-INSERTADOS                            
+DSPLYS*    DISPLAY 'REG.LEIDOS     : ' WS-LEIDOS-ENT                            
+      *F*                                                                       
+           CLOSE FICH-ENT.                                                      
+           CLOSE FICH-SAL.                                                      
+           GOBACK.                                                              
+

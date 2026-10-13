@@ -1,0 +1,887 @@
+      ******************************************************************        
+       IDENTIFICATION DIVISION.                                                 
+       PROGRAM-ID. B372JCOA.                                                    
+      ******************************************************************        
+      * APLICACIÓN.....: RESCATES Y VENCIMIENTOS                       *        
+      * ANALISTA.......: EVERIS                                        *        
+      * PROGRAMADOR....: EVERIS                                        *        
+      * FECHA DE REALLIZACIÓN: 11/06/17.                               *        
+      *                                                                *        
+      * DESCRIPCIÓN:                                                   *        
+      *   ------------------------------------------------------------ *        
+      *  |    CARGA DE IMPORTES, COASEGUROS Y PORCERTANJES DE LA TABLA|*        
+      *  | TB372VEN0 A LA TABLA TB372CCV0                             |*        
+      *   ------------------------------------------------------------ *        
+      *                                                                *        
+      ******************************************************************        
+       ENVIRONMENT DIVISION.                                                    
+      *                                                                         
+       CONFIGURATION SECTION.                                                   
+      *                                                                         
+       SPECIAL-NAMES.                                                           
+           DECIMAL-POINT IS COMMA.                                              
+      *                                                                         
+       INPUT-OUTPUT SECTION.                                                    
+      *                                                                         
+       FILE-CONTROL.                                                            
+      * FICHERO DE REGISTROS DE TB362VEN0                                       
+           SELECT FICH-ENT                                                      
+           ASSIGN TO SYS001                                                     
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL.                                           
+
+      * FICHERO DE REGISTROS                                                    
+           SELECT FICH-SAL                                                      
+           ASSIGN TO SYS002                                                     
+           ORGANIZATION IS SEQUENTIAL                                           
+           ACCESS MODE IS SEQUENTIAL.                                           
+
+      ******************************************************************        
+      *                  DATA DIVISION                                 *        
+      ******************************************************************        
+      *                                                                         
+       DATA DIVISION.                                                           
+
+       FILE SECTION.                                                            
+       FD FICH-ENT                                                              
+             BLOCK CONTAINS 0 RECORDS                                           
+             RECORDING MODE IS F                                                
+             LABEL RECORDS ARE STANDARD.                                        
+       01 REG-ENT PIC X(791).                                                   
+
+       FD FICH-SAL                                                              
+             BLOCK CONTAINS 0 RECORDS                                           
+             RECORDING MODE IS F                                                
+             LABEL RECORDS ARE STANDARD.                                        
+       01 REG-SAL PIC X(76).                                                    
+
+
+      ******************************************************************        
+      *                  WORKING-STORAGE SECTION                       *        
+      ******************************************************************        
+      *                                                                         
+       WORKING-STORAGE SECTION.                                                 
+
+       01 FILLER.                                                               
+          03 FILLER PIC X(40) VALUE 'INICIO WORKING-STORAGE SECTION'.           
+
+      **                                                                        
+      ** SWITCH                                                                 
+      **                                                                        
+          03 SW-ERRORES              PIC X(2) VALUE SPACES.                     
+             88 NO-ERROR                      VALUE '00'.                       
+             88 ERROR-GRAVE                   VALUE '01'.                       
+
+          03 SW-FICH-ENT             PIC X(2) VALUE SPACES.                     
+             88 SW-INI-FICH-ENT               VALUE '00'.                       
+             88 SW-FIN-FICH-ENT               VALUE '01'.                       
+
+      **                                                                        
+      ** FECHA DEL SISTEMA                                                      
+      **                                                                        
+          03 WS-FECHA-ACTUAL.                                                   
+             05 WS-FECHA.                                                       
+                07 WS-ANO                   PIC 9(04).                          
+                07 WS-MES                   PIC 9(02).                          
+                07 WS-DIA                   PIC 9(02).                          
+             05 WS-TIEMPO.                                                      
+                07 WS-HORA                  PIC 9(02).                          
+                07 WS-MINUTOS               PIC 9(02).                          
+                07 WS-SEGUNDOS              PIC 9(02).                          
+                07 WS-CENTESIMAS            PIC 9(02).                          
+             05 FILLER                      PIC 9(05).                          
+
+      **                                                                        
+      ** VARIABLES-PARA-OPERAR-PORCENTAJE                                       
+      **                                                                        
+          03 WS-VAR-OPERAR.                                                     
+      *BDGI-01-22-2018 INI                                                      
+             05 WS-TOTAL-IMPOR    PIC S9(11)V9(2) USAGE COMP-3.                 
+             05 WS-TXT-TOTAL-IMPOR     PIC -ZZZZZZZZZZ9,99.                     
+             05 WS-PORC-COA-9DECI      PIC S9(3)V9(9) USAGE COMP-3.             
+             05 WS-TXT-PORC-COA-9DECI  PIC -ZZ9,999999999.                      
+             05 WS-IMPOR-COA           PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-IMPOR-COA8DECI      PIC S9(10)V9(8) USAGE COMP-3.            
+             05 WS-TXT-IMPOR-COA8DECI                                           
+                 PIC -Z.ZZZ.ZZZ.ZZ9,99999999.                                   
+             05 WS-TXT-IMPRTOINTEGRCAP                                          
+                 PIC -ZZZZZZZZZ9,99999999.                                      
+             05 WS-TXT-IMPREDPRICAP                                             
+                 PIC -ZZZZZZZZZ9,99999999.                                      
+             05 WS-TXT-IMPREDTRANCAP                                            
+                 PIC -ZZZZZZZZZ9,99999999.                                      
+             05 WS-TXT-IMPRTONETOCAP                                            
+                 PIC -ZZZZZZZZZ9,99999999.                                      
+             05 WS-TXT-IMPRETCAP                                                
+                 PIC -ZZZZZZZZZ9,99999999.                                      
+             05 WS-TXT-IMPCOMPENSATORIA                                         
+                 PIC -ZZZZZZZZZ9,99999999.                                      
+             05 WS-TXT-IMPCAPITAL                                               
+                 PIC -ZZZZZZZZZ9,99999999.                                      
+      *BDGI-01-22-2018 FIN                                                      
+             05 WS-TOTAL-PORCE         PIC 9(3).                                
+OJO          05 WS-POR-IMPRTOINTEGRCAP PIC S9(10)V9(8) USAGE COMP-3.            
+OJO          05 WS-POR-IMPREDPRICAP    PIC S9(10)V9(8) USAGE COMP-3.            
+OJO          05 WS-POR-IMPREDTRANCAP   PIC S9(10)V9(8) USAGE COMP-3.            
+OJO          05 WS-POR-IMPRTONETOCAP   PIC S9(10)V9(8) USAGE COMP-3.            
+OJO          05 WS-POR-IMPRETCAP       PIC S9(10)V9(8) USAGE COMP-3.            
+OJO          05 WS-POR-IMPCOMPENSATORIA PIC S9(10)V9(8) USAGE COMP-3.           
+OJO          05 WS-POR-IMPCAPITAL      PIC S9(10)V9(8) USAGE COMP-3.            
+             05 WS-CALC-POR            PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-SUMA-IMP-CALC       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-RESTO-IMP-CALC      PIC S9(11)V9(2) USAGE COMP-3.            
+
+      **                                                                        
+      ** VARIABLES-PARA-OPERAR-AJUSTE-IMPORTES                                  
+      **                                                                        
+          03 WS-AJU-OPERAR.                                                     
+             05 WS-AJU-IMPRTOINTEGRCAP PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-AJU-IMPREDPRICAP    PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-AJU-IMPREDTRANCAP   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-AJU-IMPRTONETOCAP   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-AJU-IMPRETCAP       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-AJU-IMPCOMPENSATORIA PIC S9(11)V9(2) USAGE COMP-3.           
+             05 WS-AJU-IMPCAPITAL      PIC S9(11)V9(2) USAGE COMP-3.            
+OJO          05 WS-AJU-PORCOA          PIC S9(3)V9(6) USAGE COMP-3.             
+      **     VARIABLES DE DIFERENCIA                                            
+             05 WS-DIF-IMPRTOINTEGRCAP PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-DIF-IMPREDPRICAP    PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-DIF-IMPREDTRANCAP   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-DIF-IMPRTONETOCAP   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-DIF-IMPRETCAP       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-DIF-IMPCOMPENSATORIA PIC S9(11)V9(2) USAGE COMP-3.           
+             05 WS-DIF-IMPCAPITAL      PIC S9(11)V9(2) USAGE COMP-3.            
+OJO          05 WS-DIF-PORCOA          PIC S9(3)V9(6) USAGE COMP-3.             
+
+      **                                                                        
+      ** CONTADORES                                                             
+      **                                                                        
+          03 WS-CONTADORES.                                                     
+             05 WS-LEIDOS-ENT          PIC 9(07).                               
+             05 WS-INSERTADOS          PIC 9(07).                               
+OJO          05 WS-TRATADOS            PIC 9(07).                               
+             05 WS-NO-INSERTADOS       PIC 9(07).                               
+
+      **                                                                        
+      ** INDICES                                                                
+      **                                                                        
+          03 XN-INDICES.                                                        
+             05 XN-I                   PIC 9(02) VALUE ZEROES.                  
+             05 XN-AJU                 PIC 9(02) VALUE ZEROES.                  
+OJO          05 INDX                   PIC 9(02) VALUE ZEROES.                  
+
+      *   -------                                                               
+      *   MODULOS                                                               
+      *   -------                                                               
+          03 WS-MODULOS.                                                        
+             05 WS-B372MCOA            PIC X(08) VALUE 'B372MCOA'.              
+      ****************************************************                      
+      ** LITERALES                                                              
+      ****************************************************                      
+          03 LT-LITERALES.                                                      
+             05 LT-ERRORES-RETORNO.                                             
+      *         LITERAL NO HAY ERRORES                                          
+                07 LT-RETURN-OK             PIC X(5) VALUE '00'.                
+      *         ERROR EN MODO                                                   
+                07 LT-RETURN-ERR-MODO       PIC X(5) VALUE '01'.                
+      *         ERROR FALTAN DATOS INFORMADOS                                   
+                07 LT-RETURN-ERR-DATINFO    PIC X(5) VALUE '02'.                
+      *         ERROR REGISTRO NO ENCONTRADO                                    
+                07 LT-RETURN-ERR-NOTFND     PIC X(5) VALUE '03'.                
+      *         ERROR REGISTRO CLAVE DUPLICADA                                  
+                07 LT-RETURN-ERR-CLVDUPLI   PIC X(5) VALUE '04'.                
+      *         ERROR EN ACCESO A BASE DE DATOS                                 
+                07 LT-RETURN-ERR-OTHER      PIC X(5) VALUE '99'.                
+
+      **                                                                        
+      ** ESTRUCTURA FICHEROS                                                    
+      **                                                                        
+
+          03 WS-REG-ENT.                                                        
+             05 WS-VEN-ANIO            PIC S9(4)V USAGE COMP-3.                 
+             05 WS-VEN-KEXPEDIENTE     PIC S9(10)V USAGE COMP-3.                
+             05 WS-VEN-KRAMO           PIC X(3).                                
+             05 WS-VEN-ANIOPOL         PIC X(4).                                
+             05 WS-VEN-KPOLIZA         PIC X(10).                               
+             05 WS-VEN-NSUBPOLIZA      PIC S9(4)V USAGE COMP-3.                 
+             05 WS-VEN-KCERTIFICADO    PIC S9(6)V USAGE COMP-3.                 
+             05 WS-VEN-KMODALIDAD      PIC S9(5)V USAGE COMP-3.                 
+             05 WS-VEN-CCANALCAMP      PIC X(2).                                
+             05 WS-VEN-CENTIDAD        PIC X(4).                                
+             05 WS-VEN-FECEFECTO       PIC X(8).                                
+             05 WS-VEN-KDURACION       PIC S9(2)V USAGE COMP-3.                 
+             05 WS-VEN-FECEMISION      PIC X(8).                                
+             05 WS-VEN-CCARTERA        PIC X(3).                                
+             05 WS-VEN-SREASEGURO      PIC X(1).                                
+             05 WS-VEN-REGIONAL        PIC X(2).                                
+             05 WS-VEN-LUGARENVIO      PIC X(2).                                
+             05 WS-VEN-KOFICINA        PIC X(4).                                
+             05 WS-VEN-IPENDIENTE      PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-CTIPOPERS1      PIC X(1).                                
+             05 WS-VEN-SRESIDENTE1     PIC X(1).                                
+             05 WS-VEN-NIF1            PIC X(10).                               
+             05 WS-VEN-KPERSONA1       PIC S9(9)V USAGE COMP-3.                 
+             05 WS-VEN-IMPCAPITAL      PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPBENEFICIOS   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECPAGOCAPITAL  PIC X(8).                                
+             05 WS-VEN-IMPANTICIPO     PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPINTEPEND     PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECVENCIMICAP   PIC X(8).                                
+             05 WS-VEN-TIPIMPUESTCAP   PIC X(2).                                
+             05 WS-VEN-IMPRTOINTEGRCAP PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPREDPRICAP    PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPREDTRANCAP   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPCOMPENSATORIA PIC S9(11)V9(2) USAGE COMP-3.           
+             05 WS-VEN-IMPRTONETOCAP   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-PORRETCAP       PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-IMPRETCAP       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPLIQCAP       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECIMPRECAP     PIC X(8).                                
+             05 WS-VEN-FECPAGRET       PIC X(8).                                
+             05 WS-VEN-IMPCOMP1        PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECPAGCOMP1     PIC X(8).                                
+             05 WS-VEN-FECEMICOMP1     PIC X(8).                                
+             05 WS-VEN-TIPIMPUESTCOMP1 PIC X(2).                                
+             05 WS-VEN-IMPRTOINTCOMP1  PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPREDPRICOMP1  PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IREDTRANCOMP1   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IRTONETCOMP1    PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-PORRETCOMP1     PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-IRETCOMP1       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-ILIQCOMP1       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECIMPRECOMP1   PIC X(8).                                
+             05 WS-VEN-FECPAGRETCOM1   PIC X(8).                                
+             05 WS-VEN-IMPCOMP2        PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECPAGCOMP2     PIC X(8).                                
+             05 WS-VEN-FECEMICOMP2     PIC X(8).                                
+             05 WS-VEN-TIPIMPUESTCOMP2 PIC X(2).                                
+             05 WS-VEN-IMPRTOINTCOMP2  PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPREDPRICOMP2  PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IREDTRANCOMP2   PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IRTONETCOMP2    PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-PORRETCOMP2     PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-IRETCOMP2       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-ILIQCOMP2       PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECIMPRECOMP2   PIC X(8).                                
+             05 WS-VEN-FECPAGRETCOM2   PIC X(8).                                
+             05 WS-VEN-CODCOA1         PIC X(7).                                
+             05 WS-VEN-PORCOA1         PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-CODCOA2         PIC X(7).                                
+             05 WS-VEN-PORCOA2         PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-CODCOA3         PIC X(7).                                
+             05 WS-VEN-PORCOA3         PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-CODCOA4         PIC X(7).                                
+             05 WS-VEN-PORCOA4         PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-CODCOA5         PIC X(7).                                
+             05 WS-VEN-PORCOA5         PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-CODCOA6         PIC X(7).                                
+             05 WS-VEN-PORCOA6         PIC S9(3)V9(2) USAGE COMP-3.             
+             05 WS-VEN-PAGOTOT         PIC X(1).                                
+             05 WS-VEN-CUSUARIO        PIC X(8).                                
+             05 WS-VEN-SBDGICAP        PIC X(1).                                
+             05 WS-VEN-FECBDGICAP      PIC X(8).                                
+             05 WS-VEN-SBDGICOMP1      PIC X(1).                                
+             05 WS-VEN-FECBDGICOMP1    PIC X(8).                                
+             05 WS-VEN-SBDGICOMP2      PIC X(1).                                
+             05 WS-VEN-FECBDGICOMP2    PIC X(8).                                
+             05 WS-VEN-GOBSERVACION    PIC X(255).                              
+             05 WS-VEN-ANIOFISCAL      PIC S9(4)V USAGE COMP-3.                 
+             05 WS-VEN-KDOMICILIO1     PIC S9(9)V USAGE COMP-3.                 
+             05 WS-VEN-IMPCOA1         PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPCOA2         PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPCOA3         PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPCOA4         PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPCOA5         PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-IMPCOA6         PIC S9(11)V9(2) USAGE COMP-3.            
+             05 WS-VEN-FECMODIFICA     PIC X(8).                                
+
+          03 WS-REG-SAL.                                                        
+             05 WS-SAL-ANIO            PIC S9(4)V USAGE COMP-3.                 
+             05 WS-SAL-KEXPEDIENTE     PIC S9(10)V USAGE COMP-3.                
+             05 WS-SAL-SQL-ERROR       PIC X(4).                                
+             05 WS-SAL-PORCE           PIC 9(3).                                
+             05 WS-SAL-MENSAJE         PIC X(60).                               
+
+      *--------                                                                 
+      *   COPYS MODULOS                                                         
+      *--------                                                                 
+
+          03 WS-COPYS.                                                          
+             05 WS-X372MCOA.                                                    
+                COPY X372MCOA.                                                  
+
+      *************************************************************             
+       PROCEDURE DIVISION.                                                      
+      *************************************************************             
+
+           PERFORM 1000-INICIO.                                                 
+
+           PERFORM 2000-PROCESO.                                                
+
+           PERFORM 9000-FINAL.                                                  
+
+
+      *****************************************************************         
+      * 1000-INICIO.                                                  *         
+      *****************************************************************         
+      *                                                                         
+       1000-INICIO.                                                             
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372JI13: 1000-INICIO'.                                     
+      *F*                                                                       
+           INITIALIZE  WS-REG-ENT                                               
+                       WS-REG-SAL                                               
+                       WS-CONTADORES                                            
+                       WS-X372MCOA                                              
+                       WS-AJU-OPERAR                                            
+                       WS-VAR-OPERAR.                                           
+
+           OPEN INPUT  FICH-ENT                                                 
+                OUTPUT FICH-SAL.                                                
+
+           SET SW-INI-FICH-ENT TO TRUE.                                         
+           SET NO-ERROR TO TRUE.                                                
+
+      *****************************************************************         
+      * 2000-PROCESO.                                                 *         
+      *****************************************************************         
+      *                                                                         
+       2000-PROCESO.                                                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372JI13: 2000-PROCESO'.                                    
+      *T*                                                                       
+
+      ***  LECTURA ANTICIPADA                                                   
+           PERFORM 8000-READ-FICH-ENT.                                          
+
+      ***  BUCLE PRINCIPAL                                                      
+           PERFORM UNTIL SW-FIN-FICH-ENT OR ERROR-GRAVE                         
+              ADD 1 TO WS-LEIDOS-ENT                                            
+OJO   *       PERFORM 8000-READ-FICH-ENT                                        
+              IF WS-VEN-CODCOA1 NOT EQUAL SPACES                                
+              OR WS-VEN-CODCOA2 NOT EQUAL SPACES                                
+              OR WS-VEN-CODCOA3 NOT EQUAL SPACES                                
+              OR WS-VEN-CODCOA4 NOT EQUAL SPACES                                
+              OR WS-VEN-CODCOA5 NOT EQUAL SPACES                                
+              OR WS-VEN-CODCOA6 NOT EQUAL SPACES                                
+OJO   *          PERFORM 3000-EVALUACION-PORCE                                  
+OJO              ADD 1 TO WS-TRATADOS                                           
+OJO              PERFORM 3000-EVALUACION-IMPORTE                                
+              END-IF                                                            
+OJO           PERFORM 8000-READ-FICH-ENT                                        
+           END-PERFORM.                                                         
+      *BDGI-01-22-2018 INI                                                      
+      **************************************************************            
+       3000-EVALUACION-IMPORTE.                                                 
+      **************************************************************            
+      * DE CADA COASEGURADO SE OBTINE SU IMP COASEG Y SE SUMA PARA              
+      * QUE EL TOTAL = TOTAL VENCIMIENTO                                        
+
+           COMPUTE WS-TOTAL-IMPOR = WS-VEN-IMPCOA1 + WS-VEN-IMPCOA2             
+                                  + WS-VEN-IMPCOA3 + WS-VEN-IMPCOA4             
+                                  + WS-VEN-IMPCOA5 + WS-VEN-IMPCOA6             
+
+           IF  WS-TOTAL-IMPOR NOT EQUAL WS-VEN-IMPCAPITAL                       
+              MOVE WS-TOTAL-IMPOR     TO WS-TXT-TOTAL-IMPOR                     
+              MOVE WS-VEN-ANIO        TO WS-SAL-ANIO                            
+              MOVE WS-VEN-KEXPEDIENTE TO WS-SAL-KEXPEDIENTE                     
+              MOVE ZEROES             TO WS-SAL-PORCE                           
+              STRING 'SUMA IMPORTES COASEGURO <> TOTAL:'                        
+                     WS-TXT-TOTAL-IMPOR                                         
+              DELIMITED BY SIZE INTO WS-SAL-MENSAJE                             
+              PERFORM 7000-ESCRIBIR-SALIDA                                      
+           END-IF                                                               
+      *                                                                         
+           PERFORM 3150-EVALUAR-DATOS-MCOA                                      
+           .                                                                    
+
+      *BDGI-01-22-2018 FIN                                                      
+      **************************************************************            
+       3000-EVALUACION-PORCE.                                                   
+      **************************************************************            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372JI13: 3000-EVALUACION-PORCE.'                           
+      *T*                                                                       
+      * DE CADA COASEGURADO SE OBTINE SU PORCENTAJE Y SE SUMA PARA              
+      * QUE EL TOTAL = 100 , ACONTINUACION SE EVALUA EL RESULTADO               
+
+           COMPUTE WS-TOTAL-PORCE = WS-VEN-PORCOA1 + WS-VEN-PORCOA2             
+                                  + WS-VEN-PORCOA3 + WS-VEN-PORCOA4             
+                                  + WS-VEN-PORCOA5 + WS-VEN-PORCOA6             
+      *D*                                                                       
+DSPLYS*    DISPLAY 'WS-VEN-PORCOA1:' WS-VEN-PORCOA1                             
+DSPLYS*    DISPLAY 'WS-VEN-PORCOA2:' WS-VEN-PORCOA2                             
+DSPLYS*    DISPLAY 'WS-VEN-PORCOA3:' WS-VEN-PORCOA3                             
+DSPLYS*    DISPLAY 'WS-VEN-PORCOA4:' WS-VEN-PORCOA4                             
+DSPLYS*    DISPLAY 'WS-VEN-PORCOA5:' WS-VEN-PORCOA5                             
+DSPLYS*    DISPLAY 'WS-VEN-PORCOA6:' WS-VEN-PORCOA6                             
+DSPLYS*    DISPLAY 'WS-TOTAL-PORCE:' WS-TOTAL-PORCE                             
+      *T*                                                                       
+
+           IF WS-TOTAL-PORCE NOT EQUAL 100                                      
+           AND WS-TOTAL-PORCE > ZEROES                                          
+      *D*                                                                       
+DSPLYS*    DISPLAY 'ENTRO POR EL IF 1'                                          
+      *T*                                                                       
+              MOVE WS-VEN-ANIO        TO WS-SAL-ANIO                            
+              MOVE WS-VEN-KEXPEDIENTE TO WS-SAL-KEXPEDIENTE                     
+              MOVE WS-TOTAL-PORCE     TO WS-SAL-PORCE                           
+              MOVE 'LA SUMA DE LOS PORCENTAJES SE EXCEDE DE 100'                
+                                      TO WS-SAL-MENSAJE                         
+              PERFORM 7000-ESCRIBIR-SALIDA                                      
+OJO   *    ELSE                                                                 
+      *D*                                                                       
+DSPLYS*    DISPLAY 'ENTRO POR EL ELSE'                                          
+      *T*                                                                       
+OJO   *       PERFORM 3100-EVALUAR-DATOS-MCOA                                   
+           END-IF                                                               
+           .                                                                    
+
+      *BDGI-01-22-2018 INI                                                      
+      **************************************************************            
+       3150-EVALUAR-DATOS-MCOA.                                                 
+      **************************************************************            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372JI13: 3150-EVALUAR-DATOS-MCOA.'                         
+      *T*                                                                       
+
+           INITIALIZE XN-I                                                      
+      *                                                                         
+      * SE EVALUA CADA COASEGURO CON SU PORCENTAJE Y IMPORTE                    
+
+           IF WS-VEN-CODCOA1 NOT EQUAL SPACES                                   
+      *D*                                                                       
+DSPLYS*    DISPLAY 'ENTRO POR CODCOA1.'                                         
+      *T*                                                                       
+                ADD 1 TO XN-I                                                   
+                MOVE FUNCTION UPPER-CASE(WS-VEN-CODCOA1)                        
+                                             TO X372MCOA-CODCOA-E (XN-I)        
+OJO             IF WS-TOTAL-IMPOR = 0                                           
+OJO                MOVE WS-VEN-PORCOA1      TO X372MCOA-PORCOA-E (XN-I)         
+OJO                MOVE WS-VEN-PORCOA1      TO WS-CALC-POR                      
+OJO                PERFORM 3150-CALCULAR-IMPORTES                               
+OJO             ELSE                                                            
+                   MOVE WS-VEN-IMPCOA1          TO WS-IMPOR-COA                 
+      *         MOVE WS-VEN-PORCOA1          TO X372MCOA-PORCOA-E (XN-I)        
+      *         MOVE WS-VEN-PORCOA1          TO WS-CALC-POR                     
+                   PERFORM 3155-CALCULAR-IMPORTES                               
+OJO             END-IF                                                          
+           END-IF                                                               
+
+           IF WS-VEN-CODCOA2 NOT EQUAL SPACES                                   
+                ADD 1 TO XN-I                                                   
+                MOVE FUNCTION UPPER-CASE(WS-VEN-CODCOA2)                        
+                                             TO X372MCOA-CODCOA-E (XN-I)        
+OJO             IF WS-TOTAL-IMPOR = 0                                           
+OJO                MOVE WS-VEN-PORCOA2      TO X372MCOA-PORCOA-E (XN-I)         
+OJO                MOVE WS-VEN-PORCOA2      TO WS-CALC-POR                      
+OJO                PERFORM 3150-CALCULAR-IMPORTES                               
+OJO             ELSE                                                            
+                    MOVE WS-VEN-IMPCOA2          TO WS-IMPOR-COA                
+      *         MOVE WS-VEN-PORCOA2          TO X372MCOA-PORCOA-E (XN-I)        
+      *         MOVE WS-VEN-PORCOA2          TO WS-CALC-POR                     
+                    PERFORM 3155-CALCULAR-IMPORTES                              
+OJO             END-IF                                                          
+           END-IF                                                               
+
+           IF WS-VEN-CODCOA3 NOT EQUAL SPACES                                   
+                ADD 1 TO XN-I                                                   
+                MOVE FUNCTION UPPER-CASE(WS-VEN-CODCOA3)                        
+                                             TO X372MCOA-CODCOA-E (XN-I)        
+OJO             IF WS-TOTAL-IMPOR = 0                                           
+OJO                MOVE WS-VEN-PORCOA3      TO X372MCOA-PORCOA-E (XN-I)         
+OJO                MOVE WS-VEN-PORCOA3      TO WS-CALC-POR                      
+OJO                PERFORM 3150-CALCULAR-IMPORTES                               
+OJO             ELSE                                                            
+                   MOVE WS-VEN-IMPCOA3          TO WS-IMPOR-COA                 
+      *         MOVE WS-VEN-PORCOA3          TO X372MCOA-PORCOA-E (XN-I)        
+      *         MOVE WS-VEN-PORCOA3          TO WS-CALC-POR                     
+                   PERFORM 3155-CALCULAR-IMPORTES                               
+OJO             END-IF                                                          
+           END-IF                                                               
+
+           IF WS-VEN-CODCOA4 NOT EQUAL SPACES                                   
+                ADD 1 TO XN-I                                                   
+                MOVE FUNCTION UPPER-CASE(WS-VEN-CODCOA4)                        
+                                             TO X372MCOA-CODCOA-E (XN-I)        
+OJO             IF WS-TOTAL-IMPOR = 0                                           
+OJO                MOVE WS-VEN-PORCOA4     TO X372MCOA-PORCOA-E (XN-I)          
+OJO                MOVE WS-VEN-PORCOA4     TO WS-CALC-POR                       
+OJO                PERFORM 3150-CALCULAR-IMPORTES                               
+OJO             ELSE                                                            
+                   MOVE WS-VEN-IMPCOA4          TO WS-IMPOR-COA                 
+      *         MOVE WS-VEN-PORCOA4          TO X372MCOA-PORCOA-E (XN-I)        
+      *         MOVE WS-VEN-PORCOA4          TO WS-CALC-POR                     
+                   PERFORM 3155-CALCULAR-IMPORTES                               
+OJO             END-IF                                                          
+           END-IF                                                               
+
+           IF WS-VEN-CODCOA5 NOT EQUAL SPACES                                   
+                ADD 1 TO XN-I                                                   
+                MOVE FUNCTION UPPER-CASE(WS-VEN-CODCOA5)                        
+                                             TO X372MCOA-CODCOA-E (XN-I)        
+OJO             IF WS-TOTAL-IMPOR = 0                                           
+OJO                MOVE WS-VEN-PORCOA5     TO X372MCOA-PORCOA-E (XN-I)          
+OJO                MOVE WS-VEN-PORCOA5     TO WS-CALC-POR                       
+OJO                PERFORM 3150-CALCULAR-IMPORTES                               
+OJO             ELSE                                                            
+                   MOVE WS-VEN-IMPCOA5          TO WS-IMPOR-COA                 
+      *         MOVE WS-VEN-PORCOA5          TO X372MCOA-PORCOA-E (XN-I)        
+      *         MOVE WS-VEN-PORCOA5          TO WS-CALC-POR                     
+                   PERFORM 3155-CALCULAR-IMPORTES                               
+OJO             END-IF                                                          
+           END-IF                                                               
+
+           IF WS-VEN-CODCOA6 NOT EQUAL SPACES                                   
+                ADD 1 TO XN-I                                                   
+                MOVE FUNCTION UPPER-CASE(WS-VEN-CODCOA6)                        
+                                             TO X372MCOA-CODCOA-E (XN-I)        
+OJO             IF WS-TOTAL-IMPOR = 0                                           
+OJO                MOVE WS-VEN-PORCOA6    TO X372MCOA-PORCOA-E (XN-I)           
+OJO                MOVE WS-VEN-PORCOA6    TO WS-CALC-POR                        
+OJO                PERFORM 3150-CALCULAR-IMPORTES                               
+OJO             ELSE                                                            
+                   MOVE WS-VEN-IMPCOA6          TO WS-IMPOR-COA                 
+      *         MOVE WS-VEN-PORCOA6          TO X372MCOA-PORCOA-E (XN-I)        
+      *         MOVE WS-VEN-PORCOA6          TO WS-CALC-POR                     
+                   PERFORM 3155-CALCULAR-IMPORTES                               
+OJO             END-IF                                                          
+           END-IF                                                               
+
+           IF XN-I GREATER THAN ZEROS                                           
+              IF XN-AJU GREATER THAN ZEROES                                     
+                PERFORM 3160-REAJUSTE-IMPO-CALC                                 
+              END-IF                                                            
+                PERFORM 4000-ALTA-EN-MCOA                                       
+           END-IF                                                               
+           .                                                                    
+
+      **************************************************************            
+       3155-CALCULAR-IMPORTES.                                                  
+      **************************************************************            
+      ** SE CALCULA CADA IMPORTE SEGUN EL PORCENTAJE DE                         
+      ** CADA COASEGURADO                                                       
+           IF X372MCOA-CODCOA-E (XN-I) = 'C0511'                                
+              MOVE XN-I  TO XN-AJU                                              
+           END-IF                                                               
+      *                                                                         
+           IF WS-IMPOR-COA NOT EQUAL 0                                          
+              MOVE  WS-IMPOR-COA  TO WS-POR-IMPCAPITAL                          
+      * CALCULAMOS EL PORCENTAJE                                                
+              COMPUTE WS-IMPOR-COA8DECI  =                                      
+               (WS-IMPOR-COA  / WS-VEN-IMPCAPITAL )                             
+OJO           MOVE WS-IMPOR-COA8DECI TO WS-TXT-IMPOR-COA8DECI                   
+              COMPUTE WS-PORC-COA-9DECI  =                                      
+                WS-IMPOR-COA8DECI * 100                                         
+              MOVE WS-PORC-COA-9DECI TO WS-TXT-PORC-COA-9DECI                   
+      *                                                                         
+              MOVE WS-PORC-COA-9DECI    TO X372MCOA-PORCOA-E (XN-I)             
+      *                                                                         
+              COMPUTE WS-POR-IMPRTOINTEGRCAP =                                  
+               (WS-VEN-IMPRTOINTEGRCAP * WS-PORC-COA-9DECI) / 100               
+              COMPUTE WS-POR-IMPREDPRICAP =                                     
+               (WS-VEN-IMPREDPRICAP * WS-PORC-COA-9DECI) / 100                  
+              COMPUTE WS-POR-IMPREDTRANCAP =                                    
+               (WS-VEN-IMPREDTRANCAP * WS-PORC-COA-9DECI) / 100                 
+              COMPUTE WS-POR-IMPRTONETOCAP =                                    
+               (WS-VEN-IMPRTONETOCAP * WS-PORC-COA-9DECI) / 100                 
+              COMPUTE WS-POR-IMPRETCAP =                                        
+               (WS-VEN-IMPRETCAP * WS-PORC-COA-9DECI) / 100                     
+              COMPUTE WS-POR-IMPCOMPENSATORIA =                                 
+               (WS-VEN-IMPCOMPENSATORIA * WS-PORC-COA-9DECI) / 100              
+           ELSE                                                                 
+              MOVE 0 TO  WS-POR-IMPRTOINTEGRCAP                                 
+                         WS-POR-IMPCAPITAL                                      
+                         WS-POR-IMPREDPRICAP                                    
+                         WS-POR-IMPREDTRANCAP                                   
+                         WS-POR-IMPRTONETOCAP                                   
+                         WS-POR-IMPRETCAP                                       
+                         WS-POR-IMPCOMPENSATORIA                                
+           END-IF                                                               
+
+           PERFORM 3155-INFORMAR-IMPO-CALC                                      
+           .                                                                    
+      *BDGI-01-22-2018 FIN                                                      
+      **************************************************************            
+       3150-CALCULAR-IMPORTES.                                                  
+      **************************************************************            
+      *D*                                                                       
+DSPLYS*    DISPLAY '3150-CALCULAR-IMPORTES'                                     
+      *T*                                                                       
+      ** SE CALCULA CADA IMPORTE SEGUN EL PORCENTAJE DE                         
+      ** CADA COASEGURADO                                                       
+           IF X372MCOA-CODCOA-E (XN-I) = 'C0511'                                
+              MOVE XN-I  TO XN-AJU                                              
+           END-IF                                                               
+      *                                                                         
+           IF WS-CALC-POR  NOT EQUAL 0                                          
+      *D*                                                                       
+DSPLYS*    DISPLAY 'ENTRO IF  WS-CALC-POR.'                                     
+      *T*                                                                       
+              COMPUTE WS-POR-IMPCAPITAL =                                       
+                       (WS-VEN-IMPCAPITAL * WS-CALC-POR) / 100                  
+              COMPUTE WS-POR-IMPRTOINTEGRCAP =                                  
+                       (WS-VEN-IMPRTOINTEGRCAP * WS-CALC-POR) / 100             
+              COMPUTE WS-POR-IMPREDPRICAP =                                     
+                       (WS-VEN-IMPREDPRICAP * WS-CALC-POR) / 100                
+              COMPUTE WS-POR-IMPREDTRANCAP =                                    
+                       (WS-VEN-IMPREDTRANCAP * WS-CALC-POR) / 100               
+              COMPUTE WS-POR-IMPRTONETOCAP =                                    
+                       (WS-VEN-IMPRTONETOCAP * WS-CALC-POR) / 100               
+              COMPUTE WS-POR-IMPRETCAP =                                        
+                       (WS-VEN-IMPRETCAP * WS-CALC-POR) / 100                   
+              COMPUTE WS-POR-IMPCOMPENSATORIA =                                 
+                       (WS-VEN-IMPCOMPENSATORIA * WS-CALC-POR) / 100            
+           ELSE                                                                 
+      *D*                                                                       
+DSPLYS*    DISPLAY 'ELSE  WS-CALC-POR.'                                         
+      *T*                                                                       
+              MOVE 0 TO  WS-POR-IMPRTOINTEGRCAP                                 
+                         WS-POR-IMPCAPITAL                                      
+                         WS-POR-IMPREDPRICAP                                    
+                         WS-POR-IMPREDTRANCAP                                   
+                         WS-POR-IMPRTONETOCAP                                   
+                         WS-POR-IMPRETCAP                                       
+                         WS-POR-IMPCOMPENSATORIA                                
+           END-IF                                                               
+
+           PERFORM 3155-INFORMAR-IMPO-CALC                                      
+      *D*                                                                       
+DSPLYS*    DISPLAY 'WS-VEN-PORCOA1 :' WS-VEN-PORCOA1                            
+DSPLYS*    DISPLAY 'WS-VEN-PORCOA2 :' WS-VEN-PORCOA2                            
+DSPLYS*    DISPLAY 'WS-VEN-PORCOA3 :' WS-VEN-PORCOA3                            
+DSPLYS*    DISPLAY 'WS-VEN-PORCOA4 :' WS-VEN-PORCOA4                            
+DSPLYS*    DISPLAY 'WS-VEN-PORCOA5 :' WS-VEN-PORCOA5                            
+DSPLYS*    DISPLAY 'WS-VEN-PORCOA6 :' WS-VEN-PORCOA6                            
+DSPLYS*    DISPLAY 'WS-VEN-IMPRTOINTEGRCAP: ' WS-VEN-IMPRTOINTEGRCAP            
+DSPLYS*    DISPLAY 'WS-VEN-IMPREDPRICAP: '    WS-VEN-IMPREDPRICAP               
+DSPLYS*    DISPLAY 'WS-VEN-IMPREDTRANCAP: '   WS-VEN-IMPREDTRANCAP              
+DSPLYS*    DISPLAY 'WS-VEN-IMPRTONETOCAP: '   WS-VEN-IMPRTONETOCAP              
+DSPLYS*    DISPLAY 'WS-VEN-IMPRETCAP: '       WS-VEN-IMPRETCAP                  
+DSPLYS*    DISPLAY 'WS-VEN-IMPCOMPENSATORIA: ' WS-VEN-IMPCOMPENSATORIA          
+DSPLYS*    DISPLAY 'WS-SUMA-IMP-CALC' WS-SUMA-IMP-CALC                          
+DSPLYS*    DISPLAY 'WS-RESTO-IMP-CALC' WS-RESTO-IMP-CALC                        
+      *T*                                                                       
+           .                                                                    
+
+      **************************************************************            
+       3155-INFORMAR-IMPO-CALC.                                                 
+      **************************************************************            
+      *D*                                                                       
+DSPLYS*    DISPLAY '3155-INFORMAR-IMPO-CALC'                                    
+      *T*                                                                       
+      ** SE INFORMA LOS CAMPOS DE ENTRADA PARA LA LLAMADA AL MODULO             
+OJO        IF WS-TOTAL-IMPOR = 0                                                
+OJO            COMPUTE   X372MCOA-IMPCOA-E (XN-I) ROUNDED =                     
+OJO                WS-POR-IMPCAPITAL * 1                                        
+OJO        ELSE                                                                 
+OJO            MOVE  WS-POR-IMPCAPITAL  TO X372MCOA-IMPCOA-E (XN-I)             
+OJO        END-IF                                                               
+OJO   *    MOVE  WS-POR-IMPRTOINTEGRCAP                                         
+OJO   *                             TO X372MCOA-IMPRTOINTEGRCOA-E (XN-I)        
+OJO   *    MOVE  WS-POR-IMPREDPRICAP                                            
+OJO   *                             TO X372MCOA-IMPREDPRICOA-E (XN-I)           
+OJO   *    MOVE  WS-POR-IMPREDTRANCAP                                           
+OJO   *                             TO X372MCOA-IMPREDTRANCOA-E (XN-I)          
+OJO   *    MOVE  WS-POR-IMPRTONETOCAP                                           
+OJO   *                             TO X372MCOA-IMPRTONETOCOA-E (XN-I)          
+OJO   *    MOVE  WS-POR-IMPRETCAP                                               
+OJO   *                             TO X372MCOA-IMPRETCOA-E (XN-I)              
+OJO   *    MOVE  WS-POR-IMPCOMPENSATORIA                                        
+OJO   *                            TO X372MCOA-IMPCOMPENSATCOA-E (XN-I)         
+OJO        COMPUTE X372MCOA-IMPRTOINTEGRCOA-E (XN-I) ROUNDED =                  
+OJO              WS-POR-IMPRTOINTEGRCAP * 1                                     
+OJO        COMPUTE X372MCOA-IMPREDPRICOA-E (XN-I)    ROUNDED =                  
+OJO              WS-POR-IMPREDPRICAP                                            
+OJO        COMPUTE X372MCOA-IMPREDTRANCOA-E (XN-I)   ROUNDED =                  
+OJO              WS-POR-IMPREDTRANCAP                                           
+OJO        COMPUTE X372MCOA-IMPRTONETOCOA-E (XN-I)   ROUNDED =                  
+OJO              WS-POR-IMPRTONETOCAP                                           
+OJO        COMPUTE X372MCOA-IMPRETCOA-E (XN-I)       ROUNDED =                  
+OJO              WS-POR-IMPRETCAP                                               
+OJO        COMPUTE X372MCOA-IMPCOMPENSATCOA-E (XN-I) ROUNDED =                  
+OJO              WS-POR-IMPCOMPENSATORIA                                        
+OJO                                                                             
+      **  SE CALCULA EL ACOMULADO DE TODOS LOS CAMPOS EN LAS VARIABLES          
+      **  DE REAJUSTE DEL COASEGURADO DE MAPFRE                                 
+
+OJO        COMPUTE WS-AJU-PORCOA = WS-AJU-PORCOA +                              
+OJO                X372MCOA-PORCOA-E (XN-I)                                     
+           COMPUTE WS-AJU-IMPCAPITAL = WS-AJU-IMPCAPITAL +                      
+                   X372MCOA-IMPCOA-E (XN-I)                                     
+           COMPUTE WS-AJU-IMPRTOINTEGRCAP = WS-AJU-IMPRTOINTEGRCAP +            
+                   X372MCOA-IMPRTOINTEGRCOA-E (XN-I)                            
+           COMPUTE WS-AJU-IMPREDPRICAP = WS-AJU-IMPREDPRICAP +                  
+                   X372MCOA-IMPREDPRICOA-E (XN-I)                               
+           COMPUTE WS-AJU-IMPREDTRANCAP = WS-AJU-IMPREDTRANCAP +                
+                   X372MCOA-IMPREDTRANCOA-E (XN-I)                              
+           COMPUTE WS-AJU-IMPRTONETOCAP = WS-AJU-IMPRTONETOCAP +                
+                   X372MCOA-IMPRTONETOCOA-E (XN-I)                              
+           COMPUTE WS-AJU-IMPRETCAP = WS-AJU-IMPRETCAP +                        
+                   X372MCOA-IMPRETCOA-E (XN-I)                                  
+           COMPUTE WS-AJU-IMPCOMPENSATORIA = WS-AJU-IMPCOMPENSATORIA +          
+                   X372MCOA-IMPCOMPENSATCOA-E (XN-I)                            
+      *D*                                                                       
+DSPLYS*    DISPLAY 'WS-AJU-IMPCAPITAL: ' WS-AJU-IMPCAPITAL                      
+DSPLYS*    DISPLAY 'WS-AJU-IMPRTOINTEGRCAP: ' WS-AJU-IMPRTOINTEGRCAP            
+DSPLYS*    DISPLAY 'WS-AJU-IMPREDPRICAP: ' WS-AJU-IMPREDPRICAP                  
+DSPLYS*    DISPLAY 'WS-AJU-IMPREDTRANCAP: ' WS-AJU-IMPREDTRANCAP                
+DSPLYS*    DISPLAY 'WS-AJU-IMPRTONETOCAP: ' WS-AJU-IMPRTONETOCAP                
+DSPLYS*    DISPLAY 'WS-AJU-IMPRETCAP: ' WS-AJU-IMPRETCAP                        
+DSPLYS*    DISPLAY 'WS-AJU-IMPCOMPENSATORIA: ' WS-AJU-IMPCOMPENSATORIA          
+DSPLYS*    DISPLAY '---VARIABLES ENTRADA MCOA--------------'                    
+DSPLYS*    DISPLAY 'IMPRTOINTEGRCAP: ' X372MCOA-IMPRTOINTEGRCOA-E (XN-I)        
+DSPLYS*    DISPLAY 'MPREDPRICAP: ' X372MCOA-IMPREDPRICOA-E (XN-I)               
+DSPLYS*    DISPLAY 'IMPREDTRANCAP: ' X372MCOA-IMPREDTRANCOA-E (XN-I)            
+DSPLYS*    DISPLAY 'IMPRTONETOCAP: ' X372MCOA-IMPRTONETOCOA-E (XN-I)            
+DSPLYS*    DISPLAY 'IMPRETCAP: ' X372MCOA-IMPCOMPENSATCOA-E (XN-I)              
+DSPLYS*    DISPLAY 'IMPCOMPENSATRIA: ' X372MCOA-IMPCOMPENSATCOA-E (XN-I)        
+      *T*                                                                       
+           .                                                                    
+
+      **************************************************************            
+       3160-REAJUSTE-IMPO-CALC.                                                 
+      **************************************************************            
+
+      ** SE RESTA EL IMPORTE ACOMULADO CON EL TOTAL OBTENIDO DE CADA            
+      ** CAMPO DEL FICHERO DE ENTRADA PARA OBTENER LA DIFERENCIA                
+
+OJO        COMPUTE WS-DIF-PORCOA     = 100 - WS-AJU-PORCOA                      
+           COMPUTE WS-DIF-IMPCAPITAL = WS-VEN-IMPCAPITAL -                      
+                                            WS-AJU-IMPCAPITAL                   
+           COMPUTE WS-DIF-IMPRTOINTEGRCAP = WS-VEN-IMPRTOINTEGRCAP -            
+                                            WS-AJU-IMPRTOINTEGRCAP              
+           COMPUTE WS-DIF-IMPREDPRICAP = WS-VEN-IMPREDPRICAP -                  
+                                         WS-AJU-IMPREDPRICAP                    
+           COMPUTE WS-DIF-IMPREDTRANCAP = WS-VEN-IMPREDTRANCAP -                
+                                          WS-AJU-IMPREDTRANCAP                  
+           COMPUTE WS-DIF-IMPRTONETOCAP = WS-VEN-IMPRTONETOCAP -                
+                                          WS-AJU-IMPRTONETOCAP                  
+           COMPUTE WS-DIF-IMPRETCAP = WS-VEN-IMPRETCAP -                        
+                                      WS-AJU-IMPRETCAP                          
+           COMPUTE WS-DIF-IMPCOMPENSATORIA = WS-VEN-IMPCOMPENSATORIA -          
+                                             WS-AJU-IMPCOMPENSATORIA            
+      ** LA DIFERENCIA SE SUMA A LOS IMPORTES QUE SE VAN A METER EN             
+      ** TABLA                                                                  
+OJO        ADD   WS-DIF-PORCOA                                                  
+OJO                              TO X372MCOA-PORCOA-E (XN-AJU)                  
+           ADD   WS-DIF-IMPCAPITAL                                              
+                                 TO X372MCOA-IMPCOA-E (XN-AJU)                  
+           ADD   WS-DIF-IMPRTOINTEGRCAP                                         
+                                 TO X372MCOA-IMPRTOINTEGRCOA-E (XN-AJU)         
+           ADD   WS-DIF-IMPREDPRICAP                                            
+                                 TO X372MCOA-IMPREDPRICOA-E (XN-AJU)            
+           ADD   WS-DIF-IMPREDTRANCAP                                           
+                                 TO X372MCOA-IMPREDTRANCOA-E (XN-AJU)           
+           ADD   WS-DIF-IMPRTONETOCAP                                           
+                                 TO X372MCOA-IMPRTONETOCOA-E (XN-AJU)           
+           ADD   WS-DIF-IMPRETCAP                                               
+                                 TO X372MCOA-IMPRETCOA-E (XN-AJU)               
+           ADD   WS-DIF-IMPCOMPENSATORIA                                        
+                                 TO X372MCOA-IMPCOMPENSATCOA-E (XN-AJU)         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'WS-DIF-IMPCAPITAL: ' WS-DIF-IMPCAPITAL                      
+DSPLYS*    DISPLAY 'WS-DIF-IMPRTOINTEGRCAP: ' WS-DIF-IMPRTOINTEGRCAP            
+DSPLYS*    DISPLAY 'WS-DIF-IMPREDPRICAP: ' WS-DIF-IMPREDPRICAP                  
+DSPLYS*    DISPLAY 'WS-DIF-IMPREDTRANCAP: ' WS-DIF-IMPREDTRANCAP                
+DSPLYS*    DISPLAY 'WS-DIF-IMPRTONETOCAP: ' WS-DIF-IMPRTONETOCAP                
+DSPLYS*    DISPLAY 'WS-DIF-IMPRTONETOCAP: ' WS-DIF-IMPRTONETOCAP                
+DSPLYS*    DISPLAY 'WS-DIF-IMPRETCAP: ' WS-DIF-IMPRETCAP                        
+DSPLYS*    DISPLAY 'WS-DIF-IMPCOMPENSATORIA: ' WS-DIF-IMPCOMPENSATORIA          
+DSPLYS*    DISPLAY '---VARIABLES ENTRADA MCOA AJUSTADAS-PARA MAPFRE-'           
+DSPLYS*    DISPLAY 'IMPRTOINTEG: ' X372MCOA-IMPRTOINTEGRCOA-E (XN-AJU)          
+DSPLYS*    DISPLAY 'MPREDPRICAP: ' X372MCOA-IMPREDPRICOA-E (XN-AJU)             
+DSPLYS*    DISPLAY 'IMPREDTRANCAP: ' X372MCOA-IMPREDTRANCOA-E (XN-AJU)          
+DSPLYS*    DISPLAY 'IMPRTONETOCAP: ' X372MCOA-IMPRTONETOCOA-E (XN-AJU)          
+DSPLYS*    DISPLAY 'IMPRETCAP: ' X372MCOA-IMPCOMPENSATCOA-E (XN-AJU)            
+DSPLYS*    DISPLAY 'IMPCOMPENSATR: ' X372MCOA-IMPCOMPENSATCOA-E (XN-AJU)        
+      *T*                                                                       
+           .                                                                    
+      **************************************************************            
+       4000-ALTA-EN-MCOA.                                                       
+      **************************************************************            
+      *D*                                                                       
+DSPLYS*    DISPLAY '4000-ALTA-EN-MCOA'                                          
+      *T*                                                                       
+      * MONTAMOS LA LLAMADA AL PGM B372MCOA CON OPERACION 'A'                   
+      * Y SIN INFORMAR EL NCOA.                                                 
+      *                                                                         
+      *                                                                         
+           INITIALIZE WS-AJU-OPERAR                                             
+                      WS-VAR-OPERAR                                             
+           MOVE 'A'                    TO X372MCOA-OPERACION-E                  
+           MOVE WS-VEN-ANIO            TO X372MCOA-ANIO-E                       
+           MOVE WS-VEN-KEXPEDIENTE     TO X372MCOA-KEXPEDIENTE-E                
+           MOVE XN-I                   TO X372MCOA-COASEGUROS-OCCURS-E          
+      *D*                                                                       
+DSPLYS*    DISPLAY '---VARIABLES ENTRADA MCOA--------------'                    
+DSPLYS*    DISPLAY 'IMPRTOINTEGRCAP: ' X372MCOA-IMPRTOINTEGRCOA-E (XN-I)        
+DSPLYS*    DISPLAY 'MPREDPRICAP: ' X372MCOA-IMPREDPRICOA-E (XN-I)               
+DSPLYS*    DISPLAY 'IMPREDTRANCAP: ' X372MCOA-IMPREDTRANCOA-E (XN-I)            
+DSPLYS*    DISPLAY 'IMPRTONETOCAP: ' X372MCOA-IMPRTONETOCOA-E (XN-I)            
+DSPLYS*    DISPLAY 'IMPRETCAP: ' X372MCOA-IMPCOMPENSATCOA-E (XN-I)              
+DSPLYS*    DISPLAY 'IMPCOMPENSATRIA: ' X372MCOA-IMPCOMPENSATCOA-E (XN-I)        
+      *T*                                                                       
+      *                                                                         
+           CALL WS-B372MCOA        USING WS-X372MCOA.                           
+      *                                                                         
+           EVALUATE X372MCOA-RETORNO-S                                          
+               WHEN LT-RETURN-OK                                                
+                    ADD 1 TO WS-INSERTADOS                                      
+                    CONTINUE                                                    
+               WHEN LT-RETURN-ERR-CLVDUPLI                                      
+                    SET ERROR-GRAVE TO TRUE                                     
+                    MOVE X372MCOA-ANIO-E     TO WS-SAL-ANIO                     
+                    MOVE X372MCOA-KEXPEDIENTE-E                                 
+                                             TO WS-SAL-KEXPEDIENTE              
+                    MOVE X372MCOA-RETORNO-S  TO WS-SAL-SQL-ERROR                
+                    MOVE 'ERROR AL INSERTAR CLAVE DUPLICADA'                    
+                                             TO WS-SAL-MENSAJE                  
+                    PERFORM 7000-ESCRIBIR-SALIDA                                
+               WHEN OTHER                                                       
+                    SET ERROR-GRAVE TO TRUE                                     
+                    MOVE X372MCOA-ANIO-E     TO WS-SAL-ANIO                     
+                    MOVE X372MCOA-KEXPEDIENTE-E                                 
+                                             TO WS-SAL-KEXPEDIENTE              
+                    MOVE X372MCOA-RETORNO-S  TO WS-SAL-SQL-ERROR                
+                    MOVE 'ERROR AL INSERTAR  TB362CCR0'                         
+                                             TO WS-SAL-MENSAJE                  
+                    PERFORM 7000-ESCRIBIR-SALIDA                                
+           END-EVALUATE                                                         
+           .                                                                    
+      *****************************************************************         
+      * 7000-ESCRIBIR-SALIDA                                          *         
+      *****************************************************************         
+      *                                                                         
+       7000-ESCRIBIR-SALIDA.                                                    
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372JI13: 7000-ESCRIBIR-SALIDA.'                            
+      *F*                                                                       
+              WRITE REG-SAL FROM WS-REG-SAL.                                    
+
+      *****************************************************************         
+      * 8000-READ-FICH-ENT.                                           *         
+      *****************************************************************         
+      *                                                                         
+       8000-READ-FICH-ENT.                                                      
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372JI13: 8000-READ-FICH-ENT'.                              
+      *F*                                                                       
+           READ FICH-ENT INTO WS-REG-ENT                                        
+             AT END                                                             
+                SET SW-FIN-FICH-ENT TO TRUE                                     
+           END-READ.                                                            
+
+      *****************************************************************         
+       9000-FINAL.                                                              
+      *****************************************************************         
+      *                                                                         
+      *D*                                                                       
+DSPLYS*    DISPLAY 'B372JI13: 9000-FINAL'.                                      
+DSPLYS*    DISPLAY 'REG.LEIDOS     : ' WS-LEIDOS-ENT                            
+DSPLYS*    DISPLAY 'REG.INSERTADOS : ' WS-INSERTADOS                            
+DSPLYS*    DISPLAY 'REG.TRATADOS   : ' WS-TRATADOS                              
+      *F*                                                                       
+           CLOSE FICH-ENT.                                                      
+           CLOSE FICH-SAL.                                                      
+           GOBACK.                                                              

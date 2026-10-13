@@ -1,0 +1,59 @@
+      ******************************************************************00010000
+      **INV: A372VENM                                                   00011000
+      ******************************************************************00012000
+      *                      COPY  X372VT11                            *00020000
+      *                                                                *00030000
+      *          MANTENIMIENTO Y CONSULTA VARIABLES DE SISTEMA         *00040000
+      *                     VENCIMIENTOS FOXPRO                        *00050000
+      *  ------------------------------------------------------------  *00051000
+      * FECHA DE CREACION:  JUNIO 2012                                 *00052000
+      ******************************************************************00060000
+      *                                                                *00061000
+      * PETICION    : MU-2016-006673       BUSCAR <<606673>            *00062000
+      * AUTOR       : INDRA                                            *00063000
+      * FECHA       : MARZO 2016                                       *00064000
+      * DESCRIPCION : SE GUARDA EN BBDD EL KDOMICILIO DE LOS           *00065000
+      *               BENEFICIARIOS                                    *00066000
+      *                                                                *00067000
+      ******************************************************************00068000
+          05 X372VT11.                                                  00070000
+             10 X372VT11-DATOS-CABECERA.                                00080000
+                15 X372VT11-KSERVICIO-C          PIC X(08).             00090000
+                15 X372VT11-CCANAL-C             PIC 9(02).             00100000
+                15 X372VT11-KEMPRESA-C           PIC X(03).             00110000
+                15 X372VT11-KDEPARTA-C           PIC X(03).             00120000
+                15 X372VT11-KUSUARIO-C           PIC X(10).             00130000
+                15 X372VT11-KCADISTR-C           PIC X(01).             00140000
+                15 X372VT11-KFILTRO-C            PIC X(02).             00150000
+                15 X372VT11-FILLER-C             PIC X(17).             00160000
+                                                                        00170000
+             10 X372VT11-ENTRADA.                                       00180000
+                15 X372VT11-KPERSONA1-E          PIC 9(09).             00190000
+606673          15 X372VT11-KDOMICILIO1-E        PIC 9(09).             00191000
+                15 X372VT11-KPERSONA2-E          PIC 9(09).             00200000
+606673          15 X372VT11-KDOMICILIO2-E        PIC 9(09).             00210000
+606673          15 X372VT11-FMODIFICA-E          PIC 9(08).             00211000
+                                                                        00220000
+             10 X372VT11-SALIDA.                                        00230000
+                15 X372VT11-ANIO-S               PIC 9(04).             00240000
+                15 X372VT11-EXPEDIENTE-S         PIC 9(10).             00250000
+                15 X372VT11-CRETORNO-S           PIC X(02).             00260000
+                15 X372VT11-GERROR-S             PIC X(100).            00270000
+                15 X372VT11-GNOMPROG-S           PIC X(08).             00280000
+                15 X372VT11-CAMPOS-S             OCCURS 02.             00281000
+                   17 X372VT11-CIDENTIFICA-S     PIC X(10).             00290000
+                   17 X372VT11-GNOMBRELARGO-S    PIC X(75).             00300000
+                   17 X372VT11-GAPELLIDO1-S      PIC X(25).             00310000
+                   17 X372VT11-GAPELLIDO2-S      PIC X(25).             00320000
+                   17 X372VT11-GDOMICILIO-S      PIC X(105).            00321000
+                   17 X372VT11-CCODPOST-S        PIC X(5).              00324000
+                   17 X372VT11-K2GRADODISC-S     PIC X(20).             00325000
+                   17 X372VT11-GPOBLACION-S      PIC X(30).             00326000
+                   17 X372VT11-CPROVINCIA-S      PIC X(10).             00327000
+                   17 X372VT11-CPAIS-S           PIC X(10).             00328000
+                   17 X372VT11-FNACIMIENTO-S     PIC X(8).              00330000
+                   17 X372VT11-CNIFLEGAL-S       PIC X(10).             00331000
+                   17 X372VT11-K2SITFAM-S        PIC X(20).             00340000
+                   17 X372VT11-CNIFCONYUGE-S     PIC X(10).             00360000
+                   17 X372VT11-IPENSIONCOM-S     PIC S9(13)V9(2).       00370000
+                   17 X372VT11-IANUALALIM-S      PIC S9(13)V9(2).       00380000

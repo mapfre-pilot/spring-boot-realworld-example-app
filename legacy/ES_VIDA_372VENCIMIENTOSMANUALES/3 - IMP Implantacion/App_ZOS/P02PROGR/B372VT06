@@ -1,0 +1,214 @@
+      *-----------------------
+       IDENTIFICATION DIVISION.
+      *------------------------
+
+       PROGRAM-ID. B372VT06.
+
+      ******************************************************************
+      *  APLICACION   : VENCIMIENTOS MANUALES (FOXPRO)                 *
+      *  ANALISTA     : EVERIS                                         *
+      *  PROGRAMADOR  : EVERIS                                         *
+      *  FECHA        : JUNIO 2012                                     *
+      *  TIPO PROGRAMA: COBOL-CICS                                     *
+      *  DESCRIPCION  : SERVICIO GESTOR DE PETICION DE DESCARGA BDGI   *
+      ******************************************************************
+      *PARAMETROS DE ENTRADA:
+      ******************************************************************
+      *   -X372VT06-ENTRADA-E: COPY DE ENTRADA DE DATOS
+      *
+      ******************************************************************
+      *PARAMETROS DE SALIDA:
+      ******************************************************************
+      *   -X372VT06-SALIDA-S : COPY DE SALIDA DE DATOS
+      ******************************************************************
+
+      ******************************************************************
+      *MODULOS UTILIZADOS:
+      ******************************************************************
+      * B372N006 : MODULO DE NEGOCIO DE B372VT06
+      *
+      ******************************************************************
+
+      ******************************************************************
+      * CODIGO DE ERRORES
+      ******************************************************************
+      *
+      * X372VT06-CRETORNO-S
+      *
+      *                    '00' OPERACION CORRECTA
+      *
+      *                    '99' ERROR AL DEVOLVER CONTROL
+      *
+      ******************************************************************
+      ******************************************************************
+
+      *--------------------
+       ENVIRONMENT DIVISION.
+      *---------------------
+
+       CONFIGURATION SECTION.
+        SPECIAL-NAMES.
+            DECIMAL-POINT IS COMMA.
+
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+
+      *-------------
+       DATA DIVISION.
+      *--------------
+
+       FILE SECTION.
+      *-------------
+
+      *************************
+       WORKING-STORAGE SECTION.
+      *************************
+      *
+        01 COPYS.
+           03 WS-PARAMETRO.
+              COPY R000X000.
+              COPY R000X001.
+        01 VARIABLES.                                                   00960000
+           03 FILLER                PIC X(17) VALUE 'INICIO DE WORKING'.00960000
+           03 LT-B372N006           PIC X(08) VALUE 'B372N006'.
+           03 FILLER                PIC X(17) VALUE 'FINAL  DE WORKING'.00960000
+
+        01 LT-LITERALES.
+      * CONSTANTES
+           03 CT-CONSTANTES.
+              05 CT-ALFANUMERICAS.
+                 07 LT-MODO-ALTA               PIC X(2)  VALUE 'A'.
+                 07 CT-01                      PIC X(02) VALUE '01'.
+                 07 CT-02                      PIC X(02) VALUE '02'.
+                 07 CT-03                      PIC X(02) VALUE '03'.
+                 07 CT-04                      PIC X(02) VALUE '04'.
+                 07 CT-05                      PIC X(02) VALUE '05'.
+                 07 CT-06                      PIC X(02) VALUE '06'.
+                 07 CT-X                       PIC X(01) VALUE 'X'.
+                 07 CT-P                       PIC X(01) VALUE 'P'.
+                 07 CT-I                       PIC X(01) VALUE 'I'.
+                 07 LT-0323770                 PIC X(7) VALUE '0323770'.
+        01 WS-VARIABLES.
+           03 B000Y011                       PIC X(08) VALUE 'B000Y011'.
+           03 WS-BB00VIRD                    PIC X(8)  VALUE 'BB00VIRD'.
+          03 WS-TIEMP                       PIC 9(15).
+          03 WS-FECHA                       PIC X(08).
+          03 NOMBRE-CICS           PIC X(08).
+      * COMMAREA
+           03 WS-COMMAREA.
+               COPY R000X000.
+               05 WS-CADENA                  PIC X(08).
+      *
+      *****************
+       LINKAGE SECTION.
+      *****************
+       01 DFHCOMMAREA.
+           COPY R000X000.
+           03 COMMAREA.
+              COPY X372VT06.
+
+      **************************************
+       PROCEDURE DIVISION USING DFHCOMMAREA.
+      **************************************
+
+
+           PERFORM 1000-INICIO.
+
+           PERFORM 2000-PROCESO.
+
+           PERFORM 9000-FIN.
+
+      ******************************************************************
+      *1000-INICIO.
+      ******************************************************************
+       1000-INICIO.
+
+           EXEC CICS
+              ASKTIME ABSTIME (WS-TIEMP)
+           END-EXEC
+
+           EXEC CICS
+              FORMATTIME ABSTIME(WS-TIEMP)
+              YYYYMMDD (WS-FECHA)
+           END-EXEC
+
+           EXEC CICS
+                IGNORE CONDITION ERROR
+           END-EXEC
+
+           EXEC CICS
+                ASSIGN APPLID (NOMBRE-CICS)
+           END-EXEC
+
+           MOVE '00'       TO X372VT06-CRETORNO-S.
+           MOVE 'B372VT06' TO X372VT06-GNOMPROG-S.
+
+
+      ******************************************************************
+      *2000-PROCESO.
+      ******************************************************************
+       2000-PROCESO.
+
+      *D*
+      *    DISPLAY 'ANIOEJER-E ' X372VT06-ANIOEJER-E
+      *    DISPLAY 'MESEJER-E  ' X372VT06-MESEJER-E
+      *    DISPLAY 'FECHAINICIAL-BDGI-E ' X372VT06-FECHAINICIAL-BDGI-E
+      *    DISPLAY 'FECHAFINAL-BDGI-E ' X372VT06-FECHAFINAL-BDGI-E
+      *F*
+           CALL LT-B372N006     USING COMMAREA.
+
+      *D*
+      *    DISPLAY ' X372VT06-CRETORNO-S '  X372VT06-CRETORNO-S
+      *    DISPLAY ' X372VT06-GERROR-S   '  X372VT06-GERROR-S
+      *    DISPLAY ' X372VT06-GNOMPROG-S '  X372VT06-GNOMPROG-S
+      *F*
+           IF X372VT06-CRETORNO-S EQUAL TO '00'
+   MSZ*       PERFORM 2300-EJECUTAR-CADENA
+   MSZ        CONTINUE
+           END-IF.
+
+      ***************************************************************
+       2300-EJECUTAR-CADENA.
+      ***************************************************************
+
+      * DETERMINAMOS EN EL ENTORNO QUE ESTAMOS
+           MOVE R000X000 OF DFHCOMMAREA
+             TO R000X000 OF WS-COMMAREA
+           MOVE LT-0323770          TO WS-CADENA(2:7)
+           EVALUATE NOMBRE-CICS(6:1)
+               WHEN 'D'
+                  MOVE CT-X           TO WS-CADENA(1:1)
+               WHEN 'I'
+                  MOVE CT-I           TO WS-CADENA(1:1)
+               WHEN 'P'
+                  MOVE CT-P           TO WS-CADENA(1:1)
+               WHEN 'R'
+                  MOVE CT-X           TO WS-CADENA(1:1)
+           END-EVALUATE.
+
+           EXEC CICS
+                LINK PROGRAM(WS-BB00VIRD)
+                COMMAREA(WS-COMMAREA)
+                LENGTH(LENGTH OF WS-COMMAREA)
+           END-EXEC.
+
+      ******************************************************************
+      *9000-FIN.
+      ******************************************************************
+       9000-FIN.
+
+           EXEC CICS                                                    00048300
+                RETURN                                                  00048400
+           END-EXEC.                                                    00048500
+
+           IF EIBRESP NOT = DFHRESP(NORMAL)
+
+
+              MOVE  'B372VT06'  TO  X372VT06-GNOMPROG-S
+              MOVE  '99'        TO  X372VT06-CRETORNO-S
+              MOVE  'ERROR AL DEVOLVER CONTROL'
+                                TO  X372VT06-GERROR-S
+
+           END-IF
+           .
+

@@ -1,0 +1,799 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.
+
+                 B372J001.
+      ****************************************************************
+      *    AUTOR      : EVERIS                                       *
+      *    FECHA      : JUNIO 2012                                   *
+      *    DESCRIPCION: INFORME CON LOS EXPEDIENTES EN 'VIGOR' Y CUYO*
+      *                 TIPO DE RETENCION SEA 'SO' O 'MO' Y QUE LA   *
+      *                 FECHA DE EMISION PRINCIPAL O COMPLEMENTARIOS *
+      *                 ESTE DENTRO DEL INTERVALO                    *
+      *                                                              *
+      *                 LLAMADA AL MODULO B372M006 CON LA OPERACION  *
+      *                 X372M006-OPERACION-E='C1' Y 'C2'             *
+      ****************************************************************
+      * MODULOS UTILIZADOS:
+      ******************************************************************
+      *
+      * B001M001 : MODULOS ROLLBACK/COMMIT
+      *
+      * B372M006 : MODULO DE MANTENIMIENTO DE LA TABLA TB372VEN0
+      *
+      * B596M705 : MODULO DE CONSULTA TABLA TB596AGN0
+      *
+      * B596M706 : MODULO DE CONSULTA TABLA TB596PIF0
+      *
+      * B596M709 : MODULO DE ACTULIZACION DE LA TABLA TB596AGN0
+      *
+      ******************************************************************
+      /
+       ENVIRONMENT DIVISION.
+      *---------------------
+       CONFIGURATION SECTION.
+      *----------------------
+       SPECIAL-NAMES.
+            DECIMAL-POINT IS COMMA.
+
+       INPUT-OUTPUT SECTION.
+      *---------------------
+       FILE-CONTROL.
+      ***  FICHERO DE SAIDA DEL INFORME
+            SELECT FICH-INF  ASSIGN TO SYS002.
+
+      ***  FICHERO DE ENTRADA
+           SELECT FICH-ENT
+           ASSIGN       TO SYS001
+           FILE STATUS IS ST-FICHERO.
+
+       DATA DIVISION.
+      *--------------
+       FILE SECTION.
+
+       FD  FICH-INF
+           LABEL RECORDS OMITTED
+           RECORDING MODE IS F.
+       01  RIMPRESO               PIC X(255).
+
+       FD  FICH-ENT
+           LABEL RECORDS OMITTED
+           RECORDING MODE IS F.
+       01  RENTRADA               PIC X(255).
+
+       WORKING-STORAGE SECTION.
+      *-----------------------
+       01  P-FILLER.
+           03  FILLER   PIC X(17)  VALUE 'INICIO-WORKING'.
+
+      **** SWICTH.
+            03 SW-FIN-ENTRADA        PIC X      VALUE 'N'.
+               88 FIN-ENTRADA                   VALUE 'S'.
+
+            03 SW-ESCRITURA          PIC XX VALUE '00'.
+               88 NO-ESCRITURA              VALUE '00'.
+               88 SI-ESCRITURA              VALUE '01'.
+
+            03 SW-COM-MAPFRE       PIC X    VALUE 'N'.
+                 88 SI-MAPFRE               VALUE 'S'.
+
+            03 SW-COM-CMADRID      PIC X    VALUE 'N'.
+                 88 SI-CMADRID              VALUE 'S'.
+
+            03 SW-COM-BANKINTER    PIC X    VALUE 'N'.
+                 88 SI-BANKINTER            VALUE 'S'.
+
+            03 SW-FIN-FICHERO        PIC X    VALUE 'N'.
+               88 FIN-FICHERO                 VALUE 'S'.
+
+            03 SW-NEGATIVO         PIC XX VALUE '01'.
+                  88 SW-NO-NEGATIVO       VALUE '01'.
+                  88 SW-SI-NEGATIVO      VALUE '00'.
+
+            03 SW-ENTRADA          PIC XX VALUE '00'.
+                  88 SW-NO-PRIMERA-VEZ    VALUE '01'.
+                  88 SW-SI-PRIMERA-VEZ   VALUE '00'.
+
+            03 SW-SWITCH.
+               05 SW-ERRORES         PIC 9(01)  VALUE 0.
+                  88 NO-ERROR                   VALUE 0.
+                  88 ERROR-GRAVE                VALUE 1.
+
+            03 SW-BORRA-ROLLBACK     PIC XX VALUE '00'.
+               88 SI-ROLLBACK               VALUE '00'.
+               88 NO-ROLLBACK               VALUE '01'.
+
+      **** VARIABLES DE TRABAJO
+
+          03 WS-FECHA-SIS.
+             05 WS-FECHA.
+                07 WS-ANO                   PIC 9(04).
+                07 WS-MES                   PIC 9(02).
+                07 WS-DIA                   PIC 9(02).
+
+          03 WS-CONSTANTES.
+             05 XN-K                        PIC 9(03) VALUE 1.
+             05 CN-RES-MAX                  PIC 9(03) VALUE 20.
+
+      * CONTROL DE FICHEROS
+            03      ST-FICHERO             PIC X(2) VALUE SPACES.
+
+      **** CONTADORES
+            03 CT-LINEA                  PIC 9(3)   VALUE ZEROS.
+            03 AUX-LINEA                 PIC 9(3)   VALUE ZEROS.
+            03 CT-PAGE                   PIC 9(4)   VALUE ZEROS.
+
+      **** CABECERAS FICH-INF
+
+           03 CAB-INTRO.
+              05 FILLER         PIC X(01)  VALUE SPACES.
+              05 FILLER         PIC X      VALUE '['.
+              05 CB-INTRO-DIA   PIC 9(2)   VALUE  ZEROS.
+              05 FILLER         PIC X      VALUE '-'.
+              05 CB-INTRO-MES   PIC 9(2)   VALUE  ZEROS.
+              05 FILLER         PIC X      VALUE '-'.
+              05 CB-INTRO-ANO   PIC 9(4)   VALUE  ZEROS.
+              05 FILLER         PIC X      VALUE ']'.
+              05 FILLER         PIC X(225)  VALUE SPACES.
+              05 FILLER         PIC X(9)   VALUE '   PAG.: '.
+              05 CB-INTRO-PAG   PIC ZZZ.
+
+           03 CAB-INTRO-1.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(16)  VALUE 'MAPFRE VIDA     '.
+
+           03 CAB-INTRO-2.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(16)  VALUE 'VENCIMIENTOS    '.
+
+
+           03 CAB-TITULO-1.
+              05 FILLER         PIC X(65)  VALUE SPACES.
+              05 FILLER         PIC X(43)
+                  VALUE 'RETENCIONES PRACTICADAS POR RENDIMIENTO DE '.
+              05 FILLER         PIC X(17)  VALUE 'CAPITAL DESDE EL '.
+              05 CAB-DD         PIC 9(2)   VALUE  ZEROS.
+              05 FILLER         PIC X      VALUE '/'.
+              05 CAB-DM         PIC 9(2)   VALUE  ZEROS.
+              05 FILLER         PIC X      VALUE '/'.
+              05 CAB-DA         PIC 9(4)   VALUE  ZEROS.
+              05 FILLER         PIC X(10)  VALUE ' HASTA EL '.
+              05 CAB-HD         PIC 9(2)   VALUE  ZEROS.
+              05 FILLER         PIC X      VALUE '/'.
+              05 CAB-HM         PIC 9(2)   VALUE  ZEROS.
+              05 FILLER         PIC X      VALUE '/'.
+              05 CAB-HA         PIC 9(4)   VALUE  ZEROS.
+
+           03 CAB-TITULO-1-SUBRAYADO.
+              05 FILLER       PIC X(65)  VALUE SPACES.
+              05 FILLER       PIC X(90)  VALUE ALL '_'.
+
+           03 CAB-TITULO-1-SUBTITULO.
+              05 FILLER       PIC X(82)  VALUE SPACES.
+              05 FILLER       PIC X(16)  VALUE '(ORDENADO POR '.
+              05 FILLER       PIC X(16)  VALUE 'AÑO+EXPEDIENTE) '.
+
+           03 CAB-TITULO-3.
+              05 FILLER       PIC X(86)  VALUE SPACES.
+              05 FILLER       PIC X(09)  VALUE 'PRINCIPAL'.
+              05 FILLER       PIC X(59)  VALUE SPACES.
+              05 FILLER       PIC X(16)  VALUE 'COMPLEMENTARIO 1'.
+              05 FILLER       PIC X(49)  VALUE SPACES.
+              05 FILLER       PIC X(16)  VALUE 'COMPLEMENTARIO 2'.
+
+           03 CAB-TITULO-3-SUBRAYADO.
+              05 FILLER       PIC X(53)  VALUE SPACES.
+              05 FILLER       PIC X(65)  VALUE ALL '_'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(65)  VALUE ALL '_'.
+              05 FILLER       PIC X(01)  VALUE SPACES.
+              05 FILLER       PIC X(65)  VALUE ALL '_'.
+
+
+           03 CAB-TITULO-2.
+              05 FILLER       PIC X(15)  VALUE SPACES.
+              05 FILLER       PIC X(03)  VALUE 'AÑO'.
+              05 FILLER       PIC X(04)  VALUE SPACES.
+              05 FILLER       PIC X(06)  VALUE 'EXPTE '.
+              05 FILLER       PIC X(05)  VALUE SPACES.
+              05 FILLER       PIC X(06)  VALUE 'POLIZA'.
+              05 FILLER       PIC X(24)  VALUE SPACES.
+              05 FILLER       PIC X(11)  VALUE 'RTO.INTEGRO'.
+              05 FILLER       PIC X(14)  VALUE SPACES.
+              05 FILLER       PIC X(08)  VALUE 'RTO.NETO'.
+              05 FILLER       PIC X(13)  VALUE SPACES.
+              05 FILLER       PIC X(09)  VALUE 'RETENCION'.
+              05 FILLER       PIC X(11)  VALUE SPACES.
+              05 FILLER       PIC X(11)  VALUE 'RTO.INTEGRO'.
+              05 FILLER       PIC X(14)  VALUE SPACES.
+              05 FILLER       PIC X(08)  VALUE 'RTO.NETO'.
+              05 FILLER       PIC X(13)  VALUE SPACES.
+              05 FILLER       PIC X(09)  VALUE 'RETENCION'.
+              05 FILLER       PIC X(11)  VALUE SPACES.
+              05 FILLER       PIC X(11)  VALUE 'RTO.INTEGRO'.
+              05 FILLER       PIC X(14)  VALUE SPACES.
+              05 FILLER       PIC X(08)  VALUE 'RTO.NETO'.
+              05 FILLER       PIC X(13)  VALUE SPACES.
+              05 FILLER       PIC X(09)  VALUE 'RETENCION'.
+
+           03 CAB-TITULO-2-SUBRAYADO.
+              05 FILLER       PIC X(15)  VALUE SPACES.
+              05 FILLER       PIC X(04)  VALUE ALL '_'.
+              05 FILLER       PIC X(03)  VALUE SPACES.
+              05 FILLER       PIC X(10)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(19)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(21)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(21)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(21)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(21)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(21)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(21)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(21)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(21)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(21)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+      *
+           03 FECHA.
+              05 FILLER          PIC X(02)  VALUE SPACES.
+              05 WS-FECDESDE.
+                 07 DA              PIC X(04).
+                 07 DM              PIC X(02).
+                 07 DD              PIC X(02).
+              05 WS-FECHASTA.
+                 07 HA              PIC X(04).
+                 07 HM              PIC X(02).
+                 07 HD              PIC X(02).
+
+           03 LIN-DETALLE.
+              05 FILLER           PIC X(15)  VALUE SPACES.
+              05 DE-ANIO          PIC X(04).
+              05 FILLER           PIC X(03)  VALUE SPACES.
+              05 DE-EXPED         PIC X(10).
+              05 FILLER           PIC X(01)  VALUE SPACES.
+              05 DE-RAMO          PIC X(03).
+              05 FILLER           PIC X(01)  VALUE SPACES.
+              05 DE-ANIOPOL       PIC X(04).
+              05 FILLER           PIC X(01)  VALUE SPACES.
+              05 DE-POLIZA        PIC X(10).
+              05 FILLER           PIC X(04)  VALUE SPACES.
+              05 DE-CAP-RTO-INT   PIC  ---.---.---.---,--  VALUE ZEROS.
+              05 FILLER           PIC X(04)  VALUE SPACES.
+              05 DE-CAP-RTO-NET   PIC  ---.---.---.---,--  VALUE ZEROS.
+              05 FILLER           PIC X(04)  VALUE SPACES.
+              05 DE-CAP-RTO       PIC  ---.---.---.---,--  VALUE ZEROS.
+              05 FILLER           PIC X(04)  VALUE SPACES.
+              05 DE-COM1-RTO-INT  PIC  ---.---.---.---,--  VALUE ZEROS.
+              05 FILLER           PIC X(04)  VALUE SPACES.
+              05 DE-COM1-RTO-NET  PIC  ---.---.---.---,--  VALUE ZEROS.
+              05 FILLER           PIC X(04)  VALUE SPACES.
+              05 DE-COM1-RTO      PIC  ---.---.---.---,--  VALUE ZEROS.
+              05 FILLER           PIC X(04)  VALUE SPACES.
+              05 DE-COM2-RTO-INT  PIC  ---.---.---.---,--  VALUE ZEROS.
+              05 FILLER           PIC X(04)  VALUE SPACES.
+              05 DE-COM2-RTO-NET  PIC  ---.---.---.---,--  VALUE ZEROS.
+              05 FILLER           PIC X(04)  VALUE SPACES.
+              05 DE-COM2-RTO      PIC  ---.---.---.---,--  VALUE ZEROS.
+
+           03 LIN-DETALLE-AUX.
+              05 DE-CENTIDAD-AUX PIC X(02).
+              05 FILLER          PIC X(15)  VALUE SPACES.
+              05 DE-ANIO-AUX     PIC X(04).
+              05 FILLER          PIC X(03)  VALUE SPACES.
+              05 DE-EXPED-AUX    PIC X(10).
+              05 FILLER          PIC X(01)  VALUE SPACES.
+              05 DE-RAMO-AUX     PIC X(03).
+              05 FILLER          PIC X(01)  VALUE SPACES.
+              05 DE-ANIOPOL-AUX  PIC X(04).
+              05 FILLER          PIC X(01)  VALUE SPACES.
+              05 DE-POLIZA-AUX   PIC X(10).
+              05 FILLER          PIC X(04)  VALUE SPACES.
+              05 DE-CAP-RTO-INT-AUX PIC S9(15)V9(2).
+              05 FILLER          PIC X(04)  VALUE SPACES.
+              05 DE-CAP-RTO-NET-AUX PIC S9(15)V9(2).
+              05 FILLER          PIC X(04)  VALUE SPACES.
+              05 DE-CAP-RTO-AUX  PIC S9(15)V9(2).
+              05 FILLER          PIC X(04)  VALUE SPACES.
+              05 DE-COM1-RTO-INT-AUX PIC S9(15)V9(2).
+              05 FILLER          PIC X(04)  VALUE SPACES.
+              05 DE-COM1-RTO-NET-AUX  PIC S9(15)V9(2).
+              05 FILLER          PIC X(04)  VALUE SPACES.
+              05 DE-COM1-RTO-AUX  PIC S9(15)V9(2).
+              05 FILLER          PIC X(04)  VALUE SPACES.
+              05 DE-COM2-RTO-INT-AUX PIC S9(15)V9(2).
+              05 FILLER          PIC X(04)  VALUE SPACES.
+              05 DE-COM2-RTO-NET-AUX  PIC S9(15)V9(2).
+              05 FILLER          PIC X(04)  VALUE SPACES.
+              05 DE-COM2-RTO-AUX  PIC S9(15)V9(2).
+
+           03 LIN-DETALLE-TOTAL-SUBRAYADO.
+              05 FILLER       PIC X(40)  VALUE SPACES.
+              05 FILLER       PIC X(12)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(21)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(21)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(21)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(21)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(21)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(21)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(21)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(21)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+              05 FILLER       PIC X(21)  VALUE ALL '_'.
+              05 FILLER       PIC X(1)   VALUE SPACES.
+
+           03 LIN-DETALLE-TOTAL.
+              05 FILLER          PIC X(40)  VALUE SPACES.
+              05 FILLER          PIC X(09)  VALUE 'TOTAL'.
+              05 DE-TOTAL-POLIZA PIC 9(03)  VALUE ZEROS.
+              05 FILLER          PIC X(02)  VALUE SPACES.
+              05 DE-CAP-RTO-INT-TO
+                                 PIC  -.---.---.---.---,--  VALUE ZEROS.
+              05 FILLER          PIC X(02)  VALUE SPACES.
+              05 DE-CAP-RTO-NET-TO
+                                 PIC  -.---.---.---.---,--  VALUE ZEROS.
+              05 FILLER          PIC X(02)  VALUE SPACES.
+              05 DE-CAP-RTO-TO
+                                 PIC  -.---.---.---.---,--  VALUE ZEROS.
+              05 FILLER          PIC X(02)  VALUE SPACES.
+              05 DE-COM1-RTO-INT-TO
+                                 PIC  -.---.---.---.---,--  VALUE ZEROS.
+              05 FILLER          PIC X(02)  VALUE SPACES.
+              05 DE-COM1-RTO-NET-TO
+                                 PIC  -.---.---.---.---,--  VALUE ZEROS.
+              05 FILLER          PIC X(02)  VALUE SPACES.
+              05 DE-COM1-RTO-TO
+                                 PIC  -.---.---.---.---,--  VALUE ZEROS.
+              05 FILLER          PIC X(02)  VALUE SPACES.
+              05 DE-COM2-RTO-INT-TO
+                                 PIC  -.---.---.---.---,--  VALUE ZEROS.
+              05 FILLER          PIC X(02)  VALUE SPACES.
+              05 DE-COM2-RTO-NET-TO
+                                 PIC  -.---.---.---.---,--  VALUE ZEROS.
+              05 FILLER          PIC X(02)  VALUE SPACES.
+              05 DE-COM2-RTO-TO
+                                 PIC  -.---.---.---.---,--  VALUE ZEROS.
+
+      *
+           03 TOTALES.
+              05 CAP-INT-TO      PIC S9(15)V9(2).
+              05 CAP-NET-TO      PIC S9(15)V9(2).
+              05 CAP-RET-TO      PIC S9(15)V9(2).
+              05 COM1-INT-TO     PIC S9(15)V9(2).
+              05 COM1-NET-TO     PIC S9(15)V9(2).
+              05 COM1-RET-TO     PIC S9(15)V9(2).
+              05 COM2-INT-TO     PIC S9(15)V9(2).
+              05 COM2-NET-TO     PIC S9(15)V9(2).
+              05 COM2-RET-TO     PIC S9(15)V9(2).
+
+           03 LINEA-BLANCO.
+              05 FILLER       PIC X(64)  VALUE SPACES.
+
+      **** VARIABLE TIPO DE OPERACION
+           03 CT-TIPOPERACION-1           PIC X(02) VALUE 'C1'.
+           03 CT-TIPOPERACION-2           PIC X(02) VALUE 'C2'.
+
+      * VARIABLES AUXILIARES CRITERIOS1
+           03 WS-CRITERIOS1.
+              05 WS-ANIO-CRIT                PIC 9(04).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-ANIODESDE                PIC 9(04).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-ANIOHASTA                PIC 9(04).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-EXPEDIDESDE              PIC 9(10).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-EXPEDIHASTA              PIC 9(10).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-FECEMISION               PIC X(08).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-FECEMIDESDE              PIC X(08).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-FECEMIHASTA              PIC X(08).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-FECPAGDESDE              PIC X(08).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-FECPAGHASTA              PIC X(08).
+              05 FILLER                      PIC X(01) VALUE ';'.
+              05 WS-FECCALCULO               PIC X(08).
+              05 FILLER                      PIC X(01) VALUE ';'.
+
+          03 WS-CLAVEELTO-ALF.
+             05 WS-CLAVEELTO-NUM            PIC 9(10).
+             05 FILLER                      PIC X(240).
+
+
+           03 LT-LITERALES.
+      **** LITERALES DE LOS PROGRAMAS UTILIZADOS
+              05 WS-B372M006               PIC X(08) VALUE 'B372M006'.
+              05 WS-B596M709               PIC X(08) VALUE 'B596M709'.
+              05 WS-B596M706               PIC X(08) VALUE 'B596M706'.
+              05 WS-B596M705               PIC X(08) VALUE 'B596M705'.
+              05 WS-B001M001               PIC X(08) VALUE 'B001M001'.
+
+      * CABECERA PARA MANDAR EL LISTADO AL CONTROL-D
+          03 CAB-0.
+MMC   *      05 FILLER               PIC X(09)  VALUE '1 CTDRPT='.
+MMC          05 FILLER               PIC X(08)  VALUE ' CTDRPT='.
+             05 CB-COMPANIA          PIC 9(02)  VALUE ZEROS.
+             05 CB-BUZON             PIC X(08)  VALUE SPACES.
+             05 FILLER               PIC X(01)  VALUE SPACES.
+             05 CB-CADENA            PIC X(08)  VALUE SPACES.
+             05 CB-FICHERO           PIC X(42)  VALUE SPACES.
+
+
+           03 FICHA-SYSIN-CADENA.
+               05 NOMBRE-CADENA      PIC X(08)  VALUE SPACES.
+
+           03 FICHA-SYSIN-BUZON.
+              05 BUZON-PROCESO      PIC X(08)  VALUE SPACES.
+
+           03 WS-BUZON.
+              05 WS-BUZON-PROCESO     PIC X(08)  VALUE SPACES.
+
+           03 WS-ANT-CENTIDAD        PIC X(04) VALUE ZEROES.
+
+          03 WS-VR562007           PIC X(08) VALUE 'VR562007'.
+
+      **
+      ** COPYS MÓDULOS
+      **
+          03 WS-X596M704.
+             COPY X596M704.
+             COPY X596N000.
+
+          03 WS-X596M705.
+             COPY X596M705.
+             COPY X596N000.
+
+          03 WS-X596M706.
+             COPY X596M706.
+             COPY X596N000.
+
+          03 WS-X596M709.
+             COPY X596M709.
+             COPY X596N000.
+
+          03 WS-X372M006.
+             COPY X372M006.
+
+          03 WS-X001M001.
+             COPY X001M001.
+
+      ****
+
+       01   FILLER            PIC X(13)  VALUE 'FINAL-WORKING'.
+
+      /
+      *
+       PROCEDURE DIVISION.
+      *===================
+      *
+      ******************************************************************
+      *                                                                *
+      *               N I V E L               0                        *
+      *                                                                *
+      ******************************************************************
+
+       INICIO SECTION.
+
+           PERFORM 1000-P-PROGRAMA.
+
+           PERFORM 2000-PROCESO.
+
+           PERFORM 3000-F-PROGRAMA.
+
+           PERFORM 10000-FIN.
+      /
+      *****************************************************************
+      *                                                               *
+      *                T R A T A M I E N T O S                        *
+      *                                                               *
+      *****************************************************************
+
+       1000-P-PROGRAMA.
+      *
+      *****  ABRIMOS LOS FICHEROS.
+      *
+           OPEN OUTPUT FICH-INF.
+           OPEN INPUT FICH-ENT.
+      ***** INICIALIZAMOS LA PRIMERA PAGINA
+           MOVE 1 TO CT-PAGE.
+      *    ACCEPT FICHA-SYSIN FROM SYSIN.
+           ACCEPT FICHA-SYSIN-BUZON FROM SYSIN.
+           MOVE FICHA-SYSIN-BUZON     TO WS-BUZON-PROCESO
+
+           ACCEPT FICHA-SYSIN-CADENA FROM SYSIN.
+           MOVE NOMBRE-CADENA          TO CB-CADENA.
+
+      ******************************************************************
+       1050-LEER-REGISTRO.
+      ******************************************************************
+
+           READ FICH-ENT INTO LIN-DETALLE-AUX
+               AT END
+                  SET FIN-FICHERO TO TRUE
+           END-READ
+
+           CONTINUE.
+
+
+       3000-F-PROGRAMA.
+      *************
+
+      *
+      ****   SE CIERRA LA BASE DE DATOS Y LOS FICHEROS.
+      *
+           CLOSE FICH-INF, FICH-ENT.
+
+      *****************************************************************
+      *                                                               *
+      *                R U T I N A S    A U X I L I A R E S           *
+      *                                                               *
+      *****************************************************************
+      *
+       2000-PROCESO.
+      ****************
+
+           INITIALIZE TOTALES
+           INITIALIZE LIN-DETALLE-TOTAL
+           INITIALIZE LIN-DETALLE
+           INITIALIZE LIN-DETALLE-AUX
+
+           MOVE FUNCTION CURRENT-DATE TO WS-FECHA-SIS.
+      *
+      *** LEECTURA
+      *
+           READ FICH-ENT INTO FECHA
+                 AT END
+                 SET FIN-FICHERO TO TRUE.
+
+           PERFORM 1050-LEER-REGISTRO
+
+      *D*
+      *    DISPLAY 'SW-FIN-FICHERO ' SW-FIN-FICHERO
+      *F*
+           IF SW-FIN-FICHERO EQUAL 'N'
+               PERFORM UNTIL FIN-FICHERO
+
+                 IF DE-CENTIDAD-AUX NOT EQUAL WS-ANT-CENTIDAD
+                    MOVE DE-CENTIDAD-AUX TO WS-ANT-CENTIDAD
+YACO                SET SW-NO-NEGATIVO TO TRUE
+                    IF SW-SI-PRIMERA-VEZ
+                       SET SW-NO-PRIMERA-VEZ TO TRUE
+                       PERFORM 8100-CABECERA-BUZON
+                    ELSE
+                       PERFORM 2300-MOVER-TOTALES
+                       PERFORM 2400-IMPRIMIR-TOTALES
+                       PERFORM 8100-CABECERA-BUZON
+                       INITIALIZE TOTALES LIN-DETALLE-TOTAL
+                    END-IF
+                 END-IF
+
+                     IF DE-CAP-RTO-INT-AUX < 0
+                        SET SW-SI-NEGATIVO TO TRUE
+                     END-IF
+YACO
+YACO                 IF DE-CAP-RTO-INT-AUX > 0
+YACO                    AND SW-SI-NEGATIVO
+YACO                    PERFORM 2300-MOVER-TOTALES
+YACO                    PERFORM 2400-IMPRIMIR-TOTALES
+YACO                 ELSE
+YACO                    PERFORM 2200-ESCRIBIR-LINEA
+YACO                 END-IF
+
+                 PERFORM 1050-LEER-REGISTRO
+               END-PERFORM
+
+               PERFORM 2300-MOVER-TOTALES
+               PERFORM 2400-IMPRIMIR-TOTALES
+               MOVE 0 TO CT-LINEA
+
+           END-IF
+              .
+      ***************************************************************
+       2200-ESCRIBIR-LINEA.
+      ***************************************************************
+
+      *
+      **** IMPRESION DE LOS VALORES
+      *
+
+              MOVE LIN-DETALLE-AUX(3:56)  TO LIN-DETALLE
+              MOVE DE-CAP-RTO-INT-AUX     TO DE-CAP-RTO-INT
+              MOVE DE-CAP-RTO-NET-AUX     TO DE-CAP-RTO-NET
+              MOVE DE-CAP-RTO-AUX         TO DE-CAP-RTO
+              MOVE DE-COM1-RTO-INT-AUX    TO DE-COM1-RTO-INT
+              MOVE DE-COM1-RTO-NET-AUX    TO DE-COM1-RTO-NET
+              MOVE DE-COM1-RTO-AUX        TO DE-COM1-RTO
+              MOVE DE-COM2-RTO-INT-AUX    TO DE-COM2-RTO-INT
+              MOVE DE-COM2-RTO-NET-AUX    TO DE-COM2-RTO-NET
+              MOVE DE-COM2-RTO-AUX        TO DE-COM2-RTO
+
+              IF CT-LINEA EQUAL 0 OR CT-LINEA > 58
+                 MOVE 0 TO CT-LINEA
+                 PERFORM 2210-IMPRIMIR-INTRO
+                 PERFORM 2220-IMPRIMIR-TITULOS-1
+                 PERFORM 2240-IMPRIMIR-TITULOS-3
+                 PERFORM 2230-IMPRIMIR-TITULOS-2
+                 ADD 1 TO CT-PAGE
+              END-IF
+
+      * IMPRIMIR-LINEA-DETALLE.
+              MOVE LIN-DETALLE TO RIMPRESO
+              WRITE RIMPRESO AFTER ADVANCING 1 LINE
+              ADD   1  TO  CT-LINEA
+              PERFORM 2250-SUMA-TOTALES
+               .
+
+       2210-IMPRIMIR-INTRO.
+      *********************
+           MOVE CT-PAGE TO CB-INTRO-PAG.
+
+           MOVE WS-ANO TO CB-INTRO-ANO
+           MOVE WS-MES TO CB-INTRO-MES
+           MOVE WS-DIA TO CB-INTRO-DIA
+
+           MOVE CAB-INTRO   TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+           MOVE CAB-INTRO-1 TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+           MOVE CAB-INTRO-2 TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+           MOVE LINEA-BLANCO TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+
+       2220-IMPRIMIR-TITULOS-1.
+      *****************
+           MOVE DA TO CAB-DA
+           MOVE DM TO CAB-DM
+           MOVE DD TO CAB-DD
+
+           MOVE HA TO CAB-HA
+           MOVE HM TO CAB-HM
+           MOVE HD TO CAB-HD
+
+           MOVE CAB-TITULO-1 TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+           MOVE CAB-TITULO-1-SUBRAYADO TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+           MOVE CAB-TITULO-1-SUBTITULO TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+           MOVE LINEA-BLANCO TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+
+       2230-IMPRIMIR-TITULOS-2.
+      *****************
+           MOVE CAB-TITULO-2 TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+           MOVE CAB-TITULO-2-SUBRAYADO TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+
+       2240-IMPRIMIR-TITULOS-3.
+      *****************
+           MOVE CAB-TITULO-3 TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+           MOVE CAB-TITULO-3-SUBRAYADO TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+
+        2250-SUMA-TOTALES.
+      **********************
+      * SUMA PARA LOS TOTALES
+           ADD   1  TO  DE-TOTAL-POLIZA
+            ADD DE-CAP-RTO-INT-AUX             TO CAP-INT-TO
+            ADD DE-CAP-RTO-NET-AUX             TO CAP-NET-TO
+            ADD DE-CAP-RTO-AUX                 TO CAP-RET-TO
+            ADD DE-COM1-RTO-INT-AUX             TO COM1-INT-TO
+            ADD DE-COM1-RTO-NET-AUX             TO COM1-NET-TO
+            ADD DE-COM1-RTO-AUX                 TO COM1-RET-TO
+            ADD DE-COM2-RTO-INT-AUX             TO COM2-INT-TO
+            ADD DE-COM2-RTO-NET-AUX             TO COM2-NET-TO
+            ADD DE-COM2-RTO-AUX                 TO COM2-RET-TO
+              .
+
+       2300-MOVER-TOTALES.
+      ********************
+      * MOVEMOS LOS TOTALES A LAS MASCARAS
+           MOVE CAP-INT-TO     TO DE-CAP-RTO-INT-TO
+           MOVE CAP-NET-TO     TO DE-CAP-RTO-NET-TO
+           MOVE CAP-RET-TO     TO DE-CAP-RTO-TO
+
+           MOVE COM1-INT-TO    TO DE-COM1-RTO-INT-TO
+           MOVE COM1-NET-TO    TO DE-COM1-RTO-NET-TO
+           MOVE COM1-RET-TO    TO DE-COM1-RTO-TO
+
+           MOVE COM2-INT-TO    TO DE-COM2-RTO-INT-TO
+           MOVE COM2-NET-TO    TO DE-COM2-RTO-NET-TO
+           MOVE COM2-RET-TO    TO DE-COM2-RTO-TO
+              .
+
+       2400-IMPRIMIR-TOTALES.
+      *****************
+           MOVE LIN-DETALLE-TOTAL-SUBRAYADO TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+           MOVE LIN-DETALLE-TOTAL TO RIMPRESO.
+           WRITE RIMPRESO AFTER ADVANCING 1 LINES.
+           ADD 1 TO CT-LINEA.
+
+      * CALCULO PARA PASAR LA PAGINA
+           SUBTRACT CT-LINEA FROM 59 GIVING AUX-LINEA
+           INITIALIZE XN-K
+           PERFORM VARYING XN-K FROM 1 BY 1
+                    UNTIL XN-K > AUX-LINEA
+
+                         MOVE LINEA-BLANCO TO RIMPRESO
+                         WRITE RIMPRESO AFTER ADVANCING 1 LINES
+                         ADD 1 TO CT-LINEA
+           END-PERFORM
+            .
+
+      ******************************************************************
+       8100-CABECERA-BUZON.
+      ******************************************************************
+           INITIALIZE CAB-0
+
+           MOVE WS-ANT-CENTIDAD(1:2) TO CB-COMPANIA.
+           MOVE NOMBRE-CADENA        TO CB-CADENA.
+           MOVE 'FICHERO RENDIMIENTO POR CAPITAL'
+             TO CB-FICHERO.
+
+           MOVE WS-BUZON          TO CB-BUZON.
+
+           WRITE RIMPRESO FROM CAB-0
+MMC                              AFTER ADVANCING PAGE.
+      ******************************************************************
+        8888-ROLLBACK.
+      ******************************************************************
+
+           INITIALIZE WS-X001M001
+           MOVE 'R'   TO X001M001-CACCION
+
+           CALL WS-B001M001 USING WS-X001M001.
+
+      *****************************************************************
+        8889-COMMIT.
+      *****************************************************************
+           INITIALIZE WS-X001M001
+           MOVE 'C' TO X001M001-CACCION
+
+           CALL WS-B001M001 USING WS-X001M001.
+
+      ***************************************************************
+       10000-FIN.
+      ***************************************************************
+
+           IF NO-ROLLBACK
+              PERFORM 8888-ROLLBACK
+           ELSE
+              PERFORM 8889-COMMIT
+           END-IF
+
+           GOBACK.

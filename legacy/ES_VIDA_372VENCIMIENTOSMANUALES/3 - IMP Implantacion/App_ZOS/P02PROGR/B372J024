@@ -1,0 +1,948 @@
+      ******************************************************************00010000
+       IDENTIFICATION DIVISION.                                         00020000
+       PROGRAM-ID. B372J024.                                            00030000
+      ******************************************************************00040000
+      **INV: A372VENM                                                   00050000
+      ******************************************************************00060000
+      *     BUSQUEDA DE KPERSONA EN LOS VENCIMIENTOS IDMS              *00070000
+      ******************************************************************00080000
+      *BREVE DESCRIPCION DEL PROGRAMA :                                *00090000
+      *     A PARTIR DE UN FICHERO DE ENTRADA, REALIZAR LLAMADAS A     *00100000
+      *     MODULOS DE PERSONAS PARA RECOGER EL KPERSONA               *00110000
+      *                                                                *00120000
+      *     COPIA DEL B362J024, ADAPTADA PARA LA MIGRACION VENCIMIENTOS*00130000
+      *     IDMS HASTA VENCIMIENTOS DB2.                               *00140000
+      ***************************************************************** 00150000
+      *ENVIRONMENT DIVISION                                            *00160000
+      ******************************************************************00170000
+       ENVIRONMENT DIVISION.                                            00180000
+       CONFIGURATION SECTION.                                           00190000
+       SOURCE-COMPUTER.                                                 00200000
+           IBM-PC.                                                      00210000
+       OBJECT-COMPUTER.                                                 00220000
+           IBM-PC.                                                      00230000
+       SPECIAL-NAMES.                                                   00240000
+           DECIMAL-POINT IS COMMA.                                      00250000
+       INPUT-OUTPUT SECTION.                                            00260000
+       FILE-CONTROL.                                                    00270000
+      * DECLARACION FICHERO ENTRADA (DATOS DE IDMS)                     00280000
+           SELECT SYS001                                                00290000
+           ASSIGN TO SYS001                                             00300000
+           ORGANIZATION IS SEQUENTIAL                                   00310000
+           ACCESS MODE IS SEQUENTIAL.                                   00320000
+      * DECLARACION FICHERO SALIDA (INCIDENCIAS)                        00330000
+           SELECT SYS002                                                00340000
+           ASSIGN TO SYS002                                             00350000
+           ORGANIZATION IS SEQUENTIAL                                   00360000
+           ACCESS MODE IS SEQUENTIAL.                                   00370000
+      * DECLARACION FICHERO SALIDA  (DATOS DE IDMS CON EL KPERSONA)     00380000
+           SELECT SYS003                                                00390000
+           ASSIGN TO SYS003                                             00400000
+           ORGANIZATION IS SEQUENTIAL                                   00410000
+           ACCESS MODE IS SEQUENTIAL.                                   00420000
+                                                                        00430000
+      ******************************************************************00440000
+       DATA DIVISION.                                                   00450000
+      ******************************************************************00460000
+       FILE SECTION.                                                    00470000
+                                                                        00480000
+      * DECLARACION ESTRUCTURA FICHEROS                                 00490000
+       FD SYS001                                                        00500000
+             BLOCK CONTAINS 0 RECORDS                                   00510000
+             RECORDING MODE IS F                                        00520000
+             LABEL RECORDS ARE STANDARD.                                00530000
+       01 REG001           PIC X(2100).                                 00540000
+      *                                                                 00550000
+       FD SYS002                                                        00560000
+             BLOCK CONTAINS 0 RECORDS                                   00570000
+             RECORDING MODE IS F                                        00580000
+             LABEL RECORDS ARE STANDARD.                                00590000
+       01 REG002           PIC X(284).                                  00600000
+      *                                                                 00610000
+      * DECLARACION ESTRUCTURA FICHEROS                                 00620000
+       FD SYS003                                                        00630000
+             BLOCK CONTAINS 0 RECORDS                                   00640000
+             RECORDING MODE IS F                                        00650000
+             LABEL RECORDS ARE STANDARD.                                00660000
+       01 REG003           PIC X(2100).                                 00670000
+      *                                                                 00680000
+      ******************************************************************00690000
+      *                  WORKING-STORAGE SECTION                       *00700000
+      ******************************************************************00710000
+       WORKING-STORAGE SECTION.                                         00720000
+       01 INDICES.                                                      00730000
+          03 IND-A   PIC 99 VALUE 00.                                   00740000
+          03 IND-D   PIC 99 VALUE 00.                                   00750000
+                                                                        00760000
+       01 SW-SWITCH.                                                    00770000
+        05 SW-FIN-SYS001                PIC X VALUE SPACES.             00780000
+          88 SI-FIN-SYS001              VALUE 'S'.                      00790000
+          88 NO-FIN-SYS001              VALUE 'N'.                      00800000
+        05 SW-CORRECTO                  PIC X VALUE SPACES.             00810000
+          88 SI-OK                      VALUE 'S'.                      00820000
+          88 NO-OK                      VALUE 'N'.                      00830000
+          88 BL-OK                      VALUE ' '.                      00840000
+        05 SW-DNI                       PIC X VALUE SPACES.             00850000
+          88 DNI-OK                     VALUE 'S'.                      00860000
+          88 DNI-NO-OK                  VALUE 'N'.                      00870000
+                                                                        00880000
+       01 WS-BANCO.                                                     00890000
+          07 WS-BAN                PIC X(4)   VALUE SPACES.             00900000
+          07 WS-SUC                PIC X(4)   VALUE SPACES.             00910000
+                                                                        00920000
+       01 WS-TFNO-IDMS PIC X(10) VALUE SPACES.                          00930000
+       01 WS-TFNO-DB2  PIC X(11) VALUE SPACES.                          00940000
+       01 WS-FSYSTEMA.                                                  00950000
+          07 WS-FASYSTEMA          PIC X(4)   VALUE SPACES.             00960000
+          07 WS-FMSYSTEMA          PIC X(2)   VALUE SPACES.             00970000
+          07 WS-FDSYSTEMA          PIC X(2)   VALUE SPACES.             00980000
+                                                                        00990000
+       01 CT-ACUMULADORES.                                              01000000
+          05 CT-INCIDENCIA              PIC 9(09)  VALUE ZEROS.         01010000
+          05 CT-LEIDOS                  PIC 9(09)  VALUE ZEROS.         01020000
+          05 CT-GRABADOS                PIC 9(09)  VALUE ZEROS.         01030000
+                                                                        01040000
+      * CONTADORES DE GRABADOS X MODO Y ESTADO                          01050000
+          05 CT-A1-AN                   PIC 9(09)  VALUE ZEROS.         01060000
+          05 CT-A1-RT                   PIC 9(09)  VALUE ZEROS.         01070000
+          05 CT-A1-VI                   PIC 9(09)  VALUE ZEROS.         01080000
+                                                                        01090000
+       01 WS-ACUMULADORES-ED.                                           01100000
+                                                                        01110000
+          05 WS-LEIDOS                   PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.  01120000
+          05 WS-GRABADOS                 PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.  01130000
+          05 WS-INCIDENCIA               PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.  01140000
+          05 WS-A1                       PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.  01150000
+          05 WS-B0                       PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.  01160000
+          05 WS-B1                       PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.  01170000
+          05 WS-B2                       PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.  01180000
+          05 WS-M0                       PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.  01190000
+          05 WS-M1                       PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.  01200000
+          05 WS-MX                       PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.  01210000
+                                                                        01220000
+          05 WS-A1-AN                   PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.   01230000
+          05 WS-A1-RT                   PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.   01240000
+          05 WS-A1-VI                   PIC ZZZ.ZZZ.ZZ9 VALUE SPACES.   01250000
+                                                                        01260000
+       01 WS-VARIABLES-AUX.                                             01270000
+          05 WS-KPERSONA                PIC 9(9)        VALUE ZEROES.   01280000
+          05 WS-KDOMICILIO              PIC 9(09)       VALUE ZEROES.   01290000
+          05 WS-SBANCARIO               PIC X(01)       VALUE SPACES.   01300000
+          05 WS-CFORMAPAGO              PIC X(01)       VALUE SPACES.   01310000
+          05 WS-CTIPODOM-PR             PIC X(01)       VALUE SPACES.   01320000
+                                                                        01330000
+      * FICHERO DE ENTRADA                                              01340000
+      *****************************************************             01350000
+      **                                                 **             01360000
+      **   COPY DEL FORMATO DEL FICHERO DE               **             01370000
+      **        CARGA DE VENCIMIENTOS IDMS INDIVIDUALES  **             01380000
+      **        LONGITUD = 2100                          **             01390000
+      **                                                 **             01400000
+      *****************************************************             01410000
+       01 WS-REG001.                                                    01420000
+         03 WS-R001-SALIDA.                                             01430000
+      *    PESTAÑA GENERAL                                              01440000
+            05 WS-R001-ANIO              PIC S9(4)V USAGE COMP-3.       01450000
+            05 WS-R001-EXPEDIENTE        PIC S9(10)V USAGE COMP-3.      01460000
+            05 WS-R001-KRAMO             PIC X(3)   VALUE SPACES.       01470000
+            05 WS-R001-KPOLIZA           PIC X(10)  VALUE SPACES.       01480000
+            05 WS-R001-KSUBPOLIZA        PIC S9(4)V USAGE COMP-3.       01490000
+            05 WS-R001-KCERTIFICADO      PIC S9(6)V USAGE COMP-3.       01500000
+            05 WS-R001-CCANALCAMP        PIC X(2)   VALUE SPACES.       01510000
+            05 WS-R001-CENTIDAD          PIC X(2)   VALUE SPACES.       01520000
+            05 WS-R001-ANIOFISCAL        PIC S9(4)V USAGE COMP-3.       01530000
+            05 WS-R001-ANIOPOL           PIC X(4)   VALUE SPACES.       01540000
+            05 WS-R001-KMODALIDAD        PIC S9(5)V USAGE COMP-3.       01550000
+            05 WS-R001-SITUACION         PIC X(20)  VALUE SPACES.       01560000
+      *     05 WS-R001-CCAUSAANUL        PIC X(2)   VALUE SPACES.       01570000
+            05 WS-R001-FECEFECTO         PIC X(8)   VALUE SPACES.       01580000
+            05 WS-R001-FECANULA          PIC X(8)   VALUE SPACES.       01590000
+            05 WS-R001-FECMODIFICA       PIC X(8)   VALUE SPACES.       01600000
+            05 WS-R001-FECEMISION        PIC X(8)   VALUE SPACES.       01610000
+            05 WS-R001-KDURACION         PIC S9(2)V USAGE COMP-3.       01620000
+            05 WS-R001-CCARTERA          PIC X(3)   VALUE SPACES.       01630000
+            05 WS-R001-SREASEGURO        PIC X(1)   VALUE SPACES.       01640000
+            05 WS-R001-PAGOTOT           PIC X(1)   VALUE SPACES.       01650000
+            05 WS-R001-CUSUARIO          PIC X(8)   VALUE SPACES.       01660000
+            05 WS-R001-TOMADOR.                                         01670000
+               07 WS-R001-NOMBRE-TOM     PIC X(25)  VALUE SPACES.       01680000
+               07 WS-R001-APELL1-TOM     PIC X(25)  VALUE SPACES.       01690000
+               07 WS-R001-APELL2-TOM     PIC X(25)  VALUE SPACES.       01700000
+               07 WS-R001-CASEGSEXO      PIC X(01)  VALUE SPACES.       01710000
+               07 WS-R001-CASEGESTC      PIC X(01)  VALUE SPACES.       01720000
+               07 WS-R001-GTELPARASE     PIC X(10)  VALUE SPACES.       01730000
+               07 WS-R001-GTELTRAASE     PIC X(10)  VALUE SPACES.       01740000
+            05 WS-R001-REGIONAL          PIC X(2)   VALUE SPACES.       01750000
+            05 WS-R001-LUGARENVIO        PIC X(2)   VALUE SPACES.       01760000
+            05 WS-R001-KOFICINA          PIC X(4)   VALUE SPACES.       01770000
+            05 WS-R001-IPENDIENTE        PIC S9(10)V9(2) USAGE COMP-3.  01780000
+            05 WS-R001-GOBSERVACION      PIC X(255) VALUE SPACES.       01790000
+            05 WS-R001-VEN-MIGR          PIC X(1)   VALUE SPACES.       01800000
+            05 WS-R001-CTIPOLIQ          PIC X(1)   VALUE SPACES.       01810000
+            05 WS-R001-CSITULIQ          PIC X(2)   VALUE SPACES.       01820000
+      *    DATOS ECONOMICOS PRINCIPAL                                   01830000
+            05 WS-R001-DESC-PRIN         PIC X(50)  VALUE SPACES.       01840000
+            05 WS-R001-IMPCAPITAL        PIC S9(10)V9(2) USAGE COMP-3.  01850000
+            05 WS-R001-IMPBENEFICIOS     PIC S9(10)V9(2) USAGE COMP-3.  01860000
+            05 WS-R001-FECPAGOCAPITAL    PIC X(8)   VALUE SPACES.       01870000
+            05 WS-R001-IMPANTICIPO       PIC 9(10)V9(2) USAGE COMP-3.   01880000
+            05 WS-R001-IMPINTEPEND       PIC 9(10)V9(2) USAGE COMP-3.   01890000
+            05 WS-R001-FECVENCIMICAP     PIC X(8)   VALUE SPACES.       01900000
+            05 WS-R001-TIPIMPUESTCAP     PIC X(2)   VALUE SPACES.       01910000
+            05 WS-R001-EXIMIDO           PIC X(1)   VALUE SPACES.       01920000
+            05 WS-R001-FECIMPRECAP       PIC X(8)   VALUE SPACES.       01930000
+            05 WS-R001-CUSUARIO-PAGCAP   PIC X(8)   VALUE SPACES.       01940000
+            05 WS-R001-FECPAGCAPTCAP     PIC X(8)   VALUE SPACES.       01950000
+            05 WS-R001-CUSUARIO-CAPTCAP  PIC X(8)   VALUE SPACES.       01960000
+            05 WS-R001-CFORMAPAGO-CAP    PIC X(1)   VALUE SPACES.       01970000
+            05 WS-R001-NCHEQUE-CAP       PIC 9(10)  VALUE ZEROES.       01980000
+            05 WS-R001-CUENTA-CAP.                                      01990000
+               07 WS-R001-KBANCO-CAP     PIC 9(8)   VALUE ZEROES.       02000000
+               07 WS-R001-NDIGCONT-CAP   PIC X(2)   VALUE SPACES.       02010000
+               07 WS-R001-NCTABAN-CAP    PIC X(10)  VALUE SPACES.       02020000
+            05 WS-R001-REF-REINVERSION   PIC X(15)  VALUE SPACES.       02030000
+      *    DATOS ECONOMICOS IRPF PRINCIPAL                              02040000
+            05 WS-R001-DESC-IRPF-PRIN    PIC X(50)  VALUE SPACES.       02050000
+            05 WS-R001-IMPRTOINTEGRCAP   PIC S9(10)V9(2) USAGE COMP-3.  02060000
+            05 WS-R001-IMPREDPRICAP      PIC S9(10)V9(2) USAGE COMP-3.  02070000
+            05 WS-R001-IMPREDTRANCAP     PIC S9(10)V9(2) USAGE COMP-3.  02080000
+            05 WS-R001-IMPRTONETOCAP     PIC S9(10)V9(2) USAGE COMP-3.  02090000
+            05 WS-R001-PORRETCAP         PIC S9(3)V9(2) USAGE COMP-3.   02100000
+            05 WS-R001-IMPRETCAP         PIC S9(10)V9(2) USAGE COMP-3.  02110000
+            05 WS-R001-FECPAGRET         PIC X(8)   VALUE SPACES.       02120000
+            05 WS-R001-IMPCOMPENSATORIA-CAP                             02130000
+                                         PIC S9(10)V9(2) USAGE COMP-3.  02140000
+            05 WS-R001-IMPLIQCAP         PIC S9(10)V9(2) USAGE COMP-3.  02150000
+            05 WS-R001-FECBDGICAP        PIC X(8)   VALUE SPACES.       02160000
+            05 WS-R001-SBDGICAP          PIC X(1)   VALUE SPACES.       02170000
+      *    DATOS ECONOMICOS COMPLEMENTARIO 1                            02180000
+            05 WS-R001-DESC-COMP1        PIC X(50)  VALUE SPACES.       02190000
+            05 WS-R001-IMPCOMP1          PIC S9(10)V9(2) USAGE COMP-3.  02200000
+            05 WS-R001-FECPAGCOMP1       PIC X(8)   VALUE SPACES.       02210000
+            05 WS-R001-FECEMICOMP1       PIC X(8)   VALUE SPACES.       02220000
+            05 WS-R001-TIPIMPUESTCOMP1   PIC X(2)   VALUE SPACES.       02230000
+            05 WS-R001-FECIMPRECOMP1     PIC X(8)   VALUE SPACES.       02240000
+            05 WS-R001-CUSUARIO-PAGCOMP1 PIC X(8)   VALUE SPACES.       02250000
+            05 WS-R001-FECPAGCAPTCOMP1   PIC X(8)   VALUE SPACES.       02260000
+            05 WS-R001-CUSUARIO-CAPTCOMP1 PIC X(8)   VALUE SPACES.      02270000
+            05 WS-R001-CFORMAPAGO-COMP1  PIC X(1)   VALUE SPACES.       02280000
+            05 WS-R001-NCHEQUE-COMP1     PIC 9(10)  VALUE ZEROES.       02290000
+            05 WS-R001-CUENTA-COMP1.                                    02300000
+               07 WS-R001-KBANCO-COMP1   PIC 9(8)   VALUE ZEROES.       02310000
+               07 WS-R001-NDIGCONT-COMP1 PIC X(2)   VALUE SPACES.       02320000
+               07 WS-R001-NCTABAN-COMP1  PIC X(10)  VALUE SPACES.       02330000
+      *    DATOS ECONOMICOS IRPF COMPLEMENTARIA                         02340000
+            05 WS-R001-DESC-IRPF-COMP1  PIC X(50)  VALUE SPACES.        02350000
+            05 WS-R001-IMPRTOINTCOMP1   PIC S9(10)V9(2) USAGE COMP-3.   02360000
+            05 WS-R001-IMPREDPRICOMP1   PIC S9(10)V9(2) USAGE COMP-3.   02370000
+            05 WS-R001-IREDTRANCOMP1    PIC S9(10)V9(2) USAGE COMP-3.   02380000
+            05 WS-R001-IRTONETCOMP1     PIC S9(10)V9(2) USAGE COMP-3.   02390000
+            05 WS-R001-PORRETCOMP1      PIC S9(3)V9(2) USAGE COMP-3.    02400000
+            05 WS-R001-IRETCOMP1        PIC S9(10)V9(2) USAGE COMP-3.   02410000
+            05 WS-R001-FECPAGRETCOM1    PIC X(8)   VALUE SPACES.        02420000
+            05 WS-R001-IMPCOMPENSATORIA-COMP1                           02430000
+                                        PIC S9(10)V9(2) USAGE COMP-3.   02440000
+            05 WS-R001-ILIQCOMP1        PIC S9(10)V9(2) USAGE COMP-3.   02450000
+            05 WS-R001-FECBDGICOMP1     PIC X(8)   VALUE SPACES.        02460000
+            05 WS-R001-SBDGICOMP1       PIC X(1)   VALUE SPACES.        02470000
+      *    DATOS ECONOMICOS COMPLEMENTARIO 2                            02480000
+            05 WS-R001-DESC-COMP2        PIC X(50)  VALUE SPACES.       02490000
+            05 WS-R001-IMPCOMP2          PIC S9(10)V9(2) USAGE COMP-3.  02500000
+            05 WS-R001-FECPAGCOMP2       PIC X(8)   VALUE SPACES.       02510000
+            05 WS-R001-FECEMICOMP2       PIC X(8)   VALUE SPACES.       02520000
+            05 WS-R001-TIPIMPUESTCOMP2   PIC X(2)   VALUE SPACES.       02530000
+            05 WS-R001-FECIMPRECOMP2     PIC X(8)   VALUE SPACES.       02540000
+            05 WS-R001-CUSUARIO-PAGCOMP2 PIC X(8)   VALUE SPACES.       02550000
+            05 WS-R001-FECPAGCAPTCOMP2   PIC X(8)   VALUE SPACES.       02560000
+            05 WS-R001-CUSUARIO-CAPTCOMP2 PIC X(8)   VALUE SPACES.      02570000
+            05 WS-R001-CFORMAPAGO-COMP2  PIC X(1)   VALUE SPACES.       02580000
+            05 WS-R001-NCHEQUE-COMP2     PIC 9(10)  VALUE ZEROES.       02590000
+            05 WS-R001-CUENTA-COMP2.                                    02600000
+               07 WS-R001-KBANCO-COMP2   PIC 9(8)   VALUE ZEROES.       02610000
+               07 WS-R001-NDIGCONT-COMP2 PIC X(2)   VALUE SPACES.       02620000
+               07 WS-R001-NCTABAN-COMP2  PIC X(10)  VALUE SPACES.       02630000
+      *    DATOS ECONOMICOS IRPF COMPLEMENTARIA                         02640000
+            05 WS-R001-DESC-IRPF-COMP2  PIC X(50)  VALUE SPACES.        02650000
+            05 WS-R001-IMPRTOINTCOMP2   PIC S9(10)V9(2) USAGE COMP-3.   02660000
+            05 WS-R001-IMPREDPRICOMP2   PIC S9(10)V9(2) USAGE COMP-3.   02670000
+            05 WS-R001-IREDTRANCOMP2    PIC S9(10)V9(2) USAGE COMP-3.   02680000
+            05 WS-R001-IRTONETCOMP2     PIC S9(10)V9(2) USAGE COMP-3.   02690000
+            05 WS-R001-PORRETCOMP2      PIC S9(3)V9(2) USAGE COMP-3.    02700000
+            05 WS-R001-IRETCOMP2        PIC S9(10)V9(2) USAGE COMP-3.   02710000
+            05 WS-R001-FECPAGRETCOM2    PIC X(8)   VALUE SPACES.        02720000
+            05 WS-R001-IMPCOMPENSATORIA-COMP2                           02730000
+                                        PIC S9(10)V9(2) USAGE COMP-3.   02740000
+            05 WS-R001-ILIQCOMP2        PIC S9(10)V9(2) USAGE COMP-3.   02750000
+            05 WS-R001-FECBDGICOMP2     PIC X(8)   VALUE SPACES.        02760000
+            05 WS-R001-SBDGICOMP2       PIC X(1)   VALUE SPACES.        02770000
+      *    DATOS PRIMER BENEFICIARIO                                    02780000
+            05 WS-R001-NIF1             PIC X(10)  VALUE SPACES.        02790000
+            05 WS-R001-KPERSONA1        PIC S9(9)V USAGE COMP-3.        02800000
+            05 WS-R001-NOMBRE1          PIC X(150) VALUE SPACES.        02810000
+            05 WS-R001-PRIMER-APELL1    PIC X(30)  VALUE SPACES.        02820000
+            05 WS-R001-SEGUNDO-APELL1   PIC X(30)  VALUE SPACES.        02830000
+            05 WS-R001-CTIPOPERS1       PIC X(1)   VALUE SPACES.        02840000
+            05 WS-R001-SRESIDENTE1      PIC X(1)   VALUE SPACES.        02850000
+            05 WS-R001-KDOMICILIO1      PIC S9(9)V USAGE COMP-3.        02860000
+            05 WS-R001-KDOMCOM1         PIC S9(9)V USAGE COMP-3.        02870000
+            05 WS-R001-DOMICILIO1.                                      02880000
+               07 WS-R001-GDOMICILIO1   PIC X(75)  VALUE SPACES.        02890000
+               07 WS-R001-GNUMVIA       PIC X(10)  VALUE SPACES.        02900000
+               07 WS-R001-GDOMIRESTO    PIC X(150) VALUE SPACES.        02910000
+            05 WS-R001-CCODPOST1        PIC X(5)   VALUE SPACES.        02920000
+            05 WS-R001-GPOBLACION1      PIC X(60)  VALUE SPACES.        02930000
+            05 WS-R001-CPROVINCIA1      PIC X(10)  VALUE SPACES.        02940000
+            05 WS-R001-CPAIS1           PIC X(10)  VALUE SPACES.        02950000
+            05 WS-R001-FNACIMIENTO1     PIC X(8)   VALUE SPACES.        02960000
+            05 WS-R001-NIF-REPLEGAL1    PIC X(10)  VALUE SPACES.        02970000
+            05 WS-R001-FATCA.                                           02980000
+               07 WS-R001-CNACIONALIDAD1     PIC X(3) VALUE SPACES.     02990000
+               07 WS-R001-CNACIONALIDAD2     PIC X(3) VALUE SPACES.     03000000
+               07 WS-R001-CPAISNACIMIENTO    PIC X(3) VALUE SPACES.     03010000
+               07 WS-R001-CPAISOBLIGACIONES1 PIC X(3) VALUE SPACES.     03020000
+               07 WS-R001-CPAISOBLIGACIONES2 PIC X(3) VALUE SPACES.     03030000
+               07 WS-R001-CPAISOBLIGACIONES3 PIC X(3) VALUE SPACES.     03040000
+               07 WS-R001-SPAISRESIDENCIA    PIC X(3) VALUE SPACES.     03050000
+               07 WS-R001-GPREFIJO-PAR       PIC X(3) VALUE SPACES.     03060000
+               07 WS-R001-GPREFIJO-TRA       PIC X(3) VALUE SPACES.     03070000
+               07 WS-R001-CPRP               PIC X(1) VALUE SPACES.     03080000
+      *    DATOS FISCALES PRIMER BENEFICIARIO                           03090000
+            05 WS-R001-DISCAPACITADO1   PIC X(1)   VALUE SPACES.        03100000
+            05 WS-R001-PREST-VIVIENDA1  PIC X(2)   VALUE SPACES.        03110000
+            05 WS-R001-SITUACION-FAMI1  PIC X(20)  VALUE SPACES.        03120000
+            05 WS-R001-NIF-CONYUGE1     PIC X(10)  VALUE SPACES.        03130000
+            05 WS-R001-IMPCOMPENSATORIA1 PIC S9(07)V9(2) USAGE COMP-3.  03140000
+            05 WS-R001-IMPALIMENHIJOS1  PIC S9(07)V9(2) USAGE COMP-3.   03150000
+      *                                                                 03160000
+            05 WS-R001-FILLER           PIC X(165) VALUE SPACES.        03170000
+      *                                                                 03180000
+       01 WS-R001-TIPODOC          PIC X(10)   VALUE SPACES.            03190000
+                                                                        03200000
+                                                                        03210000
+      * FICHERO DE SALIDA                                               03220000
+      *************************************************                 03230000
+      **                                             **                 03240000
+      **   COPY DEL FORMATO DEL FICHERO DE           **                 03250000
+      **        INDICENCIAS                          **                 03260000
+      **                                             **                 03270000
+      *************************************************                 03280000
+       01 WS-REG002.                                                    03290000
+          09 R002-DAT-INCIDENCIA.                                       03300000
+      *     PROGRAMA QUE FINALMENTE ESCRIBE LA INCIDENCIA EN EL FICHERO 03310000
+            11 R002-CPROBATCH              PIC X(08).                   03320000
+      *     PROGRAMA QUE DETECTA LA INCIDENCIA                          03330000
+            11 R002-CPROGSERV           PIC X(08).                      03340000
+      *     CODIGO DE ERROR DEL SERVICIO                                03350000
+            11 R002-CRETORNO            PIC X(05).                      03360000
+      *     TIPO DE RETORNO: I - INCIDENCIA CONTROLADA                  03370000
+      *                      E - ERROR DESCONTROLADO                    03380000
+            11 R002-CTIPORETORNO        PIC X(01).                      03390000
+      *     NUMERO DE PáRRAFO DONDE SE PRODUCE LA INCIDENCIA            03400000
+            11 R002-NPARRAFO            PIC X(10).                      03410000
+      *     SQLCODE                                                     03420000
+            11 R002-SQLCODE             PIC 9(05).                      03430000
+      *     CODIGO DE INCIDENCIA (PROPIO DEL SERVICIO)                  03440000
+            11 R002-CINCIDENCIA         PIC X(05).                      03450000
+      *     DESCRIPCIóN DE LA INCIDENCIA                                03460000
+            11 R002-GINCIDENCIA         PIC X(80).                      03470000
+      *     ALMACENAR RESTO DE INFORMACIóN                              03480000
+            11 R002-GDATOS              PIC X(100).                     03490000
+      *   CLAVE DE COMUNICACIóN:                                        03500000
+          09 R002-CLAVE.                                                03510000
+      *     AÑO                                                         03520000
+            11 R002-ANIO                PIC 9(04).                      03530000
+      *     Nº EXPEDIENTE                                               03540000
+            11 R002-EXPEDIENTE          PIC 9(10).                      03550000
+      *     Nº POLIZA                                                   03560000
+            11 R002-KPOLIZA             PIC X(10).                      03570000
+      *     Nº SUBPOLIZA                                                03580000
+            11 R002-KSUBPOLIZA          PIC X(04).                      03590000
+      *     Nº CERTIFICADO                                              03600000
+            11 R002-KCERTIFICADO        PIC 9(06).                      03610000
+      *     RESTO FILLER                                                03620000
+            11 R002-RESTO               PIC X(28).                      03630000
+                                                                        03640000
+      * FICHERO DE SALIDA                                               03650000
+      *****************************************************             03660000
+      **                                                 **             03670000
+      **   COPY DEL FORMATO DEL FICHERO DE               **             03680000
+      **        CARGA DE VENCIMIENTOS IDMS INDIVIDUALES  **             03690000
+      **        LONGITUD = 2100                          **             03700000
+      **                                                 **             03710000
+      *****************************************************             03720000
+       01 WS-REG003.                                                    03730000
+         03 WS-R003-SALIDA.                                             03740000
+      *    PESTAÑA GENERAL                                              03750000
+            05 WS-R003-ANIO              PIC S9(4)V USAGE COMP-3.       03760000
+            05 WS-R003-EXPEDIENTE        PIC S9(10)V USAGE COMP-3.      03770000
+            05 WS-R003-KRAMO             PIC X(3)   VALUE SPACES.       03780000
+            05 WS-R003-KPOLIZA           PIC X(10)  VALUE SPACES.       03790000
+            05 WS-R003-KSUBPOLIZA        PIC S9(4)V USAGE COMP-3.       03800000
+            05 WS-R003-KCERTIFICADO      PIC S9(6)V USAGE COMP-3.       03810000
+            05 WS-R003-CCANALCAMP        PIC X(2)   VALUE SPACES.       03820000
+            05 WS-R003-CENTIDAD          PIC X(2)   VALUE SPACES.       03830000
+            05 WS-R003-ANIOFISCAL        PIC S9(4)V USAGE COMP-3.       03840000
+            05 WS-R003-ANIOPOL           PIC X(4)   VALUE SPACES.       03850000
+            05 WS-R003-KMODALIDAD        PIC S9(5)V USAGE COMP-3.       03860000
+            05 WS-R003-SITUACION         PIC X(20)  VALUE SPACES.       03870000
+      *     05 WS-R003-CCAUSAANUL        PIC X(2)   VALUE SPACES.       03880000
+            05 WS-R003-FECEFECTO         PIC X(8)   VALUE SPACES.       03890000
+            05 WS-R003-FECANULA          PIC X(8)   VALUE SPACES.       03900000
+            05 WS-R003-FECMODIFICA       PIC X(8)   VALUE SPACES.       03910000
+            05 WS-R003-FECEMISION        PIC X(8)   VALUE SPACES.       03920000
+            05 WS-R003-KDURACION         PIC S9(2)V USAGE COMP-3.       03930000
+            05 WS-R003-CCARTERA          PIC X(3)   VALUE SPACES.       03940000
+            05 WS-R003-SREASEGURO        PIC X(1)   VALUE SPACES.       03950000
+            05 WS-R003-PAGOTOT           PIC X(1)   VALUE SPACES.       03960000
+            05 WS-R003-CUSUARIO          PIC X(8)   VALUE SPACES.       03970000
+            05 WS-R003-TOMADOR.                                         03980000
+               07 WS-R003-NOMBRE-TOM     PIC X(25)  VALUE SPACES.       03990000
+               07 WS-R003-APELL1-TOM     PIC X(25)  VALUE SPACES.       04000000
+               07 WS-R003-APELL2-TOM     PIC X(25)  VALUE SPACES.       04010000
+               07 WS-R003-CASEGSEXO      PIC X(01)  VALUE SPACES.       04020000
+               07 WS-R003-CASEGESTC      PIC X(01)  VALUE SPACES.       04030000
+               07 WS-R003-GTELPARASE     PIC X(10)  VALUE SPACES.       04040000
+               07 WS-R003-GTELTRAASE     PIC X(10)  VALUE SPACES.       04050000
+            05 WS-R003-REGIONAL          PIC X(2)   VALUE SPACES.       04060000
+            05 WS-R003-LUGARENVIO        PIC X(2)   VALUE SPACES.       04070000
+            05 WS-R003-KOFICINA          PIC X(4)   VALUE SPACES.       04080000
+            05 WS-R003-IPENDIENTE        PIC S9(10)V9(2) USAGE COMP-3.  04090000
+            05 WS-R003-GOBSERVACION      PIC X(255) VALUE SPACES.       04100000
+            05 WS-R003-VEN-MIGR          PIC X(1)   VALUE SPACES.       04110000
+            05 WS-R003-CTIPOLIQ          PIC X(1)   VALUE SPACES.       04120000
+            05 WS-R003-CSITULIQ          PIC X(2)   VALUE SPACES.       04130000
+      *    DATOS ECONOMICOS PRINCIPAL                                   04140000
+            05 WS-R003-DESC-PRIN         PIC X(50)  VALUE SPACES.       04150000
+            05 WS-R003-IMPCAPITAL        PIC S9(10)V9(2) USAGE COMP-3.  04160000
+            05 WS-R003-IMPBENEFICIOS     PIC S9(10)V9(2) USAGE COMP-3.  04170000
+            05 WS-R003-FECPAGOCAPITAL    PIC X(8)   VALUE SPACES.       04180000
+            05 WS-R003-IMPANTICIPO       PIC 9(10)V9(2) USAGE COMP-3.   04190000
+            05 WS-R003-IMPINTEPEND       PIC 9(10)V9(2) USAGE COMP-3.   04200000
+            05 WS-R003-FECVENCIMICAP     PIC X(8)   VALUE SPACES.       04210000
+            05 WS-R003-TIPIMPUESTCAP     PIC X(2)   VALUE SPACES.       04220000
+            05 WS-R003-EXIMIDO           PIC X(1)   VALUE SPACES.       04230000
+            05 WS-R003-FECIMPRECAP       PIC X(8)   VALUE SPACES.       04240000
+            05 WS-R003-CUSUARIO-PAGCAP   PIC X(8)   VALUE SPACES.       04250000
+            05 WS-R003-FECPAGCAPTCAP     PIC X(8)   VALUE SPACES.       04260000
+            05 WS-R003-CUSUARIO-CAPTCAP  PIC X(8)   VALUE SPACES.       04270000
+            05 WS-R003-CFORMAPAGO-CAP    PIC X(1)   VALUE SPACES.       04280000
+            05 WS-R003-NCHEQUE-CAP       PIC 9(10)  VALUE ZEROES.       04290000
+            05 WS-R003-CUENTA-CAP.                                      04300000
+               07 WS-R003-KBANCO-CAP     PIC 9(8)   VALUE ZEROES.       04310000
+               07 WS-R003-NDIGCONT-CAP   PIC X(2)   VALUE SPACES.       04320000
+               07 WS-R003-NCTABAN-CAP    PIC X(10)  VALUE SPACES.       04330000
+            05 WS-R003-REF-REINVERSION   PIC X(15)  VALUE SPACES.       04340000
+      *    DATOS ECONOMICOS IRPF PRINCIPAL                              04350000
+            05 WS-R003-DESC-IRPF-PRIN    PIC X(50)  VALUE SPACES.       04360000
+            05 WS-R003-IMPRTOINTEGRCAP   PIC S9(10)V9(2) USAGE COMP-3.  04370000
+            05 WS-R003-IMPREDPRICAP      PIC S9(10)V9(2) USAGE COMP-3.  04380000
+            05 WS-R003-IMPREDTRANCAP     PIC S9(10)V9(2) USAGE COMP-3.  04390000
+            05 WS-R003-IMPRTONETOCAP     PIC S9(10)V9(2) USAGE COMP-3.  04400000
+            05 WS-R003-PORRETCAP         PIC S9(3)V9(2) USAGE COMP-3.   04410000
+            05 WS-R003-IMPRETCAP         PIC S9(10)V9(2) USAGE COMP-3.  04420000
+            05 WS-R003-FECPAGRET         PIC X(8)   VALUE SPACES.       04430000
+            05 WS-R003-IMPCOMPENSATORIA-CAP                             04440000
+                                         PIC S9(10)V9(2) USAGE COMP-3.  04450000
+            05 WS-R003-IMPLIQCAP         PIC S9(10)V9(2) USAGE COMP-3.  04460000
+            05 WS-R003-FECBDGICAP        PIC X(8)   VALUE SPACES.       04470000
+            05 WS-R003-SBDGICAP          PIC X(1)   VALUE SPACES.       04480000
+      *    DATOS ECONOMICOS COMPLEMENTARIO 1                            04490000
+            05 WS-R003-DESC-COMP1        PIC X(50)  VALUE SPACES.       04500000
+            05 WS-R003-IMPCOMP1          PIC S9(10)V9(2) USAGE COMP-3.  04510000
+            05 WS-R003-FECPAGCOMP1       PIC X(8)   VALUE SPACES.       04520000
+            05 WS-R003-FECEMICOMP1       PIC X(8)   VALUE SPACES.       04530000
+            05 WS-R003-TIPIMPUESTCOMP1   PIC X(2)   VALUE SPACES.       04540000
+            05 WS-R003-FECIMPRECOMP1     PIC X(8)   VALUE SPACES.       04550000
+            05 WS-R003-CUSUARIO-PAGCOMP1 PIC X(8)   VALUE SPACES.       04560000
+            05 WS-R003-FECPAGCAPTCOMP1   PIC X(8)   VALUE SPACES.       04570000
+            05 WS-R003-CUSUARIO-CAPTCOMP1 PIC X(8)   VALUE SPACES.      04580000
+            05 WS-R003-CFORMAPAGO-COMP1  PIC X(1)   VALUE SPACES.       04590000
+            05 WS-R003-NCHEQUE-COMP1     PIC 9(10)  VALUE ZEROES.       04600000
+            05 WS-R003-CUENTA-COMP1.                                    04610000
+               07 WS-R003-KBANCO-COMP1   PIC 9(8)   VALUE ZEROES.       04620000
+               07 WS-R003-NDIGCONT-COMP1 PIC X(2)   VALUE SPACES.       04630000
+               07 WS-R003-NCTABAN-COMP1  PIC X(10)  VALUE SPACES.       04640000
+      *    DATOS ECONOMICOS IRPF COMPLEMENTARIA                         04650000
+            05 WS-R003-DESC-IRPF-COMP1  PIC X(50)  VALUE SPACES.        04660000
+            05 WS-R003-IMPRTOINTCOMP1   PIC S9(10)V9(2) USAGE COMP-3.   04670000
+            05 WS-R003-IMPREDPRICOMP1   PIC S9(10)V9(2) USAGE COMP-3.   04680000
+            05 WS-R003-IREDTRANCOMP1    PIC S9(10)V9(2) USAGE COMP-3.   04690000
+            05 WS-R003-IRTONETCOMP1     PIC S9(10)V9(2) USAGE COMP-3.   04700000
+            05 WS-R003-PORRETCOMP1      PIC S9(3)V9(2) USAGE COMP-3.    04710000
+            05 WS-R003-IRETCOMP1        PIC S9(10)V9(2) USAGE COMP-3.   04720000
+            05 WS-R003-FECPAGRETCOM1    PIC X(8)   VALUE SPACES.        04730000
+            05 WS-R003-IMPCOMPENSATORIA-COMP1                           04740000
+                                        PIC S9(10)V9(2) USAGE COMP-3.   04750000
+            05 WS-R003-ILIQCOMP1        PIC S9(10)V9(2) USAGE COMP-3.   04760000
+            05 WS-R003-FECBDGICOMP1     PIC X(8)   VALUE SPACES.        04770000
+            05 WS-R003-SBDGICOMP1       PIC X(1)   VALUE SPACES.        04780000
+      *    DATOS ECONOMICOS COMPLEMENTARIO 2                            04790000
+            05 WS-R003-DESC-COMP2        PIC X(50)  VALUE SPACES.       04800000
+            05 WS-R003-IMPCOMP2          PIC S9(10)V9(2) USAGE COMP-3.  04810000
+            05 WS-R003-FECPAGCOMP2       PIC X(8)   VALUE SPACES.       04820000
+            05 WS-R003-FECEMICOMP2       PIC X(8)   VALUE SPACES.       04830000
+            05 WS-R003-TIPIMPUESTCOMP2   PIC X(2)   VALUE SPACES.       04840000
+            05 WS-R003-FECIMPRECOMP2     PIC X(8)   VALUE SPACES.       04850000
+            05 WS-R003-CUSUARIO-PAGCOMP2 PIC X(8)   VALUE SPACES.       04860000
+            05 WS-R003-FECPAGCAPTCOMP2   PIC X(8)   VALUE SPACES.       04870000
+            05 WS-R003-CUSUARIO-CAPTCOMP2 PIC X(8)   VALUE SPACES.      04880000
+            05 WS-R003-CFORMAPAGO-COMP2  PIC X(1)   VALUE SPACES.       04890000
+            05 WS-R003-NCHEQUE-COMP2     PIC 9(10)  VALUE ZEROES.       04900000
+            05 WS-R003-CUENTA-COMP2.                                    04910000
+               07 WS-R003-KBANCO-COMP2   PIC 9(8)   VALUE ZEROES.       04920000
+               07 WS-R003-NDIGCONT-COMP2 PIC X(2)   VALUE SPACES.       04930000
+               07 WS-R003-NCTABAN-COMP2  PIC X(10)  VALUE SPACES.       04940000
+      *    DATOS ECONOMICOS IRPF COMPLEMENTARIA                         04950000
+            05 WS-R003-DESC-IRPF-COMP2  PIC X(50)  VALUE SPACES.        04960000
+            05 WS-R003-IMPRTOINTCOMP2   PIC S9(10)V9(2) USAGE COMP-3.   04970000
+            05 WS-R003-IMPREDPRICOMP2   PIC S9(10)V9(2) USAGE COMP-3.   04980000
+            05 WS-R003-IREDTRANCOMP2    PIC S9(10)V9(2) USAGE COMP-3.   04990000
+            05 WS-R003-IRTONETCOMP2     PIC S9(10)V9(2) USAGE COMP-3.   05000000
+            05 WS-R003-PORRETCOMP2      PIC S9(3)V9(2) USAGE COMP-3.    05010000
+            05 WS-R003-IRETCOMP2        PIC S9(10)V9(2) USAGE COMP-3.   05020000
+            05 WS-R003-FECPAGRETCOM2    PIC X(8)   VALUE SPACES.        05030000
+            05 WS-R003-IMPCOMPENSATORIA-COMP2                           05040000
+                                        PIC S9(10)V9(2) USAGE COMP-3.   05050000
+            05 WS-R003-ILIQCOMP2        PIC S9(10)V9(2) USAGE COMP-3.   05060000
+            05 WS-R003-FECBDGICOMP2     PIC X(8)   VALUE SPACES.        05070000
+            05 WS-R003-SBDGICOMP2       PIC X(1)   VALUE SPACES.        05080000
+      *    DATOS PRIMER BENEFICIARIO                                    05090000
+            05 WS-R003-NIF1             PIC X(10)  VALUE SPACES.        05100000
+            05 WS-R003-KPERSONA1        PIC S9(9)V USAGE COMP-3.        05110000
+            05 WS-R003-NOMBRE1          PIC X(150) VALUE SPACES.        05120000
+            05 WS-R003-PRIMER-APELL1    PIC X(30)  VALUE SPACES.        05130000
+            05 WS-R003-SEGUNDO-APELL1   PIC X(30)  VALUE SPACES.        05140000
+            05 WS-R003-CTIPOPERS1       PIC X(1)   VALUE SPACES.        05150000
+            05 WS-R003-SRESIDENTE1      PIC X(1)   VALUE SPACES.        05160000
+            05 WS-R003-KDOMICILIO1      PIC S9(9)V USAGE COMP-3.        05170000
+            05 WS-R003-KDOMCOM1         PIC S9(9)V USAGE COMP-3.        05180000
+            05 WS-R003-DOMICILIO1.                                      05190000
+               07 WS-R003-GDOMICILIO1   PIC X(75)  VALUE SPACES.        05200000
+               07 WS-R003-GNUMVIA       PIC X(10)  VALUE SPACES.        05210000
+               07 WS-R003-GDOMIRESTO    PIC X(150) VALUE SPACES.        05220000
+            05 WS-R003-CCODPOST1        PIC X(5)   VALUE SPACES.        05230000
+            05 WS-R003-GPOBLACION1      PIC X(60)  VALUE SPACES.        05240000
+            05 WS-R003-CPROVINCIA1      PIC X(10)  VALUE SPACES.        05250000
+            05 WS-R003-CPAIS1           PIC X(10)  VALUE SPACES.        05260000
+            05 WS-R003-FNACIMIENTO1     PIC X(8)   VALUE SPACES.        05270000
+            05 WS-R003-NIF-REPLEGAL1    PIC X(10)  VALUE SPACES.        05280000
+            05 WS-R003-FATCA.                                           05290000
+               07 WS-R003-CNACIONALIDAD1     PIC X(3) VALUE SPACES.     05300000
+               07 WS-R003-CNACIONALIDAD2     PIC X(3) VALUE SPACES.     05310000
+               07 WS-R003-CPAISNACIMIENTO    PIC X(3) VALUE SPACES.     05320000
+               07 WS-R003-CPAISOBLIGACIONES1 PIC X(3) VALUE SPACES.     05330000
+               07 WS-R003-CPAISOBLIGACIONES2 PIC X(3) VALUE SPACES.     05340000
+               07 WS-R003-CPAISOBLIGACIONES3 PIC X(3) VALUE SPACES.     05350000
+               07 WS-R003-SPAISRESIDENCIA    PIC X(3) VALUE SPACES.     05360000
+               07 WS-R003-GPREFIJO-PAR       PIC X(3) VALUE SPACES.     05370000
+               07 WS-R003-GPREFIJO-TRA       PIC X(3) VALUE SPACES.     05380000
+               07 WS-R003-CPRP               PIC X(1) VALUE SPACES.     05390000
+      *    DATOS FISCALES PRIMER BENEFICIARIO                           05400000
+            05 WS-R003-DISCAPACITADO1   PIC X(1)   VALUE SPACES.        05410000
+            05 WS-R003-PREST-VIVIENDA1  PIC X(2)   VALUE SPACES.        05420000
+            05 WS-R003-SITUACION-FAMI1  PIC X(20)  VALUE SPACES.        05430000
+            05 WS-R003-NIF-CONYUGE1     PIC X(10)  VALUE SPACES.        05440000
+            05 WS-R003-IMPCOMPENSATORIA1 PIC S9(07)V9(2) USAGE COMP-3.  05450000
+            05 WS-R003-IMPALIMENHIJOS1  PIC S9(07)V9(2) USAGE COMP-3.   05460000
+      *                                                                 05470000
+            05 WS-R003-FILLER           PIC X(165) VALUE SPACES.        05480000
+      *                                                                 05490000
+       01 LT-LITERALES.                                                 05500000
+      * CALCULO DE TIPO DNI                                             05510000
+          03 LT-VALIDAR-DNI       PIC X(8) VALUE 'B001N001'.            05520000
+      * ALTA PERSONAS                                                   05530000
+          03 LT-B620NI50          PIC X(8) VALUE 'B620NI50'.            05540000
+      * ALTA DOMICILIOS                                                 05550000
+PRUEBA    03 LT-B620ND54          PIC X(8) VALUE 'W620ND54'.            05560000
+      * ALTA TELEFONOS                                                  05570000
+          03 LT-B620NI62          PIC X(8) VALUE 'B620NI62'.            05580000
+      * ALTA CUENTAS                                                    05590000
+PRUEBA    03 LT-B620N054          PIC X(8) VALUE 'W620N054'.            05600000
+          03 LT-B001N009          PIC X(8) VALUE 'B001N009'.            05610000
+      * DESCRIPCION DE INCIDENCIAS                                      05620000
+          03 LT-EP001             PIC X(80)                             05630000
+             VALUE 'FALTA CIA, NIF, NOMBRE, APELL1 O FECHA NACIMIENTO'. 05640000
+          03 LT-EP002             PIC X(80)                             05650000
+             VALUE 'FALTA DOMICILIO DE PRESTACION       '.              05660000
+          03 LT-EP003             PIC X(80)                             05670000
+             VALUE 'ERROR AL INTENTAR DAR DE ALTA       '.              05680000
+          03 LT-EP004             PIC X(80)                             05690000
+             VALUE 'ERROR AL INTENTAR DAR DE ALTA DOMICILIO'.           05700000
+          03 LT-EP005             PIC X(80)                             05710000
+             VALUE 'ERROR VALIDANDO CIF/NIF ENTRADA     '.              05720000
+          03 LT-EP006             PIC X(80)                             05730000
+             VALUE 'ERROR RECUPERANDO KCUENTA (PRESTAC) '.              05740000
+          03 LT-EP999             PIC X(80)                             05750000
+             VALUE 'ERROR LLAMANDO A SERVICIO           '.              05760000
+                                                                        05770000
+      * NOMBRE DEL PROGRAMA                                             05780000
+       01 LT-B372J024             PIC X(8) VALUE 'B372J024'.            05790000
+                                                                        05800000
+      * COPYS                                                           05810000
+       01 WS-B620M001.                                                  05820000
+           COPY X620M001.                                               05830000
+           COPY R960T001.                                               05840000
+       01 WS-B620M002.                                                  05850000
+           COPY X620M002.                                               05860000
+           COPY R960T001.                                               05870000
+       01 WS-B620M003.                                                  05880000
+           COPY X620M003.                                               05890000
+           COPY R960T001.                                               05900000
+                                                                        05910000
+       01 WS-B620N054.                                                  05920000
+           COPY X620M054.                                               05930000
+                                                                        05940000
+      * COPY CALCULAR FECHA                                             05950000
+       COPY X001N009.                                                   05960000
+                                                                        05970000
+      * COPY VALIDAR DNI (NIVEL 01)                                     05980000
+       COPY X001N001.                                                   05990000
+                                                                        06000000
+        LINKAGE SECTION.                                                06010000
+      *********************************************************         06020000
+        01 DFHCOMMAREA PIC X(1).                                        06030000
+      *************************************************************     06040000
+       PROCEDURE DIVISION USING DFHCOMMAREA.                            06050000
+      *************************************************************     06060000
+                                                                        06070000
+      *D*                                                               06080000
+           DISPLAY '*------- INICIO B372J024 --------*'                 06090000
+      *F*                                                               06100000
+           PERFORM 1000-INICIO.                                         06110000
+           PERFORM 2000-PROCESO.                                        06120000
+           PERFORM 9000-FIN.                                            06130000
+                                                                        06140000
+       1000-INICIO.                                                     06150000
+      *-----------                                                      06160000
+                                                                        06170000
+      * INICIALIZAR VARIABLES                                           06180000
+           INITIALIZE CT-ACUMULADORES                                   06190000
+           INITIALIZE WS-REG001                                         06200000
+           INITIALIZE WS-REG002.                                        06210000
+                                                                        06220000
+           SET NO-FIN-SYS001 TO TRUE.                                   06230000
+           MOVE ' ' TO SW-CORRECTO.                                     06240000
+                                                                        06250000
+      *    CARGAR FECHA DEL DIA                                         06260000
+           MOVE  FUNCTION CURRENT-DATE  TO  WS-FSYSTEMA.                06270000
+                                                                        06280000
+           OPEN INPUT  SYS001.                                          06290000
+           OPEN OUTPUT SYS002.                                          06300000
+           OPEN OUTPUT SYS003.                                          06310000
+                                                                        06320000
+           PERFORM 9999-LEER-SYS001                                     06330000
+                                                                        06340000
+           IF SI-FIN-SYS001                                             06350000
+      *D*                                                               06360000
+              DISPLAY '**************************************'          06370000
+              DISPLAY '**   FICHERO POLIZAS RESCATES VACIO **'          06380000
+              DISPLAY '**************************************'          06390000
+      *F*                                                               06400000
+              CONTINUE                                                  06410000
+           END-IF.                                                      06420000
+                                                                        06430000
+      ******************************************************************06440000
+       2000-PROCESO.                                                    06450000
+      ******************************************************************06460000
+                                                                        06470000
+           PERFORM UNTIL SI-FIN-SYS001                                  06480000
+             PERFORM 9000-MOVER-001-A-003                               06490000
+             SET SI-OK TO TRUE                                          06500000
+             PERFORM 3100-COMPROBAR-DATOS-E                             06510000
+             MOVE ZEROS TO WS-KPERSONA                                  06520000
+                           WS-KDOMICILIO                                06530000
+             IF SI-OK                                                   06540000
+                PERFORM 3200-BUSCAR-PER-DB2                             06550000
+             END-IF                                                     06560000
+                                                                        06570000
+             MOVE WS-KPERSONA    TO WS-R003-KPERSONA1                   06580000
+             MOVE WS-KDOMICILIO  TO WS-R003-KDOMICILIO1                 06590000
+                                    WS-R003-KDOMCOM1                    06600000
+      *GRABAMOS EN SALIDA                                               06610000
+             PERFORM 9100-GRABA-SYS003                                  06620000
+             PERFORM 9999-LEER-SYS001                                   06630000
+           END-PERFORM.                                                 06640000
+                                                                        06650000
+      *========================*                                        06660000
+       3100-COMPROBAR-DATOS-E.                                          06670000
+      *========================*                                        06680000
+                                                                        06690000
+      * A)COMPROBAMOS DATOS PERSONALES => OBLIGATORIO                   06700000
+           IF WS-R001-CTIPOPERS1 = 'F'                                  06710000
+            IF WS-R001-CENTIDAD = ZEROS OR WS-R001-CENTIDAD = SPACES    06720000
+            OR WS-R001-NIF1          = SPACES                           06730000
+            OR WS-R001-NOMBRE1       = SPACES                           06740000
+            OR WS-R001-PRIMER-APELL1 = SPACES                           06750000
+            OR WS-R001-FNACIMIENTO1  = ZEROS                            06760000
+      *      >> ERROR DATOS ENTRADA VACIOS                              06770000
+             SET NO-OK TO TRUE                                          06780000
+      *      MOVER DATOS GENERALES A REGISTRO DE INCIDENCIAS (R002)     06790000
+             PERFORM 70000-MOVER-A-INCIDENCIA                           06800000
+      *      MOVER DATOS ESPECIFICOS A R002                             06810000
+             MOVE LT-B372J024 TO   R002-CPROGSERV                       06820000
+             MOVE '00000'     TO   R002-CRETORNO                        06830000
+             MOVE 'I'         TO   R002-CTIPORETORNO                    06840000
+             MOVE '03100'     TO   R002-NPARRAFO                        06850000
+             MOVE 'EP001'     TO   R002-CINCIDENCIA                     06860000
+             MOVE LT-EP001    TO   R002-GINCIDENCIA                     06870000
+      *      .......................................................... 06880000
+             MOVE SPACES                TO   R002-GDATOS                06890000
+             MOVE WS-R001-CENTIDAD      TO R002-GDATOS(1:2)             06900000
+             MOVE WS-R001-NIF1          TO R002-GDATOS(4:10)            06910000
+             MOVE WS-R001-NOMBRE1       TO R002-GDATOS(16:30)           06920000
+             MOVE WS-R001-PRIMER-APELL1 TO R002-GDATOS(49:30)           06930000
+             MOVE WS-R001-FNACIMIENTO1  TO R002-GDATOS(80:8)            06940000
+      *      .......................................................... 06950000
+      *      ESCRIBIR LA INCIDENCIA EN FICHERO                          06960000
+             PERFORM 70100-ESCRIBIR-INCIDENCIA                          06970000
+            ELSE                                                        06980000
+      * B)COMPROBAMOS QUE EL DNI SEA CORRECTO Y CALCULAMOS SU TIPO-DOC  06990000
+             PERFORM 3110-VALIDAR-DNI                                   07000000
+             IF NOT DNI-OK                                              07010000
+      *        >> ERROR EN VALIDACION DNI                               07020000
+                SET NO-OK TO TRUE                                       07030000
+      *      MOVER DATOS GENERALES A REGISTRO DE INCIDENCIAS (R002)     07040000
+                PERFORM 70000-MOVER-A-INCIDENCIA                        07050000
+      *      MOVER DATOS ESPECIFICOS A R002                             07060000
+                MOVE LT-B372J024 TO   R002-CPROGSERV                    07070000
+                MOVE '00000'     TO   R002-CRETORNO                     07080000
+                MOVE 'I'         TO   R002-CTIPORETORNO                 07090000
+                MOVE '03100'     TO   R002-NPARRAFO                     07100000
+                MOVE 'EP005'     TO   R002-CINCIDENCIA                  07110000
+                MOVE LT-EP005    TO   R002-GINCIDENCIA                  07120000
+      *      .......................................................... 07130000
+                MOVE SPACES            TO   R002-GDATOS                 07140000
+                MOVE WS-R001-NIF1      TO   R002-GDATOS(1:10)           07150000
+      *      .......................................................... 07160000
+      *      ESCRIBIR LA INCIDENCIA EN FICHERO                          07170000
+                PERFORM 70100-ESCRIBIR-INCIDENCIA                       07180000
+             END-IF                                                     07190000
+            END-IF                                                      07200000
+           ELSE                                                         07210000
+            IF WS-R001-CENTIDAD = ZEROS OR WS-R001-CENTIDAD = SPACES    07220000
+            OR WS-R001-NIF1          = SPACES                           07230000
+            OR WS-R001-NOMBRE1       = SPACES                           07240000
+      *      >> ERROR DATOS ENTRADA VACIOS                              07250000
+             SET NO-OK TO TRUE                                          07260000
+      *      MOVER DATOS GENERALES A REGISTRO DE INCIDENCIAS (R002)     07270000
+             PERFORM 70000-MOVER-A-INCIDENCIA                           07280000
+      *      MOVER DATOS ESPECIFICOS A R002                             07290000
+             MOVE LT-B372J024 TO   R002-CPROGSERV                       07300000
+             MOVE '00000'     TO   R002-CRETORNO                        07310000
+             MOVE 'I'         TO   R002-CTIPORETORNO                    07320000
+             MOVE '03100'     TO   R002-NPARRAFO                        07330000
+             MOVE 'EP001'     TO   R002-CINCIDENCIA                     07340000
+             MOVE LT-EP001    TO   R002-GINCIDENCIA                     07350000
+      *      .......................................................... 07360000
+             MOVE SPACES                TO   R002-GDATOS                07370000
+             MOVE WS-R001-CENTIDAD      TO R002-GDATOS(1:2)             07380000
+             MOVE WS-R001-NIF1          TO R002-GDATOS(4:10)            07390000
+             MOVE WS-R001-NOMBRE1       TO R002-GDATOS(16:30)           07400000
+             MOVE WS-R001-PRIMER-APELL1 TO R002-GDATOS(49:30)           07410000
+      *      .......................................................... 07420000
+      *      ESCRIBIR LA INCIDENCIA EN FICHERO                          07430000
+             PERFORM 70100-ESCRIBIR-INCIDENCIA                          07440000
+            ELSE                                                        07450000
+      * B)COMPROBAMOS QUE EL DNI SEA CORRECTO Y CALCULAMOS SU TIPO-DOC  07460000
+             PERFORM 3110-VALIDAR-DNI                                   07470000
+             IF NOT DNI-OK                                              07480000
+      *        >> ERROR EN VALIDACION DNI                               07490000
+                SET NO-OK TO TRUE                                       07500000
+      *      MOVER DATOS GENERALES A REGISTRO DE INCIDENCIAS (R002)     07510000
+                PERFORM 70000-MOVER-A-INCIDENCIA                        07520000
+      *      MOVER DATOS ESPECIFICOS A R002                             07530000
+                MOVE LT-B372J024 TO   R002-CPROGSERV                    07540000
+                MOVE '00000'     TO   R002-CRETORNO                     07550000
+                MOVE 'I'         TO   R002-CTIPORETORNO                 07560000
+                MOVE '03100'     TO   R002-NPARRAFO                     07570000
+                MOVE 'EP005'     TO   R002-CINCIDENCIA                  07580000
+                MOVE LT-EP005    TO   R002-GINCIDENCIA                  07590000
+      *      .......................................................... 07600000
+                MOVE SPACES            TO   R002-GDATOS                 07610000
+                MOVE WS-R001-NIF1      TO   R002-GDATOS(1:10)           07620000
+      *      .......................................................... 07630000
+      *      ESCRIBIR LA INCIDENCIA EN FICHERO                          07640000
+                PERFORM 70100-ESCRIBIR-INCIDENCIA                       07650000
+             END-IF                                                     07660000
+            END-IF                                                      07670000
+           END-IF.                                                      07680000
+                                                                        07690000
+      *----------------------*                                          07700000
+       3110-VALIDAR-DNI.                                                07710000
+      *----------------------*                                          07720000
+           MOVE ' '    TO SW-DNI.                                       07730000
+           MOVE SPACES TO WS-R001-TIPODOC.                              07740000
+                                                                        07750000
+           MOVE FUNCTION UPPER-CASE(WS-R001-NIF1) TO COD-DNI-E          07760000
+                                                                        07770000
+           CALL LT-VALIDAR-DNI USING X001N001.                          07780000
+      *                                                                 07790000
+           IF ESTADO-DNI-R IN X001N001 NOT EQUAL ZERO                   07800000
+              SET DNI-NO-OK TO TRUE                                     07810000
+           ELSE                                                         07820000
+              SET DNI-OK    TO TRUE                                     07830000
+              MOVE TIPO-DNI-R IN X001N001 TO WS-R001-TIPODOC            07840000
+           END-IF.                                                      07850000
+      *                                                                 07860000
+      *========================*                                        07870000
+       3200-BUSCAR-PER-DB2.                                             07880000
+      *========================*                                        07890000
+                                                                        07900000
+           INITIALIZE WS-B620M001.                                      07910000
+                                                                        07920000
+      *    LLAMAMOS A PERSONAS PARA VER SI EXISTE ESA PERSONA/CIA       07930000
+           MOVE 'C'                TO   X620M001-CLAVE.                 07940000
+           MOVE WS-R001-NIF1       TO   X620M001-CIDENTIFICA-E.         07950000
+                                                                        07960000
+           CALL LT-B620NI50 USING WS-B620M001.                          07970000
+                                                                        07980000
+      *D*                                                               07990000
+           DISPLAY ' 3200-BUSCAR-PER-DB2, NIF: ' WS-R001-NIF1           08000000
+           DISPLAY ' R960T001-ERROR OF WS-B620M001(1): '                08010000
+                     R960T001-ERROR OF WS-B620M001(1)                   08020000
+      *F*                                                               08030000
+           IF R960T001-ERROR OF WS-B620M001(1)  = '00003'               08040000
+      *       SI CONSULTAMOS Y NO EXISTE (00003) NO SE DA DE ALTA       08050000
+              CONTINUE                                                  08060000
+      *D*                                                               08070000
+           DISPLAY '*****NO EXISTE EL NIF EN PERSONAS'                  08080000
+      *F*                                                               08090000
+           ELSE                                                         08100000
+              IF R960T001-ERROR OF WS-B620M001(1)  = '00000'            08110000
+              OR R960T001-ERROR OF WS-B620M001(1)  = SPACES             08120000
+              OR X620M001-KPERSONA-S(1) > ZEROS                         08130000
+                 MOVE X620M001-KPERSONA-S(1) TO WS-KPERSONA             08140000
+      *D*                                                               08150000
+           DISPLAY '**EXISTE EL NIF EN PERSONAS'                        08160000
+           DISPLAY '**X620M001-KPERSONA-S: '                            08170000
+                      X620M001-KPERSONA-S(1)                            08180000
+           DISPLAY '**X620M001-KCOMPANIA-S: '                           08190000
+                      X620M001-KCOMPANIA-S(1)                           08200000
+           DISPLAY '**X620M001-CCOMPANIA-S: '                           08210000
+                      X620M001-CCOMPANIA-S(1)                           08220000
+      *F*                                                               08230000
+              ELSE                                                      08240000
+      *       SI EL ACCESO HA DEVUELTO RETORNO ERRONEO --> INCIDENCIA   08250000
+                 SET NO-OK TO TRUE                                      08260000
+      *          MOVER DATOS GENERALES A R002                           08270000
+                 PERFORM 70000-MOVER-A-INCIDENCIA                       08280000
+      *          MOVER DATOS ESPECIFICOS A R002                         08290000
+                 MOVE LT-B620NI50       TO   R002-CPROGSERV             08300000
+                 MOVE R960T001-ERROR OF WS-B620M001(1)                  08310000
+                                        TO   R002-CRETORNO              08320000
+                 MOVE 'I'         TO   R002-CTIPORETORNO                08330000
+                 MOVE '03200'     TO   R002-NPARRAFO                    08340000
+                 MOVE 'EP999'     TO   R002-CINCIDENCIA                 08350000
+                 MOVE LT-EP999    TO   R002-GINCIDENCIA                 08360000
+                 MOVE SPACES      TO   R002-GDATOS                      08370000
+      *          ESCRIBIR LA INCIDENCIA EN FICHERO                      08380000
+                 PERFORM 70100-ESCRIBIR-INCIDENCIA                      08390000
+              END-IF                                                    08400000
+           END-IF.                                                      08410000
+                                                                        08420000
+      *=======================*                                         08430000
+       9000-MOVER-001-A-003.                                            08440000
+      *=======================*                                         08450000
+            MOVE WS-REG001  TO  WS-REG003.                              08460000
+                                                                        08470000
+      *=======================*                                         08480000
+       9100-GRABA-SYS003.                                               08490000
+      *=======================*                                         08500000
+           WRITE  REG003 FROM WS-REG003.                                08510000
+                                                                        08520000
+           ADD 1 TO CT-GRABADOS.                                        08530000
+           IF WS-R001-SITUACION = 'EN VIGOR'                            08540000
+              ADD 1 TO CT-A1-VI                                         08550000
+           ELSE                                                         08560000
+              IF WS-R001-SITUACION = 'ANULADA'                          08570000
+                 ADD 1 TO CT-A1-AN                                      08580000
+              ELSE                                                      08590000
+                 IF WS-R001-SITUACION = 'RETENIDA'                      08600000
+                    ADD 1 TO CT-A1-RT                                   08610000
+                 END-IF                                                 08620000
+              END-IF                                                    08630000
+           END-IF.                                                      08640000
+                                                                        08650000
+      ******************************************************************08660000
+       70000-MOVER-A-INCIDENCIA.                                        08670000
+      ******************************************************************08680000
+             INITIALIZE WS-REG002.                                      08690000
+                                                                        08700000
+             MOVE LT-B372J024          TO   R002-CPROBATCH              08710000
+             MOVE WS-R001-ANIO         TO   R002-ANIO                   08720000
+             MOVE WS-R001-EXPEDIENTE   TO   R002-EXPEDIENTE             08730000
+             MOVE WS-R001-KPOLIZA      TO   R002-KPOLIZA                08740000
+             MOVE WS-R001-KSUBPOLIZA   TO   R002-KSUBPOLIZA             08750000
+             MOVE WS-R001-KCERTIFICADO TO   R002-KCERTIFICADO           08760000
+             MOVE SPACES               TO   R002-RESTO.                 08770000
+                                                                        08780000
+      ******************************************************************08790000
+       70100-ESCRIBIR-INCIDENCIA.                                       08800000
+      ******************************************************************08810000
+                                                                        08820000
+           WRITE REG002  FROM WS-REG002.                                08830000
+           ADD 1 TO CT-INCIDENCIA.                                      08840000
+                                                                        08850000
+      *--------------------*                                            08860000
+       9999-LEER-SYS001.                                                08870000
+      *--------------------*                                            08880000
+           MOVE 'N' TO SW-FIN-SYS001.                                   08890000
+                                                                        08900000
+           READ SYS001 INTO WS-REG001                                   08910000
+                AT END MOVE 'S' TO SW-FIN-SYS001                        08920000
+           END-READ.                                                    08930000
+                                                                        08940000
+           IF NO-FIN-SYS001                                             08950000
+              ADD 1 TO CT-LEIDOS                                        08960000
+              IF WS-R001-CTIPOLIQ = '1'                                 08970000
+                  MOVE WS-R001-CFORMAPAGO-CAP  TO WS-CFORMAPAGO         08980000
+              END-IF                                                    08990000
+              IF WS-R001-CTIPOLIQ = '2'                                 09000000
+                 MOVE WS-R001-CFORMAPAGO-COMP1 TO WS-CFORMAPAGO         09010000
+              END-IF                                                    09020000
+              IF WS-R001-CTIPOLIQ = '3'                                 09030000
+                 MOVE WS-R001-CFORMAPAGO-COMP2 TO WS-CFORMAPAGO         09040000
+              END-IF                                                    09050000
+           END-IF.                                                      09060000
+                                                                        09070000
+      **************************************************************    09080000
+       9000-FIN.                                                        09090000
+      **************************************************************    09100000
+                                                                        09110000
+      *D*                                                               09120000
+           DISPLAY '*------- FIN B372J024 --------*'                    09130000
+      *F*                                                               09140000
+                                                                        09150000
+           MOVE CT-LEIDOS            TO    WS-LEIDOS                    09160000
+           MOVE CT-GRABADOS          TO    WS-GRABADOS                  09170000
+           MOVE CT-INCIDENCIA        TO    WS-INCIDENCIA                09180000
+                                                                        09190000
+           MOVE CT-A1-AN             TO    WS-A1-AN                     09200000
+           MOVE CT-A1-RT             TO    WS-A1-RT                     09210000
+           MOVE CT-A1-VI             TO    WS-A1-VI                     09220000
+      *D*                                                               09230000
+           DISPLAY '*************************************************'  09240000
+           DISPLAY '******  ESTADISTICAS  B372J024  *****************'  09250000
+           DISPLAY '*************************************************'  09260000
+           DISPLAY '* TOTAL REGISTROS LEIDOS (NºMOD)   : ' WS-LEIDOS    09270000
+           DISPLAY '* TOTAL REGISTROS GRABADOS         : ' WS-GRABADOS  09280000
+                                                                        09290000
+           DISPLAY '  ALTAS RETENIDAS            : ' WS-A1-RT           09300000
+           DISPLAY '  ALTAS ANULADAS             : ' WS-A1-AN           09310000
+           DISPLAY '  ALTAS EN VIGOR             : ' WS-A1-VI           09320000
+                                                                        09330000
+           DISPLAY ' * INCIDENCIAS TOTAL GRABADAS   : ' WS-INCIDENCIA.  09340000
+           DISPLAY '*************************************************'  09350000
+           DISPLAY '> LOS REG. NO PROCESADOS PUEDEN SER POR ERROR EN '  09360000
+           DISPLAY '> EL TRATAMIENTO ACTUAL O EN EL TRATAM.ANTERIOR. '  09370000
+           DISPLAY '*************************************************'  09380000
+           DISPLAY '******  FINAL PROGRAMA B372J024  ****************'  09390000
+           DISPLAY '*************************************************'  09400000
+      *F*                                                               09410000
+                                                                        09420000
+           CLOSE SYS001.                                                09430000
+           CLOSE SYS002.                                                09440000
+           CLOSE SYS003.                                                09450000
+                                                                        09460000
+           GOBACK.                                                      09470000
+                                                                        09480000

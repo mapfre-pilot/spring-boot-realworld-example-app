@@ -1,0 +1,26 @@
+      ******************************************************************00010018
+      *                      COPY  X372VT07                            *00020049
+      *                                                                *00030010
+      *         EMISION DE INFORME DE LA CARGA DE FICHEROS DE LOS      *00040048
+      *         COMPLEMENTARIOS VENCIMIENTOS MANUALES (FOXPRO)         *00041048
+      * -------------------------------------------------------------  *00050051
+      * FECHA DE CREACION:  JUNIO 2012                                 *00051052
+      ******************************************************************00060010
+       05 X372VT07.                                                     00070049
+          07 X372VT07-DATOS-CABECERA.                                   00080049
+             09 X372VT07-KSERVICIO-C        PIC X(08).                  00090049
+             09 X372VT07-CCANAL-C           PIC 9(02).                  00100049
+             09 X372VT07-KEMPRESA-C         PIC X(03).                  00110049
+             09 X372VT07-KDEPARTA-C         PIC X(03).                  00120049
+             09 X372VT07-KUSUARIO-C         PIC X(10).                  00130049
+             09 X372VT07-KCADISTR-C         PIC X(01).                  00140049
+             09 X372VT07-KFILTRO-C          PIC X(02).                  00150049
+             09 X372VT07-FILLER-C           PIC X(17).                  00160049
+                                                                        00170043
+          07 X372VT07-E.                                                00180049
+             09 X372VT07-TIPOEMI-E          PIC X(02).                  00190049
+                                                                        00270043
+          07 X372VT07-S.                                                00280049
+             09 X372VT07-CRETORNO-S           PIC X(2).                 00590049
+             09 X372VT07-GERROR-S             PIC X(070).               00600053
+             09 X372VT07-GNOMPROG-S           PIC X(8).                 00610049
