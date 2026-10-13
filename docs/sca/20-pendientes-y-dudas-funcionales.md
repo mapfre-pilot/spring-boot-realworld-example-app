@@ -42,7 +42,7 @@ Objetivo: que el analista pueda darnos la información **de forma funcional** y 
 12c. Al RETOMAR una Contra Anulación pospuesta, la **Oficina** (usuario con varias oficinas NUUMA) vuelve a quedar sin seleccionar, igual que en SCA. ¿Debe conservarse la oficina elegida antes de posponer?
 
 ### 2.4 Buscador / Detalle
-13. ¿Debe SCA2 mostrar también las solicitudes históricas y las creadas en SCA (hoy sólo las suyas)?
+13. ~~¿Debe SCA2 mostrar también las solicitudes históricas y las creadas en SCA (hoy sólo las suyas)?~~ **Resuelto (Excel, «como SCA») e implementado**: el buscador las lista (ronda 7d) y abren un Detalle de sólo consulta con datos de CORE (ronda 7g, `docs/sca/21-revision-ronda7.md`). Queda la pestaña «Otras sol. Anulación» del Detalle, que sólo lista las de SCA2.
 14. ¿Debe abrir el Detalle directamente cuando hay un único resultado, como SCA, o mantener la lista?
 15. ¿`JJGONZ2` (perfil funcional) debe acceder a `/errores`? Hoy sólo administradores.
 

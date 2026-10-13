@@ -136,3 +136,34 @@ Informe UI completo: `pruebas/13-ronda7-informe-testing-agent.md` (sección «Ro
 **Observación (no corregida):** en 15787867 la tarjeta CA2 Incompleta muestra Grupo OFICINA / RED MAPFRE / PCARAGE y fecha fin 13/10/2026 (datos de la gestión que devuelve CORE) y la cabecera «FINALIZADO NEGATIVO CON CONTRAANULACIÓN» mientras el buscador dice Pendiente; es el mismo origen de datos que SCA (CORE), pendiente de confirmar con el analista si en SCA se ve igual tras un salto de nivel.
 
 **Pendiente derivado:** `contadorPosponer` siempre 1 (cargar el valor actual en el CMD Posponer); conservar la Oficina al retomar sigue a la espera de contexto del analista.
+
+## Ronda 7g — Detalle de sólo consulta para solicitudes de SCA / históricas (decisión Excel: «como SCA»)
+
+**Decisión del analista:** la lista del buscador debe funcionar como SCA; en SCA una fila histórica abre su Detalle (`SCA_BuscadorTabla` → `SCA_PM_REDIRIGIRDETALLE` con el DTO de CORE) y se muestra en sólo consulta con datos de CORE.
+
+**Cambio 1 — `SCA2_Buscador` v23** (backup `sca2work/r13/busc23_before.sail`, readback idéntico, UUID conservado): en la tabla «Otras solicitudes de la póliza / cliente (SCA e históricas en CORE, sin gestión en SCA2)» el número de solicitud pasa a ser un enlace que guarda `ri!idSolicitud` y `ri!numPoliza` (la cabecera CORE no devuelve la póliza) y abre el Detalle. La tabla de solicitudes SCA2 no cambia.
+
+**Cambio 2 — `SCA2_DetalleSolicitud` v48/v49** (backups `r13/det48_before.sail`, `r13/det49_before.sail`; readback idéntico; input nuevo opcional `numPoliza` Text):
+- `soloCore` = la solicitud no existe como record SCA2 (`SCA2_cargarSolicitud` sin `estado`). En ese caso:
+  - aviso azul «Solicitud gestionada en SCA o histórica: datos de CORE, sólo consulta»;
+  - póliza: `ri!numPoliza` del buscador y, si falta (acceso por URL), se extrae de `SCAC_consultaBBDDSCA.solicitud` (llega como texto `[numSolicitudPca:…, numPoliza:…]`); el tipo de póliza (wAutemis/NSE/Vida) se resuelve con `SCA2_obtenerTipoPoliza` en vez de `origenPoliza` del record;
+  - tarjetas de «Gestiones realizadas» construidas desde `SCA2_consultaGestion` (2 Contra Anulacion, 3 Acciones Administrativas, 4 Impresion, 5 Mecanizacion, 7 Autorizacion, en el orden de CORE) con estado, fechas, nivel, perfil/grupo/NUUMA de CORE; sin `idTarea`, por lo que **no hay RETOMAR ni REASIGNAR**; la lógica de impresiones/autorización derivadas de tareas SCA2 se desactiva para no duplicar;
+  - pestaña «Solicitud Anulación» alimentada con un mapa equivalente construido desde `SCA2_consultarCabeceraSolicitud` (fecha solicitud, origen, causa, canal, fecha estado, fecha anulación, catalogación, impresión, impago, compañía; estado traducido con la misma tabla `codEstSolic` → estado SCA2 que el buscador);
+  - la solicitud se trata como cerrada (`tipoAccion` por URL no abre ninguna tarea), sin sondeos de refresco (record/tareas) y sin «Trazabilidad técnica».
+- Las solicitudes SCA2 siguen el camino anterior sin cambios (`testInterface` 15787867: sin aviso, tarjetas y trazabilidad como antes).
+
+**Cambio 3 — `SCA2_SolicitudAnulacion` v9** (backup `r13/solanul9_before.sail`): «Reserva prima» comparaba `rsvPrima = 1` sin tolerar null (error «Cannot compare incompatible operands of type Null and type Number» al abrir la pestaña en una solicitud sólo-CORE); ahora `tointeger(a!defaultValue(…, 0)) = 1`.
+
+**Pruebas `testInterface` (sin error de evaluación):** 15787864 (SCA, sólo alta directa) con y sin `numPoliza`; 15787531 (alta + CA negativa + impresión); 15787832 (CA nivel 1 y nivel 2 incompletas + impresión, póliza recuperada de BBDD SCA); 15787040 (CA incompleta + Acciones Administrativas); `SCA2_Buscador` con y sin solicitud seleccionada.
+
+**Prueba UI (JJGONZ2):** ver `docs/sca/pruebas/13-ronda7-informe-testing-agent.md` (ronda 7g).
+
+**Límites / pendiente:** la pestaña «Otras sol. Anulación» (`SCA2_TablaOtrasSolAnulacion`) sigue listando sólo solicitudes SCA2 de la póliza, no las de CORE como SCA; «Datos contacto» y «Notificaciones» sólo tienen datos para solicitudes SCA2; el campo Reserva prima no está en la cabecera CORE (se muestra «NO SOLICITADA»).
+
+#### 7g.1 — Estado de las filas CORE en el buscador: texto descriptivo (hallazgo de la prueba UI)
+
+- **Síntoma:** la tabla «Otras solicitudes de la póliza / cliente» de SCA2 mostraba el código interno `FINALIZADA_NEG_CONTRA` como etiqueta de estado (p. ej. 15787531), mientras SCA muestra «Finalizado negativo con contraanulación». En la prueba de 7d solo se había verificado el estado Pendiente (codEstSolic 2).
+- **Causa:** el mapeo codEstSolic → estado SCA2 del Buscador (7d) y del Detalle sólo-CORE (7g) usa los alias `FINALIZADA_NEG_CONTRA` (4/15) y `FINALIZADA_NO_REQ` (5), que `SCA2_textoEstadoSolicitud` no conocía (solo `RECHAZADA` / `FINALIZADA_SIN_ANULAR`), por lo que caía en el `default` y devolvía el código tal cual.
+- **Corrección:** `SCA2_textoEstadoSolicitud` v13 añade los dos alias con los mismos textos de `SCA_D_EstadosSolicitud`; `SCA2_colorEstadoSolicitud` (v6, sin cambios) ya asigna `#BE0F0F` a esos textos, igual que `SCA_BuscadorTabla`.
+- **Pruebas:** `testRule` texto/color para `FINALIZADA_NEG_CONTRA`, `FINALIZADA_NO_REQ`, `PENDIENTE`, `RECHAZADA`; `testInterface` de `SCA2_Buscador` v23 y `SCA2_DetalleSolicitud` v49 (15787531) sin errores. Backups en `sca2work/r13/txtest_before.sail` / `txtest_after.sail`.
+- **Pendiente de confirmar con el analista:** para 15787531 SCA muestra Causa anulación / Fecha resolución «-» en el buscador y SCA2 muestra «COMPROMISOS / 25/09/2026 11:45:42» (datos que devuelve CORE). Hay que decidir si SCA2 debe ocultarlos como SCA o mostrar el dato de CORE.
