@@ -38,6 +38,7 @@ Reserva RCI (pedir a la sesión padre antes de usar): 0005726681805 000572668171
 
 | Sesión | Objeto (nombre · uuid) | Motivo | Reservado (UTC) | Estado |
 |---|---|---|---|---|
+| H1 | SCA2_AltaSolicitudPage · _a-0000f069-4f37-8000-9cc8-011c48011c48_20055716 | Validación residual de fax al cambiar canal (caso manual_test-5); se comprobó después que SCA hace lo mismo | 2026-10-13 10:40 (antes de recibir el protocolo) | liberado (v25 → v27): cambio aplicado en v26 y REVERTIDO en v27 (expresión idéntica a v25); sin cambio neto |
 
 ## Incidencias
 
