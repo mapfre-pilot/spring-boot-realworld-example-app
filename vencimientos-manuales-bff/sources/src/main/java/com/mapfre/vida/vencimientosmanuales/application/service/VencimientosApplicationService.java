@@ -6,8 +6,6 @@ import com.mapfre.vida.vencimientosmanuales.application.port.in.VencimientosUseC
 import com.mapfre.vida.vencimientosmanuales.domain.LiquidationCalculator;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-
 @Service
 public class VencimientosApplicationService implements VencimientosUseCase {
     private final HostVencimientosPort host;
@@ -18,26 +16,13 @@ public class VencimientosApplicationService implements VencimientosUseCase {
     }
 
     @Override
-    public HostResponse execute(Operacion operation, Map<String, Object> fields) {
-        return switch (operation) {
-            case VT01 -> host.gestionarExpediente(new Vt01Request(fields));
-            case VT02 -> host.gestionarVariables(new Vt02Request(fields));
-            case VT03 -> host.gestionarCarteras(new Vt03Request(fields));
-            case VT04 -> {
-                HostResponse response = host.buscarExpedientes(new Vt04Request(fields));
-                host.buscarDatosAdicionales(new Vt08Request(fields));
-                yield response;
-            }
-            case VT05 -> host.listarCarteras(new Vt05Request(fields));
-            case VT06 -> host.solicitarBdgi(new Vt06Request(fields));
-            case VT07 -> host.cargarFichero(new Vt07Request(fields));
-            case VT08 -> host.buscarDatosAdicionales(new Vt08Request(fields));
-            case VT09 -> host.emitirFiniquitos(new Vt09Request(fields));
-            case VT10 -> host.imprimirInformes(new Vt10Request(fields));
-            case VT11 -> host.gestionarPersonas(new Vt11Request(fields));
-            case VT12 -> host.gestionarCoaseguro(new Vt12Request(fields));
-            case VT19 -> host.consultarCartera(new Vt19Request(fields));
-        };
+    public VtResponse execute(Operacion operation, VtRequest request) {
+        VtResponse response = host.execute(operation, request);
+        if (operation == Operacion.VT04 && request instanceof Vt04Request search) {
+            host.execute(Operacion.VT08, new Vt08Request(search.busqueda().anio(),
+                    search.busqueda().numero(), "S", null, null));
+        }
+        return response;
     }
 
     @Override

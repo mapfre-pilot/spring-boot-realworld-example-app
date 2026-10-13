@@ -168,7 +168,11 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/Variables' }
       responses:
-        '200': { description: Variables actualizadas. }
+        '200':
+          description: Variables actualizadas.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Variables' }
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '503': { $ref: '#/components/responses/Unavailable' }
@@ -192,14 +196,18 @@ paths:
     put:
       operationId: modificarCoaseguro
       tags: [Coaseguro]
-      summary: Actualizar cuadro de coaseguro (VT12)
+      summary: Actualizar cuadro de coaseguro mediante VT01
       requestBody:
         required: true
         content:
           application/json:
             schema: { $ref: '#/components/schemas/Coaseguro' }
       responses:
-        '200': { description: Coaseguro actualizado. }
+        '200':
+          description: Coaseguro actualizado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Coaseguro' }
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '503': { $ref: '#/components/responses/Unavailable' }
@@ -285,8 +293,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items: { $ref: '#/components/schemas/Cartera' }
+                $ref: '#/components/schemas/PaginaCarteras'
         '401': { $ref: '#/components/responses/Unauthorized' }
         '503': { $ref: '#/components/responses/Unavailable' }
   /carteras/listado:
@@ -365,7 +372,11 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/PeticionBdgi' }
       responses:
-        '202': { description: Petición BDGI aceptada. }
+        '202':
+          description: Petición BDGI aceptada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Vt06Response' }
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '503': { $ref: '#/components/responses/Unavailable' }
@@ -382,7 +393,11 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/CargaFichero' }
       responses:
-        '202': { description: Carga aceptada. }
+        '202':
+          description: Carga aceptada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Vt07Response' }
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '503': { $ref: '#/components/responses/Unavailable' }
@@ -401,7 +416,7 @@ paths:
           description: Importes de liquidación.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/LiquidationResult' }
+              schema: { $ref: '#/components/schemas/Liquidacion' }
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 components:
@@ -470,24 +485,56 @@ components:
         anio: { type: string }
         numero: { type: string }
         ramo: { type: string }
+        anioPoliza: { type: string }
         numeroPoliza: { type: string }
         subpoliza: { type: string }
         certificado: { type: string }
         nif: { type: string }
         situacion: { type: string }
         importeCapital: { type: number }
+        beneficios: { type: number }
+        anticipo: { type: number }
+        interesesPendientes: { type: number }
+        fechaEfecto: { type: string, format: date }
+        coaseguradoras:
+          type: array
+          maxItems: 6
+          items: { $ref: '#/components/schemas/Coaseguradora' }
     ExpedienteMutation:
-      allOf:
-        - $ref: '#/components/schemas/Expediente'
-        - type: object
-          properties:
-            anioPoliza: { type: string }
-            modalidad: { type: string }
-            fechaEfecto: { type: string, format: date }
-            beneficios: { type: number }
-            anticipo: { type: number }
-            interesesPendientes: { type: number }
-            observacion: { type: string, maxLength: 100 }
+      type: object
+      required: [anio, numero]
+      properties:
+        anio: { type: string, pattern: '^\d{4}$' }
+        numero: { type: string, maxLength: 10 }
+        ramo: { type: string, maxLength: 3 }
+        anioPoliza: { type: string, maxLength: 4 }
+        numeroPoliza: { type: string, maxLength: 10 }
+        subpoliza: { type: string, maxLength: 4 }
+        certificado: { type: string, maxLength: 6 }
+        nif: { type: string, maxLength: 10 }
+        situacion: { type: string, maxLength: 2 }
+        importeCapital: { type: number }
+        beneficios: { type: number }
+        anticipo: { type: number }
+        interesesPendientes: { type: number }
+        fechaEfecto: { type: string, format: date }
+        coaseguradoras:
+          type: array
+          maxItems: 6
+          items: { $ref: '#/components/schemas/Coaseguradora' }
+    BusquedaExpedientes:
+      type: object
+      properties:
+        anio: { type: string, pattern: '^\d{4}$' }
+        numero: { type: string, maxLength: 10 }
+        ramo: { type: string, maxLength: 3 }
+        anioPoliza: { type: string, pattern: '^\d{4}$' }
+        numeroPoliza: { type: string, maxLength: 10 }
+        subpoliza: { type: string, maxLength: 4 }
+        certificado: { type: string, maxLength: 6 }
+        nif: { type: string, minLength: 8, maxLength: 10 }
+        page: { type: integer, minimum: 0 }
+        size: { type: integer, minimum: 1, maximum: 100 }
     PaginaExpedientes:
       type: object
       properties:
@@ -499,11 +546,17 @@ components:
         totalElements: { type: integer, format: int64 }
     Variables:
       type: object
+      required: [variables]
       properties:
-        tabla: { type: string }
-        valores:
-          type: object
-          additionalProperties: { type: string }
+        variables:
+          type: array
+          items: { $ref: '#/components/schemas/Variable' }
+    Variable:
+      type: object
+      required: [codigo, valor]
+      properties:
+        codigo: { type: string }
+        valor: { type: string }
     Coaseguradora:
       type: object
       required: [codigo, porcentaje]
@@ -593,6 +646,18 @@ components:
       properties:
         id: { type: string, format: uuid }
         estado: { type: string, enum: [ACEPTADO] }
+    Vt06Response:
+      type: object
+      properties:
+        solicitudId: { type: string }
+        estado: { type: string }
+        mensaje: { type: string }
+    Vt07Response:
+      type: object
+      properties:
+        cargaId: { type: string }
+        estado: { type: string }
+        mensaje: { type: string }
     LiquidationRequest:
       type: object
       properties:
@@ -620,12 +685,12 @@ components:
         porcentajeRetencion: { type: number }
         tipoImpuesto: { type: string }
         codigoPostal: { type: string }
-    LiquidationResult:
+    Liquidacion:
       type: object
       properties:
         capital: { $ref: '#/components/schemas/ImporteCalculado' }
-        complementario: { $ref: '#/components/schemas/ImporteCalculado' }
         prima: { $ref: '#/components/schemas/ImporteCalculado' }
+        complementario: { $ref: '#/components/schemas/ImporteCalculado' }
         liquidoCapital: { type: number }
         importesCoasegurados:
           type: array
@@ -633,6 +698,7 @@ components:
     ImporteCalculado:
       type: object
       properties:
+        importe: { type: number }
         rtoNeto: { type: number }
         retencion: { type: number }
         liquido: { type: number }

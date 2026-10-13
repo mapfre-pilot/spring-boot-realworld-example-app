@@ -1,9 +1,31 @@
 package com.mapfre.vida.vencimientosmanuales.infrastructure.adapter.in.rest;
 
-import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.HostResponse;
-import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Operacion;
-import com.mapfre.vida.vencimientosmanuales.application.port.out.ImpresionPort;
 import com.mapfre.vida.vencimientosmanuales.application.port.in.VencimientosUseCase;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Operacion;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt01Response;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt01Request;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt02Response;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt02Request;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt03Response;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt03Request;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt04Response;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt04Request;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt05Response;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt05Request;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt06Response;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt06Request;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt07Response;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt07Request;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt09Request;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt10Request;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt11Response;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt11Request;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt12Response;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt12Request;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt19Response;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimientosPort.Vt19Request;
+import com.mapfre.vida.vencimientosmanuales.application.port.out.ImpresionPort;
 import com.mapfre.vida.vencimientosmanuales.domain.LiquidationCalculator;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -14,7 +36,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.mapfre.vida.vencimientosmanuales.infrastructure.adapter.in.rest.ApiDtos.*;
@@ -32,7 +54,7 @@ public class VencimientosController {
     }
 
     @GetMapping("/expedientes")
-    public Map<String, Object> buscarExpedientes(
+    public PaginaExpedientes buscarExpedientes(
             @RequestParam(required = false) String anio, @RequestParam(required = false) String numero,
             @RequestParam(required = false) String ramo, @RequestParam(required = false) String anioPoliza,
             @RequestParam(required = false) String numeroPoliza, @RequestParam(required = false) String subpoliza,
@@ -41,148 +63,215 @@ public class VencimientosController {
         boolean expediente = anio != null && numero != null;
         boolean poliza = ramo != null && anioPoliza != null && numeroPoliza != null;
         boolean persona = nif != null && !nif.isBlank();
-        int criteria = (expediente ? 1 : 0) + (poliza ? 1 : 0) + (persona ? 1 : 0);
-        if (criteria != 1 || page < 0 || size < 1 || size > 100) {
+        if ((expediente ? 1 : 0) + (poliza ? 1 : 0) + (persona ? 1 : 0) != 1
+                || page < 0 || size < 1 || size > 100) {
             throw new IllegalArgumentException("Indique un criterio completo de búsqueda y paginación válida");
         }
-        Map<String, Object> fields = fields("ANIO-E", anio, "KEXPEDIENTE-E", numero,
-                "KRAMO-E", ramo, "ANIOPOL-E", anioPoliza, "KPOLIZA-E", numeroPoliza,
-                "NSUBPOLIZA-E", subpoliza, "KCERTIFICADO-E", certificado, "NIF-E", nif,
-                "page", page, "size", size);
-        return service.execute(Operacion.VT04, fields).campos();
+        HostVencimientosPort.BusquedaExpedientes criteria = new HostVencimientosPort.BusquedaExpedientes(
+                anio, numero, ramo, anioPoliza, numeroPoliza, subpoliza, certificado, nif, page, size);
+        Vt04Response response = (Vt04Response) service.execute(Operacion.VT04, new Vt04Request("C1", criteria));
+        return new PaginaExpedientes(response.expedientes().stream().map(this::toApi).toList(),
+                response.page(), response.size(), response.totalElements());
     }
 
     @GetMapping("/expedientes/{anio}/{numero}")
-    public Map<String, Object> obtenerExpediente(@PathVariable String anio, @PathVariable String numero) {
-        return service.execute(Operacion.VT01, fields("OPERACION-E", "C1", "ANIO-E", anio,
-                "KEXPEDIENTE-E", numero)).campos();
+    public Expediente obtenerExpediente(@PathVariable String anio, @PathVariable String numero) {
+        Vt01Response response = (Vt01Response) service.execute(Operacion.VT01,
+                new Vt01Request("C1", anio, numero, null, null, null, null, null, null,
+                        null, null, null, null, null, null, List.of()));
+        return toApi(response.expediente());
     }
 
     @PostMapping("/expedientes")
-    public ResponseEntity<Map<String, Object>> altaExpediente(
+    public ResponseEntity<Expediente> altaExpediente(
             @RequestHeader("Idempotency-Key") @NotBlank String key, @Valid @RequestBody ExpedienteMutation body) {
-        Map<String, Object> result = service.execute(Operacion.VT01, expedienteFields("A1", body)).campos();
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        validateCoaseguro(body.coaseguradoras());
+        Vt01Response response = (Vt01Response) service.execute(Operacion.VT01, request("A1", body));
+        return ResponseEntity.status(HttpStatus.CREATED).body(toApi(response.expediente()));
     }
 
     @PutMapping("/expedientes/{anio}/{numero}")
-    public Map<String, Object> modificarExpediente(@PathVariable String anio, @PathVariable String numero,
-            @Valid @RequestBody ExpedienteMutation body) {
-        return service.execute(Operacion.VT01, expedienteFields("M1", body)).campos();
+    public Expediente modificarExpediente(@PathVariable String anio, @PathVariable String numero,
+                                          @Valid @RequestBody ExpedienteMutation body) {
+        validateCoaseguro(body.coaseguradoras());
+        Vt01Response response = (Vt01Response) service.execute(Operacion.VT01,
+                request("M1", withKeys(anio, numero, body)));
+        return toApi(response.expediente());
     }
 
     @PostMapping("/expedientes/{anio}/{numero}/anulacion")
-    public Map<String, Object> anularExpediente(@PathVariable String anio, @PathVariable String numero,
-            @RequestHeader("Idempotency-Key") @NotBlank String key) {
-        return service.execute(Operacion.VT01, fields("ANIO-E", anio, "KEXPEDIENTE-E", numero,
-                "FANULACION-E", java.time.LocalDate.now().toString())).campos();
+    public ResponseEntity<Void> anularExpediente(@PathVariable String anio, @PathVariable String numero,
+                                                 @RequestHeader("Idempotency-Key") @NotBlank String key) {
+        service.execute(Operacion.VT01, new Vt01Request("A2", anio, numero, null, null, null,
+                null, null, null, null, null, null, null, null, java.time.LocalDate.now(), List.of()));
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/expedientes/{anio}/{numero}/reaseguro")
-    public Map<String, Object> gestionarReaseguro(@PathVariable String anio, @PathVariable String numero,
-            @RequestHeader("Idempotency-Key") @NotBlank String key) {
-        return service.execute(Operacion.VT01, fields("OPERACION-E", "M3", "ANIO-E", anio,
-                "KEXPEDIENTE-E", numero)).campos();
+    public ResponseEntity<Void> gestionarReaseguro(@PathVariable String anio, @PathVariable String numero,
+                                                   @RequestHeader("Idempotency-Key") @NotBlank String key) {
+        service.execute(Operacion.VT01, new Vt01Request("M3", anio, numero, null, null, null,
+                null, null, null, null, null, null, null, null, null, List.of()));
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/expedientes/{anio}/{numero}/variables")
-    public Map<String, Object> consultarVariables(@PathVariable String anio, @PathVariable String numero) {
-        return service.execute(Operacion.VT02, fields("ANIO-E", anio, "KEXPEDIENTE-E", numero)).campos();
+    public Variables consultarVariables(@PathVariable String anio, @PathVariable String numero) {
+        Vt02Response response = (Vt02Response) service.execute(Operacion.VT02,
+                new Vt02Request("C", anio, numero, null, List.of()));
+        return new Variables(response.variables().stream().map(v -> new Variable(v.codigo(), v.valor())).toList());
     }
 
     @PutMapping("/expedientes/{anio}/{numero}/variables")
-    public Map<String, Object> modificarVariables(@PathVariable String anio, @PathVariable String numero,
-            @RequestBody Map<String, String> body) {
-        return service.execute(Operacion.VT02, fields("ANIO-E", anio, "KEXPEDIENTE-E", numero,
-                "valores", body)).campos();
+    public Variables modificarVariables(@PathVariable String anio, @PathVariable String numero,
+                                        @Valid @RequestBody VariablesRequest body) {
+        var values = body.variables().stream()
+                .map(value -> new HostVencimientosPort.Variable(value.codigo(), value.valor())).toList();
+        Vt02Response response = (Vt02Response) service.execute(Operacion.VT02,
+                new Vt02Request("M", anio, numero, null, values));
+        return new Variables(response.variables().stream().map(v -> new Variable(v.codigo(), v.valor())).toList());
     }
 
     @GetMapping("/expedientes/{anio}/{numero}/coaseguro")
-    public Map<String, Object> consultarCoaseguro(@PathVariable String anio, @PathVariable String numero) {
-        return service.execute(Operacion.VT12, fields("ANIO-E", anio, "KEXPEDIENTE-E", numero)).campos();
+    public Coaseguro consultarCoaseguro(@PathVariable String anio, @PathVariable String numero) {
+        Vt12Response response = (Vt12Response) service.execute(Operacion.VT12,
+                new Vt12Request("C1", null, null));
+        return toCoaseguro(response.coaseguradoras());
     }
 
     @PutMapping("/expedientes/{anio}/{numero}/coaseguro")
-    public Map<String, Object> modificarCoaseguro(@PathVariable String anio, @PathVariable String numero,
-            @Valid @RequestBody CoaseguroRequest body) {
+    public Coaseguro modificarCoaseguro(@PathVariable String anio, @PathVariable String numero,
+                                        @Valid @RequestBody CoaseguroRequest body) {
         BigDecimal sum = body.coaseguradoras().stream().map(Coaseguradora::porcentaje)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         if (sum.compareTo(new BigDecimal("100")) != 0) {
             throw new IllegalArgumentException("Los porcentajes de coaseguro deben sumar 100");
         }
-        return service.execute(Operacion.VT12, fields("ANIO-E", anio, "KEXPEDIENTE-E", numero,
-                "CUADRO-COASEGURO-E", body.coaseguradoras())).campos();
+        Expediente current = obtenerExpediente(anio, numero);
+        var shares = body.coaseguradoras().stream()
+                .map(value -> new HostVencimientosPort.Coaseguradora(value.codigo(), value.porcentaje(),
+                        null, null)).toList();
+        Vt01Response response = (Vt01Response) service.execute(Operacion.VT01, new Vt01Request("M1",
+                current.anio(), current.numero(), current.ramo(), current.anioPoliza(), current.numeroPoliza(),
+                current.subpoliza(), current.certificado(), current.nif(), current.situacion(), current.importeCapital(),
+                current.beneficios(), current.anticipo(), current.interesesPendientes(), current.fechaEfecto(), shares));
+        return toCoaseguro(response.expediente().coaseguradoras());
     }
 
     @GetMapping("/expedientes/{anio}/{numero}/fiscalidad")
-    public Map<String, Object> fiscalidad(@PathVariable String anio, @PathVariable String numero) {
-        return service.execute(Operacion.VT01, fields("OPERACION-E", "C1", "ANIO-E", anio,
-                "KEXPEDIENTE-E", numero, "modo", "fiscalidad")).campos();
+    public DatosFiscales fiscalidad(@PathVariable String anio, @PathVariable String numero) {
+        Expediente value = obtenerExpediente(anio, numero);
+        return new DatosFiscales(null, null, value.nif(), null);
     }
 
     @GetMapping("/personas")
-    public Map<String, Object> persona(@RequestParam @NotBlank @Size(min = 8, max = 10) String nif) {
-        return service.execute(Operacion.VT11, fields("nif", nif)).campos();
+    public Persona persona(@RequestParam @NotBlank @Size(min = 8, max = 10) String nif) {
+        Vt11Response response = (Vt11Response) service.execute(Operacion.VT11,
+                new Vt11Request(nif, null, null, null, null, null));
+        var value = response.persona();
+        return new Persona(value.nombre(), value.apellidos(), value.nif(), value.domicilio(),
+                value.codigoPostal(), value.poblacion());
     }
 
     @GetMapping("/polizas/{ramo}/{anio}/{numero}/cartera")
-    public Map<String, Object> carteraPoliza(@PathVariable String ramo, @PathVariable String anio,
-            @PathVariable String numero, @RequestParam(required = false) String subpoliza,
-            @RequestParam(required = false) String certificado) {
-        return service.execute(Operacion.VT19, fields("RAMO-E", ramo, "ANIOPOL-E", anio, "POLIZA-E", numero,
-                "NSUBPOLIZA-E", subpoliza, "KCERTIFICADO-E", certificado)).campos();
+    public Cartera carteraPoliza(@PathVariable String ramo, @PathVariable String anio,
+                                 @PathVariable String numero, @RequestParam(required = false) String subpoliza,
+                                 @RequestParam(required = false) String certificado) {
+        Vt19Response response = (Vt19Response) service.execute(Operacion.VT19,
+                new Vt19Request(numero, subpoliza, certificado));
+        return toApi(response.cartera());
     }
 
     @GetMapping("/carteras")
-    public Map<String, Object> carteras() {
-        return service.execute(Operacion.VT03, Map.of()).campos();
+    public PaginaCarteras carteras() {
+        Vt03Response response = (Vt03Response) service.execute(Operacion.VT03, new Vt03Request("C", null, null,
+                null, null, null, null));
+        return new PaginaCarteras(response.carteras().stream().map(this::toApi).toList(),
+                0, Math.max(1, response.carteras().size()), response.carteras().size());
     }
 
     @GetMapping("/carteras/listado")
-    public Map<String, Object> listadoCarteras(@RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+    public PaginaCarteras listadoCarteras(@RequestParam(defaultValue = "0") int page,
+                                          @RequestParam(defaultValue = "20") int size) {
         if (page < 0 || size < 1 || size > 100) throw new IllegalArgumentException("Paginación no válida");
-        return service.execute(Operacion.VT05, fields("page", page, "size", size)).campos();
+        Vt05Response response = (Vt05Response) service.execute(Operacion.VT05,
+                new Vt05Request("C", null, null, null, null, null, null, page, size));
+        return new PaginaCarteras(response.carteras().stream().map(this::toApi).toList(),
+                response.page(), response.size(), response.totalElements());
     }
 
     @PostMapping("/finiquitos/emisiones")
     public ResponseEntity<ImpresionPort.PrintJob> emitir(@RequestHeader("Idempotency-Key") @NotBlank String key,
-            @Valid @RequestBody EmisionRequest body) {
-        service.execute(Operacion.VT09, fields("ANIO-E", body.anio(), "EXPEDIENTE-DESDE-E",
-                body.expedienteDesde(), "EXPEDIENTE-HASTA-E", body.expedienteHasta()));
+                                                         @Valid @RequestBody EmisionRequest body) {
+        service.execute(Operacion.VT09, new Vt09Request(body.anio(), body.expedienteDesde(),
+                body.expedienteHasta(), body.fechaEmision(), body.tipoEmision(), body.lugarEnvio()));
         return ResponseEntity.accepted().body(impresion.submit("finiquitos", key));
     }
 
     @PostMapping("/informes")
     public ResponseEntity<ImpresionPort.PrintJob> informe(@RequestHeader("Idempotency-Key") @NotBlank String key,
-            @Valid @RequestBody InformeRequest body) {
-        service.execute(Operacion.VT10, fields("TIPO-EMISION-E", body.tipoEmision(),
-                "ANIO-DESDE-E", body.anioDesde(), "ANIO-HASTA-E", body.anioHasta()));
+                                                          @Valid @RequestBody InformeRequest body) {
+        service.execute(Operacion.VT10, new Vt10Request(body.tipoEmision(), body.anioDesde(), body.anioHasta(),
+                body.expedienteDesde(), body.expedienteHasta(), body.fechaEmisionDesde(),
+                body.fechaEmisionHasta(), body.fechaPagoDesde(), body.fechaPagoHasta()));
         return ResponseEntity.accepted().body(impresion.submit("informe", key));
     }
 
     @PostMapping("/peticiones-bdgi")
-    public ResponseEntity<Map<String, Object>> bdgi(@RequestHeader("Idempotency-Key") @NotBlank String key,
-            @Valid @RequestBody BdgiRequest body) {
-        return ResponseEntity.accepted().body(service.execute(Operacion.VT06, fields(
-                "ANIO-E", body.anioEjercicio(), "MES-E", body.mesEjercicio(),
-                "FECHA-INICIAL-E", body.fechaInicial(), "FECHA-FINAL-E", body.fechaFinal())).campos());
+    public ResponseEntity<Vt06Response> bdgi(@RequestHeader("Idempotency-Key") @NotBlank String key,
+                                             @Valid @RequestBody BdgiRequest body) {
+        return ResponseEntity.accepted().body((Vt06Response) service.execute(Operacion.VT06, new Vt06Request(
+                body.anioEjercicio(), body.mesEjercicio(), body.fechaInicial(), body.fechaFinal())));
     }
 
     @PostMapping("/cargas-fichero")
-    public ResponseEntity<Map<String, Object>> cargar(@RequestHeader("Idempotency-Key") @NotBlank String key,
-            @Valid @RequestBody CargaRequest body) {
-        return ResponseEntity.accepted().body(service.execute(Operacion.VT07,
-                fields("TIPO-EMISION-E", body.tipoEmision())).campos());
+    public ResponseEntity<Vt07Response> cargar(@RequestHeader("Idempotency-Key") @NotBlank String key,
+                                               @Valid @RequestBody CargaRequest body) {
+        return ResponseEntity.accepted().body((Vt07Response) service.execute(
+                Operacion.VT07, new Vt07Request(body.tipoEmision())));
     }
 
     @PostMapping("/calculos/liquidacion")
-    public LiquidationCalculator.Result liquidacion(@Valid @RequestBody LiquidationRequest body) {
+    public Liquidacion liquidacion(@Valid @RequestBody LiquidationRequest body) {
         List<BigDecimal> percentages = body.coaseguradoras() == null ? List.of()
                 : body.coaseguradoras().stream().map(Coaseguradora::porcentaje).collect(Collectors.toList());
-        return service.calculate(new LiquidationCalculator.Input(fiscal(body.capital()), fiscal(body.prima()),
+        var result = service.calculate(new LiquidationCalculator.Input(fiscal(body.capital()), fiscal(body.prima()),
                 fiscal(body.complementario()), body.importeCapital(), body.beneficios(), body.anticipo(),
                 body.interesesPendientes(), percentages));
+        return new Liquidacion(amount(result.capital()), amount(result.prima()), amount(result.complementario()),
+                result.liquidoCapital(), result.importesCoasegurados());
+    }
+
+    private Vt01Request request(String operation, ExpedienteMutation body) {
+        return new Vt01Request(operation, body.anio(), body.numero(), body.ramo(), body.anioPoliza(),
+                body.numeroPoliza(), body.subpoliza(), body.certificado(), body.nif(), body.situacion(),
+                body.importeCapital(),
+                body.beneficios(), body.anticipo(), body.interesesPendientes(), body.fechaEfecto(),
+                body.coaseguradoras().stream().map(value ->
+                        new HostVencimientosPort.Coaseguradora(value.codigo(), value.porcentaje(), null, null)).toList());
+    }
+
+    private ExpedienteMutation withKeys(String anio, String numero, ExpedienteMutation body) {
+        return new ExpedienteMutation(anio, numero, body.ramo(), body.anioPoliza(), body.numeroPoliza(),
+                body.subpoliza(), body.certificado(), body.nif(), body.situacion(), body.importeCapital(), body.beneficios(),
+                body.anticipo(), body.interesesPendientes(), body.fechaEfecto(), body.coaseguradoras());
+    }
+
+    private Expediente toApi(HostVencimientosPort.Expediente value) {
+        return new Expediente(value.anio(), value.numero(), value.ramo(), value.anioPoliza(),
+                value.numeroPoliza(), value.subpoliza(), value.certificado(), value.nif(), value.situacion(),
+                value.importeCapital(), value.beneficios(), value.anticipo(), value.interesesPendientes(),
+                value.fechaEfecto(), value.coaseguradoras().stream()
+                .map(item -> new Coaseguradora(item.codigo(), item.porcentaje())).toList());
+    }
+
+    private Coaseguro toCoaseguro(List<HostVencimientosPort.Coaseguradora> values) {
+        return new Coaseguro(values.stream().map(item -> new Coaseguradora(item.codigo(), item.porcentaje())).toList());
+    }
+
+    private Cartera toApi(HostVencimientosPort.Cartera value) {
+        return new Cartera(value.ramo(), value.anioPoliza(), value.numeroPoliza(),
+                value.subpoliza(), value.modalidad(), value.situacion());
     }
 
     private LiquidationCalculator.FiscalInput fiscal(FiscalInput input) {
@@ -191,19 +280,17 @@ public class VencimientosController {
                 input.tipoImpuesto(), input.codigoPostal());
     }
 
-    private Map<String, Object> expedienteFields(String operation, ExpedienteMutation body) {
-        return fields("OPERACION-E", operation, "ANIO-E", body.anio(), "KEXPEDIENTE-E", body.numero(),
-                "KRAMO-E", body.ramo(), "KPOLIZA-E", body.numeroPoliza(), "NSUBPOLIZA-E", body.subpoliza(),
-                "KCERTIFICADO-E", body.certificado(), "NIF-E", body.nif(), "IMPCAPITAL-E", body.importeCapital(),
-                "BENEFICIOS-E", body.beneficios(), "ANTICIPO-E", body.anticipo(),
-                "INTERESES-PENDIENTES-E", body.interesesPendientes());
+    private void validateCoaseguro(List<Coaseguradora> values) {
+        if (!values.isEmpty()) {
+            BigDecimal sum = values.stream().map(Coaseguradora::porcentaje)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            if (sum.compareTo(new BigDecimal("100")) != 0) {
+                throw new IllegalArgumentException("Los porcentajes de coaseguro deben sumar 100");
+            }
+        }
     }
 
-    private Map<String, Object> fields(Object... keyValues) {
-        Map<String, Object> result = new LinkedHashMap<>();
-        for (int i = 0; i < keyValues.length; i += 2) {
-            if (keyValues[i + 1] != null) result.put(String.valueOf(keyValues[i]), keyValues[i + 1]);
-        }
-        return result;
+    private ImporteCalculado amount(LiquidationCalculator.Amount value) {
+        return new ImporteCalculado(value.importe(), value.rtoNeto(), value.retencion(), value.liquido());
     }
 }

@@ -1,8 +1,6 @@
 spring:
   application:
     name: vencimientos-manuales-bff
-  profiles:
-    default: local
   jackson:
     default-property-inclusion: non_null
 server:

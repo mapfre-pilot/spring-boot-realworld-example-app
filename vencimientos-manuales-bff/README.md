@@ -15,7 +15,7 @@ cd vencimientos-manuales-bff/sources
 
 El servicio escucha en `http://localhost:8080`. La documentación OpenAPI está disponible en `/v3/api-docs` y `/v3/api-docs.yaml`. Los endpoints de Actuator se publican sin autenticación en `/monitoring/health`, `/monitoring/metrics` y `/monitoring/prometheus`.
 
-`local` desactiva deliberadamente la autenticación y solo debe usarse para desarrollo. En los demás perfiles el servicio actúa como OAuth2 Resource Server para Entra ID; configura `ENTRAID_TENANT_ID`, `ENTRAID_AUDIENCE`, `ENTRAID_SCOPE_CONSULTA` y `ENTRAID_SCOPE_GESTION` sin incluir secretos en el repositorio. El CORS local permite `http://localhost:4200`; otros orígenes se configuran en `APP_CORS_ALLOWED_ORIGINS`.
+Sin perfil activo, la aplicación usa la configuración segura de OAuth2 Resource Server para Entra ID; configura `ENTRAID_TENANT_ID`, `ENTRAID_AUDIENCE`, `ENTRAID_SCOPE_CONSULTA` y `ENTRAID_SCOPE_GESTION` sin incluir secretos en el repositorio. `local` desactiva deliberadamente la autenticación y solo debe usarse para desarrollo, activándolo de forma explícita con `SPRING_PROFILES_ACTIVE=local` (o `-Dspring-boot.run.profiles=local` al arrancar con Maven). El CORS local permite `http://localhost:4200`; otros orígenes se configuran en `APP_CORS_ALLOWED_ORIGINS`.
 
 Para emitir trazas OTLP configura `OTEL_EXPORTER_OTLP_ENDPOINT`; el exportador queda desactivado si no se proporciona. Los logs se generan en JSON y no registran cuerpos HTTP ni PII.
 
@@ -33,9 +33,9 @@ El adaptador CTG no abre conexiones reales. `ARCH-FIS-COM-001` requiere Gateway 
 | Legacy | Endpoint |
 |---|---|
 | B372VT04 + B372VT08 | `GET /api/v1/expedientes` |
-| B372VT01 | `GET/POST/PUT /api/v1/expedientes`, `POST /{anio}/{numero}/anulacion` y `/reaseguro` |
+| B372VT01 | `GET/POST/PUT /api/v1/expedientes`, `POST /{anio}/{numero}/anulacion` y `/reaseguro`, `PUT /api/v1/expedientes/{anio}/{numero}/coaseguro` |
 | B372VT02 | `GET/PUT /api/v1/expedientes/{anio}/{numero}/variables` |
-| B372VT12 | `GET/PUT /api/v1/expedientes/{anio}/{numero}/coaseguro` |
+| B372VT12 | `GET /api/v1/expedientes/{anio}/{numero}/coaseguro` |
 | B372VT11 | `GET /api/v1/personas?nif=...` |
 | B372VT19 | `GET /api/v1/polizas/{ramo}/{anio}/{numero}/cartera` |
 | B372VT03 + B372VT05 | `GET /api/v1/carteras` y `/api/v1/carteras/listado` (provisionales) |
@@ -53,9 +53,9 @@ Los catálogos VT03/VT05 quedan explícitamente provisionales: sus contratos apa
 ## Límites y cuestiones abiertas
 
 - B372VT11 recibe claves de persona/domicilio en el XML legacy, no un NIF de búsqueda. El endpoint por NIF es el contrato solicitado; el mapeo productivo debe acordarse con el propietario de ese servicio.
-- El XML de B372VT12 es de consulta del cuadro y no define con claridad la escritura de coaseguradoras. El `PUT` queda en el contrato, pero necesita confirmar el servicio o ampliar formalmente el XML.
+- El XML de B372VT12 define la consulta del cuadro; la escritura se modela mediante los campos de entrada de coaseguro de B372VT01. Hay que confirmar que la operación `M1` es la prevista por el host para este cambio.
 - No se encontró el código de operación VT01 para anulación ni para consulta individual; alta `A1`, modificación `M1` y reaseguro `M3` sí están confirmados. No se debe habilitar tráfico host hasta cerrar esos códigos.
-- Los DTOs host conservan los nombres XML en mapas tipados por servicio; el snapshot de implantación debe convertirse en campos Java explícitos antes de activar una integración real.
+- Los requests y responses del puerto host son records Java tipados; la traducción a campos XML/COBOL está confinada al adaptador `B372VtXmlMapper`. El adaptador CTG sigue pendiente y debe validarse con el contrato de transporte real antes de activar integración.
 - VT03/05/08 se mantienen provisionales donde el inventario no confirma contrato o caller. VT12 usa transacción 3612.
 - El algoritmo implementa el redondeo solicitado `HALF_UP`; la función legacy usa `Number.toFixed`, cuyo comportamiento puede diferir en empates binarios. `tools/caracterizacion/calculos.js` ejecuta la función legacy original para evidenciar esos casos.
 - Los flujos que crean estado reciben `Idempotency-Key`, pero no hay almacenamiento compartido de claves; se debe definir la estrategia antes de habilitar reintentos con CTG.

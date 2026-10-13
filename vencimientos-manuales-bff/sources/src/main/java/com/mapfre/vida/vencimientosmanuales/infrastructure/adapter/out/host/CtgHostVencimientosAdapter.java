@@ -4,14 +4,19 @@ import com.mapfre.vida.vencimientosmanuales.application.port.out.HostVencimiento
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-
 @Component
 @Profile("!local")
 public class CtgHostVencimientosAdapter implements HostVencimientosPort {
+    private final B372VtXmlMapper xmlMapper;
+
+    public CtgHostVencimientosAdapter(B372VtXmlMapper xmlMapper) {
+        this.xmlMapper = xmlMapper;
+    }
+
     @Override
     @HostAudit
-    public HostResponse execute(Operacion operacion, Map<String, Object> camposXml) {
+    public VtResponse execute(Operacion operacion, VtRequest request) {
+        xmlMapper.toXmlFields(request);
         throw new HostIntegrationPendingException();
     }
 }
