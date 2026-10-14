@@ -25,7 +25,7 @@ Mismo protocolo que `coordinacion-ronda9.md` (léelo entero antes de empezar). R
 | R10-A Telemáticas | en curso (inicio 2026-10-14 13:40 UTC) | | lectura de planes/h1-h3; pólizas §R10-A de arriba abajo; informe r10a-telematicas.md |
 | R10-B Corredor | pendiente | | |
 | R10-C Campañas TTQ/PREMFIDE/RETOS/SVA | en curso (2026-10-14 13:35 UTC) | | Leyendo planes; análisis SAIL CA campañas; pólizas §R10-C de arriba abajo |
-| R10-D Plan de pagos + NSE autorización | pendiente | | |
+| R10-D Plan de pagos + NSE autorización | en curso (inicio 2026-10-14 13:40 UTC) | | Lectura de planes; informe `r10d-plan-pagos-documentos-nse.md`; sin reservas todavía |
 | PADRE | en curso | | HU3980 estados, Detalle tras actualización NSE, documentos AA |
 
 ## Incidencias compartidas
