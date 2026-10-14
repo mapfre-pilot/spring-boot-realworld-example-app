@@ -37,7 +37,21 @@ Los modales `SCA2_ContraAnulacionModalRetos`, `…ModalSVA` y `…ModalSVAEmail`
 
 ## 4. Resultados por caso
 
-_(se completa con las pruebas de UI)_
+_(en curso — tabla provisional, se completa al cerrar)_
+
+### 4.1 Solicitudes creadas en esta sesión
+
+| App | Póliza | Solicitud | Gestión CA | Argumentos de campaña vistos | Uso |
+|---|---|---|---|---|---|
+| SCA | 0731380063613 | 15787972 | — (sólo alta 43705612) | — | GUARDAR tardó ~5 min y acabó en «403 Acceso denegado»; la solicitud se creó pero SCA no generó la tarea de CA |
+| SCA | 0731380341847 | 15787981 | — (sólo alta 43705629) | — | Idem |
+| SCA | 0006661200369 | 15787988 | — | — | Idem |
+| SCA | 0732000133236 | 15787993 | — | — | Idem |
+| SCA2 | 0731600130561 | — | — | — | El alta no creó solicitud (póliza vencida 19/09/2026) |
+| SCA2 | 2002300400992 | 15787983 | 43705638 FINALIZADA POSITIVA 16:10 | SERVICIO VALOR AÑADIDO (252) | Caso 2-13 SVA: POSITIVO sin modal de regalos (igual que SCA por diseño, ver §6) |
+| SCA2 | 2002100432427 | 15787994 | 43705658 FINALIZADA POSITIVA 16:20 | TU TE QUEDAS BANKIA 76 TREBOLES DISPONIBLES (DEFCART TTQBANKIA), PÉRDIDA DE DESCUENTOS (290) | Caso 2-10 TTQ (validaciones, cancelar, error de integración → corregido) y 2-14 |
+| SCA2 | 2002100425210 | 15788000 | pendiente | TU TE QUEDAS CONCESIONARIOS 40 TREBOLES DISPONIBLES | Caso 2-10 TTQ positivo completo tras correcciones |
+
 
 ## 5. Hallazgos externos (CORE / NSE / Emisión / Documentum)
 
