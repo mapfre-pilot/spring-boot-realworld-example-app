@@ -20,7 +20,7 @@ Mismo protocolo que `coordinacion-ronda9.md` (léelo entero antes de empezar). R
 | SCA2_subirDocumentosGD, SCA2_calcularDocumentosASubir | `_a-0001f076-8f0a-8000-9d26-011c48011c48_5481351 / _a-0000f069-4f37-8000-9cc8-011c48011c48_20052759` | PADRE | Documento de venta (con/sin traspaso) no llega al gestor documental en AA (Analisis SCA2 14/10) | 2026-10-07 17:00 | | |
 | SCA2_ContraAnulacionOpciones | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056435` | R10-C | Campañas: pasar tuTeQuedas/numBonAplic/svaElegido/email/fecVencimiento al modal de recuperación (hoy SCA2 nunca llama gestionarTTQ) y usar DEFCART (tréboles disponibles/recomendados, tipoBonificacion) como SCA | 2026-10-14 14:20 | | PUT hecho v44 → v45 (14:45 UTC); pendiente prueba UI |
 | SCA2_ContraAnulacionModalRecuperacionPoliza | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052951` | R10-C | Paridad SCA en asignación TTQ/tréboles/SVA (reset estado argumento en error, mensaje cerca de vencimiento) | 2026-10-14 14:20 | | PUT hecho v4 → v5 (14:45 UTC); pendiente prueba UI |
-| SCA2_executeAsignarIntegracion | `6eb7470e-5807-4050-801c-442bdab112c3` | R10-C | Asignación de tréboles Club MAPFRE falla en SCA2 (500 «no SOAPAction header!») mientras SCAC_executeAsignarIntegracion responde 200 con el mismo payload | 2026-10-14 16:30 | | |
+| SCA2_executeAsignarIntegracion | `6eb7470e-5807-4050-801c-442bdab112c3` | R10-C | Asignación de tréboles Club MAPFRE falla en SCA2 (500 «no SOAPAction header!») mientras SCAC_executeAsignarIntegracion responde 200 con el mismo payload | 2026-10-14 16:30 | 2026-10-14 16:40 | v1 → v2: `ignoreEmptyHeaders` a false para que se envíe `SOAPAction: ""`; test LCP con NIF inválido devuelve 200/inderror=1 como SCAC |
 
 ## Estado por sesión
 
