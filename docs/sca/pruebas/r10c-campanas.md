@@ -50,7 +50,9 @@ _(en curso — tabla provisional, se completa al cerrar)_
 | SCA2 | 0731600130561 | — | — | — | El alta no creó solicitud (póliza vencida 19/09/2026) |
 | SCA2 | 2002300400992 | 15787983 | 43705638 FINALIZADA POSITIVA 16:10 | SERVICIO VALOR AÑADIDO (252) | Caso 2-13 SVA: POSITIVO sin modal de regalos (igual que SCA por diseño, ver §6) |
 | SCA2 | 2002100432427 | 15787994 | 43705658 FINALIZADA POSITIVA 16:20 | TU TE QUEDAS BANKIA 76 TREBOLES DISPONIBLES (DEFCART TTQBANKIA), PÉRDIDA DE DESCUENTOS (290) | Caso 2-10 TTQ (validaciones, cancelar, error de integración → corregido) y 2-14 |
-| SCA2 | 2002100425210 | 15788000 | pendiente | TU TE QUEDAS CONCESIONARIOS 40 TREBOLES DISPONIBLES | Caso 2-10 TTQ positivo completo tras correcciones |
+| SCA2 | 2002100425210 | 15788000 | 43705672 FINALIZADA POSITIVA 16:35 | TU TE QUEDAS CONCESIONARIOS 40 TREBOLES DISPONIBLES | Caso 2-10 TTQ POSITIVO completo (TTQAUTOCON, máximo 40, 1 trébol asignado: Club MAPFRE pasa de 0,88 a 1,88) |
+| SCA2 | 2002300300497 | 15788003 | CA FINALIZADA NEGATIVA | TU TE QUEDAS NO CLUB MAPFRE 20 TREBOLES DISPONIBLES | Caso 2-10 NEGATIVO con argumento de campaña (sin modal; exige imprimir carta; redirige a Anular póliza, no anulada) |
+| SCA2 | 2002300379272 | 15788004 | INCOMPLETA (pendiente) | TU TE QUEDAS NO CLUB MAPFRE 30 TREBOLES DISPONIBLES | Caso 2-10 con cliente no activo en Club MAPFRE: mensaje «No se han podido asignar tréboles… no está dado de alta en te cuidamos… El cliente no tiene ningún contrato en vigor…» y argumento vuelve a Pendiente |
 
 
 ## 5. Hallazgos externos (CORE / NSE / Emisión / Documentum)
