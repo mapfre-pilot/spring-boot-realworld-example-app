@@ -24,7 +24,7 @@ Mismo protocolo que `coordinacion-ronda9.md` (léelo entero antes de empezar). R
 |---|---|---|---|
 | R10-A Telemáticas | pendiente | | |
 | R10-B Corredor | pendiente | | |
-| R10-C Campañas TTQ/PREMFIDE/RETOS/SVA | pendiente | | |
+| R10-C Campañas TTQ/PREMFIDE/RETOS/SVA | en curso (2026-10-14 13:35 UTC) | | Leyendo planes; análisis SAIL CA campañas; pólizas §R10-C de arriba abajo |
 | R10-D Plan de pagos + NSE autorización | pendiente | | |
 | PADRE | en curso | | HU3980 estados, Detalle tras actualización NSE, documentos AA |
 
