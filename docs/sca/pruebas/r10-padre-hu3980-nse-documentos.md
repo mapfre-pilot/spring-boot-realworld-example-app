@@ -61,3 +61,16 @@ Al volver desde el Detalle de 15787945 en SCA, error en `sca_datoscabecera` (`a!
 ## Evidencias
 
 Grabación de la sesión de pruebas UI: `sca-hu3980-autorizacion-1410-edited.mp4` (adjunta en la sesión Devin). Capturas en `evidencias/r10-padre-*.png`.
+
+
+## Anexo A — Alta Hogar NSE en SCA2 (hallazgo R10-A, corregido por el PADRE)
+
+**Síntoma (R10-A, póliza 0732000028208, Hogar telemática NSE):** tras ACEPTAR en el popup de validaciones, SCA2 volvía al formulario sin ID ni mensaje a los ~58 s; CORE sin solicitud; bandeja de errores vacía. Reproducido dos veces.
+
+**Causa (propia de SCA2):** `SCA2_construirContextoAlta` v10 devolvía `datosPolizaHogar: { tomador: {}, estructuraComercial: {} }` (listas vacías). `SCA2_PreGenerarStudAnul` (misma expresión que `SCA_PreGenerarStudAnul`) indexa `datosPolizaHogar.tomador.codCalificacion` cuando `origenPoliza = "NSE-Hogar"` y lanzaba «Cannot index property 'codCalificacion' of type String into type List of Variant» (LCP, `r14/diag_pre_hogar.json`). El nodo *PreGenerar* del PM `SCA2 CMD Alta` quedaba en pausa por excepción antes de llamar a CORE: ni `PDTE-`, ni registro `SCA2 Error`, ni mensaje en pantalla (el `a!startProcess` síncrono volvía sin `idSolicitud`). En SCA el contexto es un CDT tipado (campos nulos), por eso nunca falla.
+
+**Corrección:** `SCA2_construirContextoAlta` v10 → v11: `datosPolizaHogar.tomador` (codCalificacion = COD_SCORE de NSE, fechaDeNacimiento = fecnac, tomadorEsConductor) y `estructuraComercial.codOficinaComercial` (nomelemnivel4) con las mismas fuentes NSE que `datosPolizaAutos`; para wAutemis quedan nulos. Backup/readback en `r14/backup/SCA2_construirContextoAlta_{before,after}.json`.
+
+**Verificación:** LCP `construirContextoAlta` + `PreGenerarStudAnul` sin error para 0732000028208 (NSE-Hogar), 2002100194827 (NSE-Autos) y 0000253500329 (wAutemis). UI (testing agent, JJGONZ2): alta de 0732000028208 → solicitud **15788005** creada con un solo GUARDAR+ACEPTAR, navegación automática a Acciones Administrativas en ~50 s, buscador «Solicitud Pendiente» (naranja) con la observación. La cabecera muestra producto HOGAR FAMILIAR y productor por canal (INTERNET-TELEFO / Telemática); el vencimiento se ve 01/02/2027 porque CORE devuelve `2027-01-31 23:00 UTC` (hora de Madrid 01/02): no es divergencia.
+
+**Pendiente de observación:** el fallo silencioso del PM `SCA2 CMD Alta` (excepción en *PreGenerar* sin `Write Error`) sigue siendo posible para otras excepciones de expresión; se propone al analista/mantenimiento que el alta muestre «Su solicitud se está generando…» con reintento/aviso cuando el proceso no devuelve `idSolicitud` en 60 s (hoy la pantalla ya lo contempla, pero la excepción deja el proceso en pausa, no en error).

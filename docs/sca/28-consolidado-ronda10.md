@@ -19,10 +19,10 @@ Ver `pruebas/r10-padre-hu3980-nse-documentos.md`.
 ## 3. Resultados de las sesiones (pendiente)
 | Sesión | Informe | OK | Corregidas | Pendientes decisión | No probados |
 |---|---|---|---|---|---|
-| R10-A Telemáticas | `pruebas/r10a-telematicas.md` | | | | |
+| R10-A Telemáticas | `pruebas/r10a-telematicas.md` | OK 5 · corregidas 0 (hallazgo alta Hogar NSE corregido por el PADRE, anexo A del informe del padre: `SCA2_construirContextoAlta` v11, solicitud 15788005) · texto distinto 1 (mensaje de solicitud abierta) · decisión 1 (pregunta «¿insiste?» para SI24) · no comparables por SCA 2 (decisora SCA TEST 403) · sin datos 3 (todas las telemáticas del Excel son NSE; 5 vigentes) |
 | R10-B Corredor | `pruebas/r10b-corredor.md` | | | | |
 | R10-C Campañas | `pruebas/r10c-campanas.md` | | | | |
-| R10-D Plan de pagos / documentos AA / NSE | `pruebas/r10d-plan-pagos-documentos-nse.md` | | | | |
+| R10-D Plan de pagos / AA documentos / NSE | `pruebas/r10d-plan-pagos-documentos-nse.md` | OK 5 · corregidas 0 · decisión 1 (plan de pagos: ni SCA ni SCA2 avisan/bloquean) · tipo 9 «compraventa sin traspaso» no llega a CORE en ninguna app (diseño heredado de SCA; tipo 1, 3 y 7 sí) · NSE: autorización positiva de 15787945 nunca llegó a CORE (externo) · no probados 3 (recorridos SCA por latencia) · solicitudes nuevas 15787977/78, 15787986/92, 15787996/98 |
 
 ## 4. Divergencias corregidas en SCA2 (pendiente de consolidar)
 
