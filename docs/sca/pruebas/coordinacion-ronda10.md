@@ -26,7 +26,7 @@ Mismo protocolo que `coordinacion-ronda9.md` (léelo entero antes de empezar). R
 
 | Sesión | Estado | Último commit | Nota |
 |---|---|---|---|
-| R10-A Telemáticas | en curso (inicio 2026-10-14 13:40 UTC) | | lectura de planes/h1-h3; pólizas §R10-A de arriba abajo; informe r10a-telematicas.md |
+| R10-A Telemáticas | TERMINADA (2026-10-14 ~17:00 UTC) | ninguna reserva; ningún objeto SCA2 modificado | Informe `pruebas/r10a-telematicas.md`. 20 pólizas R10-A clasificadas (todas NSE telemáticas; sólo 5 vigentes sin solicitud abierta). Solicitudes creadas: SCA 15787971/15787976/15787984; SCA2 15787973/15787979. Hallazgos: decisora SCA TEST no ejecuta (403/«Aún procesando») → CA/AA no comparables en SCA; **alta Hogar SCA2 (0732000028208) no crea solicitud ni error, reproducido 2 veces → pendiente de diagnóstico con trazas de proceso**; texto distinto en mensaje «solicitud abierta»; pregunta «¿insiste?» SI24 sigue pendiente de decisión (ronda 9). |
 | R10-B Corredor | EN CURSO (inicio 2026-10-14 13:35 UTC) | | Alta + CA con pólizas de corredor (§R10-B); informe r10b-corredor.md |
 | R10-C Campañas TTQ/PREMFIDE/RETOS/SVA | en curso (2026-10-14 13:35 UTC) | | Leyendo planes; análisis SAIL CA campañas; pólizas §R10-C de arriba abajo |
 | R10-D Plan de pagos + NSE autorización | en curso (inicio 2026-10-14 13:40 UTC) | | Lectura de planes; informe `r10d-plan-pagos-documentos-nse.md`; sin reservas todavía |
