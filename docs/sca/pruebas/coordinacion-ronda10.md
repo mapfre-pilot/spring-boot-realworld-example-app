@@ -15,6 +15,7 @@ Mismo protocolo que `coordinacion-ronda9.md` (léelo entero antes de empezar). R
 
 | Objeto | UUID | Sesión | Motivo | Reservado (UTC) | Liberado (UTC) | Versión ant. → nueva / resultado |
 |---|---|---|---|---|---|---|
+| SCA2_cargarSolicitud | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20054954` | R10-B | `datosProductor` del mapa no incluye idcanal/idsubcanal/estele/essi24 (el record sí los tiene): el modal Sí/No nunca ve canal 4/5 (corredor) ni telemática; se añaden esos campos | 2026-10-14 18:05 | | |
 | SCA2_ContraAnulacionOpciones | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056435` | R10-B | FINALIZAR de CA debe abrir el modal Sí/No como SCA (aviso corredor SI24/GGE caso 2-19, ilocalizables, «¿insiste?» CCC); cambio mínimo sobre v47 | 2026-10-14 17:20 | | |
 | SCA2_ContraAnulacionModalSiNo | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052807` | R10-B | Nuevo input `onFinalizar` para que el «Si/OK» del modal lance CMD CompletarAccion desde Opciones (en SCA lo hace el submit del formulario de tarea) | 2026-10-14 17:20 | | |
 | SCA2_textoEstadoSolicitud, SCA2_colorEstadoSolicitud, SCA2_calcularEstadoSolicitud, SCA2_BuscadorTabla, SCA2_TablaOtrasSolAnulacion | `20063670 / 20063676 / 20052795 / 20056379 / 20065000` | PADRE | Etiquetas y colores del listado por NUUMA según HU3980 | 2026-10-07 17:00 | 2026-10-14 17:05 | calcularEstadoSolicitud 1→2, textoEstado 13→14, colorEstado 6→7, BuscadorTabla 11→12 (TablaOtrasSol sin cambios, v6). Validación LCP + render buscador OK; etiquetas/colores HU3980 |
