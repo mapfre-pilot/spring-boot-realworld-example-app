@@ -63,3 +63,7 @@ y gestiones; SCA2 mantiene su record como caché/estado de proceso.
 - Repo documental: `mapfre-pilot/spring-boot-realworld-example-app`, rama **`feature/sca`** (PR #1 abierta), carpeta `docs/sca/`. Commits pequeños, sin `git add .`, push a la misma rama.
 - Workspace `sca2work/` (en el paquete, sin credenciales): `obj/` = exportación local de SCA/SCA2/SCAC (reglas, interfaces, procesos en .sail/.json; puede estar desfasada respecto a TEST: **siempre GET vivo antes de modificar**), `r5…r15/` = backups, payloads y relecturas por ronda, `r15/NOTAS-ronda11.md` = notas de la última ronda.
 - Memoria del usuario y de la forma de trabajar: ver `docs/sca/README.md` y este documento.
+
+
+## 8. Sesiones
+Ver `MAPA-SESIONES.md` (= `docs/sca/31-mapa-sesiones.md`): sesión padre, sesiones previas y las 20 sesiones hijas con su cometido e informe.
