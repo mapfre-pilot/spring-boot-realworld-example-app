@@ -21,11 +21,15 @@ Hallazgo colateral corregido durante la prueba: pestaña «Solicitud Anulación�
 | ANULAR PÓLIZA → CORRECTO; el proceso crea la gestión «Verti/vencimiento» (tarea VERTI 231, 18:19:40) | PASA: el motor devolvió contactos para esta póliza |
 | Tras ACEPTAR, saltar a la pantalla de inducción | FALLABA (volvía al buscador) → corregido en `SCA2_DetalleTareas` v25 (pendiente de reprobar con otra solicitud en MECANIZAR) |
 | Pantalla «Inducción Verti / Vencimiento» con casillas | FALLABA («No se han determinado contactos») → corregido v5 (parámetros del motor como en Mecanización + casillas por defecto si el motor no responde): PASA |
-| CONTINUAR → mecanizar | FALLABA 1: la 2.ª ejecución de CMD Mecanizar se descartaba por idempotencia (la tarea VERTI escribía la transición OK) → corregido en el proceso. FALLABA 2: «only one smart service can be run per expression evaluation» (insertarObservaciones + startProcess) → v6/v7 encadenan inducción → mecanizar y pasan las observaciones al proceso. Resultado de la reprueba final: ver §3 |
+| CONTINUAR → mecanizar | FALLABA 1: la 2.ª ejecución de CMD Mecanizar se descartaba por idempotencia (la tarea VERTI escribía la transición OK) → corregido en el proceso. FALLABA 2: «only one smart service can be run per expression evaluation» (insertarObservaciones + startProcess) → v6/v7 encadenan inducción → mecanizar y pasan las observaciones al proceso. FALLABA 3 (v6/v7): encadenar startProcess en onSuccess cuenta también como 2.º smart service → v8: el botón sólo lanza CMD Mecanizar con `inducirVerti`, y el proceso tiene un nodo nuevo «Inducción Verti (CMP)» (Start Process del PM corporativo). FALLABA 4 (v8): el proceso ejecutó la mecanización en CORE (gestión 43705728) pero «Write Éxito» falló por clave de idempotencia duplicada (la tarea VERTI había escrito ya la clave `SCA2 CMD Mecanizar|15788025|1` a las 18:19) → clave con sufijo `|VERTI` en la vuelta desde la inducción y cierre de la tarea MECANIZAR pendiente. Resultado de la reprueba con solicitud nueva: §3 |
 | Comparación SCA | No probado: sin solicitud SCA en mecanización; póliza 0000023400744 tiene ya la solicitud 15788045 |
 
-## 3. Pendientes de prueba
-- Reprueba final de CONTINUAR en 15788025 con v7 (se anota al cerrar la ronda).
+## 3. Reprueba con solicitud nueva (15788053, póliza 0001047017117)
+(resultado al cierre de la ronda; ver doc 34 §4)
+
+**Estado de 15788025 (ATENCIÓN):** CORE tiene la anulación mecanizada (gestión 43705728, proceso 17390968 a las 18:45) pero SCA2 sigue en EN_ACCION/VERTI con las tareas 220 (MECANIZAR) y 231 (VERTI) pendientes porque la escritura falló. No relanzar CMD Mecanizar (volvería a llamar a CORE); hace falta sincronizar el registro a mano (MECANIZADA → ANL) o finalizar la solicitud. Decisión del usuario.
+
+## 4. Pendientes de prueba
 - ANULAR PÓLIZA → ACEPTAR → pantalla de inducción en la misma cadena (DetalleTareas v25) con una solicitud nueva en MECANIZAR.
 - Efecto real de la inducción (PM CMP Inducir Cliente Completo) en GAIA/Verti: sólo comprobable desde Verti/GAIA.
 - Vencimiento a un año (SGC): no implementado en SCA2 (doc 34 §3).
