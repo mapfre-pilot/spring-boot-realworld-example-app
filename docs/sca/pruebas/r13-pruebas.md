@@ -36,7 +36,9 @@ Hallazgo colateral corregido durante la prueba: pestaña «Solicitud Anulación�
 | Efecto real de la inducción en Verti/GAIA | NO PROBADO (sólo desde Verti/GAIA) |
 
 ### 3b. Reprueba de DetalleTareas v26 (ACEPTAR → inducción en la misma cadena)
-- 15788057 / 0001047017127: la póliza tiene acuerdo especial → la CA negativa derivó a CA nivel 2 (GGE EXPERTOS SI24), no a Mecanización; no sirve para el escenario. Se repite con otra póliza (resultado al final de esta sección).
+- 15788057 / 0001047017127: la póliza tiene acuerdo especial → la CA negativa derivó a CA nivel 2 (GGE EXPERTOS SI24), no a Mecanización; no sirve para el escenario (queda la CA nivel 2 sin gestionar).
+- 15788058 / 0001047017135 (v26): ANULAR PÓLIZA → ACEPTAR volvió al buscador. Causa real (hallada por el tester en el código): en MECANIZACION el popup CORRECTO mostraba otra card «ACEPTAR» con enlace directo al buscador y ocultaba el botón corregido → v27/v28: el botón corregido se muestra en MECANIZACION, relee la tarea VERTI en el clic y mantiene el popup («Comprobando si procede la inducción…») mientras el proceso no ha decidido. Por RETOMAR: Verti → CONTINUAR → Detalle a los 2 min: Mecanización «Anulación Realizada», Verti «Finalizada», nueva CA nivel 2 incompleta (no gestionada).
+- Tercera solicitud (v28): resultado al final de esta sección.
 
 
 **Estado de 15788025 (ATENCIÓN):** CORE tiene la anulación mecanizada (gestión 43705728, proceso 17390968 a las 18:45) pero SCA2 sigue en EN_ACCION/VERTI con las tareas 220 (MECANIZAR) y 231 (VERTI) pendientes porque la escritura falló. No relanzar CMD Mecanizar (volvería a llamar a CORE); hace falta sincronizar el registro a mano (MECANIZADA → ANL) o finalizar la solicitud. Decisión del usuario.
