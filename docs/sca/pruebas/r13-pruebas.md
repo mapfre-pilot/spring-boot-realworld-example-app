@@ -25,7 +25,19 @@ Hallazgo colateral corregido durante la prueba: pestaña «Solicitud Anulación�
 | Comparación SCA | No probado: sin solicitud SCA en mecanización; póliza 0000023400744 tiene ya la solicitud 15788045 |
 
 ## 3. Reprueba con solicitud nueva (15788053, póliza 0001047017117)
-(resultado al cierre de la ronda; ver doc 34 §4)
+| Paso | Resultado |
+|---|---|
+| CA: INCREMENTO PRIMA → NEGATIVO → FINALIZAR → SI (oficina MADRID CORREDORES NORTE II, carta) | PASA: «Finalizada Negativa» |
+| Mecanización: sólo confirmación; ANULAR PÓLIZA | PASA |
+| ACEPTAR abre la inducción en la misma cadena | FALLA (vuelve al buscador: ACEPTAR se pulsó antes de que el proceso creara la tarea VERTI) → `SCA2_DetalleTareas` v26: ACEPTAR espera (máx. 90 s) a la tarea VERTI o al fin de la mecanización. Reprueba: §3b |
+| RETOMAR Gestión Verti/vencimiento → casillas → Verti → CONTINUAR → ACEPTAR | PASA, sin error |
+| Detalle a los 2 min | PASA: Mecanización «Anulación Realizada» (fin 21:04:25), Gestión Verti/vencimiento «Finalizada», sin MECANIZAR pendiente |
+| Después aparece «Contra Anulación — Incompleta, nivel 2» (21:04:19) | Comportamiento del ciclo existente (mecanización → cambio de nivel → CrearAccion nivel 2, como SCA: SI24). Confirmar con el analista que tras Verti también aplica |
+| Efecto real de la inducción en Verti/GAIA | NO PROBADO (sólo desde Verti/GAIA) |
+
+### 3b. Reprueba de DetalleTareas v26 (ACEPTAR → inducción en la misma cadena)
+- 15788057 / 0001047017127: la póliza tiene acuerdo especial → la CA negativa derivó a CA nivel 2 (GGE EXPERTOS SI24), no a Mecanización; no sirve para el escenario. Se repite con otra póliza (resultado al final de esta sección).
+
 
 **Estado de 15788025 (ATENCIÓN):** CORE tiene la anulación mecanizada (gestión 43705728, proceso 17390968 a las 18:45) pero SCA2 sigue en EN_ACCION/VERTI con las tareas 220 (MECANIZAR) y 231 (VERTI) pendientes porque la escritura falló. No relanzar CMD Mecanizar (volvería a llamar a CORE); hace falta sincronizar el registro a mano (MECANIZADA → ANL) o finalizar la solicitud. Decisión del usuario.
 
