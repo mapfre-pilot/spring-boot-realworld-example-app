@@ -16,6 +16,7 @@ Historial completo en `docs/sca/README.md` y los documentos 01–29. Lo impresci
 - `pruebas/` → un informe por sesión/ronda (h1–h6, r9a–r9e, r10a–r10d, r11-pruebas) y protocolos `coordinacion-ronda*.md`.
 
 ## 2. Pendientes exactos (en orden)
+0. **Ronda 12 ya aplicada** (`33-respuestas-analista-ronda12.md`, `pruebas/r12-pruebas.md`): 13 respuestas del analista, 2 cambios (etiqueta «Pendiente de Autorización» y `anulaTecnicos=true` para CCC/CCR). Quedan de ella: usuario CCC/CCR para probar en pantalla, caso 15788014, incidencia del alta que vuelve al formulario sin número (15788025), SCA TEST con etiquetas nuevas (externo).
 1. **Esperar respuestas del analista** a las 4 preguntas de `29` §5 y a las 21 de `28`: cascada motivo 3/detalle 8 (sin causas en CORE para nadie), convivencia del batch NSE, plazo/aviso ANL (24 h `ANL_TIMEOUT`), texto del error al cancelar autorización, quién ve la bandeja de errores.
 2. **Probar lo no probado de la ronda 11** (`pruebas/r11-pruebas.md` §3): decisión del motor con SI24 + póliza de acuerdos (`anulaExperto = true`) — hace falta una póliza de acuerdos (clase de agente 33/56/97/49/80/69 o acuerdos de la lista `isAcuerdoSi24` en `SCA2_ContraAnulacionOpciones`) sin solicitudes, alta y CA positiva con SISANS, y comprobar en `SCA2 Datos Solicitud.mcaanulaexperto = "true"` y la derivación del motor; y relanzamiento de un error `DOC_GD_FAIL` comprobando que la regla v7 reutiliza la referencia (`reutilizado: true`) sin duplicar en el SGD.
 3. **Batch NSE propio de SCA2**: cuando el analista decida (doc 29 §3), crear en el diseñador el proceso `SCA2 Batch Mecanizacion NSE` (la API LCP no crea procesos) y las reglas/constante desde LCP.
@@ -42,8 +43,9 @@ Pasos por objeto: GET vivo → comprobar `versionId` esperado → backup JSON �
 | Objeto | Tipo | UUID | Versión |
 |---|---|---|---|
 | SCA2_AltaSolicitudPage | Interfaz | _a-0000f069-4f37-8000-9cc8-011c48011c48_20055716 | v30 |
-| SCA2_ContraAnulacionOpciones | Interfaz | _a-0000f069-4f37-8000-9cc8-011c48011c48_20056435 | v49 |
-| SCA2_ContraAnulacionModalSiNo | Interfaz | _a-0000f069-4f37-8000-9cc8-011c48011c48_20052807 | v4 |
+| SCA2_ContraAnulacionOpciones | Interfaz | _a-0000f069-4f37-8000-9cc8-011c48011c48_20056435 | v50 (R12) |
+| SCA2_ContraAnulacionModalSiNo | Interfaz | _a-0000f069-4f37-8000-9cc8-011c48011c48_20052807 | v5 (R12) |
+| SCA2_calcularEstadoSolicitud | Regla | _a-0000f069-4f37-8000-9cc8-011c48011c48_20052795 | v3 (R12) |
 | SCA2_consultarCausa | Regla | _a-0000f069-4f37-8000-9cc8-011c48011c48_20050906 | v2 |
 | SCA2_subirDocumentosGD | Regla | _a-0001f076-8f0a-8000-9d26-011c48011c48_5481351 | v7 |
 | SCA2_altaDocumento | Regla | _a-0001f076-8f0a-8000-9d26-011c48011c48_5481374 | v1 |

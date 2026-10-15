@@ -49,7 +49,7 @@ Revisados por el PADRE sin cambio: (a) tarjeta «Contra anulación» del Detalle
 - **Datos de prueba (R10-B)**: las 10 pólizas 2002500499276…301 figuran como productor «RED AGEN / Expertos» y sin cabecera en CORE; no sirven como corredor.
 
 ## 6. Preguntas para el analista
-1. **HU3980-1**: solicitud finalizada en CORE (estado 5) con mecanización `INCOMPLETA` porque NSE no respondió (15787945): ¿«Solicitud Pendiente», «Pendiente de Autorización» o «Solicitud Finalizada sin anular»? CORE no informa el estado de mecanización «pendiente de autorizar».
+1. **HU3980-1** *(resuelto R12: «Pendiente de Autorización», doc 33)*: solicitud finalizada en CORE (estado 5) con mecanización `INCOMPLETA` porque NSE no respondió (15787945): ¿«Solicitud Pendiente», «Pendiente de Autorización» o «Solicitud Finalizada sin anular»? CORE no informa el estado de mecanización «pendiente de autorizar».
 2. **HU3980-2**: ¿se actualizará SCA TEST con las etiquetas HU3980? Hasta entonces no hay comparación literal SCA/SCA2 en el buscador.
 3. **NSE-1**: texto de la tarjeta de Autorización tras rechazo NSE: SCA «Rechazada» vs SCA2 «Autorizacion Rechazada» (CORE no devuelve `codEstado`). ¿Cuál se quiere?
 4. **DOC-1**: en AA por venta del vehículo, el «Documento compra/venta sin traspaso del seguro» (tipo 9) no queda en CORE en ninguna de las dos aplicaciones (sólo DNI y contrato con traspaso). ¿Debe conservarse en CORE/gestor documental? ¿Debe avisar la pantalla a la oficina?
@@ -58,7 +58,7 @@ Revisados por el PADRE sin cambio: (a) tarjeta «Contra anulación» del Detalle
 7. **TEL-1** (R10-A): la pregunta «¿El cliente insiste en que se anule su póliza por este canal?» la ve en SCA SI24 y Gestión Especial; en SCA2 (decisión ronda 9) sólo CCC/CCR. ¿Se confirma que SI24 no debe verla? ¿Debe preguntarse también en el alta cuando deriva a AA (casos 23/24 del plan)?
 8. **TEL-2** (R10-A): mensaje de solicitud abierta: SCA «La póliza ya tiene una solicitud abierta en Appian»; SCA2 texto largo con instrucciones (esperar, no generar nueva, añadir documentos en NSE/SGO). ¿Cuál se mantiene?
 9. **TEL-3** (R10-A): póliza telemática gestionada por Oficina → SCA2 la deja en Contra Anulación nivel 1 de la misma oficina, sin salto a SI24. ¿Es lo esperado o debe saltar a SI24/Expertos por ser telemática?
-10. **NSE-2** (R10-D): autorización NSE de 15787945 que no llegó a CORE: ¿quién revisa el canal NSE→CORE? Mientras, ¿qué debe mostrar SCA2 (hoy «Mecanización Incompleta» / «Solicitud Finalizada sin anular»)?
+10. **NSE-2** *(respondido R12: lo cambia un servicio externo; mientras, mecanización incompleta)* (R10-D): autorización NSE de 15787945 que no llegó a CORE: ¿quién revisa el canal NSE→CORE? Mientras, ¿qué debe mostrar SCA2 (hoy «Mecanización Incompleta» / «Solicitud Finalizada sin anular»)?
 
 11. **CORR-1** (R10-B): SI24 Experto finaliza negativa la CA de una póliza de **corredor** (canal 4/5): SCA avisa «La póliza es de un corredor, es necesario que el cliente se dirija a su oficina bancaria o corredor…» y cierra como «finalizada sin anular, derivada». SCA2 lo está reproduciendo (§4 #5): ¿se confirma ese comportamiento y ese estado?
 12. **CORR-2** (R10-B): ¿se mantiene en SCA2 toda la cadena de preguntas de FINALIZAR de SCA (continuar → ilocalizable «¿se ha podido contactar?» → «¿insiste por este canal?» en correspondencia/telemática/acuerdo)? Se está igualando a SCA salvo indicación contraria.
