@@ -30,5 +30,15 @@ Todos los PMs se han re-dibujado con un layout por niveles (BFS desde Start: flu
 - Los inputs eliminados no se referenciaban en ninguna expresión (comentarios excluidos) y los llamadores sólo pasaban valores que se ignoraban.
 - Pruebas: regresión UI con el testing agent (alta → CA negativa → mecanización → inducción Verti; alta → CA positiva; buscador; Detalle) — resultado en §5.
 
-## 5. Pruebas
-(se completa al cierre de la ronda)
+## 5. Pruebas (testing agent, JJGONZ2, grabación `sca2-r14-regresion`)
+| Caso | Solicitud / póliza | Resultado |
+|---|---|---|
+| Buscador por póliza y por NIF; etiquetas HU3980 | 94821785F | PASA |
+| Alta → CA argumento → NEGATIVO «R14 regresión» → FINALIZAR → Mecanización (sólo confirmación) → ANULAR PÓLIZA → un ACEPTAR abre la inducción → Verti → CONTINUAR | 15788096 / 0001047017144 | PASA: a los 2 min Mecanización «Anulación Realizada» y Verti «Finalizada» (CMD CompletarAccion y CMD Mecanizar reducidos ejecutados de extremo a extremo) |
+| Alta → CA → POSITIVO | 15788097 / 0001047017145 | PASA: «Finalizada Positiva» en el Detalle y «Finalizado Contra Anulación Positiva» en el buscador |
+| Detalle: seis pestañas (incl. Solicitud Anulación) | ambas | PASA, sin errores de pantalla |
+| Acción Administrativa con documentos | — | NO PROBADO en esta ronda (ninguna póliza derivó a AA); la lógica de documentos AccAdm sólo cambió de nodo (unificación 310/313) y mantiene la condición exacta |
+| Observaciones «-» en la tarjeta de CA positiva | 15788097 | No es regresión: CORE guarda la observación en la gestión del alta y la gestión de CA positiva sin observaciones, igual que en 15788000 (ronda 10) |
+| CA nivel 2 tras mecanizar con Verti | 15788096 | Ciclo existente (pregunta abierta al analista desde la ronda 13) |
+
+Regla auxiliar `SCA2_tmpDevinQuery` eliminada al cierre.
