@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" font-family="Arial, Helvetica, sans-serif" font-size="15">
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#444"/></marker>
+<style>.b{fill:#fff;stroke:#444;stroke-width:1.5;rx:8}.h{fill:#BE0F0F;stroke:#BE0F0F;rx:8}.t{fill:#fff;font-weight:bold}.l{stroke:#444;stroke-width:1.5;fill:none;marker-end:url(#a)}.s{font-size:12.5px;fill:#333}.g{fill:#E46B15;stroke:#E46B15;rx:8}.v{fill:#008C47;stroke:#008C47;rx:8}.az{fill:#0D82BD;stroke:#0D82BD;rx:8}</style></defs>
+<text x="700" y="34" text-anchor="middle" font-size="22" font-weight="bold">SCA2 — Ciclo de vida de una solicitud de anulación</text>
+<rect x="40" y="70" width="200" height="60" class="h"/><text x="140" y="96" text-anchor="middle" class="t">Buscador</text><text x="140" y="116" text-anchor="middle" fill="#fff" class="s">póliza / cliente / NIF</text>
+<rect x="300" y="70" width="220" height="60" class="h"/><text x="410" y="96" text-anchor="middle" class="t">Alta de la solicitud</text><text x="410" y="116" text-anchor="middle" fill="#fff" class="s">motivo·detalle·causa · simulación</text>
+<rect x="580" y="70" width="240" height="60" class="g"/><text x="700" y="96" text-anchor="middle" class="t">Motor de reglas</text><text x="700" y="116" text-anchor="middle" fill="#fff" class="s">decide acción + nivel + grupo</text>
+<path d="M240,100 L300,100" class="l"/><path d="M520,100 L580,100" class="l"/>
+<!-- acciones -->
+<rect x="60" y="230" width="230" height="90" class="b"/><text x="175" y="258" text-anchor="middle" font-weight="bold">Contra anulación</text><text x="175" y="280" text-anchor="middle" class="s">argumentos · campañas · oficina</text><text x="175" y="300" text-anchor="middle" class="s">POSITIVO / NEGATIVO / POSPONER</text>
+<rect x="330" y="230" width="230" height="90" class="b"/><text x="445" y="258" text-anchor="middle" font-weight="bold">Acción administrativa</text><text x="445" y="280" text-anchor="middle" class="s">catalogación · documentación</text><text x="445" y="300" text-anchor="middle" class="s">DNI · compraventa · visor «ojo»</text>
+<rect x="600" y="230" width="230" height="90" class="b"/><text x="715" y="258" text-anchor="middle" font-weight="bold">Autorización fuera de norma</text><text x="715" y="280" text-anchor="middle" class="s">ACEPTAR / RECHAZAR / CANCELAR</text><text x="715" y="300" text-anchor="middle" class="s">avisos NSE 00000005/06</text>
+<rect x="870" y="230" width="230" height="90" class="b"/><text x="985" y="258" text-anchor="middle" font-weight="bold">Cambio de nivel</text><text x="985" y="280" text-anchor="middle" class="s">gestión SGC · notificación DUE</text><text x="985" y="300" text-anchor="middle" class="s">nivel 2 = SI24 / Expertos</text>
+<rect x="1140" y="230" width="220" height="90" class="b"/><text x="1250" y="258" text-anchor="middle" font-weight="bold">Fin sin anular</text><text x="1250" y="280" text-anchor="middle" class="s">NO MECANIZAR · FIN PROCESO</text><text x="1250" y="300" text-anchor="middle" class="s">caducidad</text>
+<path d="M700,130 L175,230" class="l"/><path d="M700,130 L445,230" class="l"/><path d="M700,130 L715,230" class="l"/><path d="M700,130 L985,230" class="l"/><path d="M700,130 L1250,230" class="l"/>
+<!-- mecanización -->
+<rect x="330" y="400" width="300" height="90" class="az"/><text x="480" y="428" text-anchor="middle" class="t">Mecanización (anulación efectiva)</text><text x="480" y="450" text-anchor="middle" fill="#fff" class="s">confirmación → ANULAR PÓLIZA → Emisión/CORE</text><text x="480" y="470" text-anchor="middle" fill="#fff" class="s">reserva de prima · ANL (wAutemis) · NSE</text>
+<rect x="700" y="400" width="300" height="90" class="b"/><text x="850" y="428" text-anchor="middle" font-weight="bold">Inducción Verti / vencimiento</text><text x="850" y="450" text-anchor="middle" class="s">• contacto a Verti</text><text x="850" y="470" text-anchor="middle" class="s">• vencimiento a un año (pendiente)</text>
+<path d="M175,320 L420,400" class="l"/><text x="250" y="372" class="s">NEGATIVO → motor</text>
+<path d="M445,320 L460,400" class="l"/><text x="470" y="372" class="s">FINALIZAR → motor</text>
+<path d="M715,320 L560,400" class="l"/><text x="620" y="372" class="s">autorizada</text>
+<path d="M630,445 L700,445" class="l"/><text x="640" y="435" class="s">si el motor lo pide</text>
+<path d="M850,490 L850,520 L480,520 L480,490" class="l"/><text x="640" y="540" text-anchor="middle" class="s">CONTINUAR → completa la mecanización</text>
+<!-- finales -->
+<rect x="60" y="600" width="260" height="70" class="v"/><text x="190" y="630" text-anchor="middle" class="t">Finalizado Contra Anulación Positiva</text><text x="190" y="652" text-anchor="middle" fill="#fff" class="s">el cliente se queda</text>
+<rect x="360" y="600" width="260" height="70" class="az"/><text x="490" y="630" text-anchor="middle" class="t">Finalizada. Anulación realizada</text><text x="490" y="652" text-anchor="middle" fill="#fff" class="s">+ CA nivel 2 si el motor lo decide</text>
+<rect x="660" y="600" width="260" height="70" class="g"/><text x="790" y="630" text-anchor="middle" class="t">Pendiente de Autorización</text><text x="790" y="652" text-anchor="middle" fill="#fff" class="s">NSE sin responder / autorización</text>
+<rect x="950" y="600" width="430" height="70" fill="#9F9F9F" stroke="#9F9F9F" rx="8"/><text x="1165" y="630" text-anchor="middle" class="t" font-size="14">Finalizada sin anular · Rechazada · Cancelada · Caducada</text><text x="1165" y="652" text-anchor="middle" fill="#fff" class="s">etiquetas HU3980 (rojo / gris)</text>
+<path d="M175,320 L190,600" class="l"/><text x="100" y="470" class="s">POSITIVO</text>
+<path d="M480,490 L490,600" class="l"/>
+<path d="M480,490 L760,600" class="l"/>
+<path d="M1250,320 L1200,600" class="l"/><path d="M715,320 L1120,600" class="l"/><text x="1040" y="560" class="s">rechazada</text>
+<text x="700" y="730" text-anchor="middle" class="s">Todas las acciones se graban como comandos cortos con trazabilidad; los fallos van a la bandeja de errores (relanzar / descartar). Las tareas tienen caducidad por nivel.</text>
+</svg>

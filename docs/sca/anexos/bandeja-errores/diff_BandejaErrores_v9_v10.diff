@@ -1,0 +1,31 @@
+--- /home/ubuntu/sca2work/r9/v10/bkp_Bandeja_v9.sail	2026-10-06 17:08:38.230664858 +0000
++++ /home/ubuntu/sca2work/r9/v7/rb_Bandeja.sail	2026-10-06 17:09:10.717480908 +0000
+@@ -114,20 +114,6 @@
+                   saveInto: {
+                     a!save(local!msgOk, null),
+                     a!save(local!msgError, null),
+-                    if(local!esAlta,
+-                      {
+-                        a!startProcess(
+-                          processModel: cons!SCA2_PM_CMD_ALTA,
+-                          processParameters: rule!SCA2_parametrosRelanzarAlta(error: fv!row),
+-                          onSuccess: {
+-                            a!save(local!msgOk, "Alta relanzada para " & a!defaultValue(index(fv!row, 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{263ccc68-f8c2-4913-b78d-8fce31e7ed9a}idSolicitud', null), "-") & ". Revise el resultado en el buscador o en esta bandeja si vuelve a fallar."),
+-                            a!save(local!tratados, append(local!tratados, local!idErr)),
+-                            a!save(local!refresco, local!refresco + 1)
+-                          },
+-                          onError: {a!save(local!msgError, "No se ha podido iniciar el relanzamiento del alta. Inténtelo de nuevo o revise el proceso en Monitoring.")}
+-                        ),
+-                        rule!SCA2_relanzarError(error: fv!row)
+-                      },
+                       a!startProcess(
+                         processModel: cons!SCA2_PM_CMD_MARCAR_ERROR_RELANZADO,
+                         processParameters: {
+@@ -148,7 +134,6 @@
+                           a!save(local!refresco, local!refresco + 1)
+                         }
+                       )
+-                    )
+                   }
+                 ),
+                 a!buttonWidget(label: "Descartar", size: "SMALL", style: "GHOST", color: "SECONDARY",
