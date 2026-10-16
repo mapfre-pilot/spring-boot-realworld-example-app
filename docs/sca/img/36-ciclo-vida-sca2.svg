@@ -15,7 +15,7 @@
 <path d="M700,130 L175,230" class="l"/><path d="M700,130 L445,230" class="l"/><path d="M700,130 L715,230" class="l"/><path d="M700,130 L985,230" class="l"/><path d="M700,130 L1250,230" class="l"/>
 <!-- mecanización -->
 <rect x="330" y="400" width="300" height="90" class="az"/><text x="480" y="428" text-anchor="middle" class="t">Mecanización (anulación efectiva)</text><text x="480" y="450" text-anchor="middle" fill="#fff" class="s">confirmación → ANULAR PÓLIZA → Emisión/CORE</text><text x="480" y="470" text-anchor="middle" fill="#fff" class="s">reserva de prima · ANL (wAutemis) · NSE</text>
-<rect x="700" y="400" width="300" height="90" class="b"/><text x="850" y="428" text-anchor="middle" font-weight="bold">Inducción Verti / vencimiento</text><text x="850" y="450" text-anchor="middle" class="s">☐ contacto a Verti</text><text x="850" y="470" text-anchor="middle" class="s">☐ vencimiento a un año (pendiente)</text>
+<rect x="700" y="400" width="300" height="90" class="b"/><text x="850" y="428" text-anchor="middle" font-weight="bold">Inducción Verti / vencimiento</text><text x="850" y="450" text-anchor="middle" class="s">• contacto a Verti</text><text x="850" y="470" text-anchor="middle" class="s">• vencimiento a un año (pendiente)</text>
 <path d="M175,320 L420,400" class="l"/><text x="250" y="372" class="s">NEGATIVO → motor</text>
 <path d="M445,320 L460,400" class="l"/><text x="470" y="372" class="s">FINALIZAR → motor</text>
 <path d="M715,320 L560,400" class="l"/><text x="620" y="372" class="s">autorizada</text>
@@ -25,10 +25,10 @@
 <rect x="60" y="600" width="260" height="70" class="v"/><text x="190" y="630" text-anchor="middle" class="t">Finalizado Contra Anulación Positiva</text><text x="190" y="652" text-anchor="middle" fill="#fff" class="s">el cliente se queda</text>
 <rect x="360" y="600" width="260" height="70" class="az"/><text x="490" y="630" text-anchor="middle" class="t">Finalizada. Anulación realizada</text><text x="490" y="652" text-anchor="middle" fill="#fff" class="s">+ CA nivel 2 si el motor lo decide</text>
 <rect x="660" y="600" width="260" height="70" class="g"/><text x="790" y="630" text-anchor="middle" class="t">Pendiente de Autorización</text><text x="790" y="652" text-anchor="middle" fill="#fff" class="s">NSE sin responder / autorización</text>
-<rect x="960" y="600" width="400" height="70" fill="#9F9F9F" stroke="#9F9F9F" rx="8"/><text x="1160" y="630" text-anchor="middle" class="t">Finalizada sin anular · Rechazada · Cancelada · Caducada</text><text x="1160" y="652" text-anchor="middle" fill="#fff" class="s">etiquetas HU3980 (rojo / gris)</text>
+<rect x="950" y="600" width="430" height="70" fill="#9F9F9F" stroke="#9F9F9F" rx="8"/><text x="1165" y="630" text-anchor="middle" class="t" font-size="14">Finalizada sin anular · Rechazada · Cancelada · Caducada</text><text x="1165" y="652" text-anchor="middle" fill="#fff" class="s">etiquetas HU3980 (rojo / gris)</text>
 <path d="M175,320 L190,600" class="l"/><text x="100" y="470" class="s">POSITIVO</text>
 <path d="M480,490 L490,600" class="l"/>
 <path d="M480,490 L760,600" class="l"/>
-<path d="M1250,320 L1200,600" class="l"/><path d="M715,320 L1120,600" class="l"/><text x="930" y="470" class="s">rechazada</text>
+<path d="M1250,320 L1200,600" class="l"/><path d="M715,320 L1120,600" class="l"/><text x="1040" y="560" class="s">rechazada</text>
 <text x="700" y="730" text-anchor="middle" class="s">Todas las acciones se graban como comandos cortos con trazabilidad; los fallos van a la bandeja de errores (relanzar / descartar). Las tareas tienen caducidad por nivel.</text>
 </svg>
