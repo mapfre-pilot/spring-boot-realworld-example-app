@@ -37,7 +37,7 @@ El site tiene 8 páginas de barra superior (la última, *Cuadro de Mando*, restr
 | **Prestaciones** | Tarjetas por ramo para prestaciones y siniestros | `05-prestaciones.png` |
 | **Gest. Comercial** | Accesos a SGC 2.0, Asesor 360, SGC 3.0 y WhatsApp para Oficinas | `06-gestion-comercial.png` |
 | **Utilidades** | SGO v2, Club MAPFRE, Site APM, Site Delegados, Información IDD, Portal de Incentivos | `07-utilidades.png` |
-| **Cuadro de Mando** | Uso de la aplicación (interacciones por motivo y canal) | — |
+| **Cuadro de Mando** (grupo `PGM Visualizar CdM`) | Filtros por periodo; bloques *Volumen de uso*, *Tiempos medios por pantalla*, *Motivos y canales*, *Registro de errores*; gráficos *Nº de consultas por día* y *Comparativa de tipos de acceso a PGM* (sin datos en TEST) | `12-cuadro-de-mando.png` |
 
 ## 4. Procesos funcionales
 
@@ -144,7 +144,7 @@ Menú de recibo (datos del pagador: actúa como asegurado, documento, contacto, 
 
 ### 7.5 Gestión comercial: dependencias de perfil
 
-Observado con el usuario de pruebas (sin perfil comercial): *Vencimientos* (Todos/Completo/Incompleto), *Actividad Comercial* → "Esta acción aún no está disponible en PGM para tu usuario… Puedes realizarla desde SGC 2.0", *Gestiones* → "No tienes permiso para ver las gestiones" (requiere perfil SGC 3.0 por NUUMA). Es decir, la pestaña degrada por perfil y enlaza a la aplicación origen. *Presupuestos*: "El cliente no tiene presupuestos".
+Observado con el usuario de pruebas (sin perfil comercial): *Vencimientos* (Todos/Completo/Incompleto), *Actividad Comercial* → "Esta acción aún no está disponible en PGM para tu usuario… Puedes realizarla desde SGC 2.0", *Gestiones* → "No tienes permiso para ver las gestiones" (requiere perfil SGC 3.0 por NUUMA). Es decir, la pestaña degrada por perfil y enlaza a la aplicación origen. Comprobado añadiendo al usuario de pruebas al grupo `PGM_AsesorComercial`: el bloqueo no depende del grupo Appian sino del **perfil SGC 3.0** (`ri!perfilSGC30`, obtenido por NUUMA en `PGM_ObtenerPerfilSGC3`) y de la **estructura comercial** (`ri!estructuraComercial`, iMediador/BDEC); los grupos Appian solo gobiernan las tarjetas/accesos. En la migración, estos permisos pasan a claims de perfil comercial resueltos por el BFF, no a grupos. *Presupuestos*: "El cliente no tiene presupuestos".
 
 **Cliente Total**: variantes Físico (empresas vinculadas: CIF, razón social, actividad, segmento, cargo, estado; añadir/editar/eliminar; firma con servicio de firma; fiabilidad), Jurídico (clientes totales vinculados) y Particular/Empresa (envío de enlace).
 
