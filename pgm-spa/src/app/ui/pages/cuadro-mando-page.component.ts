@@ -17,7 +17,9 @@ import { Columna, TablaExportableComponent } from '../components/tabla-exportabl
       <div class="grid grid-4">
         @for (k of kpis(); track k.codigo) {
           <article class="card kpi">
-            <div class="valor">{{ k.valor | number: '1.0-2' }}<small> {{ k.unidad }}</small></div>
+            <div class="valor">
+              {{ k.valor | number: '1.0-2' }}<small> {{ k.unidad }}</small>
+            </div>
             <div>{{ k.nombre }}</div>
             <div class="muted">{{ k.periodo }}</div>
           </article>
@@ -25,7 +27,12 @@ import { Columna, TablaExportableComponent } from '../components/tabla-exportabl
       </div>
     </section>
     <section class="card">
-      <pgm-tabla-exportable titulo="Detalle de indicadores" nombreFichero="kpis" [columnas]="columnas" [filas]="kpis()" />
+      <pgm-tabla-exportable
+        titulo="Detalle de indicadores"
+        nombreFichero="kpis"
+        [columnas]="columnas"
+        [filas]="kpis()"
+      />
     </section>
   `,
 })
@@ -35,7 +42,11 @@ export class CuadroMandoPageComponent {
   readonly cargando = signal(true);
   readonly error = signal<string | null>(null);
   readonly columnas: Columna<Kpi>[] = [
-    { clave: 'codigo', titulo: 'Código' }, { clave: 'nombre', titulo: 'Indicador' }, { clave: 'valor', titulo: 'Valor' }, { clave: 'unidad', titulo: 'Unidad' }, { clave: 'periodo', titulo: 'Periodo' },
+    { clave: 'codigo', titulo: 'Código' },
+    { clave: 'nombre', titulo: 'Indicador' },
+    { clave: 'valor', titulo: 'Valor' },
+    { clave: 'unidad', titulo: 'Unidad' },
+    { clave: 'periodo', titulo: 'Periodo' },
   ];
 
   constructor() {

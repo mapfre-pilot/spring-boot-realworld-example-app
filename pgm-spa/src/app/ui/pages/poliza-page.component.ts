@@ -18,27 +18,57 @@ import { Columna, TablaExportableComponent } from '../components/tabla-exportabl
       <section class="card">
         <div class="row">
           <h1>Póliza {{ p.numero }} · {{ etiquetas[p.ramo] }}</h1>
-          <span class="chip" [class.chip-ok]="p.estado === 'EN_VIGOR'" [class.chip-error]="p.estado === 'ANULADA'">{{ p.estado }}</span>
+          <span
+            class="chip"
+            [class.chip-ok]="p.estado === 'EN_VIGOR'"
+            [class.chip-error]="p.estado === 'ANULADA'"
+            >{{ p.estado }}</span
+          >
           <span class="spacer"></span>
-          <a class="btn btn-secundario" [routerLink]="['/clientes', p.clienteId]">Ficha del cliente</a>
-          @if (lanzadera(); as l) { <a class="btn" [href]="l.url" target="_blank" rel="noopener">↗ Gestionar en {{ l.destino }}</a> }
+          <a class="btn btn-secundario" [routerLink]="['/clientes', p.clienteId]"
+            >Ficha del cliente</a
+          >
+          @if (lanzadera(); as l) {
+            <a class="btn" [href]="l.url" target="_blank" rel="noopener"
+              >↗ Gestionar en {{ l.destino }}</a
+            >
+          }
         </div>
         <div class="grid grid-2">
           <dl class="datos">
-            <dt>Producto</dt><dd>{{ p.producto }}</dd>
-            <dt>Riesgo</dt><dd>{{ p.riesgo }}</dd>
-            <dt>Efecto</dt><dd>{{ p.fechaEfecto | date: 'dd/MM/yyyy' }}</dd>
-            <dt>Vencimiento</dt><dd>{{ p.fechaVencimiento | date: 'dd/MM/yyyy' }}</dd>
+            <dt>Producto</dt>
+            <dd>{{ p.producto }}</dd>
+            <dt>Riesgo</dt>
+            <dd>{{ p.riesgo }}</dd>
+            <dt>Efecto</dt>
+            <dd>{{ p.fechaEfecto | date: 'dd/MM/yyyy' }}</dd>
+            <dt>Vencimiento</dt>
+            <dd>{{ p.fechaVencimiento | date: 'dd/MM/yyyy' }}</dd>
           </dl>
           <dl class="datos">
-            <dt>Prima anual</dt><dd>{{ p.primaAnual | currency: 'EUR' }}</dd>
-            <dt>Forma de pago</dt><dd>{{ p.formaPago }}</dd>
-            <dt>Acciones</dt><dd>@for (a of p.acciones; track a) { <span class="chip">{{ a }}</span>&nbsp; } @empty { — }</dd>
+            <dt>Prima anual</dt>
+            <dd>{{ p.primaAnual | currency: 'EUR' }}</dd>
+            <dt>Forma de pago</dt>
+            <dd>{{ p.formaPago }}</dd>
+            <dt>Acciones</dt>
+            <dd>
+              @for (a of p.acciones; track a) {
+                <span class="chip">{{ a }}</span
+                >&nbsp;
+              } @empty {
+                —
+              }
+            </dd>
           </dl>
         </div>
       </section>
       <section class="card">
-        <pgm-tabla-exportable titulo="Recibos de la póliza" [nombreFichero]="'recibos-' + p.numero" [columnas]="columnas" [filas]="recibos()" />
+        <pgm-tabla-exportable
+          titulo="Recibos de la póliza"
+          [nombreFichero]="'recibos-' + p.numero"
+          [columnas]="columnas"
+          [filas]="recibos()"
+        />
       </section>
     }
   `,
@@ -53,8 +83,13 @@ export class PolizaPageComponent {
   readonly error = signal<string | null>(null);
   readonly etiquetas = ETIQUETA_RAMO;
   readonly columnas: Columna<Recibo>[] = [
-    { clave: 'numero', titulo: 'Recibo' }, { clave: 'estado', titulo: 'Estado' }, { clave: 'importe', titulo: 'Importe (€)' },
-    { clave: 'fechaEmision', titulo: 'Emisión' }, { clave: 'fechaVencimiento', titulo: 'Vencimiento' }, { clave: 'formaPago', titulo: 'Forma de pago' }, { clave: 'ibanEnmascarado', titulo: 'IBAN' },
+    { clave: 'numero', titulo: 'Recibo' },
+    { clave: 'estado', titulo: 'Estado' },
+    { clave: 'importe', titulo: 'Importe (€)' },
+    { clave: 'fechaEmision', titulo: 'Emisión' },
+    { clave: 'fechaVencimiento', titulo: 'Vencimiento' },
+    { clave: 'formaPago', titulo: 'Forma de pago' },
+    { clave: 'ibanEnmascarado', titulo: 'IBAN' },
   ];
 
   constructor() {
@@ -62,11 +97,15 @@ export class PolizaPageComponent {
   }
 
   async cargar(numero: string): Promise<void> {
-    this.cargando.set(true); this.error.set(null);
+    this.cargando.set(true);
+    this.error.set(null);
     try {
       const p = await firstValueFrom(this.repo.poliza(numero));
       this.poliza.set(p);
-      const [r, l] = await Promise.all([firstValueFrom(this.repo.recibosPoliza(numero)), firstValueFrom(this.repo.lanzaderas(p.ramo))]);
+      const [r, l] = await Promise.all([
+        firstValueFrom(this.repo.recibosPoliza(numero)),
+        firstValueFrom(this.repo.lanzaderas(p.ramo)),
+      ]);
       this.recibos.set(r.items);
       this.lanzadera.set(l.items.find((x) => x.codigo === p.lanzadera) ?? l.items[0] ?? null);
     } catch (e) {

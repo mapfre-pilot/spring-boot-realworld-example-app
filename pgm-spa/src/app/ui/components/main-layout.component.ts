@@ -49,15 +49,67 @@ interface Entrada {
     </main>
   `,
   styles: `
-    .cabecera { display: flex; align-items: center; gap: 1.5rem; padding: 0 1.25rem; height: 56px; background: var(--pgm-rojo); color: #fff; position: sticky; top: 0; z-index: 10; }
-    .marca { color: #fff; font-weight: 700; font-size: 1.2rem; white-space: nowrap; }
-    .marca span { font-weight: 400; font-size: .8rem; margin-left: .4rem; opacity: .9; }
-    nav { display: flex; gap: .25rem; flex: 1; flex-wrap: wrap; }
-    nav a { color: #fff; padding: .4rem .7rem; border-radius: 4px; opacity: .9; }
-    nav a:hover, nav a.activa { background: rgba(255,255,255,.18); opacity: 1; text-decoration: none; }
-    .usuario { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2; }
-    .usuario .muted, .usuario .btn-enlace { color: #fff; opacity: .85; font-size: .75rem; }
-    main { padding: 1.25rem; max-width: 1400px; margin: 0 auto; display: grid; gap: 1rem; }
+    .cabecera {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 0 1.25rem;
+      height: 56px;
+      background: var(--pgm-rojo);
+      color: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .marca {
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.2rem;
+      white-space: nowrap;
+    }
+    .marca span {
+      font-weight: 400;
+      font-size: 0.8rem;
+      margin-left: 0.4rem;
+      opacity: 0.9;
+    }
+    nav {
+      display: flex;
+      gap: 0.25rem;
+      flex: 1;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: #fff;
+      padding: 0.4rem 0.7rem;
+      border-radius: 4px;
+      opacity: 0.9;
+    }
+    nav a:hover,
+    nav a.activa {
+      background: rgba(255, 255, 255, 0.18);
+      opacity: 1;
+      text-decoration: none;
+    }
+    .usuario {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      line-height: 1.2;
+    }
+    .usuario .muted,
+    .usuario .btn-enlace {
+      color: #fff;
+      opacity: 0.85;
+      font-size: 0.75rem;
+    }
+    main {
+      padding: 1.25rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      gap: 1rem;
+    }
   `,
 })
 export class MainLayoutComponent implements OnInit {
@@ -69,7 +121,11 @@ export class MainLayoutComponent implements OnInit {
     { ruta: '/gestion-cartera', texto: 'Gestión de cartera', clave: Visibilidad.GESTION_CARTERA },
     { ruta: '/prestaciones', texto: 'Prestaciones', clave: Visibilidad.PRESTACIONES },
     { ruta: '/recibos', texto: 'Recibos', clave: Visibilidad.RECIBOS },
-    { ruta: '/gestion-comercial', texto: 'Gestión comercial', clave: Visibilidad.GESTION_COMERCIAL },
+    {
+      ruta: '/gestion-comercial',
+      texto: 'Gestión comercial',
+      clave: Visibilidad.GESTION_COMERCIAL,
+    },
     { ruta: '/utilidades', texto: 'Utilidades', clave: Visibilidad.UTILIDADES },
     { ruta: '/cuadro-mando', texto: 'Cuadro de mando', clave: Visibilidad.CUADRO_MANDO },
   ];

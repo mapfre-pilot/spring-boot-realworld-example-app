@@ -26,15 +26,26 @@ import { EstadoComponent } from '../components/estado.component';
       <div class="grid grid-3">
         @for (l of visibles(); track l.codigo) {
           <article class="card">
-            <div class="row"><strong>{{ l.nombre }}</strong><span class="spacer"></span><span class="chip">{{ l.destino }}</span></div>
+            <div class="row">
+              <strong>{{ l.nombre }}</strong
+              ><span class="spacer"></span><span class="chip">{{ l.destino }}</span>
+            </div>
             @if (l.requiereNuuma && !store.nuuma()) {
-              <p class="alerta">Requiere estructura comercial (NUUMA). Tu usuario no tiene NUUMA asignado.</p>
+              <p class="alerta">
+                Requiere estructura comercial (NUUMA). Tu usuario no tiene NUUMA asignado.
+              </p>
             } @else {
-              <a class="btn" [href]="l.url" target="_blank" rel="noopener">Abrir {{ l.destino }} ↗</a>
+              <a class="btn" [href]="l.url" target="_blank" rel="noopener"
+                >Abrir {{ l.destino }} ↗</a
+              >
             }
           </article>
         } @empty {
-          @if (!cargando()) { <div class="vacio">No hay lanzaderas de {{ etiquetas[ramo()] }} para {{ titulo() }}</div> }
+          @if (!cargando()) {
+            <div class="vacio">
+              No hay lanzaderas de {{ etiquetas[ramo()] }} para {{ titulo() }}
+            </div>
+          }
         }
       </div>
     </section>
@@ -62,7 +73,8 @@ export class LanzaderasRamoComponent {
   }
 
   async cargar(ramo: Ramo): Promise<void> {
-    this.cargando.set(true); this.error.set(null);
+    this.cargando.set(true);
+    this.error.set(null);
     try {
       this.lanzaderas.set((await firstValueFrom(this.repo.lanzaderas(ramo))).items);
     } catch (e) {
@@ -77,13 +89,19 @@ export class LanzaderasRamoComponent {
 @Component({
   selector: 'pgm-gestion-cartera-page',
   imports: [LanzaderasRamoComponent],
-  template: `<pgm-lanzaderas-ramo titulo="Gestión de cartera" descripcion="Suplementos, anulaciones, rehabilitaciones y consultas de cartera por ramo." />`,
+  template: `<pgm-lanzaderas-ramo
+    titulo="Gestión de cartera"
+    descripcion="Suplementos, anulaciones, rehabilitaciones y consultas de cartera por ramo."
+  />`,
 })
 export class GestionCarteraPageComponent {}
 
 @Component({
   selector: 'pgm-prestaciones-page',
   imports: [LanzaderasRamoComponent],
-  template: `<pgm-lanzaderas-ramo titulo="Prestaciones" descripcion="Apertura y seguimiento de siniestros y prestaciones por ramo." />`,
+  template: `<pgm-lanzaderas-ramo
+    titulo="Prestaciones"
+    descripcion="Apertura y seguimiento de siniestros y prestaciones por ramo."
+  />`,
 })
 export class PrestacionesPageComponent {}

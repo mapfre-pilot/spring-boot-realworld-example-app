@@ -10,7 +10,10 @@ describe('PgmApiRepository (contrato BFF /api/v1)', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(withInterceptors([problemDetailsInterceptor])), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(withInterceptors([problemDetailsInterceptor])),
+        provideHttpClientTesting(),
+      ],
     });
     repo = TestBed.inject(PgmApiRepository);
     http = TestBed.inject(HttpTestingController);
@@ -36,7 +39,9 @@ describe('PgmApiRepository (contrato BFF /api/v1)', () => {
     http.expectOne('/api/v1/clientes/C-1001/ficha').flush({});
     http.expectOne('/api/v1/polizas/P-1').flush({});
     http.expectOne('/api/v1/recibos/R-1').flush({});
-    http.expectOne((r) => r.url === '/api/v1/lanzaderas' && r.params.get('ramo') === 'SALUD').flush({ items: [], total: 0 });
+    http
+      .expectOne((r) => r.url === '/api/v1/lanzaderas' && r.params.get('ramo') === 'SALUD')
+      .flush({ items: [], total: 0 });
     http.expectOne('/api/v1/cuadro-mando/kpis').flush({ items: [], total: 0 });
   });
 
@@ -50,7 +55,12 @@ describe('PgmApiRepository (contrato BFF /api/v1)', () => {
       },
     });
     http.expectOne('/api/v1/clientes/C-404/ficha').flush(
-      { type: 'https://pgm.mapfre.es/problems/recurso-no-encontrado', title: 'Recurso no encontrado', status: 404, detail: 'No existe el cliente C-404' },
+      {
+        type: 'https://pgm.mapfre.es/problems/recurso-no-encontrado',
+        title: 'Recurso no encontrado',
+        status: 404,
+        detail: 'No existe el cliente C-404',
+      },
       { status: 404, statusText: 'Not Found' },
     );
   });
@@ -62,6 +72,8 @@ describe('PgmApiRepository (contrato BFF /api/v1)', () => {
         done();
       },
     });
-    http.expectOne('/api/v1/contexto').error(new ProgressEvent('error'), { status: 0 } as Partial<HttpErrorResponse>);
+    http
+      .expectOne('/api/v1/contexto')
+      .error(new ProgressEvent('error'), { status: 0 } as Partial<HttpErrorResponse>);
   });
 });

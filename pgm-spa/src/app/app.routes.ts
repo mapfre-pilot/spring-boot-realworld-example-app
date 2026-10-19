@@ -12,52 +12,66 @@ export const appRoutes: Route[] = [
       {
         path: 'inicio',
         canActivate: [visibilidadGuard(Visibilidad.INICIO)],
-        loadComponent: () => import('./ui/pages/inicio-page.component').then((m) => m.InicioPageComponent),
+        loadComponent: () =>
+          import('./ui/pages/inicio-page.component').then((m) => m.InicioPageComponent),
       },
       {
         path: 'clientes/:id',
         canActivate: [visibilidadGuard(Visibilidad.FICHA_CLIENTE)],
         loadComponent: () =>
-          import('./ui/pages/ficha-cliente-page.component').then((m) => m.FichaClientePageComponent),
+          import('./ui/pages/ficha-cliente-page.component').then(
+            (m) => m.FichaClientePageComponent,
+          ),
       },
       {
         path: 'polizas/:numero',
         canActivate: [visibilidadGuard(Visibilidad.FICHA_CLIENTE)],
-        loadComponent: () => import('./ui/pages/poliza-page.component').then((m) => m.PolizaPageComponent),
+        loadComponent: () =>
+          import('./ui/pages/poliza-page.component').then((m) => m.PolizaPageComponent),
       },
       {
         path: 'recibos/:numero',
         canActivate: [visibilidadGuard(Visibilidad.RECIBOS)],
-        loadComponent: () => import('./ui/pages/recibo-page.component').then((m) => m.ReciboPageComponent),
+        loadComponent: () =>
+          import('./ui/pages/recibo-page.component').then((m) => m.ReciboPageComponent),
       },
       {
         path: 'nueva-produccion',
         canActivate: [visibilidadGuard(Visibilidad.NUEVA_PRODUCCION)],
         loadComponent: () =>
-          import('./ui/pages/nueva-produccion-page.component').then((m) => m.NuevaProduccionPageComponent),
+          import('./ui/pages/nueva-produccion-page.component').then(
+            (m) => m.NuevaProduccionPageComponent,
+          ),
       },
       {
         path: 'gestion-cartera',
         canActivate: [visibilidadGuard(Visibilidad.GESTION_CARTERA)],
         loadComponent: () =>
-          import('./ui/pages/lanzaderas-ramo-page.component').then((m) => m.GestionCarteraPageComponent),
+          import('./ui/pages/lanzaderas-ramo-page.component').then(
+            (m) => m.GestionCarteraPageComponent,
+          ),
       },
       {
         path: 'prestaciones',
         canActivate: [visibilidadGuard(Visibilidad.PRESTACIONES)],
         loadComponent: () =>
-          import('./ui/pages/lanzaderas-ramo-page.component').then((m) => m.PrestacionesPageComponent),
+          import('./ui/pages/lanzaderas-ramo-page.component').then(
+            (m) => m.PrestacionesPageComponent,
+          ),
       },
       {
         path: 'recibos',
         canActivate: [visibilidadGuard(Visibilidad.RECIBOS)],
-        loadComponent: () => import('./ui/pages/recibos-page.component').then((m) => m.RecibosPageComponent),
+        loadComponent: () =>
+          import('./ui/pages/recibos-page.component').then((m) => m.RecibosPageComponent),
       },
       {
         path: 'gestion-comercial',
         canActivate: [visibilidadGuard(Visibilidad.GESTION_COMERCIAL)],
         loadComponent: () =>
-          import('./ui/pages/gestion-comercial-page.component').then((m) => m.GestionComercialPageComponent),
+          import('./ui/pages/gestion-comercial-page.component').then(
+            (m) => m.GestionComercialPageComponent,
+          ),
       },
       {
         path: 'utilidades',
@@ -74,7 +88,9 @@ export const appRoutes: Route[] = [
       {
         path: 'acceso-denegado',
         loadComponent: () =>
-          import('./ui/pages/acceso-denegado-page.component').then((m) => m.AccesoDenegadoPageComponent),
+          import('./ui/pages/acceso-denegado-page.component').then(
+            (m) => m.AccesoDenegadoPageComponent,
+          ),
       },
       { path: '**', redirectTo: 'inicio' },
     ],

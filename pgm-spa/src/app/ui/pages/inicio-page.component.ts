@@ -11,17 +11,31 @@ import { Columna, TablaExportableComponent } from '../components/tabla-exportabl
 /** /inicio — buscador multicriterio de clientes (documento, nombre, teléfono, e-mail, póliza, tarjeta sanitaria, localidad). */
 @Component({
   selector: 'pgm-inicio-page',
-  imports: [FormsModule, RouterLink, TablaExportableComponent, EstadoComponent, CarruselRamosComponent],
+  imports: [
+    FormsModule,
+    RouterLink,
+    TablaExportableComponent,
+    EstadoComponent,
+    CarruselRamosComponent,
+  ],
   template: `
     <section class="card">
       <h1>Buscar cliente</h1>
       <form class="grid grid-4" (ngSubmit)="buscar()">
-        <label>Nombre / razón social <input name="texto" [(ngModel)]="criterios.texto" placeholder="Ej. García" /></label>
-        <label>Documento (NIF/NIE/CIF) <input name="documento" [(ngModel)]="criterios.documento" /></label>
+        <label
+          >Nombre / razón social
+          <input name="texto" [(ngModel)]="criterios.texto" placeholder="Ej. García"
+        /></label>
+        <label
+          >Documento (NIF/NIE/CIF) <input name="documento" [(ngModel)]="criterios.documento"
+        /></label>
         <label>Teléfono <input name="telefono" [(ngModel)]="criterios.telefono" /></label>
         <label>E-mail <input name="email" [(ngModel)]="criterios.email" /></label>
         <label>Nº póliza <input name="poliza" [(ngModel)]="criterios.poliza" /></label>
-        <label>Tarjeta sanitaria <input name="tarjetaSanitaria" [(ngModel)]="criterios.tarjetaSanitaria" /></label>
+        <label
+          >Tarjeta sanitaria
+          <input name="tarjetaSanitaria" [(ngModel)]="criterios.tarjetaSanitaria"
+        /></label>
         <label>Localidad <input name="localidad" [(ngModel)]="criterios.localidad" /></label>
         <div class="row" style="align-items:flex-end">
           <button class="btn" type="submit" [disabled]="cargando()">Buscar</button>
@@ -33,11 +47,19 @@ import { Columna, TablaExportableComponent } from '../components/tabla-exportabl
 
     @if (resultados() !== null) {
       <section class="card">
-        <pgm-tabla-exportable titulo="Resultados" nombreFichero="clientes" [columnas]="columnas" [filas]="resultados()!" mensajeVacio="Ningún cliente cumple los criterios" />
+        <pgm-tabla-exportable
+          titulo="Resultados"
+          nombreFichero="clientes"
+          [columnas]="columnas"
+          [filas]="resultados()!"
+          mensajeVacio="Ningún cliente cumple los criterios"
+        />
         @if (resultados()!.length) {
-          <p class="muted">Abrir ficha:
+          <p class="muted">
+            Abrir ficha:
             @for (c of resultados(); track c.id) {
-              <a [routerLink]="['/clientes', c.id]" class="chip">{{ c.nombre }} {{ c.apellidos }}</a>&nbsp;
+              <a [routerLink]="['/clientes', c.id]" class="chip">{{ c.nombre }} {{ c.apellidos }}</a
+              >&nbsp;
             }
           </p>
         }

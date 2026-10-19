@@ -17,18 +17,36 @@ import { EstadoComponent } from '../components/estado.component';
       <section class="card">
         <div class="row">
           <h1>Recibo {{ r.numero }}</h1>
-          <span class="chip" [class.chip-ok]="r.estado === 'COBRADO'" [class.chip-aviso]="r.estado === 'PENDIENTE'" [class.chip-error]="r.estado === 'DEVUELTO'">{{ r.estado }}</span>
+          <span
+            class="chip"
+            [class.chip-ok]="r.estado === 'COBRADO'"
+            [class.chip-aviso]="r.estado === 'PENDIENTE'"
+            [class.chip-error]="r.estado === 'DEVUELTO'"
+            >{{ r.estado }}</span
+          >
           <span class="spacer"></span>
-          <a class="btn btn-secundario" [routerLink]="['/polizas', r.polizaNumero]">Póliza {{ r.polizaNumero }}</a>
-          <a class="btn btn-secundario" [routerLink]="['/clientes', r.clienteId]">Ficha del cliente</a>
+          <a class="btn btn-secundario" [routerLink]="['/polizas', r.polizaNumero]"
+            >Póliza {{ r.polizaNumero }}</a
+          >
+          <a class="btn btn-secundario" [routerLink]="['/clientes', r.clienteId]"
+            >Ficha del cliente</a
+          >
         </div>
         <dl class="datos">
-          <dt>Ramo</dt><dd>{{ etiquetas[r.ramo] }}</dd>
-          <dt>Importe</dt><dd><strong>{{ r.importe | currency: 'EUR' }}</strong></dd>
-          <dt>Emisión</dt><dd>{{ r.fechaEmision | date: 'dd/MM/yyyy' }}</dd>
-          <dt>Vencimiento</dt><dd>{{ r.fechaVencimiento | date: 'dd/MM/yyyy' }}</dd>
-          <dt>Forma de pago</dt><dd>{{ r.formaPago }}</dd>
-          <dt>IBAN</dt><dd>{{ r.ibanEnmascarado ?? '—' }}</dd>
+          <dt>Ramo</dt>
+          <dd>{{ etiquetas[r.ramo] }}</dd>
+          <dt>Importe</dt>
+          <dd>
+            <strong>{{ r.importe | currency: 'EUR' }}</strong>
+          </dd>
+          <dt>Emisión</dt>
+          <dd>{{ r.fechaEmision | date: 'dd/MM/yyyy' }}</dd>
+          <dt>Vencimiento</dt>
+          <dd>{{ r.fechaVencimiento | date: 'dd/MM/yyyy' }}</dd>
+          <dt>Forma de pago</dt>
+          <dd>{{ r.formaPago }}</dd>
+          <dt>IBAN</dt>
+          <dd>{{ r.ibanEnmascarado ?? '—' }}</dd>
         </dl>
       </section>
     }
@@ -47,7 +65,8 @@ export class ReciboPageComponent {
   }
 
   async cargar(numero: string): Promise<void> {
-    this.cargando.set(true); this.error.set(null);
+    this.cargando.set(true);
+    this.error.set(null);
     try {
       this.recibo.set(await firstValueFrom(this.repo.recibo(numero)));
     } catch (e) {

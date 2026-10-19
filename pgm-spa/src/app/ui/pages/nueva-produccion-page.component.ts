@@ -8,11 +8,19 @@ import { LanzaderasRamoComponent } from './lanzaderas-ramo-page.component';
   selector: 'pgm-nueva-produccion-page',
   imports: [LanzaderasRamoComponent],
   template: `
-    <pgm-lanzaderas-ramo titulo="Nueva producción" descripcion="Tarificación y emisión de nuevas pólizas por ramo en los aplicativos corporativos." [ramoInicial]="ramoInicial()" />
+    <pgm-lanzaderas-ramo
+      titulo="Nueva producción"
+      descripcion="Tarificación y emisión de nuevas pólizas por ramo en los aplicativos corporativos."
+      [ramoInicial]="ramoInicial()"
+    />
     @if (store.puede(V.TARIFICACION_SALUD)) {
       <section class="card">
         <h2>Tarificación Salud integrada</h2>
-        <p>La tarificación de Salud está disponible dentro de PGM desde la ficha del cliente (botón <strong>Vto. / Ppto.</strong>): busca el cliente en <a href="/inicio">Inicio</a> y lanza el diálogo multipaso.</p>
+        <p>
+          La tarificación de Salud está disponible dentro de PGM desde la ficha del cliente (botón
+          <strong>Vto. / Ppto.</strong>): busca el cliente en <a href="/inicio">Inicio</a> y lanza
+          el diálogo multipaso.
+        </p>
       </section>
     }
   `,
@@ -21,5 +29,7 @@ export class NuevaProduccionPageComponent {
   readonly store = inject(ContextoStore);
   readonly V = Visibilidad;
   readonly ramo = input<string>();
-  readonly ramoInicial = computed<Ramo | null>(() => (RAMOS.includes(this.ramo() as Ramo) ? (this.ramo() as Ramo) : null));
+  readonly ramoInicial = computed<Ramo | null>(() =>
+    RAMOS.includes(this.ramo() as Ramo) ? (this.ramo() as Ramo) : null,
+  );
 }

@@ -22,7 +22,10 @@ export const problemDetailsInterceptor: HttpInterceptorFn = (request, next) =>
     catchError((error: HttpErrorResponse) => {
       const body = error.error;
       const problem: ProblemDetails =
-        error.status !== 0 && body && typeof body === 'object' && ('title' in body || 'detail' in body)
+        error.status !== 0 &&
+        body &&
+        typeof body === 'object' &&
+        ('title' in body || 'detail' in body)
           ? {
               type: body.type || 'about:blank',
               title: body.title || error.statusText || 'Error de comunicación',
@@ -32,9 +35,13 @@ export const problemDetailsInterceptor: HttpInterceptorFn = (request, next) =>
             }
           : {
               type: 'about:blank',
-              title: error.status === 0 ? 'BFF no disponible' : error.statusText || 'Error de comunicación',
+              title:
+                error.status === 0
+                  ? 'BFF no disponible'
+                  : error.statusText || 'Error de comunicación',
               status: error.status,
-              detail: error.status === 0 ? 'No se ha podido conectar con el BFF (pgm-bff).' : undefined,
+              detail:
+                error.status === 0 ? 'No se ha podido conectar con el BFF (pgm-bff).' : undefined,
             };
       return throwError(() => new ApiProblemError(problem));
     }),

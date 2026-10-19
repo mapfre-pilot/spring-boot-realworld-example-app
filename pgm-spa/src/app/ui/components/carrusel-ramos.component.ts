@@ -2,8 +2,14 @@ import { Component, input, output, signal } from '@angular/core';
 import { RAMOS, Ramo } from '../../domain/models/api.models';
 
 export const ETIQUETA_RAMO: Record<Ramo, string> = {
-  AUTOS: 'Autos', HOGAR: 'Hogar', SALUD: 'Salud', VIDA: 'Vida', DECESOS: 'Decesos',
-  AHORRO: 'Ahorro', EMPRESAS: 'Empresas', OTROS: 'Otros',
+  AUTOS: 'Autos',
+  HOGAR: 'Hogar',
+  SALUD: 'Salud',
+  VIDA: 'Vida',
+  DECESOS: 'Decesos',
+  AHORRO: 'Ahorro',
+  EMPRESAS: 'Empresas',
+  OTROS: 'Otros',
 };
 
 /** Carrusel de ramos/productos: selecciona el ramo activo para lanzaderas y tarjetas. */
@@ -24,11 +30,39 @@ export const ETIQUETA_RAMO: Record<Ramo, string> = {
     </div>
   `,
   styles: `
-    .carrusel { display: flex; align-items: center; gap: .5rem; overflow: hidden; }
-    .pista { display: flex; gap: .5rem; transition: transform .25s; }
-    .tarjeta { width: 116px; height: 72px; border: 1px solid var(--pgm-gris-2); border-radius: 6px; background: #fff; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .25rem; font: inherit; }
-    .tarjeta.activa { border-color: var(--pgm-rojo); color: var(--pgm-rojo); font-weight: 600; }
-    .icono { font-size: 1.3rem; }
+    .carrusel {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      overflow: hidden;
+    }
+    .pista {
+      display: flex;
+      gap: 0.5rem;
+      transition: transform 0.25s;
+    }
+    .tarjeta {
+      width: 116px;
+      height: 72px;
+      border: 1px solid var(--pgm-gris-2);
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      font: inherit;
+    }
+    .tarjeta.activa {
+      border-color: var(--pgm-rojo);
+      color: var(--pgm-rojo);
+      font-weight: 600;
+    }
+    .icono {
+      font-size: 1.3rem;
+    }
   `,
 })
 export class CarruselRamosComponent {
@@ -38,7 +72,14 @@ export class CarruselRamosComponent {
   readonly inicio = signal(0);
   readonly etiquetas = ETIQUETA_RAMO;
   readonly iconos: Record<Ramo, string> = {
-    AUTOS: '🚗', HOGAR: '🏠', SALUD: '🩺', VIDA: '🛡', DECESOS: '🕊', AHORRO: '💶', EMPRESAS: '🏢', OTROS: '📦',
+    AUTOS: '🚗',
+    HOGAR: '🏠',
+    SALUD: '🩺',
+    VIDA: '🛡',
+    DECESOS: '🕊',
+    AHORRO: '💶',
+    EMPRESAS: '🏢',
+    OTROS: '📦',
   };
 
   seleccionar(r: Ramo): void {

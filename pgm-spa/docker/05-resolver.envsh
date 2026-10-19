@@ -1,0 +1,3 @@
+#!/bin/sh
+# Exporta el DNS interno del runtime (Docker 127.0.0.11, Podman 10.89.x.1) para la directiva resolver de nginx.conf.
+export NGINX_RESOLVER="${NGINX_RESOLVER:-$(awk '/^nameserver/ { print $2; exit }' /etc/resolv.conf)}"

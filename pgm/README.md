@@ -28,9 +28,33 @@ docker compose -f pgm/docker-compose.yml up --build
 
 El perfil `local` no necesita credenciales ni red MAPFRE: el BFF sirve **datos sintéticos** (ningún dato real de cliente) y la SPA no pide login (usuario mock `usuario.local`).
 
+### 2.b Arranque con Podman (Windows)
+
+Requisitos: [Podman Desktop](https://podman-desktop.io/) o Podman CLI ≥ 4.x con la extensión *Compose* (proveedor `docker-compose` o `podman-compose`).
+
+```powershell
+podman machine init                       # solo la primera vez
+podman machine start
+cd spring-boot-realworld-example-app
+podman compose -f pgm/docker-compose.yml up --build
+```
+
+- Si `podman compose` dice que no encuentra proveedor: `pip install podman-compose` y repite, o `winget install Docker.DockerCompose` (solo el binario de compose, sin Docker Desktop).
+- Alternativa sin compose:
+  ```powershell
+  podman network create pgm
+  podman build -t pgm-bff:local -f pgm-bff/docker/Dockerfile pgm-bff
+  podman build -t pgm-spa:local -f pgm-spa/docker/Dockerfile pgm-spa
+  podman run -d --name bff --network pgm -p 8080:8080 pgm-bff:local
+  podman run -d --name spa --network pgm -p 4200:8080 -e BFF_URL=http://bff:8080 pgm-spa:local
+  ```
+- Las imágenes no requieren root (usuarios `app`/`nginx` no privilegiados, puertos internos 8080): funcionan en modo rootless. Para parar: `podman compose -f pgm/docker-compose.yml down` (o `podman rm -f spa bff`).
+- Primer build: ~5–8 min (descarga Maven/npm). Si la red corporativa corta registries públicos, configura el proxy en `podman machine ssh` o usa el arranque manual del §3.
+- Imágenes base y mirror Maven configurables por variables de entorno (sirven para Docker y Podman): `NODE_IMAGE`, `NGINX_IMAGE`, `MAVEN_MIRROR` (p. ej. `$env:NODE_IMAGE="public.ecr.aws/docker/library/node:22-alpine"` si Docker Hub devuelve 429, o las imágenes de `acrmapfredevops` dentro de MAPFRE). El BFF admite además `BUILD_IMAGE`/`RUNTIME_IMAGE`.
+
 ## 3. Arranque manual (desarrollo)
 
-Requisitos: JDK 21, Maven 3.9+, Node.js 22+ (probado con 24), npm 10.
+Requisitos: JDK 21, Maven 3.9+, Node.js 22+ (probado con 24), npm 10. `pgm-spa/.npmrc` fija `legacy-peer-deps=true` (necesario para Spectator 18 con Angular 19).
 
 ```powershell
 # BFF

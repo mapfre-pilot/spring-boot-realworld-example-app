@@ -1,8 +1,18 @@
 /** Modelos alineados con el contrato OpenAPI del BFF (pgm-bff/sources/src/main/resources/openapi/pgm-bff.yaml). */
 export type Tipologia = 'PARTICULAR' | 'AUTONOMO' | 'EMPRESA';
 export type EstadoCliente = 'EN_VIGOR' | 'POTENCIAL' | 'ANULADO';
-export type Ramo = 'AUTOS' | 'HOGAR' | 'SALUD' | 'VIDA' | 'DECESOS' | 'AHORRO' | 'EMPRESAS' | 'OTROS';
-export const RAMOS: Ramo[] = ['AUTOS', 'HOGAR', 'SALUD', 'VIDA', 'DECESOS', 'AHORRO', 'EMPRESAS', 'OTROS'];
+export type Ramo =
+  'AUTOS' | 'HOGAR' | 'SALUD' | 'VIDA' | 'DECESOS' | 'AHORRO' | 'EMPRESAS' | 'OTROS';
+export const RAMOS: Ramo[] = [
+  'AUTOS',
+  'HOGAR',
+  'SALUD',
+  'VIDA',
+  'DECESOS',
+  'AHORRO',
+  'EMPRESAS',
+  'OTROS',
+];
 
 export interface Lista<T> {
   items: T[];

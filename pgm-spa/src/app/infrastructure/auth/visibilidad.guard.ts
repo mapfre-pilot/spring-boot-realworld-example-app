@@ -10,5 +10,7 @@ export const visibilidadGuard =
     const store = inject(ContextoStore);
     const router = inject(Router);
     if (!store.cargado()) await store.cargar();
-    return store.puede(clave) ? true : router.createUrlTree(['/acceso-denegado'], { queryParams: { clave } });
+    return store.puede(clave)
+      ? true
+      : router.createUrlTree(['/acceso-denegado'], { queryParams: { clave } });
   };

@@ -6,6 +6,8 @@ services:
     build:
       context: ../pgm-bff
       dockerfile: docker/Dockerfile
+      args:
+        MAVEN_MIRROR: ${MAVEN_MIRROR:-https://repo.maven.apache.org/maven2}
     image: pgm-bff:local
     environment:
       SPRING_PROFILES_ACTIVE: local
@@ -23,6 +25,8 @@ services:
       dockerfile: docker/Dockerfile
       args:
         CONFIGURATION: local
+        NODE_IMAGE: ${NODE_IMAGE:-node:22-alpine}
+        NGINX_IMAGE: ${NGINX_IMAGE:-nginxinc/nginx-unprivileged:1.27-alpine}
     image: pgm-spa:local
     environment:
       BFF_URL: http://bff:8080

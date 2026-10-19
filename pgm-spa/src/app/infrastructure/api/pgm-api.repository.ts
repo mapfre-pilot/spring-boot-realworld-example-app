@@ -48,13 +48,18 @@ export class PgmApiRepository implements PgmRepository {
 
   productos(clienteId: string, estado?: string): Observable<Lista<Poliza>> {
     const params = estado ? new HttpParams().set('estado', estado) : undefined;
-    return this.http.get<Lista<Poliza>>(`${this.base}/clientes/${encodeURIComponent(clienteId)}/productos`, {
-      params,
-    });
+    return this.http.get<Lista<Poliza>>(
+      `${this.base}/clientes/${encodeURIComponent(clienteId)}/productos`,
+      {
+        params,
+      },
+    );
   }
 
   recibosCliente(clienteId: string): Observable<Lista<Recibo>> {
-    return this.http.get<Lista<Recibo>>(`${this.base}/clientes/${encodeURIComponent(clienteId)}/recibos`);
+    return this.http.get<Lista<Recibo>>(
+      `${this.base}/clientes/${encodeURIComponent(clienteId)}/recibos`,
+    );
   }
 
   prestacionesCliente(clienteId: string): Observable<Lista<Prestacion>> {
@@ -92,7 +97,9 @@ export class PgmApiRepository implements PgmRepository {
   }
 
   recibosPoliza(numero: string): Observable<Lista<Recibo>> {
-    return this.http.get<Lista<Recibo>>(`${this.base}/polizas/${encodeURIComponent(numero)}/recibos`);
+    return this.http.get<Lista<Recibo>>(
+      `${this.base}/polizas/${encodeURIComponent(numero)}/recibos`,
+    );
   }
 
   recibo(numero: string): Observable<Recibo> {

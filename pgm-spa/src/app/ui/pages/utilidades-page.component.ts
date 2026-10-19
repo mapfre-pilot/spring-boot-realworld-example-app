@@ -16,21 +16,55 @@ import { EstadoComponent } from '../components/estado.component';
       <div class="grid grid-3">
         @for (l of transversales(); track l.codigo) {
           <article class="card">
-            <div class="row"><strong>{{ l.nombre }}</strong><span class="spacer"></span><span class="chip">{{ l.destino }}</span></div>
-            @if (l.requiereNuuma && !store.nuuma()) { <p class="alerta">Requiere NUUMA</p> } @else { <a class="btn" [href]="l.url" target="_blank" rel="noopener">Abrir ↗</a> }
+            <div class="row">
+              <strong>{{ l.nombre }}</strong
+              ><span class="spacer"></span><span class="chip">{{ l.destino }}</span>
+            </div>
+            @if (l.requiereNuuma && !store.nuuma()) {
+              <p class="alerta">Requiere NUUMA</p>
+            } @else {
+              <a class="btn" [href]="l.url" target="_blank" rel="noopener">Abrir ↗</a>
+            }
           </article>
-        } @empty { @if (!cargando()) { <div class="vacio">Sin utilidades disponibles</div> } }
+        } @empty {
+          @if (!cargando()) {
+            <div class="vacio">Sin utilidades disponibles</div>
+          }
+        }
       </div>
     </section>
     <section class="card">
       <h2>Mi contexto</h2>
       @if (store.contexto(); as c) {
         <dl class="datos">
-          <dt>Usuario</dt><dd>{{ c.usuario }} · {{ c.nombre }}</dd>
-          <dt>Perfiles (Entra ID)</dt><dd>@for (p of c.perfiles; track p) { <span class="chip">{{ p }}</span>&nbsp; }</dd>
-          <dt>Perfil SGC 3.0</dt><dd>{{ c.perfilSgc30 ?? '—' }}</dd>
-          <dt>Estructura comercial</dt><dd>@if (c.estructura; as e) { NUUMA {{ e.nuuma }} · {{ e.oficina }} · {{ e.delegacion }} · {{ e.territorial }} } @else { — }</dd>
-          <dt>Visibilidades</dt><dd>@for (v of visibilidades(); track v.clave) { <span class="chip" [class.chip-ok]="v.valor" [class.chip-error]="!v.valor">{{ v.clave }}</span>&nbsp; }</dd>
+          <dt>Usuario</dt>
+          <dd>{{ c.usuario }} · {{ c.nombre }}</dd>
+          <dt>Perfiles (Entra ID)</dt>
+          <dd>
+            @for (p of c.perfiles; track p) {
+              <span class="chip">{{ p }}</span
+              >&nbsp;
+            }
+          </dd>
+          <dt>Perfil SGC 3.0</dt>
+          <dd>{{ c.perfilSgc30 ?? '—' }}</dd>
+          <dt>Estructura comercial</dt>
+          <dd>
+            @if (c.estructura; as e) {
+              NUUMA {{ e.nuuma }} · {{ e.oficina }} · {{ e.delegacion }} · {{ e.territorial }}
+            } @else {
+              —
+            }
+          </dd>
+          <dt>Visibilidades</dt>
+          <dd>
+            @for (v of visibilidades(); track v.clave) {
+              <span class="chip" [class.chip-ok]="v.valor" [class.chip-error]="!v.valor">{{
+                v.clave
+              }}</span
+              >&nbsp;
+            }
+          </dd>
         </dl>
       }
     </section>
@@ -43,7 +77,12 @@ export class UtilidadesPageComponent {
   readonly cargando = signal(true);
   readonly error = signal<string | null>(null);
   readonly transversales = computed(() => this.lanzaderas().filter((l) => !l.ramo));
-  readonly visibilidades = computed(() => Object.entries(this.store.contexto()?.visibilidades ?? {}).map(([clave, valor]) => ({ clave, valor })));
+  readonly visibilidades = computed(() =>
+    Object.entries(this.store.contexto()?.visibilidades ?? {}).map(([clave, valor]) => ({
+      clave,
+      valor,
+    })),
+  );
 
   constructor() {
     void firstValueFrom(this.repo.lanzaderas())

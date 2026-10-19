@@ -5,7 +5,11 @@ import { ContextoStore } from './contexto.store';
 
 describe('ContextoStore', () => {
   const contexto = {
-    usuario: 'u1', nombre: 'Usuario Uno', perfiles: ['PGM_USUARIO'], perfilSgc30: null, estructura: null,
+    usuario: 'u1',
+    nombre: 'Usuario Uno',
+    perfiles: ['PGM_USUARIO'],
+    perfilSgc30: null,
+    estructura: null,
     visibilidades: { inicio: true, gestionesSgc30: false },
   };
 

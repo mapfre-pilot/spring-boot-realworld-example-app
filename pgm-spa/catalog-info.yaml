@@ -1,0 +1,16 @@
+# Registro en Backstage (BP-API-001 paso register-in-catalog). Pendiente de alta real en el catálogo corporativo.
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: pgm-spa
+  description: SPA Angular de PGM (Posición Global MAPFRE)
+  annotations:
+    github.com/project-slug: mapfre-pilot/spring-boot-realworld-example-app
+    kdd.mapfre.es/wrk-spec: WRK-SPEC-NEW-SPA-001
+  tags: [pgm, canales-y-clientes]
+spec:
+  dependsOn: [component:pgm-bff]
+  type: website
+  lifecycle: experimental
+  owner: group:arquitectura
+  system: pgm

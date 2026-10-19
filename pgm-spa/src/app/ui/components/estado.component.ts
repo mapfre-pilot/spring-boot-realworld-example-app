@@ -4,8 +4,12 @@ import { Component, input } from '@angular/core';
 @Component({
   selector: 'pgm-estado',
   template: `
-    @if (cargando()) { <div class="vacio">Cargando…</div> }
-    @if (error()) { <div class="alerta alerta-error">{{ error() }}</div> }
+    @if (cargando()) {
+      <div class="vacio">Cargando…</div>
+    }
+    @if (error()) {
+      <div class="alerta alerta-error">{{ error() }}</div>
+    }
   `,
 })
 export class EstadoComponent {

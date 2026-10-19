@@ -14,7 +14,9 @@ export interface Columna<T> {
       <strong>{{ titulo() }}</strong>
       <span class="muted">{{ filasOrdenadas().length }} elementos</span>
       <span class="spacer"></span>
-      <button class="btn btn-secundario" [disabled]="!filas().length" (click)="exportar()">Exportar CSV</button>
+      <button class="btn btn-secundario" [disabled]="!filas().length" (click)="exportar()">
+        Exportar CSV
+      </button>
     </div>
     @if (filas().length) {
       <table class="tabla">
@@ -23,7 +25,9 @@ export interface Columna<T> {
             @for (c of columnas(); track c.clave) {
               <th (click)="ordenarPor(c.clave)">
                 {{ c.titulo }}
-                @if (orden().clave === c.clave) { <span>{{ orden().asc ? '▲' : '▼' }}</span> }
+                @if (orden().clave === c.clave) {
+                  <span>{{ orden().asc ? '▲' : '▼' }}</span>
+                }
               </th>
             }
           </tr>
@@ -42,7 +46,11 @@ export interface Columna<T> {
       <div class="vacio">{{ mensajeVacio() }}</div>
     }
   `,
-  styles: `.cabecera-tabla { margin-bottom: .5rem; }`,
+  styles: `
+    .cabecera-tabla {
+      margin-bottom: 0.5rem;
+    }
+  `,
 })
 export class TablaExportableComponent<T extends object> {
   readonly titulo = input('');

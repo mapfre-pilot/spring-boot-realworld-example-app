@@ -18,13 +18,20 @@ import { Columna, TablaExportableComponent } from '../components/tabla-exportabl
         <label>Nº recibo <input name="recibo" [(ngModel)]="recibo" /></label>
         <label>Nº póliza <input name="poliza" [(ngModel)]="poliza" /></label>
         <label>Documento del cliente <input name="documento" [(ngModel)]="documento" /></label>
-        <div class="row" style="align-items:flex-end"><button class="btn" type="submit">Consultar</button></div>
+        <div class="row" style="align-items:flex-end">
+          <button class="btn" type="submit">Consultar</button>
+        </div>
       </form>
       <pgm-estado [cargando]="cargando()" [error]="error()" />
     </section>
     @if (resultados() !== null) {
       <section class="card">
-        <pgm-tabla-exportable titulo="Recibos" nombreFichero="recibos" [columnas]="columnas" [filas]="resultados()!" />
+        <pgm-tabla-exportable
+          titulo="Recibos"
+          nombreFichero="recibos"
+          [columnas]="columnas"
+          [filas]="resultados()!"
+        />
       </section>
     }
   `,
@@ -32,26 +39,41 @@ import { Columna, TablaExportableComponent } from '../components/tabla-exportabl
 export class RecibosPageComponent {
   private readonly repo = inject(PGM_REPOSITORY);
   private readonly router = inject(Router);
-  recibo = ''; poliza = ''; documento = '';
+  recibo = '';
+  poliza = '';
+  documento = '';
   readonly resultados = signal<Recibo[] | null>(null);
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);
   readonly columnas: Columna<Recibo>[] = [
-    { clave: 'numero', titulo: 'Recibo' }, { clave: 'polizaNumero', titulo: 'Póliza' }, { clave: 'ramo', titulo: 'Ramo' }, { clave: 'estado', titulo: 'Estado' },
-    { clave: 'importe', titulo: 'Importe (€)' }, { clave: 'fechaEmision', titulo: 'Emisión' }, { clave: 'fechaVencimiento', titulo: 'Vencimiento' }, { clave: 'formaPago', titulo: 'Forma de pago' },
+    { clave: 'numero', titulo: 'Recibo' },
+    { clave: 'polizaNumero', titulo: 'Póliza' },
+    { clave: 'ramo', titulo: 'Ramo' },
+    { clave: 'estado', titulo: 'Estado' },
+    { clave: 'importe', titulo: 'Importe (€)' },
+    { clave: 'fechaEmision', titulo: 'Emisión' },
+    { clave: 'fechaVencimiento', titulo: 'Vencimiento' },
+    { clave: 'formaPago', titulo: 'Forma de pago' },
   ];
 
   async buscar(): Promise<void> {
-    this.cargando.set(true); this.error.set(null);
+    this.cargando.set(true);
+    this.error.set(null);
     try {
       if (this.recibo.trim()) {
         void this.router.navigate(['/recibos', this.recibo.trim()]);
       } else if (this.poliza.trim()) {
-        this.resultados.set((await firstValueFrom(this.repo.recibosPoliza(this.poliza.trim()))).items);
+        this.resultados.set(
+          (await firstValueFrom(this.repo.recibosPoliza(this.poliza.trim()))).items,
+        );
       } else if (this.documento.trim()) {
-        const clientes = await firstValueFrom(this.repo.buscarClientes({ documento: this.documento.trim() }));
+        const clientes = await firstValueFrom(
+          this.repo.buscarClientes({ documento: this.documento.trim() }),
+        );
         if (!clientes.items.length) throw new Error('No existe ningún cliente con ese documento');
-        this.resultados.set((await firstValueFrom(this.repo.recibosCliente(clientes.items[0].id))).items);
+        this.resultados.set(
+          (await firstValueFrom(this.repo.recibosCliente(clientes.items[0].id))).items,
+        );
       } else {
         throw new Error('Indica un número de recibo, de póliza o el documento del cliente');
       }
