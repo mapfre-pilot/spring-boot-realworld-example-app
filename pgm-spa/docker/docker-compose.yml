@@ -1,0 +1,13 @@
+# Solo la SPA (requiere un BFF accesible en BFF_URL). Para SPA+BFF usa el docker-compose.yml de la raíz del repo (pgm/).
+services:
+  spa:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: pgm-spa:local
+    environment:
+      BFF_URL: ${BFF_URL:-http://host.docker.internal:8080}
+    ports:
+      - "${SPA_PORT:-4200}:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

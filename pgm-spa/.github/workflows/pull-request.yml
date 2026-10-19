@@ -1,0 +1,19 @@
+# Equivalente abierto del workflow corporativo ZeusOneteam-CI-FrontSPA (no disponible fuera de la organización MAPFRE).
+name: pgm-spa pull-request
+on:
+  pull_request:
+    paths: ["pgm-spa/**"]
+defaults:
+  run:
+    working-directory: pgm-spa
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: pgm-spa/package-lock.json }
+      - run: npm ci --no-audit --no-fund
+      - run: npx nx lint pgm-spa
+      - run: npx nx test pgm-spa --ci
+      - run: npx nx build pgm-spa

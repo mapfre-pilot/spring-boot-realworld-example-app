@@ -1,0 +1,33 @@
+# PGM en arquitectura de referencia — arranque local completo (SPA + BFF) con datos sintéticos.
+#   docker compose -f pgm/docker-compose.yml up --build
+#   SPA: http://localhost:4200   BFF: http://localhost:8080 (health: /monitoring/health, OpenAPI: /v3/api-docs.yaml)
+services:
+  bff:
+    build:
+      context: ../pgm-bff
+      dockerfile: docker/Dockerfile
+    image: pgm-bff:local
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      APP_CORS_ALLOWED_ORIGINS: http://localhost:4200
+    ports:
+      - "${BFF_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/monitoring/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+  spa:
+    build:
+      context: ../pgm-spa
+      dockerfile: docker/Dockerfile
+      args:
+        CONFIGURATION: local
+    image: pgm-spa:local
+    environment:
+      BFF_URL: http://bff:8080
+    ports:
+      - "${SPA_PORT:-4200}:8080"
+    depends_on:
+      bff:
+        condition: service_healthy

@@ -1,0 +1,18 @@
+name: pgm-spa merge-commit
+on:
+  push:
+    branches: [develop, main]
+    paths: ["pgm-spa/**"]
+defaults:
+  run:
+    working-directory: pgm-spa
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: pgm-spa/package-lock.json }
+      - run: npm ci --no-audit --no-fund
+      - run: npx nx test pgm-spa --ci
+      - run: docker build -f docker/Dockerfile --build-arg CONFIGURATION=production -t pgm-spa:${{ github.sha }} .
