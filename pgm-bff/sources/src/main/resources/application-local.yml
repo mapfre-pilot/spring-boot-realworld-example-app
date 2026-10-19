@@ -1,0 +1,9 @@
+# Perfil local: sin Entra ID y con adaptadores en memoria (datos sintéticos, sin PII real).
+# El usuario se toma de la cabecera X-PGM-Usuario (por defecto usuario.local) y sus perfiles de X-PGM-Perfiles.
+pgm:
+  local:
+    usuario-por-defecto: usuario.local
+    perfiles-por-defecto: [PGM_USUARIO, PGM_ASESOR_COMERCIAL, PGM_VISUALIZAR_CDM]
+logging:
+  level:
+    com.mapfre.pgm: DEBUG

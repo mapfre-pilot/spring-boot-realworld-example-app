@@ -1,0 +1,4 @@
+[
+ {"id":"SGO-1","clienteId":"C-1001","tipo":"Duplicado de recibo","estado":"RESUELTA","fecha":"2026-06-02","descripcion":"Duplicado recibo R-7001 enviado por correo"},
+ {"id":"SGO-2","clienteId":"C-1003","tipo":"Cambio de datos","estado":"EN_CURSO","fecha":"2026-10-11","descripcion":"Actualización de domicilio social"}
+]

@@ -1,0 +1,355 @@
+openapi: 3.0.3
+info:
+  title: pgm-bff
+  version: 1.0.0
+  description: |
+    BFF de PGM (Plataforma de Gestión MAPFRE) para la SPA pgm-spa. Contrato OpenAPI-first (BP-API-001).
+    Único punto de entrada del navegador: el BFF compone API Canal (PROD-APICANAL-*) y APIs de plataforma
+    (PGO, SGC 3.0, iMediador, SGO, comunicaciones) a través del API Gateway interno (ARCH-FIS-COM-001).
+    Errores en formato RFC 9457 (application/problem+json). Sin PII en logs.
+  contact: { name: Arquitectura MAPFRE España — Canales y Clientes }
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local (perfil local, sin Entra ID; cabeceras X-PGM-Usuario / X-PGM-Perfiles opcionales)
+  - url: https://pgm-bff.{entorno}.mapfre.invalid/api/v1
+    description: Entornos (OIDC Entra ID)
+    variables: { entorno: { default: dev, enum: [dev, test, pre, pro] } }
+security:
+  - entraId: [pgm.acceso]
+tags:
+  - { name: contexto, description: Contexto y visibilidades del usuario }
+  - { name: clientes, description: Búsqueda y ficha 360 }
+  - { name: polizas }
+  - { name: recibos }
+  - { name: nueva-produccion, description: Tarificación rápida Salud y borradores }
+  - { name: utilidades, description: Lanzaderas, auditoría, comunicaciones, cuadro de mando }
+paths:
+  /contexto:
+    get:
+      tags: [contexto]
+      operationId: obtenerContexto
+      summary: Perfil, estructura comercial y visibilidades calculadas por el BFF
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ContextoUsuario' } } } }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+  /clientes/search:
+    get:
+      tags: [clientes]
+      operationId: buscarClientes
+      summary: Búsqueda multicriterio de clientes (federada en API Canal Clientes)
+      parameters:
+        - { name: q, in: query, schema: { type: string }, description: Texto libre (nombre, documento, id) }
+        - { name: documento, in: query, schema: { type: string } }
+        - { name: telefono, in: query, schema: { type: string } }
+        - { name: email, in: query, schema: { type: string } }
+        - { name: poliza, in: query, schema: { type: string } }
+        - { name: tarjetaSanitaria, in: query, schema: { type: string } }
+        - { name: localidad, in: query, schema: { type: string } }
+        - { name: limite, in: query, schema: { type: integer, default: 20, maximum: 50 } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ListaClienteResumen' } } } }
+        '400': { $ref: '#/components/responses/PeticionInvalida' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '502': { $ref: '#/components/responses/SistemaExterno' }
+  /clientes/{id}/ficha:
+    get:
+      tags: [clientes]
+      operationId: obtenerFichaCliente
+      summary: Visión 360 nivel 1 (cabecera, palancas, alertas, familia, posición bancaria)
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Cliente' } } } }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+        '502': { $ref: '#/components/responses/SistemaExterno' }
+  /clientes/{id}/productos:
+    get:
+      tags: [clientes]
+      operationId: listarProductosCliente
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ListaPoliza' } } } }
+  /clientes/{id}/recibos:
+    get:
+      tags: [clientes]
+      operationId: listarRecibosCliente
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ListaRecibo' } } } }
+  /clientes/{id}/prestaciones:
+    get:
+      tags: [clientes]
+      operationId: listarPrestacionesCliente
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ListaPrestacion' } } } }
+  /clientes/{id}/presupuestos:
+    get:
+      tags: [clientes]
+      operationId: listarPresupuestosCliente
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ListaPresupuesto' } } } }
+  /clientes/{id}/oportunidades:
+    get:
+      tags: [clientes]
+      operationId: listarOportunidadesCliente
+      summary: Vencimientos y oportunidades (PGO)
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ListaOportunidad' } } } }
+  /clientes/{id}/gestiones:
+    get:
+      tags: [clientes]
+      operationId: listarGestionesCliente
+      summary: Gestiones comerciales SGC 3.0 / iMediador (requiere perfil SGC 3.0 y NUUMA)
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ListaGestionComercial' } } } }
+        '403': { $ref: '#/components/responses/Prohibido' }
+  /clientes/{id}/solicitudes-sgo:
+    get:
+      tags: [clientes]
+      operationId: listarSolicitudesSgoCliente
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ListaSolicitudSgo' } } } }
+  /polizas/{numero}:
+    get:
+      tags: [polizas]
+      operationId: obtenerPoliza
+      parameters: [ { name: numero, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Poliza' } } } }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+  /polizas/{numero}/recibos:
+    get:
+      tags: [polizas]
+      operationId: listarRecibosPoliza
+      parameters: [ { name: numero, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ListaRecibo' } } } }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+  /recibos/{numero}:
+    get:
+      tags: [recibos]
+      operationId: obtenerRecibo
+      parameters: [ { name: numero, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Recibo' } } } }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+  /tarificacion/salud:
+    post:
+      tags: [nueva-produccion]
+      operationId: tarificarSalud
+      summary: Tarificación rápida de Salud (API Canal Ventas)
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/TarificacionSaludRequest' } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/TarificacionSaludResultado' } } } }
+        '400': { $ref: '#/components/responses/PeticionInvalida' }
+        '403': { $ref: '#/components/responses/Prohibido' }
+  /tarificacion/salud/borradores:
+    post:
+      tags: [nueva-produccion]
+      operationId: guardarBorradorTarificacion
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/TarificacionSaludRequest' } } } }
+      responses:
+        '201':
+          description: Creado
+          headers: { Location: { schema: { type: string } } }
+          content: { application/json: { schema: { type: object, properties: { id: { type: string } } } } }
+  /tarificacion/salud/borradores/{id}:
+    get:
+      tags: [nueva-produccion]
+      operationId: obtenerBorradorTarificacion
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/TarificacionSaludRequest' } } } }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+  /lanzaderas:
+    get:
+      tags: [utilidades]
+      operationId: listarLanzaderas
+      summary: Enlaces a NSE, GESALUD, GESVIDA, Portal Interno, SGC, SGO, Citrix (filtradas por ramo y NUUMA)
+      parameters: [ { name: ramo, in: query, schema: { $ref: '#/components/schemas/Ramo' } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ListaLanzadera' } } } }
+  /auditoria:
+    post:
+      tags: [utilidades]
+      operationId: registrarAuditoria
+      summary: Registro de acceso por NUUMA (sin PII)
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/AuditoriaRequest' } } } }
+      responses:
+        '202': { description: Aceptado }
+        '400': { $ref: '#/components/responses/PeticionInvalida' }
+  /comunicaciones/llamadas:
+    post:
+      tags: [utilidades]
+      operationId: iniciarLlamada
+      summary: Click-to-call (plataforma de comunicaciones)
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [clienteId, telefono], properties: { clienteId: { type: string }, telefono: { type: string } } } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { idLlamada: { type: string } } } } } }
+  /cuadro-mando/kpis:
+    get:
+      tags: [utilidades]
+      operationId: listarKpis
+      summary: Cuadro de mando de uso (requiere PGM_VISUALIZAR_CDM)
+      parameters: [ { name: periodo, in: query, schema: { type: string, default: mes-actual } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ListaKpi' } } } }
+        '403': { $ref: '#/components/responses/Prohibido' }
+components:
+  securitySchemes:
+    entraId:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize
+          tokenUrl: https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token
+          scopes: { pgm.acceso: Acceso a PGM }
+  parameters:
+    ClienteId: { name: id, in: path, required: true, schema: { type: string }, example: C-1001 }
+  responses:
+    PeticionInvalida: { description: Petición inválida, content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+    NoAutenticado: { description: Sin token válido }
+    Prohibido: { description: Acceso no autorizado, content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+    NoEncontrado: { description: Recurso no encontrado, content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+    SistemaExterno: { description: API Canal o plataforma no disponible, content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+  schemas:
+    Problem:
+      type: object
+      properties: { type: { type: string, format: uri }, title: { type: string }, status: { type: integer }, detail: { type: string }, instance: { type: string } }
+    Ramo: { type: string, enum: [AUTOS, HOGAR, SALUD, VIDA, DECESOS, AHORRO, EMPRESAS, OTROS] }
+    Tipologia: { type: string, enum: [PARTICULAR, AUTONOMO, EMPRESA] }
+    EstadoCliente: { type: string, enum: [EN_VIGOR, POTENCIAL, ANULADO] }
+    ContextoUsuario:
+      type: object
+      properties:
+        usuario: { type: string }
+        nombre: { type: string }
+        perfiles: { type: array, items: { type: string } }
+        perfilSgc30: { type: string, nullable: true }
+        estructura: { $ref: '#/components/schemas/EstructuraComercial' }
+        visibilidades: { type: object, additionalProperties: { type: boolean } }
+    EstructuraComercial:
+      type: object
+      nullable: true
+      properties: { nuuma: { type: string }, oficina: { type: string }, delegacion: { type: string }, territorial: { type: string } }
+    ClienteResumen:
+      type: object
+      properties:
+        id: { type: string }
+        nombre: { type: string }
+        apellidos: { type: string }
+        tipoDocumento: { type: string }
+        documento: { type: string }
+        tipologia: { $ref: '#/components/schemas/Tipologia' }
+        estado: { $ref: '#/components/schemas/EstadoCliente' }
+        telefono: { type: string }
+        email: { type: string }
+        localidad: { type: string }
+        numeroPolizasEnVigor: { type: integer }
+    Cliente:
+      allOf:
+        - $ref: '#/components/schemas/ClienteResumen'
+        - type: object
+          properties:
+            fechaNacimiento: { type: string, format: date }
+            nacionalidad: { type: string }
+            vip: { type: boolean }
+            robinson: { type: boolean }
+            exclusivoCorredor: { type: boolean }
+            direccion: { type: object, properties: { via: { type: string }, numero: { type: string }, codigoPostal: { type: string }, localidad: { type: string }, provincia: { type: string } } }
+            oficinaGestora: { type: string }
+            gestorAsignado: { type: string }
+            palancas: { type: object, properties: { dniDigitalizado: { type: boolean }, rgpdFirmado: { type: boolean }, altaAci: { type: boolean }, clienteTotal: { type: boolean }, planPagos: { type: boolean }, enFamilia: { type: boolean }, dpv: { type: boolean } } }
+            alertas: { type: array, items: { type: object, properties: { tipo: { type: string }, texto: { type: string }, fecha: { type: string, format: date } } } }
+            familia: { type: array, items: { type: object, properties: { clienteId: { type: string }, nombre: { type: string }, parentesco: { type: string } } } }
+            posicionBancaria: { type: string }
+            descuentoVinculacion: { type: integer }
+    Poliza:
+      type: object
+      properties:
+        numero: { type: string }
+        clienteId: { type: string }
+        ramo: { $ref: '#/components/schemas/Ramo' }
+        producto: { type: string }
+        estado: { type: string, enum: [EN_VIGOR, ANULADA, SUSPENDIDA] }
+        fechaEfecto: { type: string, format: date }
+        fechaVencimiento: { type: string, format: date }
+        primaAnual: { type: number }
+        formaPago: { type: string }
+        riesgo: { type: string }
+        acciones: { type: array, items: { type: string } }
+        lanzadera: { type: string }
+    Recibo:
+      type: object
+      properties:
+        numero: { type: string }
+        clienteId: { type: string }
+        polizaNumero: { type: string }
+        ramo: { $ref: '#/components/schemas/Ramo' }
+        estado: { type: string, enum: [COBRADO, PENDIENTE, DEVUELTO, ANULADO] }
+        importe: { type: number }
+        fechaEmision: { type: string, format: date }
+        fechaVencimiento: { type: string, format: date }
+        formaPago: { type: string }
+        ibanEnmascarado: { type: string }
+    Prestacion:
+      type: object
+      properties:
+        numero: { type: string }
+        clienteId: { type: string }
+        polizaNumero: { type: string }
+        ramo: { $ref: '#/components/schemas/Ramo' }
+        tipo: { type: string }
+        estado: { type: string, enum: [ABIERTA, EN_TRAMITE, CERRADA] }
+        fechaOcurrencia: { type: string, format: date }
+        fechaApertura: { type: string, format: date }
+        descripcion: { type: string }
+        tramitador: { type: string }
+    Presupuesto:
+      type: object
+      properties: { numero: { type: string }, clienteId: { type: string }, ramo: { $ref: '#/components/schemas/Ramo' }, producto: { type: string }, estado: { type: string }, fecha: { type: string, format: date }, fechaCaducidad: { type: string, format: date }, primaAnual: { type: number } }
+    Oportunidad:
+      type: object
+      properties: { id: { type: string }, clienteId: { type: string }, tipo: { type: string, enum: [VENCIMIENTO, OPORTUNIDAD, CROSSELLING] }, ramo: { $ref: '#/components/schemas/Ramo' }, polizaNumero: { type: string }, fecha: { type: string, format: date }, descripcion: { type: string }, prioridad: { type: string, enum: [ALTA, MEDIA, BAJA] } }
+    GestionComercial:
+      type: object
+      properties: { id: { type: string }, clienteId: { type: string }, tipo: { type: string }, estado: { type: string }, fecha: { type: string, format: date-time }, descripcion: { type: string }, gestor: { type: string }, origen: { type: string } }
+    SolicitudSgo:
+      type: object
+      properties: { id: { type: string }, clienteId: { type: string }, tipo: { type: string }, estado: { type: string }, fecha: { type: string, format: date }, descripcion: { type: string } }
+    Lanzadera:
+      type: object
+      properties: { codigo: { type: string }, nombre: { type: string }, destino: { type: string }, ramo: { $ref: '#/components/schemas/Ramo' }, url: { type: string, format: uri }, requiereNuuma: { type: boolean } }
+    Kpi:
+      type: object
+      properties: { codigo: { type: string }, nombre: { type: string }, valor: { type: number }, unidad: { type: string }, periodo: { type: string } }
+    TarificacionSaludRequest:
+      type: object
+      required: [producto, codigoPostal, edades]
+      properties:
+        clienteId: { type: string }
+        producto: { type: string, example: Salud Elección Plus }
+        codigoPostal: { type: string, pattern: '^\d{5}$' }
+        edades: { type: array, minItems: 1, items: { type: integer, minimum: 0, maximum: 120 } }
+        copago: { type: boolean, default: false }
+    TarificacionSaludResultado:
+      type: object
+      properties: { id: { type: string }, producto: { type: string }, primaMensual: { type: number }, primaAnual: { type: number }, coberturas: { type: array, items: { type: string } }, estado: { type: string } }
+    AuditoriaRequest:
+      type: object
+      required: [accion, pantalla]
+      properties: { accion: { type: string, example: LANZADERA }, clienteId: { type: string }, pantalla: { type: string } }
+    ListaClienteResumen: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/ClienteResumen' } }, total: { type: integer } } }
+    ListaPoliza: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Poliza' } }, total: { type: integer } } }
+    ListaRecibo: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Recibo' } }, total: { type: integer } } }
+    ListaPrestacion: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Prestacion' } }, total: { type: integer } } }
+    ListaPresupuesto: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Presupuesto' } }, total: { type: integer } } }
+    ListaOportunidad: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Oportunidad' } }, total: { type: integer } } }
+    ListaGestionComercial: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/GestionComercial' } }, total: { type: integer } } }
+    ListaSolicitudSgo: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/SolicitudSgo' } }, total: { type: integer } } }
+    ListaLanzadera: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Lanzadera' } }, total: { type: integer } } }
+    ListaKpi: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Kpi' } }, total: { type: integer } } }

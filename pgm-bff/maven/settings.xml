@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Plantilla corporativa: Azure Artifacts como mirror. Local: no se requiere (Maven Central). PAT solo en ~/.m2/settings.xml, nunca en el repo. -->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">
+  <servers>
+    <server>
+      <id>mapfre-azure-artifacts</id>
+      <username>${env.AZURE_ARTIFACTS_USER}</username>
+      <password>${env.AZURE_ARTIFACTS_PAT}</password>
+    </server>
+  </servers>
+  <profiles>
+    <profile>
+      <id>mapfre</id>
+      <repositories>
+        <repository>
+          <id>mapfre-azure-artifacts</id>
+          <url>${env.AZURE_ARTIFACTS_MAVEN_URL}</url>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+</settings>

@@ -1,0 +1,7 @@
+[
+ {"numero":"S-9001","clienteId":"C-1001","polizaNumero":"AUT-000100","ramo":"AUTOS","tipo":"Daños propios","estado":"EN_TRAMITE","fechaOcurrencia":"2026-09-12","fechaApertura":"2026-09-13","descripcion":"Colisión en aparcamiento, peritación pendiente","tramitador":"Tramitador Demo A"},
+ {"numero":"S-9002","clienteId":"C-1001","polizaNumero":"HOG-000101","ramo":"HOGAR","tipo":"Daños por agua","estado":"CERRADA","fechaOcurrencia":"2026-03-02","fechaApertura":"2026-03-02","descripcion":"Fuga en baño, reparación realizada","tramitador":"Tramitador Demo B"},
+ {"numero":"P-9003","clienteId":"C-1001","polizaNumero":"SAL-000102","ramo":"SALUD","tipo":"Reembolso","estado":"ABIERTA","fechaOcurrencia":"2026-10-05","fechaApertura":"2026-10-06","descripcion":"Reembolso de consulta especialista","tramitador":"Tramitador Demo C"},
+ {"numero":"S-9101","clienteId":"C-1002","polizaNumero":"AUT-000200","ramo":"AUTOS","tipo":"Lunas","estado":"CERRADA","fechaOcurrencia":"2026-06-20","fechaApertura":"2026-06-20","descripcion":"Sustitución de parabrisas","tramitador":"Tramitador Demo A"},
+ {"numero":"S-9201","clienteId":"C-1003","polizaNumero":"EMP-000300","ramo":"EMPRESAS","tipo":"Incendio","estado":"EN_TRAMITE","fechaOcurrencia":"2026-08-15","fechaApertura":"2026-08-16","descripcion":"Incendio parcial en almacén, peritación en curso","tramitador":"Tramitador Demo D"}
+]

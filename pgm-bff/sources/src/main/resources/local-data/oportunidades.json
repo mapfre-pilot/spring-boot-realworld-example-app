@@ -1,0 +1,6 @@
+[
+ {"id":"O-1","clienteId":"C-1001","tipo":"VENCIMIENTO","ramo":"AUTOS","polizaNumero":"AUT-000100","fecha":"2026-11-15","descripcion":"Vencimiento anual Autos — revisar prima renovación","prioridad":"ALTA"},
+ {"id":"O-2","clienteId":"C-1001","tipo":"CROSSELLING","ramo":"VIDA","polizaNumero":null,"fecha":"2026-10-20","descripcion":"Propensión Vida Riesgo (presupuesto PR-5001 vigente)","prioridad":"MEDIA"},
+ {"id":"O-3","clienteId":"C-1002","tipo":"OPORTUNIDAD","ramo":"SALUD","polizaNumero":null,"fecha":"2026-10-25","descripcion":"Retomar presupuesto de Salud caducado","prioridad":"MEDIA"},
+ {"id":"O-4","clienteId":"C-1003","tipo":"VENCIMIENTO","ramo":"EMPRESAS","polizaNumero":"EMP-000300","fecha":"2027-01-01","descripcion":"Vencimiento Multirriesgo Empresas","prioridad":"BAJA"}
+]

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="pgm-bff"/>
+  <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+      <providers>
+        <timestamp><fieldName>@timestamp</fieldName><timeZone>UTC</timeZone></timestamp>
+        <logLevel/>
+        <loggerName/>
+        <threadName/>
+        <mdc/>
+        <pattern><pattern>{"app":"${appName}"}</pattern></pattern>
+        <provider class="com.mapfre.pgm.bff.infrastructure.observability.PiiMaskingMessageJsonProvider"/>
+        <stackTrace/>
+      </providers>
+    </encoder>
+  </appender>
+  <root level="INFO">
+    <appender-ref ref="JSON"/>
+  </root>
+</configuration>

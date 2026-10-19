@@ -1,0 +1,111 @@
+spring:
+  application:
+    name: pgm-bff
+  profiles:
+    default: local
+  jackson:
+    default-property-inclusion: non_null
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}"
+  cloud:
+    config:
+      enabled: ${CONFIG_SERVER_ENABLED:false}
+      fail-fast: false
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      base-path: /monitoring
+      exposure:
+        include: [health, metrics, prometheus, info]
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: ${OTEL_SAMPLING_PROBABILITY:0.1}
+  otlp:
+    tracing:
+      export:
+        enabled: ${OTEL_TRACING_ENABLED:false}
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
+
+app:
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:4200}
+
+pgm:
+  features:
+    tarificacion-salud: ${PGM_FEATURE_TARIFICACION_SALUD:true}
+    gestion-comercial: ${PGM_FEATURE_GESTION_COMERCIAL:true}
+    cuadro-mando: ${PGM_FEATURE_CUADRO_MANDO:true}
+    click-to-call: ${PGM_FEATURE_CLICK_TO_CALL:true}
+  gateway:
+    # API Gateway interno (ARCH-FIS-COM-001): único punto de salida del BFF. Nunca ESB/SOAP/Denodo/core.
+    base-url: ${PGM_GATEWAY_BASE_URL:https://api-gateway.interno.mapfre.invalid}
+    tenant: ${PGM_GATEWAY_TENANT:mapfre-es}
+    connect-timeout-ms: ${PGM_GATEWAY_CONNECT_TIMEOUT_MS:2000}
+    read-timeout-ms: ${PGM_GATEWAY_READ_TIMEOUT_MS:5000}
+    rutas:
+      api-canal-clientes: /api-canal/clientes/v1
+      api-canal-polizas: /api-canal/polizas/v1
+      api-canal-recibos: /api-canal/recibos/v1
+      api-canal-siniestros: /api-canal/siniestros/v1
+      api-canal-ventas: /api-canal/ventas/v1
+      pgo: /plataformas/pgo/v1
+      sgc30: /plataformas/sgc30/v1
+      imediador: /plataformas/imediador/v1
+      sgo: /plataformas/sgo/v1
+      comunicaciones: /plataformas/comunicaciones/v1
+  lanzaderas:
+    - { codigo: NSE, nombre: "NSE — Nuevo Sistema de Emisión", destino: NSE, ramo: AUTOS, url: "${PGM_URL_NSE:https://nse.interno.mapfre.invalid}", requiere-nuuma: false }
+    - { codigo: NSE_HOGAR, nombre: "NSE — Hogar", destino: NSE, ramo: HOGAR, url: "${PGM_URL_NSE:https://nse.interno.mapfre.invalid}/hogar", requiere-nuuma: false }
+    - { codigo: GESALUD, nombre: "GESALUD", destino: GESALUD, ramo: SALUD, url: "${PGM_URL_GESALUD:https://gesalud.interno.mapfre.invalid}", requiere-nuuma: false }
+    - { codigo: GESVIDA, nombre: "GESVIDA / WEBVIDA", destino: GESVIDA, ramo: VIDA, url: "${PGM_URL_GESVIDA:https://gesvida.interno.mapfre.invalid}", requiere-nuuma: false }
+    - { codigo: DECESOS, nombre: "Decesos — Portal Interno", destino: PORTAL_INTERNO, ramo: DECESOS, url: "${PGM_URL_PORTAL_INTERNO:https://portal.interno.mapfre.invalid}/decesos", requiere-nuuma: false }
+    - { codigo: PORTAL_INTERNO, nombre: "Portal Interno", destino: PORTAL_INTERNO, url: "${PGM_URL_PORTAL_INTERNO:https://portal.interno.mapfre.invalid}", requiere-nuuma: false }
+    - { codigo: SGC30, nombre: "SGC 3.0 — Gestión comercial", destino: SGC30, url: "${PGM_URL_SGC30:https://sgc.interno.mapfre.invalid}", requiere-nuuma: true }
+    - { codigo: SGO, nombre: "SGO — Solicitudes", destino: SGO, url: "${PGM_URL_SGO:https://sgo.interno.mapfre.invalid}", requiere-nuuma: false }
+    - { codigo: CITRIX, nombre: "Citrix — aplicaciones host", destino: CITRIX, url: "${PGM_URL_CITRIX:https://citrix.interno.mapfre.invalid}", requiere-nuuma: true }
+
+security:
+  entraid:
+    tenant-id: ${ENTRAID_TENANT_ID:}
+    audience: ${ENTRAID_AUDIENCE:}
+    issuer: ${ENTRAID_ISSUER:https://login.microsoftonline.com/${ENTRAID_TENANT_ID:}/v2.0}
+    jwk-set-uri: ${ENTRAID_JWKS_URI:https://login.microsoftonline.com/${ENTRAID_TENANT_ID:}/discovery/v2.0/keys}
+    scope: ${ENTRAID_SCOPE:pgm.acceso}
+    groups-claim: ${ENTRAID_GROUPS_CLAIM:groups}
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 20
+        minimum-number-of-calls: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        register-health-indicator: true
+    instances:
+      apicanal: { base-config: default }
+      plataforma: { base-config: default }
+  retry:
+    configs:
+      default:
+        max-attempts: 3
+        wait-duration: 200ms
+        enable-exponential-backoff: true
+        retry-exceptions: [ org.springframework.web.client.ResourceAccessException, org.springframework.web.client.HttpServerErrorException ]
+    instances:
+      apicanal-lectura: { base-config: default }
+      plataforma-lectura: { base-config: default }

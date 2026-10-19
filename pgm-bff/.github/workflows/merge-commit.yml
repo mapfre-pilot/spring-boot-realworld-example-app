@@ -1,0 +1,17 @@
+# ZeusOneteam-CI-ContainerJava (merge) — build, tests, imagen de contenedor y publicación en ACR (requiere secretos corporativos).
+name: pgm-bff merge-commit
+on:
+  push:
+    branches: [develop, main]
+    paths: ["pgm-bff/**"]
+jobs:
+  build-and-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21", cache: maven }
+      - run: mvn -B clean verify
+        working-directory: pgm-bff/sources
+      - run: docker build -f pgm-bff/docker/Dockerfile -t pgm-bff:${{ github.sha }} pgm-bff
+      # - Push a acrmapfredevops.azurecr.io y despliegue Argo CD: pasos ZeusOneteam (onboarding SRE pendiente)

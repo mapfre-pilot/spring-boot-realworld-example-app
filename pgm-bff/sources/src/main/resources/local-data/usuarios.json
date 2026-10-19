@@ -1,0 +1,5 @@
+{
+ "usuario.local": {"perfilSgc30": "ASESOR", "estructura": {"nuuma": "NU000001", "oficina": "0001 Madrid Centro", "delegacion": "Madrid", "territorial": "Centro"}},
+ "gestor.sin.nuuma": {"perfilSgc30": null, "estructura": null},
+ "director.oficina": {"perfilSgc30": "DIRECTOR", "estructura": {"nuuma": "NU000002", "oficina": "0410 Sevilla Nervión", "delegacion": "Sevilla", "territorial": "Sur"}}
+}

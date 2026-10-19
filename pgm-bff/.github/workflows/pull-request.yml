@@ -1,0 +1,16 @@
+# ZeusOneteam-CI-ContainerJava (pull request) — plantilla corporativa; en este repo piloto se ejecuta el equivalente abierto.
+name: pgm-bff pull-request
+on:
+  pull_request:
+    paths: ["pgm-bff/**"]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: pgm-bff/sources } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21", cache: maven }
+      - run: mvn -B clean verify
+      - uses: actions/upload-artifact@v4
+        with: { name: pgm-bff-jar, path: pgm-bff/sources/target/*.jar }

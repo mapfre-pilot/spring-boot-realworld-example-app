@@ -1,0 +1,11 @@
+[
+ {"numero":"R-7001","clienteId":"C-1001","polizaNumero":"AUT-000100","ramo":"AUTOS","estado":"DEVUELTO","importe":306.20,"fechaEmision":"2026-05-15","fechaVencimiento":"2026-05-30","formaPago":"Domiciliación","ibanEnmascarado":"ES** **** **** **** **** 1234"},
+ {"numero":"R-7002","clienteId":"C-1001","polizaNumero":"HOG-000101","ramo":"HOGAR","estado":"COBRADO","importe":298.75,"fechaEmision":"2026-02-01","fechaVencimiento":"2026-02-15","formaPago":"Domiciliación","ibanEnmascarado":"ES** **** **** **** **** 1234"},
+ {"numero":"R-7003","clienteId":"C-1001","polizaNumero":"SAL-000102","ramo":"SALUD","estado":"PENDIENTE","importe":95.00,"fechaEmision":"2026-10-01","fechaVencimiento":"2026-10-31","formaPago":"Domiciliación","ibanEnmascarado":"ES** **** **** **** **** 1234"},
+ {"numero":"R-7004","clienteId":"C-1001","polizaNumero":"SAL-000102","ramo":"SALUD","estado":"COBRADO","importe":95.00,"fechaEmision":"2026-09-01","fechaVencimiento":"2026-09-30","formaPago":"Domiciliación","ibanEnmascarado":"ES** **** **** **** **** 1234"},
+ {"numero":"R-7101","clienteId":"C-1002","polizaNumero":"AUT-000200","ramo":"AUTOS","estado":"COBRADO","importe":388.10,"fechaEmision":"2026-04-10","fechaVencimiento":"2026-04-25","formaPago":"Domiciliación","ibanEnmascarado":"ES** **** **** **** **** 5678"},
+ {"numero":"R-7102","clienteId":"C-1002","polizaNumero":"DEC-000201","ramo":"DECESOS","estado":"PENDIENTE","importe":61.25,"fechaEmision":"2026-10-01","fechaVencimiento":"2026-10-20","formaPago":"Domiciliación","ibanEnmascarado":"ES** **** **** **** **** 5678"},
+ {"numero":"R-7201","clienteId":"C-1003","polizaNumero":"EMP-000300","ramo":"EMPRESAS","estado":"COBRADO","importe":4860.00,"fechaEmision":"2026-01-01","fechaVencimiento":"2026-01-31","formaPago":"Transferencia","ibanEnmascarado":null},
+ {"numero":"R-7202","clienteId":"C-1003","polizaNumero":"AUT-000301","ramo":"AUTOS","estado":"DEVUELTO","importe":1155.00,"fechaEmision":"2025-09-01","fechaVencimiento":"2025-09-15","formaPago":"Transferencia","ibanEnmascarado":null},
+ {"numero":"R-7501","clienteId":"C-1005","polizaNumero":"HOG-000500","ramo":"HOGAR","estado":"ANULADO","importe":160.00,"fechaEmision":"2024-03-01","fechaVencimiento":"2024-03-15","formaPago":"Domiciliación","ibanEnmascarado":"ES** **** **** **** **** 9012"}
+]
