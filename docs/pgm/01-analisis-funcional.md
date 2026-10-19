@@ -178,6 +178,7 @@ Accesos transversales: Portal Interno (SAC, bandeja, Liquicom, Asesor 360, SGC 2
 | **Firmar RGPD** | Métodos: firma biométrica, aceptación por email, aceptación por SMS; alternativa "impresión y firma" (oficina sin papel). |
 | **Solicitar alta en ACI** | Requisito previo: teléfono móvil o email del cliente ("incorpóralos en Más datos cliente"); el resto de datos se modifican por suplemento. |
 | **Alta Cliente Total** | Tabla del cliente (NIF, nombre, clasificación actual / nueva), empresas vinculadas (CIF, razón social, actividad, segmento, clasificación, cargo, estado), *Ver documento*, *Añadir CIF*, *Firmar*. |
+| Ficha de **cliente potencial** (`11-ficha-cliente-potencial.png`) | Enlace *Modificación Cliente Potencial* en cabecera; ACI, Plan de pagos y ClubMAPFRE aparecen como "Acción no disponible" ("Esta funcionalidad no está disponible para este cliente"); DpV 0 %, prima 0,00 € con cálculo bajo demanda; productos "Todos (0) — No hay productos para este cliente"; aviso de refresco "Para poder visualizar la información del cliente modificada, actualiza la página". El carrusel añade el ramo *Resto patrimoniales*. |
 | Pestaña **Estados anteriores** | Vacía para el cliente de prueba (sin pólizas anuladas). |
 
 Nota de trazabilidad: al abrir *Digitalizar DNI*, *Firmar RGPD*, *Solicitar alta en ACI* y *Alta Cliente Total*, Appian arranca una instancia de proceso con tarea de usuario (así están diseñados); se cerraron sin enviar nada, por lo que no hubo modificación de datos, pero las instancias quedan iniciadas por el usuario de pruebas.
