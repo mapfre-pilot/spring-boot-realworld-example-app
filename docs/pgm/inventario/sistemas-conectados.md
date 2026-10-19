@@ -1,0 +1,33 @@
+- **CMP API ESB** (system.http) base=`https://esb.pre.mapfre.net:26005/` auth=None — Sistema conectado que incluye el host esb
+- **CMP API WLCatalog** (system.http) base=`https://esb.pre.mapfre.net:26005/ARQ_CATALOG_SMEDWeb/sca/wICatalog` auth=None — Sistema conectado para el acceso al catálogo ARQ_CATALOG_SMEDWeb/sca/wICatalog
+- **CMP LoopBack** (system.http) base=`https://mapfrespain-test.appiancloud.com/suite/webapi/` auth=API Key — Sistema conectado para llamar a webAPIs del propio entorno Appìan. Útil , entre otros, para redireccionar, lanzar procesos, convertir a base64...
+- **PGM API Portal Interno** (system.http) base=`https://wportalinterno.pre.mapfre.net:26001/` auth=Basic — 
+- **PGM API WLCatalog** (system.http) base=`https://esb.pre.mapfre.net:26005/ARQ_CATALOG_SMEDWeb/sca/wICatalog` auth=None — Sistema conectado para el acceso al catálogo ARQ_CATALOG_SMEDWeb/sca/wICatalog
+- **PGM BDEC API** (system.http) base=`https://wportalinterno.pre.mapfre.net:26001` auth=Basic — Conexión con la API de BDEC que permite la consulta de claves y estructuras comerciales de un agente
+- **PGM BFF** (system.http) base=`https://api-pgm.digital.private.pre.mapfredigitalhealth.com:26033` auth=OAuth Client Credentials Grant — Sistema conectado que apunta al BFF
+- **PGM BFF TOKEN** (system.http) base=`https://apioauth.platform.pre.mapfredigitalhealth.com` auth=None — Sistema conectado para la obtención del token necesario para los servicios del BFF
+- **PGM Citrix API** (system.http) base=`https://virtualapps.pre.mapfre.net:26009/Citrix/APIWeb/` auth=None — Conexión con la lanzadera de aplicaciones del Portal de Mediadores  Endpoint PRE: https://virtualapps.pre.mapfre.net:26009/Citrix/APIWeb/ Endpoint PRO: https://virtualappspro.mapfre.net:27010/Citrix/APIWeb/
+- **PGM Client API** (system.http) base=`https://apisb.mapfre.net:25003/esp/srv/api/clients/1.0` auth=OAuth Client Credentials Grant — Contiene información relativa a clientes (consulta, ficha cliente)  Scope: esp:clients/basicInfo:read esp:clients/extendedInfo esp:clients/address esp:clients/contactMethod
+- **PGM Clients EDGE** (system.http) base=`https://webservices.pre.mapfre.net:26004` auth=Basic — Sistema que conecta con el API EDGE de Clientes
+- **PGM Clients EDGE Recibos** (system.http) base=`http://denodo-prep.es.mapfre.net:26014` auth=Basic — Sistema que conecta la máquina del API EDGE de Clientes que contiene la información de los recibos
+- **PGM Health API** (system.http) base=`https://apisb.mapfre.com/esp/srv/api/health/1.0` auth=None — Contiene información relativa a pólizas de salud (consulta, tarificación)  Scope: esp:health/commercialization:simulation esp:health/commercialization:policy
+- **PGM Health API 2.0** (system.http) base=`https://apisb.mapfre.com/esp/srv/api/health/2.0` auth=None — "esp:health/commercialization:insuranceApplication","esp:health/commercialization:policy", "esp:health/commercialization:simulation","esp:health/post-commercialization", "esp:health/post-commercialization:cancelEndorsement", 
+- **PGM Integraciones** (system.http) base=`https://apisb.mapfre.net:25003/` auth=None — 
+- **PGM Life Risk API** (system.http) base=`https://webservices.pre.mapfre.net:26004` auth=Basic — Connected sistem del API de Life Risk scopes: esp:life/commercialization ,  esp:life/commercialization:delete , esp:life/commercialization:simulation , esp:life/post-commercialization
+- **PGM Motor API** (system.http) base=`https://apisb.mapfre.net:25003/srv/api/1.0/motor/` auth=OAuth Client Credentials Grant — Sistema conectado para las llamadas del api motor
+- **PGM MotorAPI Login** (system.http) base=`https://apisb.mapfre.net:25003/auth/authorize/login` auth=Basic — 
+- **PGM PGM Life Risk API DUPLICADO** (system.http) base=`https://webservices.pre.mapfre.net:26004` auth=Basic — 
+- **PGM PostgreSQL AWS** (system.[DataSource].[AuroraPostgreSqlConnectedSystem]) base=`` auth= — CS de acceso a la BBDD de AWS
+- **PGM Pre-registro ACI** (system.http) base=`https://apisb.mapfre.net:25003/esp/srv/api/aci/1.0/seguridad/login` auth=Basic — 
+- **PGM WMAPFRE** (system.http) base=`https://wmapfre.pre.mapfre.net:26016` auth=Basic — 
+- **PGM iMediador EDGE** (system.http) base=`https://wportalinterno.pre.mapfre.net:26001/iMediador_be-web/sgc-imediador` auth=Basic — Sistema conectado con la API Edge que proporciona los servicios de iMediador
+- **PGM loopback appian** (system.http) base=`https://mapfrespain-test.appiancloud.com/suite/webapi/` auth=API Key — Sistema conectado que apunta al loopback de pgm
+- **PGM_Comercialización_Seguros_NSE** (system.http) base=`http://webservices.pre.mapfre.net:26004/` auth=None — Gestionar Comercialización Seguros NSE (REST) [1.0] 
+- **PGM_ConectaOrange** (system.http) base=`https://bwctc.conecta.orange.es` auth=None — 
+- **PGM_KeyVault_SGC3.0** (system.http) base=`https://sgc3-pre-keyvault.vault.azure.net/` auth=OAuth Client Credentials Grant — Sistema para conexión con el KeyVault de SGC3.0
+- **PGM_MapfreDigitalHealth** (system.http) base=`https://clientes.private.pre.mapfredigitalhealth.com:26030` auth=None — http://api-pgo-lb.clientes.dev.mapfredigitalhealth.com/swagger-ui/index.html
+- **PGM_NeuronaVerti** (system.http) base=`https://neurona-pre.verti.es.mapfre.net:26017` auth=None — 
+- **PGM_SCDG** (system.http) base=`https://scgd.pre.mapfre.net:26012` auth=Basic — scgd.pre.mapfre.net
+- **PGM_SGC3.0** (system.http) base=`https://sgc.es.pre.azure.mapfre.com` auth=OAuth Client Credentials Grant — 
+- **PGM_WebApi_SGC_Prueba** (system.http) base=`None` auth=OAuth Client Credentials Grant — Prueba para SGC
+- **PGM_iMediadorEDGE_AltaNGA** (system.http) base=`https://wportalinterno.pre.mapfre.net:26001/sgc_bbe-web/sgc/` auth=Basic — Sistema conectado que se usa para dar el alta de un nga

@@ -1,0 +1,13 @@
+- WEB_API **PGM_POST_write_record** POST /infoCliente public=False — Componente que gestiona las peticiones de escribir o redirigir los clientes en records
+- WEB_API **PGM WebApiFichaPoliza** POST /5bESUw public=False — Web API que abre la ficha de una póliza
+- WEB_API **PGM_GET_consultar_cliente_record** GET /infoCliente public=False — Componente GET que gestiona las peticiones de escribir o redirigir los clientes en records
+- WEB_API **PGM_POST_agendar_registro_operaciones** POST /registro public=False — Endpoint encargado de realizar la llamada al registro de operaciones
+- WEB_API **PGM_Get_FichaCliente** GET /fichaCliente public=False — Web Api Get para acceder a la ficha del cliente
+- WEB_API **PGM_IdCliente_NumeroDocumento** GET /accesoFicha public=False — WebApi para obtener el idCliente en función del número de documento
+- WEB_API **PGM_WebApiFichaPoliza_V2** POST /abrir-poliza public=False — Web API que abre la ficha de una póliza
+- WEB_API **PGM Test WSDL** GET /testWsdl public=False — 
+- WEB_API **PGM_WebApi_SGC** POST /abrir-ficha-SGC public=False — Web API POST para lanzar el proceso de ficha cliente
+- DATA_STORE **PGM BBDD Borradores** ds=jdbc/Appian entidades=['registros', 'tarificacionesSalud', 'intervinientesSalud'] — Contiene la información sobre tarificaciones pendientes
+- DATA_STORE **PGM Cuadro de Mando** ds=jdbc/Appian entidades=['PGM_cuadroDeMando', 'PGM_EVT_CONTEXT_KEY'] — 
+- DATA_STORE **PGM Registros procesos** ds=jdbc/Appian entidades=['tarificaciones'] — Almacena registros de procesos realizados en PGM para poder lanzar avisos
+- DATA_STORE **PGM Memoria Caché** ds=jdbc/Appian entidades=['clientes', 'iconosCitrix'] — Simula el almacenamiento de datos en memoria caché para poder efectuar ciertas operaciones con registros

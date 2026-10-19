@@ -1,0 +1,17 @@
+- **PGM Catalogo Nacionalidad** src=WEB_SERVICE tabla=`.` campos=2: claveNacionalidad, nombreNacionalidad — 
+- **PGM Cuadro de mando** src=None tabla=`.` campos=0:  — 
+- **PGM interaccionesMotivosYCanales** src=DATABASE tabla=`.PGM_INTERACCIONES_MOTIVOS_YCANALES` campos=6: id, motivo, canal, timeStamp, hora, mes — 
+- **PGM_Cliente_Acciones** src=None tabla=`.` campos=0:  — Record que se usa para determinar tipo de cliente total
+- **PGM_Cliente_Record** src=None tabla=`.` campos=0:  — Registro para clientes. Muestra ficha cliente
+- **PGM_Cliente_Recordv2** src=None tabla=`.` campos=0:  — 
+- **PGM_Cliente_Recordv3** src=None tabla=`.` campos=0:  — 
+- **PGM_Poliza_ListaExportable** src=None tabla=`.` campos=0:  — Registro para pólizas. Tabla formateada para la exportación en Excel
+- **PGM_Poliza_Record** src=None tabla=`.` campos=0:  — Record dummy que contiene la tabla de productos
+- **PGM_Prestacion_ListaExportable** src=None tabla=`.` campos=0:  — Registro para prestaciones. Tabla formateada para la exportación en Excel
+- **PGM_Presupuesto_ListaExportable** src=None tabla=`.` campos=0:  — Registro para presupuestos. Tabla formateada para la exportación en Excel
+- **PGM_R_GDPRBrand** src=DATABASE tabla=`pgm_portalgestion.pgm_gdprbrand` campos=3: id, data, idCliente — Record de gdpr
+- **PGM_R_cliente_record_postgres** src=DATABASE tabla=`pgm_portalgestion.pgm_cliente_record_postgres` campos=86: idCliente, documento, tipoDocumento, caducidadDocumento, fechaDeNacimiento, estadoCivil, profesion, codigoPostal, ciudad, provincia, pais, numeroHijos, tipoPersona, nacionalidad, idioma, fechaAlta, genero, listaRobinson_9, listaRobinson_12, fechaUltimaEncuesta, comentarioUltimaEncuesta, npsUltimaEncuesta, motivoUltimaEncuesta, antiguedad, valorTipologia, categoria, segmentoIntegralidad, esVIP, autonomoPotencial, residenteHabitual — Record que alimenta y procesa la ficha del cliente
+- **PGM_R_cliente_tmp** src=DATABASE tabla=`pgm_portalgestion.pgm_r_cliente_tmp` campos=37: id, idCliente, nombre, apellido1, apellido2, email, telefonoMovil, telefonoFijo, direccion, aci, estado, situacion, ultimoAccesoACI, rgpdFirmado, rgpd, susceptibleFamilia, clubMapfre, trebolesDisponibles, trebolesGastados, perfilado, descuentoIntegralidad, fechaRegistro, familia, alertasConsentimientos, canalConsentimientosSMS, canalConsentimientosTelefono, canalConsentimientosWhatsapp, canalConsentimientosEnvioPostal, canalConsentimientosEmail, consentimientosComercial — Record que contiene los campos temporales  de cliente que se borraran cada 10 min
+- **PGM_Recibo_ListaExportable** src=None tabla=`.` campos=0:  — Registro para recibos. Tabla formateada para la exportación en Excel
+- **PGM_Record_Recibo** src=WEB_SERVICE tabla=`.` campos=3: startIndex, totalCount, batchSize — Record para gestionar las acciones que se pueden hacer con un recibo
+- **PGM_Record_Vencimientos_PGO** src=None tabla=`.` campos=0:  — 

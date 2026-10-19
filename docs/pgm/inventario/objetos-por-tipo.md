@@ -1,0 +1,2203 @@
+# Inventario de objetos PGM_MAPFRE (Appian TEST)
+
+Fuente: LCP API `/objects?appUuid=_a-0000e700-629a-8000-9bc5-011c48011c48_1927060` (19/10/2026). Total: 2986 objetos.
+
+| Tipo | Nº |
+|---|---|
+| DOCUMENT | 850 |
+| INTERFACE | 566 |
+| CONSTANT | 545 |
+| EXPRESSION_RULE | 332 |
+| INTEGRATION | 211 |
+| DATA_TYPE | 156 |
+| PROCESS_MODEL | 127 |
+| DECISION | 58 |
+| FOLDER | 58 |
+| CONNECTED_SYSTEM | 30 |
+| GROUP | 21 |
+| RECORD_TYPE | 17 |
+| WEB_API | 9 |
+| DATA_STORE | 4 |
+| SITE | 2 |
+
+## SITE (2)
+
+- PGM
+- PGM Site Cambios
+
+## RECORD_TYPE (17)
+
+- PGM Catalogo Nacionalidad
+- PGM Cuadro de mando
+- PGM interaccionesMotivosYCanales
+- PGM_Cliente_Acciones
+- PGM_Cliente_Record
+- PGM_Cliente_Recordv2
+- PGM_Cliente_Recordv3
+- PGM_Poliza_ListaExportable
+- PGM_Poliza_Record
+- PGM_Prestacion_ListaExportable
+- PGM_Presupuesto_ListaExportable
+- PGM_R_GDPRBrand
+- PGM_R_cliente_record_postgres
+- PGM_R_cliente_tmp
+- PGM_Recibo_ListaExportable
+- PGM_Record_Recibo
+- PGM_Record_Vencimientos_PGO
+
+## WEB_API (9)
+
+- PGM Test WSDL
+- PGM WebApiFichaPoliza
+- PGM_GET_consultar_cliente_record
+- PGM_Get_FichaCliente
+- PGM_IdCliente_NumeroDocumento
+- PGM_POST_agendar_registro_operaciones
+- PGM_POST_write_record
+- PGM_WebApiFichaPoliza_V2
+- PGM_WebApi_SGC
+
+## DATA_STORE (4)
+
+- PGM BBDD Borradores
+- PGM Cuadro de Mando
+- PGM Memoria Caché
+- PGM Registros procesos
+
+## CONNECTED_SYSTEM (30)
+
+- PGM API Portal Interno
+- PGM API WLCatalog
+- PGM BDEC API
+- PGM BFF
+- PGM BFF TOKEN
+- PGM Citrix API
+- PGM Client API
+- PGM Clients EDGE
+- PGM Clients EDGE Recibos
+- PGM Health API
+- PGM Health API 2.0
+- PGM Integraciones
+- PGM Life Risk API
+- PGM Motor API
+- PGM MotorAPI Login
+- PGM PGM Life Risk API DUPLICADO
+- PGM PostgreSQL AWS
+- PGM Pre-registro ACI
+- PGM WMAPFRE
+- PGM iMediador EDGE
+- PGM loopback appian
+- PGM_Comercialización_Seguros_NSE
+- PGM_ConectaOrange
+- PGM_KeyVault_SGC3.0
+- PGM_MapfreDigitalHealth
+- PGM_NeuronaVerti
+- PGM_SCDG
+- PGM_SGC3.0
+- PGM_WebApi_SGC_Prueba
+- PGM_iMediadorEDGE_AltaNGA
+
+## GROUP (21)
+
+- PGM Acceso APP No Appian SGC
+- PGM Audit
+- PGM Piloto Captura WEB
+- PGM Usuarios Locust
+- PGM Visualizar CdM
+- PGM2 administradores
+- PGM2‎ usuarios
+- PGM_APS
+- PGM_Admin
+- PGM_Alertas
+- PGM_AllUsers
+- PGM_AsesorClientes
+- PGM_AsesorComercial
+- PGM_Delegado
+- PGM_DirectorComercial
+- PGM_GestorDelegado
+- PGM_Grupo_PilotoFrontal_NSEi
+- PGM_TTT
+- PGM_UsuarioCentral
+- PGM_UsuariosEvolutivoConsentimientos
+- PGM_UsuariosTerritorio
+
+## PROCESS_MODEL (127)
+
+- PGM Abrir Mas Datos Clientes
+- PGM Abrir enlace SGC
+- PGM Abrir enlace externo
+- PGM AbrirAccionesPoliza
+- PGM AbrirConsultaDocumentos
+- PGM AbrirCreatividades
+- PGM AbrirSuperbonus
+- PGM Acceso Ficha Ampliada Socio
+- PGM Actualizar Cliente
+- PGM Actualizar Vencimiento Incompleto
+- PGM Anadir documentos PGO
+- PGM AnadirObservacionesPGO
+- PGM Avisos
+- PGM AñadirVencimientoPresupuesto
+- PGM AñadirVencimientoPresupuestoPGO
+- PGM Borrado Record
+- PGM CargaInfoClienteRendimiento
+- PGM Cargando Datos
+- PGM Citrix
+- PGM Cliente cacheado
+- PGM ClienteTotal Documentos
+- PGM Clientes
+- PGM CompletarInfoCliente Paralelo
+- PGM ConsultarDatosPrestacion
+- PGM ConsultarDatosSiniestro
+- PGM ConsultarRecibosPorPoliza
+- PGM CrearUsuariosViaCSV
+- PGM Descargar información cliente
+- PGM Detalle Gestion SGC3.0
+- PGM Documentos SGO
+- PGM DocumentosGestionSGC3
+- PGM Eliminar documento PGO
+- PGM EliminarObservacionPGO
+- PGM Ficha Cliente TEST
+- PGM Ficha Cliente WebAPI
+- PGM Ficha Poliza
+- PGM GestionSCA
+- PGM Gestión comercial
+- PGM Gestión de cartera
+- PGM Guardar Más Datos Cliente
+- PGM Guardar Más Datos Cliente Modificacion
+- PGM GuardarMotivosYCanales
+- PGM GuardarMotivosYCanalesAppian
+- PGM Imprimir Duplicado
+- PGM Inducir Cliente Santander
+- PGM Informacion Tomador Recibo
+- PGM Inicio
+- PGM LlamarAlCliente
+- PGM Mostrar Comunicaciones
+- PGM MotivoConsultaYSCA
+- PGM Nueva Producción
+- PGM Obtener Actividad Comercial
+- PGM ObtenerArgumentarioSCA
+- PGM ObtenerIconosRecursoCitrix
+- PGM ObtenerIntegraciones
+- PGM Prestaciones y siniestros
+- PGM Página no disponible
+- PGM Recargar Ficha Cliente
+- PGM Recibos
+- PGM Recuperar borrador Salud
+- PGM Recuperar duplicado recibo
+- PGM SelecionarTarficiacionConjuntaSalud
+- PGM Subida Documentos PGO
+- PGM Tarificación rápida Salud
+- PGM Utilidades
+- PGM consultarDatosAgente
+- PGM crearClienteACI
+- PGM crearRegistroConsultaModificacion
+- PGM obtenerLanzaderaIntegracion
+- PGM recuperar documentos PGO
+- PGM testHTMLtoPDF
+- PGM validarModificacionDatosCliente
+- PGM_Abrir_Ficha_Por_DNI
+- PGM_ActualizaNacionalidad
+- PGM_AgruparRecibos
+- PGM_AltaContratoIniciado_Santander
+- PGM_AltaContrato_Santander
+- PGM_AplicarGestionEnvioAlBanco
+- PGM_BajaContratoIniciado_Santander
+- PGM_BajaContrato_Santander
+- PGM_Cancelar_InducirCliente
+- PGM_Cancelar_InducirCliente_Savia
+- PGM_ClienteTotal
+- PGM_CompletarInfoCliente
+- PGM_ConsultaDetSolicitudSGO
+- PGM_ConsultaPolizaHogar
+- PGM_ConsultaSolicitudesActivasSGO
+- PGM_ConsultarAgrupables
+- PGM_ConsultarDatosRecibo
+- PGM_ConsultarGestiones
+- PGM_ConsultarPresupuestos
+- PGM_ConsultarProductorVida
+- PGM_DPVE_Inicio
+- PGM_Eliminar_BorradorTarificacion
+- PGM_EnviarCentroRecibos
+- PGM_GestionarSCA
+- PGM_ImprimirDuplicado
+- PGM_InducirCliente
+- PGM_InducirClienteRGPD
+- PGM_InducirCliente_Robinson
+- PGM_InducirCliente_SinRGPD
+- PGM_LanzaderaCitrix_v2
+- PGM_Llamada_Gestionar_SAVIA
+- PGM_Llamada_Gestionar_Santander 
+- PGM_Llamada_Gestionar_Verti
+- PGM_MapearIconosCitrix
+- PGM_MostrarObservacionInteraccion
+- PGM_Nav_Inicio
+- PGM_NuevoIdContactoWA
+- PGM_PUEBA
+- PGM_ProcesoCitrix
+- PGM_Proceso_Mensaje_ErrorSolicitud
+- PGM_Proceso_Mensaje_SolicitudEnvio
+- PGM_Prueba_ConsultaVerti
+- PGM_Prueba_VERTI
+- PGM_R_agendarBorrado
+- PGM_R_borradoRecord
+- PGM_R_borradoRecordCliente
+- PGM_R_registrarConsultaCliente
+- PGM_RecibosYPrestaciones
+- PGM_RecuperarCliente
+- PGM_RecuperarDatosCliente
+- PGM_RecuperarDatosFichaCliente
+- PGM_RecuperarRecibosYPrestaciones
+- PGM_SeleccionTelefonoWA
+- PGM_SignatureManagemen_Search_Resultado
+- PGM_cancelar_InducirSantander
+
+## INTEGRATION (211)
+
+- CMP_PostConsulta_consultarDatosAgente
+- PGM_APICatalogo
+- PGM_APICatalogo_Argumentario
+- PGM_APICatalogo_DPVE
+- PGM_APICatalogo_DPVE_v2
+- PGM_APICatalogo_IntegracionesPoliza
+- PGM_APICatalogo_ObtenerRoles
+- PGM_APICatalogo_ParametrosIntegracion
+- PGM_APICatalogo_PolizaValida
+- PGM_APICatalogo_SCA
+- PGM_APICatalogo_URLIntegracion
+- PGM_APICatalogo_URLPresupuestos
+- PGM_APICatalogo_catalogo
+- PGM_APICatalogo_codURLPresupuestos
+- PGM_APIGW_newToken
+- PGM_APIGW_refreshToken
+- PGM_APISCA_ObtenerArgumentario
+- PGM_API_HOME_ConsumoProtegido
+- PGM_API_HOME_HipotecaSegura
+- PGM_AccesoSGO
+- PGM_BDEC_EstructuraComercialPorClave
+- PGM_BFF_DPV
+- PGM_BFF_OperacionConsents
+- PGM_BFF_Token
+- PGM_CitrixAPI_Configuration
+- PGM_CitrixAPI_Configuration_AWS
+- PGM_CitrixAPI_DownloadFromPath
+- PGM_CitrixAPI_GetAuthMethods
+- PGM_CitrixAPI_ListResources
+- PGM_CitrixAPI_ListResources_AWS
+- PGM_CitrixAPI_LoginUsername
+- PGM_Click2Call
+- PGM_ClientsAPI_ActualizarMetodoContacto
+- PGM_ClientsAPI_AvisosClientePorId
+- PGM_ClientsAPI_BankingPosition
+- PGM_ClientsAPI_BeneficiosClientePorId
+- PGM_ClientsAPI_BusquedaClientes
+- PGM_ClientsAPI_BusquedaClientes_Rendimiento
+- PGM_ClientsAPI_CarterizacionClientePorId
+- PGM_ClientsAPI_ChecksClientePorId
+- PGM_ClientsAPI_DatosClientePorId
+- PGM_ClientsAPI_DescuentoIntegralidadPorDocumento
+- PGM_ClientsAPI_DireccionesClientePorId
+- PGM_ClientsAPI_EDGE_AvisosClientePorId
+- PGM_ClientsAPI_EDGE_BankingPosition
+- PGM_ClientsAPI_EDGE_CarterizacionClientePorId
+- PGM_ClientsAPI_EDGE_ChecksClientePorId
+- PGM_ClientsAPI_EDGE_DatosClientePorId
+- PGM_ClientsAPI_EDGE_DescuentoVinculacion
+- PGM_ClientsAPI_EDGE_DireccionesClientePorId
+- PGM_ClientsAPI_EDGE_MasDatosCliente
+- PGM_ClientsAPI_EDGE_MetodosContactoClientePorId
+- PGM_ClientsAPI_EDGE_Obtener_ClienteTotal
+- PGM_ClientsAPI_EDGE_PerfilClientePorId
+- PGM_ClientsAPI_EDGE_PolizasClientePorId
+- PGM_ClientsAPI_EDGE_PolizasClientePorIdCarrusel
+- PGM_ClientsAPI_EDGE_ProductosPorId
+- PGM_ClientsAPI_EDGE_RecibosClientePorId
+- PGM_ClientsAPI_EDGE_exclusivoCorredor
+- PGM_ClientsAPI_EDGE_modificarDireccionCliente
+- PGM_ClientsAPI_EncuestasClientePorId
+- PGM_ClientsAPI_InteraccionesClientePorId
+- PGM_ClientsAPI_Interaction
+- PGM_ClientsAPI_Interaction_Santander_Alta
+- PGM_ClientsAPI_Interaction_Santander_Baja
+- PGM_ClientsAPI_Interaction_Verti
+- PGM_ClientsAPI_Login
+- PGM_ClientsAPI_Login_ACI
+- PGM_ClientsAPI_MetodosContactoClientePorId
+- PGM_ClientsAPI_MetodosIdentificacionClientePorId
+- PGM_ClientsAPI_PerfilClientePorId
+- PGM_ClientsAPI_PolizasClientePorId
+- PGM_ClientsAPI_PolizasClientePorIdCarrusel
+- PGM_ClientsAPI_PrestacionesClientePorId
+- PGM_ClientsAPI_PresupuestosClientePorDocumentoYNPpto
+- PGM_ClientsAPI_PresupuestosClientePorId
+- PGM_ClientsAPI_RecibosClientePorId
+- PGM_ClientsAPI_ReclamacionesClientePorId
+- PGM_ClientsAPI_UpdateToken_ACI
+- PGM_ClientsEDGE_ActualizarNacionalidad
+- PGM_ClientsEDGE_ActualizarPreferenciasContacto
+- PGM_ClientsEDGE_BorrarContactMethod
+- PGM_ClientsEDGE_ContactoBDC
+- PGM_ClientsEDGE_Crosselling
+- PGM_ClientsEDGE_EliminarDirecciones
+- PGM_ClientsEDGE_Informacion_externa
+- PGM_ClientsEDGE_InteracionesClientePorId
+- PGM_ClientsEDGE_OrigenDatos
+- PGM_ClientsEDGE_PreferenciasContacto
+- PGM_ClientsEDGE_Search
+- PGM_ClientsEDGE_products
+- PGM_ClientsEDGE_productsDetail
+- PGM_ClientsMediation_BeneficiosClientePorId
+- PGM_ClientsMediation_DescuentoIntegralidadPorDocumento
+- PGM_ClientsMediation_EncuestasClientePorId
+- PGM_ClientsMediation_MetodosIdentificacionClientePorId
+- PGM_ClientsMediation_PrestacionesClientePorId
+- PGM_ClientsMediation_PresupuestosClientePorDocumentoYNPpto
+- PGM_ClientsMediation_PresupuestosClientePorId
+- PGM_ClientsMediation_ReclamacionesClientePorId
+- PGM_ClientsMediation_Superbonus
+- PGM_ComercializacionSeguros_Polizas
+- PGM_ConsultarDatosAgente
+- PGM_ConsultarDetalleSiniestro
+- PGM_DELETE_ClienteTotal_Eliminar_Empresa
+- PGM_DPVE_Checks
+- PGM_DPVE_GenerarDocumentacion
+- PGM_DPVE_IntegralidadPrimas
+- PGM_DPVE_Integralidad_Simulacion
+- PGM_DPVE_IntegralityDiscountDetail
+- PGM_DigitalHealth_ActualizacionVencimientoCompleto
+- PGM_DigitalHealth_ActualizarVencimientoIncompleto
+- PGM_DigitalHealth_ActualizarVencimientoSalud
+- PGM_DigitalHealth_AltaVencimientoIncompleto
+- PGM_DigitalHealth_AnadirObservacion
+- PGM_DigitalHealth_AñadirDocumento
+- PGM_DigitalHealth_DetalleVencimiento
+- PGM_DigitalHealth_EditarObservacion
+- PGM_DigitalHealth_EliminarDocumento
+- PGM_DigitalHealth_EliminarObservacion
+- PGM_DigitalHealth_EliminarVencimiento
+- PGM_DigitalHealth_EnrutamientoNUUMA
+- PGM_DigitalHealth_ObtenerDocumento
+- PGM_DigitalHealth_SumarioVencimientosCliente
+- PGM_DigitalHealth_VencimientosNumeroDocumento
+- PGM_DigitalHealth_listadoCompanias
+- PGM_EliminarObservacion
+- PGM_ExstreamDocumentation_comunication_V2
+- PGM_GET_ClienteTotal
+- PGM_GET_ClienteTotal_Cargos
+- PGM_GET_ClienteTotal_Documentos
+- PGM_GET_ClienteTotal_Search
+- PGM_GestionarACI_crearCliente
+- PGM_GestionarLeads_SAVIA_V2
+- PGM_GestionarSiniestroAutos
+- PGM_GestionarSiniestroAutos_Prestacion
+- PGM_GestionarSolicitudesAnulacion
+- PGM_HealthAPI_CoberturasPorIdProducto
+- PGM_HealthAPI_DetallesPolizaSaludPorId
+- PGM_HealthAPI_ProductosComerciales
+- PGM_HealthAPI_ProfesionesPorIdProducto
+- PGM_HealthAPI_Tarificacion
+- PGM_HomeApi_PolicyDetail
+- PGM_InduccionVerti_No_NSE
+- PGM_KeyVault_SGC3_Encriptar
+- PGM_LifeAPI_DuplicadoPoliza
+- PGM_LifeAPI_DuplicadoRecibos
+- PGM_LifeAPI_Poliza
+- PGM_LifeAPI_UnitLink
+- PGM_MotorAPI_newToken
+- PGM_MotorApi_Policy
+- PGM_NeuronaVerti_Inducir
+- PGM_NeuronaVerti_Login
+- PGM_ObtenerGruposRest
+- PGM_PGO
+- PGM_POST_ClienteTotal_Enviar_Firma
+- PGM_POST_ClienteTotal_Insertar_Empresa
+- PGM_POST_cliente_record
+- PGM_POST_llamar_registro_operaciones
+- PGM_PUT_ClienteTotal_Actualizar_Empresa
+- PGM_PerfiladoCliente
+- PGM_R_obtenerCliente
+- PGM_SGC30_ActualizarAsignacion
+- PGM_SGC30_ActualizarNGA
+- PGM_SGC30_ActualizarObservacionPorIdTarea_ActualizaciónExitoPotencial
+- PGM_SGC30_ActualizarObservacionPorIdTarea_General
+- PGM_SGC30_CerrarTarea
+- PGM_SGC30_Compartir
+- PGM_SGC30_CrearObservacionPorIdTarea
+- PGM_SGC30_DetalleGestion
+- PGM_SGC30_EstructuraDentroDeEstructura
+- PGM_SGC30_EstructuraFueraDeEstructura
+- PGM_SGC30_GestionesNumeroDocumento
+- PGM_SGC30_Perfil
+- PGM_SGC30_ReabrirTarea
+- PGM_SGC30_descargaDocumentos
+- PGM_SGC3_firmaMediador
+- PGM_ServiciosCrosselling_Creatividades
+- PGM_ServiciosHogar_ConsultarPoliza
+- PGM_ServiciosRecibos_ConsultarDatosRecibo
+- PGM_ServiciosRecibos_EnvioAlBanco
+- PGM_ServiciosRecibos_IOperarAgrupaciones
+- PGM_ServiciosSGC_ConsultarGestiones
+- PGM_ServiciosSGO_ConsultarDocumentos
+- PGM_ServiciosSGO_ConsultarSolicitudes
+- PGM_ServiciosSGO_ConsultarSolicitudes_Interfaz
+- PGM_ServiciosVida_ConsultarProductor
+- PGM_SignatureManagemen_Search
+- PGM_SignatureManagemen_Search_Baja
+- PGM_SignatureManagemen_cancellation
+- PGM_SignatureManagemen_request
+- PGM_TeCuidamosAPI_ObtenerIdSocio
+- PGM_TeCuidamosAPI_TrebolesCliente
+- PGM_WebApi_numDocumento
+- PGM_getFinancialGroup
+- PGM_getFunds
+- PGM_getPlans
+- PGM_iMediadorEDGE_ActividadComercial
+- PGM_iMediadorEDGE_AltaActividad
+- PGM_iMediadorEDGE_AltaActividad_New
+- PGM_iMediadorEDGE_AltaContacto
+- PGM_iMediadorEDGE_AltaGestion
+- PGM_iMediadorEDGE_AltaVencimiento
+- PGM_iMediadorEDGE_CatalogoAcciones
+- PGM_iMediadorEDGE_CatalogoNivelesGestion
+- PGM_iMediadorEDGE_ConsultaContactos
+- PGM_iMediadorEDGE_ConsultaGestiones
+- PGM_iMediadorEDGE_Perfil
+- PGM_iMediadorEDGE_Vencimientos
+- PGM_informacionUsuario_grupos
+- PGM_registrarConsultaModificacionPOST
+
+## INTERFACE (566)
+
+- PGM2_FichaCliente_Header_Media
+- PGM2_FichaCliente_Header_ParteSuperior_Nuevo
+- PGM_AccionesRecomendaciones
+- PGM_Acciones_ContactarWA
+- PGM_AgruparRecibos_Seleccionable
+- PGM_AltaVencimientos
+- PGM_AltaVencimientos_Accidentes
+- PGM_AltaVencimientos_AhorroJubilacion
+- PGM_AltaVencimientos_Autos
+- PGM_AltaVencimientos_Comunidades
+- PGM_AltaVencimientos_ConsumoFinanciacion
+- PGM_AltaVencimientos_Decesos
+- PGM_AltaVencimientos_Financiacion
+- PGM_AltaVencimientos_Hogar
+- PGM_AltaVencimientos_Ingenieria
+- PGM_AltaVencimientos_Multirriesgos
+- PGM_AltaVencimientos_PlanesPensiones
+- PGM_AltaVencimientos_ProductosFinancieros
+- PGM_AltaVencimientos_ResponsabilidadCivil
+- PGM_AltaVencimientos_RestoEmpresas
+- PGM_AltaVencimientos_RestoPatrimoniales
+- PGM_AltaVencimientos_Riesgo
+- PGM_AltaVencimientos_Salud
+- PGM_AltaVencimientos_Solunion
+- PGM_AltaVencimientos_Transportes
+- PGM_AltaVencimientos_v2
+- PGM_AsignarGestiones
+- PGM_Autos_Info_General_v2
+- PGM_Autos_Info_Riesgo
+- PGM_AvisoCitrix
+- PGM_AvisoCitrix_v2
+- PGM_Avisos
+- PGM_AvisosSinResultados
+- PGM_Avisos_y_Novedades_Inicio
+- PGM_AñadirDocumentos_PGO
+- PGM_BFF_CajaAlertas
+- PGM_BarraArgumentarioSCA
+- PGM_BarraOpcionesSeleccionables
+- PGM_BarraOpcionesSeleccionables_Sin_Barra
+- PGM_BarraPrincipal_Imagenes
+- PGM_Borradores_TarificacionSalud
+- PGM_BotonVencimientoCompleto_PGO
+- PGM_CajaAviso
+- PGM_CajaAviso_BorrarDireccion
+- PGM_CajaAviso_MostrarRecibos
+- PGM_CajaCollapsible
+- PGM_CajaCollapsible_v2
+- PGM_CajaNoCollapsible
+- PGM_CalculadoraSeguroSalud
+- PGM_CalculadoraSeguroSalud_Form
+- PGM_CaracteristicasTecnicasProducto_AltaVencimiento
+- PGM_CaracteristicasTecnicasProducto_DetalleVencimiento
+- PGM_CargandoDatos
+- PGM_CentroDeComunicaciones
+- PGM_ClausulaInformativaMediadores
+- PGM_ClienteTotal_Empresa
+- PGM_ClienteTotal_Fisico
+- PGM_ClienteTotal_Juridico
+- PGM_ClienteTotal_Particular
+- PGM_Clientes
+- PGM_CobrarRecibosMultiples_Bizum
+- PGM_Cobrar_Recibo_Individual
+- PGM_Cobrar_Recibo_Multiple
+- PGM_Cobrar_Recibo_Multiple_ReciboSeleccionado
+- PGM_Cobrar_Recibos_Multiples_FormaCobro
+- PGM_ConfirmacionTarificacion
+- PGM_ConfirmarAltaACI
+- PGM_ConsultaDocumentacionCliente
+- PGM_ConsumoProtegido_Cabecera_Inferior
+- PGM_ConsumoProtegido_Cobertura_Producto_Comercial
+- PGM_ConsumoProtegido_Coberturas_ListaCoberturas_Colapsable
+- PGM_ConsumoProtegido_Figuras_Detalle
+- PGM_ConsumoProtegido_InfGeneral_DetalleObservaciones
+- PGM_ConsumoProtegido_InfObjetoAsegurado_ObjetoAsegurado
+- PGM_ConsumoProtegido_Principal
+- PGM_Contenido_Caja_Collapsable
+- PGM_CuadroBusqueda
+- PGM_CuadroDeMando
+- PGM_DPVE_Carrusel_Prioridad
+- PGM_DPVE_FormularioPrincipal
+- PGM_DPVE_Header
+- PGM_DPVE_Inicio
+- PGM_DPVE_Inicio_Proceso
+- PGM_DPVE_Mensaje_ClienteConflictivo
+- PGM_DPVE_Mensaje_Cliente_NoEncontrado
+- PGM_DPVE_ProductosContratados
+- PGM_DPVE_botones
+- PGM_DatosDeContacto
+- PGM_DatosDeContacto_Email
+- PGM_DatosDeContacto_Tel
+- PGM_DatosDireccion
+- PGM_DatosGenerales_DetallesVencimiento
+- PGM_DatosGenerales_Vencimiento
+- PGM_DatosGuardadosCorrectamente
+- PGM_Datos_Asegurado_Poliza_Vida
+- PGM_Datos_Beneficiarios_Poliza_Vida
+- PGM_Datos_EsptructuraComercial_Poliza_Vida
+- PGM_Datos_Tomador_Detalle_Autos
+- PGM_Datos_Tomador_Poliza_Vida
+- PGM_DesagruparRecibo
+- PGM_DescargarTabla
+- PGM_DetalleAutos_InfGeneral
+- PGM_DetalleGestion30
+- PGM_DetalleHogar_Riesgo_DetalleComunidades
+- PGM_DetallePoliza_DatosTomador
+- PGM_DetallePoliza_Salud_TablaCoberturas
+- PGM_DetalleSuperbonus
+- PGM_DetalleVencimiento
+- PGM_DetalleVencimientos_Accidentes
+- PGM_DetalleVencimientos_AhorroJubilacion
+- PGM_DetalleVencimientos_Autos
+- PGM_DetalleVencimientos_Comunidades
+- PGM_DetalleVencimientos_Consumo
+- PGM_DetalleVencimientos_Decesos
+- PGM_DetalleVencimientos_EditarSalud
+- PGM_DetalleVencimientos_Financiacion
+- PGM_DetalleVencimientos_Hogar
+- PGM_DetalleVencimientos_Ingenieria
+- PGM_DetalleVencimientos_Multirriesgos
+- PGM_DetalleVencimientos_PlanesPensiones
+- PGM_DetalleVencimientos_ProductosFinancieros
+- PGM_DetalleVencimientos_ResponsabilidadCivil
+- PGM_DetalleVencimientos_RestoEmpresas
+- PGM_DetalleVencimientos_RestoPatrimoniales
+- PGM_DetalleVencimientos_Riesgo
+- PGM_DetalleVencimientos_Salud
+- PGM_DetalleVencimientos_Solunion
+- PGM_DetalleVencimientos_Transportes
+- PGM_DetalleVida_Doumentos
+- PGM_Detalle_Autos_Garantias
+- PGM_Detalle_Autos_Intervinientes
+- PGM_Detalle_Autos_Obervaciones
+- PGM_Detalle_Autos_Riesgo
+- PGM_Detalle_DescuentoVinculacion
+- PGM_Detalle_PolizaHogar_Agente
+- PGM_Detalle_PolizaHogar_Asegurado
+- PGM_Detalle_PolizaHogar_Asegurado_Datos_Personales
+- PGM_Detalle_PolizaHogar_Asegurado_Domicilio
+- PGM_Detalle_PolizaHogar_Caracteristicas_Generales
+- PGM_Detalle_PolizaHogar_Clausulas
+- PGM_Detalle_PolizaHogar_Coaseguro
+- PGM_Detalle_PolizaHogar_Coberturas_Garantias
+- PGM_Detalle_PolizaHogar_Desglose_Instalaciones
+- PGM_Detalle_PolizaHogar_Desglose_Recibos
+- PGM_Detalle_PolizaHogar_Informacion_Catastral
+- PGM_Detalle_PolizaHogar_Informacion_Catastro
+- PGM_Detalle_PolizaHogar_Informacion_de_catastro
+- PGM_Detalle_PolizaHogar_Nivel_Objeto_Asegurado
+- PGM_Detalle_PolizaHogar_Nivel_Poliza
+- PGM_Detalle_PolizaHogar_Observaciones
+- PGM_Detalle_PolizaHogar_OtrasFechas
+- PGM_Detalle_PolizaHogar_Protecciones
+- PGM_Detalle_PolizaHogar_Reaseguro
+- PGM_Detalle_PolizaHogar_Tomador
+- PGM_Detalle_PolizaHogar_Tomador_Contacto
+- PGM_Detalle_PolizaHogar_Tomador_Correspondencia
+- PGM_Detalle_PolizaHogar_Tomador_Datos_Personales
+- PGM_Detalle_PolizaHogar_Tomador_Domicilio
+- PGM_Detalle_PolizaHogar_Vivienda
+- PGM_Detalle_PolizaHogar_Vivienda_Datos_Vivienda
+- PGM_Detalle_PolizaHogar_Vivienda_Forma_Aseguramiento
+- PGM_Detalle_Recibos_Caracteristicas_Generales
+- PGM_Detalle_Recibos_Comisiones
+- PGM_Detalle_Recibos_Cuota
+- PGM_Detalle_Recibos_Datos_Pagador
+- PGM_Detalle_Recibos_Entidad
+- PGM_Detalle_Recibos_Estructura_Comercial
+- PGM_Detalle_Recibos_Gestiones
+- PGM_Detalle_Situaciones
+- PGM_DocumentosAdjuntos
+- PGM_DocumentosSGO
+- PGM_EnFamilia
+- PGM_EnviarMensaje_CCC
+- PGM_Enviar_CentroRecibos
+- PGM_ErrorAdjuntarDoc_PGO
+- PGM_ErrorAltaACIEmailMovil
+- PGM_ErrorCargaCliente
+- PGM_ErrorCitrixProceso_v2
+- PGM_ErrorGuardarDatos
+- PGM_ErrorObtenerDoc_PGO
+- PGM_ErrorValidacionDatos
+- PGM_Error_Busqueda
+- PGM_EstadosAnteriores
+- PGM_Estructura_Auxiliar_CoberturasAuto
+- PGM_Estructura_Auxiliar_UnitLink
+- PGM_Exceso_Resultados_de_busqueda
+- PGM_ExitoAdjuntarDoc_PGO
+- PGM_ExitoAdjuntarDoc_PGO_Detalle
+- PGM_FichaCliente_Carrusel
+- PGM_FichaCliente_Carrusel_v2
+- PGM_FichaCliente_Global
+- PGM_FichaCliente_HeaderConsentimientos
+- PGM_FichaCliente_Header_Media
+- PGM_FichaCliente_Header_MediaEmpresas
+- PGM_FichaCliente_Header_Palancas
+- PGM_FichaCliente_Header_Palancas_Empresas
+- PGM_FichaCliente_Header_Palancas_v2
+- PGM_FichaCliente_Header_ParteInferior
+- PGM_FichaCliente_Header_ParteInferior_v2
+- PGM_FichaCliente_Header_ParteSuperior_Mobile
+- PGM_FichaCliente_Header_ParteSuperior_Nuevo
+- PGM_FichaCliente_Header_ParteSuperior_Nuevo_v2
+- PGM_FichaCliente_Header_PrimasYDescuentos
+- PGM_FichaCliente_Header_Record
+- PGM_FichaCliente_Header_Resumida
+- PGM_FichaCliente_ItemCarrusel
+- PGM_FichaCliente_ItemCarrusel_Mobile
+- PGM_FichaCliente_ItemCarrusel_Mobile_v2
+- PGM_FichaCliente_ItemCarrusel_v2
+- PGM_FichaCliente_Prestaciones
+- PGM_FichaCliente_ResultadosBusqueda
+- PGM_FichaCliente_SeccionDtoVinculacion
+- PGM_FichaCliente_SeccionPrestaciones_v2
+- PGM_FichaCliente_SeccionPresupuestos_v2
+- PGM_FichaCliente_SeccionProductos_v2
+- PGM_FichaCliente_SeccionRecibos_v2
+- PGM_FichaCliente_Vision360
+- PGM_FichaCliente_v2
+- PGM_FichaCliente_v2_Record
+- PGM_FichaPoliza
+- PGM_FichaPoliza_Busqueda
+- PGM_FichaPoliza_DetalleAutos
+- PGM_FichaPoliza_DetalleGenerica
+- PGM_FichaPoliza_DetalleSalud
+- PGM_FichaPoliza_DetalleVida
+- PGM_FichaSGO_Solicitud
+- PGM_Ficha_Cliente_Vencimientos
+- PGM_Ficha_Recibo
+- PGM_FiltrosActividadComercial
+- PGM_FiltrosCdM
+- PGM_FiltrosMenos10Productos
+- PGM_FiltrosProductos
+- PGM_FiltrosResultadosBusqueda_Mobile
+- PGM_FiltrosSGO
+- PGM_FiltrosVencimientos_V2
+- PGM_Filtros_Reclamacion_Interaccion
+- PGM_Flujo_Imprimir_Duplicado
+- PGM_Footer_Polizas_Autos
+- PGM_FormularioBusqueda_Cliente
+- PGM_FormularioMasDatosCliente
+- PGM_FormularioTarificacion_DatosAsegurado
+- PGM_FormularioTarificacion_DatosAsegurados
+- PGM_FormularioTarificacion_DatosComerciales
+- PGM_FormularioTarificacion_DatosContrato_v2
+- PGM_FormularioTarificacion_DatosTomador_v2
+- PGM_FormularioTarificacion_v2
+- PGM_Garantias_Poliza_Vida
+- PGM_GestionBloqueada
+- PGM_GestionComercial
+- PGM_GestionComercial_TarjetasProductos
+- PGM_GestionDeCartera
+- PGM_GestionDeCartera_Empresas
+- PGM_GestionDeCartera_Patrimoniales
+- PGM_GestionDeCartera_Salud
+- PGM_GestionDeCartera_TarjetasProductos
+- PGM_GestionDeCartera_Vida
+- PGM_GestiondeCartera_Agropecuario
+- PGM_GestiondeCartera_Autos
+- PGM_HSCP_Autorizaciones
+- PGM_HSCP_DatosPolizas
+- PGM_HSCP_DatosPolizas_DateIconTextField
+- PGM_HSCP_DatosPolizas_Derecha
+- PGM_HSCP_DatosPolizas_Izquierda
+- PGM_HSCP_DatosPolizas_PeriodoSituacionTextField
+- PGM_HSCP_EntornoEconomico
+- PGM_HSCP_Figuras
+- PGM_HSCP_Figuras_DatosPersonales
+- PGM_HSCP_Figuras_Domicilios
+- PGM_HSCP_Figuras_FormasContacto
+- PGM_HSCP_Inf_General
+- PGM_HSCP_Inf_General_DatosDePago
+- PGM_HSCP_Inf_General_DatosGenerales
+- PGM_HeaderDetalleBusquedaPoliza
+- PGM_Header_AccionesCliente
+- PGM_Header_AltaContacto_WA
+- PGM_Header_Cliente_Principal_Autos
+- PGM_Header_Detalle_Expediente
+- PGM_Header_Detalle_PolizaHogar
+- PGM_Header_Detalle_Polizas
+- PGM_Header_Detalle_Recibos
+- PGM_Header_Detalle_Siniestro
+- PGM_Header_Polizas_Autos_Derecha
+- PGM_Header_Polizas_Autos_Izquierda
+- PGM_HipotecaSegura_Autorizaciones_DatosGenerales
+- PGM_HipotecaSegura_Autorizaciones_Normas
+- PGM_HipotecaSegura_Cobertura_Producto_Comercial
+- PGM_HipotecaSegura_Coberturas_ListaCoberturas_Colapsable
+- PGM_HipotecaSegura_DatosDePago
+- PGM_HipotecaSegura_Datos_Polizas
+- PGM_HipotecaSegura_Figuras
+- PGM_HipotecaSegura_Figuras_DatosGenerales
+- PGM_HipotecaSegura_Figuras_Detalle
+- PGM_HipotecaSegura_Figuras_Domicilios
+- PGM_HipotecaSegura_Figuras_TomadorFormasContacto
+- PGM_HipotecaSegura_Inf_General_DatosGenerales
+- PGM_HipotecaSegura_Inf_General_Detalle_Observaciones
+- PGM_HipotecaSegura_Info_Objeto_Asegurado
+- PGM_HipotecaSegura_Info_Objeto_Asegurado_Caracteristicas
+- PGM_HipotecaSegura_Info_Objeto_Asegurado_FactoresDeRiesgo
+- PGM_HipotecaSegura_Principal
+- PGM_HipotecaSegura_Principal_DatosPolizas_Derecha
+- PGM_HipotecaSegura_Principal_DatosPolizas_Izquierda
+- PGM_HistoricoObservaciones_PGO
+- PGM_Hogar_Autorizaciones_DatosGenerales
+- PGM_Hogar_Autorizaciones_Normas
+- PGM_Hogar_BarraOpcionesSeleccionables
+- PGM_Hogar_Cabecera_Cliente
+- PGM_Hogar_Cabecera_Inferior
+- PGM_Hogar_Cobertura_Producto_Comercial
+- PGM_Hogar_Coberturas_Item_ListaCoberturas_Colapsable
+- PGM_Hogar_Coberturas_ListaCoberturas_Colapsable
+- PGM_Hogar_Datos_Polizas
+- PGM_Hogar_Figuras
+- PGM_Hogar_Figuras_DatosGenerales
+- PGM_Hogar_Figuras_Detalle
+- PGM_Hogar_Figuras_Domicilios
+- PGM_Hogar_Figuras_TomadorFormasContacto
+- PGM_Hogar_Inf_General_DatosGenerales
+- PGM_Hogar_Inf_General_Detalle_Observaciones
+- PGM_Hogar_Inf_General_ObservacionesYClausulas
+- PGM_Hogar_Pagos_DatosDePago
+- PGM_Hogar_Pagos_Descuentos
+- PGM_Hogar_Pagos_DetalleRecibo
+- PGM_Hogar_Pagos_DetalleRecibo_Resumen
+- PGM_Hogar_Pagos_EntornoEconomico
+- PGM_Hogar_Prestaciones_Error
+- PGM_Hogar_Principal
+- PGM_Hogar_Principal_DatosPolizas_Derecha
+- PGM_Hogar_Principal_DatosPolizas_Izquierda
+- PGM_Hogar_Recibos_Detalle
+- PGM_Hogar_Recibos_FiltroBusqueda
+- PGM_Hogar_Recibos_Footer
+- PGM_Hogar_Riesgo_DatosDeLaVivienda
+- PGM_Hogar_Riesgo_FormaAsegur
+- PGM_Hogar_Riesgo_InfCatastro
+- PGM_Hogar_Riesgo_NumPolReemplazo
+- PGM_Hogar_Riesgo_Principal
+- PGM_Hogar_Riesgo_Protecciones
+- PGM_Hogar_Riesgo_RegimenVivienda
+- PGM_Hogar_Riesgo_SituacionObjAsegur
+- PGM_Hogar_Situaciones_Footer
+- PGM_Hogar_Situaciones_Inf_General
+- PGM_Hogar_Situaciones_Principal
+- PGM_Icono_prueba
+- PGM_ImpresionRecibo_DuplicadoAvisoCobro
+- PGM_Impresion_Recibo_Poliza
+- PGM_ImpresionesRecibo_Duplicado
+- PGM_Impresiones_De_Recibo
+- PGM_Imprimir_Duplicado
+- PGM_Imprimir_Duplicado_ImpresionLocal
+- PGM_Incluir_Empresa_Vinculada
+- PGM_InducirCliente
+- PGM_InducirCliente_Principal
+- PGM_Inf_General_Auto_AutorizacionesDatosGenerales
+- PGM_Inf_General_Auto_AutorizacionesNormas
+- PGM_Inf_General_Auto_BonusMalus
+- PGM_Inf_General_Auto_Cargadores
+- PGM_Inf_General_Auto_CoberturasProductoCo
+- PGM_Inf_General_Auto_DatosGenerales
+- PGM_Inf_General_Auto_DatosVehiculo
+- PGM_Inf_General_Auto_Equipamientos
+- PGM_Inf_General_Auto_EstadoVehiculo
+- PGM_Inf_General_Auto_Figuras
+- PGM_Inf_General_Auto_FigurasTomador
+- PGM_Inf_General_Auto_FigurasTomadorDatos
+- PGM_Inf_General_Auto_FigurasTomadorDatosGenerales
+- PGM_Inf_General_Auto_FigurasTomadorDomicilio
+- PGM_Inf_General_Auto_FigurasTomadorFormasContacto
+- PGM_Inf_General_Auto_ListaCoberturas
+- PGM_Inf_General_Auto_ObservacionesYClausulas
+- PGM_Inf_General_Auto_PagosDatosDePago
+- PGM_Inf_General_Auto_PagosDescuentos
+- PGM_Inf_General_Auto_PagosEntornoEconomico
+- PGM_Inf_General_Auto_Situaciones
+- PGM_Inf_General_Auto_VehiculoFamiliar
+- PGM_Inf_General_Auto_YCAR
+- PGM_Inf_General_Hogar_FigurasTomadorDatos
+- PGM_Inf_General_Hogar_FigurasTomadorDomicilio
+- PGM_Inf_General_Hogar_Figuras_Tomador
+- PGM_Inf_General_Hogar_Figuras_TomadorDatosGenerales
+- PGM_Inicio
+- PGM_Inicio_PantallaPrincipal
+- PGM_IntegracionesPolizas_v2
+- PGM_InterfazDescargaDocumentosSGC30
+- PGM_InterfazNav_Avisos
+- PGM_InterfazNav_Blanco
+- PGM_InterfazNav_Clientes
+- PGM_InterfazNav_GestionComercial
+- PGM_InterfazNav_GestionDeCartera
+- PGM_InterfazNav_Inicio
+- PGM_InterfazNav_NuevaProduccion
+- PGM_InterfazNav_PrestacionesYSiniestros
+- PGM_InterfazNav_Recibos
+- PGM_InterfazNav_Utilidades
+- PGM_KPIs
+- PGM_LLamandoAlCliente
+- PGM_ListaRecursos_Citrix
+- PGM_LoginProceso
+- PGM_Login_Citrix
+- PGM_MC_Inhabilitado_Por_Repeticion
+- PGM_Mapa_Migas
+- PGM_MasDatosCliente
+- PGM_Masdatos
+- PGM_MensajeError_Citrix
+- PGM_MensajePreRegistro_ACI
+- PGM_MensajeSesionCaducada_TarificacionSalud
+- PGM_Mensaje_AltaContratoIniciado_Santander
+- PGM_Mensaje_AltaContrato_Santander
+- PGM_Mensaje_BajaContratoIniciado_Santander
+- PGM_Mensaje_BajaContrato_Santander
+- PGM_Mensaje_CancelarInducirCliente
+- PGM_Mensaje_CancelarSolicitud_Savia
+- PGM_Mensaje_ClienteRobinson
+- PGM_Mensaje_ErrorSolicitud
+- PGM_Mensaje_RGPD
+- PGM_Mensaje_SolicitudCotizacion
+- PGM_Mensaje_SolicitudEnvio
+- PGM_Navegacion_POC
+- PGM_Notificaciones
+- PGM_NuevaActividadComercial
+- PGM_NuevaProduccion
+- PGM_NuevaProduccion_Agropecuario
+- PGM_NuevaProduccion_Ahorro
+- PGM_NuevaProduccion_Autos
+- PGM_NuevaProduccion_Empresas
+- PGM_NuevaProduccion_Patrimoniales
+- PGM_NuevaProduccion_Salud_v2
+- PGM_NuevaProduccion_TarjetasProductos
+- PGM_NuevaProduccion_Vida
+- PGM_ObservacionInteraccion
+- PGM_OrigenDeLosDatos
+- PGM_PalancaPlanEnFamilia
+- PGM_PalancaPlanEnFamilia_v2
+- PGM_PantallaExitoError
+- PGM_Pantalla_ErrorServicio_ClienteTotal
+- PGM_Pantalla_ExitoError_ClienteTotal
+- PGM_ParrillaTarificacion
+- PGM_PlanDePagos
+- PGM_PopUp_AgruparRecibos
+- PGM_PopUp_AltaContacto
+- PGM_PopUp_EnlaceExterno
+- PGM_PopUp_ErrorGenerico
+- PGM_PopUp_RecibosMenu
+- PGM_PopUp_avisoAgruparRecibo
+- PGM_PopUp_avisoDesagruparRecibo
+- PGM_PosicionBancaria
+- PGM_PrestacionesAutos_Campos_DetalleExpediente
+- PGM_PrestacionesAutos_Campos_DetalleSiniestro
+- PGM_PrestacionesAutos_DetalleExpediente
+- PGM_PrestacionesAutos_DetallePoliza
+- PGM_PrestacionesAutos_DetalleSiniestro
+- PGM_PrestacionesAutos_Prestaciones_DetallePoliza
+- PGM_PrestacionesAutos_Prestaciones_TablaPoliza
+- PGM_PrestacionesAutos_TablaPrestaciones
+- PGM_PrestacionesYSiniestros
+- PGM_PrestacionesYSiniestros_Autos
+- PGM_PrestacionesYSiniestros_Patrimoniales
+- PGM_PrestacionesYSiniestros_Salud
+- PGM_PrestacionesYSiniestros_TarjetasProductos
+- PGM_Primas_Poliza_Vida
+- PGM_Prueba_Locust
+- PGM_R_ResultadosBusqueda_Cliente
+- PGM_R_recordViewFichaCliente
+- PGM_ReciboAgrupado
+- PGM_ReciboGrupo
+- PGM_Recibos
+- PGM_RecibosColapsados
+- PGM_RecibosMenu
+- PGM_Recibos_Periodos
+- PGM_Recibos_Periodos_Seleccionable
+- PGM_Recibos_TarjetasProductos
+- PGM_RecursosCitrixProceso
+- PGM_RecursosCitrixProceso_v2
+- PGM_ResultadosBusqueda_Cliente
+- PGM_ResultadosBusqueda_Cliente_Simplificado
+- PGM_ResumenActividadComercial
+- PGM_ResumenErrores
+- PGM_ResumenEstadosAnteriores_v2
+- PGM_ResumenGestiones
+- PGM_ResumenPrestaciones_v2
+- PGM_ResumenPresupuestos_v2
+- PGM_ResumenProductos_Colapsado
+- PGM_ResumenProductos_v2
+- PGM_ResumenRecibos_Colapsado
+- PGM_ResumenRecibos_v2
+- PGM_ResumenRecibos_v3
+- PGM_ResumenVencimientos
+- PGM_Resumen_Detalle_PolizaHogar
+- PGM_Resumen_Detalle_Recibos
+- PGM_SeleccionIdContacto
+- PGM_SeleccionPerfi_iMediador
+- PGM_SeleccionTelefonoWA
+- PGM_SelecionarTarificadorSalud
+- PGM_ServiciosFinancieros_Principal
+- PGM_ServiciosFinancieros_Santander
+- PGM_SinAvisos
+- PGM_SinComunicaciones
+- PGM_Sin_Resultados_de_busqueda
+- PGM_SolicitudCotizacion_Verti
+- PGM_SolicitudEnvio_Savia
+- PGM_TablaActividadComercial
+- PGM_TablaAlertas
+- PGM_TablaGestiones_SGC30
+- PGM_TablaHistorialSGO
+- PGM_TablaInteracciones
+- PGM_TablaIntervinientes
+- PGM_TablaPrestaciones
+- PGM_TablaPresupuestos
+- PGM_TablaProductos
+- PGM_TablaProductos_Mobile
+- PGM_TablaRecibos
+- PGM_TablaReclamaciones
+- PGM_TablaSGO
+- PGM_TablaVencimientos_V2
+- PGM_TablaVolumetriaMotivosYCanales
+- PGM_Tabla_Impresion_Periodo
+- PGM_TestParalelo
+- PGM_TextField
+- PGM_TipologiaCliente
+- PGM_Utilidades
+- PGM_Utilidades_TarjetasProductos
+- PGM_VencimientoCompleto_PGO
+- PGM_VerDetalle_Header
+- PGM_VerDetalle_Header_Mobile
+- PGM_VerDetalle_Header_resumido
+- PGM_VistaResumen_AgruparRecibo
+- PGM_VistaResumen_ReciboAgrupado
+- PGM_alertaAnadirVencimiento_PGO
+- PGM_altaACICompletada
+- PGM_altaACIError
+- PGM_altaContactoError
+- PGM_busquedaByNuuma
+- PGM_cabecera_Inferior_Figuras
+- PGM_cabecera_Inferior_Riesgo
+- PGM_componenteDocumentacion_PGO
+- PGM_detalleRecibos_PorPoliza
+- PGM_displayErroresCdM
+- PGM_divisionCanal
+- PGM_divisionMotivo
+- PGM_editarObservacion_PGO
+- PGM_eliminarDocumento_PGO
+- PGM_eliminarObservacion_PGO
+- PGM_graficoCanalesMes
+- PGM_graficoHorasVolumetria
+- PGM_graficoMotivosMes
+- PGM_iMediador_Gestiones
+- PGM_interfazTestCreatividad
+- PGM_modalMotivoSCA
+- PGM_numAccesosDiarios
+- PGM_paginacionPeriodos
+- PGM_pruebaAR
+- PGM_seguimientoAccesosDiarios
+- PGM_seguimientoHorarioCDM
+- PGM_seguimientoLag
+- PGM_seguimientoLagFichaCliente
+- PGM_seguimientoLagInfoCliente
+- PGM_seguimientoLagMotivosCanales
+- PGM_seguimientoLagResultadoBusqueda
+- PGM_selector_Perfil30
+- PGM_selector_Perfil30_Detalle
+- PGM_tipologiaSolicitudes
+- PGM_verCreatividad
+- PGM_visualizarDocClienteTotal
+- PGM_visualizarDocPGO
+- PGM_visualizarDuplicado
+- pruebas_jose
+
+## EXPRESSION_RULE (332)
+
+- PGM_APICatalogo_catalogo_recordDataSource
+- PGM_AccionesPolizaCompleto
+- PGM_ActividadComercialPorIdContacto
+- PGM_ActualizarListaProfesiones
+- PGM_ActualizarNombresProductos
+- PGM_ActualizarVencimientoIncompleto
+- PGM_Agrupación_Roles_AS
+- PGM_Agrupación_Roles_OTROS
+- PGM_Agrupación_Roles_TO_TI
+- PGM_AgruparDtoVinculacion
+- PGM_AgruparGestionesEstado
+- PGM_AgruparItemsCarrusel
+- PGM_AgruparItemsCarruselPorCodAgrup
+- PGM_AgruparPolizas_Record
+- PGM_AgruparPorRol
+- PGM_AgruparPorRol_AS
+- PGM_AgruparPorRol_OTROS
+- PGM_AgruparPorRol_TITO
+- PGM_AgruparPresupuestos_Record
+- PGM_AgruparRecibos_Record
+- PGM_AgruparYFiltrarPolizas_Record
+- PGM_AgruparYFiltrarPrestaciones_Record
+- PGM_AgruparYFiltrarPresupuestos_Record
+- PGM_AgruparYFiltrarRecibos_Record
+- PGM_ArregloNIF_PFM
+- PGM_AsignarDocumentosARecurso
+- PGM_AumentarNumeroRecibos
+- PGM_Body_ConsultarSolicitudesActivasSGO
+- PGM_BuscadorEstructuraExternaSGC30
+- PGM_CONTADOR_ESTADOS
+- PGM_CasteoManualClientePoliza
+- PGM_ClienteJsonToBase64
+- PGM_ClientePGM_a_ClienteRM
+- PGM_ClientePorID_Completo
+- PGM_ClientePorId
+- PGM_ClientePorNumPoliza_Record_v2
+- PGM_CoberturasPorIdProducto
+- PGM_CompletarInfoCliente
+- PGM_Comprobar_Flujo_idCliente
+- PGM_ConstruirLanzadera
+- PGM_ConsultarDatosRecibo
+- PGM_ConsultarVencimientosPresupuestos
+- PGM_ContactosPorDocumento
+- PGM_ContarItems
+- PGM_ContruirLanzaderaPrestaciones
+- PGM_ConversorCodRamoCodAgrupacion
+- PGM_ConvertirEnFecha
+- PGM_ConvertirEnFechaYHora
+- PGM_CrearEnlace_SGC
+- PGM_CrearIdentifier_SGC
+- PGM_DPVE_ClienteDuplicado
+- PGM_DPVE_Codigos_Grupos
+- PGM_DPVE_ObtenerClientIdPorCIF
+- PGM_DPVE_ObtenerDescuento
+- PGM_DPVE_ObtenerPrimaMaximaMinima
+- PGM_DPVE_ObtenerProductosContratados
+- PGM_DPVE_ObtenerRazonSocialporID
+- PGM_DPVE_ObtenerTipologiaCliente
+- PGM_DPVE_Producto_porCodCia_CodRamo
+- PGM_DatosAgentePorClave
+- PGM_DetallePolizaAutosPorId
+- PGM_DetallePolizaHogarPorId
+- PGM_DetallePolizaSaludPorId
+- PGM_DetallePolizaVidaRiesgoPorId
+- PGM_DetallePoliza_ConsumoProtegido
+- PGM_DetalleSalud_CoberturasPoliza
+- PGM_DetalleSiniestroPorExpediente
+- PGM_EJEMPLORECIBO
+- PGM_EjemploListadoGestiones_SGC30
+- PGM_EmptyDataSubset
+- PGM_EncriptarNuuma
+- PGM_EntidadesCompetencia_PGO
+- PGM_Entidades_Aseguradoras
+- PGM_ErroresValidacion_DatosDeContacto_Email
+- PGM_ErroresValidacion_DatosDeContacto_Tel
+- PGM_EsValidaBusquedaCliente
+- PGM_EstructuraComercialPorNUUMA
+- PGM_Extraccion_Atributos_Hogar
+- PGM_ExtraerCoberturasOpcionales
+- PGM_ExtraerCoberturasOpcionales_v2
+- PGM_ExtraerSectoresEstrategicos
+- PGM_ExtraerUltimoIdCliente
+- PGM_Extraer_Resultado_BankingPosition
+- PGM_Extraer_Resultado_ValidarEmail
+- PGM_FechaReclamacionesPendientes
+- PGM_FiltradoInteracciones
+- PGM_FiltradoReclamaciones
+- PGM_FiltrarMapa
+- PGM_FiltrarPolizas_Record
+- PGM_Filtro_Resultados_de_busqueda_codigo_postal
+- PGM_Filtro_Resultados_de_busqueda_dni
+- PGM_Filtro_Resultados_de_busqueda_estado
+- PGM_Filtro_Resultados_de_busqueda_nombre
+- PGM_FormatearBusquedaCliente
+- PGM_FormatearBusquedaClienteEDGE
+- PGM_FormatearFecha
+- PGM_FormatearFechaHoraJavascript
+- PGM_FormatearFecha_Servicio
+- PGM_FormatearNombreCliente
+- PGM_FormatearNumero
+- PGM_FormatearTelefono
+- PGM_FormatearValorMonetario
+- PGM_Formatear_Marcas_GDPR
+- PGM_FuncionalidadColapsada
+- PGM_GET_respuesta_web_api
+- PGM_GMTTime
+- PGM_GenerarCadenaDeRecibos
+- PGM_GenerateNonce
+- PGM_GetConsentimientosCliente
+- PGM_GrupoResolutor_Ejemplos
+- PGM_GuardarClienteEnTarificacion
+- PGM_HSCP_Autorizaciones_Mapeo
+- PGM_HSCP_DatosPolizas_Mapeo
+- PGM_HSCP_EntornoEconomico_Mapeo
+- PGM_HSCP_Figuras_DatosGenerales_Mapeo
+- PGM_HSCP_Figuras_Domicilios_Mapeo
+- PGM_HSCP_Figuras_FormasContacto_Mapeo
+- PGM_HSCP_Inf_General_DatosDePago_Mapeo
+- PGM_HSCP_Inf_General_DatosGenerales_Mapeo
+- PGM_Hogar_Recibos_ObtenerFechasPeriodo
+- PGM_InfoClienteYvencimientosPresupuetos
+- PGM_InfoParrillaCoberturas
+- PGM_InicializarArray
+- PGM_Limpiar_Resultados_Búsqueda
+- PGM_ListadoEntidadesVIDA_PGO
+- PGM_ListadoEntidades_PGO
+- PGM_MapearActividadComercial
+- PGM_MapearActividadComercial_Inicial
+- PGM_MapearAlertas
+- PGM_MapearCliente_SImple
+- PGM_MapearContactos
+- PGM_MapearDetSolicitudesSGO
+- PGM_MapearDetalleGestion
+- PGM_MapearGestiones
+- PGM_MapearIntegraciones
+- PGM_MapearIntegraciones_v2
+- PGM_MapearInteracciones
+- PGM_MapearListadoGestiones
+- PGM_MapearPrametros_Integracion
+- PGM_MapearReclamaciones
+- PGM_MapearRolesUsuario
+- PGM_MapearSolicitudesSGO
+- PGM_MapearURL_Integracion
+- PGM_MapearVencimientos
+- PGM_Mapear_BorradorSalud
+- PGM_Mapear_ConsultarDatosRecibo
+- PGM_Mapear_Intervinientes
+- PGM_Mapear_PolizaHogar
+- PGM_Mapear_RespuestaXML
+- PGM_Mapear_TarificacionSalud
+- PGM_MapeoPrestaciones
+- PGM_MapeoRecibos
+- PGM_MapeoRecibosYPrestaciones
+- PGM_MapeoVencimientos_Detalle
+- PGM_MapeoVencimientos_Listado
+- PGM_Mapeo_ResultadoBusqueda_EmpresaVinculadas
+- PGM_Mapfre_ValidaTelefonoAgente
+- PGM_NombreProductoPorId
+- PGM_ObservacionPorID_Record
+- PGM_ObtenerCreatividades
+- PGM_ObtenerCredenciales
+- PGM_ObtenerGestiones_iMediador
+- PGM_ObtenerIconoCLTV
+- PGM_ObtenerListaRecursos
+- PGM_ObtenerListadoPerfilesSGC3
+- PGM_ObtenerLoginNeurona
+- PGM_ObtenerNuuma
+- PGM_ObtenerNuuma_Proceso
+- PGM_ObtenerPerfilSGC3
+- PGM_ObtenerResultadosUnicos
+- PGM_Obtener_ClienteTotal
+- PGM_OrdenarPeriodos_porPagina
+- PGM_OrdenarPolizas
+- PGM_POST_respuesta_web_api
+- PGM_PerteneceAGT
+- PGM_PerteneceSGO
+- PGM_PolizasPorIdCliente
+- PGM_PolizasPorIdCliente_Record
+- PGM_PolizasPorIdCliente_V2
+- PGM_Polizas_Verti
+- PGM_PrestacionesPorIdCliente
+- PGM_PrestacionesPorIdCliente_Record
+- PGM_PrestacionesPorPoliza
+- PGM_PresupuestosPorDocumentoYNPpto
+- PGM_PresupuestosPorIdCliente
+- PGM_PrimeraEnMayuscula
+- PGM_ProductDetailAPoliza
+- PGM_ProductDetailAPoliza_DescargarTabla
+- PGM_ProductInversionAPoliza
+- PGM_ProductInversionAPoliza_DescargarTabla
+- PGM_ProductosComercialesSalud
+- PGM_Prueba_Datos
+- PGM_Prueba_Respuesta404
+- PGM_QueryCompletarInfoCliente
+- PGM_Query_CacheIcono
+- PGM_Query_CacheIdCliente
+- PGM_Query_FicherosIcaGenerados
+- PGM_Query_RecursosSinCacheIcono
+- PGM_Query_TarificacionSalud
+- PGM_Query_TarificacionSalud_Intervinientes
+- PGM_Query_TarificacionesUsuario
+- PGM_QuitarAtributosXML
+- PGM_QuitarCero
+- PGM_R_ClientePorID_Record
+- PGM_R_ClientePorNumPoliza_Record
+- PGM_R_GetAlertasPorIdCliente_Report
+- PGM_R_MapaAErrorIntegracion
+- PGM_R_MapeoClienteRecord
+- PGM_R_MapeoRecordCDT
+- PGM_R_PolizaPorNumPoliza_Record
+- PGM_R_PresupuestosPorIdCliente_Record
+- PGM_R_QueryReportRecibos
+- PGM_R_RecibosPorIdCliente_Record
+- PGM_R_actualizarClienteTmp
+- PGM_R_getClientePorIdRecord
+- PGM_R_getContactosCliente
+- PGM_R_getInfoCliente
+- PGM_R_getPlanDePagos
+- PGM_R_getPolizasPorIdCliente
+- PGM_R_getPosicionBancaria
+- PGM_R_getRespuestaCrosselling
+- PGM_R_getRespuestaDatoAgente
+- PGM_R_getServicioFamilias
+- PGM_R_mapearErroresWebApi
+- PGM_R_obtenerFichaCliente
+- PGM_R_recargarVariablesFicha
+- PGM_R_recargar_ficha_cliente
+- PGM_R_validarDiccionario
+- PGM_RecibosHogar_PorIdCliente
+- PGM_RecibosPorIdCliente
+- PGM_RecibosPorPeriodo
+- PGM_RecuperarCookie
+- PGM_RecuperarDireccion
+- PGM_RecuperarDireccionHabitual
+- PGM_RecuperarEmailHabitual
+- PGM_RecuperarFechaExpiracion
+- PGM_RecuperarFijoHabitual
+- PGM_RecuperarMovilHabitual
+- PGM_RellenarCaracteres
+- PGM_RequestConsultarDatosRecibo
+- PGM_RequestConsultarDesgloseRecibo
+- PGM_RequestConsultarGestiones
+- PGM_RequestConsultarGestionesPropias
+- PGM_RequestConsultarGestionesRecibo
+- PGM_ResetearVariable
+- PGM_ResultadoSail_Record
+- PGM_ResultadoValidacionMailPopUp
+- PGM_SePuedeBuscar
+- PGM_SeleccionarYOrdenarPolizasCarrusel
+- PGM_SeleccionarYOrdenarPolizasCarruselPorCodAgrupa
+- PGM_SeleccionarYOrdenarPresupuestosCarrusel
+- PGM_SeleccionarYOrdenarPresupuestosCarruselPorCodAgrup
+- PGM_SeleccionarYOrdenarVencimientosCarrusel
+- PGM_SeleccionarYOrdenarVencimientosCarruselPorCodAgrup
+- PGM_SepararPoliza
+- PGM_SimulacionTarificacion
+- PGM_SinFiltros
+- PGM_SinFiltros_PGO
+- PGM_Sleep
+- PGM_SumarPrimas
+- PGM_SumarioVencimientosCliente
+- PGM_TM_ColaBorradoRecord
+- PGM_TM_crearColaTransacciones
+- PGM_TestRespuestaXML
+- PGM_TiempoHastaHoy
+- PGM_Traduccion
+- PGM_Traduccion_Reemplazar
+- PGM_ValidaCIF
+- PGM_ValidaEmail
+- PGM_ValidaNIE
+- PGM_ValidaNIF
+- PGM_ValidacionPrefijo
+- PGM_ValidacionTelefono
+- PGM_ValidacionesFormularioCliente
+- PGM_Valores_TipologiaCliente
+- PGM_VencimientosPorIdContacto
+- PGM_WebApi_AbrirFichaPoliza
+- PGM_WebApi_SGC_LanzarProceso
+- PGM_XMLCombinado_ConsultarDatosRecibo
+- PGM_XMLEnvioAlBanco
+- PGM_applyFiltersRecordsCDM
+- PGM_avgResultadoBusqueda
+- PGM_bodyAltaVencimientosPGO
+- PGM_busquedaCliente_CodigoPostal
+- PGM_catalogoIdiomas
+- PGM_catalogoNacionalidades
+- PGM_comprobarTipoContacto
+- PGM_consolidarObservacionesSGC30
+- PGM_convertDurationToSeconds
+- PGM_countUsuariosUnicos
+- PGM_customPickerNUUMA
+- PGM_ejemploRecibos
+- PGM_ejemplosPoliza_Prueba
+- PGM_ejemplosPrestaciones_Prueba
+- PGM_encriptarNuuma_SGC30
+- PGM_encriptarParametroLanzadera
+- PGM_enrutamientoNUUMA
+- PGM_extraerCamposBusquedaPosicionada
+- PGM_extraerNombreDoc
+- PGM_formatearDatosTablaSGC
+- PGM_formatearFechaVencimiento
+- PGM_getInfoCliente_test
+- PGM_getLagInfoFichaCliente
+- PGM_getLatenciaByTarea
+- PGM_getSoapHeader
+- PGM_getTokenApiGW
+- PGM_getTokenMotorAPI
+- PGM_mapInfoToCdM
+- PGM_mapearClienteBuscado
+- PGM_mapeoPolizasCarrusel
+- PGM_mapeoURLsPresupuestos
+- PGM_numMotivoCanalesNoDefinidos
+- PGM_obtenerGruposIntegraciones
+- PGM_obtenerParametroArgumentario
+- PGM_pruebaRM
+- PGM_readExcel
+- PGM_redirigirFichaCliente
+- PGM_registrarConsultaXML
+- PGM_respuesta_search_webApi
+- PGM_respuesta_write_record
+- PGM_sinSGC3
+- PGM_sumarRecibos_PorPoliza
+- PGM_superbonus
+- PGM_validarFechaVencimiento
+- PGM_validarRequestWebAPIPoliza
+- PGM_validarRequestWebAPISGC
+- PGM_valorXML
+- PGM_volumetriaPorMotivoCanalMes
+- PGM_xmlCatalogoDPVE
+- PGM_xmlCatalogoLanzaderasPrestaciones
+- PGM_xmlCatalogoMotivos
+- PGM_xmlCatalogoSCA
+
+## DECISION (58)
+
+- PGM_ClienteRobinson
+- PGM_CodAgrupCodRamo
+- PGM_CodigoAgrupacion
+- PGM_CodigoMotivo
+- PGM_CodigoRamoARamo
+- PGM_ColorEstado
+- PGM_DPVE_CodCia_CodRamo_PorRamo
+- PGM_DPVE_Productopor_CodCia_CodRamo
+- PGM_DPVE_icono_Gen_Documentacion
+- PGM_EstadoGestiones
+- PGM_EstadoRecibos
+- PGM_IconoRamo_Carrusel
+- PGM_IconoRamo_EstiloMapfre
+- PGM_Icono_DtoVinculacionRamo
+- PGM_IconosPalancas
+- PGM_MapearParametrosIntegracion
+- PGM_MensajeGDPR
+- PGM_MotivoDireccion
+- PGM_PrioridadNum
+- PGM_ProbabilidadConversion
+- PGM_ProductoSGCaVencimiento
+- PGM_RamoACodigoRamo
+- PGM_RamoDeProducto
+- PGM_RamoPGMaProductoSGC20
+- PGM_RamoPGMaProductoSGC_AU
+- PGM_RamoPGMaProductoSGC_CO
+- PGM_Test_Perfil_Finaciero_Firmado
+- PGM_TipoDocumentoACodigoDocumento
+- PGM_TipoPerfilCliente
+- PGM_TraduccionClaveAValor_PGO
+- PGM_TraduccionCodigoURLPrestaciones
+- PGM_TraduccionOriginTypeATipoAccion
+- PGM_TraduccionRamoATipoOportunidad
+- PGM_TraduccionRamoATipoOportunidad_AU
+- PGM_TraduccionRamoATipoOportunidad_CO
+- PGM_TraduccionRamoATipoOportunidad_EM
+- PGM_TraduccionRamoATipoOportunidad_PA
+- PGM_TraduccionTipoOportunidadARamo
+- PGM_TraduccionValorAClave_PGO
+- PGM_Traduccion_Figuras_Poliza_Auto
+- PGM_Traduccion_Icono_Estado_Cliente
+- PGM_Traduccion_Icono_Header_Cliente
+- PGM_Traduccion_Tipologia
+- PGM_TraducirGenero_SGC
+- PGM_TraducirTipoContacto_SGC
+- PGM_TraducirTipoDocumento_SGC
+- PGM_Traducir_Coaseguro
+- PGM_ValoracionNPS
+- PGM_icono_tipologiaINFERIDA_cliente_particular
+- PGM_icono_tipologia_cliente_autonomo
+- PGM_icono_tipologia_cliente_empresa
+- PGM_icono_tipologia_cliente_empresa_detalle
+- PGM_icono_tipologia_cliente_particular
+- PGM_lanzaderasSCA
+- PGM_policyRoleId_a_nombreRol
+- PGM_pruebaHogar
+- PGM_traduccionMIMEdocumentos
+- PGM_traduccion_tipoProductoPGO
+
+## DATA_TYPE (156)
+
+- AA_EVT_CONTEXT_KEY
+- PGM_ActividadComercial
+- PGM_ActividadComercialAlta
+- PGM_Alerta
+- PGM_BBDD_Tarificacion
+- PGM_BBDD_TarificacionSalud
+- PGM_BBDD_TarificacionSalud_Intervinientes
+- PGM_Cache_IconoCitrix
+- PGM_Cache_IdCliente
+- PGM_CamposBusquedaPosicionada
+- PGM_Clausulas
+- PGM_Cliente
+- PGM_ClienteRM
+- PGM_Cliente_AddressRM
+- PGM_Cliente_PersonNameRM
+- PGM_Cliente_ResultadoBusqueda
+- PGM_Cliente_SearchProfileRM
+- PGM_ClientsAPI_Interaction
+- PGM_ClientsAPI_Interaction_hashtags
+- PGM_ComercializacionSeguros_Polizas
+- PGM_Contacto
+- PGM_DatoDinamico
+- PGM_Datos_ConsultarDatosAgente
+- PGM_DetSolicitudSGO
+- PGM_DetallePoliza_Autos
+- PGM_DetallePoliza_Autos_Coberturas
+- PGM_DetallePoliza_Autos_Coverturas
+- PGM_DetallePoliza_Autos_Garantias
+- PGM_DetallePoliza_Autos_Garantias
+- PGM_DetallePoliza_Autos_Intervinientes
+- PGM_DetallePoliza_Autos_Riesgo
+- PGM_DetallePoliza_ConsumoProtegido
+- PGM_DetallePoliza_ConsumoProtegido_Coberturas
+- PGM_DetallePoliza_ConsumoProtegido_Coberturas_Desglose
+- PGM_DetallePoliza_ConsumoProtegido_ProductoComercial
+- PGM_DetallePoliza_ConsumoProtegido_Riesgo
+- PGM_DetallePoliza_HSCP_EntornoEconomico
+- PGM_DetallePoliza_HipotecaSegura
+- PGM_DetallePoliza_HipotecaSegura_Prestamos
+- PGM_DetallePoliza_Hogar
+- PGM_DetallePoliza_Hogar_Coberturas
+- PGM_DetallePoliza_Hogar_Coberturas_Desglose
+- PGM_DetallePoliza_Hogar_Controles_Tecnicos
+- PGM_DetallePoliza_Hogar_Datos_Agente
+- PGM_DetallePoliza_Hogar_Datos_Agente_valido
+- PGM_DetallePoliza_Hogar_Descuentos
+- PGM_DetallePoliza_Hogar_Descuentos_ListaDescuentos
+- PGM_DetallePoliza_Hogar_Producto_Comercial
+- PGM_DetallePoliza_Hogar_Pruebas_Andres
+- PGM_DetallePoliza_Hogar_Riesgo
+- PGM_DetallePoliza_Hogar_RiesgoAddress
+- PGM_DetallePoliza_Hogar_Situaciones
+- PGM_DetallePoliza_Salud
+- PGM_DetallePoliza_Salud_Coberturas
+- PGM_DetallePoliza_Salud_Persona
+- PGM_DetallePoliza_VidaAhorro
+- PGM_DetallePoliza_VidaAhorro_Beneficiarios
+- PGM_DetallePoliza_VidaAhorro_Direccion
+- PGM_DetallePoliza_VidaAhorro_Estructura_Comercial
+- PGM_DetallePoliza_VidaAhorro_Persona
+- PGM_DetallePoliza_VidaAhorro_Primas
+- PGM_DetallePoliza_VidaAhorro_UnitLink
+- PGM_DetallePoliza_VidaAhorro_UnitLink_Distribucion
+- PGM_DetallePoliza_VidaRiesgo
+- PGM_DetallePoliza_VidaRiesgo_Beneficiarios
+- PGM_DetallePoliza_VidaRiesgo_Coberturas
+- PGM_DetallePoliza_VidaRiesgo_Persona
+- PGM_DocumentoSGO
+- PGM_EVT_CONTEXT_KEY
+- PGM_EntidadCompetencia
+- PGM_EntradaHistorialSGO
+- PGM_ErrorIntegracion
+- PGM_EstadosAnteriores
+- PGM_EstructuraComercial
+- PGM_FiltrosPrestaciones
+- PGM_FiltrosPresupuestos
+- PGM_FiltrosProducto
+- PGM_FiltrosRecibos
+- PGM_FiltrosSGO
+- PGM_Gestion
+- PGM_Gestion30_Detalle
+- PGM_Gestion30_Documentos
+- PGM_Gestion30_ObservacionesUsuario
+- PGM_GestionAlta
+- PGM_GestionSGC30
+- PGM_GestionarLeads_SAVIA
+- PGM_HSCP_Inf_General_DatosDePago
+- PGM_HSCP_Inf_General_DatosGenerales_DatosAgente
+- PGM_HSCP_Inf_General_DatosGenerales_DatosPoliza
+- PGM_InfoParrilla
+- PGM_InfoParrilla_Cobertura
+- PGM_Info_Bancaria
+- PGM_Interacion
+- PGM_MasDatosCliente
+- PGM_ParametrosIntegracion
+- PGM_PerfilSGC3
+- PGM_PeriodoRecibo
+- PGM_PlanDePagos
+- PGM_Poliza
+- PGM_PolizaSalud
+- PGM_Prestacion
+- PGM_Prestacion_Autos
+- PGM_Presupuesto
+- PGM_Recibo
+- PGM_Reclamacion
+- PGM_Record_observaciones_PGO
+- PGM_RecursoCitrix
+- PGM_RegistroTarificacion
+- PGM_Request_ConsultarDatosRecibo
+- PGM_Request_ConsultarGestiones
+- PGM_Request_ConsultarProductorVida
+- PGM_Request_CrearClienteACI
+- PGM_Request_EnvioAlBanco
+- PGM_Request_Generica
+- PGM_Request_ObtenerPolizaPorFechaCanal
+- PGM_ResultadoTarificacion
+- PGM_SCA_Argumentario
+- PGM_SignatureManagemen_request
+- PGM_Siniestro
+- PGM_SolicitudSGO
+- PGM_Superbonus
+- PGM_TarificacionSalud
+- PGM_TarificacionSalud_insuredPerson
+- PGM_Vencimiento
+- PGM_VencimientoAhorroJubilacion
+- PGM_VencimientoAlta
+- PGM_Vencimiento_Accidentes
+- PGM_Vencimiento_AhorroJubilacion
+- PGM_Vencimiento_Autos
+- PGM_Vencimiento_CaracteristicasTecnicasProducto
+- PGM_Vencimiento_Comunidades
+- PGM_Vencimiento_ConsumoFinanciacion
+- PGM_Vencimiento_Decesos
+- PGM_Vencimiento_Financiacion
+- PGM_Vencimiento_FondosInversion
+- PGM_Vencimiento_Hogar
+- PGM_Vencimiento_Ingenieria
+- PGM_Vencimiento_Multirriesgos
+- PGM_Vencimiento_PGO
+- PGM_Vencimiento_PlanesPensiones
+- PGM_Vencimiento_ResponsabilidadCivil
+- PGM_Vencimiento_RestoEmpresas
+- PGM_Vencimiento_RestoPatrimoniales
+- PGM_Vencimiento_Riesgo
+- PGM_Vencimiento_Salud
+- PGM_Vencimiento_Solunion
+- PGM_Vencimiento_Transportes
+- PGM_canalesContacto
+- PGM_cuadroDeMando
+- PGM_datosAsegurado
+- PGM_documentosPGO
+- PGM_integracionesPoliza
+- PGM_medioDeContacto
+- PGM_observaciones_PGO
+- PGM_respuestaVencimientosPresupuestos
+- PGM_sismapKey_perfilSGC30
+
+## CONSTANT (545)
+
+- CMP_VAL_SIGLAS_APLICACION_PGM
+- PGM_42_2021_CONTRATO_DE_PRESTACION_DE_SERVICIOS_SANTANDER_MAPFRE_EDIT
+- PGM_A360 ISOTIPO1X
+- PGM_ACTUALIZACION_VENCIMIENTO_INCOMPLETO
+- PGM_AGRUPACIONESCARRUSEL_COMUNIDADES
+- PGM_AGRUPACIONESCARRUSEL_EMPRESA
+- PGM_AGRUPACIONESCARRUSEL_EMPRESA_2
+- PGM_AGRUPACIONESCARRUSEL_PARTICULARES
+- PGM_ALERTA1X
+- PGM_ALERTA2X_1
+- PGM_ALERTA2X_3
+- PGM_ANULADO_VENCIMIENTO
+- PGM_APIPGO_KEY
+- PGM_ATENAUS_ISOTIPO1X
+- PGM_AUTOMOVILES_FLOTA
+- PGM_AUTOMOVILES_TURISMO
+- PGM_AUTONOMO_POTENCIAL1X
+- PGM_AUTONOMO_POTENCIAL_2
+- PGM_AccionesTag
+- PGM_AgruparRecibos
+- PGM_Autonomo_Familia_Platino_A
+- PGM_BAJA_CONTRATO
+- PGM_BARRITA_ACTIVADA
+- PGM_BARRITA_DESACTIVADA
+- PGM_BASE_URL_WHATSAPP
+- PGM_BOTON_VERMAS
+- PGM_BOTON_VERMAS2
+- PGM_BOTON_VERMENOS2
+- PGM_BUSCAR1X
+- PGM_BUSCAR2X
+- PGM_BUSQUEDA_SIN_RESULTADOS
+- PGM_CANALES
+- PGM_CATEGORIAS_EXTRA_VENCIMIENTOS
+- PGM_CATEGORIAS_VENCIMIENTOS
+- PGM_CHECK2X
+- PGM_CHEVRON_ABAJO
+- PGM_CHEVRON_ARRIBA
+- PGM_CHEVRON_LEFT
+- PGM_CIERRE2X
+- PGM_CLIENTID_CLIENTS_ACI
+- PGM_CLIENTID_CLIENTS_HEALTH
+- PGM_CLIENTID_HOMEAPI
+- PGM_CLIENTID_MOTOR
+- PGM_CLIENTSECRET_CLIENTS_HEALTH
+- PGM_CLIENTSECRET_MOTOR
+- PGM_CLTV_ESTRELLAS_1
+- PGM_CLTV_ESTRELLAS_2
+- PGM_CLTV_ESTRELLAS_3
+- PGM_CLTV_ESTRELLAS_4
+- PGM_CLTV_ESTRELLAS_5
+- PGM_COBERTURA_NO_DISPONIBLE
+- PGM_COBERTURA_OBLIGATORIA
+- PGM_COBERTURA_OPCIONAL_NO
+- PGM_COBERTURA_OPCIONAL_SI
+- PGM_CODIGOS_MOTIVO
+- PGM_CODIGO_DIRECCION_HABITUAL
+- PGM_CODIGO_METODOCONTACTO_EMAIL
+- PGM_CODIGO_METODOCONTACTO_FAX
+- PGM_CODIGO_METODOCONTACTO_FIJO
+- PGM_CODIGO_METODOCONTACTO_HABITUAL
+- PGM_CODIGO_METODOCONTACTO_MARKETING
+- PGM_CODIGO_METODOCONTACTO_MOVIL
+- PGM_CODIGO_METODOCONTACTO_OTRO
+- PGM_CODRAMO_AUTOS_HOGAR
+- PGM_CODRAMO_VIDA_RIESGO
+- PGM_COLOR_AMARILLOCLARO_WARNING
+- PGM_COLOR_AMARILLO_MAPFRE
+- PGM_COLOR_AMARILLO_WARNING
+- PGM_COLOR_AZULCLARO_INFORMACION
+- PGM_COLOR_AZULMEDIO_MAPFRE
+- PGM_COLOR_AZULOSCURO_MAPFRE
+- PGM_COLOR_AZULOSCURO_TAG_CARRUSEL
+- PGM_COLOR_AZUL_ESTADO_CLIENTE_MAPFRE
+- PGM_COLOR_AZUL_INFORMACION
+- PGM_COLOR_AZUL_TAG
+- PGM_COLOR_BLANCO_MAPFRE
+- PGM_COLOR_GRISAZULADO_CLARO
+- PGM_COLOR_GRISAZULADO_MAPFRE
+- PGM_COLOR_GRISCLARO_APPIAN
+- PGM_COLOR_GRISCLARO_MAPFRE
+- PGM_COLOR_GRISCLARO_TAGS
+- PGM_COLOR_GRISCLARO_TEXTOINACTIVO_CARRUSEL
+- PGM_COLOR_GRISMEDIO_DETALLE
+- PGM_COLOR_GRISMEDIO_FONDO_CARRUSEL
+- PGM_COLOR_GRISMEDIO_MAPFRE
+- PGM_COLOR_GRISMEDIO_TAG_CARRUSEL
+- PGM_COLOR_GRISOSCURO_MAPFRE
+- PGM_COLOR_NARANJACLARO_MAPFRE
+- PGM_COLOR_NARANJA_MAPFRE
+- PGM_COLOR_NEGROAZUL_MAPFRE
+- PGM_COLOR_NEGRO_MAPFRE
+- PGM_COLOR_ROJOCLARO_APPIAN
+- PGM_COLOR_ROJOCLARO_MAPFRE
+- PGM_COLOR_ROJO_MAPFRE
+- PGM_COLOR_VERDECLARO_EXITO
+- PGM_COLOR_VERDE_ALTERNATIVO_MAPFRE
+- PGM_COLOR_VERDE_CHECKS_PALANCAS
+- PGM_COLOR_VERDE_ESTADO_CLIENTE_MAPFRE
+- PGM_COLOR_VERDE_EXITO
+- PGM_COLOR_VERDE_MAPFRE
+- PGM_CONS_AUTH_TOKENBFF_CLIENTID
+- PGM_CONS_AUTH_TOKENBFF_CLIENT_SECRET
+- PGM_CONS_CARPETA_DUPLICADO_RECIBOS
+- PGM_CONS_CLAVESCANALESCONSENTIMIENTO
+- PGM_CONS_CLAVESCONSENTIMIENTO
+- PGM_CONS_EndpointGESALUD_VencimientoCompleto
+- PGM_CONS_FIN_HORARIO_PROD
+- PGM_CONS_FIN_HORARIO_PROD_FECHA
+- PGM_CONS_ICONO_CANALPOSTAL
+- PGM_CONS_ID_CARPETA_DUPLICADOS
+- PGM_CONS_IMG_INACTIVIDAD_2X
+- PGM_CONS_INICIO_HORARIO_PROD
+- PGM_CONS_INICIO_HORARIO_PROD_FECHA
+- PGM_CONS_LANZADERA_PILOTO_NSEi
+- PGM_CONS_MOSTRARPDP
+- PGM_CONS_MOSTRAR_SOLUCION_GLOBAL
+- PGM_CONS_PUNTERO_GRUPO_PILOTO_NSEi
+- PGM_CONS_SECRET_MOTOR_HOGAR_CLAIMS
+- PGM_CONS_TEXTO_FIRMA_CLIENTE_TOTAL
+- PGM_CONS_TM_BORRADO_RECORD
+- PGM_CONS_TM_REGISTRAR_AHORA
+- PGM_CONS_TM_REGISTRAR_CONSULTA
+- PGM_CONS_URL_ACCESO_A_FICHA_GET
+- PGM_CONS_URL_ACCESO_A_PGM_NUMDOC
+- PGM_CONS_URL_FAC
+- PGM_CONS_URL_SOLUCION_GLOBAL
+- PGM_CONS_USER_EVOLUTIVOCONSENTIMIENTOS
+- PGM_CONS_USUARIOS_NEGOCIO
+- PGM_CONS_VAL_MOSTRAR_SGC
+- PGM_CONS_VER_DETALLE_PRESTACIONES
+- PGM_CORREO_ELECTRONICO
+- PGM_CORREO___FAX
+- PGM_Carpeta_DocumentosIdiomas
+- PGM_Catalogo
+- PGM_DECESOS2X
+- PGM_DESCARGAR_TODOS1X
+- PGM_DESCARGAR_TODOS2X
+- PGM_DIVIDER
+- PGM_DOMINIO_PORTALINTERNO
+- PGM_DOMINIO_PORTALINTERNO_SGC20
+- PGM_DPVE_Gen_Documento
+- PGM_DPVE_PM_Inicio
+- PGM_DSE_BORRADORES_INTERVINIENTES_SALUD
+- PGM_DSE_BORRADORES_REGISTROS
+- PGM_DSE_BORRADORES_TARIFICACIONES_SALUD
+- PGM_DSE_CACHEICONOSCITRIX
+- PGM_DSE_CACHEIDCLIENTE
+- PGM_DSE_REGISTROS
+- PGM_DS_CUADRODEMANDO
+- PGM_DS_Tarificacion
+- PGM_DocumentosPGO
+- PGM_Documentos_SGO
+- PGM_EFECTO_FUTURO_1
+- PGM_EJEMPLOLLAMADA_CONSULTARDATOSRECIBO
+- PGM_EJEMPLOLLAMADA_HOGAR
+- PGM_EJEMPLO_OBTENERESTCOMCLAVE_
+- PGM_EJEMPLO_OBTENERESTCOMCLAVE__1
+- PGM_EMAIL_2
+- PGM_EMPLEADO_MAPFRE
+- PGM_ENDPOINT_APIS
+- PGM_ENDPOINT_API_ACI
+- PGM_ENDPOINT_API_CLIENTS
+- PGM_ENDPOINT_APM_NUEVO
+- PGM_ENDPOINT_APP
+- PGM_ENDPOINT_APPIAN
+- PGM_ENDPOINT_ATENAUS
+- PGM_ENDPOINT_CITRIX_PRE
+- PGM_ENDPOINT_CITRIX_PRO
+- PGM_ENDPOINT_CORE7
+- PGM_ENDPOINT_DELEGADOS
+- PGM_ENDPOINT_DENODO
+- PGM_ENDPOINT_ESB
+- PGM_ENDPOINT_GESCOMAD
+- PGM_ENDPOINT_INFORMACION_INTERES_IDD
+- PGM_ENDPOINT_INVERSION
+- PGM_ENDPOINT_PORTAL_INTERNO
+- PGM_ENDPOINT_Portal_Incentivos
+- PGM_ENDPOINT_SGC30
+- PGM_ENDPOINT_SGO
+- PGM_ENDPOINT_VIRTUALAPPS
+- PGM_ENDPOINT_WEBSEVICES
+- PGM_ENDPOINT_WHATSAPP
+- PGM_ENDPOINT_WMAPFRE
+- PGM_ENDPOINT_WMBIG2IS
+- PGM_ENDPOINT_WPORTALINERNO_PUERTO
+- PGM_ENDPOINT_WPORTALINTERNO
+- PGM_ENDPOINT_WPORTALINTERNO_SOLONOMBRE
+- PGM_ENDPOINT_webvida
+- PGM_ENLACE_DE_INTERES_HERRAMIENTA
+- PGM_ENLACE_DE_INTERES_LIBRO
+- PGM_ENLACE_DE_INTERES_LISTADO
+- PGM_ENLACE_DE_INTERES_LOCALIZACION
+- PGM_ERROR1X
+- PGM_ERROR2X
+- PGM_ERROR_EN_ICA
+- PGM_ERROR_INHABILITADO_
+- PGM_ERROR_RESULTADOS
+- PGM_ESTADOVACIO2X
+- PGM_EXITO1X
+- PGM_EjemploDetSolicitudSGO
+- PGM_EjemploSolicitudesSGO
+- PGM_EjemploXML
+- PGM_EndpointGESALUD
+- PGM_EndpointTARIFICACION
+- PGM_Endpoint_APPS
+- PGM_Endpoint_APPS_Dental
+- PGM_Endpoint_APPS_SALUD
+- PGM_Ensenar_ClienteTotal
+- PGM_Ensenar_Filas_Tipologia_Cliente
+- PGM_EntidadesAseguradoras
+- PGM_FAS_ALL_USERS
+- PGM_FLECHA_DERECHA_ACTIVA
+- PGM_FLECHA_DERECHA_DESACTIVADA
+- PGM_FLECHA_IZQUIERDA_ACTIVA
+- PGM_FLECHA_IZQUIERDA_DESACTIVADA
+- PGM_FOLDER_DOCUMENTOS_TEMPORALES_SERVICIOS
+- PGM_FOLDER_FICHEROSTEMPORALESCITRIX
+- PGM_FOLDER_ICONOSCITRIX
+- PGM_GRP_NO_APPIAN_ALTA_CLIENTE
+- PGM_GRP_VISUALIZAR_CDM
+- PGM_GRUPO_ALERTAS
+- PGM_GRUPO_ALLUSERS
+- PGM_GRUPO_APS
+- PGM_GRUPO_ASESORCLIENTES
+- PGM_GRUPO_ASESORCOMERCIAL
+- PGM_GRUPO_DELEGADO
+- PGM_GRUPO_DIRECTORCOMERCIAL
+- PGM_GRUPO_GESTORDELEGADO
+- PGM_GRUPO_USUARIOCENTRAL
+- PGM_GRUPO_USUARIOTTT
+- PGM_GR_DETALLEHOGAR
+- PGM_GR_ISOTIPOX
+- PGM_GR_RM_USUSARIOS
+- PGM_HOGAR_ACTIVE2X
+- PGM_HOSTYPUERTO_MISV
+- PGM_HOST_APICatalogo
+- PGM_HOST_CONSULTARAGENTE
+- PGM_HOST_CORE7
+- PGM_HOST_DENODO
+- PGM_HOST_EDGE
+- PGM_HOST_ESB
+- PGM_HOST_WMBIG2IS
+- PGM_HOST_WPORTALINTERNO
+- PGM_Hogar_ENDPOINT_Consuweb
+- PGM_Host_Neurona
+- PGM_Host_mapfredigitalhealth
+- PGM_ICONOASPA_PALANCAS
+- PGM_ICONOCARTERIZACION
+- PGM_ICONO_9_CUADRADOS
+- PGM_ICONO_CANALFIJO
+- PGM_ICONO_CANALMAIL
+- PGM_ICONO_CANALMOVIL
+- PGM_ICONO_CANALWHATSAPP
+- PGM_ICONO_CERRAR
+- PGM_ICONO_CLIENTE_TOTAL_ROJO
+- PGM_ICONO_CON_FILTROS_1X
+- PGM_ICONO_EMAIL
+- PGM_ICONO_HOGAR_BLANCO
+- PGM_ICONO_LANZADERA_WA_2
+- PGM_ICONO_LVC_INTRANET
+- PGM_ICONO_NOTIFICACION_PUNTO_ROJO_MOV
+- PGM_ICONO_PAPELERA
+- PGM_ICONO_RECIBOAGRUPADO
+- PGM_ICONO_RECIBO_NOEFECTIVO
+- PGM_ICONO_RECIBO_NOSEGURO
+- PGM_ICONO_RENTAL_ALTA
+- PGM_ICONO_SANTANDER
+- PGM_ICONO_SANTANDER_1
+- PGM_ICONO_SIN_FILTROS_1X
+- PGM_ICONO_SOLUCION_GLOBAL
+- PGM_ICONO_Superbonus_OFF
+- PGM_ICONO_Superbonus_ON
+- PGM_ICONO_TREBOL
+- PGM_ICONO_TREBOLMAPFRE
+- PGM_ICONO_VIDA_NP
+- PGM_ICON_CANCELAR2X
+- PGM_ICON_INFO2X
+- PGM_ICON_NOTIFICACION_PUNTO_ROJO
+- PGM_ICON_SITUACIONES
+- PGM_ICO_ACCIDENTES_GRIS
+- PGM_ICO_ACCIDENTES_ROJO
+- PGM_ICO_AGRICOLA_ACTIVE
+- PGM_ICO_AUTOEMPRENDEDORES_ACTIVE
+- PGM_ICO_BANDERA
+- PGM_ICO_BANDERA_2
+- PGM_ICO_CIBERON_ACTIVE
+- PGM_ICO_CONSTRUCCION_ACTIVE
+- PGM_ICO_CONTRATACION_SEGURO_ACTIVE
+- PGM_ICO_DECENAL_ACTIVE
+- PGM_ICO_DRONE_ACTIVE
+- PGM_ICO_EMAIL
+- PGM_ICO_EMBARCACIONES_ACTIVE
+- PGM_ICO_FLOTAS_ROJO
+- PGM_ICO_INDEMNIZACION_ACTIVE
+- PGM_ICO_MAQUINARIA_ACTIVE
+- PGM_ICO_MAQUINARIA_ROJO
+- PGM_ICO_MERCANCIAS_ACTIVE
+- PGM_ICO_MIRA
+- PGM_ICO_MULTIRRIESGO_ROJO
+- PGM_ICO_PROYECTO_ACTIVE
+- PGM_ICO_PROYECTO_GESTION_ACTIVE
+- PGM_ICO_PROYECTO_RIESGO_ACTIVE
+- PGM_ICO_PROYECTO_VIDA_ACTIVE
+- PGM_ICO_REEMBOLSO_ACTIVE
+- PGM_ICO_RENTAS_ACTIVE
+- PGM_ICO_RESPONSABILIDAD_ROJO
+- PGM_ICO_SALUD_GRIS
+- PGM_ICO_SALUD_ROJO
+- PGM_ICO_SOLICITUD_ACTIVE
+- PGM_ICO_SOLICITUD_GESTION_ACTIVE
+- PGM_ICO_TALLERES_ACTIVE
+- PGM_ICO_TLFNO_MOVIL
+- PGM_ICO_TOGGLEOFF
+- PGM_ICO_TOGGLEON
+- PGM_ICO_VERIFICACION_DIGITAL_ACTIVE
+- PGM_ICO_VIDA_ROJO
+- PGM_IDS_LISTA_PROFESIONES
+- PGM_IDS_LISTA_RELACIONES
+- PGM_IDS_PRODUCTOS_SALUD
+- PGM_INCREMENTAL_ALTACLIENTE
+- PGM_INFOPARRILLA_SALUD_ASISTENCIA_INDIVIDUAL
+- PGM_INFOPARRILLA_SALUD_INDEMNIZACION
+- PGM_INFOPARRILLA_SALUD_INDEMNIZACION_ESENCIAL
+- PGM_INFOPARRILLA_SALUD_REEMBOLSO_INDIVIDUAL
+- PGM_INFORMACION_AZUL1X
+- PGM_INFORMATION1X
+- PGM_Icono_Auto_Detalle
+- PGM_Icono_Autos
+- PGM_InducirCliente_Cons
+- PGM_LIST_ConsumoProtegido
+- PGM_LIST_Inf_General_HipotecaSegura
+- PGM_LIST_Inf_General_Hogar
+- PGM_LLAMADA
+- PGM_LOADING_GIF
+- PGM_LOGO_CAPTURA_WEB
+- PGM_LOGO_CONSUWEB
+- PGM_LanzaderaSCA
+- PGM_LinkRendimiento
+- PGM_Llamada_Gestionar_SAVIA
+- PGM_Llamada_Gestionar_Santander
+- PGM_Llamada_Gestionar_Verti
+- PGM_MAX_DTOVINCULACION
+- PGM_MAX_ITEMS_CARRUSEL
+- PGM_MAX_ITEMS_CARRUSEL_MOBILE
+- PGM_MOSTRAR_CAMBIOS_CARRUSEL
+- PGM_MOSTRAR_WA
+- PGM_MOTIVOS
+- PGM_MensajesIgnorarAlertas
+- PGM_Mostrar_ExclusivoCorredor
+- PGM_NAV_AVISOS
+- PGM_NAV_CLIENTES
+- PGM_NAV_GESTIONCOMERCIAL
+- PGM_NAV_GESTIONDECARTERA
+- PGM_NAV_NUEVAPRODUCCION
+- PGM_NAV_PRESTACIONESYSINIESTROS
+- PGM_NAV_RECIBOS
+- PGM_NAV_UTILIDADES
+- PGM_NOMBRES_LISTA_PROFESIONES
+- PGM_NOMBRES_LISTA_RELACIONES
+- PGM_NOMBRES_PRODUCTOS_SALUD
+- PGM_NUEVA_PRODUCCI_N_AGROECUARIO_GRANDE
+- PGM_NUEVA_PRODUCCI_N_AUTOS_GRANDE
+- PGM_NUEVA_PRODUCCI_N_EMPRESAS_GRANDE
+- PGM_NUEVA_PRODUCCI_N_PATRIMONIALES_GRANDE
+- PGM_NUEVA_PRODUCCI_N_SALUD_GRANDE
+- PGM_NUEVA_PRODUCCI_N_VIDA_GRANDE
+- PGM_NUM_PRODUCTOS_AGRUPACION
+- PGM_Nombre_Aplicacion
+- PGM_OFICINA
+- PGM_OFICINA_DEFAULT
+- PGM_ORDENPOLIZAS_AUTONOMO
+- PGM_ORDENPOLIZAS_EMPRESA
+- PGM_ORDENPOLIZAS_PARTICULAR
+- PGM_PERFIL_FINANCIERO
+- PGM_PGM_BANKINGPOSITIONTAG
+- PGM_PGM_BOTON_VERMENOS
+- PGM_PGM_EJEMPLOLLAMADA_ENVIOALBANCO
+- PGM_PGM_PLANTILLA_CONSULTARDETALLESINIESTROAUTOSCOMPLETA
+- PGM_PGM_PR_CompletarInfoSail
+- PGM_PGM_ico_comercio_active
+- PGM_PLANTILLA_XML_DOC_DPVE
+- PGM_PLATINO_A
+- PGM_PM_ACCESO_FAS
+- PGM_PM_ALTA_CLIENTE
+- PGM_PM_AbrirSuperbonus
+- PGM_PM_AnadirObservacionesPGO
+- PGM_PM_CONSULTAPOLIZAHOGAR
+- PGM_PM_CONSULTARDATOSRECIBO
+- PGM_PM_CONSULTARPRODUCTORVIDA
+- PGM_PM_CONSULTARRECIBOSPORPOLIZA
+- PGM_PM_CompletarInfoParalelo
+- PGM_PM_DETALLE_GESTION30
+- PGM_PM_ELIMINARBORRADORES
+- PGM_PM_FICHA_CLIENTE_WEB_API
+- PGM_PM_FICHA_POLIZA
+- PGM_PM_FICHA_SANDBOX
+- PGM_PM_FICHA_TEST
+- PGM_PM_INDUCIR_SANTANDER
+- PGM_PM_INDUCIR_SAVIA
+- PGM_PM_LANZADERACITRIX
+- PGM_PM_MapearIconosCitrix
+- PGM_PM_NAV_CITRIX
+- PGM_PM_OBTENER_ARGUMENTARIO_SCA
+- PGM_PM_OBTERNER_ACTIVIDAD_COMERCIAL
+- PGM_PM_RECARGARFICHACLIENTE
+- PGM_PM_RECIBOSPRESTACIONES
+- PGM_PM_RECUPERARBORRADOR
+- PGM_PM_RECUPERARCLIENTE
+- PGM_PM_RECUPERARDATOSCLIENTE
+- PGM_PM_RECUPERARRECIBOSYPRESTACIONESCLIENTE
+- PGM_PM_RECUPERAR_CLIENTE_SANBOX
+- PGM_PM_RM_INICIO
+- PGM_PM_TARIFICACIONSALUD
+- PGM_POLIZA_ESTADO
+- PGM_POLIZA_ICONO
+- PGM_POLIZA_RAMO
+- PGM_POTENCIALIDAD1_SEL
+- PGM_POTENCIALIDAD1_SIN
+- PGM_POTENCIALIDAD2_SEL
+- PGM_POTENCIALIDAD2_SIN
+- PGM_POTENCIALIDAD3_SEL
+- PGM_POTENCIALIDAD5_SIN
+- PGM_PRESTACION_ESTADO
+- PGM_PRESUPUESTO_ESTADO
+- PGM_PRODUCTOS_IDS_SALUD_ASISTENCIA_INDIVIDUAL
+- PGM_PRODUCTOS_IDS_SALUD_INDEMNIZACION
+- PGM_PRODUCTOS_IDS_SALUD_INDEMNIZACION_ESENCIAL
+- PGM_PRODUCTOS_IDS_SALUD_REEMBOLSO_INDIVIDUAL
+- PGM_PRODUCTOS_SALUD_ASISTENCIA_INDIVIDUAL
+- PGM_PRODUCTOS_SALUD_INDEMNIZACION
+- PGM_PRODUCTOS_SALUD_INDEMNIZACION_ESENCIAL
+- PGM_PRODUCTOS_SALUD_REEMBOLSO_INDIVIDUAL
+- PGM_PROXIMO_VENCIMIENTO
+- PGM_PRUEBAS_RENDIMIENTO
+- PGM_PRUEBA_BAT
+- PGM_PRUEBA_ICA
+- PGM_PRUEBAmime
+- PGM_PR_ARGUMENTARIO_SCA
+- PGM_PR_COMPLETARINFOCLIENTE
+- PGM_PR_COMPLETARINFOCLIENTEWEBAPI
+- PGM_PR_CONSULTARECIBOSPORPOLIZA
+- PGM_PR_FICHA_CLIENTE
+- PGM_PR_RECUPERARDATOSCLIENTE
+- PGM_PR_RECUPERARRECIBOSYPRESTACIONESCLIENTE
+- PGM_PSS_APPUPGM
+- PGM_PSS_APP_FMA_PGMAPPIAN
+- PGM_PSS_NEURONA
+- PGM_PilotoCapturaWEB_Group
+- PGM_PolizasNoIncluidasCarrusel
+- PGM_PortalInterno_NSE_Prueba
+- PGM_RAMOSLANZADERAPRESTACIONESHOGAR
+- PGM_RAMOS_DE_PRODUCTOS
+- PGM_RAMOS_QUE_APLICAN_PRIMA
+- PGM_RAMO_OTROS
+- PGM_RECIBO_ESTADO
+- PGM_RENTAS_ALTAS_2
+- PGM_RESUMEN_CLIENTE_COLAPSAR2X
+- PGM_RESUMEN_CLIENTE_EXPANDIR2X
+- PGM_ROBINSON
+- PGM_ROBINSON_2
+- PGM_R_CONS_ActualizarCliente
+- PGM_R_CONS_REGISTRAR_CONSULTA_CLIENTE
+- PGM_R_CONS_URL_ACCESO_FICHA_CLIENTE
+- PGM_RamosAltaVencimientos
+- PGM_RamosAltaVencimientos_CO
+- PGM_Resumen_polizas_AUTOS_CONS
+- PGM_SALUD_ASISTENCIA_SANITARIA
+- PGM_SALUD_CONTRATACION
+- PGM_SALUD_INDEMNIZACION
+- PGM_SALUD_REMBOLSO
+- PGM_SANTANDER
+- PGM_SANTANDER_GRIS
+- PGM_SAVIA
+- PGM_SAVIA_GRIS
+- PGM_SCOPES_CLIENTS
+- PGM_SCOPES_CLIENTS_ACI
+- PGM_SCOPES_HEALTH
+- PGM_SCOPES_MOTOR
+- PGM_SCOPE_HOMEAPI
+- PGM_SCOPE_MOTORAPI
+- PGM_SGC_ISOTIPO1X
+- PGM_SGO_AccesoAplicacion
+- PGM_SGO_ISOTIPO1X
+- PGM_SIN_AGRUPACION_55X55_GRIS
+- PGM_SIN_AVISOS2X
+- PGM_SIN_PRODUCTOS
+- PGM_SIN_RESULTADO2X
+- PGM_SIN_RESULTADOS_DE_BUSQUEDA_FILTRADO_1X
+- PGM_SIN_SGC_USUARIOS
+- PGM_SIN_TIPOLOGIA
+- PGM_SUPERBONUS1X
+- PGM_Scopes_TeCuidamos
+- PGM_TAGRESULTADOBUSQUEDA
+- PGM_TELEFONO
+- PGM_TELEFONOFIJO_2
+- PGM_TELEFONO_MOVIL_2
+- PGM_TESTCREATIVIDAD
+- PGM_TEST_CITRIX_CREDENTIALS_JSON
+- PGM_URL_FAS
+- PGM_URL_GESALUD
+- PGM_URL_LANZADERAS_GESALUD
+- PGM_URL_PGM
+- PGM_URL_REGISTRO_ACCIONES_NUUMA
+- PGM_USR_APPUPGM
+- PGM_USR_APP_FMA_PGMAPPIAN
+- PGM_USR_NEURONA
+- PGM_USUARIOSCOLAPSADO
+- PGM_USUARIOSGRUPOTRABAJO
+- PGM_VERTI
+- PGM_VERTI_GRIS
+- PGM_VIDA2X
+- PGM_VIP
+- PGM_VIP_2
+- PGM_VisibilidadCLTV
+- PGM_VisualizarDuplicadoRecibos
+- PGM_WHATSAPP
+- PGM_WHATSAPP_OFICINAS
+- PGM_WebApi_DatosSecretoCliente
+- PGM_body_argumentos
+- PGM_cancelar_InducirSantander
+- PGM_enrutadoSGC
+- PGM_ico_accidentes_active
+- PGM_ico_ahorro_active
+- PGM_ico_autos_active
+- PGM_ico_comunidades_active
+- PGM_ico_decesos_active
+- PGM_ico_flotas_active
+- PGM_ico_flotas_disabled
+- PGM_ico_hogar_active
+- PGM_ico_multirriesgo_active
+- PGM_ico_otros_active
+- PGM_ico_sac_active
+- PGM_ico_salud_active
+- PGM_ico_trasnporte_active
+- PGM_ico_viajes_active
+- PGM_ico_vida_active
+- PGM_icono_informacion1x
+- PGM_maxDpV
+- PGM_mostrarDPVE
+- PGM_mostrarPGO
+- PGM_perteneceEdge
+- PGM_pruebaDocumentosLuis
+- PGM_responsabilidadCivil_active
+- PGM_tipoAlertaCabecera
+- PGM_visualizacionRecibos
+
+## FOLDER (58)
+
+- PGM Barra principal
+- PGM Categorías cliente
+- PGM Constantes colores
+- PGM Constantes endpoints
+- PGM Constantes imágenes
+- PGM Constantes process models
+- PGM Constants
+- PGM Decisions
+- PGM Documentos Duplicado Recibo
+- PGM Documentos Duplicado Recibos
+- PGM Documentos PGO
+- PGM Documentos SGC3
+- PGM Documentos SGO
+- PGM Documentos temporales servicios
+- PGM Ficheros temporales Citrix
+- PGM Iconos
+- PGM Iconos Citrix
+- PGM Iconos Ramos
+- PGM Imagenes
+- PGM Integrations
+- PGM Integrations API Citrix
+- PGM Integrations API Clients
+- PGM Integrations API Health
+- PGM Integrations API Motor
+- PGM Integrations API News
+- PGM Integrations SGC 2.0
+- PGM Integrations Servicios Hogar
+- PGM Integrations Servicios Recibos
+- PGM Integrations Servicios SGO
+- PGM Interfaces
+- PGM Interfaces Poliza Autos Pruebas
+- PGM Interfaces no utilizadas
+- PGM Plantillas llamadas servicios
+- PGM Process models reports
+- PGM Queries
+- PGM Queries API Citrix
+- PGM Queries API Clients
+- PGM Queries API Health
+- PGM Queries API Motor
+- PGM Queries Borradores
+- PGM Queries Servicios SGC 2.0
+- PGM Reglas y constantes
+- PGM Rules and Constants
+- PGM Rules and expressions
+- PGM Servicios ACI
+- PGM reglas no utilizadas
+- PGM_Cliente_Total
+- PGM_ConsumoProtegido
+- PGM_Documentos_DPVE
+- PGM_Documentos_Idiomas
+- PGM_Documentos_Incidencias_Puntuales
+- PGM_Documentos_Inducir
+- PGM_EMISION
+- PGM_HSCP_ComponentesComunes
+- PGM_Hipoteca_Segura
+- PGM_Iconos_CLTV
+- PGM_Interfaces_Hogar_Poliza
+- PGM_cache_duplicado_recibos
+
+## DOCUMENT (850)
+
+No se listan individualmente (iconos, imágenes, plantillas y documentos de trabajo).
