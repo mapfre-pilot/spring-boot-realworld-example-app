@@ -111,7 +111,63 @@ Bandeja y solicitudes **SGO** (sistema de gestión de operaciones), documentos d
 - Límite de 100 resultados en búsqueda; búsqueda por identificador excluye criterios personales.
 - Registro de operaciones de consulta/modificación de clientes por NUUMA (auditoría en Portal Interno).
 
-## 6. Fuera de alcance / no verificado en TEST
+## 7. Casuísticas y variantes detectadas (UI + SAIL)
+
+Complemento tras recorrer la ficha de un cliente real en TEST y extraer los textos literales de las 566 interfaces (`inventario/pantallas-textos-sail.md`, `inventario/lanzaderas-paginas.md`, `inventario/lanzaderas-por-ramo.md`).
+
+### 7.1 Tipologías de cliente y marcas de cabecera
+
+| Variante | Qué cambia |
+|---|---|
+| **Particular** vs **Autónomo** (real o *potencial*) vs **Empresa** | Cabecera distinta: para empresas se muestran segmento, F. constitución, actividad, nº empleados y facturación "extraída del balance"; para particulares edad, estado civil, profesión, dirección. Iconos de tipología (decisiones `PGM_icono_tipologia_*`, `PGM_TipoPerfilCliente`). |
+| **Vigor** / **Potencial** | Estado del cliente (icono y color: `PGM_Traduccion_Icono_Estado_Cliente`, `PGM_ColorEstado`). Un potencial puede no tener documento (**VIP sin documento**). |
+| Marcas: **VIP**, **Rentas Altas**, **Empleado MAPFRE**, **Cliente Robinson**, **No perfilado**, **Gestor personal** | Se muestran como etiquetas; Robinson (`PGM_ClienteRobinson`) y RGPD condicionan la inducción comercial y los avisos (`PGM_MensajeGDPR`). |
+| **Exclusivo corredor** | Aviso cuando el cliente está gestionado por un corredor exclusivo (`exclusiveAgentMessage`). |
+| Cliente **menor** / **fallecido** | Variantes de validación en formularios (edad, documentos). |
+| **Perfil financiero firmado** | Condiciona el alta de vencimientos de productos financieros (`PGM_Test_Perfil_Finaciero_Firmado`). |
+
+### 7.2 Cabecera: palancas y acciones
+
+DNI (digitalizar) · Consentimientos/RGPD (firmar; canales) · ACI (alta) · Plan de pagos (susceptible / datos PDP / simular) · Plan **En Familia** (`servicioFamilyId`) · ClubMAPFRE (alta; tréboles disponibles/gastados vía *Te Cuidamos*) · Acceso **FAS** (ficha ampliada) · Edición de datos de contacto (nuevo móvil, fijo, email; registra interacción) · **Alertas urgentes** y **Avisos e interacciones** (buscador con filtros y fechas) · Refrescar ficha · Click-to-call (fijo/móvil) y WhatsApp.
+
+Primas y descuentos: *Pulse para calcular la prima total* (cálculo bajo demanda), **Descuento por vinculación** con *Simulador DPVE* / *Ejecutar DPVEs* (selección de productos a los que aplicar descuentos; reglas Pymes ≥ 5 asegurados, colectivos ≥ 50). Mensaje "No es posible realizar el cálculo online" cuando el servicio falla.
+
+### 7.3 Resumen por ramo y acciones de póliza
+
+Carrusel con un ítem por ramo (`PGM_FichaCliente_ItemCarrusel`: nº pólizas TO/TI y otros, nº vencimientos, nº presupuestos) y acción **Vto./Ppto.** que abre el alta de vencimiento/oportunidad en PGO (completo/incompleto, productos financieros con ISIN/emisor/tipo de interés, adjuntos y observaciones). Versiones *Mobile* de cabecera, carrusel y tabla de productos.
+
+Tabla de productos: filtro **En vigor / Anulado**, pestañas *Estados anteriores*, *Prestaciones*, *Recibos*; acciones por póliza (ficha de póliza con pestañas resumen/prestaciones/recibos, duplicados, solicitud de anulación, impresión).
+
+### 7.4 Recibos: operativas
+
+Menú de recibo (datos del pagador: actúa como asegurado, documento, contacto, dirección) · **Agrupar/Desagrupar** (forma de pago, situación, STCAT, grupo, nota de cargo, no seguro, reserva de primas, descuento, tréboles, plan de pago, póliza on/off, Planeta Santander, efectivo/no efectivo, pendiente de vencimiento) · **Impresiones de recibo** / duplicado / aviso de cobro · **Enviar a Centro de Recibos** (observaciones) · **Cobrar recibo individual / múltiple** (forma de cobro, Bizum) · **Envío al banco**.
+
+### 7.5 Gestión comercial: dependencias de perfil
+
+Observado con el usuario de pruebas (sin perfil comercial): *Vencimientos* (Todos/Completo/Incompleto), *Actividad Comercial* → "Esta acción aún no está disponible en PGM para tu usuario… Puedes realizarla desde SGC 2.0", *Gestiones* → "No tienes permiso para ver las gestiones" (requiere perfil SGC 3.0 por NUUMA). Es decir, la pestaña degrada por perfil y enlaza a la aplicación origen. *Presupuestos*: "El cliente no tiene presupuestos".
+
+**Cliente Total**: variantes Físico (empresas vinculadas: CIF, razón social, actividad, segmento, cargo, estado; añadir/editar/eliminar; firma con servicio de firma; fiabilidad), Jurídico (clientes totales vinculados) y Particular/Empresa (envío de enlace).
+
+### 7.6 Lanzaderas por ramo (N. Producción / Gest. Cartera / Prestaciones)
+
+Cada tarjeta de ramo abre una interfaz con accesos a aplicaciones externas; **PGM no implementa la emisión ni la gestión de cartera**, solo las enlaza:
+
+| Ramo | Nueva producción | Gestión de cartera | Prestaciones |
+|---|---|---|---|
+| Automóviles | NSE Autos (tarificación y emisión, rápida, otros acuerdos), NSEi (piloto por grupo), wAutem, Flotas (Citrix) | NSE suplementos, acuerdos especiales, Flotas | METS (solo Director Comercial / Usuario Central) |
+| Patrimoniales | NSE Hogar/Comunidades, Decesos, Viajes (Citrix/URL), Portal Interno | NSE suplementos, bandeja de operaciones | Hogar (Home API), Decesos |
+| Salud | **Tarificación rápida PGM** (propia, con borradores) + GESALUD (pasarela) por producto (Supra, Plus, Tú e-liges, Dental, Elección, Reembolso, Indemnización…) | GESALUD (operaciones pendientes, incompletas) | Salud |
+| Vida / Ahorro | GESVIDA, WEBVIDA (rentas, solicitud), comparador de riesgo (PGM CV), dependencia, Solución Global, accidentes | GESVIDA | Vida |
+| Empresas | Multirriesgo, RC, CiberON, Autoemprendedores, Mercancías (NSE / Citrix) | Suplementos, bandeja de operaciones, cláusulas | Empresas |
+| Agropecuario | SAC (Portal Interno), NSE Agropecuaria, bandeja de operaciones | idem | Agropecuario |
+
+Accesos transversales: Portal Interno (SAC, bandeja, Liquicom, Asesor 360, SGC 2.0, Club), SGC 3.0, WhatsApp Oficinas (restringido por grupos), SGO (site Appian), APM, Delegados, IDD, Incentivos, VirtualApps/Citrix (`PGM_PM_NAV_CITRIX`: lista de recursos por usuario).
+
+### 7.7 Limitaciones de la exploración
+
+El usuario de pruebas no tiene perfil comercial (NUUMA/estructura) ni grupos de piloto, por lo que *Gestiones SGC 3.0*, *Actividad comercial*, *Cuadro de mando* y los pilotos (Captura Web, NSEi, consentimientos) se documentan solo desde SAIL. Las operativas que modifican datos no se ejecutaron.
+
+## 8. Fuera de alcance / no verificado en TEST
 
 - Operativas que modifican datos (cobros, agrupaciones, altas de vencimiento, firmas, inducciones) **no se ejecutaron** para no dejar rastro; se documentan a partir de los objetos de diseño.
 - Cuadro de mando y pilotos (Captura Web, NSEi) no se visualizaron (grupo restringido).

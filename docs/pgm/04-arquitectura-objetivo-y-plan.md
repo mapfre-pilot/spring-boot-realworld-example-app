@@ -1,6 +1,6 @@
 # PGM — Arquitectura objetivo y plan de migración (brownfield)
 
-> Specs activadas (dry-run del router KDD, 19/10/2026): `MFST-NEW-SPA-001@1.3.0` → `ARQT-ANGULAR-001@1.1.0`, `BP-API-001@1.0.0`; `MFST-NEW-BFF-001@1.2.0` → `ARCH-FIS-COM-001@1.0.0`, `ARQT-SBOOT-001@1.0.1`, `BP-API-001@1.0.0`. Contexto adicional: `ARCH-APICANAL-001`, `PROD-APICANAL-*`. Todas con `confidence: medium/low` sin `verified`: las decisiones que se apoyan en ellas se marcan como tal.
+> Specs activadas (WRK-SPEC congelados en `.kdd/WRK-SPEC-NEW-SPA-001.md` y `.kdd/WRK-SPEC-NEW-BFF-001.md`, 19/10/2026): `MFST-NEW-SPA-001@1.3.0` → `ARQT-ANGULAR-001@1.1.0`, `BP-API-001@1.0.0`; `MFST-NEW-BFF-001@1.2.0` → `ARCH-FIS-COM-001@1.0.0`, `ARQT-SBOOT-001@1.0.1`, `BP-API-001@1.0.0`. Contexto adicional: `ARCH-APICANAL-001`, `PROD-APICANAL-*`. Todas con `confidence: medium/low` sin `verified`: las decisiones que se apoyan en ellas se marcan como tal.
 
 ## 1. Arquitectura objetivo
 
@@ -80,7 +80,7 @@ Criterios de corte por fase: paridad funcional verificada con analistas funciona
 
 ## 4. Riesgos y decisiones abiertas (Open Questions del WRK-SPEC)
 
-1. **Plataforma del manifest**: PGM (canal oficinas) no está en el enum `PEV|PPV|PENV|PGD|PGO|standalone`; propuesta `standalone` (la activación es idéntica a `PGO`). Falta un `PLAT-FUNC` / `PROD` para el canal PGM (gap del grafo).
+1. **Plataforma**: PGM pertenece a la plataforma **Canales y Clientes**, que todavía no tiene specs (`PLAT-FUNC-*`, `PROD-*`) en el grafo; los WRK-SPEC se han creado con `platform: standalone` (misma activación que `PGO`) por decisión del usuario (19/10/2026). Gap a consolidar: `PLAT-FUNC-CYC-001` y `PROD-CYC-PGM-*`.
 2. **Dominios sin producto API Canal** (PGO, SGC, iMediador, SGO, ACI/Club, partners): ¿nuevos `PROD-APICANAL-*` o consumo de API de Plataforma por Gateway desde el BFF? Decisión con PCC y Arquitectura.
 3. **Búsqueda federada** por matrícula/recibo/presupuesto/expediente: ¿en API Canal Clientes o compuesta en el BFF?
 4. Operativas de **recibos** (cobro, agrupación, banco) y de **pólizas** (anulación, duplicados): calendario de API Canal; mientras tanto Appian sigue sirviendo esas acciones (strangler).

@@ -60,3 +60,13 @@ Leyenda de destino: *API Canal* = `PROD-APICANAL-*`; *Plataforma* = API de Plata
 - Catálogo de **lanzaderas** por ramo/perfil (hoy constantes + WLCatalog + Citrix), deep links de entrada (`/clientes/{documento}`, `/polizas/{id}`) y auditoría de accesos (registro de operaciones por NUUMA).
 - Borradores de tarificación y estado de diálogos multi-paso (Cliente Total, alta ACI, PGO documentos).
 - Nada de caché de datos de cliente ni lógica de dominio reutilizable (eso va a API Canal).
+
+## 5. Regla "nada legacy": verificación del mapeo
+
+Criterio del usuario y de `ARCH-APICANAL-001`: **todo va por lo nuevo**. Revisión fila a fila:
+
+- Ninguna capacidad C1–C25 tiene como destino ESB/SOAP (`esb.pre`, `core7`, `soa7`, `wmbig2is`), Denodo, `mrcconsultaback`/`apisb…/clients/1.0` ni lambdas Citrix. Esas rutas aparecen solo en la columna *as-is* y **desaparecen con Appian**.
+- Donde API Canal no publica aún la capacidad (◐/✘), el destino es *solicitar a PCC* o *API de Plataforma por API Gateway*; **nunca** un adaptador legacy en el BFF. Mientras tanto la operativa sigue sirviéndose desde Appian (strangler) y así queda recogido en el plan (doc 04 §2).
+- Las **lanzaderas** a aplicaciones de ramo (NSE, GESALUD, GESVIDA/WEBVIDA, Portal Interno, SGC, SGO, Citrix) no son consumo de servicios: son enlaces de navegación. Se mantienen como catálogo de URLs en el BFF (C22) hasta que cada aplicación exponga su propia API de plataforma o su frontal nuevo; no implican integración técnica con legacy.
+- Los dos accesos "duplicados" actuales a Clientes (EDGE y API GW) convergen en un único consumidor: `PROD-APICANAL-CLIENTES-001`.
+- Terceros (Verti, Santander, SAVIA) salen del BFF hacia un BFP (`ARCH-APICANAL-001`), no se llaman directamente.
