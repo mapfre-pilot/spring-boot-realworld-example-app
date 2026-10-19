@@ -10,7 +10,7 @@ updated: "2026-10-19"
 owner: ggalv10
 generated:
   by: devin/session-bd30d5222e1d49f685a1fc534d35b644
-  at: "2026-10-19T18:21:47.810Z"
+  at: "2026-10-19T19:28:34Z"
 task_type: new-bff
 manifest_used: MFST-NEW-BFF-001@1.2.0
 parameters:
@@ -26,7 +26,7 @@ activates:
 suggested: []
 activation_frozen: true
 activation_resolved_at: "2026-10-19T18:21:47.810Z"
-bootstrap_state: pending
+bootstrap_state: completed
 tags:
   - work-spec
   - new-bff
@@ -81,8 +81,13 @@ Resueltos por el router; congelados con `activation_frozen: true`.
 - Capacidades a solicitar a API Canal: búsqueda por matrícula/recibo/presupuesto/expediente; alertas, interacciones, encuestas, reclamaciones, integralidad; operativas de recibos (cobro, agrupación, envío al banco, duplicados) y de pólizas (anulación, duplicados); listado de presupuestos por cliente.
 - Modelo de autorización: grupos Entra ID vs claims de estructura comercial; servicio de perfiles.
 - Las specs activadas son `confidence: medium` sin `verified`; `ARCH-APICANAL-001` y `PROD-APICANAL-*` son `draft/low`.
+- [gap] `mapfre-cli scaffold` / Zeus / Backstage no accesibles desde la sesión: esqueleto creado a mano siguiendo la estructura del arquetipo; workflows `.github/workflows/*` son equivalentes abiertos de ZeusOneteam-CI (pendiente sustituir al entrar en la organización).
+- [gap] Imágenes base `acrmapfredevops` y librerías corporativas (UI, `@mapfre-tech/*`) no accesibles: sustituidas por Temurin/nginx-unprivileged y estilos propios.
+- [gap] Contratos reales de API Canal y APIs de plataforma tras el API Gateway no publicados: adaptadores `@Profile("!local")` escritos contra los paths propuestos en `docs/pgm/03-mapeo-api-canal.md`; perfil `local` con datos sintéticos.
+- [gap] Onboarding SRE/observabilidad corporativa pendiente (OTLP configurable por `OTEL_EXPORTER_OTLP_ENDPOINT`).
 
 ## Traceability
 | Relación | Target |
 |---|---|
 | governed-by-manifest | MFST-NEW-BFF-001@1.2.0 |
+- Implementación (2026-10-19): `pgm-bff/` en rama `feature/pgm` de mapfre-pilot/spring-boot-realworld-example-app. Evidencia: `mvn clean package` + `mvn test` (16 tests OK, Java 21, Spring Boot 3.5.6); JAR arrancado en perfil `local`: `/monitoring/health|metrics|prometheus` 200, OpenAPI en `/v3/api-docs.yaml` (20 operaciones), 20 endpoints `/api/v1` verificados; commit `232e24b`.

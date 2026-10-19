@@ -10,7 +10,7 @@ updated: "2026-10-19"
 owner: ggalv10
 generated:
   by: devin/session-bd30d5222e1d49f685a1fc534d35b644
-  at: "2026-10-19T18:21:47.989Z"
+  at: "2026-10-19T19:28:34Z"
 task_type: new-spa
 manifest_used: MFST-NEW-SPA-001@1.3.0
 parameters:
@@ -26,7 +26,7 @@ suggested:
   - MFST-NEW-BFF-001@1.0.0
 activation_frozen: true
 activation_resolved_at: "2026-10-19T18:21:47.989Z"
-bootstrap_state: pending
+bootstrap_state: completed
 tags:
   - work-spec
   - new-spa
@@ -79,8 +79,13 @@ El site Appian `pgm-mapfre` (566 interfaces SAIL, 8 páginas, navegación por pe
 - Gestión de estado (signals vs NgRx) y estrategia de microfrontend si Nébula/SGC necesitan embeber la ficha.
 - Lanzaderas Citrix/NSE: qué aplicaciones de ramo seguirán sin API y cómo se abren desde la SPA.
 - Cuadro de mando: métricas de negocio en Grafana vs pantalla propia.
+- [gap] `mapfre-cli scaffold` / Zeus / Backstage no accesibles desde la sesión: esqueleto creado a mano siguiendo la estructura del arquetipo; workflows `.github/workflows/*` son equivalentes abiertos de ZeusOneteam-CI (pendiente sustituir al entrar en la organización).
+- [gap] Imágenes base `acrmapfredevops` y librerías corporativas (UI, `@mapfre-tech/*`) no accesibles: sustituidas por Temurin/nginx-unprivileged y estilos propios.
+- [gap] Contratos reales de API Canal y APIs de plataforma tras el API Gateway no publicados: adaptadores `@Profile("!local")` escritos contra los paths propuestos en `docs/pgm/03-mapeo-api-canal.md`; perfil `local` con datos sintéticos.
+- [gap] Onboarding SRE/observabilidad corporativa pendiente (OTLP configurable por `OTEL_EXPORTER_OTLP_ENDPOINT`).
 
 ## Traceability
 | Relación | Target |
 |---|---|
 | governed-by-manifest | MFST-NEW-SPA-001@1.3.0 |
+- Implementación (2026-10-19): `pgm-spa/` en rama `feature/pgm` de mapfre-pilot/spring-boot-realworld-example-app. Evidencia: `npx nx lint|test|build pgm-spa` OK (11 tests Jest+Spectator; build production 365 kB inicial); e2e en navegador contra el BFF local: inicio/búsqueda, ficha 360 (C-1001, C-1004), Vto./Ppto. con tarificación Salud y borrador, gestión comercial, cuadro de mando, lanzaderas por ramo, recibos, 404 RFC 9457; commit `ce6eccf`.
