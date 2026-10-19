@@ -11,5 +11,17 @@ Fuente: «Analisis SCA2.docx» (19/10). Cambios en SCA2 TEST; la lógica de SCA 
 | 4 | Autemis pendiente: al ANULAR PÓLIZA lanzar «bloquear» de NEW antes de ANL | Nodo nuevo «Bloquear póliza en Central (NEW)» en `CMD Mecanizar` entre «Success Mecanización? (wAutemis 00000005/6)» y «Crear Autorización» (`bloquearPolizaEnCentral` de RecubrirNew con póliza, perfil, nuuma, reservaPrima, motivo/detalle/causa, fecha), como el nodo «Bloquear póliza» de `SCA Finalizar Mecanizacion`; resultado en `pv!bloqueoCentral` | `SCA2 CMD Mecanizar` (nodo 340, PV `bloqueoCentral`) |
 | 5 | Casos NSE (pólizas 2002600070490…) | Pruebas pendientes (ver §2) | — |
 
-## 2. Pruebas
-(se completa con el informe del testing agent: casos A popup, B nuuma/salto a mecanizar, C Autemis + CANCELAR)
+## 2. Pruebas (19/10 tarde, testing agent, JJGONZ2/SISANS/devin; vídeo `sca2-r20-v35-bc-edited.mp4`)
+
+| Caso | Resultado |
+|---|---|
+| A. Compañías contrarias como ventana | **PASA** con 2002600073360 (sin guardar): la lupa oculta el formulario y deja sola la tarjeta; seleccionar devuelve el formulario con la compañía; la X conserva el valor. Hallazgo corregido de paso: CANCELAR del alta no limpiaba la compañía elegida y aparecía en el siguiente alta (`SCA2_AltaSolicitudPage` v35). 2002600070459 (la del analista) ya tiene solicitud abierta. |
+| B. Nuuma «-» en nivel 2 / RETOMAR / SI24 finalizar negativo → mecanizar | **NO PROBADO**: 15788107 / 0001047017147 (acuerdos) fue tras la CA negativa directamente a Mecanización (nivel 00000004), sin nivel 2; 7101/7111/7113/7136/7137/7146 «póliza no válida o no disponible» en CORE; la CA nivel 2 de 15788105 está asignada a Oficina (no SI24). Hace falta una póliza nueva cuyo motor derive a SI24 nivel 2 (como 0002729291207 del analista, ya con solicitud). Los cambios están verificados por relectura/renderizado, no en pantalla. |
+| C. Autemis pendiente: bloqueo NEW + CANCELAR | **NO PROBADO**: ninguna póliza wAutemis libre con A EFECTO anterior a hoy (7148/7150/7156 fechas de 2027, 7011 sólo A VENCIMIENTO, 7007 con solicitud SCA). El nodo nuevo está en el PM (relectura OK) pero no se ha ejecutado; CANCELAR de mantenimiento sigue sin ejecutar. |
+| Ronda 19 (misma tarde) | AUTORIZAR 15788103 y RECHAZAR 15788105 **PASAN** de extremo a extremo (ver doc 37 §5). |
+
+## 3. Pendiente / para el analista
+1. Datos: pólizas wAutemis de acuerdos que deriven a SI24 nivel 2 (B) y pólizas wAutemis con anulación «a efecto» retroactiva sin solicitud (C). Las pólizas 000104701xxxx restantes tienen efecto en 2027 (Emisión devuelve 00000004, no pendiente de autorizar).
+2. Nuuma al retomar: SCA2 lo registra en su tarea y lo muestra; **no se escribe en CORE hasta posponer/finalizar** (no hay servicio CORE conocido para «retomar»). Confirmar si basta o indicar el servicio.
+3. Casos NSE del punto 5 (recién emitidas, a futuro, renovadas): sin empezar.
+4. El resultado de «Bloquear póliza en Central» se guarda en `pv!bloqueoCentral` y no corta el flujo (como SCA); si NEW falla en PRE la anulación seguirá por ANL igual.
