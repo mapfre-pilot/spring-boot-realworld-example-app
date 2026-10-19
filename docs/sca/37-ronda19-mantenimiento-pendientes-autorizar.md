@@ -52,6 +52,19 @@ Límites documentados: (1) `desbloqueoAnulacion = "S"` y `estado = "2"` para rec
 ![Detalle](img/37/detalle.png)
 ![Confirmación](img/37/confirmacion-autorizar.png)
 
+
+## 5. Pruebas reales (19/10, segunda fase, OK del usuario)
+
+| Caso | Solicitud / póliza | Resultado |
+|---|---|---|
+| Diagnóstico | 15788100 / 0001047017041 | **Defecto SCA2 encontrado**: el nivel de Emisión «00000005» viaja en `pv!observaciones` de `CMD Mecanizar` y se perdía al pasar por la tarea Verti (la pantalla Verti relanzaba el comando con su texto libre) → ninguna wAutemis con inducción entraba en espera ANL. |
+| Fix 1 | `SCA2 CMD Mecanizar` nodo «Write Tarea VERTI» + `SCA2_VertiVencimientoPrincipal` v9→v11 | La tarea VERTI guarda `tokenTarea = MEC:<nivel>|<rolNse>|<mcaReservaPrima>|<importeRsvPrima>` (columna de 64 car.; el primer intento en JSON superó el límite → 15788101 en ERROR; `split()` descarta el último campo vacío → 15788102 sin espera) y la pantalla lo devuelve al comando al CONTINUAR. |
+| AUTORIZAR | 15788103 / 0001047017092, 17:34 | Página → PM `ANL Desbloquear` (13 s): fila ANL `ESTADO=1`, `DESBLOQUEO_ANULACION=S`, `NUUMA_NEW`, `OBSERVACIONES_NEW`. `CMD Mecanizar` lo detecta en el 1.er sondeo (17:36) y continúa. «Desbloquear Póliza en Central» (RecubrirNew PRE) devuelve 500 / «No se ha encontrado ninguna Póliza en Central» → póliza sigue vigente → `actualizarMecanizacion(4, V)` → **«Cerrada sin mecanizar» / «Finalizada. Rechazada anulación»** (misma regla que SCA). Fallo externo, no de Appian. |
+| RECHAZAR | 15788105 / 0001047017002, 18:08 | Igual con `ESTADO=2`; detectado a los 2 min; cierre «Sin mecanizar» + CA nivel 2 (rama normal post-ANL). |
+| CANCELAR | pendiente | Sin póliza apta antes del corte de la sesión (criterio apto: A EFECTO con fecha fija de CORE anterior a hoy, sin solicitud CORE; 00000004 no aplica). Se repite en la ronda 20. |
+
+Conclusión: la herramienta permite probar Autemis sin esperar a SGO (ANL recibe la respuesta y SCA2 reanuda en ≤5 min). El desenlace funcional (anulada / rechazada) depende de Central/NEW de PRE, que en TEST no encuentra estas pólizas.
+
 ## 4. Pendiente / decisiones
 1. ¿Probar AUTORIZAR/RECHAZAR sobre 15787878 (dato antiguo; el PM ANL escribiría en su fila ANL 2101 y llamaría a central/NEW/SGO) o esperar a una póliza wAutemis que Emisión deje «pendiente de aceptar» (00000005/06) para probar el ciclo completo con dato nuevo?
 2. Confirmar con SGO/ANL los valores reales de `desbloqueoAnulacion` y del `estado` de rechazo para igualarlos.
