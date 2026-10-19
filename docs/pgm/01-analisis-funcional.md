@@ -163,7 +163,26 @@ Cada tarjeta de ramo abre una interfaz con accesos a aplicaciones externas; **PG
 
 Accesos transversales: Portal Interno (SAC, bandeja, Liquicom, Asesor 360, SGC 2.0, Club), SGC 3.0, WhatsApp Oficinas (restringido por grupos), SGO (site Appian), APM, Delegados, IDD, Incentivos, VirtualApps/Citrix (`PGM_PM_NAV_CITRIX`: lista de recursos por usuario).
 
-### 7.7 Limitaciones de la exploración
+### 7.8 Diálogos de la ficha comprobados en TEST (primera pantalla, sin enviar)
+
+| Acción | Comportamiento observado |
+|---|---|
+| Menú **ACCIONES** (cabecera) | *Más datos cliente* (consultar más datos), *Centro de comunicaciones*, *Consulta descarga documentación*. |
+| **Acciones** de una póliza | Diálogo "Acciones – Ramo – nº póliza": *Consulta individual SCA* (anulaciones) y *Documentación de emisión*; el resto de acciones depende del ramo/estado. |
+| **Vto./Ppto.** | Diálogo "Añadir Vencimiento / Presupuesto" (PGO); para usuarios sin perfil comercial: "Esta acción aún no está disponible en PGM para tu usuario… Contacta con el administrador". |
+| **Ver más** (En Familia) | "El cliente no tiene familiares identificados. Para obtener los beneficios de MAPFRE en Familia, cree una familia" → *CREAR FAMILIA*. |
+| **Simular** (Plan de pagos) | "El cliente es susceptible de contratar un Plan de Pagos" → *Simular plan de pagos individual* / *familiar*. |
+| **Descuento vinculación** | "Resumen Descuento por Vinculación (DpV)": sectores de negocio (Autos, Patrimonio/RC, Salud, Decesos, Vida/Accidentes), tomadores con pólizas en vigor, composición familiar del DpV por sector, DpV mínimo para nueva producción; detalle por contrato / tomador / documento. |
+| **Alertas urgentes** | "Centro de Comunicaciones" con pestañas *Alertas* (prioridad, descripción: p. ej. revisar nacionalidad y actualizar desde FAC; solicitar documento y almacenarlo en el gestor documental), *Interacciones*, *Reclamaciones*. |
+| **Digitalizar DNI** | *Digitalizar ahora* (frontal y reverso, png/jpg/bmp/tif/pdf ≤ 3 MB) o *Solicitar al cliente*. |
+| **Firmar RGPD** | Métodos: firma biométrica, aceptación por email, aceptación por SMS; alternativa "impresión y firma" (oficina sin papel). |
+| **Solicitar alta en ACI** | Requisito previo: teléfono móvil o email del cliente ("incorpóralos en Más datos cliente"); el resto de datos se modifican por suplemento. |
+| **Alta Cliente Total** | Tabla del cliente (NIF, nombre, clasificación actual / nueva), empresas vinculadas (CIF, razón social, actividad, segmento, clasificación, cargo, estado), *Ver documento*, *Añadir CIF*, *Firmar*. |
+| Pestaña **Estados anteriores** | Vacía para el cliente de prueba (sin pólizas anuladas). |
+
+Nota de trazabilidad: al abrir *Digitalizar DNI*, *Firmar RGPD*, *Solicitar alta en ACI* y *Alta Cliente Total*, Appian arranca una instancia de proceso con tarea de usuario (así están diseñados); se cerraron sin enviar nada, por lo que no hubo modificación de datos, pero las instancias quedan iniciadas por el usuario de pruebas.
+
+### 7.9 Limitaciones de la exploración
 
 El usuario de pruebas no tiene perfil comercial (NUUMA/estructura) ni grupos de piloto, por lo que *Gestiones SGC 3.0*, *Actividad comercial*, *Cuadro de mando* y los pilotos (Captura Web, NSEi, consentimientos) se documentan solo desde SAIL. Las operativas que modifican datos no se ejecutaron.
 
