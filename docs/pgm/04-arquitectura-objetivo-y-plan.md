@@ -55,6 +55,23 @@
 - Borradores de tarificación Salud y estado de diálogos → almacén ligero del BFF (Redis/Mongo Atlas, starter corporativo) o en la propia plataforma de Ventas si lo ofrece.
 - CDTs `urn:mapfre:pgm` → DTO OpenAPI del BFF + modelos de los productos API Canal.
 
+### 1.5 Componentes a construir (resumen para verificación)
+
+Diagrama: `diagramas/pgm-arquitectura-objetivo-v2.svg|png`.
+
+| # | Componente | Quién lo construye | Qué incluye |
+|---|---|---|---|
+| ① | `pgm-spa` (Angular + Nx) | Equipo PGM | Módulos inicio/buscador, clientes (ficha 360 con pestañas), pólizas, recibos, prestaciones, nueva producción, gestión de cartera, utilidades, KPIs; deep links que sustituyen a las Web APIs Appian; cliente OpenAPI generado |
+| ② | `pgm-bff` (Spring Boot 3) | Equipo PGM | REST `/api/v1` OpenAPI-first; composición 360 por pestaña; autorización perfil × estructura comercial × flags; catálogo de lanzaderas; auditoría NUUMA; borradores; puertos de salida a API Canal y a plataformas; starters RAM (auth, logging, telemetry, monitoring, httpclient, rediscache opcional) |
+| ③ | Capacidades API Canal (`PROD-APICANAL-*`) | PCC | Existentes (Clientes ODL/search/…, Pólizas, Recibos, Siniestros, Ventas) + solicitudes del doc 03 §3 |
+| ④ | APIs de plataforma por API Gateway | Plataformas (PGO, SGC, iMediador/GESCOM, SGO, ACI/Club, consentimientos, comunicaciones) | Publicación en API Gateway interno; decisión con PCC sobre nuevos productos API Canal |
+| ⑤ | BFP partners | Canal/acuerdos | Verti, Santander, SAVIA fuera del BFF |
+| ⑥ | Plataforma técnica | Zeus OneTeam / DevOps | Scaffold, repos `mapfre-tech`, GitHub Actions, SonarQube, Backstage, ACR, Argo CD |
+| ⑦ | Observabilidad | Equipo PGM + SRE | Logs JSON sin PII, OTLP, Prometheus/Grafana, KPIs de negocio que sustituyen al cuadro de mando |
+| ⑧ | Seguridad | Equipo PGM + Identidad | Entra ID OIDC/JWT, client-credentials por tenant, mapa de grupos Appian → Entra, perfil comercial → claims |
+
+Lo que **no** se construye: BBDD de cliente (se elimina la caché PostgreSQL), adaptadores a ESB/SOAP/Denodo/API Clientes legacy, procesos de orquestación tipo Appian.
+
 ## 2. Estrategia: strangler por dominio
 
 Appian sigue en producción mientras la SPA y el BFF crecen; el **buscador y la ficha** son el primer corte porque concentran el 70 % de las integraciones (Clientes) y están cubiertos por API Canal Clientes. Cada fase entrega valor y retira integraciones de Appian.
