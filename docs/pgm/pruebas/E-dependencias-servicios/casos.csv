@@ -1,0 +1,15 @@
+id,pantalla,accion,datos,esperado,real,resultado(OK/KO/BLOQUEADO),evidencia
+E-00,(sin UI) Área E,Recorrido funcional de pantallas,—,No aplica: el área E analiza objetos de diseño por LCP,No se ejecutó ninguna pantalla ni acción de negocio,OK,informe.md §0
+E-01,LCP /objects,Inventariar objetos de PGM_MAPFRE,appUuid _a-0000e700-629a-8000-9bc5-011c48011c48_1927060,2986 objetos; 33 CS; 211 integraciones,2986 objetos; 30 CS; 211 integraciones; limit efectivo 50,KO,informe.md §1.1 (discrepancia 33 vs 30 no conciliada)
+E-02,LCP /connected-systems/{uuid},Descargar los 30 CS (URL y auth),30 uuids,30 definiciones,30 definiciones; todas las URL apuntan a PRE,OK,informe.md Anexo A
+E-03,LCP /integrations/{uuid},Descargar las 211 integraciones,211 uuids,211 definiciones,208 OK; 3 HTTP 500 (Unmatched open bracket),KO,informe.md §1.3
+E-04,LCP /web-apis/{uuid},Descargar las 9 Web APIs,9 uuids,alias+método+expresión,solo alias/método (sin expresión SAIL),BLOQUEADO,informe.md §3.1
+E-05,LCP /expression-rules /process-models /interfaces,Localizar consumidores de cada integración,332 reglas 127 PM 566 interfaces,consumidor para cada integración,139 con consumidor por rule!; 69 sin consumidor directo,OK,informe.md §1.3 y Anexo B
+E-06,LCP /groups/{uuid}/members,Miembros de los 21 grupos PGM,21 grupos,listado de miembros,21 listados; devin solo en PGM_AsesorComercial y PGM Visualizar CdM,OK,informe.md §7.1
+E-07,LCP /constants,Flags y endpoints por entorno,545 constantes,URLs TEST/PRE/PRO,URLs TEST=PRE; PRO solo Citrix,OK,informe.md §2.3 §7.2
+E-08,Grafo KDD,Cruce con PROD-APICANAL-*,spec-graph CLI,listado de productos API Canal,CLI falla (Permission denied); specs leídas en Markdown (5 productos draft confidence low),OK,informe.md §4
+E-09,LCP test PGM_R_ClientePorNumPoliza_Record,Verificar dato de prueba por póliza (solo lectura),numPoliza 0007001170587,cliente titular,idCliente 9198551 documento 98064151V Platino,OK,informe.md §6.1
+E-10,LCP test PGM_Query_CacheIdCliente,Buscar ids cacheados por usuario,9 usuarios,ids de cliente,vacío para todos,OK,informe.md §6.3
+E-11,LCP test PGM_respuesta_search_webApi,Resolver documento→idCliente,15930307R 01076564A 98064151V,búsqueda de solo lectura,resuelve ids 38859674/38903733/9198551 pero escribe en caché PGM_R_cliente_record_postgres (3 filas),KO,informe.md §6.4 (incidencia)
+E-12,LCP test PGM_R_getClientePorIdRecord,Leer caché por id,3 ids,ficha completa,devuelve record con claves por uuid de campo (no legible sin mapeo),OK,informe.md §6.3
+E-13,—,Localizar 10-20 documentos por capacidad (impagados prestaciones presupuestos PGO empresa VIP Robinson),—,lista de documentos,no realizado: exige invocar servicios de negocio para muchos clientes,BLOQUEADO,informe.md §6.1 y requisitos DAT-2
