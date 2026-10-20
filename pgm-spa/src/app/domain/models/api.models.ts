@@ -60,6 +60,13 @@ export interface CriteriosBusqueda {
   poliza?: string;
   tarjetaSanitaria?: string;
   localidad?: string;
+  primerApellido?: string;
+  segundoApellido?: string;
+  codigoPostal?: string;
+  expediente?: string;
+  matricula?: string;
+  presupuesto?: string;
+  recibo?: string;
 }
 
 export interface ClienteResumen {
@@ -74,6 +81,10 @@ export interface ClienteResumen {
   email: string;
   localidad: string;
   numeroPolizasEnVigor: number;
+  fechaNacimiento: string | null;
+  domicilio: string | null;
+  codigoPostal: string | null;
+  robinson: boolean;
 }
 
 export interface Direccion {
