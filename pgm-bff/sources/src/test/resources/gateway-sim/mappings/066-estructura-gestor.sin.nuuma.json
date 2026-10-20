@@ -3,7 +3,7 @@
   "priority": 5,
   "request": {
     "method": "GET",
-    "urlPath": "/plataformas/imediador/v1/usuarios/gestor.sin.nuuma/estructura"
+    "urlPath": "/legacy/imediador/api/1.0/usuario/gestor.sin.nuuma/perfil"
   },
   "response": {
     "status": 404,

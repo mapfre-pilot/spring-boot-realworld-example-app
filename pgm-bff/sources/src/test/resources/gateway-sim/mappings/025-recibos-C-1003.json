@@ -2,13 +2,13 @@
   "name": "recibos-C-1003",
   "priority": 5,
   "request": {
-    "method": "GET",
-    "urlPath": "/api-canal/recibos/v1/recibos",
-    "queryParameters": {
-      "clienteId": {
-        "equalTo": "C-1003"
+    "method": "POST",
+    "urlPath": "/legacy/clients-edge/gesycore_servicios_bbe-web/services/consultarRecibo",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$[?(@.clienteId == 'C-1003')]"
       }
-    }
+    ]
   },
   "response": {
     "status": 200,

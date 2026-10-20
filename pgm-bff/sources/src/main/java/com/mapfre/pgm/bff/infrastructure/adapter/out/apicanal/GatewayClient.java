@@ -48,15 +48,20 @@ public class GatewayClient {
     }
 
     public <T, B> T post(String ruta, String path, B body, Class<T> tipo) {
+        return postInterno(ruta, path, body, spec -> spec.body(tipo));
+    }
+
+    private <T, B> T postInterno(String ruta, String path, B body,
+                                 java.util.function.Function<RestClient.ResponseSpec, T> lector) {
         try {
             String idempotencyKey = idempotencia.claveActual();
-            return client.post().uri(props.urlDe(ruta) + path)
+            return lector.apply(client.post().uri(props.urlDe(ruta) + path)
                     .headers(headers -> {
                         if (idempotencyKey != null) {
                             headers.set("Idempotency-Key", idempotencyKey);
                         }
                     })
-                    .body(body).retrieve().body(tipo);
+                    .body(body).retrieve());
         } catch (HttpClientErrorException e) {
             throw new ErrorClienteExternoException(ruta, "Error " + e.getStatusCode().value() + " en " + path, e);
         } catch (HttpServerErrorException e) {
@@ -64,6 +69,14 @@ public class GatewayClient {
         } catch (RestClientException e) {
             throw new SistemaExternoException(ruta, "Fallo de comunicación en " + path, e);
         }
+    }
+
+    public String companyId() {
+        return props.companyId() == null || props.companyId().isBlank() ? "1" : props.companyId();
+    }
+
+    public <T, B> T post(String ruta, String path, B body, ParameterizedTypeReference<T> tipo) {
+        return postInterno(ruta, path, body, spec -> spec.body(tipo));
     }
 
     public String url(String ruta, String path) {

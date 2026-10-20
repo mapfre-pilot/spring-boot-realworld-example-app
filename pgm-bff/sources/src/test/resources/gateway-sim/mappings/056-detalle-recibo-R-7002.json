@@ -3,7 +3,7 @@
   "priority": 5,
   "request": {
     "method": "GET",
-    "urlPath": "/api-canal/recibos/v1/recibos/R-7002"
+    "urlPath": "/api-canal/recibos/receipts/R-7002"
   },
   "response": {
     "status": 200,

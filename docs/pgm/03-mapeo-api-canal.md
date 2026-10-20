@@ -61,12 +61,27 @@ Leyenda de destino: *API Canal* = `PROD-APICANAL-*`; *Plataforma* = API de Plata
 - Borradores de tarificación y estado de diálogos multi-paso (Cliente Total, alta ACI, PGO documentos).
 - Nada de caché de datos de cliente ni lógica de dominio reutilizable (eso va a API Canal).
 
-## 5. Regla "nada legacy": verificación del mapeo
+## 5. Lo que API Canal no cubre: servicios legacy de PGM a través del API Gateway
 
-Criterio del usuario y de `ARCH-APICANAL-001`: **todo va por lo nuevo**. Revisión fila a fila:
+**Decisión del owner (ggalv10, 2026-10-20):** las capacidades que API Canal no publica se consumen de los **mismos servicios que ya usa PGM en Appian**, pero nunca en directo: el BFF solo habla con el API Gateway interno (ARCH-FIS-COM-001, regla 1), que publica tanto los productos API Canal como las fachadas de los servicios legacy. Sustituye la regla anterior «nada legacy» (sección 5 de la versión previa de este documento).
 
-- Ninguna capacidad C1–C25 tiene como destino ESB/SOAP (`esb.pre`, `core7`, `soa7`, `wmbig2is`), Denodo, `mrcconsultaback`/`apisb…/clients/1.0` ni lambdas Citrix. Esas rutas aparecen solo en la columna *as-is* y **desaparecen con Appian**.
-- Donde API Canal no publica aún la capacidad (◐/✘), el destino es *solicitar a PCC* o *API de Plataforma por API Gateway*; **nunca** un adaptador legacy en el BFF. Mientras tanto la operativa sigue sirviéndose desde Appian (strangler) y así queda recogido en el plan (doc 04 §2).
-- Las **lanzaderas** a aplicaciones de ramo (NSE, GESALUD, GESVIDA/WEBVIDA, Portal Interno, SGC, SGO, Citrix) no son consumo de servicios: son enlaces de navegación. Se mantienen como catálogo de URLs en el BFF (C22) hasta que cada aplicación exponga su propia API de plataforma o su frontal nuevo; no implican integración técnica con legacy.
-- Los dos accesos "duplicados" actuales a Clientes (EDGE y API GW) convergen en un único consumidor: `PROD-APICANAL-CLIENTES-001`.
-- Terceros (Verti, Santander, SAVIA) salen del BFF hacia un BFP (`ARCH-APICANAL-001`), no se llaman directamente.
+Los contratos se han tomado de dos fuentes: para API Canal, las specs `PROD-APICANAL-*` del grafo KDD; para legacy, los objetos de integración y *connected systems* exportados de `PGM_MAPFRE` (211 integraciones, ver `inventario/integraciones.csv`).
+
+| Ruta Gateway (`pgm.gateway.rutas`) | Origen del contrato | Endpoints usados por el BFF | Integración Appian equivalente |
+|---|---|---|---|
+| `api-canal-clientes` → host `api-product-clients` | PROD-APICANAL-CLIENTES-001 | `GET /client/search` (document, name, phone, email, policyNumber, healthCardNumber, city, limit) · `GET /clients/individuals/{clientId}` · `GET /clients/{clientId}/policies` | `PGM_ClientsEDGE_Search`, `DatosClientePorId`, `PolizasClientePorId*` |
+| `api-canal-polizas` → host `msapi-policy` | PROD-APICANAL-POLIZAS-001 | `GET /companies/{companyId}/policies/{policyId}` (`companyId` = `pgm.gateway.company-id`) | `HealthAPI_DetallesPolizaSaludPorId`, `HomeApi_PolicyDetail`, `MotorApi_Policy` |
+| `api-canal-recibos` → host `msapi-receipts` | PROD-APICANAL-RECIBOS-001 | `GET /receipts/{receiptId}` (detalle) | `LifeAPI_DuplicadoRecibos` |
+| `api-canal-ventas` → host `msapi-commercialization-health` | PROD-APICANAL-VENTAS-001 | `POST /1.0/health/quote` | `HealthAPI_Tarificacion` |
+| `clients-edge` (legacy) → `webservices.*.mapfre.net` | Connected system *PGM Clients EDGE* | `GET /api_negocioclientes_int-web/api/1.0/client/{id}/claims` (prestaciones) · `GET …/client/{id}/projects?internalUser` (presupuestos) · `POST /gesycore_servicios_bbe-web/services/consultarRecibo` (recibos por cliente, GESYC) | `PGM_ClientsMediation_PrestacionesCliente*`, `PGM_ClientsMediation_PresupuestosCliente*`, `PGM_ServiciosRecibos_ConsultarDatosRecibo` |
+| `pgo` (legacy) → `clientes.private.*.mapfredigitalhealth.com` | Connected system *PGM_MapfreDigitalHealth* | `POST /apipgo/client/opportunities` · (`GET /apipgo/opportunity/{id}`, `POST /apipgo/opportunity/health`, `PATCH /apipgo/opportunity/complete/{id}` en siguientes iteraciones) | `PGM_DigitalHealth_*` |
+| `sgc30` (legacy) → `sgc.es.*.azure.mapfre.com` | Connected system *PGM_SGC3.0* | `POST /sgc3-bk-business-tasks/api/1.0/external/business-tasks` (gestiones) · `GET /sgc3-bk-users/api/1.0/user/profile?preferredUsername` (perfil SGC 3.0) | `PGM_SGC30_GestionesNumeroDocumento`, `PGM_SGC30_Perfil` |
+| `imediador` (legacy) → `wportalinterno.*/iMediador_be-web/sgc-imediador` | Connected system *PGM iMediador EDGE* | `GET /api/1.0/usuario/{nuuma}/perfil` (estructura comercial) · actividad comercial `GET /api/1.0/contacto/{id}/usuario/{nuuma}/…` (siguiente iteración) | `PGM_iMediadorEDGE_Perfil`, `PGM_iMediadorEDGE_ActividadComercial` |
+| `bdec` (legacy) → `wportalinterno.*` | Connected system *PGM BDEC API* | `GET /ES_AUAD_ESTRUAGE_SERVICIOS_REST_be-web/api/1.0/claveProduccion/{clave}` (reservado) | `PGM_BDEC_EstructuraComercialPorClave` |
+| `sgo` (legacy) → fachada REST del Gateway sobre webMethods | `PGM_ServiciosSGO_*` (SOAP `ConsultarSolicitudes`, `ConsultarDocumentos`) | `POST /ConsultarSolicitudes` | `PGM_ServiciosSGO_ConsultarSolicitudes` |
+| `click2call` (legacy) → `bwctc.conecta.orange.es` | Connected system *PGM_ConectaOrange* | `POST /com.broadsoft.xsi-actions/v2.0/user/{nuuma}/calls/callmenow?address={telefono}` | `PGM_Click2Call` |
+
+Notas:
+- Las bases por entorno (`dev/pre/pro`) viven en el Gateway, no en el BFF: el BFF solo conoce `PGM_GATEWAY_BASE_URL` y las rutas relativas anteriores. Las URLs de PRE de los *connected systems* de Appian se dejan como referencia para quien configure el Gateway (ver `inventario/sistemas-conectados.md`).
+- ESB (`esb.*.mapfre.net`), Denodo y SOAP directos siguen **prohibidos** desde el BFF; cuando la fuente legacy es SOAP (SGO, GESYC agrupaciones, ESB siniestralidad) el Gateway debe exponer una fachada REST.
+- Los esquemas de respuesta de estos servicios no están publicados en el grafo KDD; el perfil `simulador` (WireMock) usa los mismos paths y métodos con cuerpos sintéticos equivalentes a los que hoy consume PGM. Ajustar los mapeadores cuando PCC/los dueños de cada servicio faciliten el contrato detallado.

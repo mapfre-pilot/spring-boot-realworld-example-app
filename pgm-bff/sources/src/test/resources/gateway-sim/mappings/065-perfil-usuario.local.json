@@ -3,7 +3,12 @@
   "priority": 5,
   "request": {
     "method": "GET",
-    "urlPath": "/plataformas/sgc30/v1/usuarios/usuario.local/perfil"
+    "urlPath": "/legacy/sgc30/sgc3-bk-users/api/1.0/user/profile",
+    "queryParameters": {
+      "preferredUsername": {
+        "equalTo": "usuario.local"
+      }
+    }
   },
   "response": {
     "status": 200,

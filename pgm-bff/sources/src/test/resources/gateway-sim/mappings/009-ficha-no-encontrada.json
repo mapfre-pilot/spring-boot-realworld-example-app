@@ -3,7 +3,7 @@
   "priority": 1,
   "request": {
     "method": "GET",
-    "urlPath": "/api-canal/clientes/v1/clientes/C-404/vision360"
+    "urlPath": "/api-canal/clientes/clients/individuals/C-404"
   },
   "response": {
     "status": 404,

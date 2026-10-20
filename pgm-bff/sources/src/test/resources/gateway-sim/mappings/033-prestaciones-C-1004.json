@@ -3,12 +3,7 @@
   "priority": 5,
   "request": {
     "method": "GET",
-    "urlPath": "/api-canal/siniestros/v1/prestaciones",
-    "queryParameters": {
-      "clienteId": {
-        "equalTo": "C-1004"
-      }
-    }
+    "urlPath": "/legacy/clients-edge/api_negocioclientes_int-web/api/1.0/client/C-1004/claims"
   },
   "response": {
     "status": 200,

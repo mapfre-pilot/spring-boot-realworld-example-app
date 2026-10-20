@@ -10,7 +10,7 @@ updated: "2026-10-19"
 owner: ggalv10
 generated:
   by: devin/session-bd30d5222e1d49f685a1fc534d35b644
-  at: "2026-10-19T19:28:34Z"
+  at: "2026-10-20T07:43:44Z"
 task_type: new-bff
 manifest_used: MFST-NEW-BFF-001@1.2.0
 parameters:
@@ -85,6 +85,8 @@ Resueltos por el router; congelados con `activation_frozen: true`.
 - [gap] Imágenes base `acrmapfredevops` y librerías corporativas (UI, `@mapfre-tech/*`) no accesibles: sustituidas por Temurin/nginx-unprivileged y estilos propios.
 - [gap] Contratos reales de API Canal y APIs de plataforma tras el API Gateway no publicados: adaptadores `@Profile("!local")` escritos contra los paths propuestos en `docs/pgm/03-mapeo-api-canal.md`; perfil `local` con datos sintéticos.
 - [gap] Onboarding SRE/observabilidad corporativa pendiente (OTLP configurable por `OTEL_EXPORTER_OTLP_ENDPOINT`).
+
+- Decisión del owner (2026-10-20, ggalv10): lo que API Canal no cubre se consume de los servicios legacy que ya usa PGM en Appian (PGO /apipgo, SGC 3.0, iMediador EDGE, BDEC/ESTRUAGE, Clients EDGE, GESYC, SGO, Click2Call), siempre a través del API Gateway interno (ARCH-FIS-COM-001 regla 1); sustituye la restricción anterior «sin legacy». Entra ID: App Registration clientId c4d0e5f0-4a24-4b89-a577-bd2c809f972a (identificador público; tenant/scope pendientes).
 
 ## Traceability
 | Relación | Target |

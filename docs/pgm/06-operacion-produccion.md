@@ -40,6 +40,8 @@ El perfil simulador no requiere credenciales ni accede a Entra ID. `X-Usuario-Lo
 
 ## Entra ID y registros de aplicación
 
+App Registration facilitado por el owner: **clientId `c4d0e5f0-4a24-4b89-a577-bd2c809f972a`** (identificador público; va en `environment.ts` de la SPA y como `ENTRAID_AUDIENCE` por defecto en el BFF). Quedan por configurar por entorno `ENTRAID_TENANT_ID` (o `__ENTRA_TENANT_ID__` en la SPA) y, si el BFF tiene API Registration propia, `ENTRAID_SCOPE`/`ENTRAID_AUDIENCE`. Ningún *client secret* en el repositorio.
+
 Aplicar la nomenclatura `APP-ESP-[PF]-[PRODUCTO]-[ENTORNO]`, con identificadores acordados por Arquitectura/Seguridad. Para PGM, la familia de nombres sigue el patrón `APP-ESP-[PF]-PGM-[ENTORNO]` (por ejemplo, sufijos `DEV`, `PRE` y `PRO`).
 
 - **SPA**: registro cliente público, flujo Authorization Code con PKCE; no contiene secreto de cliente. Configurar los URI de redirección y salida de sesión por entorno.
@@ -47,6 +49,10 @@ Aplicar la nomenclatura `APP-ESP-[PF]-[PRODUCTO]-[ENTORNO]`, con identificadores
 - **BFF hacia Gateway (M2M)**: cuando el Gateway requiera identidad de aplicación, registrar al BFF como cliente confidencial y usar Client Credentials con el scope de recurso `.default` del API Gateway. El secreto/certificado se gestiona fuera del repositorio. La configuración final de scopes y permisos debe cerrarse con Seguridad y el equipo propietario del Gateway.
 
 La SPA no debe enviar secretos ni usar Client Credentials. No habilitar el perfil de simulación ni el de desarrollo local para validar la seguridad corporativa.
+
+## Rutas publicadas en el API Gateway
+
+El BFF solo conoce `PGM_GATEWAY_BASE_URL` + rutas relativas (`pgm.gateway.rutas`): `api-canal-{clientes,polizas,recibos,siniestros,ventas}` para API Canal y `pgo`, `sgc30`, `imediador`, `bdec`, `clients-edge`, `sgo`, `click2call` para los servicios legacy que ya usa PGM (decisión del owner 2026-10-20). El detalle endpoint a endpoint está en `docs/pgm/03-mapeo-api-canal.md` §5. El Gateway de cada entorno debe publicar esas rutas apuntando a los hosts correspondientes (dev/pre/pro).
 
 ## Cliente Gateway y resiliencia
 

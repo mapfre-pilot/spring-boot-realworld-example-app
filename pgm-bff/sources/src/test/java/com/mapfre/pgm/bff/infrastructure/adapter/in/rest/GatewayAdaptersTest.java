@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -119,11 +120,11 @@ class GatewayAdaptersTest {
         assertThat(post("/api/v1/auditoria", auditoria.replace("LANZADERA", "OTRA"), "auditoria-1", null)
                 .getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
 
-        GATEWAY.verify(1, postRequestedFor(urlPathEqualTo("/api-canal/ventas/v1/tarificaciones/salud"))
+        GATEWAY.verify(1, postRequestedFor(urlPathEqualTo("/api-canal/ventas/1.0/health/quote"))
                 .withHeader("X-Tenant", equalTo("mapfre-es"))
                 .withHeader("Idempotency-Key", equalTo("tarificacion-1"))
                 .withHeader("traceparent", matching("00-[0-9a-f]{32}-[0-9a-f]{16}-01")));
-        GATEWAY.verify(1, postRequestedFor(urlPathEqualTo("/plataformas/comunicaciones/v1/llamadas"))
+        GATEWAY.verify(1, postRequestedFor(urlPathMatching("/legacy/click2call/com\\.broadsoft\\.xsi-actions/v2\\.0/user/[^/]+/calls/callmenow"))
                 .withHeader("Idempotency-Key", equalTo("llamada-1")));
     }
 

@@ -2,13 +2,13 @@
   "name": "gestiones-C-1005",
   "priority": 5,
   "request": {
-    "method": "GET",
-    "urlPath": "/plataformas/sgc30/v1/gestiones",
-    "queryParameters": {
-      "clienteId": {
-        "equalTo": "C-1005"
+    "method": "POST",
+    "urlPath": "/legacy/sgc30/sgc3-bk-business-tasks/api/1.0/external/business-tasks",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$[?(@.clienteId == 'C-1005')]"
       }
-    }
+    ]
   },
   "response": {
     "status": 200,

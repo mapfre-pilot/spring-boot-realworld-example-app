@@ -3,7 +3,12 @@
   "priority": 5,
   "request": {
     "method": "GET",
-    "urlPath": "/plataformas/sgc30/v1/usuarios/gestor.sin.nuuma/perfil"
+    "urlPath": "/legacy/sgc30/sgc3-bk-users/api/1.0/user/profile",
+    "queryParameters": {
+      "preferredUsername": {
+        "equalTo": "gestor.sin.nuuma"
+      }
+    }
   },
   "response": {
     "status": 404,

@@ -61,6 +61,16 @@ podman compose -f pgm/docker-compose.yml up --build
   ```
   Dentro de MAPFRE, las mismas variables sirven para las imágenes de `acrmapfredevops` y `MAVEN_MIRROR` para Azure Artifacts.
 
+### 2.c Actualizar (rebuild) en Podman tras descargar una versión nueva
+
+```powershell
+cd pgm-feature-pgm                                  # carpeta donde has descomprimido el ZIP nuevo (sobrescribe la anterior)
+podman compose -f pgm/docker-compose.yml down       # para y elimina los contenedores anteriores
+podman compose -f pgm/docker-compose.yml build --no-cache bff spa
+podman compose -f pgm/docker-compose.yml up
+```
+Si usaste las variables `BUILD_IMAGE`/`RUNTIME_IMAGE`/`NODE_IMAGE`/`NGINX_IMAGE` (mirror de AWS), vuelve a exportarlas en la misma consola antes del `build`. Para limpiar imágenes huérfanas: `podman image prune -f`. Comprobación: http://localhost:8080/monitoring/health devuelve `{"status":"UP"}` y http://localhost:4200 muestra el buscador.
+
 ### Perfil simulador (adaptadores reales contra un Gateway simulado)
 
 El perfil `simulador` mantiene los adaptadores reales del BFF y dirige sus llamadas a WireMock con respuestas sintéticas:

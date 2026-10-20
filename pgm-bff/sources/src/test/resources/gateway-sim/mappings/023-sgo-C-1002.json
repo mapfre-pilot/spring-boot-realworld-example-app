@@ -2,13 +2,13 @@
   "name": "sgo-C-1002",
   "priority": 5,
   "request": {
-    "method": "GET",
-    "urlPath": "/plataformas/sgo/v1/solicitudes",
-    "queryParameters": {
-      "clienteId": {
-        "equalTo": "C-1002"
+    "method": "POST",
+    "urlPath": "/legacy/sgo/ConsultarSolicitudes",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$[?(@.clienteId == 'C-1002')]"
       }
-    }
+    ]
   },
   "response": {
     "status": 200,

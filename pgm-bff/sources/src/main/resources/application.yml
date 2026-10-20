@@ -58,22 +58,27 @@ pgm:
     cuadro-mando: ${PGM_FEATURE_CUADRO_MANDO:true}
     click-to-call: ${PGM_FEATURE_CLICK_TO_CALL:true}
   gateway:
-    # API Gateway interno (ARCH-FIS-COM-001): único punto de salida del BFF. Nunca ESB/SOAP/Denodo/core.
+    # API Gateway interno (ARCH-FIS-COM-001): único punto de salida del BFF (API Canal y legacy publicados en él). Nunca ESB/SOAP/Denodo/core en directo.
     base-url: ${PGM_GATEWAY_BASE_URL:https://api-gateway.interno.mapfre.invalid}
     tenant: ${PGM_GATEWAY_TENANT:mapfre-es}
     connect-timeout-ms: ${PGM_GATEWAY_CONNECT_TIMEOUT_MS:2000}
     read-timeout-ms: ${PGM_GATEWAY_READ_TIMEOUT_MS:5000}
+    company-id: ${PGM_GATEWAY_COMPANY_ID:1}
     rutas:
-      api-canal-clientes: /api-canal/clientes/v1
-      api-canal-polizas: /api-canal/polizas/v1
-      api-canal-recibos: /api-canal/recibos/v1
-      api-canal-siniestros: /api-canal/siniestros/v1
-      api-canal-ventas: /api-canal/ventas/v1
-      pgo: /plataformas/pgo/v1
-      sgc30: /plataformas/sgc30/v1
-      imediador: /plataformas/imediador/v1
-      sgo: /plataformas/sgo/v1
-      comunicaciones: /plataformas/comunicaciones/v1
+      # API Canal (specs PROD-APICANAL-*): rutas relativas al host de cada micro, publicadas en el Gateway
+      api-canal-clientes: /api-canal/clientes          # api-product-clients (PROD-APICANAL-CLIENTES-001)
+      api-canal-polizas: /api-canal/polizas            # msapi-policy (PROD-APICANAL-POLIZAS-001)
+      api-canal-recibos: /api-canal/recibos            # msapi-receipts (PROD-APICANAL-RECIBOS-001)
+      api-canal-siniestros: /api-canal/siniestros      # msapi-accident-* (PROD-APICANAL-SINIESTROS-001)
+      api-canal-ventas: /api-canal/ventas              # msapi-commercialization-health (PROD-APICANAL-VENTAS-001)
+      # Legacy que ya usa PGM en Appian (decisión owner 2026-10-20), expuesto por el Gateway (ARCH-FIS-COM-001)
+      pgo: /legacy/pgo                                 # PGM_MapfreDigitalHealth /apipgo/*
+      sgc30: /legacy/sgc30                             # PGM_SGC3.0 /sgc3-bk-*
+      imediador: /legacy/imediador                     # PGM iMediador EDGE /api/1.0/*
+      bdec: /legacy/bdec                               # PGM BDEC API (ESTRUAGE)
+      clients-edge: /legacy/clients-edge               # PGM Clients EDGE (negocioclientes, GESYC, METS, consentimientos, TeCuidamos)
+      sgo: /legacy/sgo                                 # PGM_ServiciosSGO_* (fachada REST del Gateway sobre webMethods)
+      click2call: /legacy/click2call                   # PGM_ConectaOrange Click2Call
   lanzaderas:
     - { codigo: NSE, nombre: "NSE — Nuevo Sistema de Emisión", destino: NSE, ramo: AUTOS, url: "${PGM_URL_NSE:https://nse.interno.mapfre.invalid}", requiere-nuuma: false }
     - { codigo: NSE_HOGAR, nombre: "NSE — Hogar", destino: NSE, ramo: HOGAR, url: "${PGM_URL_NSE:https://nse.interno.mapfre.invalid}/hogar", requiere-nuuma: false }
@@ -88,7 +93,7 @@ pgm:
 security:
   entraid:
     tenant-id: ${ENTRAID_TENANT_ID:}
-    audience: ${ENTRAID_AUDIENCE:}
+    audience: ${ENTRAID_AUDIENCE:c4d0e5f0-4a24-4b89-a577-bd2c809f972a}
     issuer: ${ENTRAID_ISSUER:https://login.microsoftonline.com/${ENTRAID_TENANT_ID:}/v2.0}
     jwk-set-uri: ${ENTRAID_JWKS_URI:https://login.microsoftonline.com/${ENTRAID_TENANT_ID:}/discovery/v2.0/keys}
     scope: ${ENTRAID_SCOPE:pgm.acceso}

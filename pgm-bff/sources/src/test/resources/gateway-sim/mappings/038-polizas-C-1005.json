@@ -3,12 +3,7 @@
   "priority": 5,
   "request": {
     "method": "GET",
-    "urlPath": "/api-canal/polizas/v1/polizas",
-    "queryParameters": {
-      "clienteId": {
-        "equalTo": "C-1005"
-      }
-    }
+    "urlPath": "/api-canal/clientes/clients/C-1005/policies"
   },
   "response": {
     "status": 200,

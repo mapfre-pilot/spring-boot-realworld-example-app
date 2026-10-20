@@ -3,7 +3,7 @@
   "priority": 5,
   "request": {
     "method": "GET",
-    "urlPath": "/api-canal/polizas/v1/polizas/EMP-000300"
+    "urlPath": "/api-canal/polizas/companies/1/policies/EMP-000300"
   },
   "response": {
     "status": 200,

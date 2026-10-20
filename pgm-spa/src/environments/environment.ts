@@ -7,7 +7,7 @@ export const environment = {
   auth: {
     enabled: true,
     tenantId: '__ENTRA_TENANT_ID__',
-    clientId: '__ENTRA_CLIENT_ID__',
+    clientId: 'c4d0e5f0-4a24-4b89-a577-bd2c809f972a',
     scopes: ['openid', 'profile', '__BFF_SCOPE__'],
   },
 };

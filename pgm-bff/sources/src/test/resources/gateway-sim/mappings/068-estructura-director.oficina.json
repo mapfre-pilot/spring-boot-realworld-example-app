@@ -3,7 +3,7 @@
   "priority": 5,
   "request": {
     "method": "GET",
-    "urlPath": "/plataformas/imediador/v1/usuarios/director.oficina/estructura"
+    "urlPath": "/legacy/imediador/api/1.0/usuario/director.oficina/perfil"
   },
   "response": {
     "status": 200,

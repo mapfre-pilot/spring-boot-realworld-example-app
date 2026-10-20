@@ -3,12 +3,7 @@
   "priority": 5,
   "request": {
     "method": "GET",
-    "urlPath": "/api-canal/ventas/v1/presupuestos",
-    "queryParameters": {
-      "clienteId": {
-        "equalTo": "C-1002"
-      }
-    }
+    "urlPath": "/legacy/clients-edge/api_negocioclientes_int-web/api/1.0/client/C-1002/projects"
   },
   "response": {
     "status": 200,

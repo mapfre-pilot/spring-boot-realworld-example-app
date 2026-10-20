@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 
-/** APIs de plataforma (PGO, SGC 3.0, iMediador, SGO, comunicaciones) por API Gateway — nunca ESB/SOAP/Denodo directos. */
+/** Servicios legacy que ya usa PGM (PGO /apipgo, SGC 3.0, iMediador EDGE, SGO, Click2Call) publicados en el API Gateway — nunca en directo. */
 @Component
 @Profile("!local")
 public class PlataformasGatewayAdapter implements OportunidadesPort, GestionComercialPort, UsuariosComercialesPort,
@@ -26,43 +26,46 @@ public class PlataformasGatewayAdapter implements OportunidadesPort, GestionCome
     @Override
     @CircuitBreaker(name = "plataforma") @Retry(name = "plataforma-lectura")
     public List<Oportunidad> porClienteOportunidades(String clienteId) {
-        return gw.<List<Oportunidad>>get("pgo", "/oportunidades", new ParameterizedTypeReference<>() {},
-                s -> s.uri(gw.url("pgo", "/oportunidades?clienteId={id}"), clienteId)).orElse(List.of());
+        List<Oportunidad> r = gw.post("pgo", "/apipgo/client/opportunities", Map.of("clienteId", clienteId),
+                new ParameterizedTypeReference<List<Oportunidad>>() {});
+        return r == null ? List.of() : r;
     }
 
     @Override
     @CircuitBreaker(name = "plataforma") @Retry(name = "plataforma-lectura")
     public List<GestionComercial> gestionesPorCliente(String clienteId) {
-        return gw.<List<GestionComercial>>get("sgc30", "/gestiones", new ParameterizedTypeReference<>() {},
-                s -> s.uri(gw.url("sgc30", "/gestiones?clienteId={id}"), clienteId)).orElse(List.of());
+        List<GestionComercial> r = gw.post("sgc30", "/sgc3-bk-business-tasks/api/1.0/external/business-tasks",
+                Map.of("clienteId", clienteId), new ParameterizedTypeReference<List<GestionComercial>>() {});
+        return r == null ? List.of() : r;
     }
 
     @Override
     @CircuitBreaker(name = "plataforma") @Retry(name = "plataforma-lectura")
     public Optional<EstructuraComercial> estructuraDe(String usuario) {
-        return gw.get("imediador", "/usuarios/{u}/estructura", new ParameterizedTypeReference<EstructuraComercial>() {},
-                s -> s.uri(gw.url("imediador", "/usuarios/{u}/estructura"), usuario));
+        return gw.get("imediador", "/api/1.0/usuario/{u}/perfil", new ParameterizedTypeReference<EstructuraComercial>() {},
+                s -> s.uri(gw.url("imediador", "/api/1.0/usuario/{u}/perfil"), usuario));
     }
 
     @Override
     @CircuitBreaker(name = "plataforma") @Retry(name = "plataforma-lectura")
     public Optional<String> perfilSgc30De(String usuario) {
-        return gw.<Map<String, String>>get("sgc30", "/usuarios/{u}/perfil", new ParameterizedTypeReference<>() {},
-                s -> s.uri(gw.url("sgc30", "/usuarios/{u}/perfil"), usuario)).map(m -> m.get("perfil"));
+        return gw.<Map<String, String>>get("sgc30", "/sgc3-bk-users/api/1.0/user/profile", new ParameterizedTypeReference<>() {},
+                s -> s.uri(gw.url("sgc30", "/sgc3-bk-users/api/1.0/user/profile?preferredUsername={u}"), usuario)).map(m -> m.get("perfil"));
     }
 
     @Override
     @CircuitBreaker(name = "plataforma") @Retry(name = "plataforma-lectura")
     public List<SolicitudSgo> solicitudesPorCliente(String clienteId) {
-        return gw.<List<SolicitudSgo>>get("sgo", "/solicitudes", new ParameterizedTypeReference<>() {},
-                s -> s.uri(gw.url("sgo", "/solicitudes?clienteId={id}"), clienteId)).orElse(List.of());
+        List<SolicitudSgo> r = gw.post("sgo", "/ConsultarSolicitudes", Map.of("clienteId", clienteId),
+                new ParameterizedTypeReference<List<SolicitudSgo>>() {});
+        return r == null ? List.of() : r;
     }
 
     @Override
     @CircuitBreaker(name = "plataforma")
     public String iniciarLlamada(String clienteId, String telefono, String usuario) {
-        Map<String, String> r = gw.post("comunicaciones", "/llamadas",
-                Map.of("clienteId", clienteId, "telefono", telefono, "usuario", usuario), Map.class);
+        Map<String, String> r = gw.post("click2call", "/com.broadsoft.xsi-actions/v2.0/user/" + usuario + "/calls/callmenow?address=" + telefono,
+                Map.of("clienteId", clienteId), Map.class);
         return r == null ? null : r.get("id");
     }
 }

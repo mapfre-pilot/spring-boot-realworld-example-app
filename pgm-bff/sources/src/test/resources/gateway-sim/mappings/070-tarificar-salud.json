@@ -3,7 +3,7 @@
   "priority": 5,
   "request": {
     "method": "POST",
-    "urlPath": "/api-canal/ventas/v1/tarificaciones/salud"
+    "urlPath": "/api-canal/ventas/1.0/health/quote"
   },
   "response": {
     "status": 200,
