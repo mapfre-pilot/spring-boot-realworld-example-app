@@ -50,3 +50,7 @@ exclusivamente con operaciones `get*`/`list*`. **No se ha modificado ningún obj
 - No se ha analizado la base de datos (`SCAC AWS DB`) ni datos de negocio, solo el diseño.
 - Los valores de credenciales (connected systems, constantes `*_PWD_*`, `*_USUARIO_*`) se han excluido deliberadamente.
 - Los hallazgos de "riesgo" son señales de revisión basadas en el diseño; no son defectos confirmados en ejecución.
+
+## Estado y previsión
+
+- [Estado de SCA2 tras la ronda 23: dudas funcionales abiertas, resumen de cambios, lógica por flujo y previsión](42-estado-sca2-ronda23.md)
