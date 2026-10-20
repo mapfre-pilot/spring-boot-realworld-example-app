@@ -7,14 +7,14 @@ PERFIL="${PGM_PERFIL:-local}"
 export PGM_CONFIG_DIR="${PGM_CONFIG_DIR:-$PWD/pgm-config}"
 mkdir -p "$PGM_CONFIG_DIR"
 bff()  { echo "BFF perfil=$PERFIL  http://localhost:8080  (config en $PGM_CONFIG_DIR)"; mvn -q -f pgm-bff/sources/pom.xml -DskipTests spring-boot:run -Dspring-boot.run.profiles="$PERFIL"; }
-spa()  { echo "SPA  http://localhost:4200  (proxy /api → BFF :8080)"; npx --prefix pgm-spa nx serve pgm-spa --host 0.0.0.0 --port 4200; }
+spa()  { echo "SPA  http://localhost:4200  (proxy /api → BFF :8080)"; (cd pgm-spa && npx nx serve pgm-spa --host 0.0.0.0 --port 4200); }
 case "${1:-up}" in
   bff) bff ;;
   spa) spa ;;
   up)
-    trap 'kill 0' EXIT
-    bff & sleep 20; spa ;;
-  test)  mvn -q -f pgm-bff/sources/pom.xml verify && npx --prefix pgm-spa nx run-many --target=lint,test --projects=pgm-spa ;;
-  build) mvn -q -f pgm-bff/sources/pom.xml -DskipTests package && npx --prefix pgm-spa nx build pgm-spa --configuration=production ;;
+    trap 'kill 0' EXIT INT TERM
+    bff & spa & wait ;;
+  test)  mvn -q -f pgm-bff/sources/pom.xml verify && (cd pgm-spa && npx nx run-many --target=lint,test --projects=pgm-spa) ;;
+  build) mvn -q -f pgm-bff/sources/pom.xml -DskipTests package && (cd pgm-spa && npx nx build pgm-spa --configuration=production) ;;
   *) echo "uso: pgm/dev.sh up|bff|spa|test|build"; exit 1 ;;
 esac
