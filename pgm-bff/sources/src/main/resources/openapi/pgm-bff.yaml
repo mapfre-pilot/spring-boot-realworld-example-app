@@ -25,6 +25,60 @@ tags:
   - { name: gestion-comercial, description: Vencimientos (PGO), actividad comercial (iMediador) y gestiones (SGC 3.0) }
   - { name: utilidades, description: Lanzaderas, auditoría, comunicaciones, cuadro de mando }
 paths:
+  /configuracion:
+    get:
+      tags: [configuracion]
+      operationId: obtenerConfiguracion
+      summary: Pestaña «Configuración» (solo PGM_ADMINISTRADOR) — Gateway, servicios y credenciales (enmascaradas), Appian, Entra ID, flags, constantes, usuarios de prueba
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Configuracion' } } } }
+        '403': { $ref: '#/components/responses/Prohibido' }
+    put:
+      tags: [configuracion]
+      operationId: guardarConfiguracion
+      summary: Guarda la configuración no secreta (validada); los secretos se envían por /configuracion/secretos
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Configuracion' } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Configuracion' } } } }
+        '400': { $ref: '#/components/responses/PeticionInvalida' }
+        '403': { $ref: '#/components/responses/Prohibido' }
+  /configuracion/secretos/{ambito}/{nombre}:
+    put:
+      tags: [configuracion]
+      operationId: guardarSecreto
+      summary: Guarda un secreto cifrado en el almacén del BFF (ámbito = clave de servicio | appian | entraid); nunca se devuelve en claro
+      parameters:
+        - { name: ambito, in: path, required: true, schema: { type: string } }
+        - { name: nombre, in: path, required: true, schema: { type: string } }
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [valor], properties: { valor: { type: string, format: password } } } } } }
+      responses:
+        '200': { description: Configuración con el secreto enmascarado, content: { application/json: { schema: { $ref: '#/components/schemas/Configuracion' } } } }
+        '400': { $ref: '#/components/responses/PeticionInvalida' }
+        '403': { $ref: '#/components/responses/Prohibido' }
+    delete:
+      tags: [configuracion]
+      operationId: borrarSecreto
+      parameters:
+        - { name: ambito, in: path, required: true, schema: { type: string } }
+        - { name: nombre, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Configuracion' } } } }
+  /configuracion/servicios/{clave}/prueba:
+    post:
+      tags: [configuracion]
+      operationId: probarServicio
+      summary: «Probar conexión» con el servicio a través del Gateway (en perfil local devuelve un resultado informativo)
+      parameters: [ { name: clave, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ResultadoPrueba' } } } }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+  /configuracion/restaurar:
+    post:
+      tags: [configuracion]
+      operationId: restaurarConfiguracion
+      summary: Restaura la configuración por defecto (application.yml + catálogo de servicios de PGM)
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Configuracion' } } } }
   /polizas/{numero}/ficha:
     get:
       tags: [posicion]
@@ -579,6 +633,34 @@ components:
     SistemaExterno: { description: API Canal o plataforma no disponible, content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
     ConflictoIdempotencia: { description: Clave de idempotencia reutilizada con un cuerpo diferente, content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
   schemas:
+    Secreto: { type: object, properties: { nombre: { type: string }, descripcion: { type: string }, informado: { type: boolean }, enmascarado: { type: string, nullable: true }, origen: { type: string, nullable: true } } }
+    ServicioConfigurado:
+      type: object
+      properties:
+        clave: { type: string }
+        nombre: { type: string }
+        descripcion: { type: string }
+        rutaGateway: { type: string }
+        origen: { type: string, enum: [API_CANAL, LEGACY] }
+        autenticacion: { type: string, enum: [NINGUNA, API_KEY, OAUTH_CLIENT_CREDENTIALS, BASIC, CABECERAS, COOKIE] }
+        urlPorEntorno: { type: object, additionalProperties: { type: string } }
+        cabeceras: { type: object, additionalProperties: { type: string } }
+        credenciales: { type: array, items: { $ref: '#/components/schemas/Secreto' } }
+        habilitado: { type: boolean }
+    Configuracion:
+      type: object
+      properties:
+        entorno: { type: string }
+        gateway: { type: object, properties: { baseUrl: { type: string }, tenant: { type: string }, companyId: { type: string }, connectTimeoutMs: { type: integer }, readTimeoutMs: { type: integer }, rutas: { type: object, additionalProperties: { type: string } } } }
+        servicios: { type: array, items: { $ref: '#/components/schemas/ServicioConfigurado' } }
+        appian: { type: object, properties: { urlBase: { type: string }, sitePgm: { type: string }, siteSgo: { type: string }, usuarioServicio: { type: string }, webApis: { type: object, additionalProperties: { type: string } }, apiKey: { $ref: '#/components/schemas/Secreto' }, habilitado: { type: boolean } } }
+        entraId: { type: object, properties: { habilitado: { type: boolean }, tenantId: { type: string }, clientId: { type: string }, scope: { type: string }, issuer: { type: string }, audience: { type: string }, redirectUris: { type: array, items: { type: string } }, clientSecretBff: { $ref: '#/components/schemas/Secreto' } } }
+        flags: { type: object, additionalProperties: { type: boolean } }
+        constantes: { type: object, additionalProperties: { type: string } }
+        usuariosPrueba: { type: array, items: { type: object, properties: { usuario: { type: string }, perfiles: { type: array, items: { type: string } }, nuuma: { type: string, nullable: true }, perfilSgc30: { type: string, nullable: true }, descripcion: { type: string } } } }
+        ultimaModificacion: { type: string, format: date-time, nullable: true }
+        modificadoPor: { type: string, nullable: true }
+    ResultadoPrueba: { type: object, properties: { servicio: { type: string }, ok: { type: boolean }, httpStatus: { type: integer, nullable: true }, latenciaMs: { type: integer }, url: { type: string }, mensaje: { type: string } } }
     AccionPoliza: { type: object, properties: { codigo: { type: string }, nombre: { type: string }, destino: { type: string }, url: { type: string, nullable: true }, requiereNuuma: { type: boolean }, externa: { type: boolean } } }
     DocumentoPoliza: { type: object, properties: { id: { type: string }, tipo: { type: string }, nombre: { type: string }, fecha: { type: string, format: date }, formato: { type: string } } }
     Garantia: { type: object, properties: { codigo: { type: string }, nombre: { type: string }, capital: { type: number, nullable: true }, franquicia: { type: string, nullable: true } } }

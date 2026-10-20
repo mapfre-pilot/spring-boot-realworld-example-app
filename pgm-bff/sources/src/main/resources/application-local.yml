@@ -3,7 +3,7 @@
 pgm:
   local:
     usuario-por-defecto: usuario.local
-    perfiles-por-defecto: [PGM_USUARIO, PGM_ASESOR_COMERCIAL, PGM_VISUALIZAR_CDM]
+    perfiles-por-defecto: [PGM_USUARIO, PGM_ASESOR_COMERCIAL, PGM_VISUALIZAR_CDM, PGM_ADMINISTRADOR]
 logging:
   level:
     com.mapfre.pgm: DEBUG

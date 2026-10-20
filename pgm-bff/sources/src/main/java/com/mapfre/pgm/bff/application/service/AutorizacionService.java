@@ -56,6 +56,7 @@ public class AutorizacionService implements ContextoUsuarioUseCase {
         v.put(Visibilidades.DETALLE_RECIBOS, esUsuario && flags.visualizacionRecibos());
         v.put(Visibilidades.DETALLE_PRESTACIONES, esUsuario && flags.detallePrestaciones());
         v.put(Visibilidades.DUPLICADO_RECIBO, esUsuario && tieneEstructura);
+        v.put(Visibilidades.CONFIGURACION, perfiles.contains(Perfiles.ADMINISTRADOR));
         return new ContextoUsuario(usuario, nombre, List.copyOf(perfiles), perfilSgc30, estructura, Map.copyOf(v));
     }
 

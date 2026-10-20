@@ -20,4 +20,5 @@ public final class Visibilidades {
     public static final String DETALLE_RECIBOS = "detalleRecibos";
     public static final String DETALLE_PRESTACIONES = "detallePrestaciones";
     public static final String DUPLICADO_RECIBO = "duplicadoRecibo";
+    public static final String CONFIGURACION = "configuracion";
 }
