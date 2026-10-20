@@ -92,3 +92,7 @@ docker compose -f pgm/docker-compose.yml --profile simulador stop gateway-sim bf
 ```
 
 WireMock carga mappings y respuestas sintéticas desde `pgm-bff/sources/src/test/resources/gateway-sim`. La configuración no sustituye pruebas contra los contratos y entornos reales de API Canal/Gateway.
+
+## Pestaña «Configuración» y almacén de secretos
+
+La pestaña **Configuración** de la SPA (perfil `PGM_ADMINISTRADOR`) administra Gateway/rutas, servicios y credenciales, conexión Appian, Entra ID, flags y URLs de lanzaderas a través de `/api/v1/configuracion`. En local los secretos se cifran (AES-256-GCM) en `PGM_CONFIG_DIR` con la clave `PGM_CONFIG_KEY`; en DEV/PRE/PRO la fuente de configuración y secretos debe ser Config Server/Vault corporativo (montar `PGM_CONFIG_DIR` en un volumen cifrado o sustituir `FicheroConfiguracionAdapter` por el adaptador de Vault en el onboarding SRE). Los cambios de Gateway/rutas se aplican al reiniciar el BFF.
