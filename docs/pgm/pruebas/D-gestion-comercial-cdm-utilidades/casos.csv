@@ -1,0 +1,33 @@
+id,pantalla,accion,datos,esperado,real,resultado(OK/KO/BLOQUEADO),evidencia
+D-C01,Login site PGM,Acceso básico con usuario de pruebas,usuario devin,Entra en Inicio - PGM,Entra en Inicio - PGM,OK,capturas/01-gest-comercial-accesos-directos.png
+D-C02,Página Gest. Comercial,Abrir página desde barra superior,-,Tarjetas SGC 2.0 / Asesor 360 / SGC 3.0 / WhatsApp para Oficinas,4 tarjetas visibles; Liquidación de comisiones oculta por grupo,OK,capturas/01-gest-comercial-accesos-directos.png
+D-C03,Página Gest. Comercial,Verificar URL lanzadera SGC 2.0 (SAIL),-,https://wportalinterno.pre.mapfre.net/UFTI_SISTEMAGESTIONCOMERCIAL/ControlAcceso.do?idAplicacion=1,Coincide (cons PGM_DOMINIO_PORTALINTERNO_SGC20),OK,informe.md D-09
+D-C04,Página Gest. Comercial,Verificar URL lanzadera Asesor 360 (SAIL),-,cons PGM_A360 + /pya360appft/#/login,https://wportalinterno.pre.mapfre.net/pya360appft/#/login,OK,informe.md D-09
+D-C05,Página Gest. Comercial,Verificar URL lanzadera SGC 3.0 (SAIL),-,cons PGM_ENDPOINT_SGC30 + /home,https://sgc.es.pre.azure.mapfre.com/home,OK,informe.md D-09
+D-C06,Página Gest. Comercial,Verificar URL lanzadera WhatsApp para Oficinas (SAIL),-,cons PGM_ENDPOINT_WHATSAPP,https://conversa-dev.mapfre.es,OK,informe.md D-09
+D-C07,Página Utilidades,Abrir página desde barra superior,-,SGO v2 + Club Mapfre + Site APM + Site Delegados + Información interés IDD + Portal de Incentivos,6 tarjetas visibles; APM antiguo / Buscador de talleres / Portales de colaboración ocultas,OK,capturas/02-utilidades.png
+D-C08,Página Utilidades,Verificar URLs de lanzaderas (constantes),-,URLs PRE,SGO v2=/suite/sites/sgo; Club=/webclub20/inicio.do; APM=https://internos.pre.mapfre.com/aps/; Delegados=http://delegadosmapfre.pre.mapfre.net/; IDD=https://www.mapfre.es/informacion-de-interes/; Incentivos=https://incentivosmapfre.es/home,OK,informe.md D-17
+D-C09,Cuadro de Mando,Acceso directo sin pertenecer a PGM Visualizar CdM,URL /page/cuadro-de-mando,Error de permiso,"Se ha producido un error - La página no existe o no tiene permiso para verla",BLOQUEADO,informe.md F3
+D-C10,Grupos Appian,Añadir devin a PGM Visualizar CdM y PGM_AsesorComercial (LCP),devin,HTTP 200 success,HTTP 200 success; membresía confirmada; LCP no permite quitar,OK,informe.md nota inicial
+D-C11,Cuadro de Mando,Acceso tras logout+login,-,Página visible en barra y carga,Carga con título Cuadro de Mando y 4 pasos,OK,capturas/03-cuadro-de-mando.png
+D-C12,Cuadro de Mando,Mostrar filtros,-,NUUMA / Motivo / Canal / Fecha de Inicio / Fecha de Fin / Origen de la Consulta,Campos mostrados + Limpiar filtros / Ocultar filtros,OK,capturas/07-cuadro-de-mando-filtros.png
+D-C13,Cuadro de Mando,Paso Volumen de uso,Mes sin seleccionar,Gráficos de consultas por día y tipos de acceso,"Número de consultas realizadas por día / Comparativa de tipos de acceso a PGM: No hay datos disponibles",OK,capturas/03-cuadro-de-mando.png
+D-C14,Cuadro de Mando,Paso Tiempos medios por pantalla,-,4 gráficos de tiempos,4 gráficos sin datos (No hay datos disponibles),OK,capturas/08-cuadro-de-mando-tiempos-medios.png
+D-C15,Cuadro de Mando,Paso Motivos y canales,-,Donuts por motivo y por canal,División de las gestiones por motivo / por canal: No hay datos disponibles,OK,capturas/09-cuadro-de-mando-motivos-canales.png
+D-C16,Cuadro de Mando,Paso Registro de errores,-,Grid NUUMA / ID Cliente / Fecha de Inicio de la Búsqueda / Errores,Grid vacío (No hay elementos disponibles),OK,capturas/10-cuadro-de-mando-registro-errores.png
+D-C17,Cuadro de Mando,Seleccionar mes y ver datos,Mes=Octubre,Gráficos con datos,No ejecutado: la tabla PGM_cuadroDeMando no tiene datos en TEST,BLOQUEADO,informe.md D-10
+D-C18,Ficha cliente,Buscar cliente y abrir ficha,15930307R,Navega sola a la ficha,Ficha JOSE LUIS GARCIA BAQUERO,OK,capturas/04-ficha-gestion-comercial-vencimientos.png
+D-C19,Ficha > Gestión comercial > Vencimientos,Abrir pestaña,15930307R,Listado de vencimientos/oportunidades PGO,"Todos 0 / Completo 0 / Incompleto 0; No hay vencimientos para este cliente",OK,capturas/04-ficha-gestion-comercial-vencimientos.png
+D-C20,Ficha > Vencimientos,Añadir Vencimiento / Presupuesto,15930307R,Diálogo de alta por ramo,Botón no visible (sin NUUMA; requiere firma cláusula mediadores),BLOQUEADO,informe.md D-04
+D-C21,Ficha > Vencimientos,Abrir detalle de vencimiento,15930307R,Detalle con Datos Generales / Producto / Riesgo y observaciones,No ejecutable: cliente sin vencimientos,BLOQUEADO,informe.md D-03
+D-C22,Ficha > Gestión comercial > Actividad Comercial,Abrir sub-pestaña,15930307R,Diario de actividad iMediador,"Esta acción aún no está disponible en PGM para tu usuario (devin) / Puedes realizarla desde SGC 2.0 / Acceso a SGC 2.0",BLOQUEADO,capturas/06-ficha-gestion-comercial-actividad-no-disponible.png
+D-C23,Ficha > Actividad Comercial,Nueva actividad (NGA),15930307R,Diálogo con RGPD y Gestión alcanzada,No ejecutable: bloqueo sin NUUMA/estructura,BLOQUEADO,informe.md D-06
+D-C24,Ficha > Gestión comercial > Gestiones,Abrir sub-pestaña,15930307R,Listado de gestiones SGC 3.0,No tienes permiso para ver las gestiones (sin perfilSGC30),BLOQUEADO,capturas/05-ficha-gestion-comercial-gestiones-sin-permiso.png
+D-C25,Ficha > Gestiones,Detalle / cerrar / reabrir / asignar / observaciones / documentos,15930307R,Diálogos de detalle de gestión,No ejecutable: sin perfil SGC 3.0 ni gestiones; operaciones de escritura no ejecutadas,BLOQUEADO,informe.md D-08
+D-C26,Integraciones SGC 3.0 / KeyVault,Lectura de definiciones (método/ruta/parámetros/auth),-,Definiciones legibles sin secretos,16 integraciones SGC30 + 1 KeyVault documentadas,OK,informe.md §2
+D-C27,Integraciones iMediador EDGE / AltaNGA,Lectura de definiciones,-,Definiciones legibles,12 integraciones documentadas (Basic Auth),OK,informe.md §2
+D-C28,Integraciones PGO (MapfreDigitalHealth),Lectura de definiciones,-,Definiciones legibles,17 integraciones /apipgo documentadas,OK,informe.md §2
+D-C29,Integraciones SGO / BDEC / ConectaOrange,Lectura de definiciones,-,Definiciones legibles,ServiciosSGO SOAP + AccesoSGO + BDEC ESTRUAGE + Click2Call documentadas,OK,informe.md §2
+D-C30,Consulta solicitudes SGO,Ejecutar consulta de solicitudes activas,-,Listado de solicitudes,No ejecutable: sin NUUMA y sin pantalla propia en el área,BLOQUEADO,informe.md D-18
+D-C31,Click2Call,Llamar al cliente,-,Llamada vía ConectaOrange,No ejecutado (genera llamada real; sin NUUMA),BLOQUEADO,informe.md D-19
+D-C32,Auditoría CdM,Verificar registro al cargar ficha,15930307R,Registro en PGM_cuadroDeMando,No verificable: el record type no muestra registros al usuario (grid vacío); proceso descrito desde PM,BLOQUEADO,informe.md D-16
