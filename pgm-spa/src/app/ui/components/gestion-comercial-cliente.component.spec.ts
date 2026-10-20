@@ -167,7 +167,11 @@ describe('GestionComercialClienteComponent', () => {
     await spectator.component.abrirGestion(gestion as never);
     spectator.detectChanges();
     expect(spectator.fixture.nativeElement.textContent).toContain('Potencialidad de éxito');
-    await spectator.component.cerrarGestion(spectator.component.detalleGestion()!, 'POSITIVA');
+    const detalle = spectator.component.detalleGestion();
+    expect(detalle).not.toBeNull();
+    if (detalle) {
+      await spectator.component.cerrarGestion(detalle, 'POSITIVA');
+    }
     expect(r.cerrarGestion).toHaveBeenCalledWith('G-1', 'POSITIVA');
   });
 
