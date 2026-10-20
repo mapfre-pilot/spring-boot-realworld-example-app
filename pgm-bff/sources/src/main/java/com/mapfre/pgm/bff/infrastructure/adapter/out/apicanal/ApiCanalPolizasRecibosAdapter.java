@@ -1,5 +1,6 @@
 package com.mapfre.pgm.bff.infrastructure.adapter.out.apicanal;
 
+import com.mapfre.pgm.bff.domain.model.PosicionCliente.*;
 import com.mapfre.pgm.bff.application.port.out.PolizasPort;
 import com.mapfre.pgm.bff.application.port.out.RecibosPort;
 import com.mapfre.pgm.bff.application.port.out.SiniestrosPort;
@@ -73,5 +74,59 @@ public class ApiCanalPolizasRecibosAdapter implements PolizasPort, RecibosPort, 
     @CircuitBreaker(name = "apicanal")
     public TarificacionSalud.Resultado tarificarSalud(TarificacionSalud.Solicitud solicitud) {
         return gw.post("api-canal-ventas", "/1.0/health/quote", solicitud, TarificacionSalud.Resultado.class);
+    }
+
+    // ---------- Área B: catálogo WLCatalog, documentación, detalle por ramo, GESYC y METS vía Gateway ----------
+    @Override
+    @CircuitBreaker(name = "plataforma") @Retry(name = "plataforma-lectura")
+    public List<AccionPoliza> accionesPoliza(String numeroPoliza) {
+        // PGM API WLCatalog (ESB SOAP) expuesto como fachada REST por el Gateway: catálogo por cia+ramo
+        return gw.<List<AccionPoliza>>get("wlcatalog", "/catalog/policies/{n}/actions", new ParameterizedTypeReference<>() {},
+                s -> s.uri(gw.url("wlcatalog", "/catalog/policies/{n}/actions"), numeroPoliza)).orElse(List.of());
+    }
+
+    @Override
+    @CircuitBreaker(name = "apicanal") @Retry(name = "apicanal-lectura")
+    public List<DocumentoPoliza> documentosPoliza(String numeroPoliza) {
+        // PROD-APICANAL-POLIZAS-001: documentación de la póliza
+        return gw.<List<DocumentoPoliza>>get("api-canal-polizas", "/companies/{c}/policies/{n}/documents", new ParameterizedTypeReference<>() {},
+                s -> s.uri(gw.url("api-canal-polizas", "/companies/{c}/policies/{n}/documents"), gw.companyId(), numeroPoliza)).orElse(List.of());
+    }
+
+    @Override
+    @CircuitBreaker(name = "apicanal") @Retry(name = "apicanal-lectura")
+    public Optional<DetallePolizaRamo> detalleRamo(String numeroPoliza) {
+        return gw.get("api-canal-polizas", "/companies/{c}/policies/{n}/detail", new ParameterizedTypeReference<DetallePolizaRamo>() {},
+                s -> s.uri(gw.url("api-canal-polizas", "/companies/{c}/policies/{n}/detail"), gw.companyId(), numeroPoliza));
+    }
+
+    @Override
+    @CircuitBreaker(name = "apicanal") @Retry(name = "apicanal-lectura")
+    public List<EstadoAnterior> estadosAnteriores(String clienteId) {
+        return gw.<List<EstadoAnterior>>get("api-canal-clientes", "/clients/{id}/policies?status=HISTORICAL", new ParameterizedTypeReference<>() {},
+                s -> s.uri(gw.url("api-canal-clientes", "/clients/{id}/policies?status=HISTORICAL"), clienteId)).orElse(List.of());
+    }
+
+    @Override
+    @CircuitBreaker(name = "plataforma") @Retry(name = "plataforma-lectura")
+    public Optional<ReciboDetalle> detalleCompleto(String numeroRecibo) {
+        // GESYC consultarRecibo (SOAP) → fachada REST del Gateway
+        return gw.get("gesyc", "/receipts/{n}", new ParameterizedTypeReference<ReciboDetalle>() {},
+                s -> s.uri(gw.url("gesyc", "/receipts/{n}"), numeroRecibo));
+    }
+
+    @Override
+    @CircuitBreaker(name = "plataforma")
+    public DuplicadoRecibo duplicado(String numeroRecibo, String nuuma) {
+        // gesycore_servicios_bbe-web/services/imprimirRecibo → fachada REST del Gateway
+        return gw.post("gesyc", "/receipts/" + numeroRecibo + "/duplicate", Map.of("nuuma", nuuma), DuplicadoRecibo.class);
+    }
+
+    @Override
+    @CircuitBreaker(name = "plataforma") @Retry(name = "plataforma-lectura")
+    public Optional<PrestacionDetalle> detallePrestacion(String numero) {
+        // METS (expedientes de siniestros) vía Gateway; API Canal Siniestros GET /accidents/{id} cuando publique el detalle
+        return gw.get("mets", "/claims/{n}", new ParameterizedTypeReference<PrestacionDetalle>() {},
+                s -> s.uri(gw.url("mets", "/claims/{n}"), numero));
     }
 }

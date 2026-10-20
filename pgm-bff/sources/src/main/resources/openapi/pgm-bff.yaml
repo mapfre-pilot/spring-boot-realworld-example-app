@@ -25,6 +25,85 @@ tags:
   - { name: gestion-comercial, description: Vencimientos (PGO), actividad comercial (iMediador) y gestiones (SGC 3.0) }
   - { name: utilidades, description: Lanzaderas, auditoría, comunicaciones, cuadro de mando }
 paths:
+  /polizas/{numero}/ficha:
+    get:
+      tags: [posicion]
+      operationId: fichaPoliza
+      summary: Ficha de póliza con la restricción de PGM (Autos/Hogar solo con PGM_USUARIOSGRUPOTRABAJO / PGM_GR_DETALLEHOGAR)
+      parameters: [ { name: numero, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Poliza' } } } }
+        '403': { $ref: '#/components/responses/Prohibido' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+  /polizas/{numero}/acciones:
+    get:
+      tags: [posicion]
+      operationId: accionesPoliza
+      summary: Diálogo «Acciones» de póliza — catálogo dinámico por compañía+ramo (WLCatalog); las que requieren NUUMA se filtran
+      parameters: [ { name: numero, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { total: { type: integer }, items: { type: array, items: { $ref: '#/components/schemas/AccionPoliza' } } } } } } }
+  /polizas/{numero}/documentos:
+    get:
+      tags: [posicion]
+      operationId: documentosPoliza
+      summary: «Documentación de emisión» → CONSULTA DESCARGA DOCUMENTOS
+      parameters: [ { name: numero, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { total: { type: integer }, items: { type: array, items: { $ref: '#/components/schemas/DocumentoPoliza' } } } } } } }
+  /polizas/{numero}/detalle-ramo:
+    get:
+      tags: [posicion]
+      operationId: detallePolizaRamo
+      summary: Bloques específicos por ramo (Vida/Ahorro garantías y beneficiarios; Autos vehículo/conductores; Hogar vivienda)
+      parameters: [ { name: numero, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/DetallePolizaRamo' } } } }
+        '403': { $ref: '#/components/responses/Prohibido' }
+  /clientes/{id}/estados-anteriores:
+    get:
+      tags: [posicion]
+      operationId: estadosAnterioresCliente
+      summary: Posición › Estados anteriores (pólizas anuladas/suspendidas con fecha y motivo de baja)
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { total: { type: integer }, items: { type: array, items: { $ref: '#/components/schemas/EstadoAnterior' } } } } } } }
+  /recibos/{numero}/acciones:
+    get:
+      tags: [posicion]
+      operationId: accionesRecibo
+      summary: Menú ⋮ del recibo (Consulta Recibos ConsuWeb, Visualizar duplicado si NUUMA, Detalle si PGM_visualizacionRecibos)
+      parameters: [ { name: numero, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { total: { type: integer }, items: { type: array, items: { $ref: '#/components/schemas/AccionRecibo' } } } } } } }
+  /recibos/{numero}/detalle:
+    get:
+      tags: [posicion]
+      operationId: detalleCompletoRecibo
+      summary: Detalle interno del recibo (pagador, estructura comercial, cuota, comisiones, gestiones)
+      parameters: [ { name: numero, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ReciboDetalle' } } } }
+        '403': { $ref: '#/components/responses/Prohibido' }
+  /recibos/{numero}/duplicado:
+    post:
+      tags: [posicion]
+      operationId: duplicadoRecibo
+      summary: «Visualizar duplicado» (GESYC imprimirRecibo vía Gateway; requiere NUUMA)
+      parameters: [ { name: numero, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/DuplicadoRecibo' } } } }
+        '403': { $ref: '#/components/responses/Prohibido' }
+  /prestaciones/{numero}:
+    get:
+      tags: [posicion]
+      operationId: detallePrestacion
+      summary: Detalle del expediente de prestación (METS), visible si PGM_CONS_VER_DETALLE_PRESTACIONES
+      parameters: [ { name: numero, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/PrestacionDetalle' } } } }
+        '403': { $ref: '#/components/responses/Prohibido' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
   /clientes/{id}/mas-datos:
     get:
       tags: [acciones-cliente]
@@ -500,6 +579,42 @@ components:
     SistemaExterno: { description: API Canal o plataforma no disponible, content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
     ConflictoIdempotencia: { description: Clave de idempotencia reutilizada con un cuerpo diferente, content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
   schemas:
+    AccionPoliza: { type: object, properties: { codigo: { type: string }, nombre: { type: string }, destino: { type: string }, url: { type: string, nullable: true }, requiereNuuma: { type: boolean }, externa: { type: boolean } } }
+    DocumentoPoliza: { type: object, properties: { id: { type: string }, tipo: { type: string }, nombre: { type: string }, fecha: { type: string, format: date }, formato: { type: string } } }
+    Garantia: { type: object, properties: { codigo: { type: string }, nombre: { type: string }, capital: { type: number, nullable: true }, franquicia: { type: string, nullable: true } } }
+    Beneficiario: { type: object, properties: { nombre: { type: string }, documento: { type: string }, parentesco: { type: string }, porcentaje: { type: number } } }
+    DetallePolizaRamo:
+      type: object
+      properties:
+        numero: { type: string }
+        ramo: { type: string }
+        bloques: { type: object, additionalProperties: { type: object, additionalProperties: { type: string } } }
+        garantias: { type: array, items: { $ref: '#/components/schemas/Garantia' } }
+        beneficiarios: { type: array, items: { $ref: '#/components/schemas/Beneficiario' } }
+    EstadoAnterior: { type: object, properties: { polizaNumero: { type: string }, ramo: { type: string }, producto: { type: string }, estado: { type: string }, fechaEfecto: { type: string, format: date }, fechaBaja: { type: string, format: date }, motivoBaja: { type: string } } }
+    ReciboDetalle:
+      type: object
+      properties:
+        recibo: { $ref: '#/components/schemas/Recibo' }
+        producto: { type: string }
+        riesgo: { type: string }
+        metodoPagoLiteral: { type: string }
+        pagador: { type: string }
+        estructuraComercial: { type: string }
+        cuota: { type: number }
+        comisiones: { type: number }
+        gestiones: { type: array, items: { type: string } }
+    AccionRecibo: { type: object, properties: { codigo: { type: string }, nombre: { type: string }, tipo: { type: string, enum: [EXTERNA, OPERACION, INTERNA] }, url: { type: string, nullable: true } } }
+    DuplicadoRecibo: { type: object, properties: { numeroRecibo: { type: string }, nombreFichero: { type: string }, tipoMime: { type: string }, contenidoBase64: { type: string } } }
+    PrestacionDetalle:
+      type: object
+      properties:
+        prestacion: { $ref: '#/components/schemas/Prestacion' }
+        importeEstimado: { type: number }
+        importePagado: { type: number }
+        codigoRamo: { type: string }
+        hitos: { type: array, items: { type: string } }
+        oficinaTramitadora: { type: string }
     Alerta: { type: object, properties: { tipo: { type: string }, texto: { type: string }, fecha: { type: string, format: date } } }
     Telefono: { type: object, properties: { tipo: { type: string }, motivo: { type: string }, prefijo: { type: string }, numero: { type: string } } }
     ContactoActualizado: { type: object, properties: { telefonos: { type: array, items: { $ref: '#/components/schemas/Telefono' } }, emails: { type: array, items: { type: string, format: email } } } }

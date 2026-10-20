@@ -16,4 +16,8 @@ public final class Visibilidades {
     public static final String UTILIDADES = "utilidades";
     public static final String CUADRO_MANDO = "cuadroMando";
     public static final String TARIFICACION_SALUD = "tarificacionSalud";
+    public static final String FICHA_POLIZA_AUTOS_HOGAR = "fichaPolizaAutosHogar";
+    public static final String DETALLE_RECIBOS = "detalleRecibos";
+    public static final String DETALLE_PRESTACIONES = "detallePrestaciones";
+    public static final String DUPLICADO_RECIBO = "duplicadoRecibo";
 }

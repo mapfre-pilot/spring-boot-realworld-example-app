@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 class AutorizacionServiceTest {
 
     private final UsuariosComercialesPort gc = mock(UsuariosComercialesPort.class);
-    private final AutorizacionService service = new AutorizacionService(gc, new FeatureFlags(true, true, true, true));
+    private final AutorizacionService service = new AutorizacionService(gc, new FeatureFlags(true, true, true, true, true, true));
 
     @Test
     void asesorConNuumaYPerfilSgcVeGestionComercialCompleta() {
@@ -56,7 +56,7 @@ class AutorizacionServiceTest {
 
     @Test
     void featureFlagApagadoOcultaTarificacion() {
-        AutorizacionService sinPiloto = new AutorizacionService(gc, new FeatureFlags(false, true, true, true));
+        AutorizacionService sinPiloto = new AutorizacionService(gc, new FeatureFlags(false, true, true, true, true, true));
         when(gc.estructuraDe("u4")).thenReturn(Optional.empty());
         when(gc.perfilSgc30De("u4")).thenReturn(Optional.empty());
         assertThat(sinPiloto.contexto("u4", "U4", List.of(Perfiles.USUARIO)).visibilidades())

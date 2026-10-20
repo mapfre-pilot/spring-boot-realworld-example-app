@@ -57,6 +57,8 @@ pgm:
     gestion-comercial: ${PGM_FEATURE_GESTION_COMERCIAL:true}
     cuadro-mando: ${PGM_FEATURE_CUADRO_MANDO:true}
     click-to-call: ${PGM_FEATURE_CLICK_TO_CALL:true}
+    visualizacion-recibos: ${PGM_FEATURE_VISUALIZACION_RECIBOS:true}   # PGM_visualizacionRecibos (false en TEST)
+    detalle-prestaciones: ${PGM_FEATURE_DETALLE_PRESTACIONES:true}     # PGM_CONS_VER_DETALLE_PRESTACIONES (false en TEST)
   gateway:
     # API Gateway interno (ARCH-FIS-COM-001): único punto de salida del BFF (API Canal y legacy publicados en él). Nunca ESB/SOAP/Denodo/core en directo.
     base-url: ${PGM_GATEWAY_BASE_URL:https://api-gateway.interno.mapfre.invalid}
@@ -82,6 +84,9 @@ pgm:
       aci: /legacy/aci                                 # PGM crearClienteACI (alta en Área de Cliente)
       firma: /legacy/firma                             # CMP_PM_FIRMA_RGPD_COMPLETO / consentimientos
       dpve: /legacy/dpve                               # PGM_DPVE_* (Plan de pagos)
+      wlcatalog: /legacy/wlcatalog                     # PGM API WLCatalog (catálogo acciones por cia+ramo, SOAP→REST)
+      gesyc: /legacy/gesyc                             # GESYC consultarRecibo / imprimirRecibo (SOAP→REST)
+      mets: /legacy/mets                               # METS expedientes de prestaciones                               # PGM_DPVE_* (Plan de pagos)
   lanzaderas:
     - { codigo: NSE, nombre: "NSE — Nuevo Sistema de Emisión", destino: NSE, ramo: AUTOS, url: "${PGM_URL_NSE:https://nse.interno.mapfre.invalid}", requiere-nuuma: false }
     - { codigo: NSE_HOGAR, nombre: "NSE — Hogar", destino: NSE, ramo: HOGAR, url: "${PGM_URL_NSE:https://nse.interno.mapfre.invalid}/hogar", requiere-nuuma: false }

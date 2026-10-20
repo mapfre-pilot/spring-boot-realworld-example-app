@@ -1,5 +1,6 @@
 package com.mapfre.pgm.bff.infrastructure.adapter.out.local;
 
+import com.mapfre.pgm.bff.domain.model.PosicionCliente.PrestacionDetalle;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mapfre.pgm.bff.application.port.out.*;
@@ -260,5 +261,15 @@ public class InMemoryPlataformasAdapter implements SiniestrosPort, VentasPort, O
     @Override
     public boolean eliminar(String usuario, String id) {
         return borradores.remove(usuario + "/" + id) != null;
+    }
+
+    @Override
+    public java.util.Optional<PrestacionDetalle> detallePrestacion(String numero) {
+        return prestaciones.stream().filter(pr -> pr.numero().equalsIgnoreCase(numero)).findFirst()
+                .map(pr -> new PrestacionDetalle(pr, new java.math.BigDecimal("1850.00"),
+                        pr.estado() == Prestacion.EstadoPrestacion.CERRADA ? new java.math.BigDecimal("1850.00") : java.math.BigDecimal.ZERO,
+                        switch (pr.ramo()) { case AUTOS -> "101"; case HOGAR -> "201"; case SALUD -> "301"; default -> "999"; },
+                        List.of("Apertura del expediente", "Asignación de tramitador", "Peritación", "Valoración"),
+                        "Oficina de prestaciones demo"));
     }
 }

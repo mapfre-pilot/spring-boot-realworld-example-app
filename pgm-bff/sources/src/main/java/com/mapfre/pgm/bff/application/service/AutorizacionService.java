@@ -51,6 +51,11 @@ public class AutorizacionService implements ContextoUsuarioUseCase {
         v.put(Visibilidades.CUADRO_MANDO, flags.cuadroMando()
                 && (perfiles.contains(Perfiles.VISUALIZAR_CDM) || perfiles.contains(Perfiles.ADMINISTRADOR)));
         v.put(Visibilidades.TARIFICACION_SALUD, esUsuario && flags.tarificacionSalud());
+        v.put(Visibilidades.FICHA_POLIZA_AUTOS_HOGAR, esUsuario && (perfiles.contains(Perfiles.GRUPO_TRABAJO)
+                || perfiles.contains(Perfiles.DETALLE_HOGAR) || perfiles.contains(Perfiles.ADMINISTRADOR)));
+        v.put(Visibilidades.DETALLE_RECIBOS, esUsuario && flags.visualizacionRecibos());
+        v.put(Visibilidades.DETALLE_PRESTACIONES, esUsuario && flags.detallePrestaciones());
+        v.put(Visibilidades.DUPLICADO_RECIBO, esUsuario && tieneEstructura);
         return new ContextoUsuario(usuario, nombre, List.copyOf(perfiles), perfilSgc30, estructura, Map.copyOf(v));
     }
 
