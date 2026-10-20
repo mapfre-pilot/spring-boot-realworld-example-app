@@ -11,5 +11,9 @@ public record ClienteResumen(
         String telefono,
         String email,
         String localidad,
-        int numeroPolizasEnVigor) {
+        int numeroPolizasEnVigor,
+        java.time.LocalDate fechaNacimiento,
+        String domicilio,
+        String codigoPostal,
+        boolean robinson) {
 }

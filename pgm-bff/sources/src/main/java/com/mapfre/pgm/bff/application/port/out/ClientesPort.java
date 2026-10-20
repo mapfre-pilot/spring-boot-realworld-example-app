@@ -11,11 +11,21 @@ public interface ClientesPort {
 
     Optional<Cliente> ficha(String clienteId);
 
+    /** Los 13 criterios del «Buscador de clientes» de PGM (PGM_FormularioBusqueda_Cliente). */
     record CriteriosBusqueda(String texto, String documento, String telefono, String email,
-                             String poliza, String tarjetaSanitaria, String localidad, int limite) {
+                             String poliza, String tarjetaSanitaria, String localidad, int limite,
+                             String primerApellido, String segundoApellido, String codigoPostal,
+                             String expediente, String matricula, String presupuesto, String recibo) {
+        public CriteriosBusqueda(String texto, String documento, String telefono, String email,
+                                 String poliza, String tarjetaSanitaria, String localidad, int limite) {
+            this(texto, documento, telefono, email, poliza, tarjetaSanitaria, localidad, limite,
+                    null, null, null, null, null, null, null);
+        }
         public boolean estaVacio() {
             return esBlanco(texto) && esBlanco(documento) && esBlanco(telefono) && esBlanco(email)
-                    && esBlanco(poliza) && esBlanco(tarjetaSanitaria) && esBlanco(localidad);
+                    && esBlanco(poliza) && esBlanco(tarjetaSanitaria) && esBlanco(localidad)
+                    && esBlanco(primerApellido) && esBlanco(segundoApellido) && esBlanco(codigoPostal)
+                    && esBlanco(expediente) && esBlanco(matricula) && esBlanco(presupuesto) && esBlanco(recibo);
         }
 
         private static boolean esBlanco(String s) {

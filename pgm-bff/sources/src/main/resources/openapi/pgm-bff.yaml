@@ -46,9 +46,17 @@ paths:
         - { name: poliza, in: query, schema: { type: string } }
         - { name: tarjetaSanitaria, in: query, schema: { type: string } }
         - { name: localidad, in: query, schema: { type: string } }
-        - { name: limite, in: query, schema: { type: integer, default: 20, maximum: 50 } }
+        - { name: limite, in: query, schema: { type: integer, default: 100, maximum: 50 } }
+        - { name: primerApellido, in: query, schema: { type: string }, description: 'Primer Apellido' }
+        - { name: segundoApellido, in: query, schema: { type: string }, description: 'Segundo apellido' }
+        - { name: codigoPostal, in: query, schema: { type: string }, description: 'Código Postal' }
+        - { name: expediente, in: query, schema: { type: string }, description: 'Nº Expediente' }
+        - { name: matricula, in: query, schema: { type: string }, description: 'Matrícula' }
+        - { name: presupuesto, in: query, schema: { type: string }, description: 'Nº presupuesto' }
+        - { name: recibo, in: query, schema: { type: string }, description: 'Nº recibo' }
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ListaClienteResumen' } } } }
+        '422': { description: 'Hay demasiados resultados para los criterios introducidos (>100)', content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
         '400': { $ref: '#/components/responses/PeticionInvalida' }
         '401': { $ref: '#/components/responses/NoAutenticado' }
         '502': { $ref: '#/components/responses/SistemaExterno' }

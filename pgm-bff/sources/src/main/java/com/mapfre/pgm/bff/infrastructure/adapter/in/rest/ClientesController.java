@@ -27,10 +27,18 @@ public class ClientesController {
                                            @RequestParam(required = false) String poliza,
                                            @RequestParam(required = false) String tarjetaSanitaria,
                                            @RequestParam(required = false) String localidad,
-                                           @RequestParam(defaultValue = "20") int limite,
+                                           @RequestParam(defaultValue = "100") int limite,
+                                           @RequestParam(required = false) String primerApellido,
+                                           @RequestParam(required = false) String segundoApellido,
+                                           @RequestParam(required = false) String codigoPostal,
+                                           @RequestParam(required = false) String expediente,
+                                           @RequestParam(required = false) String matricula,
+                                           @RequestParam(required = false) String presupuesto,
+                                           @RequestParam(required = false) String recibo,
                                            UsuarioActual usuario) {
         return ListaDto.de(buscar.buscar(new CriteriosBusqueda(q, documento, telefono, email, poliza, tarjetaSanitaria,
-                localidad, limite), usuario.id()));
+                localidad, limite, primerApellido, segundoApellido, codigoPostal, expediente, matricula, presupuesto, recibo),
+                usuario.id()));
     }
 
     @GetMapping("/{id}/ficha")

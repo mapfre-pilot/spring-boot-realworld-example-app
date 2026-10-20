@@ -1,6 +1,7 @@
 package com.mapfre.pgm.bff.infrastructure.adapter.in.rest;
 
 import com.mapfre.pgm.bff.domain.exception.AccesoNoAutorizadoException;
+import com.mapfre.pgm.bff.domain.exception.DemasiadosResultadosException;
 import com.mapfre.pgm.bff.domain.exception.RecursoNoEncontradoException;
 import com.mapfre.pgm.bff.domain.exception.SistemaExternoException;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
@@ -24,6 +25,11 @@ public class ApiExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
     private static final String TIPO_BASE = "https://pgm.mapfre.es/problems/";
+
+    @ExceptionHandler(DemasiadosResultadosException.class)
+    ProblemDetail demasiadosResultados(DemasiadosResultadosException e) {
+        return problem(HttpStatus.UNPROCESSABLE_ENTITY, "demasiados-resultados", "Hay demasiados resultados para los criterios introducidos", e.getMessage());
+    }
 
     @ExceptionHandler(RecursoNoEncontradoException.class)
     ProblemDetail noEncontrado(RecursoNoEncontradoException e) {
