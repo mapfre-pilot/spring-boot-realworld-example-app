@@ -48,9 +48,18 @@ podman compose -f pgm/docker-compose.yml up --build
   podman run -d --name bff --network pgm -p 8080:8080 pgm-bff:local
   podman run -d --name spa --network pgm -p 4200:8080 -e BFF_URL=http://bff:8080 pgm-spa:local
   ```
+- Error `unable to retrieve auth token: invalid username/password` al bajar imágenes de Docker Hub: Podman está usando un login caducado (habitual con Rancher Desktop). `podman logout --all` y reintentar; si persiste, borrar las entradas `docker.io` / `index.docker.io` del Administrador de credenciales de Windows y las `auths` de `%USERPROFILE%\.docker\config.json`. Alternativa: apuntar las imágenes base al mirror público de AWS (`$env:BUILD_IMAGE`, `$env:RUNTIME_IMAGE`, `$env:NODE_IMAGE`, `$env:NGINX_IMAGE`, ver más abajo).
 - Las imágenes no requieren root (usuarios `app`/`nginx` no privilegiados, puertos internos 8080): funcionan en modo rootless. Para parar: `podman compose -f pgm/docker-compose.yml down` (o `podman rm -f spa bff`).
 - Primer build: ~5–8 min (descarga Maven/npm). Si la red corporativa corta registries públicos, configura el proxy en `podman machine ssh` o usa el arranque manual del §3.
-- Imágenes base y mirror Maven configurables por variables de entorno (sirven para Docker y Podman): `NODE_IMAGE`, `NGINX_IMAGE`, `MAVEN_MIRROR` (p. ej. `$env:NODE_IMAGE="public.ecr.aws/docker/library/node:22-alpine"` si Docker Hub devuelve 429, o las imágenes de `acrmapfredevops` dentro de MAPFRE). El BFF admite además `BUILD_IMAGE`/`RUNTIME_IMAGE`.
+- Imágenes base y mirror Maven configurables por variables de entorno (sirven para Docker y Podman): `NODE_IMAGE`, `NGINX_IMAGE`, `MAVEN_MIRROR` y para el BFF `BUILD_IMAGE`, `RUNTIME_IMAGE`. Ejemplo con el mirror público de AWS (si Docker Hub falla por credenciales o 429):
+  ```powershell
+  $env:BUILD_IMAGE="public.ecr.aws/docker/library/maven:3.9.11-eclipse-temurin-21-alpine"
+  $env:RUNTIME_IMAGE="public.ecr.aws/docker/library/eclipse-temurin:21-jre-alpine"
+  $env:NODE_IMAGE="public.ecr.aws/docker/library/node:22-alpine"
+  $env:NGINX_IMAGE="public.ecr.aws/nginx/nginx-unprivileged:1.27-alpine"
+  podman compose -f pgm/docker-compose.yml up --build
+  ```
+  Dentro de MAPFRE, las mismas variables sirven para las imágenes de `acrmapfredevops` y `MAVEN_MIRROR` para Azure Artifacts.
 
 ## 3. Arranque manual (desarrollo)
 

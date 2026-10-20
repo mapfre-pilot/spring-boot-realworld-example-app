@@ -8,6 +8,8 @@ services:
       dockerfile: docker/Dockerfile
       args:
         MAVEN_MIRROR: ${MAVEN_MIRROR:-https://repo.maven.apache.org/maven2}
+        BUILD_IMAGE: ${BUILD_IMAGE:-maven:3.9.11-eclipse-temurin-21-alpine}
+        RUNTIME_IMAGE: ${RUNTIME_IMAGE:-eclipse-temurin:21-jre-alpine}
     image: pgm-bff:local
     environment:
       SPRING_PROFILES_ACTIVE: local
