@@ -15,12 +15,29 @@ cd spring-boot-realworld-example-app
 ```
 (o *Code → Download ZIP* de la rama `feature/pgm` y descomprimir).
 
-## 2. Arranque rápido con Docker (Windows / macOS / Linux)
+## 2. Arranque recomendado: Dev Container con Podman (VS Code)
 
-Requisito: Docker Desktop.
+El repositorio incluye `.devcontainer/` (Java 21 + Maven 3.9 + Node 22, usuario no root, puertos 4200/8080, caché de Maven/npm y almacén de Configuración en volúmenes). Se ejecuta con **Podman** (no hace falta Docker Desktop).
 
-```bash
-docker compose -f pgm/docker-compose.yml up --build
+Requisitos en Windows: Rancher Desktop con Podman (o Podman Desktop) y VS Code con la extensión **Dev Containers**. Una sola vez, en VS Code → Settings (JSON):
+
+```json
+"dev.containers.dockerPath": "podman",
+"dev.containers.dockerComposePath": "podman-compose"
+```
+
+Pasos:
+
+1. Abre la carpeta descomprimida del ZIP (la que contiene `.devcontainer/`) en VS Code → `F1` → **Dev Containers: Reopen in Container**. La primera vez construye la imagen y ejecuta `.devcontainer/post-create.sh` (dependencias Maven y `npm ci`).
+2. En el terminal del contenedor: `pgm/dev.sh up` (BFF + SPA) o `pgm/dev.sh bff` / `pgm/dev.sh spa` en dos terminales. VS Code abre <http://localhost:4200> automáticamente; BFF en <http://localhost:8080>.
+3. Perfil del BFF: `local` por defecto (datos sintéticos). Para servicios reales define `PGM_PERFIL=pruebas` **en Windows antes de abrir VS Code** (el devcontainer lo propaga) o ejecuta `PGM_PERFIL=pruebas pgm/dev.sh bff`. `pgm/dev.sh test` y `pgm/dev.sh build` ejecutan las comprobaciones.
+
+Si tu red no llega a Docker Hub / Maven Central / nodejs.org, exporta en Windows antes de abrir VS Code: `BASE_IMAGE` (p. ej. `public.ecr.aws/docker/library/eclipse-temurin:21-jdk-jammy` o la imagen de `acrmapfredevops`), `MAVEN_URL`, `NODE_URL`, `MAVEN_MIRROR` y `NPM_CONFIG_REGISTRY` (Azure Artifacts). Podman rootless: el contenedor usa `--userns=keep-id`, así los ficheros creados en el workspace son tuyos.
+
+### 2.a Alternativa sin VS Code: compose con Podman
+
+```powershell
+podman compose -f pgm/docker-compose.yml up --build
 ```
 
 - SPA: <http://localhost:4200>
@@ -28,7 +45,7 @@ docker compose -f pgm/docker-compose.yml up --build
 
 El perfil `local` no necesita credenciales ni red MAPFRE: el BFF sirve **datos sintéticos** (ningún dato real de cliente) y la SPA no pide login (usuario mock `usuario.local`).
 
-### 2.b Arranque con Podman (Windows)
+### 2.b Detalle de Podman en Windows (compose)
 
 Requisitos: [Podman Desktop](https://podman-desktop.io/) o Podman CLI ≥ 4.x con la extensión *Compose* (proveedor `docker-compose` o `podman-compose`).
 

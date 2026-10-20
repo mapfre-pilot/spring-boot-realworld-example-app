@@ -1,0 +1,55 @@
+{
+  "name": "PGM (SPA Angular + BFF Spring Boot) — Podman",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".",
+    "args": {
+      "BASE_IMAGE": "${localEnv:BASE_IMAGE:eclipse-temurin:21-jdk-jammy}",
+      "MAVEN_URL": "${localEnv:MAVEN_URL:https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz}",
+      "NODE_URL": "${localEnv:NODE_URL:https://nodejs.org/dist/v22.12.0/node-v22.12.0-linux-x64.tar.xz}"
+    }
+  },
+  "runArgs": ["--userns=keep-id", "--security-opt", "label=disable"],
+  "containerUser": "vscode",
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": false,
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/pgm,type=bind,Z",
+  "workspaceFolder": "/workspaces/pgm",
+  "mounts": [
+    "source=pgm-m2,target=/home/vscode/.m2,type=volume",
+    "source=pgm-npm,target=/home/vscode/.npm,type=volume",
+    "source=pgm-config,target=/workspaces/pgm-config,type=volume"
+  ],
+  "containerEnv": {
+    "PGM_PERFIL": "${localEnv:PGM_PERFIL:local}",
+    "PGM_CONFIG_DIR": "/workspaces/pgm-config",
+    "MAVEN_MIRROR": "${localEnv:MAVEN_MIRROR:}",
+    "NPM_CONFIG_REGISTRY": "${localEnv:NPM_CONFIG_REGISTRY:}"
+  },
+  "forwardPorts": [4200, 8080],
+  "portsAttributes": {
+    "4200": { "label": "PGM SPA (Angular)", "onAutoForward": "openBrowser" },
+    "8080": { "label": "PGM BFF (Spring Boot)", "onAutoForward": "silent" }
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vmware.vscode-boot-dev-pack",
+        "angular.ng-template",
+        "nrwl.angular-console",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "redhat.vscode-yaml"
+      ],
+      "settings": {
+        "java.configuration.updateBuildConfiguration": "automatic",
+        "java.import.maven.enabled": true,
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "[java]": { "editor.defaultFormatter": "redhat.java" }
+      }
+    }
+  }
+}
