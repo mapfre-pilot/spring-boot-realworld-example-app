@@ -87,6 +87,8 @@ Resueltos por el router; congelados con `activation_frozen: true`.
 - [gap] Onboarding SRE/observabilidad corporativa pendiente (OTLP configurable por `OTEL_EXPORTER_OTLP_ENDPOINT`).
 
 - Decisión del owner (2026-10-20, ggalv10): lo que API Canal no cubre se consume de los servicios legacy que ya usa PGM en Appian (PGO /apipgo, SGC 3.0, iMediador EDGE, BDEC/ESTRUAGE, Clients EDGE, GESYC, SGO, Click2Call), siempre a través del API Gateway interno (ARCH-FIS-COM-001 regla 1); sustituye la restricción anterior «sin legacy». Entra ID: App Registration clientId c4d0e5f0-4a24-4b89-a577-bd2c809f972a (identificador público), tenant 93ad25dd-8cdc-4066-9727-31a8a3024f80, scope api://c4d0e5f0-4a24-4b89-a577-bd2c809f972a/pgm.acceso (a crear en el portal de Entra ID).
+- (2026-10-20, tras pruebas A–F en Appian TEST) Gaps de contrato pendientes de PCC/dueños: detalle por ramo de PGO `opportunity/incomplete` (17 subformularios), iMediador `/api/1.0/perfil`, SGC 3.0 detalle/Agendar/Asignar, GESYC `consultarRecibo`/`imprimirRecibo`, WLCatalog, Motor/Health/Life API por ramo, `inicioExterno` de SGO. Los adaptadores `!local` usan los paths observados en los objetos de integración de PGM con cuerpos sintéticos (simulador). Lista única en `docs/pgm/pruebas/requisitos-pruebas-servicios.md`.
+- Constantes Appian mapeadas a flags `pgm.features.*`: `PGM_visualizacionRecibos`, `PGM_CONS_VER_DETALLE_PRESTACIONES`; grupos `PGM_USUARIOSGRUPOTRABAJO` / `PGM_GR_DETALLEHOGAR` → visibilidad `fichaPolizaAutosHogar`.
 
 ## Traceability
 | Relación | Target |

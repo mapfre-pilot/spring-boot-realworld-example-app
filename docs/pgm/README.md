@@ -14,3 +14,9 @@ Análisis brownfield de la aplicación Appian **PGM_MAPFRE** (TEST) y propuesta 
 | `../../.kdd/` | WRK-SPEC congelados: `WRK-SPEC-NEW-SPA-001` (ARQT-ANGULAR-001, BP-API-001) y `WRK-SPEC-NEW-BFF-001` (ARCH-FIS-COM-001, ARQT-SBOOT-001, BP-API-001), `platform: standalone` (plataforma Canales y Clientes sin specs aún) |
 
 Método: inventario por LCP API en modo lectura (2.986 objetos; 1.922 definiciones descargadas), navegación del site `pgm-mapfre` sin ejecutar operativas que modifiquen datos, lectura de specs del grafo KDD (`ARCH-APICANAL-001`, `PROD-APICANAL-*`, `ARQT-ANGULAR-001`, `ARQT-SBOOT-001`, `BP-API-001`, `ARCH-FIS-COM-001`). En Appian no se creó ni modificó ningún objeto.
+
+## Pruebas funcionales en Appian TEST (áreas A–F)
+
+- `pruebas/matriz-global.md` — matriz consolidada Appian ↔ nueva app, gaps pendientes, correcciones e incidencias.
+- `pruebas/requisitos-pruebas-servicios.md` — listado único de lo necesario para probar con servicios reales (rutas del Gateway, contratos, identidad, datos, red).
+- `pruebas/<ÁREA>/informe.md`, `casos.csv`, `capturas/` — informes por área (A inicio/cabecera, B pólizas/recibos/prestaciones, C Vto./Ppto. y lanzaderas, D gestión comercial/CdM/utilidades, E dependencias, F perfil comercial).

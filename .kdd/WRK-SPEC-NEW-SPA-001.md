@@ -85,6 +85,7 @@ El site Appian `pgm-mapfre` (566 interfaces SAIL, 8 páginas, navegación por pe
 - [gap] Onboarding SRE/observabilidad corporativa pendiente (OTLP configurable por `OTEL_EXPORTER_OTLP_ENDPOINT`).
 
 - Decisión del owner (2026-10-20, ggalv10): lo que API Canal no cubre se consume de los servicios legacy que ya usa PGM en Appian (PGO /apipgo, SGC 3.0, iMediador EDGE, BDEC/ESTRUAGE, Clients EDGE, GESYC, SGO, Click2Call), siempre a través del API Gateway interno (ARCH-FIS-COM-001 regla 1); sustituye la restricción anterior «sin legacy». Entra ID: App Registration clientId c4d0e5f0-4a24-4b89-a577-bd2c809f972a (identificador público), tenant 93ad25dd-8cdc-4066-9727-31a8a3024f80, scope api://c4d0e5f0-4a24-4b89-a577-bd2c809f972a/pgm.acceso (a crear en el portal de Entra ID).
+- (2026-10-20, tras pruebas A–F en Appian TEST) Pendiente de paridad: subformularios de alta de vencimiento por ramo (17) y pestaña Presupuesto; selector de perfil iMediador en Inicio; diálogos Agendar/Asignar de gestión; agrupación de ramos del carrusel por tipo de cliente; crear/dar de baja familia. Matriz en `docs/pgm/pruebas/matriz-global.md`.
 
 ## Traceability
 | Relación | Target |
