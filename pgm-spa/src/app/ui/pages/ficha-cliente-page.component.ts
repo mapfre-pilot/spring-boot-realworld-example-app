@@ -30,6 +30,7 @@ import { DialogoPasosComponent } from '../components/dialogo-pasos.component';
 import { EstadoComponent } from '../components/estado.component';
 import { IconoComponent } from '../components/icono.component';
 import { IndicadoresClienteComponent } from '../components/indicadores-cliente.component';
+import { AccionesClienteComponent } from '../components/acciones-cliente.component';
 import { GestionComercialClienteComponent } from '../components/gestion-comercial-cliente.component';
 import {
   Columna,
@@ -60,6 +61,7 @@ const textoEstado = (v: unknown): string => `${v ?? ''}`.replace(/_/g, ' ');
     FormsModule,
     RouterLink,
     IndicadoresClienteComponent,
+    AccionesClienteComponent,
     TablaExportableComponent,
     EstadoComponent,
     DialogoPasosComponent,
@@ -91,6 +93,7 @@ const textoEstado = (v: unknown): string => `${v ?? ''}`.replace(/_/g, ' ');
             {{ c.nombre }} {{ c.apellidos }} <span class="doc">({{ c.documento }})</span>
           </h1>
           <pgm-indicadores-cliente [c]="c" />
+          <pgm-acciones-cliente [cliente]="c" (cambio)="cargar(c.id)" />
           <span class="sep"></span>
           <button
             class="contacto"

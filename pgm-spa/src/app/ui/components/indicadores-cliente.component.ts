@@ -107,9 +107,9 @@ export class IndicadoresClienteComponent {
         no: 'Cliente sin documentación digitalizada',
       },
       { clave: 'rgpdFirmado', texto: 'RGPD', si: 'RGPD firmado', no: 'RGPD no firmado' },
-      { clave: 'altaAci', texto: 'ACI', si: 'Alta en ACI', no: 'Sin alta en ACI' },
+      { clave: 'altaAci', texto: 'ACI', si: 'Alta en ACI', no: 'Potencial' },
       { clave: 'enFamilia', texto: 'En Familia', si: 'Con unidad familiar', no: 'Sin familia' },
-      { clave: 'planPagos', texto: 'Plan de pagos', si: 'Contratado', no: 'No contratado' },
+      { clave: 'planPagos', texto: 'Plan de pagos', si: 'Contratado', no: 'Potencial' },
       {
         clave: 'clienteTotal',
         texto: 'Cliente Total',

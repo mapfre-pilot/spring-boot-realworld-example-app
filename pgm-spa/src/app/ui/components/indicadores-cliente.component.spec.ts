@@ -84,7 +84,7 @@ describe('IndicadoresClienteComponent', () => {
     const texto = spectator.element.textContent ?? '';
     expect(texto).toContain('Documentación digitalizada');
     expect(texto).toContain('RGPD no firmado');
-    expect(texto).toContain('Sin alta en ACI');
+    expect(texto).toContain('Potencial');
     expect(spectator.queryAll('.palanca.activa')).toHaveLength(2);
   });
 });

@@ -13,6 +13,17 @@ import {
   Cliente,
   ClienteResumen,
   ContextoUsuario,
+  MasDatos,
+  ContactoActualizado,
+  Comunicaciones,
+  PeriodoComunicaciones,
+  DocumentoCliente,
+  FirmaRgpd,
+  ResultadoAccion,
+  ClienteTotal,
+  EmpresaVinculada,
+  PlanPagos,
+  SimulacionPlanPagos,
   CriteriosBusqueda,
   DocumentoAdjunto,
   FiltroActividad,
@@ -281,6 +292,77 @@ export class PgmApiRepository implements PgmRepository {
 
   auditar(registro: AuditoriaRequest): Observable<void> {
     return this.http.post<void>(`${this.base}/auditoria`, registro, idempotente());
+  }
+
+  // ---- Menú ACCIONES y palancas de la cabecera ----
+  private cliente(id: string): string {
+    return `${this.base}/clientes/${encodeURIComponent(id)}`;
+  }
+  masDatos(clienteId: string): Observable<MasDatos> {
+    return this.http.get<MasDatos>(`${this.cliente(clienteId)}/mas-datos`);
+  }
+  actualizarContacto(clienteId: string, contacto: ContactoActualizado): Observable<MasDatos> {
+    return this.http.put<MasDatos>(`${this.cliente(clienteId)}/contacto`, contacto);
+  }
+  comunicaciones(clienteId: string, periodo: PeriodoComunicaciones): Observable<Comunicaciones> {
+    return this.http.get<Comunicaciones>(`${this.cliente(clienteId)}/comunicaciones`, {
+      params: new HttpParams().set('periodo', periodo),
+    });
+  }
+  documentosCliente(clienteId: string, tipo?: string): Observable<Lista<DocumentoCliente>> {
+    let params = new HttpParams();
+    if (tipo) params = params.set('tipo', tipo);
+    return this.http.get<Lista<DocumentoCliente>>(`${this.cliente(clienteId)}/documentos`, {
+      params,
+    });
+  }
+  solicitarDigitalizacionDni(clienteId: string, canal: string): Observable<ResultadoAccion> {
+    return this.http.post<ResultadoAccion>(
+      `${this.cliente(clienteId)}/dni/solicitud`,
+      { canal },
+      idempotente(),
+    );
+  }
+  metodosFirmaRgpd(clienteId: string): Observable<FirmaRgpd> {
+    return this.http.get<FirmaRgpd>(`${this.cliente(clienteId)}/rgpd/metodos`);
+  }
+  firmarRgpd(clienteId: string, metodo: string): Observable<ResultadoAccion> {
+    return this.http.post<ResultadoAccion>(
+      `${this.cliente(clienteId)}/rgpd/firma`,
+      { metodo },
+      idempotente(),
+    );
+  }
+  solicitarAltaAci(clienteId: string): Observable<ResultadoAccion> {
+    return this.http.post<ResultadoAccion>(`${this.cliente(clienteId)}/aci`, {}, idempotente());
+  }
+  clienteTotal(clienteId: string): Observable<ClienteTotal> {
+    return this.http.get<ClienteTotal>(`${this.cliente(clienteId)}/cliente-total`);
+  }
+  anadirEmpresaVinculada(clienteId: string, empresa: EmpresaVinculada): Observable<ClienteTotal> {
+    return this.http.post<ClienteTotal>(
+      `${this.cliente(clienteId)}/cliente-total/empresas`,
+      empresa,
+      idempotente(),
+    );
+  }
+  planPagos(clienteId: string): Observable<PlanPagos> {
+    return this.http.get<PlanPagos>(`${this.cliente(clienteId)}/plan-pagos`);
+  }
+  simularPlanPagos(
+    clienteId: string,
+    tipo: 'INDIVIDUAL' | 'FAMILIAR',
+  ): Observable<SimulacionPlanPagos> {
+    return this.http.post<SimulacionPlanPagos>(`${this.cliente(clienteId)}/plan-pagos/simulacion`, {
+      tipo,
+    });
+  }
+  inducir(clienteId: string, canal: string): Observable<ResultadoAccion> {
+    return this.http.post<ResultadoAccion>(
+      `${this.cliente(clienteId)}/inducciones`,
+      { canal },
+      idempotente(),
+    );
   }
 }
 

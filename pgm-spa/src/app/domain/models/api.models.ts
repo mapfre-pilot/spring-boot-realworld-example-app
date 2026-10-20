@@ -393,3 +393,101 @@ export interface AuditoriaRequest {
   clienteId?: string;
   pantalla: string;
 }
+
+// ---- Menú ACCIONES y palancas de la cabecera (PGM_Header_AccionesCliente) ----
+export interface Telefono {
+  tipo: string;
+  motivo: string;
+  prefijo: string;
+  numero: string;
+}
+export interface MasDatos {
+  nacionalidad: string | null;
+  idioma: string | null;
+  fechaNacimiento: string | null;
+  edad: number | null;
+  sexo: string | null;
+  numeroHijos: number | null;
+  tipoPersona: string | null;
+  estadoCivil: string | null;
+  empleadoMapfre: boolean;
+  profesion: string | null;
+  telefonos: Telefono[];
+  emails: string[];
+  origenDatos: Record<string, string>;
+  avisos: string[];
+}
+export interface ContactoActualizado {
+  telefonos: Telefono[];
+  emails: string[];
+}
+export interface Interaccion {
+  id: string;
+  fecha: string;
+  canal: string;
+  motivo: string;
+  descripcion: string;
+  estado: string;
+}
+export type PeriodoComunicaciones = '30D' | '12M' | '3A';
+export interface Comunicaciones {
+  alertas: Alerta[];
+  interacciones: Interaccion[];
+  reclamaciones: Interaccion[];
+  periodo: PeriodoComunicaciones;
+}
+export interface DocumentoCliente {
+  id: string;
+  tipoDocumento: string;
+  codificacion: string;
+  nombre: string;
+  fechaAlta: string;
+  fechaVigencia: string | null;
+  nivelLopd: string;
+  clasificacion: string;
+  contrato: string | null;
+  clausula: string | null;
+}
+export interface MetodoFirma {
+  codigo: 'BIOMETRICA' | 'EMAIL' | 'SMS' | 'IMPRESION' | string;
+  nombre: string;
+  disponible: boolean;
+}
+export interface FirmaRgpd {
+  metodos: MetodoFirma[];
+  estado: string;
+}
+export interface ResultadoAccion {
+  estado: string;
+  mensaje: string;
+  referencia: string;
+}
+export interface EmpresaVinculada {
+  cif: string;
+  razonSocial: string;
+  actividad: string | null;
+  segmento: string | null;
+  clasificacion: string | null;
+  cargo: string | null;
+  estado: string | null;
+}
+export interface ClienteTotal {
+  nif: string;
+  nombre: string;
+  clasificacionActual: string;
+  nuevaClasificacion: string | null;
+  empresas: EmpresaVinculada[];
+  puedeFirmar: boolean;
+}
+export interface PlanPagos {
+  susceptible: boolean;
+  individualDisponible: boolean;
+  familiarDisponible: boolean;
+  mensaje: string | null;
+}
+export interface SimulacionPlanPagos {
+  tipo: 'INDIVIDUAL' | 'FAMILIAR';
+  cuotaMensual: number;
+  numeroCuotas: number;
+  productosIncluidos: string[];
+}

@@ -10,6 +10,17 @@ import {
   Cliente,
   ClienteResumen,
   ContextoUsuario,
+  MasDatos,
+  ContactoActualizado,
+  Comunicaciones,
+  PeriodoComunicaciones,
+  DocumentoCliente,
+  FirmaRgpd,
+  ResultadoAccion,
+  ClienteTotal,
+  EmpresaVinculada,
+  PlanPagos,
+  SimulacionPlanPagos,
   CriteriosBusqueda,
   DocumentoAdjunto,
   FiltroActividad,
@@ -76,6 +87,24 @@ export interface PgmRepository {
   eliminarBorradorSalud(id: string): Observable<void>;
   llamar(clienteId: string, telefono: string): Observable<{ idLlamada: string }>;
   auditar(registro: AuditoriaRequest): Observable<void>;
+
+  // ---- Menú ACCIONES y palancas de la cabecera ----
+  masDatos(clienteId: string): Observable<MasDatos>;
+  actualizarContacto(clienteId: string, contacto: ContactoActualizado): Observable<MasDatos>;
+  comunicaciones(clienteId: string, periodo: PeriodoComunicaciones): Observable<Comunicaciones>;
+  documentosCliente(clienteId: string, tipo?: string): Observable<Lista<DocumentoCliente>>;
+  solicitarDigitalizacionDni(clienteId: string, canal: string): Observable<ResultadoAccion>;
+  metodosFirmaRgpd(clienteId: string): Observable<FirmaRgpd>;
+  firmarRgpd(clienteId: string, metodo: string): Observable<ResultadoAccion>;
+  solicitarAltaAci(clienteId: string): Observable<ResultadoAccion>;
+  clienteTotal(clienteId: string): Observable<ClienteTotal>;
+  anadirEmpresaVinculada(clienteId: string, empresa: EmpresaVinculada): Observable<ClienteTotal>;
+  planPagos(clienteId: string): Observable<PlanPagos>;
+  simularPlanPagos(
+    clienteId: string,
+    tipo: 'INDIVIDUAL' | 'FAMILIAR',
+  ): Observable<SimulacionPlanPagos>;
+  inducir(clienteId: string, canal: string): Observable<ResultadoAccion>;
 }
 
 export const PGM_REPOSITORY = new InjectionToken<PgmRepository>('PGM_REPOSITORY');
