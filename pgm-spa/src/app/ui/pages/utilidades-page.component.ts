@@ -3,29 +3,20 @@ import { firstValueFrom } from 'rxjs';
 import { PGM_REPOSITORY } from '../../application/ports/pgm.repository';
 import { ContextoStore } from '../../application/use-cases/contexto.store';
 import { Lanzadera } from '../../domain/models/api.models';
+import { AccesoComponent } from '../components/acceso.component';
 import { EstadoComponent } from '../components/estado.component';
 
 /** /utilidades — accesos transversales (Portal Interno, SGC 3.0, SGO, Citrix) y contexto técnico del usuario. */
 @Component({
   selector: 'pgm-utilidades-page',
-  imports: [EstadoComponent],
+  imports: [EstadoComponent, AccesoComponent],
   template: `
-    <section class="card">
-      <h1>Utilidades</h1>
+    <section>
+      <h1>Accesos directos</h1>
       <pgm-estado [cargando]="cargando()" [error]="error()" />
-      <div class="grid grid-3">
+      <div class="accesos">
         @for (l of transversales(); track l.codigo) {
-          <article class="card">
-            <div class="row">
-              <strong>{{ l.nombre }}</strong
-              ><span class="spacer"></span><span class="chip">{{ l.destino }}</span>
-            </div>
-            @if (l.requiereNuuma && !store.nuuma()) {
-              <p class="alerta">Requiere NUUMA</p>
-            } @else {
-              <a class="btn" [href]="l.url" target="_blank" rel="noopener">Abrir ↗</a>
-            }
-          </article>
+          <pgm-acceso [l]="l" [bloqueado]="l.requiereNuuma && !store.nuuma()" />
         } @empty {
           @if (!cargando()) {
             <div class="vacio">Sin utilidades disponibles</div>
@@ -34,7 +25,7 @@ import { EstadoComponent } from '../components/estado.component';
       </div>
     </section>
     <section class="card">
-      <h2>Mi contexto</h2>
+      <h2>Mi contexto de usuario</h2>
       @if (store.contexto(); as c) {
         <dl class="datos">
           <dt>Usuario</dt>

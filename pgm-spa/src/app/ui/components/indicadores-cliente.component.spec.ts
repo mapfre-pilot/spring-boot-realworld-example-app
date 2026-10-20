@@ -45,15 +45,12 @@ describe('IndicadoresClienteComponent', () => {
   let spectator: Spectator<IndicadoresClienteComponent>;
   const createComponent = createComponentFactory(IndicadoresClienteComponent);
 
-  it('muestra estado, tipología, VIP, descuento de vinculación y palancas', () => {
+  it('muestra estado, tipología y VIP', () => {
     spectator = createComponent({ props: { c: base } });
     const texto = spectator.element.textContent ?? '';
-    expect(texto).toContain('En vigor');
+    expect(texto).toContain('Vigor');
     expect(texto).toContain('Particular');
     expect(texto).toContain('VIP');
-    expect(texto).toContain('Dto. vinculación 10%');
-    expect(texto).toContain('✔ DNI');
-    expect(texto).toContain('✘ RGPD');
     expect(texto).not.toContain('Robinson');
   });
 
@@ -78,5 +75,16 @@ describe('IndicadoresClienteComponent', () => {
     expect(texto).toContain('Exclusivo corredor');
     expect(texto).toContain('Menor');
     expect(texto).not.toContain('VIP');
+  });
+
+  it('vista palancas: estado de DNI, RGPD, ACI, En Familia, plan de pagos, Cliente Total y DpV', () => {
+    spectator = createComponent({ props: { c: base, vista: 'palancas' } });
+    const palancas = spectator.queryAll('.palanca');
+    expect(palancas).toHaveLength(7);
+    const texto = spectator.element.textContent ?? '';
+    expect(texto).toContain('Documentación digitalizada');
+    expect(texto).toContain('RGPD no firmado');
+    expect(texto).toContain('Sin alta en ACI');
+    expect(spectator.queryAll('.palanca.activa')).toHaveLength(2);
   });
 });

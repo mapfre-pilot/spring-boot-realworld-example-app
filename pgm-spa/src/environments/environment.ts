@@ -2,6 +2,8 @@
 export const environment = {
   production: true,
   bffUrl: '',
+  /** Texto de la franja de entorno (vacío en PRO: sin franja). */
+  entorno: '',
   auth: {
     enabled: true,
     tenantId: '__ENTRA_TENANT_ID__',

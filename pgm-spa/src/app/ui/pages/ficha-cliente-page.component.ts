@@ -1,7 +1,7 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { PGM_REPOSITORY } from '../../application/ports/pgm.repository';
 import { ContextoStore } from '../../application/use-cases/contexto.store';
@@ -13,20 +13,44 @@ import {
   Poliza,
   Prestacion,
   Presupuesto,
+  RAMOS,
+  Ramo,
   Recibo,
   SolicitudSgo,
   TarificacionResultado,
   Visibilidad,
 } from '../../domain/models/api.models';
-import { ETIQUETA_RAMO } from '../components/carrusel-ramos.component';
+import {
+  CarruselRamosComponent,
+  ContadorRamo,
+  ETIQUETA_RAMO,
+  ICONO_RAMO,
+} from '../components/carrusel-ramos.component';
 import { DialogoPasosComponent } from '../components/dialogo-pasos.component';
 import { EstadoComponent } from '../components/estado.component';
+import { IconoComponent } from '../components/icono.component';
 import { IndicadoresClienteComponent } from '../components/indicadores-cliente.component';
-import { Columna, TablaExportableComponent } from '../components/tabla-exportable.component';
+import {
+  Columna,
+  TablaExportableComponent,
+  exportarCsv,
+} from '../components/tabla-exportable.component';
 
-type Pestana = 'productos' | 'recibos' | 'prestaciones' | 'presupuestos' | 'gestiones' | 'sgo';
+type Principal = 'posicion' | 'comercial' | 'presupuestos';
+type Pestana = 'productos' | 'prestaciones' | 'recibos' | 'sgo';
 
-/** /clientes/:id — ficha 360 del cliente: indicadores, alertas, familia, productos por ramo, recibos, prestaciones, gestión comercial. */
+const badgeEstado = (v: unknown): string =>
+  'badge' +
+  (['ANULADA', 'ANULADO', 'RECHAZADA', 'DEVUELTO'].includes(`${v}`)
+    ? ' rojo'
+    : ['PENDIENTE', 'EN_TRAMITE', 'ABIERTA', 'SUSPENDIDA'].includes(`${v}`)
+      ? ' naranja'
+      : ['CERRADA'].includes(`${v}`)
+        ? ' gris'
+        : '');
+const textoEstado = (v: unknown): string => `${v ?? ''}`.replace(/_/g, ' ');
+
+/** /clientes/:id — ficha 360 del cliente: cabecera, palancas, resumen por ramo, posición, gestión comercial y presupuestos. */
 @Component({
   selector: 'pgm-ficha-cliente-page',
   imports: [
@@ -38,167 +62,350 @@ type Pestana = 'productos' | 'recibos' | 'prestaciones' | 'presupuestos' | 'gest
     TablaExportableComponent,
     EstadoComponent,
     DialogoPasosComponent,
+    CarruselRamosComponent,
+    IconoComponent,
   ],
   template: `
     <pgm-estado [cargando]="cargando()" [error]="error()" />
     @if (cliente(); as c) {
-      <section class="card">
-        <div class="row">
-          <h1>{{ c.nombre }} {{ c.apellidos }}</h1>
-          <span class="muted">{{ c.tipoDocumento }} {{ c.documento }}</span>
-          <span class="spacer"></span>
-          <button class="btn btn-secundario" (click)="llamar(c)">📞 Llamar</button>
-          <button class="btn" (click)="abrirDialogo()">Vto. / Ppto.</button>
+      @if (!c.palancas.rgpdFirmado) {
+        <div class="alerta aviso-rgpd">
+          <pgm-icono nombre="aviso" [tam]="26" />
+          <span>
+            Puedes utilizar los datos del Cliente/Potencial MAPFRE para la
+            <strong>gestión de sus contratos o para resolver cualquier petición</strong> que
+            solicite.
+            <strong
+              >Recaba su consentimiento para poder realizarle futuras gestiones comerciales</strong
+            >
+            (RGPD no firmado).
+          </span>
         </div>
-        <pgm-indicadores-cliente [c]="c" />
-        <div class="grid grid-3" style="margin-top:1rem">
-          <dl class="datos">
-            <dt>Nacimiento</dt>
-            <dd>{{ c.fechaNacimiento | date: 'dd/MM/yyyy' }} · {{ c.nacionalidad }}</dd>
-            <dt>Dirección</dt>
-            <dd>
-              {{ c.direccion.via }} {{ c.direccion.numero }}, {{ c.direccion.codigoPostal }}
-              {{ c.direccion.localidad }} ({{ c.direccion.provincia }})
-            </dd>
-            <dt>Teléfono</dt>
-            <dd>{{ c.telefono }}</dd>
-            <dt>E-mail</dt>
-            <dd>{{ c.email }}</dd>
-          </dl>
-          <dl class="datos">
-            <dt>Oficina gestora</dt>
-            <dd>{{ c.oficinaGestora }}</dd>
-            <dt>Gestor</dt>
-            <dd>{{ c.gestorAsignado }}</dd>
-            <dt>Posición bancaria</dt>
-            <dd>{{ c.posicionBancaria ?? '—' }}</dd>
-          </dl>
-          <div>
-            <h3>Alertas ({{ c.alertas.length }})</h3>
+      }
+
+      <section class="ficha">
+        <div class="cabecera-cliente">
+          <h1>
+            {{ c.nombre }} {{ c.apellidos }} <span class="doc">({{ c.documento }})</span>
+          </h1>
+          <pgm-indicadores-cliente [c]="c" />
+          <span class="sep"></span>
+          <button
+            class="contacto"
+            type="button"
+            (click)="llamar(c)"
+            title="Llamar desde el centro de comunicaciones"
+          >
+            <pgm-icono nombre="telefono" /> {{ c.telefono || '–' }}
+          </button>
+          <span class="sep"></span>
+          <span class="contacto"><pgm-icono nombre="email" /> {{ c.email || '–' }}</span>
+          <span class="spacer"></span>
+          <button
+            class="btn-icono"
+            type="button"
+            [attr.aria-label]="'Alertas (' + c.alertas.length + ')'"
+            (click)="verAlertas.set(!verAlertas())"
+          >
+            <pgm-icono nombre="campana" [tam]="22" />
+            @if (c.alertas.length) {
+              <span class="punto">{{ c.alertas.length }}</span>
+            }
+          </button>
+          <button class="btn-icono" type="button" aria-label="Recargar" (click)="cargar(c.id)">
+            <pgm-icono nombre="refrescar" [tam]="20" />
+          </button>
+        </div>
+
+        @if (verAlertas()) {
+          <div class="alertas">
             @for (a of c.alertas; track $index) {
-              <div class="alerta" style="margin-bottom:.3rem">
-                <strong>{{ a.tipo }}</strong> · {{ a.texto }}
+              <div class="alerta">
+                <pgm-icono nombre="aviso" />
+                <span
+                  ><strong>{{ a.tipo }}</strong> · {{ a.texto }}</span
+                >
+                <span class="spacer"></span>
                 <span class="muted">{{ a.fecha | date: 'dd/MM/yyyy' }}</span>
               </div>
             } @empty {
-              <span class="muted">Sin alertas</span>
-            }
-            <h3 style="margin-top:.75rem">Familia</h3>
-            @for (m of c.familia; track m.clienteId) {
-              <a [routerLink]="['/clientes', m.clienteId]" class="chip"
-                >{{ m.nombre }} ({{ m.parentesco }})</a
-              >&nbsp;
-            } @empty {
-              <span class="muted">Sin unidad familiar</span>
+              <div class="alerta alerta-info"><pgm-icono nombre="info" /> Sin alertas</div>
             }
           </div>
-        </div>
-        @if (llamadaId()) {
-          <p class="alerta">Llamada registrada en el centro de comunicaciones: {{ llamadaId() }}</p>
         }
+        @if (llamadaId()) {
+          <div class="alerta alerta-info">
+            <pgm-icono nombre="telefono" /> Llamada registrada en el centro de comunicaciones:
+            {{ llamadaId() }}
+          </div>
+        }
+
+        <div class="datos-cliente">
+          <div>
+            <span class="etiqueta">Edad</span><strong>{{ edad() ?? '–' }} años</strong>
+          </div>
+          <div>
+            <span class="etiqueta">Nacimiento</span
+            ><strong>{{ c.fechaNacimiento | date: 'dd/MM/yyyy' }} · {{ c.nacionalidad }}</strong>
+          </div>
+          <div class="ancho">
+            <span class="etiqueta">Dirección habitual</span>
+            <strong class="mayus"
+              >{{ c.direccion.via }} {{ c.direccion.numero }}, {{ c.direccion.codigoPostal }},
+              {{ c.direccion.localidad }}, {{ c.direccion.provincia }}</strong
+            >
+          </div>
+          <div>
+            <span class="etiqueta">Oficina gestora</span><strong>{{ c.oficinaGestora }}</strong>
+          </div>
+          <div>
+            <span class="etiqueta">Gestor</span><strong>{{ c.gestorAsignado }}</strong>
+          </div>
+        </div>
+
+        <div class="franja">
+          <pgm-indicadores-cliente [c]="c" vista="palancas" />
+          <div class="cifras">
+            <div class="cifra-bloque">
+              <span class="cifra">{{ c.descuentoVinculacion ?? 0 }}%</span>
+              <span class="rojo">Descuento vinculación</span>
+            </div>
+            <div class="cifra-bloque">
+              <span class="cifra">{{ totalPrima() | currency: 'EUR' }}</span>
+              <span>Total prima (tomador/titular)</span>
+              <small class="muted">*No contabiliza productos anulados</small>
+            </div>
+            <div>
+              <span class="chip-titulo">Familia</span>
+              @for (m of c.familia; track m.clienteId) {
+                <a [routerLink]="['/clientes', m.clienteId]" class="familiar"
+                  >{{ m.nombre }} <span class="muted">({{ m.parentesco }})</span></a
+                >
+              } @empty {
+                <span class="muted">Sin unidad familiar</span>
+              }
+            </div>
+            <div>
+              <span class="chip-titulo">Posición bancaria</span>
+              <span>{{ c.posicionBancaria ?? 'Sin posición bancaria' }}</span>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section class="card">
-        <div class="tabs">
-          <button [class.activa]="pestana() === 'productos'" (click)="pestana.set('productos')">
-            Productos ({{ polizas().length }})
-          </button>
-          <button [class.activa]="pestana() === 'recibos'" (click)="pestana.set('recibos')">
-            Recibos ({{ recibos().length }})
-          </button>
-          <button
-            [class.activa]="pestana() === 'prestaciones'"
-            (click)="pestana.set('prestaciones')"
-          >
-            Prestaciones ({{ prestaciones().length }})
-          </button>
-          <button
-            [class.activa]="pestana() === 'presupuestos'"
-            (click)="pestana.set('presupuestos')"
-          >
-            Ppto. / Oportunidades ({{ presupuestos().length + oportunidades().length }})
-          </button>
-          @if (store.puede(V.GESTIONES_SGC30)) {
-            <button [class.activa]="pestana() === 'gestiones'" (click)="pestana.set('gestiones')">
-              Gestiones SGC 3.0 ({{ gestiones().length }})
-            </button>
-          }
-          <button [class.activa]="pestana() === 'sgo'" (click)="pestana.set('sgo')">
-            SGO ({{ sgo().length }})
-          </button>
+        <h2>Resumen</h2>
+        <pgm-carrusel-ramos
+          [contadores]="contadores()"
+          [accionTexto]="store.puede(V.ANADIR_VENCIMIENTO) ? 'Vto. / Ppto.' : ''"
+          (seleccion)="filtrarRamo($event)"
+          (accion)="abrirDialogo($event)"
+        />
+        <div class="row leyenda">
+          <span class="spacer"></span><span class="punto-gris"></span> Tomador, titular o cotitular
         </div>
+      </section>
 
-        @switch (pestana()) {
-          @case ('productos') {
-            <div class="row" style="margin-bottom:.75rem">
-              <label
-                ><span>Ver</span>
-                <select [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event)">
-                  <option value="EN_VIGOR">Productos en vigor</option>
-                  <option value="ANULADA">Productos anulados</option>
-                  <option value="">Todos</option>
+      <div class="tabs principales">
+        <button [class.activa]="principal() === 'posicion'" (click)="principal.set('posicion')">
+          Posición del cliente
+        </button>
+        <button [class.activa]="principal() === 'comercial'" (click)="principal.set('comercial')">
+          Gestión comercial
+        </button>
+        <button
+          [class.activa]="principal() === 'presupuestos'"
+          (click)="principal.set('presupuestos')"
+        >
+          Presupuestos
+        </button>
+      </div>
+
+      <section class="card">
+        @switch (principal()) {
+          @case ('posicion') {
+            <div class="row cabecera-posicion">
+              <div class="subtabs">
+                <button
+                  [class.activa]="pestana() === 'productos'"
+                  (click)="pestana.set('productos')"
+                >
+                  Productos
+                </button>
+                <button
+                  [class.activa]="pestana() === 'prestaciones'"
+                  (click)="pestana.set('prestaciones')"
+                >
+                  Prestaciones ({{ prestaciones().length }})
+                </button>
+                <button [class.activa]="pestana() === 'recibos'" (click)="pestana.set('recibos')">
+                  Recibos ({{ recibos().length }})
+                </button>
+                <button [class.activa]="pestana() === 'sgo'" (click)="pestana.set('sgo')">
+                  SGO ({{ sgo().length }})
+                </button>
+              </div>
+              @if (pestana() === 'productos') {
+                <select
+                  aria-label="Estado de los productos"
+                  [ngModel]="filtroEstado()"
+                  (ngModelChange)="filtroEstado.set($event)"
+                >
+                  <option value="EN_VIGOR">En vigor ({{ cuentaEstado('EN_VIGOR') }})</option>
+                  <option value="ANULADA">Anulados ({{ cuentaEstado('ANULADA') }})</option>
+                  <option value="">Todos ({{ polizas().length }})</option>
                 </select>
-              </label>
-            </div>
-            <div class="grid grid-3">
-              @for (p of polizasFiltradas(); track p.numero) {
-                <article class="card poliza" [class.anulada]="p.estado !== 'EN_VIGOR'">
-                  <div class="row">
-                    <strong>{{ ramo(p.ramo) }}</strong
-                    ><span class="spacer"></span
-                    ><span
-                      class="chip"
-                      [class.chip-ok]="p.estado === 'EN_VIGOR'"
-                      [class.chip-error]="p.estado === 'ANULADA'"
-                      >{{ p.estado }}</span
-                    >
-                  </div>
-                  <div>{{ p.producto }}</div>
-                  <div class="muted">{{ p.riesgo }}</div>
-                  <div class="row">
-                    <a [routerLink]="['/polizas', p.numero]">Póliza {{ p.numero }}</a
-                    ><span class="spacer"></span
-                    ><strong>{{ p.primaAnual | currency: 'EUR' }}</strong>
-                  </div>
-                  <div class="muted">
-                    Vence {{ p.fechaVencimiento | date: 'dd/MM/yyyy' }} · {{ p.formaPago }}
-                  </div>
-                  <div class="row acciones">
-                    @for (a of p.acciones; track a) {
-                      <span class="chip">{{ a }}</span>
-                    }
-                    @if (lanzaderaDe(p); as l) {
-                      <a
-                        class="chip chip-rojo"
-                        [href]="l.url"
-                        target="_blank"
-                        rel="noopener"
-                        (click)="auditar('lanzadera:' + l.codigo)"
-                        >↗ {{ l.destino }}</a
-                      >
-                    }
-                  </div>
-                </article>
-              } @empty {
-                <div class="vacio">Sin productos para el filtro seleccionado</div>
+                @if (filtroRamo(); as r) {
+                  <button class="chip" type="button" (click)="filtroRamo.set(null)">
+                    {{ ramo(r) }} <pgm-icono nombre="cerrar" [tam]="13" />
+                  </button>
+                }
+                <span class="spacer"></span>
+                <button
+                  class="btn-enlace"
+                  [disabled]="!polizasFiltradas().length"
+                  (click)="exportarProductos()"
+                >
+                  Descargar <pgm-icono nombre="descargar" [tam]="17" />
+                </button>
               }
             </div>
+            @switch (pestana()) {
+              @case ('productos') {
+                <table class="tabla productos">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>Ramo / Producto / Póliza</th>
+                      <th>Riesgo</th>
+                      <th>Importe</th>
+                      <th>Fecha</th>
+                      <th>Estado</th>
+                      <th></th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (p of polizasFiltradas(); track p.numero) {
+                      <tr class="poliza">
+                        <td class="icono-ramo">
+                          <pgm-icono [nombre]="iconoRamo(p.ramo)" [tam]="24" [trazo]="1.5" />
+                        </td>
+                        <td>
+                          <div class="ramo-txt">{{ ramo(p.ramo) }}</div>
+                          <div>{{ p.producto }}</div>
+                          <a [routerLink]="['/polizas', p.numero]">{{ p.numero }}</a>
+                        </td>
+                        <td class="muted">{{ p.riesgo }}</td>
+                        <td>
+                          <strong>{{ p.primaAnual | currency: 'EUR' }}</strong>
+                          <div class="muted">{{ p.formaPago }}</div>
+                        </td>
+                        <td class="fechas">
+                          <span class="muted">Efecto</span> {{ p.fechaEfecto | date: 'dd/MM/yyyy' }}
+                          <br /><span class="muted">Vencimiento</span>
+                          {{ p.fechaVencimiento | date: 'dd/MM/yyyy' }}
+                        </td>
+                        <td>
+                          <span [class]="badge(p.estado)">{{ texto(p.estado) }}</span>
+                        </td>
+                        <td class="acciones">
+                          <details>
+                            <summary>Acciones</summary>
+                            <div class="menu">
+                              @for (a of p.acciones; track a) {
+                                @if (lanzaderaDe(p); as l) {
+                                  <a
+                                    [href]="l.url"
+                                    target="_blank"
+                                    rel="noopener"
+                                    (click)="auditar('accion:' + a)"
+                                    >{{ a }} <small class="muted">({{ l.destino }})</small></a
+                                  >
+                                } @else {
+                                  <span class="muted">{{ a }}</span>
+                                }
+                              }
+                              @if (lanzaderaDe(p); as l) {
+                                <a
+                                  [href]="l.url"
+                                  target="_blank"
+                                  rel="noopener"
+                                  (click)="auditar('lanzadera:' + l.codigo)"
+                                  ><pgm-icono nombre="externo" [tam]="14" /> Abrir en
+                                  {{ l.destino }}</a
+                                >
+                              }
+                            </div>
+                          </details>
+                        </td>
+                        <td>
+                          <a
+                            [routerLink]="['/polizas', p.numero]"
+                            aria-label="Ver póliza"
+                            class="flecha"
+                            ><pgm-icono nombre="derecha" [trazo]="2.4"
+                          /></a>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="8" class="vacio">Sin productos para el filtro seleccionado</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+              @case ('recibos') {
+                <pgm-tabla-exportable
+                  titulo="Recibos"
+                  nombreFichero="recibos"
+                  [columnas]="colRecibos"
+                  [filas]="recibos()"
+                  [navegable]="true"
+                  (filaSeleccionada)="irRecibo($event)"
+                />
+              }
+              @case ('prestaciones') {
+                <pgm-tabla-exportable
+                  titulo="Prestaciones / siniestros"
+                  nombreFichero="prestaciones"
+                  [columnas]="colPrestaciones"
+                  [filas]="prestaciones()"
+                />
+              }
+              @case ('sgo') {
+                <pgm-tabla-exportable
+                  titulo="Solicitudes SGO"
+                  nombreFichero="sgo"
+                  [columnas]="colSgo"
+                  [filas]="sgo()"
+                />
+              }
+            }
           }
-          @case ('recibos') {
+          @case ('comercial') {
             <pgm-tabla-exportable
-              titulo="Recibos"
-              nombreFichero="recibos"
-              [columnas]="colRecibos"
-              [filas]="recibos()"
+              titulo="Oportunidades y vencimientos"
+              nombreFichero="oportunidades"
+              [columnas]="colOportunidades"
+              [filas]="oportunidades()"
             />
-          }
-          @case ('prestaciones') {
-            <pgm-tabla-exportable
-              titulo="Prestaciones / siniestros"
-              nombreFichero="prestaciones"
-              [columnas]="colPrestaciones"
-              [filas]="prestaciones()"
-            />
+            @if (store.puede(V.GESTIONES_SGC30)) {
+              <br />
+              <pgm-tabla-exportable
+                titulo="Gestiones SGC 3.0"
+                nombreFichero="gestiones"
+                [columnas]="colGestiones"
+                [filas]="gestiones()"
+                [mensajeVacio]="errorGestiones() ?? 'Sin gestiones'"
+              />
+            } @else {
+              <div class="alerta alerta-info" style="margin-top:1rem">
+                <pgm-icono nombre="info" /> Las gestiones SGC 3.0 requieren perfil SGC 3.0 y
+                estructura comercial (NUUMA).
+              </div>
+            }
           }
           @case ('presupuestos') {
             <pgm-tabla-exportable
@@ -206,30 +413,6 @@ type Pestana = 'productos' | 'recibos' | 'prestaciones' | 'presupuestos' | 'gest
               nombreFichero="presupuestos"
               [columnas]="colPresupuestos"
               [filas]="presupuestos()"
-            />
-            <br />
-            <pgm-tabla-exportable
-              titulo="Oportunidades y vencimientos"
-              nombreFichero="oportunidades"
-              [columnas]="colOportunidades"
-              [filas]="oportunidades()"
-            />
-          }
-          @case ('gestiones') {
-            <pgm-tabla-exportable
-              titulo="Gestiones comerciales (SGC 3.0)"
-              nombreFichero="gestiones"
-              [columnas]="colGestiones"
-              [filas]="gestiones()"
-              [mensajeVacio]="errorGestiones() ?? 'Sin gestiones'"
-            />
-          }
-          @case ('sgo') {
-            <pgm-tabla-exportable
-              titulo="Solicitudes SGO"
-              nombreFichero="sgo"
-              [columnas]="colSgo"
-              [filas]="sgo()"
             />
           }
         }
@@ -285,6 +468,7 @@ type Pestana = 'productos' | 'recibos' | 'prestaciones' | 'presupuestos' | 'gest
               </p>
             } @else {
               <p class="alerta">
+                <pgm-icono nombre="info" />
                 Este producto se tarifica en la lanzadera corporativa del ramo (NSE). Se registrará
                 únicamente la oportunidad.
               </p>
@@ -312,7 +496,7 @@ type Pestana = 'productos' | 'recibos' | 'prestaciones' | 'presupuestos' | 'gest
               </p>
             }
             @if (borradorId()) {
-              <p class="alerta">Borrador guardado: {{ borradorId() }}</p>
+              <p class="alerta alerta-info">Borrador guardado: {{ borradorId() }}</p>
             }
           }
         }
@@ -323,20 +507,185 @@ type Pestana = 'productos' | 'recibos' | 'prestaciones' | 'presupuestos' | 'gest
     }
   `,
   styles: `
-    .poliza {
+    .aviso-rgpd {
+      font-size: 1rem;
+    }
+    .ficha {
+      background: #fff;
+      box-shadow: var(--pgm-sombra);
+    }
+    .cabecera-cliente {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.9rem;
+      padding: 1.25rem 1.5rem 0.5rem;
+    }
+    .cabecera-cliente h1 {
+      margin: 0;
+      font-size: 1.35rem;
+      color: #3c4650;
+    }
+    .doc {
+      font-weight: 400;
+    }
+    .sep {
+      width: 1px;
+      height: 22px;
+      background: var(--pgm-borde-input);
+    }
+    .contacto {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font: inherit;
+      font-weight: 600;
+      background: none;
+      border: none;
+      padding: 0;
+      color: var(--pgm-texto);
+    }
+    .contacto pgm-icono {
+      color: var(--pgm-rojo);
+    }
+    button.contacto {
+      cursor: pointer;
+    }
+    .punto {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      min-width: 16px;
+      height: 16px;
+      border-radius: 8px;
+      background: var(--pgm-rojo);
+      color: #fff;
+      font-size: 0.68rem;
+      line-height: 16px;
+    }
+    .alertas {
       display: grid;
-      gap: 0.35rem;
+      gap: 0.4rem;
+      padding: 0 1.5rem 0.75rem;
     }
-    .poliza.anulada {
-      opacity: 0.7;
+    .datos-cliente {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr 2.5fr 1.4fr 1.2fr;
+      gap: 1rem 2rem;
+      padding: 1rem 1.5rem 1.5rem;
     }
-    .acciones {
-      margin-top: 0.4rem;
+    .datos-cliente > div {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .datos-cliente strong {
+      font-weight: 600;
+      color: #3c4650;
+    }
+    .mayus {
+      text-transform: uppercase;
+    }
+    .franja {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 2rem;
+      background: var(--pgm-fondo-franja);
+      padding: 1.5rem;
+    }
+    .cifras {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      border-left: 1px solid var(--pgm-borde-input);
+      padding-left: 2rem;
+    }
+    .cifra-bloque {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .rojo {
+      color: var(--pgm-rojo);
+    }
+    .chip-titulo {
+      display: inline-block;
+      background: #4f5b66;
+      color: #fff;
+      border-radius: 999px;
+      padding: 0.1rem 0.8rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .familiar {
+      display: block;
+    }
+    .leyenda {
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+    }
+    .punto-gris {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #4f5b66;
+    }
+    .cabecera-posicion {
+      margin-bottom: 1rem;
+      gap: 2rem;
+    }
+    .cabecera-posicion select {
+      min-width: 220px;
+    }
+    .productos .icono-ramo {
+      color: #6c7b88;
+      width: 40px;
+    }
+    .ramo-txt {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      color: var(--pgm-texto-2);
+    }
+    .fechas {
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+    .acciones details {
+      position: relative;
+    }
+    .acciones summary {
+      color: var(--pgm-rojo);
+      cursor: pointer;
+      list-style: none;
+    }
+    .acciones .menu {
+      position: absolute;
+      right: 0;
+      z-index: 5;
+      min-width: 240px;
+      display: grid;
+      gap: 0.5rem;
+      background: #fff;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      padding: 0.75rem 1rem;
+    }
+    .flecha {
+      color: var(--pgm-rojo);
+    }
+    @media (max-width: 1100px) {
+      .datos-cliente,
+      .franja,
+      .cifras {
+        grid-template-columns: 1fr 1fr;
+      }
     }
   `,
 })
 export class FichaClientePageComponent {
   private readonly repo = inject(PGM_REPOSITORY);
+  private readonly router = inject(Router);
   readonly store = inject(ContextoStore);
   readonly V = Visibilidad;
   readonly id = input.required<string>();
@@ -353,14 +702,41 @@ export class FichaClientePageComponent {
   readonly lanzaderas = signal<Lanzadera[]>([]);
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);
+  readonly principal = signal<Principal>('posicion');
   readonly pestana = signal<Pestana>('productos');
+  readonly filtroRamo = signal<Ramo | null>(null);
+  readonly verAlertas = signal(false);
   readonly filtroEstado = signal<string>('EN_VIGOR');
   readonly llamadaId = signal<string | null>(null);
   readonly polizasFiltradas = computed(() => {
     const f = this.filtroEstado();
+    const r = this.filtroRamo();
     return this.polizas().filter(
-      (p) => !f || (f === 'EN_VIGOR' ? p.estado === 'EN_VIGOR' : p.estado !== 'EN_VIGOR'),
+      (p) =>
+        (!f || (f === 'EN_VIGOR' ? p.estado === 'EN_VIGOR' : p.estado !== 'EN_VIGOR')) &&
+        (!r || p.ramo === r),
     );
+  });
+  readonly totalPrima = computed(() =>
+    this.polizas()
+      .filter((p) => p.estado === 'EN_VIGOR')
+      .reduce((t, p) => t + (p.primaAnual ?? 0), 0),
+  );
+  readonly edad = computed(() => {
+    const f = this.cliente()?.fechaNacimiento;
+    if (!f) return null;
+    return Math.floor((Date.now() - new Date(f).getTime()) / (365.25 * 24 * 3600 * 1000));
+  });
+  readonly contadores = computed(() => {
+    const c = Object.fromEntries(
+      RAMOS.map((r) => [r, { polizas: 0, vencimientos: 0, presupuestos: 0 }]),
+    ) as Record<Ramo, ContadorRamo>;
+    this.polizas()
+      .filter((p) => p.estado === 'EN_VIGOR')
+      .forEach((p) => c[p.ramo].polizas++);
+    this.oportunidades().forEach((o) => c[o.ramo].vencimientos++);
+    this.presupuestos().forEach((p) => c[p.ramo].presupuestos++);
+    return c;
   });
 
   readonly dialogo = signal(false);
@@ -381,7 +757,7 @@ export class FichaClientePageComponent {
       titulo: 'Ramo',
       formato: (v) => ETIQUETA_RAMO[v as keyof typeof ETIQUETA_RAMO] ?? `${v}`,
     },
-    { clave: 'estado', titulo: 'Estado' },
+    { clave: 'estado', titulo: 'Estado', formato: textoEstado, etiqueta: badgeEstado },
     { clave: 'importe', titulo: 'Importe (€)' },
     { clave: 'fechaEmision', titulo: 'Emisión' },
     { clave: 'fechaVencimiento', titulo: 'Vencimiento' },
@@ -392,7 +768,7 @@ export class FichaClientePageComponent {
     { clave: 'polizaNumero', titulo: 'Póliza' },
     { clave: 'ramo', titulo: 'Ramo' },
     { clave: 'tipo', titulo: 'Tipo' },
-    { clave: 'estado', titulo: 'Estado' },
+    { clave: 'estado', titulo: 'Estado', formato: textoEstado, etiqueta: badgeEstado },
     { clave: 'fechaOcurrencia', titulo: 'Ocurrencia' },
     { clave: 'descripcion', titulo: 'Descripción' },
     { clave: 'tramitador', titulo: 'Tramitador' },
@@ -401,7 +777,7 @@ export class FichaClientePageComponent {
     { clave: 'numero', titulo: 'Presupuesto' },
     { clave: 'ramo', titulo: 'Ramo' },
     { clave: 'producto', titulo: 'Producto' },
-    { clave: 'estado', titulo: 'Estado' },
+    { clave: 'estado', titulo: 'Estado', formato: textoEstado, etiqueta: badgeEstado },
     { clave: 'fecha', titulo: 'Fecha' },
     { clave: 'fechaCaducidad', titulo: 'Caduca' },
     { clave: 'primaAnual', titulo: 'Prima anual (€)' },
@@ -417,7 +793,7 @@ export class FichaClientePageComponent {
   readonly colGestiones: Columna<GestionComercial>[] = [
     { clave: 'fecha', titulo: 'Fecha' },
     { clave: 'tipo', titulo: 'Tipo' },
-    { clave: 'estado', titulo: 'Estado' },
+    { clave: 'estado', titulo: 'Estado', formato: textoEstado, etiqueta: badgeEstado },
     { clave: 'descripcion', titulo: 'Descripción' },
     { clave: 'gestor', titulo: 'Gestor' },
     { clave: 'origen', titulo: 'Origen' },
@@ -425,7 +801,7 @@ export class FichaClientePageComponent {
   readonly colSgo: Columna<SolicitudSgo>[] = [
     { clave: 'id', titulo: 'Solicitud' },
     { clave: 'tipo', titulo: 'Tipo' },
-    { clave: 'estado', titulo: 'Estado' },
+    { clave: 'estado', titulo: 'Estado', formato: textoEstado, etiqueta: badgeEstado },
     { clave: 'fecha', titulo: 'Fecha' },
     { clave: 'descripcion', titulo: 'Descripción' },
   ];
@@ -453,7 +829,9 @@ export class FichaClientePageComponent {
     try {
       const c = await firstValueFrom(this.repo.fichaCliente(id));
       this.cliente.set(c);
+      this.principal.set('posicion');
       this.pestana.set('productos');
+      this.filtroRamo.set(null);
       this.filtroEstado.set(c.estado === 'ANULADO' ? 'ANULADA' : 'EN_VIGOR');
       void this.auditar('ficha');
       const [pol, rec, pre, ppt, opo, sgo, lan] = await Promise.all([
@@ -508,9 +886,71 @@ export class FichaClientePageComponent {
     }
   }
 
-  abrirDialogo(): void {
+  cuentaEstado(e: string): number {
+    return this.polizas().filter((p) =>
+      e === 'EN_VIGOR' ? p.estado === 'EN_VIGOR' : p.estado !== 'EN_VIGOR',
+    ).length;
+  }
+
+  iconoRamo(r: Ramo) {
+    return ICONO_RAMO[r];
+  }
+
+  badge(v: unknown): string {
+    return badgeEstado(v);
+  }
+
+  texto(v: unknown): string {
+    return textoEstado(v);
+  }
+
+  filtrarRamo(r: Ramo): void {
+    this.principal.set('posicion');
+    this.pestana.set('productos');
+    this.filtroEstado.set('');
+    this.filtroRamo.set(r);
+  }
+
+  irRecibo(r: Recibo): void {
+    void this.router.navigate(['/recibos', r.numero]);
+  }
+
+  exportarProductos(): void {
+    exportarCsv(
+      'productos',
+      [
+        'Ramo',
+        'Producto',
+        'Póliza',
+        'Riesgo',
+        'Prima anual',
+        'Forma de pago',
+        'Efecto',
+        'Vencimiento',
+        'Estado',
+      ],
+      this.polizasFiltradas().map((p) => [
+        this.ramo(p.ramo),
+        p.producto,
+        p.numero,
+        p.riesgo,
+        `${p.primaAnual}`,
+        p.formaPago,
+        p.fechaEfecto,
+        p.fechaVencimiento,
+        p.estado,
+      ]),
+    );
+  }
+
+  abrirDialogo(ramo?: Ramo): void {
+    const preseleccion: Partial<Record<Ramo, string>> = {
+      SALUD: this.store.puede(Visibilidad.TARIFICACION_SALUD) ? 'SALUD-FAMILIAR' : '',
+      AUTOS: 'AUTOS-TR',
+      HOGAR: 'HOGAR-PLUS',
+    };
     this.formulario = {
-      producto: '',
+      producto: ramo ? (preseleccion[ramo] ?? '') : '',
       codigoPostal: this.cliente()?.direccion.codigoPostal ?? '',
       copago: false,
     };

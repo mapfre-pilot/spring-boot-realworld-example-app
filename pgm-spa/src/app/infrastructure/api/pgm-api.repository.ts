@@ -116,11 +116,19 @@ export class PgmApiRepository implements PgmRepository {
   }
 
   tarificarSalud(solicitud: TarificacionSolicitud): Observable<TarificacionResultado> {
-    return this.http.post<TarificacionResultado>(`${this.base}/tarificacion/salud`, solicitud);
+    return this.http.post<TarificacionResultado>(
+      `${this.base}/tarificacion/salud`,
+      solicitud,
+      idempotente(),
+    );
   }
 
   guardarBorradorSalud(solicitud: TarificacionSolicitud): Observable<{ id: string }> {
-    return this.http.post<{ id: string }>(`${this.base}/tarificacion/salud/borradores`, solicitud);
+    return this.http.post<{ id: string }>(
+      `${this.base}/tarificacion/salud/borradores`,
+      solicitud,
+      idempotente(),
+    );
   }
 
   borradorSalud(id: string): Observable<TarificacionSolicitud> {
@@ -130,13 +138,28 @@ export class PgmApiRepository implements PgmRepository {
   }
 
   llamar(clienteId: string, telefono: string): Observable<{ idLlamada: string }> {
-    return this.http.post<{ idLlamada: string }>(`${this.base}/comunicaciones/llamadas`, {
-      clienteId,
-      telefono,
-    });
+    return this.http.post<{ idLlamada: string }>(
+      `${this.base}/comunicaciones/llamadas`,
+      {
+        clienteId,
+        telefono,
+      },
+      idempotente(),
+    );
   }
 
   auditar(registro: AuditoriaRequest): Observable<void> {
-    return this.http.post<void>(`${this.base}/auditoria`, registro);
+    return this.http.post<void>(`${this.base}/auditoria`, registro, idempotente());
   }
+}
+
+/** PAT-SYNC-API-001: cada POST lleva una Idempotency-Key nueva (el BFF la usa para no duplicar operaciones en reintentos). */
+export function nuevaClaveIdempotencia(): string {
+  const c = globalThis.crypto;
+  if (c?.randomUUID) return c.randomUUID();
+  return `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}`;
+}
+
+function idempotente(): { headers: Record<string, string> } {
+  return { headers: { 'Idempotency-Key': nuevaClaveIdempotencia() } };
 }
