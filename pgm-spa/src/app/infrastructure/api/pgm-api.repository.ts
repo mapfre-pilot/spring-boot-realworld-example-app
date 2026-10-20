@@ -13,6 +13,14 @@ import {
   Cliente,
   ClienteResumen,
   ContextoUsuario,
+  AccionPoliza,
+  DocumentoPoliza,
+  DetallePolizaRamo,
+  EstadoAnterior,
+  ReciboDetalle,
+  AccionRecibo,
+  DuplicadoRecibo,
+  PrestacionDetalle,
   MasDatos,
   ContactoActualizado,
   Comunicaciones,
@@ -362,6 +370,50 @@ export class PgmApiRepository implements PgmRepository {
       `${this.cliente(clienteId)}/inducciones`,
       { canal },
       idempotente(),
+    );
+  }
+
+  // ---- Posición del cliente (área B) ----
+  fichaPoliza(numero: string): Observable<Poliza> {
+    return this.http.get<Poliza>(`${this.base}/polizas/${encodeURIComponent(numero)}/ficha`);
+  }
+  accionesPoliza(numero: string): Observable<Lista<AccionPoliza>> {
+    return this.http.get<Lista<AccionPoliza>>(
+      `${this.base}/polizas/${encodeURIComponent(numero)}/acciones`,
+    );
+  }
+  documentosPoliza(numero: string): Observable<Lista<DocumentoPoliza>> {
+    return this.http.get<Lista<DocumentoPoliza>>(
+      `${this.base}/polizas/${encodeURIComponent(numero)}/documentos`,
+    );
+  }
+  detallePolizaRamo(numero: string): Observable<DetallePolizaRamo> {
+    return this.http.get<DetallePolizaRamo>(
+      `${this.base}/polizas/${encodeURIComponent(numero)}/detalle-ramo`,
+    );
+  }
+  estadosAnteriores(clienteId: string): Observable<Lista<EstadoAnterior>> {
+    return this.http.get<Lista<EstadoAnterior>>(`${this.cliente(clienteId)}/estados-anteriores`);
+  }
+  accionesRecibo(numero: string): Observable<Lista<AccionRecibo>> {
+    return this.http.get<Lista<AccionRecibo>>(
+      `${this.base}/recibos/${encodeURIComponent(numero)}/acciones`,
+    );
+  }
+  detalleRecibo(numero: string): Observable<ReciboDetalle> {
+    return this.http.get<ReciboDetalle>(
+      `${this.base}/recibos/${encodeURIComponent(numero)}/detalle`,
+    );
+  }
+  duplicadoRecibo(numero: string): Observable<DuplicadoRecibo> {
+    return this.http.post<DuplicadoRecibo>(
+      `${this.base}/recibos/${encodeURIComponent(numero)}/duplicado`,
+      {},
+    );
+  }
+  detallePrestacion(numero: string): Observable<PrestacionDetalle> {
+    return this.http.get<PrestacionDetalle>(
+      `${this.base}/prestaciones/${encodeURIComponent(numero)}`,
     );
   }
 }

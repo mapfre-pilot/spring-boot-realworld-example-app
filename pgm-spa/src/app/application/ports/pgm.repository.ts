@@ -10,6 +10,14 @@ import {
   Cliente,
   ClienteResumen,
   ContextoUsuario,
+  AccionPoliza,
+  DocumentoPoliza,
+  DetallePolizaRamo,
+  EstadoAnterior,
+  ReciboDetalle,
+  AccionRecibo,
+  DuplicadoRecibo,
+  PrestacionDetalle,
   MasDatos,
   ContactoActualizado,
   Comunicaciones,
@@ -105,6 +113,17 @@ export interface PgmRepository {
     tipo: 'INDIVIDUAL' | 'FAMILIAR',
   ): Observable<SimulacionPlanPagos>;
   inducir(clienteId: string, canal: string): Observable<ResultadoAccion>;
+
+  // ---- Posición del cliente (área B) ----
+  fichaPoliza(numero: string): Observable<Poliza>;
+  accionesPoliza(numero: string): Observable<Lista<AccionPoliza>>;
+  documentosPoliza(numero: string): Observable<Lista<DocumentoPoliza>>;
+  detallePolizaRamo(numero: string): Observable<DetallePolizaRamo>;
+  estadosAnteriores(clienteId: string): Observable<Lista<EstadoAnterior>>;
+  accionesRecibo(numero: string): Observable<Lista<AccionRecibo>>;
+  detalleRecibo(numero: string): Observable<ReciboDetalle>;
+  duplicadoRecibo(numero: string): Observable<DuplicadoRecibo>;
+  detallePrestacion(numero: string): Observable<PrestacionDetalle>;
 }
 
 export const PGM_REPOSITORY = new InjectionToken<PgmRepository>('PGM_REPOSITORY');

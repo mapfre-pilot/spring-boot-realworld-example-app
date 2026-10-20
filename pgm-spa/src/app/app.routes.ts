@@ -30,6 +30,12 @@ export const appRoutes: Route[] = [
           import('./ui/pages/poliza-page.component').then((m) => m.PolizaPageComponent),
       },
       {
+        path: 'prestaciones/:numero',
+        canActivate: [visibilidadGuard(Visibilidad.PRESTACIONES)],
+        loadComponent: () =>
+          import('./ui/pages/prestacion-page.component').then((m) => m.PrestacionPageComponent),
+      },
+      {
         path: 'recibos/:numero',
         canActivate: [visibilidadGuard(Visibilidad.RECIBOS)],
         loadComponent: () =>

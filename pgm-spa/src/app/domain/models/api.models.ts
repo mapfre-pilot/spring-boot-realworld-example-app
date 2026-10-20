@@ -491,3 +491,79 @@ export interface SimulacionPlanPagos {
   numeroCuotas: number;
   productosIncluidos: string[];
 }
+
+// ---- Posición del cliente (área B): acciones/documentos/detalle de póliza, estados anteriores, recibo, prestación ----
+export interface AccionPoliza {
+  codigo: string;
+  nombre: string;
+  destino: string;
+  url: string | null;
+  requiereNuuma: boolean;
+  externa: boolean;
+}
+export interface DocumentoPoliza {
+  id: string;
+  tipo: string;
+  nombre: string;
+  fecha: string;
+  formato: string;
+}
+export interface Garantia {
+  codigo: string;
+  nombre: string;
+  capital: number | null;
+  franquicia: string | null;
+}
+export interface Beneficiario {
+  nombre: string;
+  documento: string;
+  parentesco: string;
+  porcentaje: number;
+}
+export interface DetallePolizaRamo {
+  numero: string;
+  ramo: Ramo;
+  bloques: Record<string, Record<string, string>>;
+  garantias: Garantia[];
+  beneficiarios: Beneficiario[];
+}
+export interface EstadoAnterior {
+  polizaNumero: string;
+  ramo: Ramo;
+  producto: string;
+  estado: Poliza['estado'];
+  fechaEfecto: string;
+  fechaBaja: string;
+  motivoBaja: string;
+}
+export interface ReciboDetalle {
+  recibo: Recibo;
+  producto: string;
+  riesgo: string;
+  metodoPagoLiteral: string;
+  pagador: string;
+  estructuraComercial: string;
+  cuota: number;
+  comisiones: number;
+  gestiones: string[];
+}
+export interface AccionRecibo {
+  codigo: string;
+  nombre: string;
+  tipo: 'EXTERNA' | 'OPERACION' | 'INTERNA';
+  url: string | null;
+}
+export interface DuplicadoRecibo {
+  numeroRecibo: string;
+  nombreFichero: string;
+  tipoMime: string;
+  contenidoBase64: string;
+}
+export interface PrestacionDetalle {
+  prestacion: Prestacion;
+  importeEstimado: number;
+  importePagado: number;
+  codigoRamo: string;
+  hitos: string[];
+  oficinaTramitadora: string;
+}

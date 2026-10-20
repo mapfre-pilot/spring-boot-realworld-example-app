@@ -19,6 +19,7 @@ import {
   SolicitudSgo,
   TarificacionResultado,
   Visibilidad,
+  EstadoAnterior,
 } from '../../domain/models/api.models';
 import {
   CarruselRamosComponent,
@@ -243,6 +244,12 @@ const textoEstado = (v: unknown): string => `${v ?? ''}`.replace(/_/g, ' ');
                 >
                   Prestaciones ({{ prestaciones().length }})
                 </button>
+                <button
+                  [class.activa]="pestana() === 'estados-anteriores'"
+                  (click)="pestana.set('estados-anteriores'); cargarEstadosAnteriores()"
+                >
+                  Estados anteriores ({{ estadosAnteriores().length }})
+                </button>
                 <button [class.activa]="pestana() === 'recibos'" (click)="pestana.set('recibos')">
                   Recibos ({{ recibos().length }})
                 </button>
@@ -371,7 +378,51 @@ const textoEstado = (v: unknown): string => `${v ?? ''}`.replace(/_/g, ' ');
                   (filaSeleccionada)="irRecibo($event)"
                 />
               }
+              @case ('estados-anteriores') {
+                <table class="tabla" data-testid="estados-anteriores">
+                  <thead>
+                    <tr>
+                      <th>Ramo / Producto / Póliza</th>
+                      <th>Efecto</th>
+                      <th>Fecha de baja</th>
+                      <th>Estado</th>
+                      <th>Motivo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (e of estadosAnteriores(); track e.polizaNumero) {
+                      <tr>
+                        <td>
+                          <div class="ramo-txt">{{ ramo(e.ramo) }}</div>
+                          <div>{{ e.producto }}</div>
+                          <a [routerLink]="['/polizas', e.polizaNumero]">{{ e.polizaNumero }}</a>
+                        </td>
+                        <td>{{ e.fechaEfecto | date: 'dd/MM/yyyy' }}</td>
+                        <td>{{ e.fechaBaja | date: 'dd/MM/yyyy' }}</td>
+                        <td>
+                          <span [class]="badge(e.estado)">{{ texto(e.estado) }}</span>
+                        </td>
+                        <td>{{ e.motivoBaja }}</td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="5" class="muted">
+                          No hay estados anteriores para este cliente
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
               @case ('prestaciones') {
+                @if (prestaciones().length) {
+                  <p class="muted expedientes">
+                    Ver expediente:
+                    @for (pr of prestaciones(); track pr.numero) {
+                      <a [routerLink]="['/prestaciones', pr.numero]">{{ pr.numero }}</a>
+                    }
+                  </p>
+                }
                 <pgm-tabla-exportable
                   titulo="Prestaciones / siniestros"
                   nombreFichero="prestaciones"
@@ -774,7 +825,7 @@ export class FichaClientePageComponent {
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);
   readonly principal = signal<Principal>('posicion');
-  readonly pestana = signal<Pestana>('productos');
+  readonly pestana = signal<Pestana | 'estados-anteriores'>('productos');
   readonly filtroRamo = signal<Ramo | null>(null);
   readonly verAlertas = signal(false);
   readonly filtroEstado = signal<string>('EN_VIGOR');
@@ -845,6 +896,13 @@ export class FichaClientePageComponent {
     { clave: 'fechaVencimiento', titulo: 'Vencimiento' },
     { clave: 'formaPago', titulo: 'Forma de pago' },
   ];
+  readonly estadosAnteriores = signal<EstadoAnterior[]>([]);
+
+  async cargarEstadosAnteriores(): Promise<void> {
+    const lista = await firstValueFrom(this.repo.estadosAnteriores(this.id()));
+    this.estadosAnteriores.set(lista.items);
+  }
+
   readonly colPrestaciones: Columna<Prestacion>[] = [
     { clave: 'numero', titulo: 'Expediente' },
     { clave: 'polizaNumero', titulo: 'Póliza' },
