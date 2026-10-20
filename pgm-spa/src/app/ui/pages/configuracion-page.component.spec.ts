@@ -132,10 +132,9 @@ describe('ConfiguracionPageComponent', () => {
     await spectator.fixture.whenStable();
     spectator.component.seccion.set('servicios');
     spectator.component.nuevos['pgo/apiKey'] = 'clave-secreta-ABCD';
-    await spectator.component.guardarSecreto(
-      'pgo',
-      spectator.component.cfg()!.servicios[0].credenciales[0],
-    );
+    const servicio = spectator.component.cfg()?.servicios[0];
+    expect(servicio).toBeDefined();
+    if (servicio) await spectator.component.guardarSecreto('pgo', servicio.credenciales[0]);
     spectator.detectChanges();
     const texto = spectator.fixture.nativeElement.textContent as string;
     expect(texto).toContain('••••••ABCD');

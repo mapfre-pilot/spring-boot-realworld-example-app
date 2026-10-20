@@ -13,7 +13,10 @@ COPY sources/src ./src
 RUN mvn -B -q package -DskipTests
 
 FROM ${RUNTIME_IMAGE}
-RUN addgroup -S app && adduser -S app -G app
+RUN addgroup -S app && adduser -S app -G app \
+    && mkdir -p /config && chown app:app /config
+# Almacén de la pestaña «Configuración» (PGM_CONFIG_DIR): volumen escribible por el usuario no privilegiado
+VOLUME /config
 USER app
 WORKDIR /app
 COPY --from=build /workspace/target/pgm-bff-*.jar app.jar
