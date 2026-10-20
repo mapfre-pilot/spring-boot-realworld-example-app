@@ -4,6 +4,7 @@ import com.mapfre.pgm.bff.domain.exception.SistemaExternoException;
 import com.mapfre.pgm.bff.domain.exception.ErrorClienteExternoException;
 import com.mapfre.pgm.bff.infrastructure.config.GatewayProperties;
 import com.mapfre.pgm.bff.infrastructure.adapter.in.rest.IdempotenciaService;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import org.springframework.context.annotation.Profile;
@@ -62,6 +63,32 @@ public class GatewayClient {
                         }
                     })
                     .body(body).retrieve());
+        } catch (HttpClientErrorException e) {
+            throw new ErrorClienteExternoException(ruta, "Error " + e.getStatusCode().value() + " en " + path, e);
+        } catch (HttpServerErrorException e) {
+            throw new SistemaExternoException(ruta, "Error " + e.getStatusCode().value() + " en " + path, e);
+        } catch (RestClientException e) {
+            throw new SistemaExternoException(ruta, "Fallo de comunicación en " + path, e);
+        }
+    }
+
+    public <T, B> T put(String ruta, String path, B body, ParameterizedTypeReference<T> tipo) {
+        try {
+            return client.put().uri(props.urlDe(ruta) + path).body(body).retrieve().body(tipo);
+        } catch (HttpClientErrorException e) {
+            throw new ErrorClienteExternoException(ruta, "Error " + e.getStatusCode().value() + " en " + path, e);
+        } catch (HttpServerErrorException e) {
+            throw new SistemaExternoException(ruta, "Error " + e.getStatusCode().value() + " en " + path, e);
+        } catch (RestClientException e) {
+            throw new SistemaExternoException(ruta, "Fallo de comunicación en " + path, e);
+        }
+    }
+
+    public void delete(String ruta, String path, Map<String, String> cabeceras) {
+        try {
+            client.delete().uri(props.urlDe(ruta) + path)
+                    .headers(h -> cabeceras.forEach(h::set))
+                    .retrieve().toBodilessEntity();
         } catch (HttpClientErrorException e) {
             throw new ErrorClienteExternoException(ruta, "Error " + e.getStatusCode().value() + " en " + path, e);
         } catch (HttpServerErrorException e) {

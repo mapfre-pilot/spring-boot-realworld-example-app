@@ -6,6 +6,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -188,5 +190,32 @@ class GatewayAdaptersTest {
         } catch (Exception e) {
             throw new AssertionError("Respuesta JSON inválida", e);
         }
+    }
+
+    @Test
+    @Order(4)
+    void gestionComercialContraLosLegacyDePgmPublicadosEnElGateway() {
+        assertThat(get("/api/v1/clientes/C-1001/oportunidades/resumen").path("todos").asInt()).isEqualTo(2);
+        assertThat(get("/api/v1/oportunidades/O-1").path("datosRiesgo").path("Matrícula").asText()).isEqualTo("0000-AAA");
+        assertThat(get("/api/v1/clientes/C-1001/actividad-comercial").path("total").asInt()).isEqualTo(1);
+        assertThat(get("/api/v1/catalogos-comerciales/NIVELES_GESTION").path("items").size()).isEqualTo(2);
+        assertThat(get("/api/v1/gestiones/G-1").path("potencialidad").asText()).isEqualTo("Alta");
+        assertThat(get("/api/v1/solicitudes-sgo/SGO-1").path("datos").path("Tramitador").asText()).isEqualTo("Oficina 0001");
+        assertThat(get("/api/v1/solicitudes-sgo/SGO-1/documentos").path("total").asInt()).isEqualTo(1);
+
+        ResponseEntity<String> alta = post("/api/v1/clientes/C-1001/oportunidades",
+                "{\"ramo\":\"AUTOS\",\"fecha\":\"2027-01-10\",\"entidadCompetencia\":\"Allianz\"}", "alta-1", null);
+        assertThat(alta.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        GATEWAY.verify(postRequestedFor(urlPathEqualTo("/legacy/pgo/apipgo/opportunity/incomplete")));
+        ResponseEntity<String> cierre = post("/api/v1/gestiones/G-1/cierre", "{\"resultado\":\"POSITIVA\"}", "cierre-1", null);
+        assertThat(cierre.getStatusCode()).isEqualTo(HttpStatus.OK);
+        GATEWAY.verify(putRequestedFor(urlPathEqualTo("/legacy/sgc30/sgc3-bk-business-tasks/api/1.0/external/business-tasks/close")));
+        ResponseEntity<String> obs = post("/api/v1/oportunidades/O-1/observaciones", "{\"texto\":\"hola\"}", "obs-1", null);
+        assertThat(obs.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        ResponseEntity<String> borrado = rest.exchange("/api/v1/oportunidades/O-1/observaciones/OB-1", HttpMethod.DELETE,
+                new HttpEntity<>(headers()), String.class);
+        assertThat(borrado.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        GATEWAY.verify(deleteRequestedFor(urlPathEqualTo("/legacy/pgo/apipgo/opportunity/O-1/observation/OB-1"))
+                .withHeader("USER-ID", equalTo("NU000001")));
     }
 }

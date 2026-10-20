@@ -1,0 +1,32 @@
+{
+  "name": "083-sgc30-reabrir",
+  "priority": 5,
+  "request": {
+    "method": "PUT",
+    "urlPath": "/legacy/sgc30/sgc3-bk-business-tasks/api/1.0/external/business-tasks/reopen"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "id": "G-1",
+      "clienteId": "C-1001",
+      "tipo": "Llamada",
+      "estado": "ABIERTA",
+      "fecha": "2026-10-03T10:30:00",
+      "descripcion": "Aviso de recibo devuelto",
+      "gestor": "NU000001",
+      "origen": "SGC30",
+      "fechaCaducidad": "2026-12-10",
+      "probabilidadConversion": 75,
+      "agendado": true,
+      "whatsapp": true,
+      "permisos": [
+        "VIEW",
+        "EDIT"
+      ]
+    }
+  }
+}

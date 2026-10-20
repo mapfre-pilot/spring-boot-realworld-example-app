@@ -1,0 +1,25 @@
+{
+  "name": "072-pgo-resumen-C-1001",
+  "priority": 5,
+  "request": {
+    "method": "POST",
+    "urlPath": "/legacy/pgo/apipgo/client/opportunities/summary",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$[?(@.clienteId == 'C-1001')]"
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "todos": 2,
+      "completos": 1,
+      "incompletos": 1,
+      "presupuestos": 1
+    }
+  }
+}

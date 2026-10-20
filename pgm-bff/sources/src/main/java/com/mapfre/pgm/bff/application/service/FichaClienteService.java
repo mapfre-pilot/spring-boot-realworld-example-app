@@ -7,6 +7,7 @@ import com.mapfre.pgm.bff.domain.exception.AccesoNoAutorizadoException;
 import com.mapfre.pgm.bff.domain.exception.RecursoNoEncontradoException;
 import com.mapfre.pgm.bff.domain.model.*;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -77,7 +78,7 @@ public class FichaClienteService implements FichaClienteUseCase {
         boolean tieneEstructura = usuariosComercialesPort.estructuraDe(usuario)
                 .map(e -> e.nuuma() != null && !e.nuuma().isBlank()).orElse(false);
         if (!tieneEstructura || usuariosComercialesPort.perfilSgc30De(usuario).isEmpty()) {
-            throw new AccesoNoAutorizadoException("Gestión comercial requiere perfil SGC 3.0 y estructura comercial (NUUMA)");
+            throw new AccesoNoAutorizadoException(TextosPgm.SIN_PERMISO_GESTIONES);
         }
         return gestionComercialPort.gestionesPorCliente(clienteId);
     }
@@ -85,5 +86,15 @@ public class FichaClienteService implements FichaClienteUseCase {
     @Override
     public List<SolicitudSgo> solicitudesSgo(String clienteId) {
         return sgoPort.solicitudesPorCliente(clienteId);
+    }
+
+    @Override
+    public Optional<SolicitudSgoDetalle> solicitudSgo(String solicitudId) {
+        return sgoPort.detalleSolicitud(solicitudId);
+    }
+
+    @Override
+    public List<DocumentoAdjunto> documentosSgo(String solicitudId) {
+        return sgoPort.documentosSolicitud(solicitudId);
     }
 }

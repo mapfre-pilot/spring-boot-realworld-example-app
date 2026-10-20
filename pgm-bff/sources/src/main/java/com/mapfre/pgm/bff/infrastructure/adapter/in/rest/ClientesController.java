@@ -58,11 +58,6 @@ public class ClientesController {
         return ListaDto.de(ficha.presupuestos(id));
     }
 
-    @GetMapping("/{id}/oportunidades")
-    public ListaDto<Oportunidad> oportunidades(@PathVariable String id) {
-        return ListaDto.de(ficha.oportunidades(id));
-    }
-
     @GetMapping("/{id}/gestiones")
     public ListaDto<GestionComercial> gestiones(@PathVariable String id, UsuarioActual usuario) {
         return ListaDto.de(ficha.gestiones(id, usuario.id()));

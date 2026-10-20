@@ -1,0 +1,24 @@
+{
+  "name": "080-imediador-catalogo-niveles",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/legacy/imediador/api/1.0/catalogo/nivelesGestion"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": [
+      {
+        "codigo": "1",
+        "nombre": "Contactado"
+      },
+      {
+        "codigo": "8",
+        "nombre": "Contratado"
+      }
+    ]
+  }
+}

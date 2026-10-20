@@ -1,0 +1,23 @@
+{
+  "name": "086-sgo-documentos",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/legacy/sgo/ConsultarDocumentos/[^/]+"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": [
+      {
+        "id": "D-1",
+        "nombre": "Solicitud.pdf",
+        "tipo": "application/pdf",
+        "fecha": "2026-09-01T10:00:00",
+        "usuario": "SGO"
+      }
+    ]
+  }
+}

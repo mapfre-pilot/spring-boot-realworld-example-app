@@ -2,6 +2,7 @@ package com.mapfre.pgm.bff.infrastructure.adapter.out.apicanal;
 
 import com.mapfre.pgm.bff.application.port.out.BorradoresPort;
 import com.mapfre.pgm.bff.domain.model.TarificacionSalud;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,5 +27,19 @@ public class InMemoryBorradoresAdapter implements BorradoresPort {
     @Override
     public Optional<TarificacionSalud.Solicitud> recuperar(String usuario, String id) {
         return Optional.ofNullable(borradores.get(usuario + "/" + id));
+    }
+
+    @Override
+    public List<Borrador> listar(String usuario) {
+        String prefijo = usuario + "/";
+        return borradores.entrySet().stream()
+                .filter(e -> e.getKey().startsWith(prefijo))
+                .map(e -> new Borrador(e.getKey().substring(prefijo.length()), e.getValue()))
+                .toList();
+    }
+
+    @Override
+    public boolean eliminar(String usuario, String id) {
+        return borradores.remove(usuario + "/" + id) != null;
     }
 }

@@ -4,6 +4,7 @@ import com.mapfre.pgm.bff.application.port.in.TarificacionSaludUseCase;
 import com.mapfre.pgm.bff.application.port.out.BorradoresPort;
 import com.mapfre.pgm.bff.application.port.out.VentasPort;
 import com.mapfre.pgm.bff.domain.model.TarificacionSalud;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
@@ -37,5 +38,15 @@ public class TarificacionSaludService implements TarificacionSaludUseCase {
     @Override
     public Optional<TarificacionSalud.Solicitud> borrador(String id, String usuario) {
         return borradoresPort.recuperar(usuario, id);
+    }
+
+    @Override
+    public List<BorradoresPort.Borrador> borradores(String usuario) {
+        return borradoresPort.listar(usuario);
+    }
+
+    @Override
+    public boolean eliminarBorrador(String id, String usuario) {
+        return borradoresPort.eliminar(usuario, id);
     }
 }

@@ -1,0 +1,14 @@
+{
+  "name": "076-pgo-observacion-delete",
+  "priority": 5,
+  "request": {
+    "method": "DELETE",
+    "urlPathPattern": "/legacy/pgo/apipgo/opportunity/[^/]+/observation/[^/]+"
+  },
+  "response": {
+    "status": 204,
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

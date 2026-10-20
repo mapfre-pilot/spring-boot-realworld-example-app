@@ -1,5 +1,56 @@
 [
- {"id":"G-1","clienteId":"C-1001","tipo":"Llamada","estado":"REALIZADA","fecha":"2026-10-03T10:30:00","descripcion":"Aviso de recibo devuelto, cliente regularizará","gestor":"Gestor Demo 1","origen":"SGC30"},
- {"id":"G-2","clienteId":"C-1001","tipo":"Visita oficina","estado":"PLANIFICADA","fecha":"2026-10-28T12:00:00","descripcion":"Renovación Autos y propuesta Vida","gestor":"Gestor Demo 1","origen":"SGC30"},
- {"id":"G-3","clienteId":"C-1002","tipo":"Campaña","estado":"PENDIENTE","fecha":"2026-10-15T09:00:00","descripcion":"Campaña Salud autónomos","gestor":"Gestor Demo 2","origen":"IMEDIADOR"}
+ {
+  "id": "G-1",
+  "clienteId": "C-1001",
+  "tipo": "Llamada",
+  "estado": "CERRADA_POSITIVA",
+  "fecha": "2026-10-03T10:30:00",
+  "descripcion": "Aviso de recibo devuelto, cliente regularizará",
+  "gestor": "Gestor Demo 1",
+  "origen": "SGC30",
+  "fechaCaducidad": "2026-12-10",
+  "probabilidadConversion": 75,
+  "agendado": true,
+  "whatsapp": true,
+  "permisos": [
+   "VIEW",
+   "EDIT"
+  ]
+ },
+ {
+  "id": "G-2",
+  "clienteId": "C-1001",
+  "tipo": "Visita oficina",
+  "estado": "ABIERTA",
+  "fecha": "2026-10-28T12:00:00",
+  "descripcion": "Renovación Autos y propuesta Vida",
+  "gestor": "Gestor Demo 1",
+  "origen": "SGC30",
+  "fechaCaducidad": "2026-12-11",
+  "probabilidadConversion": 40,
+  "agendado": false,
+  "whatsapp": false,
+  "permisos": [
+   "VIEW",
+   "EDIT"
+  ]
+ },
+ {
+  "id": "G-3",
+  "clienteId": "C-1002",
+  "tipo": "Campaña",
+  "estado": "ABIERTA",
+  "fecha": "2026-10-15T09:00:00",
+  "descripcion": "Campaña Salud autónomos",
+  "gestor": "Gestor Demo 2",
+  "origen": "IMEDIADOR",
+  "fechaCaducidad": "2026-12-12",
+  "probabilidadConversion": 20,
+  "agendado": true,
+  "whatsapp": false,
+  "permisos": [
+   "VIEW",
+   "EDIT"
+  ]
+ }
 ]

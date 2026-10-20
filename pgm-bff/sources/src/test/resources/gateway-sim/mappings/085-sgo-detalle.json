@@ -1,0 +1,28 @@
+{
+  "name": "085-sgo-detalle",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/legacy/sgo/ConsultarSolicitud/[^/]+"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "solicitud": {
+        "id": "SGO-1",
+        "clienteId": "C-1001",
+        "tipo": "Alta",
+        "estado": "EN_TRAMITE",
+        "fecha": "2026-09-01",
+        "descripcion": "Solicitud"
+      },
+      "datos": {
+        "Tramitador": "Oficina 0001"
+      },
+      "documentos": []
+    }
+  }
+}

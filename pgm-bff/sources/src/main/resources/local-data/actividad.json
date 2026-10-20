@@ -1,0 +1,38 @@
+[
+ {
+  "id": "A-1",
+  "clienteId": "C-1001",
+  "fecha": "2026-10-02T09:15:00",
+  "gestionAlcanzada": "Contactado",
+  "usuario": "NU000001",
+  "accion": "Llamada",
+  "tipoAccion": "Renovación",
+  "comentarios": "Cliente pide revisar prima de Autos",
+  "producto": "Autos",
+  "prima": 612.4
+ },
+ {
+  "id": "A-2",
+  "clienteId": "C-1001",
+  "fecha": "2026-10-09T17:40:00",
+  "gestionAlcanzada": "Presupuestado",
+  "usuario": "NU000001",
+  "accion": "Visita",
+  "tipoAccion": "Venta cruzada",
+  "comentarios": "Entregado presupuesto Vida Riesgo PR-5001",
+  "producto": "Vida",
+  "prima": 318.0
+ },
+ {
+  "id": "A-3",
+  "clienteId": "C-1002",
+  "fecha": "2026-09-20T11:00:00",
+  "gestionAlcanzada": "No interesado",
+  "usuario": "NU000002",
+  "accion": "Email",
+  "tipoAccion": "Campaña",
+  "comentarios": "No desea Salud este año",
+  "producto": "Salud",
+  "prima": null
+ }
+]

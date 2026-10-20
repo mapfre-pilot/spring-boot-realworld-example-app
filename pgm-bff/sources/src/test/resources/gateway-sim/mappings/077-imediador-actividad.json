@@ -1,0 +1,28 @@
+{
+  "name": "077-imediador-actividad",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/legacy/imediador/api/1.0/contacto/actividadComercial"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": [
+      {
+        "id": "A-1",
+        "clienteId": "C-1001",
+        "fecha": "2026-10-02T09:15:00",
+        "gestionAlcanzada": "Contactado",
+        "usuario": "NU000001",
+        "accion": "Llamada",
+        "tipoAccion": "Renovación",
+        "comentarios": "Cliente pide revisar prima",
+        "producto": "Autos",
+        "prima": 612.4
+      }
+    ]
+  }
+}

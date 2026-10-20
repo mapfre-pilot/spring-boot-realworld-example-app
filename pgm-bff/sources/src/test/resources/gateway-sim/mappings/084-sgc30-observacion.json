@@ -1,0 +1,21 @@
+{
+  "name": "084-sgc30-observacion",
+  "priority": 5,
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/legacy/sgc30/sgc3-bk-business-tasks/api/1.0/external/business-tasks/[^/]+/observations"
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "id": "OB-3",
+      "fecha": "2026-10-20T09:00:00",
+      "fechaActualizacion": null,
+      "texto": "obs",
+      "usuario": "NU000001"
+    }
+  }
+}

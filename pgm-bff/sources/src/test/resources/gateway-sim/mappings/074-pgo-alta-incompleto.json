@@ -1,0 +1,31 @@
+{
+  "name": "074-pgo-alta-incompleto",
+  "priority": 5,
+  "request": {
+    "method": "POST",
+    "urlPath": "/legacy/pgo/apipgo/opportunity/incomplete"
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "id": "O-NEW",
+      "clienteId": "C-1001",
+      "tipo": "VENCIMIENTO",
+      "ramo": "AUTOS",
+      "polizaNumero": "AUT-000100",
+      "fecha": "2026-11-15",
+      "descripcion": "Vencimiento anual Autos",
+      "prioridad": "ALTA",
+      "clase": "INCOMPLETO",
+      "usuario": "NU000001",
+      "entidadCompetencia": "Allianz",
+      "prima": 420.5,
+      "comentarios": "Revisar prima",
+      "anexos": 1,
+      "contratado": false
+    }
+  }
+}

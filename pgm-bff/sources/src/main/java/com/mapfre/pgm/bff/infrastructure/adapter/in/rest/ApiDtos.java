@@ -36,6 +36,12 @@ public final class ApiDtos {
     public record LlamadaRequest(@NotBlank String clienteId, @NotBlank String telefono) {
     }
 
+    public record ObservacionRequest(@NotBlank String texto) {
+    }
+    public record CierreGestionRequest(@NotBlank @Pattern(regexp = "POSITIVA|NEGATIVA") String resultado) {
+    }
+    public record BorradorResumenDto(String id, String producto, String codigoPostal, int asegurados) {
+    }
     public record LlamadaDto(String idLlamada) {
     }
 

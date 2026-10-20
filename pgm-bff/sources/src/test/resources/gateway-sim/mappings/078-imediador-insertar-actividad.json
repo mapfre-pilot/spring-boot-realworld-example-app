@@ -1,0 +1,26 @@
+{
+  "name": "078-imediador-insertar-actividad",
+  "priority": 5,
+  "request": {
+    "method": "POST",
+    "urlPath": "/legacy/imediador/api/1.0/contacto/insertarActividad"
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "id": "A-NEW",
+      "clienteId": "C-1001",
+      "fecha": "2026-10-20T09:00:00",
+      "gestionAlcanzada": "Interesado",
+      "usuario": "NU000001",
+      "accion": "Nueva actividad",
+      "tipoAccion": "NGA",
+      "comentarios": "simulada",
+      "producto": null,
+      "prima": null
+    }
+  }
+}

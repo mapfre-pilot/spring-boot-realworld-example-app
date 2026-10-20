@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: pgm-bff
-  version: 1.1.0
+  version: 1.2.0
   description: |
     BFF de PGM (Plataforma de Gestión MAPFRE) para la SPA pgm-spa. Contrato OpenAPI-first (BP-API-001).
     Único punto de entrada del navegador: el BFF compone API Canal (PROD-APICANAL-*) y APIs de plataforma
@@ -22,6 +22,7 @@ tags:
   - { name: polizas }
   - { name: recibos }
   - { name: nueva-produccion, description: Tarificación rápida Salud y borradores }
+  - { name: gestion-comercial, description: Vencimientos (PGO), actividad comercial (iMediador) y gestiones (SGC 3.0) }
   - { name: utilidades, description: Lanzaderas, auditoría, comunicaciones, cuadro de mando }
 paths:
   /contexto:
@@ -91,15 +92,146 @@ paths:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ListaPresupuesto' } } } }
   /clientes/{id}/oportunidades:
     get:
-      tags: [clientes]
+      tags: [gestion-comercial]
       operationId: listarOportunidadesCliente
-      summary: Vencimientos y oportunidades (PGO)
-      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      summary: Vencimientos y oportunidades (PGO) con los filtros de PGM (Producto, Tipo Acción, Fecha Desde/Hasta, Contratado, Clase)
+      parameters:
+        - { $ref: '#/components/parameters/ClienteId' }
+        - { name: producto, in: query, schema: { $ref: '#/components/schemas/Ramo' } }
+        - { name: tipo, in: query, schema: { type: string, enum: [VENCIMIENTO, OPORTUNIDAD, CROSSELLING] } }
+        - { name: clase, in: query, schema: { type: string, enum: [COMPLETO, INCOMPLETO, PRECOTIZADO] } }
+        - { name: desde, in: query, schema: { type: string, format: date } }
+        - { name: hasta, in: query, schema: { type: string, format: date } }
+        - { name: contratado, in: query, schema: { type: boolean } }
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ListaOportunidad' } } } }
+    post:
+      tags: [gestion-comercial]
+      operationId: crearOportunidadCliente
+      summary: Alta de vencimiento/oportunidad incompleta (PGO POST /apipgo/opportunity/incomplete). Requiere NUUMA y perfil SGC 3.0.
+      parameters: [ { $ref: '#/components/parameters/ClienteId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/AltaOportunidad' } } } }
+      responses:
+        '201': { description: Creada, content: { application/json: { schema: { $ref: '#/components/schemas/Oportunidad' } } } }
+        '403': { $ref: '#/components/responses/Prohibido' }
+  /clientes/{id}/oportunidades/resumen:
+    get:
+      tags: [gestion-comercial]
+      operationId: resumenOportunidadesCliente
+      summary: Contadores Todos / Completo / Incompleto (PGO summary)
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ResumenOportunidades' } } } }
+  /oportunidades/{id}:
+    get:
+      tags: [gestion-comercial]
+      operationId: obtenerOportunidad
+      summary: Detalle de vencimiento (datos generales, producto, riesgo, observaciones, anexos)
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/OportunidadDetalle' } } } }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+  /oportunidades/{id}/observaciones:
+    post:
+      tags: [gestion-comercial]
+      operationId: anadirObservacionOportunidad
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ObservacionRequest' } } } }
+      responses:
+        '201': { description: Creada, content: { application/json: { schema: { $ref: '#/components/schemas/Observacion' } } } }
+  /oportunidades/{id}/observaciones/{obsId}:
+    delete:
+      tags: [gestion-comercial]
+      operationId: eliminarObservacionOportunidad
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } }, { name: obsId, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '204': { description: Eliminada }
+  /clientes/{id}/actividad-comercial:
+    get:
+      tags: [gestion-comercial]
+      operationId: listarActividadComercialCliente
+      summary: Diario de actividad comercial (iMediador). Sin NUUMA responde 403 con el texto literal de PGM.
+      parameters:
+        - { $ref: '#/components/parameters/ClienteId' }
+        - { name: desde, in: query, schema: { type: string, format: date } }
+        - { name: hasta, in: query, schema: { type: string, format: date } }
+        - { name: gestionAlcanzada, in: query, schema: { type: string } }
+        - { name: producto, in: query, schema: { type: string } }
+        - { name: tipoAccion, in: query, schema: { type: string } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ListaActividadComercial' } } } }
+        '403': { $ref: '#/components/responses/Prohibido' }
+    post:
+      tags: [gestion-comercial]
+      operationId: crearActividadComercialCliente
+      summary: Nueva actividad / gestión alcanzada (iMediador insertarActividad)
+      parameters: [ { $ref: '#/components/parameters/ClienteId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/AltaActividad' } } } }
+      responses:
+        '201': { description: Creada, content: { application/json: { schema: { $ref: '#/components/schemas/ActividadComercial' } } } }
+        '403': { $ref: '#/components/responses/Prohibido' }
+  /catalogos-comerciales/{tipo}:
+    get:
+      tags: [gestion-comercial]
+      operationId: obtenerCatalogoComercial
+      summary: Catálogos iMediador/PGO (acciones, niveles de gestión, compañías de la competencia)
+      parameters: [ { name: tipo, in: path, required: true, schema: { type: string, enum: [ACCIONES, NIVELES_GESTION, COMPANIAS] } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/CatalogoComercial' } } } }
+  /gestiones/{id}:
+    get:
+      tags: [gestion-comercial]
+      operationId: obtenerGestion
+      summary: Detalle de gestión SGC 3.0 (potencialidad, asignación, contacto, observaciones, gestiones alcanzadas)
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/GestionDetalle' } } } }
+        '403': { $ref: '#/components/responses/Prohibido' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+  /gestiones/{id}/cierre:
+    post:
+      tags: [gestion-comercial]
+      operationId: cerrarGestion
+      summary: Cerrar gestión (Cerrada positiva / Cerrada negativa) — SGC 3.0 PUT business-tasks/close
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [resultado], properties: { resultado: { type: string, enum: [POSITIVA, NEGATIVA] } } } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/GestionComercial' } } } }
+  /gestiones/{id}/reapertura:
+    post:
+      tags: [gestion-comercial]
+      operationId: reabrirGestion
+      summary: Reabrir gestión — SGC 3.0 PUT business-tasks/reopen
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/GestionComercial' } } } }
+  /gestiones/{id}/observaciones:
+    post:
+      tags: [gestion-comercial]
+      operationId: anadirObservacionGestion
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ObservacionRequest' } } } }
+      responses:
+        '201': { description: Creada, content: { application/json: { schema: { $ref: '#/components/schemas/Observacion' } } } }
+  /solicitudes-sgo/{id}:
+    get:
+      tags: [utilidades]
+      operationId: obtenerSolicitudSgo
+      summary: Detalle de solicitud SGO (ConsultarSolicitud vía fachada REST del Gateway)
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/SolicitudSgoDetalle' } } } }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+  /solicitudes-sgo/{id}/documentos:
+    get:
+      tags: [utilidades]
+      operationId: listarDocumentosSgo
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ListaDocumentoAdjunto' } } } }
   /clientes/{id}/gestiones:
     get:
-      tags: [clientes]
+      tags: [gestion-comercial]
       operationId: listarGestionesCliente
       summary: Gestiones comerciales SGC 3.0 / iMediador (requiere perfil SGC 3.0 y NUUMA)
       parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
@@ -150,6 +282,12 @@ paths:
         '403': { $ref: '#/components/responses/Prohibido' }
         '409': { $ref: '#/components/responses/ConflictoIdempotencia' }
   /tarificacion/salud/borradores:
+    get:
+      tags: [nueva-produccion]
+      operationId: listarBorradoresTarificacion
+      summary: Borradores de tarificación Salud del usuario (N. Producción › Salud › Borradores)
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/BorradorResumen' } }, total: { type: integer } } } } } }
     post:
       tags: [nueva-produccion]
       operationId: guardarBorradorTarificacion
@@ -162,6 +300,13 @@ paths:
           content: { application/json: { schema: { type: object, properties: { id: { type: string } } } } }
         '409': { $ref: '#/components/responses/ConflictoIdempotencia' }
   /tarificacion/salud/borradores/{id}:
+    delete:
+      tags: [nueva-produccion]
+      operationId: eliminarBorradorTarificacion
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '204': { description: Eliminado }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
     get:
       tags: [nueva-produccion]
       operationId: obtenerBorradorTarificacion
@@ -324,13 +469,74 @@ components:
       properties: { numero: { type: string }, clienteId: { type: string }, ramo: { $ref: '#/components/schemas/Ramo' }, producto: { type: string }, estado: { type: string }, fecha: { type: string, format: date }, fechaCaducidad: { type: string, format: date }, primaAnual: { type: number } }
     Oportunidad:
       type: object
-      properties: { id: { type: string }, clienteId: { type: string }, tipo: { type: string, enum: [VENCIMIENTO, OPORTUNIDAD, CROSSELLING] }, ramo: { $ref: '#/components/schemas/Ramo' }, polizaNumero: { type: string }, fecha: { type: string, format: date }, descripcion: { type: string }, prioridad: { type: string, enum: [ALTA, MEDIA, BAJA] } }
+      description: Fila de la tabla «Vencimientos» de PGM (Producto/Riesgo, Venc./Oport., Anexos, Usuario, Entidad competencia, F. Venci./Opor., Prima/Saldo, Comentarios, Clase de Vcto.)
+      properties: { id: { type: string }, clienteId: { type: string }, tipo: { type: string, enum: [VENCIMIENTO, OPORTUNIDAD, CROSSELLING] }, ramo: { $ref: '#/components/schemas/Ramo' }, polizaNumero: { type: string }, fecha: { type: string, format: date }, descripcion: { type: string }, prioridad: { type: string, enum: [ALTA, MEDIA, BAJA] }, clase: { type: string, enum: [COMPLETO, INCOMPLETO, PRECOTIZADO] }, usuario: { type: string }, entidadCompetencia: { type: string }, prima: { type: number }, comentarios: { type: string }, anexos: { type: integer }, contratado: { type: boolean } }
+    ResumenOportunidades:
+      type: object
+      properties: { todos: { type: integer }, completos: { type: integer }, incompletos: { type: integer }, presupuestos: { type: integer } }
+    Observacion:
+      type: object
+      properties: { id: { type: string }, fecha: { type: string, format: date-time }, fechaActualizacion: { type: string, format: date-time }, texto: { type: string }, usuario: { type: string } }
+    ObservacionRequest:
+      type: object
+      required: [texto]
+      properties: { texto: { type: string, maxLength: 2000 } }
+    DocumentoAdjunto:
+      type: object
+      properties: { id: { type: string }, nombre: { type: string }, tipo: { type: string }, fecha: { type: string, format: date-time }, usuario: { type: string } }
+    ListaDocumentoAdjunto: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/DocumentoAdjunto' } }, total: { type: integer } } }
+    OportunidadDetalle:
+      type: object
+      properties:
+        oportunidad: { $ref: '#/components/schemas/Oportunidad' }
+        datosGenerales: { type: object, additionalProperties: { type: string } }
+        datosProducto: { type: object, additionalProperties: { type: string } }
+        datosRiesgo: { type: object, additionalProperties: { type: string } }
+        observaciones: { type: array, items: { $ref: '#/components/schemas/Observacion' } }
+        documentos: { type: array, items: { $ref: '#/components/schemas/DocumentoAdjunto' } }
+    AltaOportunidad:
+      type: object
+      required: [ramo, fecha]
+      properties: { ramo: { $ref: '#/components/schemas/Ramo' }, tipo: { type: string, enum: [VENCIMIENTO, OPORTUNIDAD, CROSSELLING] }, fecha: { type: string, format: date }, entidadCompetencia: { type: string }, prima: { type: number }, comentarios: { type: string }, datosProducto: { type: object, additionalProperties: { type: string } }, datosRiesgo: { type: object, additionalProperties: { type: string } } }
+    ActividadComercial:
+      type: object
+      description: Fila del diario de actividad (Fecha y hora, Gestión Alcanzada, Usuario, Acción, Tipo de acción, Comentarios, Producto, Prima)
+      properties: { id: { type: string }, clienteId: { type: string }, fecha: { type: string, format: date-time }, gestionAlcanzada: { type: string }, usuario: { type: string }, accion: { type: string }, tipoAccion: { type: string }, comentarios: { type: string }, producto: { type: string }, prima: { type: number } }
+    ListaActividadComercial: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/ActividadComercial' } }, total: { type: integer } } }
+    AltaActividad:
+      type: object
+      required: [nivelGestion]
+      properties: { nivelGestion: { type: string }, comentario: { type: string }, polizaNumero: { type: string }, sinRgpd: { type: boolean, description: 'CONTINUAR SIN RGPD' } }
+    CatalogoComercial:
+      type: object
+      properties: { tipo: { type: string, enum: [ACCIONES, NIVELES_GESTION, COMPANIAS] }, items: { type: array, items: { type: object, properties: { codigo: { type: string }, nombre: { type: string } } } } }
     GestionComercial:
       type: object
-      properties: { id: { type: string }, clienteId: { type: string }, tipo: { type: string }, estado: { type: string }, fecha: { type: string, format: date-time }, descripcion: { type: string }, gestor: { type: string }, origen: { type: string } }
+      description: Gestión SGC 3.0 (F. caducidad, Acci. Comercial, Comentarios, Prob., Estado, Agendado, Usuario). Solo filas con permiso VIEW.
+      properties: { id: { type: string }, clienteId: { type: string }, tipo: { type: string }, estado: { type: string, enum: [ABIERTA, CERRADA_POSITIVA, CERRADA_NEGATIVA, CADUCADA] }, fecha: { type: string, format: date-time }, descripcion: { type: string }, gestor: { type: string }, origen: { type: string }, fechaCaducidad: { type: string, format: date }, probabilidadConversion: { type: integer }, agendado: { type: boolean }, whatsapp: { type: boolean }, permisos: { type: array, items: { type: string } } }
+    GestionDetalle:
+      type: object
+      properties:
+        gestion: { $ref: '#/components/schemas/GestionComercial' }
+        potencialidad: { type: string, enum: [Alta, Media, Baja] }
+        asignadaA: { type: string }
+        telefonos: { type: array, items: { type: string } }
+        email: { type: string }
+        observaciones: { type: array, items: { $ref: '#/components/schemas/Observacion' } }
+        documentos: { type: array, items: { $ref: '#/components/schemas/DocumentoAdjunto' } }
+        gestionesAlcanzadas: { type: array, items: { $ref: '#/components/schemas/ActividadComercial' } }
     SolicitudSgo:
       type: object
       properties: { id: { type: string }, clienteId: { type: string }, tipo: { type: string }, estado: { type: string }, fecha: { type: string, format: date }, descripcion: { type: string } }
+    SolicitudSgoDetalle:
+      type: object
+      properties:
+        solicitud: { $ref: '#/components/schemas/SolicitudSgo' }
+        datos: { type: object, additionalProperties: { type: string } }
+        documentos: { type: array, items: { $ref: '#/components/schemas/DocumentoAdjunto' } }
+    BorradorResumen:
+      type: object
+      properties: { id: { type: string }, producto: { type: string }, codigoPostal: { type: string }, asegurados: { type: integer } }
     Lanzadera:
       type: object
       properties: { codigo: { type: string }, nombre: { type: string }, destino: { type: string }, ramo: { $ref: '#/components/schemas/Ramo' }, url: { type: string, format: uri }, requiereNuuma: { type: boolean } }

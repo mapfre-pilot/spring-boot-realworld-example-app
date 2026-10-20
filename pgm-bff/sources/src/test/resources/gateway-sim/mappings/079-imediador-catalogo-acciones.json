@@ -1,0 +1,24 @@
+{
+  "name": "079-imediador-catalogo-acciones",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/legacy/imediador/api/1.0/catalogo/acciones"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": [
+      {
+        "codigo": "LLAMADA",
+        "nombre": "Llamada"
+      },
+      {
+        "codigo": "VISITA",
+        "nombre": "Visita"
+      }
+    ]
+  }
+}

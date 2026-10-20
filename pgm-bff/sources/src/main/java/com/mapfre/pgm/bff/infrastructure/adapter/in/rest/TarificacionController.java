@@ -58,6 +58,22 @@ public class TarificacionController {
         });
     }
 
+    @GetMapping("/tarificacion/salud/borradores")
+    public ListaDto<BorradorResumenDto> borradores(UsuarioActual u) {
+        return ListaDto.de(tarificacion.borradores(u.id()).stream()
+                .map(b -> new BorradorResumenDto(b.id(), b.solicitud().producto(), b.solicitud().codigoPostal(),
+                        b.solicitud().edades() == null ? 0 : b.solicitud().edades().size()))
+                .toList());
+    }
+
+    @DeleteMapping("/tarificacion/salud/borradores/{id}")
+    public ResponseEntity<Void> eliminarBorrador(@PathVariable String id, UsuarioActual u) {
+        if (!tarificacion.eliminarBorrador(id, u.id())) {
+            throw new RecursoNoEncontradoException("Borrador", id);
+        }
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/tarificacion/salud/borradores/{id}")
     public TarificacionSalud.Solicitud borrador(@PathVariable String id, UsuarioActual u) {
         return tarificacion.borrador(id, u.id()).orElseThrow(() -> new RecursoNoEncontradoException("Borrador", id));
