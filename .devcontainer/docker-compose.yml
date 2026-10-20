@@ -6,7 +6,6 @@ services:
       context: ../pgm-bff/.devcontainer
       args:
         BASE_IMAGE: ${BASE_IMAGE:-eclipse-temurin:21-jdk-jammy}
-        MAVEN_URL: ${MAVEN_URL:-https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz}
     user: "1000:1000"
     userns_mode: keep-id
     security_opt: [label=disable]

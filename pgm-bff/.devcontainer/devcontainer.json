@@ -3,8 +3,7 @@
   "build": {
     "dockerfile": "Dockerfile",
     "args": {
-      "BASE_IMAGE": "${localEnv:BASE_IMAGE:eclipse-temurin:21-jdk-jammy}",
-      "MAVEN_URL": "${localEnv:MAVEN_URL:https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz}"
+      "BASE_IMAGE": "${localEnv:BASE_IMAGE:eclipse-temurin:21-jdk-jammy}"
     }
   },
   "runArgs": ["--userns=keep-id", "--security-opt", "label=disable"],

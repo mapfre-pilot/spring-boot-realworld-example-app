@@ -30,7 +30,7 @@ Requisitos en Windows: Rancher Desktop con Podman (`podman info` responde) o Pod
 
 **Uno solo:** abre `pgm-bff/` o `pgm-spa/` en VS Code → Reopen in Container → en el terminal `bash .devcontainer/run.sh`. Si la SPA va sola, el proxy apunta a `host.containers.internal:8080` (BFF en otro contenedor o en Windows); se cambia con `PGM_BFF_URL`.
 
-Perfil del BFF: `local` por defecto (datos sintéticos). Para servicios reales define `PGM_PERFIL=pruebas` en Windows antes de abrir VS Code (`$env:PGM_PERFIL="pruebas"; code .`). Si tu red no llega a Docker Hub / Maven Central / nodejs.org, define igualmente `BASE_IMAGE`, `NODE_IMAGE`, `MAVEN_URL`, `MAVEN_MIRROR` y `NPM_CONFIG_REGISTRY`. Podman rootless: `--userns=keep-id`, los ficheros del workspace siguen siendo tuyos.
+Perfil del BFF: `local` por defecto (datos sintéticos). Para servicios reales define `PGM_PERFIL=pruebas` en Windows antes de abrir VS Code (`$env:PGM_PERFIL="pruebas"; code .`). Si tu red no llega a Docker Hub / Maven Central / npmjs, define igualmente `BASE_IMAGE`, `NODE_IMAGE`, `MAVEN_MIRROR` y `NPM_CONFIG_REGISTRY`. **Red con inspección TLS** (error `SSL certificate problem: unable to get local issuer certificate`): exporta la CA raíz de MAPFRE desde Windows (`certmgr.msc` → raíz de confianza → exportar Base-64 `.cer`) y cópiala como `.crt` en `pgm-bff/.devcontainer/certs/` y `pgm-spa/.devcontainer/certs/`; el build la instala en el sistema, en el `cacerts` de Java y en Node (las imágenes ya no descargan nada por HTTPS durante el build: Maven viene de apt). Podman rootless: `--userns=keep-id`, los ficheros del workspace siguen siendo tuyos.
 
 ### 2.a Alternativa sin VS Code: compose con Podman
 
