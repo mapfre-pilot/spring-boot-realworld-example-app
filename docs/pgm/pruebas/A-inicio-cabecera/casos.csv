@@ -1,0 +1,40 @@
+id,pantalla,accion,datos,esperado,real,resultado(OK/KO/BLOQUEADO),evidencia
+C01,Inicio - Buscador,Login Acceso Básico y carga de Inicio,usuario devin,Página Inicio - PGM con buscador y enlaces de interés,Inicio cargado con 13 campos; enlaces de interés; Ficha Ampliada de Cliente; Bandeja SGO,OK,capturas/01-inicio-buscador.png
+C02,Inicio - Buscador,BUSCAR sin criterios,ninguno,No se dispara la búsqueda,No ocurre nada visible (sin mensaje),OK,capturas/02-busqueda-vacia.png
+C03,Inicio - Buscador,Informar Documento,15930307R,Se deshabilitan criterios incompatibles,Deshabilitados nombre/apellidos/email/teléfono/expediente/matrícula/póliza/recibo/tarjeta; CP y Nº presupuesto habilitados,OK,capturas/03-busqueda-documento-rellenado.png
+C04,Inicio - Buscador,Informar Nombre,JOSE + GARCIA,Se deshabilitan criterios incompatibles,Deshabilitados Documento/Expediente/Matrícula/Póliza/Presupuesto/Recibo/Tarjeta,OK,capturas/39-buscador-campos-deshabilitados-con-nombre.png
+C05,Inicio - Buscador,Búsqueda por documento con 1 resultado,15930307R,Navega sola a la ficha,Nueva pestaña con ficha JOSE LUIS GARCIA BAQUERO,OK,capturas/04-resultado-busqueda-documento-15930307R.png
+C06,Inicio - Buscador,Búsqueda por documento potencial,01076564A,Ficha de potencial,Nueva pestaña ficha Jose Maria Garcia Garcia (Modificacion Cliente Potencial),OK,capturas/26-ficha-01076564A-potencial-cabecera.png
+C07,Inicio - Buscador,Búsqueda por CIF empresa,A20030979,Ficha de empresa,Nueva pestaña ficha JOSE MIGUEL ZUBILLAGA E HIJOS S.A. con bloque de balance,OK,capturas/38-ficha-empresa-A20030979-cabecera.png
+C08,Inicio - Buscador,Documento inexistente,00000000T,Mensaje sin resultados,"""No hay resultados para estos criterios de búsqueda"" + NUEVA BÚSQUEDA / ALTA CLIENTE",OK,capturas/33-busqueda-documento-inexistente-sin-resultados.png
+C09,Inicio - Buscador,Solo Nombre/Razón social,JOSE,Validación (SAIL exige apellido para persona física) o resultados,Busca como razón social: grid 61 resultados en nueva pestaña,OK,capturas/29-resultados-busqueda-solo-nombre-JOSE.png
+C10,Resultados de búsqueda,Ordenar por columna Documento,JOSE,Grid ordenado,"""Ordenado por Documento ascending""",OK,capturas/30-resultados-orden-por-documento.png
+C11,Resultados de búsqueda,Paginar a página 2,JOSE,Siguientes 10 resultados,Página 2 con empresas (CIF A…),OK,capturas/31-resultados-pagina-2.png
+C12,Resultados de búsqueda,Clic en fila,JOSE fila 1,Abre ficha del cliente,El clic por coordenadas en la celda no navegó,BLOQUEADO,capturas/29-resultados-busqueda-solo-nombre-JOSE.png
+C13,Resultados de búsqueda,Más de 100 resultados,no ejecutado,Mensaje de exceso,No se ejecutó ninguna búsqueda con >100 coincidencias (texto SAIL: Hay demasiados resultados para los criterios introducidos),BLOQUEADO,-
+C14,Inicio - Buscador,Nombre y apellido de 1 carácter,J + G,Mensajes de mínimo 2 caracteres,"""El nombre debe contener al menos 2 caracteres"" / ""El apellido debe contener al menos 2 caracteres""",OK,capturas/34-busqueda-nombre-1-caracter-validacion.png
+C15,Inicio - Buscador,Solo Primer Apellido,GARCIA,Mensaje de criterio insuficiente,"""Es necesario cumplimentar también el nombre o el segundo apellido""",OK,capturas/37-busqueda-solo-apellido.png
+C16,Inicio - Buscador,Email inválido,noesemail,Mensaje de email inválido,"""Email no válido""",OK,capturas/36-busqueda-email-invalido.png
+C17,Inicio - Buscador,Teléfono inválido,123,"""Formato de número de teléfono inválido""",Sin error; abrió ficha de 71913797L (coincidencia parcial),KO,capturas/35-busqueda-telefono-invalido.png
+C18,Inicio - Enlaces de interés,Revisar destinos,6 enlaces,URLs externas,Gestor de la Competencia / Guía de productos / Gestor del cliente / Buscador de talleres / Medallia / #MAPFREStories (URLs en informe),OK,capturas/01-inicio-buscador.png
+C19,Ficha - Cabecera particular,Visualizar cabecera,15930307R,Datos+palancas+DpV+prima,Vigor; fijo 649097598; palancas DNI/RGPD/ACI/Familia/Plan pagos/Club; DpV 4%; prima 879.84; posición bancaria,OK,capturas/05-ficha-15930307R-cabecera-completa.png
+C20,Ficha - Cabecera potencial,Visualizar cabecera,01076564A,Datos de potencial,Chip Modificacion Cliente Potencial; móvil+email; ACI/Plan pagos/Club Acción no disponible; DpV 0%,OK,capturas/26-ficha-01076564A-potencial-cabecera.png
+C21,Ficha - Cabecera empresa,Visualizar cabecera,A20030979,Datos de empresa,Bloque balance 31/12/2024; sin palancas; sin Alta Cliente Total,OK,capturas/38-ficha-empresa-A20030979-cabecera.png
+C22,Ficha - Cabecera,Tipologías VIP/Rentas Altas/Empleado/Robinson/Autónomo/No perfilado/Gestor personal/Exclusivo corredor,sin documento,Icono de tipología,No se localizó cliente de estas tipologías,BLOQUEADO,-
+C23,Ficha - Menú ACCIONES,Abrir menú,15930307R,Lista de acciones,Más datos cliente / Centro de comunicaciones / Consulta descarga documentación,OK,capturas/06-ficha-15930307R-menu-acciones.png
+C24,Más datos cliente,Abrir pestañas,15930307R,3 pestañas,Más datos / Datos de contacto / Origen de los datos (14 elementos),OK,capturas/07-mas-datos-cliente-pestana-mas-datos.png
+C25,Centro de comunicaciones,Abrir pestañas,15930307R,Alertas/Interacciones/Reclamaciones,Alertas 2; Interacciones 0; Reclamaciones vacío,OK,capturas/10-centro-comunicaciones-alertas.png
+C26,Consulta descarga documentación,Abrir diálogo y CDD,15930307R,Diálogo + pantalla CDD,Documentación de cliente / Comunicaciones Clientes; CDD con filtros y grid vacío,OK,capturas/14-cdd-consulta-descarga-documentos-cliente.png
+C27,Digitalizar DNI,Abrir diálogo (no enviar),15930307R,Diálogo 2 pestañas,Digitalizar ahora / Solicitar al cliente; ENVIAR deshabilitado; 1ª apertura colgada >30 s,OK,capturas/15-digitalizar-dni-digitalizar-ahora.png
+C28,Firmar RGPD,Abrir diálogo (no firmar),15930307R,Selección de método,Radios deshabilitados (sin móvil/email); CONTINUAR deshabilitado,OK,capturas/17-firmar-rgpd-seleccion-metodo.png
+C29,Solicitar Alta en ACI,Abrir (no ejecutar),15930307R,Formulario de alta,Pop-up Error email y/o telefono; no llega al formulario,OK,capturas/18-solicitar-alta-aci-error-datos.png
+C30,En Familia,Ver más,15930307R,Primera pantalla familia,"""El cliente no tiene familiares identificados"" + CREAR FAMILIA",OK,capturas/19-en-familia-sin-familiares.png
+C31,En Familia,CREAR FAMILIA,15930307R,Formulario/confirmación,Creó la familia FAM1377681 sin confirmación (INCIDENCIA),KO,capturas/20-en-familia-crear-familia-resultado.png
+C32,MAPFRE en Familia,Ver Familia,FAM1377681,Detalle de familia,Familia inactiva; 1 miembro CLIENTE GESTOR sin firmar,OK,capturas/21-mapfre-en-familia-detalle.png
+C33,Plan de pagos,Simular (primera pantalla),15930307R,Pantalla de simulación,Susceptible de Plan de Pagos; botones individual (activo) / familiar (deshabilitado); simulación no ejecutada,OK,capturas/23-plan-de-pagos-simular-primera-pantalla.png
+C34,Descuento vinculación,Abrir detalle,15930307R,Resumen y detalle DpV,Resumen por sectores (VIDA/ACCIDENTES 4%) y detalle contrato 0005913294,OK,capturas/24-descuento-vinculacion-dpv-detalle.png
+C35,Alta Cliente Total,Abrir (no añadir CIF),15930307R,Datos del cliente,Tabla NIF/Nombre/Clasificación; Empresas vinculadas vacío; AÑADIR CIF; FIRMAR deshabilitado,OK,capturas/25-alta-cliente-total-datos-cliente.png
+C36,Cabecera,Llamar al fijo (Click2Call),15930307R,Diálogo de llamada,Solo tooltip; no abrió en 35 s,BLOQUEADO,-
+C37,Cabecera,Modificacion Cliente Potencial,01076564A,Primera pantalla,No abrió en 20 s,BLOQUEADO,capturas/27-modificacion-cliente-potencial-primera-pantalla.png
+C38,Cabecera,Icono tipología / campana alertas / editar / refrescar,15930307R,Popup o acción,Icono tipología sin efecto (cliente sin tipología); resto no probado,BLOQUEADO,-
+C39,Menú ACCIONES,Acciones sgc20 / sva / inducirCliente,devin sin NUUMA,Visibles con perfil SGC 3.0,No visibles (sin estructura comercial),BLOQUEADO,capturas/06-ficha-15930307R-menu-acciones.png
