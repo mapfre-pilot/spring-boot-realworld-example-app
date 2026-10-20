@@ -1,0 +1,33 @@
+{
+  "name": "PGM BFF (Spring Boot 3 / Java 21) — Podman",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "BASE_IMAGE": "${localEnv:BASE_IMAGE:eclipse-temurin:21-jdk-jammy}",
+      "MAVEN_URL": "${localEnv:MAVEN_URL:https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz}"
+    }
+  },
+  "runArgs": ["--userns=keep-id", "--security-opt", "label=disable"],
+  "containerUser": "vscode",
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": false,
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/pgm-bff,type=bind,Z",
+  "workspaceFolder": "/workspaces/pgm-bff",
+  "mounts": [
+    "source=pgm-m2,target=/home/vscode/.m2,type=volume",
+    "source=pgm-config,target=/config,type=volume"
+  ],
+  "containerEnv": {
+    "SPRING_PROFILES_ACTIVE": "${localEnv:PGM_PERFIL:local}",
+    "MAVEN_MIRROR": "${localEnv:MAVEN_MIRROR:}"
+  },
+  "forwardPorts": [8080],
+  "portsAttributes": { "8080": { "label": "PGM BFF", "onAutoForward": "silent" } },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": ["vscjava.vscode-java-pack", "vmware.vscode-boot-dev-pack", "redhat.vscode-yaml"],
+      "settings": { "java.configuration.updateBuildConfiguration": "automatic" }
+    }
+  }
+}

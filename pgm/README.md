@@ -15,24 +15,22 @@ cd spring-boot-realworld-example-app
 ```
 (o *Code → Download ZIP* de la rama `feature/pgm` y descomprimir).
 
-## 2. Arranque recomendado: Dev Container con Podman (VS Code)
+## 2. Arranque recomendado: Dev Containers con Podman (VS Code)
 
-El repositorio incluye `.devcontainer/` (Java 21 + Maven 3.9 + Node 22, usuario no root, puertos 4200/8080, caché de Maven/npm y almacén de Configuración en volúmenes). Se ejecuta con **Podman** (no hace falta Docker Desktop).
+Hay un dev container **por componente** (`pgm-bff/.devcontainer`: Java 21 + Maven; `pgm-spa/.devcontainer`: Node 22) y uno en la **carpeta padre** (`.devcontainer/`, basado en compose) que levanta los dos a la vez en una sola ventana de VS Code. Todo se ejecuta con **Podman** (no hace falta Docker Desktop).
 
-Requisitos en Windows: Rancher Desktop con Podman (o Podman Desktop) y VS Code con la extensión **Dev Containers**. Una sola vez, en VS Code → Settings (JSON):
+Requisitos en Windows: Rancher Desktop con Podman (`podman info` responde) o Podman Desktop, `podman-compose` (`pip install podman-compose`) y VS Code con la extensión **Dev Containers**. Una sola vez, en VS Code → Settings (JSON):
 
 ```json
 "dev.containers.dockerPath": "podman",
 "dev.containers.dockerComposePath": "podman-compose"
 ```
 
-Pasos:
+**Los dos a la vez (una ventana):** abre la carpeta descomprimida del ZIP (la que contiene `.devcontainer/`, `pgm-bff/` y `pgm-spa/`) → `F1` → **Dev Containers: Reopen in Container**. Compose construye las dos imágenes, instala dependencias y arranca el BFF (8080) y la SPA (4200, proxy `/api` → `bff:8080`); VS Code abre <http://localhost:4200>. En esa ventana editas BFF y SPA (el repo entero está montado en ambos contenedores): la SPA recarga al guardar; para reiniciar el BFF tras un cambio Java, `podman compose -f .devcontainer/docker-compose.yml restart bff` desde Windows (o `podman restart <contenedor bff>`). Logs: `podman compose -f .devcontainer/docker-compose.yml logs -f bff`.
 
-1. Abre la carpeta descomprimida del ZIP (la que contiene `.devcontainer/`) en VS Code → `F1` → **Dev Containers: Reopen in Container**. La primera vez construye la imagen y ejecuta `.devcontainer/post-create.sh` (dependencias Maven y `npm ci`).
-2. En el terminal del contenedor: `pgm/dev.sh up` (BFF + SPA) o `pgm/dev.sh bff` / `pgm/dev.sh spa` en dos terminales. VS Code abre <http://localhost:4200> automáticamente; BFF en <http://localhost:8080>.
-3. Perfil del BFF: `local` por defecto (datos sintéticos). Para servicios reales define `PGM_PERFIL=pruebas` **en Windows antes de abrir VS Code** (el devcontainer lo propaga) o ejecuta `PGM_PERFIL=pruebas pgm/dev.sh bff`. `pgm/dev.sh test` y `pgm/dev.sh build` ejecutan las comprobaciones.
+**Uno solo:** abre `pgm-bff/` o `pgm-spa/` en VS Code → Reopen in Container → en el terminal `bash .devcontainer/run.sh`. Si la SPA va sola, el proxy apunta a `host.containers.internal:8080` (BFF en otro contenedor o en Windows); se cambia con `PGM_BFF_URL`.
 
-Si tu red no llega a Docker Hub / Maven Central / nodejs.org, exporta en Windows antes de abrir VS Code: `BASE_IMAGE` (p. ej. `public.ecr.aws/docker/library/eclipse-temurin:21-jdk-jammy` o la imagen de `acrmapfredevops`), `MAVEN_URL`, `NODE_URL`, `MAVEN_MIRROR` y `NPM_CONFIG_REGISTRY` (Azure Artifacts). Podman rootless: el contenedor usa `--userns=keep-id`, así los ficheros creados en el workspace son tuyos.
+Perfil del BFF: `local` por defecto (datos sintéticos). Para servicios reales define `PGM_PERFIL=pruebas` en Windows antes de abrir VS Code (`$env:PGM_PERFIL="pruebas"; code .`). Si tu red no llega a Docker Hub / Maven Central / nodejs.org, define igualmente `BASE_IMAGE`, `NODE_IMAGE`, `MAVEN_URL`, `MAVEN_MIRROR` y `NPM_CONFIG_REGISTRY`. Podman rootless: `--userns=keep-id`, los ficheros del workspace siguen siendo tuyos.
 
 ### 2.a Alternativa sin VS Code: compose con Podman
 

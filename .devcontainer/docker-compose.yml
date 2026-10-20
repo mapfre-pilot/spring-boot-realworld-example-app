@@ -1,0 +1,49 @@
+# Dev containers de PGM levantados a la vez desde la carpeta padre (VS Code Dev Containers + podman-compose).
+# Reutiliza las definiciones de cada componente: pgm-bff/.devcontainer y pgm-spa/.devcontainer.
+services:
+  bff:
+    build:
+      context: ../pgm-bff/.devcontainer
+      args:
+        BASE_IMAGE: ${BASE_IMAGE:-eclipse-temurin:21-jdk-jammy}
+        MAVEN_URL: ${MAVEN_URL:-https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz}
+    user: "1000:1000"
+    userns_mode: keep-id
+    security_opt: [label=disable]
+    volumes:
+      - ..:/workspaces/pgm:Z
+      - pgm-m2:/home/vscode/.m2
+      - pgm-config:/config
+    working_dir: /workspaces/pgm/pgm-bff
+    environment:
+      HOME: /home/vscode
+      SPRING_PROFILES_ACTIVE: ${PGM_PERFIL:-local}
+      PGM_CONFIG_DIR: /config
+      PGM_CONFIG_KEY: ${PGM_CONFIG_KEY:-}
+      MAVEN_MIRROR: ${MAVEN_MIRROR:-}
+      APP_CORS_ALLOWED_ORIGINS: http://localhost:4200
+    ports: ["8080:8080"]
+    command: bash -lc "bash .devcontainer/post-create.sh && bash .devcontainer/run.sh"
+  spa:
+    build:
+      context: ../pgm-spa/.devcontainer
+      args:
+        BASE_IMAGE: ${NODE_IMAGE:-node:22-bookworm-slim}
+    user: "1000:1000"
+    userns_mode: keep-id
+    security_opt: [label=disable]
+    volumes:
+      - ..:/workspaces/pgm:Z
+      - pgm-npm:/home/vscode/.npm
+    working_dir: /workspaces/pgm/pgm-spa
+    environment:
+      HOME: /home/vscode
+      PGM_BFF_URL: http://bff:8080
+      NPM_CONFIG_REGISTRY: ${NPM_CONFIG_REGISTRY:-}
+    ports: ["4200:4200"]
+    depends_on: [bff]
+    command: bash -lc "bash .devcontainer/post-create.sh && bash .devcontainer/run.sh"
+volumes:
+  pgm-m2:
+  pgm-npm:
+  pgm-config:
