@@ -30,6 +30,7 @@ import { DialogoPasosComponent } from '../components/dialogo-pasos.component';
 import { EstadoComponent } from '../components/estado.component';
 import { IconoComponent } from '../components/icono.component';
 import { IndicadoresClienteComponent } from '../components/indicadores-cliente.component';
+import { GestionComercialClienteComponent } from '../components/gestion-comercial-cliente.component';
 import {
   Columna,
   TablaExportableComponent,
@@ -64,6 +65,7 @@ const textoEstado = (v: unknown): string => `${v ?? ''}`.replace(/_/g, ' ');
     DialogoPasosComponent,
     CarruselRamosComponent,
     IconoComponent,
+    GestionComercialClienteComponent,
   ],
   template: `
     <pgm-estado [cargando]="cargando()" [error]="error()" />
@@ -197,7 +199,7 @@ const textoEstado = (v: unknown): string => `${v ?? ''}`.replace(/_/g, ' ');
         <h2>Resumen</h2>
         <pgm-carrusel-ramos
           [contadores]="contadores()"
-          [accionTexto]="store.puede(V.ANADIR_VENCIMIENTO) ? 'Vto. / Ppto.' : ''"
+          accionTexto="Vto. / Ppto."
           (seleccion)="filtrarRamo($event)"
           (accion)="abrirDialogo($event)"
         />
@@ -385,38 +387,104 @@ const textoEstado = (v: unknown): string => `${v ?? ''}`.replace(/_/g, ' ');
             }
           }
           @case ('comercial') {
-            <pgm-tabla-exportable
-              titulo="Oportunidades y vencimientos"
-              nombreFichero="oportunidades"
-              [columnas]="colOportunidades"
-              [filas]="oportunidades()"
+            <pgm-gestion-comercial-cliente
+              [clienteId]="id()"
+              [cliente]="
+                cliente()
+                  ? { rgpd: !!cliente()!.palancas.rgpdFirmado, documento: cliente()!.documento }
+                  : null
+              "
             />
-            @if (store.puede(V.GESTIONES_SGC30)) {
-              <br />
-              <pgm-tabla-exportable
-                titulo="Gestiones SGC 3.0"
-                nombreFichero="gestiones"
-                [columnas]="colGestiones"
-                [filas]="gestiones()"
-                [mensajeVacio]="errorGestiones() ?? 'Sin gestiones'"
-              />
-            } @else {
-              <div class="alerta alerta-info" style="margin-top:1rem">
-                <pgm-icono nombre="info" /> Las gestiones SGC 3.0 requieren perfil SGC 3.0 y
-                estructura comercial (NUUMA).
-              </div>
-            }
           }
           @case ('presupuestos') {
-            <pgm-tabla-exportable
-              titulo="Presupuestos"
-              nombreFichero="presupuestos"
-              [columnas]="colPresupuestos"
-              [filas]="presupuestos()"
-            />
+            @if (presupuestos().length === 0 && !hayFiltroPresupuestos()) {
+              <div class="alerta alerta-info">
+                <pgm-icono nombre="info" /> El cliente no tiene presupuestos
+              </div>
+            } @else {
+              <form class="filtros-ppto" (ngSubmit)="(0)">
+                <strong>Filtro de presupuestos</strong>
+                <label
+                  >Ramo
+                  <select [(ngModel)]="filtroPpto.ramo" name="pRamo">
+                    <option value="">Todos</option>
+                    @for (r of ramosPpto(); track r) {
+                      <option [value]="r">{{ ramo(r) }}</option>
+                    }
+                  </select></label
+                >
+                <label
+                  >Nº de Presupuesto <input [(ngModel)]="filtroPpto.numero" name="pNumero"
+                /></label>
+                <button
+                  type="button"
+                  class="btn-secundario"
+                  (click)="filtroPpto = { ramo: '', numero: '' }"
+                >
+                  Limpiar filtros
+                </button>
+                <button type="button" class="btn" (click)="cargar(id())">Actualizar</button>
+              </form>
+              <pgm-tabla-exportable
+                titulo="Presupuestos"
+                nombreFichero="presupuestos"
+                [columnas]="colPresupuestos"
+                [filas]="presupuestosFiltrados()"
+                mensajeVacio="No hay resultados para los filtros seleccionados"
+                [navegable]="true"
+                (filaSeleccionada)="consultarPresupuesto($event)"
+              />
+              <small class="muted"
+                >Consultar/Retomar: abre el presupuesto en el tarificador de su ramo (RM para
+                Vida-Riesgo).</small
+              >
+            }
           }
         }
       </section>
+
+      @if (bloqueoVto()) {
+        <div
+          class="backdrop"
+          role="presentation"
+          (click)="bloqueoVto.set(false)"
+          (keydown.escape)="bloqueoVto.set(false)"
+          tabindex="-1"
+        >
+          <div
+            class="dialogo bloqueo-vto"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titulo-bloqueo"
+            (click)="$event.stopPropagation()"
+            (keydown)="$event.stopPropagation()"
+            tabindex="0"
+          >
+            <h2 id="titulo-bloqueo">Añadir Vencimiento / Presupuesto</h2>
+            <div class="tabs">
+              <button class="activa">Vencimientos</button><button disabled>Presupuestos</button>
+            </div>
+            <div class="alerta alerta-info">
+              <pgm-icono nombre="info" />
+              <div>
+                <p>
+                  <strong
+                    >Esta acción aún no está disponible en PGM para tu usuario ({{
+                      store.contexto()?.estructura?.nuuma ?? store.contexto()?.usuario
+                    }})</strong
+                  >
+                </p>
+                <p>
+                  Contacta con el administrador de la aplicación si consideras que debes acceder
+                </p>
+              </div>
+            </div>
+            <div class="row" style="justify-content:flex-end">
+              <button class="btn" (click)="bloqueoVto.set(false)">ENTENDIDO</button>
+            </div>
+          </div>
+        </div>
+      }
 
       <pgm-dialogo-pasos
         [abierto]="dialogo()"
@@ -740,6 +808,17 @@ export class FichaClientePageComponent {
   });
 
   readonly dialogo = signal(false);
+  readonly bloqueoVto = signal(false);
+  filtroPpto = { ramo: '', numero: '' };
+  readonly hayFiltroPresupuestos = () => !!(this.filtroPpto.ramo || this.filtroPpto.numero);
+  readonly ramosPpto = computed(() => [...new Set(this.presupuestos().map((p) => p.ramo))]);
+  readonly presupuestosFiltrados = computed(() =>
+    this.presupuestos().filter(
+      (p) =>
+        (!this.filtroPpto.ramo || p.ramo === this.filtroPpto.ramo) &&
+        (!this.filtroPpto.numero || p.numero.includes(this.filtroPpto.numero)),
+    ),
+  );
   readonly pasoDialogo = signal(0);
   readonly tarifa = signal<TarificacionResultado | null>(null);
   readonly borradorId = signal<string | null>(null);
@@ -943,7 +1022,19 @@ export class FichaClientePageComponent {
     );
   }
 
+  consultarPresupuesto(p: Presupuesto): void {
+    void this.auditar('presupuesto:' + p.numero);
+    const lanzadera = this.lanzaderas().find((l) => l.ramo === p.ramo);
+    if (lanzadera) {
+      window.open(lanzadera.url, '_blank', 'noopener');
+    }
+  }
+
   abrirDialogo(ramo?: Ramo): void {
+    if (!this.store.puede(Visibilidad.ANADIR_VENCIMIENTO)) {
+      this.bloqueoVto.set(true);
+      return;
+    }
     const preseleccion: Partial<Record<Ramo, string>> = {
       SALUD: this.store.puede(Visibilidad.TARIFICACION_SALUD) ? 'SALUD-FAMILIAR' : '',
       AUTOS: 'AUTOS-TR',

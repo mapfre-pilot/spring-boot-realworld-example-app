@@ -183,26 +183,155 @@ export interface Presupuesto {
   primaAnual: number;
 }
 
+/** Fila de «Vencimientos» de PGM: Producto/Riesgo, Venc./Oport., Anexos, Usuario, Entidad competencia, F. Venci./Opor., Prima/Saldo, Comentarios, Clase de Vcto. */
 export interface Oportunidad {
   id: string;
   clienteId: string;
-  tipo: string;
+  tipo: 'VENCIMIENTO' | 'OPORTUNIDAD' | 'CROSSELLING';
   ramo: Ramo;
   polizaNumero: string | null;
   fecha: string;
   descripcion: string;
   prioridad: 'ALTA' | 'MEDIA' | 'BAJA';
+  clase: 'COMPLETO' | 'INCOMPLETO' | 'PRECOTIZADO' | null;
+  usuario: string | null;
+  entidadCompetencia: string | null;
+  prima: number | null;
+  comentarios: string | null;
+  anexos: number;
+  contratado: boolean;
 }
 
+export interface ResumenOportunidades {
+  todos: number;
+  completos: number;
+  incompletos: number;
+  presupuestos: number;
+}
+
+export interface Observacion {
+  id: string;
+  fecha: string;
+  fechaActualizacion: string | null;
+  texto: string;
+  usuario: string;
+}
+
+export interface DocumentoAdjunto {
+  id: string;
+  nombre: string;
+  tipo: string;
+  fecha: string;
+  usuario: string;
+}
+
+export interface OportunidadDetalle {
+  oportunidad: Oportunidad;
+  datosGenerales: Record<string, string>;
+  datosProducto: Record<string, string>;
+  datosRiesgo: Record<string, string>;
+  observaciones: Observacion[];
+  documentos: DocumentoAdjunto[];
+}
+
+export interface AltaOportunidad {
+  ramo: Ramo;
+  tipo?: Oportunidad['tipo'];
+  fecha: string;
+  entidadCompetencia?: string;
+  prima?: number | null;
+  comentarios?: string;
+  datosProducto?: Record<string, string>;
+  datosRiesgo?: Record<string, string>;
+}
+
+export interface FiltroOportunidades {
+  producto?: Ramo | null;
+  tipo?: Oportunidad['tipo'] | null;
+  clase?: Oportunidad['clase'];
+  desde?: string | null;
+  hasta?: string | null;
+  contratado?: boolean | null;
+}
+
+/** Diario de actividad comercial iMediador: Fecha y hora, Gestión Alcanzada, Usuario, Acción, Tipo de acción, Comentarios, Producto, Prima. */
+export interface ActividadComercial {
+  id: string;
+  clienteId: string;
+  fecha: string;
+  gestionAlcanzada: string;
+  usuario: string;
+  accion: string;
+  tipoAccion: string;
+  comentarios: string | null;
+  producto: string | null;
+  prima: number | null;
+}
+
+export interface FiltroActividad {
+  desde?: string | null;
+  hasta?: string | null;
+  gestionAlcanzada?: string | null;
+  producto?: string | null;
+  tipoAccion?: string | null;
+}
+
+export interface AltaActividad {
+  nivelGestion: string;
+  comentario?: string;
+  polizaNumero?: string | null;
+  sinRgpd?: boolean;
+}
+
+export interface CatalogoItem {
+  codigo: string;
+  nombre: string;
+}
+export type TipoCatalogoComercial = 'ACCIONES' | 'NIVELES_GESTION' | 'COMPANIAS';
+export interface CatalogoComercial {
+  tipo: TipoCatalogoComercial;
+  items: CatalogoItem[];
+}
+
+/** Gestión SGC 3.0: F. caducidad, Acci. Comercial (+WhatsApp), Comentarios, Prob., Estado, Agendado, Usuario. */
 export interface GestionComercial {
   id: string;
   clienteId: string;
   tipo: string;
-  estado: string;
+  estado: 'ABIERTA' | 'CERRADA_POSITIVA' | 'CERRADA_NEGATIVA' | 'CADUCADA' | string;
   fecha: string;
   descripcion: string;
   gestor: string;
   origen: string;
+  fechaCaducidad: string | null;
+  probabilidadConversion: number | null;
+  agendado: boolean;
+  whatsapp: boolean;
+  permisos: string[];
+}
+
+export interface GestionDetalle {
+  gestion: GestionComercial;
+  potencialidad: string;
+  asignadaA: string | null;
+  telefonos: string[];
+  email: string | null;
+  observaciones: Observacion[];
+  documentos: DocumentoAdjunto[];
+  gestionesAlcanzadas: ActividadComercial[];
+}
+
+export interface SolicitudSgoDetalle {
+  solicitud: SolicitudSgo;
+  datos: Record<string, string>;
+  documentos: DocumentoAdjunto[];
+}
+
+export interface BorradorResumen {
+  id: string;
+  producto: string;
+  codigoPostal: string;
+  asegurados: number;
 }
 
 export interface SolicitudSgo {

@@ -4,25 +4,49 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { PgmRepository } from '../../application/ports/pgm.repository';
 import {
+  ActividadComercial,
+  AltaActividad,
+  AltaOportunidad,
   AuditoriaRequest,
+  BorradorResumen,
+  CatalogoComercial,
   Cliente,
   ClienteResumen,
   ContextoUsuario,
   CriteriosBusqueda,
+  DocumentoAdjunto,
+  FiltroActividad,
+  FiltroOportunidades,
   GestionComercial,
+  GestionDetalle,
   Kpi,
   Lanzadera,
   Lista,
+  Observacion,
   Oportunidad,
+  OportunidadDetalle,
   Poliza,
   Prestacion,
   Presupuesto,
   Ramo,
   Recibo,
+  ResumenOportunidades,
   SolicitudSgo,
+  SolicitudSgoDetalle,
   TarificacionResultado,
   TarificacionSolicitud,
+  TipoCatalogoComercial,
 } from '../../domain/models/api.models';
+
+function paramsDe(filtro?: Record<string, unknown>): HttpParams {
+  let params = new HttpParams();
+  Object.entries(filtro ?? {}).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== '') {
+      params = params.set(k, String(v));
+    }
+  });
+  return params;
+}
 
 /** Adaptador HTTP hacia el BFF (/api/v1). Es el único destino de red de la SPA. */
 @Injectable({ providedIn: 'root' })
@@ -74,10 +98,67 @@ export class PgmApiRepository implements PgmRepository {
     );
   }
 
-  oportunidades(clienteId: string): Observable<Lista<Oportunidad>> {
+  oportunidades(clienteId: string, filtro?: FiltroOportunidades): Observable<Lista<Oportunidad>> {
     return this.http.get<Lista<Oportunidad>>(
       `${this.base}/clientes/${encodeURIComponent(clienteId)}/oportunidades`,
+      { params: paramsDe(filtro as Record<string, unknown>) },
     );
+  }
+
+  resumenOportunidades(clienteId: string): Observable<ResumenOportunidades> {
+    return this.http.get<ResumenOportunidades>(
+      `${this.base}/clientes/${encodeURIComponent(clienteId)}/oportunidades/resumen`,
+    );
+  }
+
+  oportunidad(id: string): Observable<OportunidadDetalle> {
+    return this.http.get<OportunidadDetalle>(
+      `${this.base}/oportunidades/${encodeURIComponent(id)}`,
+    );
+  }
+
+  crearOportunidad(clienteId: string, alta: AltaOportunidad): Observable<Oportunidad> {
+    return this.http.post<Oportunidad>(
+      `${this.base}/clientes/${encodeURIComponent(clienteId)}/oportunidades`,
+      alta,
+      idempotente(),
+    );
+  }
+
+  observarOportunidad(id: string, texto: string): Observable<Observacion> {
+    return this.http.post<Observacion>(
+      `${this.base}/oportunidades/${encodeURIComponent(id)}/observaciones`,
+      { texto },
+      idempotente(),
+    );
+  }
+
+  eliminarObservacionOportunidad(id: string, obsId: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.base}/oportunidades/${encodeURIComponent(id)}/observaciones/${encodeURIComponent(obsId)}`,
+    );
+  }
+
+  actividadComercial(
+    clienteId: string,
+    filtro?: FiltroActividad,
+  ): Observable<Lista<ActividadComercial>> {
+    return this.http.get<Lista<ActividadComercial>>(
+      `${this.base}/clientes/${encodeURIComponent(clienteId)}/actividad-comercial`,
+      { params: paramsDe(filtro as Record<string, unknown>) },
+    );
+  }
+
+  crearActividad(clienteId: string, alta: AltaActividad): Observable<ActividadComercial> {
+    return this.http.post<ActividadComercial>(
+      `${this.base}/clientes/${encodeURIComponent(clienteId)}/actividad-comercial`,
+      alta,
+      idempotente(),
+    );
+  }
+
+  catalogoComercial(tipo: TipoCatalogoComercial): Observable<CatalogoComercial> {
+    return this.http.get<CatalogoComercial>(`${this.base}/catalogos-comerciales/${tipo}`);
   }
 
   gestiones(clienteId: string): Observable<Lista<GestionComercial>> {
@@ -86,9 +167,49 @@ export class PgmApiRepository implements PgmRepository {
     );
   }
 
+  gestion(id: string): Observable<GestionDetalle> {
+    return this.http.get<GestionDetalle>(`${this.base}/gestiones/${encodeURIComponent(id)}`);
+  }
+
+  cerrarGestion(id: string, resultado: 'POSITIVA' | 'NEGATIVA'): Observable<GestionComercial> {
+    return this.http.post<GestionComercial>(
+      `${this.base}/gestiones/${encodeURIComponent(id)}/cierre`,
+      { resultado },
+      idempotente(),
+    );
+  }
+
+  reabrirGestion(id: string): Observable<GestionComercial> {
+    return this.http.post<GestionComercial>(
+      `${this.base}/gestiones/${encodeURIComponent(id)}/reapertura`,
+      {},
+      idempotente(),
+    );
+  }
+
+  observarGestion(id: string, texto: string): Observable<Observacion> {
+    return this.http.post<Observacion>(
+      `${this.base}/gestiones/${encodeURIComponent(id)}/observaciones`,
+      { texto },
+      idempotente(),
+    );
+  }
+
   solicitudesSgo(clienteId: string): Observable<Lista<SolicitudSgo>> {
     return this.http.get<Lista<SolicitudSgo>>(
       `${this.base}/clientes/${encodeURIComponent(clienteId)}/solicitudes-sgo`,
+    );
+  }
+
+  solicitudSgo(id: string): Observable<SolicitudSgoDetalle> {
+    return this.http.get<SolicitudSgoDetalle>(
+      `${this.base}/solicitudes-sgo/${encodeURIComponent(id)}`,
+    );
+  }
+
+  documentosSgo(id: string): Observable<Lista<DocumentoAdjunto>> {
+    return this.http.get<Lista<DocumentoAdjunto>>(
+      `${this.base}/solicitudes-sgo/${encodeURIComponent(id)}/documentos`,
     );
   }
 
@@ -133,6 +254,16 @@ export class PgmApiRepository implements PgmRepository {
 
   borradorSalud(id: string): Observable<TarificacionSolicitud> {
     return this.http.get<TarificacionSolicitud>(
+      `${this.base}/tarificacion/salud/borradores/${encodeURIComponent(id)}`,
+    );
+  }
+
+  borradoresSalud(): Observable<Lista<BorradorResumen>> {
+    return this.http.get<Lista<BorradorResumen>>(`${this.base}/tarificacion/salud/borradores`);
+  }
+
+  eliminarBorradorSalud(id: string): Observable<void> {
+    return this.http.delete<void>(
       `${this.base}/tarificacion/salud/borradores/${encodeURIComponent(id)}`,
     );
   }
