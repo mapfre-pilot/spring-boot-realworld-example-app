@@ -25,6 +25,126 @@ tags:
   - { name: gestion-comercial, description: Vencimientos (PGO), actividad comercial (iMediador) y gestiones (SGC 3.0) }
   - { name: utilidades, description: Lanzaderas, auditoría, comunicaciones, cuadro de mando }
 paths:
+  /clientes/{id}/mas-datos:
+    get:
+      tags: [acciones-cliente]
+      operationId: masDatosCliente
+      summary: «Más datos cliente» (pestañas Más datos / Datos de contacto / Origen de los datos)
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/MasDatos' } } } }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+  /clientes/{id}/contacto:
+    put:
+      tags: [acciones-cliente]
+      operationId: actualizarContactoCliente
+      summary: Modificar teléfonos/emails del cliente (API Canal contactMethods)
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ContactoActualizado' } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/MasDatos' } } } }
+        '400': { $ref: '#/components/responses/PeticionInvalida' }
+  /clientes/{id}/comunicaciones:
+    get:
+      tags: [acciones-cliente]
+      operationId: centroComunicaciones
+      summary: Centro de comunicaciones (alertas, interacciones, reclamaciones) con periodo 30D | 12M | 3A
+      parameters:
+        - { $ref: '#/components/parameters/ClienteId' }
+        - { name: periodo, in: query, schema: { type: string, enum: [30D, 12M, 3A], default: 30D } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Comunicaciones' } } } }
+  /clientes/{id}/documentos:
+    get:
+      tags: [acciones-cliente]
+      operationId: consultaDescargaDocumentacion
+      summary: CDD «Consulta y descarga de documentación»
+      parameters:
+        - { $ref: '#/components/parameters/ClienteId' }
+        - { name: tipo, in: query, schema: { type: string } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { total: { type: integer }, items: { type: array, items: { $ref: '#/components/schemas/DocumentoCliente' } } } } } } }
+  /clientes/{id}/dni/solicitud:
+    post:
+      tags: [acciones-cliente]
+      operationId: solicitarDigitalizacionDni
+      summary: Palanca DNI → «Digitalizar DNI» (componente Captura DNI)
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      requestBody: { content: { application/json: { schema: { type: object, properties: { canal: { type: string, enum: [CAPTURA_WEB, TABLETA] } } } } } }
+      responses:
+        '202': { description: Solicitud iniciada, content: { application/json: { schema: { $ref: '#/components/schemas/ResultadoAccion' } } } }
+        '400': { $ref: '#/components/responses/PeticionInvalida' }
+  /clientes/{id}/rgpd/metodos:
+    get:
+      tags: [acciones-cliente]
+      operationId: metodosFirmaRgpd
+      summary: Métodos de firma RGPD disponibles (SMS/EMAIL deshabilitados sin móvil/email)
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/FirmaRgpd' } } } }
+  /clientes/{id}/rgpd/firma:
+    post:
+      tags: [acciones-cliente]
+      operationId: firmarRgpd
+      summary: Palanca RGPD → «Firmar RGPD» (CMP_PM_FIRMA_RGPD_COMPLETO)
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [metodo], properties: { metodo: { type: string, enum: [BIOMETRICA, EMAIL, SMS, IMPRESION] } } } } } }
+      responses:
+        '202': { description: Solicitud de firma enviada, content: { application/json: { schema: { $ref: '#/components/schemas/ResultadoAccion' } } } }
+        '400': { $ref: '#/components/responses/PeticionInvalida' }
+  /clientes/{id}/aci:
+    post:
+      tags: [acciones-cliente]
+      operationId: solicitarAltaAci
+      summary: Palanca ACI → «Solicitar alta en ACI» (requiere móvil o email)
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      responses:
+        '202': { description: Alta solicitada, content: { application/json: { schema: { $ref: '#/components/schemas/ResultadoAccion' } } } }
+        '400': { $ref: '#/components/responses/PeticionInvalida' }
+  /clientes/{id}/cliente-total:
+    get:
+      tags: [acciones-cliente]
+      operationId: clienteTotal
+      summary: «Alta Cliente Total» (datos y empresas vinculadas)
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ClienteTotal' } } } }
+  /clientes/{id}/cliente-total/empresas:
+    post:
+      tags: [acciones-cliente]
+      operationId: anadirEmpresaVinculada
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/EmpresaVinculada' } } } }
+      responses:
+        '201': { description: Empresa añadida, content: { application/json: { schema: { $ref: '#/components/schemas/ClienteTotal' } } } }
+        '400': { $ref: '#/components/responses/PeticionInvalida' }
+  /clientes/{id}/plan-pagos:
+    get:
+      tags: [acciones-cliente]
+      operationId: planPagos
+      summary: Palanca Plan de pagos (DPVE): susceptibilidad individual/familiar
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/PlanPagos' } } } }
+  /clientes/{id}/plan-pagos/simulacion:
+    post:
+      tags: [acciones-cliente]
+      operationId: simularPlanPagos
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      requestBody: { content: { application/json: { schema: { type: object, properties: { tipo: { type: string, enum: [INDIVIDUAL, FAMILIAR] } } } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/SimulacionPlanPagos' } } } }
+        '400': { $ref: '#/components/responses/PeticionInvalida' }
+  /clientes/{id}/inducciones:
+    post:
+      tags: [acciones-cliente]
+      operationId: inducirCliente
+      summary: ACCIONES → Inducir (requiere NUUMA; teléfono/email; cliente no Robinson)
+      parameters: [ { $ref: '#/components/parameters/ClienteId' } ]
+      requestBody: { content: { application/json: { schema: { type: object, properties: { canal: { type: string, enum: [WEB, APP, EMAIL, SMS] } } } } } }
+      responses:
+        '202': { description: Inducción enviada, content: { application/json: { schema: { $ref: '#/components/schemas/ResultadoAccion' } } } }
+        '400': { $ref: '#/components/responses/PeticionInvalida' }
   /contexto:
     get:
       tags: [contexto]
@@ -380,6 +500,42 @@ components:
     SistemaExterno: { description: API Canal o plataforma no disponible, content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
     ConflictoIdempotencia: { description: Clave de idempotencia reutilizada con un cuerpo diferente, content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
   schemas:
+    Alerta: { type: object, properties: { tipo: { type: string }, texto: { type: string }, fecha: { type: string, format: date } } }
+    Telefono: { type: object, properties: { tipo: { type: string }, motivo: { type: string }, prefijo: { type: string }, numero: { type: string } } }
+    ContactoActualizado: { type: object, properties: { telefonos: { type: array, items: { $ref: '#/components/schemas/Telefono' } }, emails: { type: array, items: { type: string, format: email } } } }
+    MasDatos:
+      type: object
+      properties:
+        nacionalidad: { type: string }
+        idioma: { type: string }
+        fechaNacimiento: { type: string, format: date }
+        edad: { type: integer }
+        sexo: { type: string }
+        numeroHijos: { type: integer }
+        tipoPersona: { type: string }
+        estadoCivil: { type: string }
+        empleadoMapfre: { type: boolean }
+        profesion: { type: string }
+        telefonos: { type: array, items: { $ref: '#/components/schemas/Telefono' } }
+        emails: { type: array, items: { type: string } }
+        origenDatos: { type: object, additionalProperties: { type: string } }
+        avisos: { type: array, items: { type: string } }
+    Interaccion: { type: object, properties: { id: { type: string }, fecha: { type: string, format: date-time }, canal: { type: string }, motivo: { type: string }, descripcion: { type: string }, estado: { type: string } } }
+    Comunicaciones:
+      type: object
+      properties:
+        alertas: { type: array, items: { $ref: '#/components/schemas/Alerta' } }
+        interacciones: { type: array, items: { $ref: '#/components/schemas/Interaccion' } }
+        reclamaciones: { type: array, items: { $ref: '#/components/schemas/Interaccion' } }
+        periodo: { type: string, enum: [30D, 12M, 3A] }
+    DocumentoCliente: { type: object, properties: { id: { type: string }, tipoDocumento: { type: string }, codificacion: { type: string }, nombre: { type: string }, fechaAlta: { type: string, format: date }, fechaVigencia: { type: string, format: date }, nivelLopd: { type: string }, clasificacion: { type: string }, contrato: { type: string }, clausula: { type: string } } }
+    MetodoFirma: { type: object, properties: { codigo: { type: string }, nombre: { type: string }, disponible: { type: boolean } } }
+    FirmaRgpd: { type: object, properties: { metodos: { type: array, items: { $ref: '#/components/schemas/MetodoFirma' } }, estado: { type: string } } }
+    ResultadoAccion: { type: object, properties: { estado: { type: string }, mensaje: { type: string }, referencia: { type: string } } }
+    EmpresaVinculada: { type: object, required: [cif], properties: { cif: { type: string }, razonSocial: { type: string }, actividad: { type: string }, segmento: { type: string }, clasificacion: { type: string }, cargo: { type: string }, estado: { type: string } } }
+    ClienteTotal: { type: object, properties: { nif: { type: string }, nombre: { type: string }, clasificacionActual: { type: string }, nuevaClasificacion: { type: string }, empresas: { type: array, items: { $ref: '#/components/schemas/EmpresaVinculada' } }, puedeFirmar: { type: boolean } } }
+    PlanPagos: { type: object, properties: { susceptible: { type: boolean }, individualDisponible: { type: boolean }, familiarDisponible: { type: boolean }, mensaje: { type: string } } }
+    SimulacionPlanPagos: { type: object, properties: { tipo: { type: string }, cuotaMensual: { type: number }, numeroCuotas: { type: integer }, productosIncluidos: { type: array, items: { type: string } } } }
     Problem:
       type: object
       properties: { type: { type: string, format: uri }, title: { type: string }, status: { type: integer }, detail: { type: string }, instance: { type: string } }

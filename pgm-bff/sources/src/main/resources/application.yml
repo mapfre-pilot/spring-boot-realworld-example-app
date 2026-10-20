@@ -79,6 +79,9 @@ pgm:
       clients-edge: /legacy/clients-edge               # PGM Clients EDGE (negocioclientes, GESYC, METS, consentimientos, TeCuidamos)
       sgo: /legacy/sgo                                 # PGM_ServiciosSGO_* (fachada REST del Gateway sobre webMethods)
       click2call: /legacy/click2call                   # PGM_ConectaOrange Click2Call
+      aci: /legacy/aci                                 # PGM crearClienteACI (alta en Área de Cliente)
+      firma: /legacy/firma                             # CMP_PM_FIRMA_RGPD_COMPLETO / consentimientos
+      dpve: /legacy/dpve                               # PGM_DPVE_* (Plan de pagos)
   lanzaderas:
     - { codigo: NSE, nombre: "NSE — Nuevo Sistema de Emisión", destino: NSE, ramo: AUTOS, url: "${PGM_URL_NSE:https://nse.interno.mapfre.invalid}", requiere-nuuma: false }
     - { codigo: NSE_HOGAR, nombre: "NSE — Hogar", destino: NSE, ramo: HOGAR, url: "${PGM_URL_NSE:https://nse.interno.mapfre.invalid}/hogar", requiere-nuuma: false }
