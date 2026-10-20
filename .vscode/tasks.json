@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "PGM: log BFF",
+      "type": "shell",
+      "command": "tail -n +1 -F /workspaces/pgm/.devcontainer/logs/bff.log",
+      "runOptions": { "runOn": "folderOpen" },
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": { "panel": "dedicated", "reveal": "always" }
+    },
+    {
+      "label": "PGM: log SPA",
+      "type": "shell",
+      "command": "tail -n +1 -F /workspaces/pgm/.devcontainer/logs/spa.log",
+      "runOptions": { "runOn": "folderOpen" },
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": { "panel": "dedicated", "reveal": "always" }
+    }
+  ]
+}

@@ -21,8 +21,13 @@ services:
       PGM_CONFIG_KEY: ${PGM_CONFIG_KEY:-}
       MAVEN_MIRROR: ${MAVEN_MIRROR:-}
       APP_CORS_ALLOWED_ORIGINS: http://localhost:4200
-    ports: ["8080:8080"]
-    command: bash -lc "bash .devcontainer/post-create.sh && bash .devcontainer/run.sh"
+    command:
+      - bash
+      - -lc
+      - >-
+        mkdir -p /workspaces/pgm/.devcontainer/logs &&
+        (bash .devcontainer/post-create.sh && bash .devcontainer/run.sh) 2>&1 |
+        tee /workspaces/pgm/.devcontainer/logs/bff.log
   spa:
     build:
       context: ../pgm-spa/.devcontainer
@@ -34,15 +39,22 @@ services:
     volumes:
       - ..:/workspaces/pgm:Z
       - pgm-npm:/home/vscode/.npm
+      - pgm-node-modules:/workspaces/pgm/pgm-spa/node_modules
     working_dir: /workspaces/pgm/pgm-spa
     environment:
       HOME: /home/vscode
       PGM_BFF_URL: http://bff:8080
       NPM_CONFIG_REGISTRY: ${NPM_CONFIG_REGISTRY:-}
-    ports: ["4200:4200"]
     depends_on: [bff]
-    command: bash -lc "bash .devcontainer/post-create.sh && bash .devcontainer/run.sh"
+    command:
+      - bash
+      - -lc
+      - >-
+        mkdir -p /workspaces/pgm/.devcontainer/logs &&
+        (bash .devcontainer/post-create.sh && bash .devcontainer/run.sh) 2>&1 |
+        tee /workspaces/pgm/.devcontainer/logs/spa.log
 volumes:
   pgm-m2:
   pgm-npm:
+  pgm-node-modules:
   pgm-config:
