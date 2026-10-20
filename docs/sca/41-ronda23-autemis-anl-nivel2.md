@@ -24,12 +24,14 @@
 ### R23-4 Salto a nivel 2: `CORE_ALTA_GESTION` «error en el acceso a la base de datos» (15788148)
 - 0005726681713 («deriva») tras CA negativa → NIVEL 2 (motor `NO_MECANIZAR`); el alta en CORE fallaba porque `SCA2_altaGestionCore` v6 (R22) mezclaba perfil de usuario `CE_RM` con subperfil de grupo `CE_MF_BK_EXPERTOSI24`.
 - SCA («SCA Contra Anulación» nodo 16, «SCA Alta Contra Anulacion» nodo 3) envía siempre `datosPerfilesPca` (nivel 2: `CE_MF_BK`/`CE_MF_BK_EXPERTOSI24` + nuuma del gestor; remap `CE_MF_SI24_EXPERTO→CE_MF_SI24`). **`SCA2_altaGestionCore` v6→v7** replica eso. Relanzamiento de 15788148 OK (tarea nivel 2 creada).
-- **`SCA2_DetalleSolicitud` v57→v58**: en nivel > 1 la tarjeta muestra el nuuma de quien retoma (Tarea) o «-», no el de CORE (que es el gestor del nivel anterior).
+- **`SCA2_DetalleSolicitud` v57→v58→v59**: en nivel > 1 la tarjeta muestra el nuuma de quien retoma (Tarea de la propia tarjeta) o «-», no el de CORE (que es el gestor del nivel anterior); v59 lo mantiene en las gestiones ya finalizadas.
 - Diferencia abierta: SCA crea la gestión de nivel 2 en CORE al abrir/retomar (popup → `SCA_PM_ALTA_CONTRA_ANULACION`); SCA2 al crear la tarea.
 
 ## 3. Pruebas (detalle en `pruebas/r23-pruebas.md`)
 - «A efecto» 0000253500327/334 → `00000004` (no pendientes). Las 5 primeras «derivan» tienen solicitud en SCA; sin solicitud previa: 0005726681713, 0005726682097, 0005726681936, 0005726681296, 0005726681221 (más en `derivan_check.txt`).
-- 15788148: alta → CA negativa → Verti previa → NIVEL 2 → error (R23-4) → v7 → relanzado → CA nivel 2 pendiente. Continuación (SISANS → mecanización → ANULAR → mantenimiento AUTORIZAR → ANL completo) en curso.
+- 15788148: alta → CA negativa → Verti previa → NIVEL 2 → error (R23-4) → v7 → relanzado → CA nivel 2 (SISANS retoma y finaliza negativa) → 2ª Verti previa → motor `NO_MECANIZAR` → nivel 3 → FIN → FINALIZADA 17:35. **Nivel 2 validado**; esta vía no mecaniza.
+- Caso pendiente de autorizar: la vía que lo produce es AA por venta del vehículo (motivo 1/detalle 5/causa 14, como 15788111) → Mecanización → `00000005`. Prueba C con 15788149 / 0005726682097.
+- Hallazgo adicional: tras la CA negativa de nivel 2 SCA2 vuelve a mostrar la pantalla Verti previa aunque el motor no mecanice (coherente con «decisión de contacto tras CA negativa»); confirmar con el analista si debe mostrarse en cada nivel.
 
 ## 4. Preguntas al analista
 1. Tras mecanizar con anulación directa (`00000004`), ¿finalizar como SCA o volver a preguntar al motor (hoy: CA nivel 2)?
