@@ -1,0 +1,19 @@
+{
+  "numero": "AUT-000100",
+  "clienteId": "C-1001",
+  "ramo": "AUTOS",
+  "producto": "Autos Todo Riesgo con franquicia",
+  "estado": "EN_VIGOR",
+  "fechaEfecto": "2025-11-15",
+  "fechaVencimiento": "2026-11-15",
+  "primaAnual": 612.4,
+  "formaPago": "Semestral",
+  "riesgo": "SEAT León 1.5 TSI — 0000 ZZZ",
+  "acciones": [
+    "Duplicado de póliza",
+    "Condiciones particulares",
+    "Modificar forma de pago",
+    "Declarar siniestro"
+  ],
+  "lanzadera": "NSE"
+}

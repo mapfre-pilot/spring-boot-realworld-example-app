@@ -1,0 +1,15 @@
+{
+  "name": "detalle-poliza-AHO-000202",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/api-canal/polizas/v1/polizas/AHO-000202"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "poliza-AHO-000202.json"
+  }
+}

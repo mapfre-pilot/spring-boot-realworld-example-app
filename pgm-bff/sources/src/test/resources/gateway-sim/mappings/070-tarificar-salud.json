@@ -1,0 +1,15 @@
+{
+  "name": "tarificar-salud",
+  "priority": 5,
+  "request": {
+    "method": "POST",
+    "urlPath": "/api-canal/ventas/v1/tarificaciones/salud"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "tarificacion-salud.json"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "numero": "HOG-000101",
+  "clienteId": "C-1001",
+  "ramo": "HOGAR",
+  "producto": "Hogar Completo",
+  "estado": "EN_VIGOR",
+  "fechaEfecto": "2026-02-01",
+  "fechaVencimiento": "2027-02-01",
+  "primaAnual": 298.75,
+  "formaPago": "Anual",
+  "riesgo": "Vivienda habitual — Calle Ficticia 12, Madrid",
+  "acciones": [
+    "Duplicado de póliza",
+    "Condiciones particulares",
+    "Declarar siniestro"
+  ],
+  "lanzadera": "NSE_HOGAR"
+}

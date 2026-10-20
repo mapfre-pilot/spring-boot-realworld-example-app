@@ -1,0 +1,20 @@
+{
+  "name": "gestiones-C-1002",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/plataformas/sgc30/v1/gestiones",
+    "queryParameters": {
+      "clienteId": {
+        "equalTo": "C-1002"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "gestiones-C-1002.json"
+  }
+}

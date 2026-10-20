@@ -1,0 +1,18 @@
+{
+  "numero": "AUT-000200",
+  "clienteId": "C-1002",
+  "ramo": "AUTOS",
+  "producto": "Autos Terceros Ampliado",
+  "estado": "EN_VIGOR",
+  "fechaEfecto": "2026-04-10",
+  "fechaVencimiento": "2027-04-10",
+  "primaAnual": 388.1,
+  "formaPago": "Anual",
+  "riesgo": "Furgoneta Renault Kangoo — 0001 ZZZ",
+  "acciones": [
+    "Duplicado de póliza",
+    "Condiciones particulares",
+    "Declarar siniestro"
+  ],
+  "lanzadera": "NSE"
+}

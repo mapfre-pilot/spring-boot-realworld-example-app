@@ -1,0 +1,15 @@
+{
+  "name": "detalle-poliza-AUT-000100",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/api-canal/polizas/v1/polizas/AUT-000100"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "poliza-AUT-000100.json"
+  }
+}

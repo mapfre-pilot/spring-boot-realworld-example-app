@@ -1,6 +1,7 @@
 package com.mapfre.pgm.bff.infrastructure.config;
 
 import java.time.Duration;
+import java.net.http.HttpClient;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.web.client.RestClientCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -17,7 +18,9 @@ public class RestClientConfiguration {
     @Bean
     RestClient gatewayRestClient(RestClient.Builder builder, GatewayProperties props,
                                  ObjectProvider<RestClientCustomizer> customizers) {
-        JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory();
+        JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder()
+                .connectTimeout(Duration.ofMillis(props.connectTimeoutMs()))
+                .build());
         factory.setReadTimeout(Duration.ofMillis(props.readTimeoutMs()));
         customizers.orderedStream().forEach(c -> c.customize(builder));
         return builder

@@ -1,0 +1,73 @@
+[
+  {
+    "numero": "AUT-000100",
+    "clienteId": "C-1001",
+    "ramo": "AUTOS",
+    "producto": "Autos Todo Riesgo con franquicia",
+    "estado": "EN_VIGOR",
+    "fechaEfecto": "2025-11-15",
+    "fechaVencimiento": "2026-11-15",
+    "primaAnual": 612.4,
+    "formaPago": "Semestral",
+    "riesgo": "SEAT León 1.5 TSI — 0000 ZZZ",
+    "acciones": [
+      "Duplicado de póliza",
+      "Condiciones particulares",
+      "Modificar forma de pago",
+      "Declarar siniestro"
+    ],
+    "lanzadera": "NSE"
+  },
+  {
+    "numero": "HOG-000101",
+    "clienteId": "C-1001",
+    "ramo": "HOGAR",
+    "producto": "Hogar Completo",
+    "estado": "EN_VIGOR",
+    "fechaEfecto": "2026-02-01",
+    "fechaVencimiento": "2027-02-01",
+    "primaAnual": 298.75,
+    "formaPago": "Anual",
+    "riesgo": "Vivienda habitual — Calle Ficticia 12, Madrid",
+    "acciones": [
+      "Duplicado de póliza",
+      "Condiciones particulares",
+      "Declarar siniestro"
+    ],
+    "lanzadera": "NSE_HOGAR"
+  },
+  {
+    "numero": "SAL-000102",
+    "clienteId": "C-1001",
+    "ramo": "SALUD",
+    "producto": "Salud Elección Plus",
+    "estado": "EN_VIGOR",
+    "fechaEfecto": "2024-06-01",
+    "fechaVencimiento": "2026-12-31",
+    "primaAnual": 1140.0,
+    "formaPago": "Mensual",
+    "riesgo": "2 asegurados",
+    "acciones": [
+      "Tarjeta sanitaria",
+      "Cuadro médico",
+      "Duplicado de póliza"
+    ],
+    "lanzadera": "GESALUD"
+  },
+  {
+    "numero": "VID-000103",
+    "clienteId": "C-1001",
+    "ramo": "VIDA",
+    "producto": "Vida Riesgo Protección",
+    "estado": "ANULADA",
+    "fechaEfecto": "2020-01-01",
+    "fechaVencimiento": "2025-01-01",
+    "primaAnual": 180.0,
+    "formaPago": "Anual",
+    "riesgo": "Capital 60.000 €",
+    "acciones": [
+      "Duplicado de póliza"
+    ],
+    "lanzadera": "GESVIDA"
+  }
+]

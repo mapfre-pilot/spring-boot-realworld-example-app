@@ -1,0 +1,15 @@
+{
+  "name": "detalle-poliza-EMP-000300",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/api-canal/polizas/v1/polizas/EMP-000300"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "poliza-EMP-000300.json"
+  }
+}

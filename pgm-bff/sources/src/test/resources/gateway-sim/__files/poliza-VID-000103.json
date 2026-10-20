@@ -1,0 +1,16 @@
+{
+  "numero": "VID-000103",
+  "clienteId": "C-1001",
+  "ramo": "VIDA",
+  "producto": "Vida Riesgo Protección",
+  "estado": "ANULADA",
+  "fechaEfecto": "2020-01-01",
+  "fechaVencimiento": "2025-01-01",
+  "primaAnual": 180.0,
+  "formaPago": "Anual",
+  "riesgo": "Capital 60.000 €",
+  "acciones": [
+    "Duplicado de póliza"
+  ],
+  "lanzadera": "GESVIDA"
+}

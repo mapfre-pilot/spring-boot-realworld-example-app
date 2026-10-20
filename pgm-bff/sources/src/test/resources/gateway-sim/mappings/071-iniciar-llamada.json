@@ -1,0 +1,15 @@
+{
+  "name": "iniciar-llamada",
+  "priority": 5,
+  "request": {
+    "method": "POST",
+    "urlPath": "/plataformas/comunicaciones/v1/llamadas"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "llamada.json"
+  }
+}

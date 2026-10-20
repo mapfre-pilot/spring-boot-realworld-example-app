@@ -37,3 +37,28 @@ services:
     depends_on:
       bff:
         condition: service_healthy
+  gateway-sim:
+    image: ${WIREMOCK_IMAGE:-wiremock/wiremock:3.9.1}
+    profiles: ["simulador"]
+    ports:
+      - "${GATEWAY_SIM_PORT:-8089}:8080"
+    volumes:
+      - ../pgm-bff/sources/src/test/resources/gateway-sim:/home/wiremock:ro
+  bff-simulador:
+    build:
+      context: ../pgm-bff
+      dockerfile: docker/Dockerfile
+      args:
+        MAVEN_MIRROR: ${MAVEN_MIRROR:-https://repo.maven.apache.org/maven2}
+        BUILD_IMAGE: ${BUILD_IMAGE:-maven:3.9.11-eclipse-temurin-21-alpine}
+        RUNTIME_IMAGE: ${RUNTIME_IMAGE:-eclipse-temurin:21-jre-alpine}
+    image: pgm-bff:local
+    profiles: ["simulador"]
+    environment:
+      SPRING_PROFILES_ACTIVE: simulador
+      PGM_GATEWAY_BASE_URL: http://gateway-sim:8080
+      APP_CORS_ALLOWED_ORIGINS: http://localhost:4200
+    ports:
+      - "${BFF_SIM_PORT:-8081}:8080"
+    depends_on:
+      - gateway-sim

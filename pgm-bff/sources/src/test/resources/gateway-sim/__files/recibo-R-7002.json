@@ -1,0 +1,12 @@
+{
+  "numero": "R-7002",
+  "clienteId": "C-1001",
+  "polizaNumero": "HOG-000101",
+  "ramo": "HOGAR",
+  "estado": "COBRADO",
+  "importe": 298.75,
+  "fechaEmision": "2026-02-01",
+  "fechaVencimiento": "2026-02-15",
+  "formaPago": "Domiciliación",
+  "ibanEnmascarado": "ES** **** **** **** **** 1234"
+}

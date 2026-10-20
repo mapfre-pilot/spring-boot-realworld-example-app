@@ -1,0 +1,35 @@
+[
+  {
+    "numero": "EMP-000300",
+    "clienteId": "C-1003",
+    "ramo": "EMPRESAS",
+    "producto": "Multirriesgo Empresas",
+    "estado": "EN_VIGOR",
+    "fechaEfecto": "2026-01-01",
+    "fechaVencimiento": "2027-01-01",
+    "primaAnual": 4860.0,
+    "formaPago": "Anual",
+    "riesgo": "Nave industrial 1.200 m² — Barcelona",
+    "acciones": [
+      "Condiciones particulares",
+      "Declarar siniestro"
+    ],
+    "lanzadera": "PORTAL_INTERNO"
+  },
+  {
+    "numero": "AUT-000301",
+    "clienteId": "C-1003",
+    "ramo": "AUTOS",
+    "producto": "Flotas",
+    "estado": "SUSPENDIDA",
+    "fechaEfecto": "2025-03-01",
+    "fechaVencimiento": "2026-03-01",
+    "primaAnual": 2310.0,
+    "formaPago": "Semestral",
+    "riesgo": "4 vehículos",
+    "acciones": [
+      "Duplicado de póliza"
+    ],
+    "lanzadera": "NSE"
+  }
+]

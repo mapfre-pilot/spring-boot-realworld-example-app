@@ -1,0 +1,16 @@
+{
+  "name": "ficha-timeout",
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/api-canal/clientes/v1/clientes/C-SLOW/vision360"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "cliente-C-1001.json",
+    "fixedDelayMilliseconds": 800
+  }
+}

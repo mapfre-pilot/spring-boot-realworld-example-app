@@ -1,0 +1,22 @@
+[
+  {
+    "id": "G-1",
+    "clienteId": "C-1001",
+    "tipo": "Llamada",
+    "estado": "REALIZADA",
+    "fecha": "2026-10-03T10:30:00",
+    "descripcion": "Aviso de recibo devuelto, cliente regularizará",
+    "gestor": "Gestor Demo 1",
+    "origen": "SGC30"
+  },
+  {
+    "id": "G-2",
+    "clienteId": "C-1001",
+    "tipo": "Visita oficina",
+    "estado": "PLANIFICADA",
+    "fecha": "2026-10-28T12:00:00",
+    "descripcion": "Renovación Autos y propuesta Vida",
+    "gestor": "Gestor Demo 1",
+    "origen": "SGC30"
+  }
+]

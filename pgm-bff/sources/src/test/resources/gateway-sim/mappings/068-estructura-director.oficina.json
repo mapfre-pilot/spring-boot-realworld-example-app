@@ -1,0 +1,15 @@
+{
+  "name": "estructura-director.oficina",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/plataformas/imediador/v1/usuarios/director.oficina/estructura"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "estructura-director.oficina.json"
+  }
+}

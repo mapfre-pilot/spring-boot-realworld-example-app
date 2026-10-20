@@ -18,7 +18,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
  * Resuelve {@link UsuarioActual}: en perfiles seguros desde el JWT (claims preferred_username/name/groups o roles);
- * en perfil local desde X-PGM-Usuario / X-PGM-Perfiles con valores por defecto.
+ * en perfiles local/simulador desde cabeceras mock con valores por defecto.
  */
 @Component
 public class UsuarioActualResolver implements HandlerMethodArgumentResolver {
@@ -50,11 +50,14 @@ public class UsuarioActualResolver implements HandlerMethodArgumentResolver {
                     .orElseGet(() -> Optional.ofNullable(jwt.getClaimAsStringList("roles")).orElse(List.of()));
             return new UsuarioActual(id, nombre, grupos);
         }
-        if (!env.matchesProfiles("local")) {
-            throw new IllegalStateException("Petición sin JWT fuera del perfil local");
+        if (!env.matchesProfiles("local", "simulador")) {
+            throw new IllegalStateException("Petición sin JWT fuera del perfil local o simulador");
         }
         LocalProperties lp = localProps.orElse(new LocalProperties("usuario.local", List.of("PGM_USUARIO")));
-        String id = Optional.ofNullable(request.getHeader("X-PGM-Usuario")).filter(s -> !s.isBlank()).orElse(lp.usuarioPorDefecto());
+        String id = Optional.ofNullable(request.getHeader("X-Usuario-Local"))
+                .filter(s -> !s.isBlank())
+                .or(() -> Optional.ofNullable(request.getHeader("X-PGM-Usuario")).filter(s -> !s.isBlank()))
+                .orElse(lp.usuarioPorDefecto());
         List<String> perfiles = Optional.ofNullable(request.getHeader("X-PGM-Perfiles")).filter(s -> !s.isBlank())
                 .map(s -> Arrays.stream(s.split(",")).map(String::trim).toList())
                 .orElse(lp.perfilesPorDefecto());

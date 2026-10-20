@@ -1,0 +1,12 @@
+{
+  "numero": "R-7101",
+  "clienteId": "C-1002",
+  "polizaNumero": "AUT-000200",
+  "ramo": "AUTOS",
+  "estado": "COBRADO",
+  "importe": 388.1,
+  "fechaEmision": "2026-04-10",
+  "fechaVencimiento": "2026-04-25",
+  "formaPago": "Domiciliación",
+  "ibanEnmascarado": "ES** **** **** **** **** 5678"
+}

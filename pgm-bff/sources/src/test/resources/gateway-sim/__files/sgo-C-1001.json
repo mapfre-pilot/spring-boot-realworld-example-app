@@ -1,0 +1,10 @@
+[
+  {
+    "id": "SGO-1",
+    "clienteId": "C-1001",
+    "tipo": "Duplicado de recibo",
+    "estado": "RESUELTA",
+    "fecha": "2026-06-02",
+    "descripcion": "Duplicado recibo R-7001 enviado por correo"
+  }
+]

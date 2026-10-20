@@ -1,7 +1,7 @@
 package com.mapfre.pgm.bff.application.service;
 
 import com.mapfre.pgm.bff.application.port.in.LanzaderasUseCase;
-import com.mapfre.pgm.bff.application.port.out.GestionComercialPort;
+import com.mapfre.pgm.bff.application.port.out.UsuariosComercialesPort;
 import com.mapfre.pgm.bff.application.port.out.LanzaderasPort;
 import com.mapfre.pgm.bff.domain.model.Lanzadera;
 import com.mapfre.pgm.bff.domain.model.Ramo;
@@ -12,16 +12,16 @@ import org.springframework.stereotype.Service;
 public class LanzaderasService implements LanzaderasUseCase {
 
     private final LanzaderasPort lanzaderasPort;
-    private final GestionComercialPort gestionComercialPort;
+    private final UsuariosComercialesPort usuariosComercialesPort;
 
-    public LanzaderasService(LanzaderasPort lanzaderasPort, GestionComercialPort gestionComercialPort) {
+    public LanzaderasService(LanzaderasPort lanzaderasPort, UsuariosComercialesPort usuariosComercialesPort) {
         this.lanzaderasPort = lanzaderasPort;
-        this.gestionComercialPort = gestionComercialPort;
+        this.usuariosComercialesPort = usuariosComercialesPort;
     }
 
     @Override
     public List<Lanzadera> disponibles(Ramo ramo, String usuario) {
-        boolean tieneNuuma = gestionComercialPort.estructuraDe(usuario)
+        boolean tieneNuuma = usuariosComercialesPort.estructuraDe(usuario)
                 .map(e -> e.nuuma() != null && !e.nuuma().isBlank()).orElse(false);
         return lanzaderasPort.todas().stream()
                 .filter(l -> ramo == null || l.ramo() == null || l.ramo() == ramo)

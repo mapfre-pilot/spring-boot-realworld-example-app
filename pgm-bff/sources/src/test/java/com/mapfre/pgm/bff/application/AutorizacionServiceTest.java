@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.mapfre.pgm.bff.application.port.out.GestionComercialPort;
+import com.mapfre.pgm.bff.application.port.out.UsuariosComercialesPort;
 import com.mapfre.pgm.bff.application.service.AutorizacionService;
 import com.mapfre.pgm.bff.application.service.FeatureFlags;
 import com.mapfre.pgm.bff.application.service.Perfiles;
@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 /** Reglas observadas en Appian: grupo gobierna tarjetas; Gestión comercial exige además perfil SGC 3.0 y NUUMA. */
 class AutorizacionServiceTest {
 
-    private final GestionComercialPort gc = mock(GestionComercialPort.class);
+    private final UsuariosComercialesPort gc = mock(UsuariosComercialesPort.class);
     private final AutorizacionService service = new AutorizacionService(gc, new FeatureFlags(true, true, true, true));
 
     @Test

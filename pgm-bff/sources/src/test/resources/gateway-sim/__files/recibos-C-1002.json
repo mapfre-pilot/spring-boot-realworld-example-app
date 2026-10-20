@@ -1,0 +1,26 @@
+[
+  {
+    "numero": "R-7101",
+    "clienteId": "C-1002",
+    "polizaNumero": "AUT-000200",
+    "ramo": "AUTOS",
+    "estado": "COBRADO",
+    "importe": 388.1,
+    "fechaEmision": "2026-04-10",
+    "fechaVencimiento": "2026-04-25",
+    "formaPago": "Domiciliación",
+    "ibanEnmascarado": "ES** **** **** **** **** 5678"
+  },
+  {
+    "numero": "R-7102",
+    "clienteId": "C-1002",
+    "polizaNumero": "DEC-000201",
+    "ramo": "DECESOS",
+    "estado": "PENDIENTE",
+    "importe": 61.25,
+    "fechaEmision": "2026-10-01",
+    "fechaVencimiento": "2026-10-20",
+    "formaPago": "Domiciliación",
+    "ibanEnmascarado": "ES** **** **** **** **** 5678"
+  }
+]

@@ -1,0 +1,53 @@
+[
+  {
+    "numero": "AUT-000200",
+    "clienteId": "C-1002",
+    "ramo": "AUTOS",
+    "producto": "Autos Terceros Ampliado",
+    "estado": "EN_VIGOR",
+    "fechaEfecto": "2026-04-10",
+    "fechaVencimiento": "2027-04-10",
+    "primaAnual": 388.1,
+    "formaPago": "Anual",
+    "riesgo": "Furgoneta Renault Kangoo — 0001 ZZZ",
+    "acciones": [
+      "Duplicado de póliza",
+      "Condiciones particulares",
+      "Declarar siniestro"
+    ],
+    "lanzadera": "NSE"
+  },
+  {
+    "numero": "DEC-000201",
+    "clienteId": "C-1002",
+    "ramo": "DECESOS",
+    "producto": "Decesos Familiar",
+    "estado": "EN_VIGOR",
+    "fechaEfecto": "2019-05-01",
+    "fechaVencimiento": "2027-05-01",
+    "primaAnual": 245.0,
+    "formaPago": "Trimestral",
+    "riesgo": "3 asegurados",
+    "acciones": [
+      "Duplicado de póliza"
+    ],
+    "lanzadera": "DECESOS"
+  },
+  {
+    "numero": "AHO-000202",
+    "clienteId": "C-1002",
+    "ramo": "AHORRO",
+    "producto": "Plan Ahorro Flexible",
+    "estado": "EN_VIGOR",
+    "fechaEfecto": "2022-09-01",
+    "fechaVencimiento": "2032-09-01",
+    "primaAnual": 1200.0,
+    "formaPago": "Mensual",
+    "riesgo": "Saldo acumulado 4.930 €",
+    "acciones": [
+      "Extracto",
+      "Aportación extraordinaria"
+    ],
+    "lanzadera": "GESVIDA"
+  }
+]

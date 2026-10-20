@@ -1,0 +1,67 @@
+[
+  {
+    "id": "C-1001",
+    "nombre": "Laura",
+    "apellidos": "Martín Serrano",
+    "tipoDocumento": "DNI",
+    "documento": "00000001R",
+    "tipologia": "PARTICULAR",
+    "estado": "EN_VIGOR",
+    "telefono": "600000001",
+    "email": "laura.demo@example.invalid",
+    "localidad": "Madrid",
+    "numeroPolizasEnVigor": 3
+  },
+  {
+    "id": "C-1002",
+    "nombre": "Pablo",
+    "apellidos": "Martín Serrano",
+    "tipoDocumento": "DNI",
+    "documento": "00000002W",
+    "tipologia": "AUTONOMO",
+    "estado": "EN_VIGOR",
+    "telefono": "600000002",
+    "email": "pablo.demo@example.invalid",
+    "localidad": "Sevilla",
+    "numeroPolizasEnVigor": 3
+  },
+  {
+    "id": "C-1003",
+    "nombre": "Construcciones Ejemplo",
+    "apellidos": "S.L.",
+    "tipoDocumento": "CIF",
+    "documento": "B00000003",
+    "tipologia": "EMPRESA",
+    "estado": "EN_VIGOR",
+    "telefono": "930000003",
+    "email": "admin@construcciones-ejemplo.invalid",
+    "localidad": "Barcelona",
+    "numeroPolizasEnVigor": 1
+  },
+  {
+    "id": "C-1004",
+    "nombre": "José María",
+    "apellidos": "García García",
+    "tipoDocumento": "DNI",
+    "documento": "00000004A",
+    "tipologia": "PARTICULAR",
+    "estado": "POTENCIAL",
+    "telefono": "600000004",
+    "email": null,
+    "localidad": "Valencia",
+    "numeroPolizasEnVigor": 0
+  },
+  {
+    "id": "C-1005",
+    "nombre": "Carmen",
+    "apellidos": "López Ruiz",
+    "tipoDocumento": "NIE",
+    "documento": "X0000005T",
+    "tipologia": "PARTICULAR",
+    "estado": "ANULADO",
+    "telefono": "600000005",
+    "email": "carmen.demo@example.invalid",
+    "localidad": "Málaga",
+    "numeroPolizasEnVigor": 0
+  }
+]

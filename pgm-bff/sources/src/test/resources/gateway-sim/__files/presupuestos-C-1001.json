@@ -1,0 +1,12 @@
+[
+  {
+    "numero": "PR-5001",
+    "clienteId": "C-1001",
+    "ramo": "VIDA",
+    "producto": "Vida Riesgo Protección",
+    "estado": "VIGENTE",
+    "fecha": "2026-10-01",
+    "fechaCaducidad": "2026-11-30",
+    "primaAnual": 196.0
+  }
+]

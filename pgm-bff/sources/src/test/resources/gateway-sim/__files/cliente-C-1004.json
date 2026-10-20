@@ -1,0 +1,44 @@
+{
+  "id": "C-1004",
+  "nombre": "José María",
+  "apellidos": "García García",
+  "tipoDocumento": "DNI",
+  "documento": "00000004A",
+  "fechaNacimiento": "1975-11-05",
+  "nacionalidad": "Española",
+  "tipologia": "PARTICULAR",
+  "estado": "POTENCIAL",
+  "vip": false,
+  "robinson": true,
+  "exclusivoCorredor": false,
+  "direccion": {
+    "via": "Plaza Inventada",
+    "numero": "1",
+    "codigoPostal": "46002",
+    "localidad": "Valencia",
+    "provincia": "Valencia"
+  },
+  "telefono": "600000004",
+  "email": null,
+  "oficinaGestora": "Oficina Valencia Ruzafa (4601)",
+  "gestorAsignado": null,
+  "palancas": {
+    "dniDigitalizado": false,
+    "rgpdFirmado": false,
+    "altaAci": false,
+    "clienteTotal": false,
+    "planPagos": false,
+    "enFamilia": false,
+    "dpv": false
+  },
+  "alertas": [
+    {
+      "tipo": "ROBINSON",
+      "texto": "Cliente inscrito en lista Robinson: sin comunicaciones comerciales",
+      "fecha": "2025-06-01"
+    }
+  ],
+  "familia": [],
+  "posicionBancaria": null,
+  "descuentoVinculacion": null
+}

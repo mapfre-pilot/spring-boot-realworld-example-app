@@ -1,0 +1,12 @@
+[
+  {
+    "numero": "PR-5401",
+    "clienteId": "C-1004",
+    "ramo": "AUTOS",
+    "producto": "Autos Terceros",
+    "estado": "VIGENTE",
+    "fecha": "2026-10-10",
+    "fechaCaducidad": "2026-12-10",
+    "primaAnual": 310.5
+  }
+]

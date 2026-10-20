@@ -1,0 +1,15 @@
+{
+  "name": "estructura-usuario.local",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/plataformas/imediador/v1/usuarios/usuario.local/estructura"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "estructura-usuario.local.json"
+  }
+}

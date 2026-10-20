@@ -1,0 +1,15 @@
+{
+  "name": "detalle-poliza-HOG-000500",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/api-canal/polizas/v1/polizas/HOG-000500"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "poliza-HOG-000500.json"
+  }
+}

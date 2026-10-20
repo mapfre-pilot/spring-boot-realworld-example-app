@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: pgm-bff
-  version: 1.0.0
+  version: 1.1.0
   description: |
     BFF de PGM (Plataforma de Gestión MAPFRE) para la SPA pgm-spa. Contrato OpenAPI-first (BP-API-001).
     Único punto de entrada del navegador: el BFF compone API Canal (PROD-APICANAL-*) y APIs de plataforma
@@ -142,21 +142,25 @@ paths:
       tags: [nueva-produccion]
       operationId: tarificarSalud
       summary: Tarificación rápida de Salud (API Canal Ventas)
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/TarificacionSaludRequest' } } } }
       responses:
-        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/TarificacionSaludResultado' } } } }
+        '200': { description: OK, headers: { Idempotent-Replayed: { schema: { type: boolean } } }, content: { application/json: { schema: { $ref: '#/components/schemas/TarificacionSaludResultado' } } } }
         '400': { $ref: '#/components/responses/PeticionInvalida' }
         '403': { $ref: '#/components/responses/Prohibido' }
+        '409': { $ref: '#/components/responses/ConflictoIdempotencia' }
   /tarificacion/salud/borradores:
     post:
       tags: [nueva-produccion]
       operationId: guardarBorradorTarificacion
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/TarificacionSaludRequest' } } } }
       responses:
         '201':
           description: Creado
-          headers: { Location: { schema: { type: string } } }
+          headers: { Location: { schema: { type: string } }, Idempotent-Replayed: { schema: { type: boolean } } }
           content: { application/json: { schema: { type: object, properties: { id: { type: string } } } } }
+        '409': { $ref: '#/components/responses/ConflictoIdempotencia' }
   /tarificacion/salud/borradores/{id}:
     get:
       tags: [nueva-produccion]
@@ -178,18 +182,22 @@ paths:
       tags: [utilidades]
       operationId: registrarAuditoria
       summary: Registro de acceso por NUUMA (sin PII)
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/AuditoriaRequest' } } } }
       responses:
-        '202': { description: Aceptado }
+        '202': { description: Aceptado, headers: { Idempotent-Replayed: { schema: { type: boolean } } } }
         '400': { $ref: '#/components/responses/PeticionInvalida' }
+        '409': { $ref: '#/components/responses/ConflictoIdempotencia' }
   /comunicaciones/llamadas:
     post:
       tags: [utilidades]
       operationId: iniciarLlamada
       summary: Click-to-call (plataforma de comunicaciones)
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
       requestBody: { required: true, content: { application/json: { schema: { type: object, required: [clienteId, telefono], properties: { clienteId: { type: string }, telefono: { type: string } } } } } }
       responses:
-        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { idLlamada: { type: string } } } } } }
+        '200': { description: OK, headers: { Idempotent-Replayed: { schema: { type: boolean } } }, content: { application/json: { schema: { type: object, properties: { idLlamada: { type: string } } } } } }
+        '409': { $ref: '#/components/responses/PeticionInvalida' }
   /cuadro-mando/kpis:
     get:
       tags: [utilidades]
@@ -210,12 +218,14 @@ components:
           scopes: { pgm.acceso: Acceso a PGM }
   parameters:
     ClienteId: { name: id, in: path, required: true, schema: { type: string }, example: C-1001 }
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: false, schema: { type: string, minLength: 1, maxLength: 255 } }
   responses:
     PeticionInvalida: { description: Petición inválida, content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
     NoAutenticado: { description: Sin token válido }
     Prohibido: { description: Acceso no autorizado, content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
     NoEncontrado: { description: Recurso no encontrado, content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
     SistemaExterno: { description: API Canal o plataforma no disponible, content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+    ConflictoIdempotencia: { description: Clave de idempotencia reutilizada con un cuerpo diferente, content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
   schemas:
     Problem:
       type: object

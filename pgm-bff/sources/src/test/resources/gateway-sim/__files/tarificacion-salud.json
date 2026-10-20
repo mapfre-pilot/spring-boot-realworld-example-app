@@ -1,0 +1,12 @@
+{
+  "id": "TAR-SIM-1001",
+  "producto": "Salud Elección Plus",
+  "primaMensual": 94.25,
+  "primaAnual": 1131.0,
+  "coberturas": [
+    "Asistencia primaria",
+    "Especialistas",
+    "Hospitalización"
+  ],
+  "estado": "SIMULADA"
+}

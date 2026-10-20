@@ -1,0 +1,12 @@
+[
+  {
+    "id": "O-3",
+    "clienteId": "C-1002",
+    "tipo": "OPORTUNIDAD",
+    "ramo": "SALUD",
+    "polizaNumero": null,
+    "fecha": "2026-10-25",
+    "descripcion": "Retomar presupuesto de Salud caducado",
+    "prioridad": "MEDIA"
+  }
+]

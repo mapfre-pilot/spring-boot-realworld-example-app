@@ -1,0 +1,12 @@
+[
+  {
+    "id": "G-3",
+    "clienteId": "C-1002",
+    "tipo": "Campaña",
+    "estado": "PENDIENTE",
+    "fecha": "2026-10-15T09:00:00",
+    "descripcion": "Campaña Salud autónomos",
+    "gestor": "Gestor Demo 2",
+    "origen": "IMEDIADOR"
+  }
+]

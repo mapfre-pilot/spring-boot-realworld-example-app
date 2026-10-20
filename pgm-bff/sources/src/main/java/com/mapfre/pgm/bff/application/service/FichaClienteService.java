@@ -19,12 +19,14 @@ public class FichaClienteService implements FichaClienteUseCase {
     private final VentasPort ventasPort;
     private final OportunidadesPort oportunidadesPort;
     private final GestionComercialPort gestionComercialPort;
+    private final UsuariosComercialesPort usuariosComercialesPort;
     private final SgoPort sgoPort;
     private final AuditoriaUseCase auditoria;
 
     public FichaClienteService(ClientesPort clientesPort, PolizasPort polizasPort, RecibosPort recibosPort,
                                SiniestrosPort siniestrosPort, VentasPort ventasPort, OportunidadesPort oportunidadesPort,
-                               GestionComercialPort gestionComercialPort, SgoPort sgoPort, AuditoriaUseCase auditoria) {
+                               GestionComercialPort gestionComercialPort, UsuariosComercialesPort usuariosComercialesPort,
+                               SgoPort sgoPort, AuditoriaUseCase auditoria) {
         this.clientesPort = clientesPort;
         this.polizasPort = polizasPort;
         this.recibosPort = recibosPort;
@@ -32,6 +34,7 @@ public class FichaClienteService implements FichaClienteUseCase {
         this.ventasPort = ventasPort;
         this.oportunidadesPort = oportunidadesPort;
         this.gestionComercialPort = gestionComercialPort;
+        this.usuariosComercialesPort = usuariosComercialesPort;
         this.sgoPort = sgoPort;
         this.auditoria = auditoria;
     }
@@ -71,9 +74,9 @@ public class FichaClienteService implements FichaClienteUseCase {
 
     @Override
     public List<GestionComercial> gestiones(String clienteId, String usuario) {
-        boolean tieneEstructura = gestionComercialPort.estructuraDe(usuario)
+        boolean tieneEstructura = usuariosComercialesPort.estructuraDe(usuario)
                 .map(e -> e.nuuma() != null && !e.nuuma().isBlank()).orElse(false);
-        if (!tieneEstructura || gestionComercialPort.perfilSgc30De(usuario).isEmpty()) {
+        if (!tieneEstructura || usuariosComercialesPort.perfilSgc30De(usuario).isEmpty()) {
             throw new AccesoNoAutorizadoException("Gestión comercial requiere perfil SGC 3.0 y estructura comercial (NUUMA)");
         }
         return gestionComercialPort.gestionesPorCliente(clienteId);

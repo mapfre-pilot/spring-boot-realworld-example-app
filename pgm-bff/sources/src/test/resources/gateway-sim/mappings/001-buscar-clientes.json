@@ -1,0 +1,15 @@
+{
+  "name": "buscar-clientes",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/api-canal/clientes/v1/clientes/busqueda"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "buscar-clientes.json"
+  }
+}

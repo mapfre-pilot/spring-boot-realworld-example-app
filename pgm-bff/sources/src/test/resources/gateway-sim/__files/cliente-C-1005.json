@@ -1,0 +1,38 @@
+{
+  "id": "C-1005",
+  "nombre": "Carmen",
+  "apellidos": "López Ruiz",
+  "tipoDocumento": "NIE",
+  "documento": "X0000005T",
+  "fechaNacimiento": "1961-02-18",
+  "nacionalidad": "Argentina",
+  "tipologia": "PARTICULAR",
+  "estado": "ANULADO",
+  "vip": false,
+  "robinson": false,
+  "exclusivoCorredor": false,
+  "direccion": {
+    "via": "Camino Simulado",
+    "numero": "22",
+    "codigoPostal": "29010",
+    "localidad": "Málaga",
+    "provincia": "Málaga"
+  },
+  "telefono": "600000005",
+  "email": "carmen.demo@example.invalid",
+  "oficinaGestora": "Oficina Málaga Centro (2901)",
+  "gestorAsignado": "Gestor Demo 1",
+  "palancas": {
+    "dniDigitalizado": true,
+    "rgpdFirmado": true,
+    "altaAci": true,
+    "clienteTotal": false,
+    "planPagos": false,
+    "enFamilia": false,
+    "dpv": false
+  },
+  "alertas": [],
+  "familia": [],
+  "posicionBancaria": "Sin domiciliación activa",
+  "descuentoVinculacion": 0
+}

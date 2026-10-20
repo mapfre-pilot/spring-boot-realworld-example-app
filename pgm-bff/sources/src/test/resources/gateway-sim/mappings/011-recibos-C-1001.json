@@ -1,0 +1,20 @@
+{
+  "name": "recibos-C-1001",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/api-canal/recibos/v1/recibos",
+    "queryParameters": {
+      "clienteId": {
+        "equalTo": "C-1001"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "recibos-C-1001.json"
+  }
+}

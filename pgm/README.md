@@ -61,6 +61,14 @@ podman compose -f pgm/docker-compose.yml up --build
   ```
   Dentro de MAPFRE, las mismas variables sirven para las imágenes de `acrmapfredevops` y `MAVEN_MIRROR` para Azure Artifacts.
 
+### Perfil simulador (adaptadores reales contra un Gateway simulado)
+
+El perfil `simulador` mantiene los adaptadores reales del BFF y dirige sus llamadas a WireMock con respuestas sintéticas:
+
+```bash
+docker compose -f pgm/docker-compose.yml --profile simulador up --build
+```
+
 ## 3. Arranque manual (desarrollo)
 
 Requisitos: JDK 21, Maven 3.9+, Node.js 22+ (probado con 24), npm 10. `pgm-spa/.npmrc` fija `legacy-peer-deps=true` (necesario para Spectator 18 con Angular 19).

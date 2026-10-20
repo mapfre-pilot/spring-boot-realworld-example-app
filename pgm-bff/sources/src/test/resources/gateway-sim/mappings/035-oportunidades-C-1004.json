@@ -1,0 +1,20 @@
+{
+  "name": "oportunidades-C-1004",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/plataformas/pgo/v1/oportunidades",
+    "queryParameters": {
+      "clienteId": {
+        "equalTo": "C-1004"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "oportunidades-C-1004.json"
+  }
+}

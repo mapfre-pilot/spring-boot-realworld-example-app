@@ -1,0 +1,14 @@
+[
+  {
+    "numero": "S-9101",
+    "clienteId": "C-1002",
+    "polizaNumero": "AUT-000200",
+    "ramo": "AUTOS",
+    "tipo": "Lunas",
+    "estado": "CERRADA",
+    "fechaOcurrencia": "2026-06-20",
+    "fechaApertura": "2026-06-20",
+    "descripcion": "Sustitución de parabrisas",
+    "tramitador": "Tramitador Demo A"
+  }
+]

@@ -1,7 +1,7 @@
 package com.mapfre.pgm.bff.application.service;
 
 import com.mapfre.pgm.bff.application.port.in.ContextoUsuarioUseCase;
-import com.mapfre.pgm.bff.application.port.out.GestionComercialPort;
+import com.mapfre.pgm.bff.application.port.out.UsuariosComercialesPort;
 import com.mapfre.pgm.bff.domain.exception.AccesoNoAutorizadoException;
 import com.mapfre.pgm.bff.domain.model.ContextoUsuario;
 import com.mapfre.pgm.bff.domain.model.EstructuraComercial;
@@ -18,18 +18,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class AutorizacionService implements ContextoUsuarioUseCase {
 
-    private final GestionComercialPort gestionComercialPort;
+    private final UsuariosComercialesPort usuariosComercialesPort;
     private final FeatureFlags flags;
 
-    public AutorizacionService(GestionComercialPort gestionComercialPort, FeatureFlags flags) {
-        this.gestionComercialPort = gestionComercialPort;
+    public AutorizacionService(UsuariosComercialesPort usuariosComercialesPort, FeatureFlags flags) {
+        this.usuariosComercialesPort = usuariosComercialesPort;
         this.flags = flags;
     }
 
     @Override
     public ContextoUsuario contexto(String usuario, String nombre, List<String> perfiles) {
-        EstructuraComercial estructura = gestionComercialPort.estructuraDe(usuario).orElse(null);
-        String perfilSgc30 = gestionComercialPort.perfilSgc30De(usuario).orElse(null);
+        EstructuraComercial estructura = usuariosComercialesPort.estructuraDe(usuario).orElse(null);
+        String perfilSgc30 = usuariosComercialesPort.perfilSgc30De(usuario).orElse(null);
         boolean esUsuario = perfiles.contains(Perfiles.USUARIO) || perfiles.contains(Perfiles.ADMINISTRADOR)
                 || perfiles.contains(Perfiles.ASESOR_COMERCIAL);
         boolean asesor = perfiles.contains(Perfiles.ASESOR_COMERCIAL) || perfiles.contains(Perfiles.ADMINISTRADOR);

@@ -1,0 +1,12 @@
+[
+  {
+    "numero": "PR-5101",
+    "clienteId": "C-1002",
+    "ramo": "SALUD",
+    "producto": "Salud Elección",
+    "estado": "CADUCADO",
+    "fecha": "2026-05-01",
+    "fechaCaducidad": "2026-06-30",
+    "primaAnual": 820.0
+  }
+]

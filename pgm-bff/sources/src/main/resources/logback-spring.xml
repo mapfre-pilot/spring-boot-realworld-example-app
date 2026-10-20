@@ -9,7 +9,7 @@
         <loggerName/>
         <threadName/>
         <mdc/>
-        <pattern><pattern>{"app":"${appName}"}</pattern></pattern>
+        <pattern><pattern>{"app":"${appName}","trace_id":"%mdc{traceId}","span_id":"%mdc{spanId}","service.name":"pgm-bff"}</pattern></pattern>
         <provider class="com.mapfre.pgm.bff.infrastructure.observability.PiiMaskingMessageJsonProvider"/>
         <stackTrace/>
       </providers>

@@ -13,6 +13,7 @@ import com.mapfre.pgm.bff.domain.model.Ramo;
 import com.mapfre.pgm.bff.infrastructure.adapter.in.rest.ApiDtos.*;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /** Contexto de usuario (visibilidades), lanzaderas, auditoría y cuadro de mando. */
@@ -25,14 +26,17 @@ public class ContextoController {
     private final LanzaderasUseCase lanzaderas;
     private final AuditoriaUseCase auditoria;
     private final CuadroMandoUseCase cuadroMando;
+    private final IdempotenciaService idempotencia;
 
     public ContextoController(ContextoUsuarioUseCase contexto, AutorizacionService autorizacion,
-                              LanzaderasUseCase lanzaderas, AuditoriaUseCase auditoria, CuadroMandoUseCase cuadroMando) {
+                              LanzaderasUseCase lanzaderas, AuditoriaUseCase auditoria, CuadroMandoUseCase cuadroMando,
+                              IdempotenciaService idempotencia) {
         this.contexto = contexto;
         this.autorizacion = autorizacion;
         this.lanzaderas = lanzaderas;
         this.auditoria = auditoria;
         this.cuadroMando = cuadroMando;
+        this.idempotencia = idempotencia;
     }
 
     @GetMapping("/contexto")
@@ -46,9 +50,12 @@ public class ContextoController {
     }
 
     @PostMapping(path = "/auditoria", consumes = "application/json")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public void auditoria(@Valid @RequestBody AuditoriaRequest req, UsuarioActual u) {
-        auditoria.registrarAcceso(u.id(), req.accion(), req.clienteId(), req.pantalla());
+    public ResponseEntity<Void> auditoria(@Valid @RequestBody AuditoriaRequest req,
+            @RequestHeader(value = "Idempotency-Key", required = false) String key, UsuarioActual u) {
+        return idempotencia.ejecutar(u.id(), "POST", "/api/v1/auditoria", key, req, () -> {
+            auditoria.registrarAcceso(u.id(), req.accion(), req.clienteId(), req.pantalla());
+            return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+        });
     }
 
     @GetMapping("/cuadro-mando/kpis")

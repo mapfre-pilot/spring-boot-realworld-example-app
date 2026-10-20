@@ -1,0 +1,12 @@
+[
+  {
+    "id": "O-4",
+    "clienteId": "C-1003",
+    "tipo": "VENCIMIENTO",
+    "ramo": "EMPRESAS",
+    "polizaNumero": "EMP-000300",
+    "fecha": "2027-01-01",
+    "descripcion": "Vencimiento Multirriesgo Empresas",
+    "prioridad": "BAJA"
+  }
+]

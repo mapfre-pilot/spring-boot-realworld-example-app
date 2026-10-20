@@ -3,6 +3,7 @@ package com.mapfre.pgm.bff.infrastructure.adapter.in.rest;
 import com.mapfre.pgm.bff.domain.exception.AccesoNoAutorizadoException;
 import com.mapfre.pgm.bff.domain.exception.RecursoNoEncontradoException;
 import com.mapfre.pgm.bff.domain.exception.SistemaExternoException;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import com.mapfre.pgm.bff.infrastructure.observability.PiiMasker;
 import java.net.URI;
 import org.slf4j.Logger;
@@ -62,6 +63,17 @@ public class ApiExceptionHandler {
                 "No se pudo completar la operación con " + e.getSistema() + ". Inténtelo de nuevo.");
         pd.setProperty("sistema", e.getSistema());
         return pd;
+    }
+
+    @ExceptionHandler(IdempotenciaEnConflictoException.class)
+    ProblemDetail idempotenciaEnConflicto(IdempotenciaEnConflictoException e) {
+        return problem(HttpStatus.CONFLICT, "idempotencia-en-conflicto", "Clave de idempotencia en conflicto", e.getMessage());
+    }
+
+    @ExceptionHandler(CallNotPermittedException.class)
+    ProblemDetail circuitoAbierto(CallNotPermittedException e) {
+        return problem(HttpStatus.SERVICE_UNAVAILABLE, "sistema-externo", "Servicio no disponible temporalmente",
+                "El circuito del servicio externo está abierto. Inténtelo de nuevo más tarde.");
     }
 
     @ExceptionHandler(Exception.class)

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "O-1",
+    "clienteId": "C-1001",
+    "tipo": "VENCIMIENTO",
+    "ramo": "AUTOS",
+    "polizaNumero": "AUT-000100",
+    "fecha": "2026-11-15",
+    "descripcion": "Vencimiento anual Autos — revisar prima renovación",
+    "prioridad": "ALTA"
+  },
+  {
+    "id": "O-2",
+    "clienteId": "C-1001",
+    "tipo": "CROSSELLING",
+    "ramo": "VIDA",
+    "polizaNumero": null,
+    "fecha": "2026-10-20",
+    "descripcion": "Propensión Vida Riesgo (presupuesto PR-5001 vigente)",
+    "prioridad": "MEDIA"
+  }
+]

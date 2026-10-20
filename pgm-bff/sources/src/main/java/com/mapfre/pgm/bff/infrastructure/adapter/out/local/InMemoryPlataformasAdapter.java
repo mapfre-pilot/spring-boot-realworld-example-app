@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Profile("local")
 public class InMemoryPlataformasAdapter implements SiniestrosPort, VentasPort, OportunidadesPort,
-        GestionComercialPort, SgoPort, ComunicacionesPort, BorradoresPort {
+        GestionComercialPort, UsuariosComercialesPort, SgoPort, ComunicacionesPort, BorradoresPort {
 
     private record UsuarioLocal(String perfilSgc30, EstructuraComercial estructura) {}
 

@@ -1,0 +1,15 @@
+{
+  "name": "perfil-director.oficina",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/plataformas/sgc30/v1/usuarios/director.oficina/perfil"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "perfil-director.oficina.json"
+  }
+}

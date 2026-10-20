@@ -1,0 +1,22 @@
+# Propuesta hasta el onboarding SRE (ZeusOneteam-OnboardingAWSArqContJava).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgm-bff-config
+data:
+  PGM_GATEWAY_BASE_URL: https://api-gateway.dev.mapfre.invalid
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgm-bff
+spec:
+  replicas: 1
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: pgm-bff
+spec:
+  minReplicas: 1
+  maxReplicas: 3

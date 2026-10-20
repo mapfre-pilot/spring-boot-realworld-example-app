@@ -1,0 +1,15 @@
+{
+  "name": "detalle-poliza-DEC-000201",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/api-canal/polizas/v1/polizas/DEC-000201"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "poliza-DEC-000201.json"
+  }
+}

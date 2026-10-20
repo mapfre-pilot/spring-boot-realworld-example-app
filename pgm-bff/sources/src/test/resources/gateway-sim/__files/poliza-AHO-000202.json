@@ -1,0 +1,17 @@
+{
+  "numero": "AHO-000202",
+  "clienteId": "C-1002",
+  "ramo": "AHORRO",
+  "producto": "Plan Ahorro Flexible",
+  "estado": "EN_VIGOR",
+  "fechaEfecto": "2022-09-01",
+  "fechaVencimiento": "2032-09-01",
+  "primaAnual": 1200.0,
+  "formaPago": "Mensual",
+  "riesgo": "Saldo acumulado 4.930 €",
+  "acciones": [
+    "Extracto",
+    "Aportación extraordinaria"
+  ],
+  "lanzadera": "GESVIDA"
+}

@@ -24,28 +24,38 @@ public class TarificacionController {
     private final AutorizacionService autorizacion;
     private final AuditoriaUseCase auditoria;
     private final ComunicacionesPort comunicaciones;
+    private final IdempotenciaService idempotencia;
 
     public TarificacionController(TarificacionSaludUseCase tarificacion, ContextoUsuarioUseCase contexto,
-                                  AutorizacionService autorizacion, AuditoriaUseCase auditoria, ComunicacionesPort comunicaciones) {
+                                  AutorizacionService autorizacion, AuditoriaUseCase auditoria, ComunicacionesPort comunicaciones,
+                                  IdempotenciaService idempotencia) {
         this.tarificacion = tarificacion;
         this.contexto = contexto;
         this.autorizacion = autorizacion;
         this.auditoria = auditoria;
         this.comunicaciones = comunicaciones;
+        this.idempotencia = idempotencia;
     }
 
     @PostMapping(path = "/tarificacion/salud", consumes = "application/json")
-    public TarificacionSalud.Resultado tarificar(@Valid @RequestBody TarificacionSaludRequest req, UsuarioActual u) {
-        autorizacion.exigir(contexto.contexto(u.id(), u.nombre(), u.perfiles()), Visibilidades.TARIFICACION_SALUD);
-        TarificacionSalud.Resultado r = tarificacion.tarificar(aSolicitud(req), u.id());
-        auditoria.registrarAcceso(u.id(), "TARIFICACION_SALUD", req.clienteId(), "nueva-produccion");
-        return r;
+    public ResponseEntity<TarificacionSalud.Resultado> tarificar(@Valid @RequestBody TarificacionSaludRequest req,
+            @RequestHeader(value = "Idempotency-Key", required = false) String key, UsuarioActual u) {
+        return idempotencia.ejecutar(u.id(), "POST", "/api/v1/tarificacion/salud", key, req, () -> {
+            autorizacion.exigir(contexto.contexto(u.id(), u.nombre(), u.perfiles()), Visibilidades.TARIFICACION_SALUD);
+            TarificacionSalud.Resultado r = tarificacion.tarificar(aSolicitud(req), u.id());
+            auditoria.registrarAcceso(u.id(), "TARIFICACION_SALUD", req.clienteId(), "nueva-produccion");
+            return ResponseEntity.ok(r);
+        });
     }
 
     @PostMapping(path = "/tarificacion/salud/borradores", consumes = "application/json")
-    public ResponseEntity<BorradorCreadoDto> guardarBorrador(@Valid @RequestBody TarificacionSaludRequest req, UsuarioActual u) {
-        String id = tarificacion.guardarBorrador(aSolicitud(req), u.id());
-        return ResponseEntity.created(URI.create("/api/v1/tarificacion/salud/borradores/" + id)).body(new BorradorCreadoDto(id));
+    public ResponseEntity<BorradorCreadoDto> guardarBorrador(@Valid @RequestBody TarificacionSaludRequest req,
+            @RequestHeader(value = "Idempotency-Key", required = false) String key, UsuarioActual u) {
+        return idempotencia.ejecutar(u.id(), "POST", "/api/v1/tarificacion/salud/borradores", key, req, () -> {
+            String id = tarificacion.guardarBorrador(aSolicitud(req), u.id());
+            return ResponseEntity.created(URI.create("/api/v1/tarificacion/salud/borradores/" + id))
+                    .body(new BorradorCreadoDto(id));
+        });
     }
 
     @GetMapping("/tarificacion/salud/borradores/{id}")
@@ -54,9 +64,12 @@ public class TarificacionController {
     }
 
     @PostMapping(path = "/comunicaciones/llamadas", consumes = "application/json")
-    public LlamadaDto llamar(@Valid @RequestBody LlamadaRequest req, UsuarioActual u) {
-        auditoria.registrarAcceso(u.id(), "CLICK_TO_CALL", req.clienteId(), "centro-comunicaciones");
-        return new LlamadaDto(comunicaciones.iniciarLlamada(req.clienteId(), req.telefono(), u.id()));
+    public ResponseEntity<LlamadaDto> llamar(@Valid @RequestBody LlamadaRequest req,
+            @RequestHeader(value = "Idempotency-Key", required = false) String key, UsuarioActual u) {
+        return idempotencia.ejecutar(u.id(), "POST", "/api/v1/comunicaciones/llamadas", key, req, () -> {
+            auditoria.registrarAcceso(u.id(), "CLICK_TO_CALL", req.clienteId(), "centro-comunicaciones");
+            return ResponseEntity.ok(new LlamadaDto(comunicaciones.iniciarLlamada(req.clienteId(), req.telefono(), u.id())));
+        });
     }
 
     private static TarificacionSalud.Solicitud aSolicitud(TarificacionSaludRequest r) {

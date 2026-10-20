@@ -1,0 +1,14 @@
+{
+  "name": "estructura-gestor.sin.nuuma",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/plataformas/imediador/v1/usuarios/gestor.sin.nuuma/estructura"
+  },
+  "response": {
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "id": "C-1001",
+  "nombre": "Laura",
+  "apellidos": "Martín Serrano",
+  "tipoDocumento": "DNI",
+  "documento": "00000001R",
+  "fechaNacimiento": "1984-03-12",
+  "nacionalidad": "Española",
+  "tipologia": "PARTICULAR",
+  "estado": "EN_VIGOR",
+  "vip": false,
+  "robinson": false,
+  "exclusivoCorredor": false,
+  "direccion": {
+    "via": "Calle Ficticia",
+    "numero": "12",
+    "codigoPostal": "28001",
+    "localidad": "Madrid",
+    "provincia": "Madrid"
+  },
+  "telefono": "600000001",
+  "email": "laura.demo@example.invalid",
+  "oficinaGestora": "Oficina Madrid Centro (0001)",
+  "gestorAsignado": "Gestor Demo 1",
+  "palancas": {
+    "dniDigitalizado": true,
+    "rgpdFirmado": true,
+    "altaAci": true,
+    "clienteTotal": false,
+    "planPagos": true,
+    "enFamilia": true,
+    "dpv": false
+  },
+  "alertas": [
+    {
+      "tipo": "RECIBO",
+      "texto": "Recibo devuelto pendiente de regularizar",
+      "fecha": "2026-10-02"
+    },
+    {
+      "tipo": "VENCIMIENTO",
+      "texto": "Vencimiento de Autos en 30 días",
+      "fecha": "2026-11-15"
+    }
+  ],
+  "familia": [
+    {
+      "clienteId": "C-1002",
+      "nombre": "Pablo Martín Serrano",
+      "parentesco": "Hermano"
+    }
+  ],
+  "posicionBancaria": "Domiciliación activa (IBAN ****1234)",
+  "descuentoVinculacion": 12
+}

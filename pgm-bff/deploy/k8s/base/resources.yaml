@@ -1,0 +1,126 @@
+# Propuesta hasta el onboarding SRE (ZeusOneteam-OnboardingAWSArqContJava).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgm-bff-config
+data:
+  SPRING_PROFILES_ACTIVE: corporativo
+  PGM_GATEWAY_BASE_URL: https://api-gateway.{entorno}.mapfre.invalid
+  PGM_GATEWAY_TENANT: mapfre-es
+  PGM_GATEWAY_CONNECT_TIMEOUT_MS: "2000"
+  PGM_GATEWAY_READ_TIMEOUT_MS: "5000"
+  PGM_IDEMPOTENCIA_VENTANA: PT24H
+  OTEL_SAMPLING_PROBABILITY: "0.1"
+  SERVER_PORT: "8080"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgm-bff
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pgm-bff
+  template:
+    metadata:
+      labels:
+        app: pgm-bff
+    spec:
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: pgm-bff
+          image: pgm-bff:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: pgm-bff-config
+            - secretRef:
+                name: pgm-bff-secrets
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10001
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /monitoring/health/liveness
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /monitoring/health/readiness
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgm-bff
+spec:
+  type: ClusterIP
+  selector:
+    app: pgm-bff
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: pgm-bff
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: pgm-bff
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: pgm-bff
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: pgm-bff

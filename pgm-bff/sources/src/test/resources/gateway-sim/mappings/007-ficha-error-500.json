@@ -1,0 +1,15 @@
+{
+  "name": "ficha-error-500",
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/api-canal/clientes/v1/clientes/C-500/vision360"
+  },
+  "response": {
+    "status": 500,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "error-sistema-externo.json"
+  }
+}

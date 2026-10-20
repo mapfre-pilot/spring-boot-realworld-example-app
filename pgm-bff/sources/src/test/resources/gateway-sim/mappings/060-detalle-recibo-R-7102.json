@@ -1,0 +1,15 @@
+{
+  "name": "detalle-recibo-R-7102",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/api-canal/recibos/v1/recibos/R-7102"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "recibo-R-7102.json"
+  }
+}

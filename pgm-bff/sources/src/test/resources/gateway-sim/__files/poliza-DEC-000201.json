@@ -1,0 +1,16 @@
+{
+  "numero": "DEC-000201",
+  "clienteId": "C-1002",
+  "ramo": "DECESOS",
+  "producto": "Decesos Familiar",
+  "estado": "EN_VIGOR",
+  "fechaEfecto": "2019-05-01",
+  "fechaVencimiento": "2027-05-01",
+  "primaAnual": 245.0,
+  "formaPago": "Trimestral",
+  "riesgo": "3 asegurados",
+  "acciones": [
+    "Duplicado de póliza"
+  ],
+  "lanzadera": "DECESOS"
+}

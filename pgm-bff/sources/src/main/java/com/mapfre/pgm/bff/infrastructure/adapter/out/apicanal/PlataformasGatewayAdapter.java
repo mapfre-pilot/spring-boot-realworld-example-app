@@ -14,7 +14,8 @@ import org.springframework.stereotype.Component;
 /** APIs de plataforma (PGO, SGC 3.0, iMediador, SGO, comunicaciones) por API Gateway — nunca ESB/SOAP/Denodo directos. */
 @Component
 @Profile("!local")
-public class PlataformasGatewayAdapter implements OportunidadesPort, GestionComercialPort, SgoPort, ComunicacionesPort {
+public class PlataformasGatewayAdapter implements OportunidadesPort, GestionComercialPort, UsuariosComercialesPort,
+        SgoPort, ComunicacionesPort {
 
     private final GatewayClient gw;
 

@@ -1,0 +1,14 @@
+{
+  "name": "ficha-no-encontrada",
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/api-canal/clientes/v1/clientes/C-404/vision360"
+  },
+  "response": {
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

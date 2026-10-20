@@ -1,0 +1,16 @@
+{
+  "numero": "HOG-000500",
+  "clienteId": "C-1005",
+  "ramo": "HOGAR",
+  "producto": "Hogar Básico",
+  "estado": "ANULADA",
+  "fechaEfecto": "2018-03-01",
+  "fechaVencimiento": "2024-03-01",
+  "primaAnual": 160.0,
+  "formaPago": "Anual",
+  "riesgo": "Vivienda — Camino Simulado 22, Málaga",
+  "acciones": [
+    "Duplicado de póliza"
+  ],
+  "lanzadera": "NSE_HOGAR"
+}

@@ -11,6 +11,8 @@ spring:
     config:
       enabled: ${CONFIG_SERVER_ENABLED:false}
       fail-fast: false
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
 
 server:
   port: ${SERVER_PORT:8080}
@@ -24,9 +26,13 @@ management:
         include: [health, metrics, prometheus, info]
   endpoint:
     health:
-      show-details: never
+      show-details: always
+      show-components: always
       probes:
         enabled: true
+  health:
+    circuitbreakers:
+      enabled: true
   metrics:
     tags:
       application: ${spring.application.name}
@@ -44,6 +50,8 @@ app:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:4200}
 
 pgm:
+  idempotencia:
+    ventana: ${PGM_IDEMPOTENCIA_VENTANA:PT24H}
   features:
     tarificacion-salud: ${PGM_FEATURE_TARIFICACION_SALUD:true}
     gestion-comercial: ${PGM_FEATURE_GESTION_COMERCIAL:true}
@@ -105,7 +113,9 @@ resilience4j:
         max-attempts: 3
         wait-duration: 200ms
         enable-exponential-backoff: true
-        retry-exceptions: [ org.springframework.web.client.ResourceAccessException, org.springframework.web.client.HttpServerErrorException ]
+        exponential-backoff-multiplier: 2
+        retry-exceptions: [ com.mapfre.pgm.bff.domain.exception.SistemaExternoException ]
+        ignore-exceptions: [ com.mapfre.pgm.bff.domain.exception.ErrorClienteExternoException ]
     instances:
       apicanal-lectura: { base-config: default }
       plataforma-lectura: { base-config: default }

@@ -1,0 +1,14 @@
+[
+  {
+    "numero": "S-9201",
+    "clienteId": "C-1003",
+    "polizaNumero": "EMP-000300",
+    "ramo": "EMPRESAS",
+    "tipo": "Incendio",
+    "estado": "EN_TRAMITE",
+    "fechaOcurrencia": "2026-08-15",
+    "fechaApertura": "2026-08-16",
+    "descripcion": "Incendio parcial en almacén, peritación en curso",
+    "tramitador": "Tramitador Demo D"
+  }
+]

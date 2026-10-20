@@ -1,0 +1,14 @@
+[
+  {
+    "numero": "R-7501",
+    "clienteId": "C-1005",
+    "polizaNumero": "HOG-000500",
+    "ramo": "HOGAR",
+    "estado": "ANULADO",
+    "importe": 160.0,
+    "fechaEmision": "2024-03-01",
+    "fechaVencimiento": "2024-03-15",
+    "formaPago": "Domiciliación",
+    "ibanEnmascarado": "ES** **** **** **** **** 9012"
+  }
+]

@@ -1,0 +1,50 @@
+{
+  "id": "C-1002",
+  "nombre": "Pablo",
+  "apellidos": "Martín Serrano",
+  "tipoDocumento": "DNI",
+  "documento": "00000002W",
+  "fechaNacimiento": "1988-07-30",
+  "nacionalidad": "Española",
+  "tipologia": "AUTONOMO",
+  "estado": "EN_VIGOR",
+  "vip": true,
+  "robinson": false,
+  "exclusivoCorredor": false,
+  "direccion": {
+    "via": "Avenida de Prueba",
+    "numero": "4",
+    "codigoPostal": "41001",
+    "localidad": "Sevilla",
+    "provincia": "Sevilla"
+  },
+  "telefono": "600000002",
+  "email": "pablo.demo@example.invalid",
+  "oficinaGestora": "Oficina Sevilla Nervión (0410)",
+  "gestorAsignado": "Gestor Demo 2",
+  "palancas": {
+    "dniDigitalizado": true,
+    "rgpdFirmado": false,
+    "altaAci": false,
+    "clienteTotal": true,
+    "planPagos": false,
+    "enFamilia": true,
+    "dpv": true
+  },
+  "alertas": [
+    {
+      "tipo": "RGPD",
+      "texto": "Consentimiento RGPD pendiente de firma",
+      "fecha": "2026-09-20"
+    }
+  ],
+  "familia": [
+    {
+      "clienteId": "C-1001",
+      "nombre": "Laura Martín Serrano",
+      "parentesco": "Hermana"
+    }
+  ],
+  "posicionBancaria": "Domiciliación activa (IBAN ****5678)",
+  "descuentoVinculacion": 18
+}

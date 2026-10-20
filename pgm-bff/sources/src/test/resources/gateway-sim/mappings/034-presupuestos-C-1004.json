@@ -1,0 +1,20 @@
+{
+  "name": "presupuestos-C-1004",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/api-canal/ventas/v1/presupuestos",
+    "queryParameters": {
+      "clienteId": {
+        "equalTo": "C-1004"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "presupuestos-C-1004.json"
+  }
+}

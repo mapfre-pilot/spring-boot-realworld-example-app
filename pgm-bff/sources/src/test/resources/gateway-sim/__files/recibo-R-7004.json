@@ -1,0 +1,12 @@
+{
+  "numero": "R-7004",
+  "clienteId": "C-1001",
+  "polizaNumero": "SAL-000102",
+  "ramo": "SALUD",
+  "estado": "COBRADO",
+  "importe": 95.0,
+  "fechaEmision": "2026-09-01",
+  "fechaVencimiento": "2026-09-30",
+  "formaPago": "Domiciliación",
+  "ibanEnmascarado": "ES** **** **** **** **** 1234"
+}

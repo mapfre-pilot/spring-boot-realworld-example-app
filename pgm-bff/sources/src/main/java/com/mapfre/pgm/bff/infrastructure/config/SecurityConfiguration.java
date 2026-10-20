@@ -26,7 +26,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
- * Resource server OIDC (Entra ID) salvo en perfil local. La SPA llama con el access token; la autorización fina
+ * Resource server OIDC (Entra ID) salvo en perfiles mock. La SPA llama con el access token; la autorización fina
  * (perfil × estructura × flags) la hace {@code AutorizacionService}, aquí solo se exige el scope de acceso a PGM.
  */
 @Configuration
@@ -34,7 +34,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfiguration {
 
     @Bean
-    @Profile("local")
+    @Profile({"local", "simulador"})
     SecurityFilterChain localSecurity(HttpSecurity http) throws Exception {
         return http.csrf(csrf -> csrf.disable())
                 .cors(cors -> {})
@@ -44,7 +44,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    @Profile("!local")
+    @Profile("!local & !simulador")
     SecurityFilterChain secureSecurity(HttpSecurity http, @Value("${security.entraid.scope}") String scope) throws Exception {
         return http.csrf(csrf -> csrf.disable())
                 .cors(cors -> {})
@@ -59,7 +59,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    @Profile("!local")
+    @Profile("!local & !simulador")
     JwtDecoder jwtDecoder(@Value("${security.entraid.jwk-set-uri}") String jwkSetUri,
                           @Value("${security.entraid.issuer}") String issuer,
                           @Value("${security.entraid.audience}") String audience) {
@@ -89,8 +89,9 @@ public class SecurityConfiguration {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(Arrays.stream(origins.split(",")).map(String::trim).toList());
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-PGM-Usuario", "X-PGM-Perfiles", "Idempotency-Key"));
-        config.setExposedHeaders(List.of("Location"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-PGM-Usuario", "X-Usuario-Local",
+                "X-PGM-Perfiles", "Idempotency-Key"));
+        config.setExposedHeaders(List.of("Location", "Idempotent-Replayed"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;

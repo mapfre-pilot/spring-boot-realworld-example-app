@@ -1,0 +1,12 @@
+{
+  "numero": "R-7202",
+  "clienteId": "C-1003",
+  "polizaNumero": "AUT-000301",
+  "ramo": "AUTOS",
+  "estado": "DEVUELTO",
+  "importe": 1155.0,
+  "fechaEmision": "2025-09-01",
+  "fechaVencimiento": "2025-09-15",
+  "formaPago": "Transferencia",
+  "ibanEnmascarado": null
+}

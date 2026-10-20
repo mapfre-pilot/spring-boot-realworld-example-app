@@ -1,0 +1,44 @@
+{
+  "id": "C-1003",
+  "nombre": "Construcciones Ejemplo",
+  "apellidos": "S.L.",
+  "tipoDocumento": "CIF",
+  "documento": "B00000003",
+  "fechaNacimiento": null,
+  "nacionalidad": "Española",
+  "tipologia": "EMPRESA",
+  "estado": "EN_VIGOR",
+  "vip": false,
+  "robinson": false,
+  "exclusivoCorredor": true,
+  "direccion": {
+    "via": "Polígono Industrial Demo",
+    "numero": "Nave 7",
+    "codigoPostal": "08040",
+    "localidad": "Barcelona",
+    "provincia": "Barcelona"
+  },
+  "telefono": "930000003",
+  "email": "admin@construcciones-ejemplo.invalid",
+  "oficinaGestora": "Oficina Barcelona Sants (0802)",
+  "gestorAsignado": "Gestor Demo 3",
+  "palancas": {
+    "dniDigitalizado": false,
+    "rgpdFirmado": true,
+    "altaAci": false,
+    "clienteTotal": true,
+    "planPagos": false,
+    "enFamilia": false,
+    "dpv": false
+  },
+  "alertas": [
+    {
+      "tipo": "CORREDOR",
+      "texto": "Cliente exclusivo de corredor: consultar antes de gestionar",
+      "fecha": "2026-01-10"
+    }
+  ],
+  "familia": [],
+  "posicionBancaria": "Transferencia",
+  "descuentoVinculacion": 0
+}

@@ -1,0 +1,15 @@
+{
+  "name": "ficha-C-1004",
+  "priority": 3,
+  "request": {
+    "method": "GET",
+    "urlPath": "/api-canal/clientes/v1/clientes/C-1004/vision360"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "cliente-C-1004.json"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "numero": "AUT-000301",
+  "clienteId": "C-1003",
+  "ramo": "AUTOS",
+  "producto": "Flotas",
+  "estado": "SUSPENDIDA",
+  "fechaEfecto": "2025-03-01",
+  "fechaVencimiento": "2026-03-01",
+  "primaAnual": 2310.0,
+  "formaPago": "Semestral",
+  "riesgo": "4 vehículos",
+  "acciones": [
+    "Duplicado de póliza"
+  ],
+  "lanzadera": "NSE"
+}
