@@ -50,8 +50,8 @@ public class UsuarioActualResolver implements HandlerMethodArgumentResolver {
                     .orElseGet(() -> Optional.ofNullable(jwt.getClaimAsStringList("roles")).orElse(List.of()));
             return new UsuarioActual(id, nombre, grupos);
         }
-        if (!env.matchesProfiles("local", "simulador")) {
-            throw new IllegalStateException("Petición sin JWT fuera del perfil local o simulador");
+        if (!env.matchesProfiles("local", "simulador", "pruebas")) {
+            throw new IllegalStateException("Petición sin JWT fuera de los perfiles local, simulador o pruebas");
         }
         LocalProperties lp = localProps.orElse(new LocalProperties("usuario.local", List.of("PGM_USUARIO")));
         String id = Optional.ofNullable(request.getHeader("X-Usuario-Local"))

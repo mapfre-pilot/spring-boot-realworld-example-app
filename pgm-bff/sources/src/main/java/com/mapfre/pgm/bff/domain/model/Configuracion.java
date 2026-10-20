@@ -17,6 +17,7 @@ public record Configuracion(
         Map<String, Boolean> flags,
         Map<String, String> constantes,
         List<UsuarioPrueba> usuariosPrueba,
+        OrigenDatos origenDatos,
         Instant ultimaModificacion,
         String modificadoPor) {
 
@@ -39,6 +40,27 @@ public record Configuracion(
     public record EntraId(boolean habilitado, String tenantId, String clientId, String scope, String issuer, String audience,
                           List<String> redirectUris, Secreto clientSecretBff) {}
 
+    /**
+     * Origen de los datos por capacidad: {@code API_CANAL} (specs PROD-APICANAL-*) o {@code LEGACY} (los mismos servicios que
+     * consume PGM en Appian). {@code porCapacidad} vacío o {@code HEREDAR} → se aplica {@code global}.
+     * {@code llamadaDirectaPruebas}: solo para pruebas locales sin API Gateway; en DEV/PRE/PRO todo sale por el Gateway (ARCH-FIS-COM-001).
+     */
+    public record OrigenDatos(String global, Map<String, String> porCapacidad, boolean llamadaDirectaPruebas, String entornoServicios) {
+        public static final String API_CANAL = "API_CANAL";
+        public static final String LEGACY = "LEGACY";
+        public static final String HEREDAR = "HEREDAR";
+        public static final List<String> CAPACIDADES = List.of("clientes", "polizas", "recibos", "siniestros", "ventas");
+        public String origenDe(String capacidad) {
+            String o = porCapacidad == null ? null : porCapacidad.get(capacidad);
+            return o == null || o.isBlank() || HEREDAR.equals(o) ? (global == null ? API_CANAL : global) : o;
+        }
+        public boolean esLegacy(String capacidad) {
+            return LEGACY.equals(origenDe(capacidad));
+        }
+    }
+    /** Parte no sensible de la configuración que la SPA necesita antes de autenticarse (login Entra ID dinámico). */
+    public record Publica(String entorno, boolean entraIdHabilitado, String tenantId, String clientId, String scope, String issuer,
+                          OrigenDatos origenDatos) {}
     public record UsuarioPrueba(String usuario, List<String> perfiles, String nuuma, String perfilSgc30, String descripcion) {}
 
     public record ResultadoPrueba(String servicio, boolean ok, Integer httpStatus, long latenciaMs, String url, String mensaje) {}

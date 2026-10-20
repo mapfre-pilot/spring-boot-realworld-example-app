@@ -11,6 +11,7 @@ import {
   ClienteResumen,
   ContextoUsuario,
   Configuracion,
+  ConfiguracionPublica,
   ResultadoPrueba,
   AccionPoliza,
   DocumentoPoliza,
@@ -129,6 +130,7 @@ export interface PgmRepository {
 
   // ---- Configuración (solo PGM_ADMINISTRADOR) ----
   configuracion(): Observable<Configuracion>;
+  configuracionPublica(): Observable<ConfiguracionPublica>;
   guardarConfiguracion(c: Partial<Configuracion>): Observable<Configuracion>;
   guardarSecreto(ambito: string, nombre: string, valor: string): Observable<Configuracion>;
   borrarSecreto(ambito: string, nombre: string): Observable<Configuracion>;

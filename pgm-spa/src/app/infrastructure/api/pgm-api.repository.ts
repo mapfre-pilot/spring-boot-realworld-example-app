@@ -14,6 +14,7 @@ import {
   ClienteResumen,
   ContextoUsuario,
   Configuracion,
+  ConfiguracionPublica,
   ResultadoPrueba,
   AccionPoliza,
   DocumentoPoliza,
@@ -422,6 +423,10 @@ export class PgmApiRepository implements PgmRepository {
   // ---- Configuración (solo PGM_ADMINISTRADOR) ----
   configuracion(): Observable<Configuracion> {
     return this.http.get<Configuracion>(`${this.base}/configuracion`);
+  }
+
+  configuracionPublica(): Observable<ConfiguracionPublica> {
+    return this.http.get<ConfiguracionPublica>(`${this.base}/configuracion/publica`);
   }
   guardarConfiguracion(c: Partial<Configuracion>): Observable<Configuracion> {
     return this.http.put<Configuracion>(`${this.base}/configuracion`, c);

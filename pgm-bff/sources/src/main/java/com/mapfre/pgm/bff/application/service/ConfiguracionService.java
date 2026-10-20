@@ -90,6 +90,7 @@ public class ConfiguracionService implements ConfiguracionUseCase {
                 nueva.flags() != null ? nueva.flags() : actual.flags(),
                 nueva.constantes() != null ? nueva.constantes() : actual.constantes(),
                 nueva.usuariosPrueba() != null ? nueva.usuariosPrueba() : actual.usuariosPrueba(),
+                nueva.origenDatos() != null ? nueva.origenDatos() : actual.origenDatos(),
                 Instant.now(), usuario);
         almacen.escribir(fusion);
         auditoria.registrarAcceso(usuario, "CONFIGURACION_GUARDAR", null, "configuracion");
@@ -178,6 +179,25 @@ public class ConfiguracionService implements ConfiguracionUseCase {
                 throw new IllegalArgumentException("Tenant ID y Client ID de Entra ID deben ser GUID");
             }
         }
+        if (c.origenDatos() != null) {
+            OrigenDatos o = c.origenDatos();
+            if (o.global() != null && !Set.of(OrigenDatos.API_CANAL, OrigenDatos.LEGACY).contains(o.global())) {
+                throw new IllegalArgumentException("Origen de datos global no válido: debe ser API_CANAL o LEGACY");
+            }
+            if (o.porCapacidad() != null) {
+                for (var e : o.porCapacidad().entrySet()) {
+                    if (!OrigenDatos.CAPACIDADES.contains(e.getKey())) {
+                        throw new IllegalArgumentException("Capacidad desconocida en origen de datos: " + e.getKey());
+                    }
+                    if (e.getValue() != null && !Set.of(OrigenDatos.API_CANAL, OrigenDatos.LEGACY, OrigenDatos.HEREDAR).contains(e.getValue())) {
+                        throw new IllegalArgumentException("Origen no válido para " + e.getKey() + ": API_CANAL, LEGACY o HEREDAR");
+                    }
+                }
+            }
+            if (o.entornoServicios() != null && !Set.of("DEV", "PRE", "PRO").contains(o.entornoServicios())) {
+                throw new IllegalArgumentException("Entorno de servicios no válido: DEV, PRE o PRO");
+            }
+        }
         if (c.appian() != null && c.appian().habilitado() && (c.appian().urlBase() == null || !c.appian().urlBase().startsWith("https://"))) {
             throw new IllegalArgumentException("La URL de Appian debe empezar por https://");
         }
@@ -198,7 +218,7 @@ public class ConfiguracionService implements ConfiguracionUseCase {
         EntraId entra = e == null ? null : new EntraId(e.habilitado(), e.tenantId(), e.clientId(), e.scope(), e.issuer(), e.audience(),
                 e.redirectUris(), enmascarar(e.clientSecretBff(), almacen.secretos("entraid")));
         return new Configuracion(c.entorno(), c.gateway(), servicios, appian, entra, c.flags(), c.constantes(), c.usuariosPrueba(),
-                c.ultimaModificacion(), c.modificadoPor());
+                c.origenDatos() == null ? origenPorDefecto() : c.origenDatos(), c.ultimaModificacion(), c.modificadoPor());
     }
 
     private Secreto enmascarar(Secreto s, Map<String, String> valores) {
@@ -219,6 +239,24 @@ public class ConfiguracionService implements ConfiguracionUseCase {
         return m;
     }
 
+    @Override
+    public Configuracion.Publica publica() {
+        Configuracion c = almacen.leer().orElseGet(this::porDefecto);
+        EntraId e = c.entraId();
+        return new Configuracion.Publica(c.entorno(), e != null && e.habilitado(), e == null ? null : e.tenantId(),
+                e == null ? null : e.clientId(), e == null ? null : e.scope(), e == null ? null : e.issuer(),
+                c.origenDatos() == null ? origenPorDefecto() : c.origenDatos());
+    }
+
+    /** Perfil «pruebas» (sin API Gateway ni API Canal disponibles): legacy de PGM con URL directa de PRE; resto: API Canal vía Gateway. */
+    OrigenDatos origenPorDefecto() {
+        boolean pruebas = env.matchesProfiles("pruebas");
+        Map<String, String> porCapacidad = new LinkedHashMap<>();
+        OrigenDatos.CAPACIDADES.forEach(cap -> porCapacidad.put(cap, OrigenDatos.HEREDAR));
+        return new OrigenDatos(env.getProperty("PGM_ORIGEN_DATOS", pruebas ? OrigenDatos.LEGACY : OrigenDatos.API_CANAL),
+                porCapacidad, pruebas, env.getProperty("PGM_ENTORNO_SERVICIOS", "PRE"));
+    }
+
     /** Catálogo por defecto: las 18 rutas del Gateway con la autenticación observada en los connected systems de PGM (área E). */
     Configuracion porDefecto() {
         List<Servicio> s = new ArrayList<>();
@@ -231,7 +269,7 @@ public class ConfiguracionService implements ConfiguracionUseCase {
         s.add(new Servicio("sgc30", "SGC 3.0", "sgc3-bk-business-tasks: gestiones, cierre, reapertura, observaciones, perfil", "sgc30", "LEGACY", TipoAutenticacion.OAUTH_CLIENT_CREDENTIALS, urls("https://sgc3.pre.mapfre.net", ""), Map.of("NUUMA", "{nuuma}"), List.of(sec("clientId", "Client ID"), sec("clientSecret", "Client secret")), true));
         s.add(new Servicio("imediador", "iMediador EDGE", "/api/1.0: perfil, estructura comercial, actividad comercial, catálogos", "imediador", "LEGACY", TipoAutenticacion.API_KEY, urls("https://imediador.pre.mapfre.net", ""), Map.of("origen", "FC"), List.of(sec("apiKey", "API key iMediador")), true));
         s.add(new Servicio("bdec", "BDEC (ESTRUAGE)", "Estructura comercial", "bdec", "LEGACY", TipoAutenticacion.BASIC, urls("", ""), Map.of(), List.of(sec("usuario", "Usuario"), sec("password", "Contraseña")), true));
-        s.add(new Servicio("clients-edge", "Clients EDGE / Client API", "negocioclientes: avisos, interacciones, reclamaciones, documentos CDD, prestaciones, presupuestos, consentimientos, inducciones", "clients-edge", "LEGACY", TipoAutenticacion.API_KEY, urls("https://clients-edge.pre.mapfre.net", ""), Map.of(), List.of(sec("apiKey", "API key")), true));
+        s.add(new Servicio("clients-edge", "Clients EDGE (webservices.pre)", "CS «PGM Clients EDGE»: MRCConsultaBack (ficha, búsqueda, contactos), MRCBack (pólizas), negocioclientes (prestaciones, presupuestos, reclamaciones), consentimientos, GESYC consultarRecibo", "clients-edge", "LEGACY", TipoAutenticacion.BASIC, urls("https://webservices.pre.mapfre.net:26004", ""), Map.of(), List.of(sec("usuario", "Usuario Basic"), sec("password", "Contraseña Basic")), true));
         s.add(new Servicio("sgo", "SGO (Sistema de Gestión Operativa)", "ConsultarSolicitudes, ConsultarDocumentos (SOAP → fachada REST en el Gateway)", "sgo", "LEGACY", TipoAutenticacion.BASIC, urls("", ""), Map.of(), List.of(sec("usuario", "Usuario de servicio"), sec("password", "Contraseña")), true));
         s.add(new Servicio("click2call", "Click2Call (Broadsoft)", "/com.broadsoft.xsi-actions/v2.0/user/{nuuma}/calls/callmenow", "click2call", "LEGACY", TipoAutenticacion.BASIC, urls("", ""), Map.of(), List.of(sec("usuario", "Usuario XSI"), sec("password", "Contraseña XSI")), flags.clickToCall()));
         s.add(new Servicio("aci", "ACI — Área de Cliente", "crearClienteACI (alta en el Área de Cliente)", "aci", "LEGACY", TipoAutenticacion.API_KEY, urls("", ""), Map.of(), List.of(sec("apiKey", "API key")), true));
@@ -240,6 +278,13 @@ public class ConfiguracionService implements ConfiguracionUseCase {
         s.add(new Servicio("wlcatalog", "WLCatalog (ESB)", "ARQ_CATALOG_SMEDWeb/sca/wICatalog: catálogo de acciones por cia+ramo (SOAP → REST)", "wlcatalog", "LEGACY", TipoAutenticacion.BASIC, urls("https://esb.pre.mapfre.net:26005", ""), Map.of(), List.of(sec("usuario", "Usuario ESB"), sec("password", "Contraseña ESB")), true));
         s.add(new Servicio("gesyc", "GESYC (recibos)", "consultarRecibo, gesycore imprimirRecibo (SOAP → REST)", "gesyc", "LEGACY", TipoAutenticacion.BASIC, urls("", ""), Map.of("NUUMA", "{nuuma}"), List.of(sec("usuario", "Usuario APPUPGM"), sec("password", "Contraseña APPUPGM")), true));
         s.add(new Servicio("mets", "METS (prestaciones)", "expedientes de siniestros", "mets", "LEGACY", TipoAutenticacion.API_KEY, urls("", ""), Map.of(), List.of(sec("apiKey", "API key")), true));
+        // Legacy que usa PGM en Appian para las capacidades que API Canal cubriría (origen de datos = LEGACY)
+        s.add(new Servicio("clients-edge-recibos", "Clients EDGE Recibos (Denodo)", "CS «PGM Clients EDGE Recibos»: /server/vfdc/client/views/receiptsDetail | products | productsDetail", "clients-edge-recibos", "LEGACY", TipoAutenticacion.BASIC, urls("http://denodo-prep.es.mapfre.net:26014", ""), Map.of(), List.of(sec("usuario", "Usuario Denodo"), sec("password", "Contraseña Denodo")), true));
+        s.add(new Servicio("client-api", "Client API (apisb clients/1.0)", "CS «PGM Client API»: /client/{id}/receipts; scopes esp:clients/basicInfo:read, extendedInfo, address, contactMethod", "client-api", "LEGACY", TipoAutenticacion.OAUTH_CLIENT_CREDENTIALS, urls("https://apisb.mapfre.net:25003/esp/srv/api/clients/1.0", ""), Map.of("tokenUrl", "https://apisb.mapfre.net:25003/auth/oauth/v2/token", "scope", "esp:clients/basicInfo:read esp:clients/extendedInfo esp:clients/address esp:clients/contactMethod"), List.of(sec("clientId", "Client ID OAuth"), sec("clientSecret", "Client secret OAuth")), true));
+        s.add(new Servicio("health-api", "Health API 1.0 (apisb)", "CS «PGM Health API»: /individual/simulation (tarificación), /individual/policy/{id}, /settings/commercialProducts", "health-api", "LEGACY", TipoAutenticacion.OAUTH_CLIENT_CREDENTIALS, urls("https://apisb.mapfre.com/esp/srv/api/health/1.0", ""), Map.of("tokenUrl", "https://apisb.mapfre.net:25003/auth/oauth/v2/token", "scope", "esp:health/commercialization:simulation esp:health/commercialization:policy"), List.of(sec("clientId", "Client ID OAuth"), sec("clientSecret", "Client secret OAuth")), true));
+        s.add(new Servicio("home-api", "Home API 2.0 (apisb)", "CS «PGM Integraciones»: /esp/srv/api/home/2.0/policy/{n}/detail (Hogar, Consumo Protegido, Hipoteca Segura)", "home-api", "LEGACY", TipoAutenticacion.OAUTH_CLIENT_CREDENTIALS, urls("https://apisb.mapfre.net:25003", ""), Map.of("tokenUrl", "https://apisb.mapfre.net:25003/auth/oauth/v2/token"), List.of(sec("clientId", "Client ID OAuth"), sec("clientSecret", "Client secret OAuth")), true));
+        s.add(new Servicio("motor-api", "Motor API 1.0 (apisb)", "CS «PGM Motor API»: /policy/{ref}/detail (Autos)", "motor-api", "LEGACY", TipoAutenticacion.OAUTH_CLIENT_CREDENTIALS, urls("https://apisb.mapfre.net:25003/srv/api/1.0/motor", ""), Map.of("tokenUrl", "https://apisb.mapfre.net:25003/auth/oauth/v2/token"), List.of(sec("clientId", "Client ID OAuth"), sec("clientSecret", "Client secret OAuth")), true));
+        s.add(new Servicio("life-api", "Life Risk API 1.0", "CS «PGM Life Risk API»: /apisbcpolizas_int-web/api/life/1.0/individual/policy/{id}, unitLink, duplicado", "life-api", "LEGACY", TipoAutenticacion.BASIC, urls("https://webservices.pre.mapfre.net:26004", ""), Map.of(), List.of(sec("usuario", "Usuario"), sec("password", "Contraseña")), true));
 
         Map<String, Boolean> f = new LinkedHashMap<>();
         f.put("tarificacionSalud", flags.tarificacionSalud()); f.put("gestionComercial", flags.gestionComercial());
@@ -258,12 +303,13 @@ public class ConfiguracionService implements ConfiguracionUseCase {
         constantes.put("PGM_URL_SVA", "https://sva.mapfre.net/");
         constantes.put("PGM_URL_CLUBMAPFRE", "https://webclub20.mapfre.net/");
 
-        List<UsuarioPrueba> usuarios = env.matchesProfiles("local", "simulador") ? List.of(
+        List<UsuarioPrueba> usuarios = env.matchesProfiles("local", "simulador", "pruebas") ? List.of(
                 new UsuarioPrueba("usuario.local", List.of("PGM_USUARIO", "PGM_ASESOR_COMERCIAL", "PGM_VISUALIZAR_CDM", "PGM_ADMINISTRADOR"), "NU000001", "ASESOR", "Usuario por defecto del perfil local (con NUUMA y perfil SGC 3.0)"),
                 new UsuarioPrueba("gestor.sin.nuuma", List.of("PGM_USUARIO"), null, null, "Sin NUUMA: ve los bloqueos literales de PGM"),
                 new UsuarioPrueba("director.oficina", List.of("PGM_USUARIO", "PGM_ASESOR_COMERCIAL", "PGM_VISUALIZAR_CDM"), "NU000002", "DIRECTOR", "Director de oficina (Cuadro de Mando)")) : List.of();
 
-        String entorno = env.matchesProfiles("local") ? "LOCAL" : env.matchesProfiles("simulador") ? "SIMULADOR" : env.getProperty("PGM_ENTORNO", "DEV");
+        String entorno = env.matchesProfiles("local") ? "LOCAL" : env.matchesProfiles("simulador") ? "SIMULADOR"
+                : env.matchesProfiles("pruebas") ? "PRUEBAS" : env.getProperty("PGM_ENTORNO", "DEV");
         Map<String, String> webApis = new LinkedHashMap<>();
         webApis.put("PGM_respuesta_search_webApi", "/suite/webapi/pgm/search");
         webApis.put("PGM_ficha_cliente_webApi", "/suite/webapi/pgm/cliente");
@@ -272,10 +318,10 @@ public class ConfiguracionService implements ConfiguracionUseCase {
                 new Gateway(gateway.baseUrl(), gateway.tenant(), gateway.companyId(), gateway.connectTimeoutMs(), gateway.readTimeoutMs(), new LinkedHashMap<>(gateway.rutas())),
                 s,
                 new Appian(appianUrl, "/suite/sites/pgm-mapfre", "/suite/sites/sgo", "svc.pgm", webApis, sec("apiKey", "API key de las Web APIs de Appian (coexistencia PGM Appian ↔ nueva app)"), false),
-                new EntraId(!env.matchesProfiles("local"), entraTenant, entraClientId, entraScope,
+                new EntraId(!env.matchesProfiles("local", "simulador", "pruebas"), entraTenant, entraClientId, entraScope,
                         entraIssuer.isBlank() ? "https://login.microsoftonline.com/" + entraTenant + "/v2.0" : entraIssuer, entraAudience,
                         List.of("http://localhost:4200", "https://pgm-dev.mapfre.net", "https://pgm-pre.mapfre.net", "https://pgm.mapfre.net"),
                         sec("clientSecret", "Client secret del BFF (solo si el BFF llama a Graph/APIs en nombre propio)")),
-                f, constantes, usuarios, null, null);
+                f, constantes, usuarios, origenPorDefecto(), null, null);
     }
 }

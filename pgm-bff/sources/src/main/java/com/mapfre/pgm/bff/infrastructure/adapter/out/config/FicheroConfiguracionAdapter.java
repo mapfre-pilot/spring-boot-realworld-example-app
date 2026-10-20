@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -33,6 +34,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class FicheroConfiguracionAdapter implements ConfiguracionPort {
+
+    private final AtomicLong version = new AtomicLong();
 
     private static final Logger log = LoggerFactory.getLogger(FicheroConfiguracionAdapter.class);
     private final ObjectMapper mapper;
@@ -61,6 +64,7 @@ public class FicheroConfiguracionAdapter implements ConfiguracionPort {
 
     @Override
     public void escribir(Configuracion configuracion) {
+        version.incrementAndGet();
         synchronized (lock) {
             try {
                 Files.createDirectories(dir);
@@ -82,6 +86,7 @@ public class FicheroConfiguracionAdapter implements ConfiguracionPort {
 
     @Override
     public void guardarSecreto(String ambito, String nombre, String valor) {
+        version.incrementAndGet();
         synchronized (lock) {
             Map<String, String> todos = new HashMap<>(leerSecretos());
             todos.put(ambito + "/" + nombre, valor);
@@ -91,6 +96,7 @@ public class FicheroConfiguracionAdapter implements ConfiguracionPort {
 
     @Override
     public void borrarSecreto(String ambito, String nombre) {
+        version.incrementAndGet();
         synchronized (lock) {
             Map<String, String> todos = new HashMap<>(leerSecretos());
             todos.remove(ambito + "/" + nombre);
@@ -157,5 +163,10 @@ public class FicheroConfiguracionAdapter implements ConfiguracionPort {
         }
         log.warn("Clave de cifrado de configuración generada en {} (solo para entornos locales; en MAPFRE usar PGM_CONFIG_KEY/Vault)", k);
         return nueva;
+    }
+
+    @Override
+    public long version() {
+        return version.get();
     }
 }

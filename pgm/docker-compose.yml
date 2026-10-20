@@ -12,7 +12,9 @@ services:
         RUNTIME_IMAGE: ${RUNTIME_IMAGE:-eclipse-temurin:21-jre-alpine}
     image: pgm-bff:local
     environment:
-      SPRING_PROFILES_ACTIVE: local
+      # local = datos sintéticos; pruebas = servicios reales (legacy PGM / API Canal) según la pestaña Configuración
+      SPRING_PROFILES_ACTIVE: ${PGM_PERFIL:-local}
+      PGM_ORIGEN_DATOS: ${PGM_ORIGEN_DATOS:-}
       APP_CORS_ALLOWED_ORIGINS: http://localhost:4200
       # Pestaña «Configuración» (perfil PGM_ADMINISTRADOR): configuración en /config (volumen) y secretos cifrados AES-GCM.
       # PGM_CONFIG_KEY: clave base64 de 32 bytes; si se omite, el BFF genera config.key en el volumen (solo local).

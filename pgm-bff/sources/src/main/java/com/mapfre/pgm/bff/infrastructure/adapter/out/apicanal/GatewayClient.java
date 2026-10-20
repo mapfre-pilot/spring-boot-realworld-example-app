@@ -27,17 +27,20 @@ public class GatewayClient {
     private final RestClient client;
     private final GatewayProperties props;
     private final IdempotenciaService idempotencia;
+    private final DestinoServicioResolver destinos;
 
-    public GatewayClient(RestClient gatewayRestClient, GatewayProperties props, IdempotenciaService idempotencia) {
+    public GatewayClient(RestClient gatewayRestClient, GatewayProperties props, IdempotenciaService idempotencia,
+                         DestinoServicioResolver destinos) {
         this.client = gatewayRestClient;
         this.props = props;
         this.idempotencia = idempotencia;
+        this.destinos = destinos;
     }
 
     public <T> Optional<T> get(String ruta, String path, ParameterizedTypeReference<T> tipo,
                                Function<RestClient.RequestHeadersUriSpec<?>, RestClient.RequestHeadersSpec<?>> uri) {
         try {
-            return Optional.ofNullable(uri.apply(client.get()).retrieve().body(tipo));
+            return Optional.ofNullable(uri.apply(client.get()).headers(h -> destinos.cabeceras(ruta).forEach(h::set)).retrieve().body(tipo));
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
                 return Optional.empty();
@@ -56,11 +59,12 @@ public class GatewayClient {
                                  java.util.function.Function<RestClient.ResponseSpec, T> lector) {
         try {
             String idempotencyKey = idempotencia.claveActual();
-            return lector.apply(client.post().uri(props.urlDe(ruta) + path)
+            return lector.apply(client.post().uri(url(ruta, path))
                     .headers(headers -> {
                         if (idempotencyKey != null) {
                             headers.set("Idempotency-Key", idempotencyKey);
                         }
+                        destinos.cabeceras(ruta).forEach(headers::set);
                     })
                     .body(body).retrieve());
         } catch (HttpClientErrorException e) {
@@ -74,7 +78,7 @@ public class GatewayClient {
 
     public <T, B> T put(String ruta, String path, B body, ParameterizedTypeReference<T> tipo) {
         try {
-            return client.put().uri(props.urlDe(ruta) + path).body(body).retrieve().body(tipo);
+            return client.put().uri(url(ruta, path)).headers(h -> destinos.cabeceras(ruta).forEach(h::set)).body(body).retrieve().body(tipo);
         } catch (HttpClientErrorException e) {
             throw new ErrorClienteExternoException(ruta, "Error " + e.getStatusCode().value() + " en " + path, e);
         } catch (HttpServerErrorException e) {
@@ -86,8 +90,8 @@ public class GatewayClient {
 
     public void delete(String ruta, String path, Map<String, String> cabeceras) {
         try {
-            client.delete().uri(props.urlDe(ruta) + path)
-                    .headers(h -> cabeceras.forEach(h::set))
+            client.delete().uri(url(ruta, path))
+                    .headers(h -> { destinos.cabeceras(ruta).forEach(h::set); cabeceras.forEach(h::set); })
                     .retrieve().toBodilessEntity();
         } catch (HttpClientErrorException e) {
             throw new ErrorClienteExternoException(ruta, "Error " + e.getStatusCode().value() + " en " + path, e);
@@ -106,7 +110,8 @@ public class GatewayClient {
         return postInterno(ruta, path, body, spec -> spec.body(tipo));
     }
 
+    /** URL completa: Gateway (por defecto) o URL directa del servicio si la configuración de pruebas lo permite. */
     public String url(String ruta, String path) {
-        return props.urlDe(ruta) + path;
+        return destinos.urlBase(ruta) + path;
     }
 }

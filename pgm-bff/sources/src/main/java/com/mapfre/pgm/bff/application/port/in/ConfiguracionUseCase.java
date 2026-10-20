@@ -10,5 +10,8 @@ public interface ConfiguracionUseCase {
     Configuracion guardarSecreto(String ambito, String nombre, String valor, String usuario, List<String> perfiles);
     Configuracion borrarSecreto(String ambito, String nombre, String usuario, List<String> perfiles);
     ResultadoPrueba probarServicio(String clave, String usuario, List<String> perfiles);
+    /** Sin autorización: solo datos públicos (entorno, Entra ID sin secretos, origen de datos). */
+    Configuracion.Publica publica();
+
     Configuracion restaurarPorDefecto(String usuario, List<String> perfiles);
 }

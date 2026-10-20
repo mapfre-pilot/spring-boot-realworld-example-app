@@ -1,0 +1,7 @@
+# Perfil «pruebas»: adaptadores reales (API Canal + legacy) sin JWT obligatorio salvo que la pestaña Configuración active Entra ID.
+# Pensado para probar la SPA contra los servicios legacy de PGM (PRE) desde un puesto sin API Gateway: origen de datos LEGACY y
+# «llamada directa» habilitados por defecto. En DEV/PRE/PRO no se usa este perfil (ARCH-FIS-COM-001: todo por el Gateway).
+pgm:
+  local:
+    usuario-por-defecto: ${PGM_USUARIO_LOCAL:usuario.local}
+    perfiles-por-defecto: ${PGM_PERFILES_LOCAL:PGM_USUARIO,PGM_ASESOR_COMERCIAL,PGM_VISUALIZAR_CDM,PGM_ADMINISTRADOR}

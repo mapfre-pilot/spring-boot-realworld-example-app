@@ -139,3 +139,19 @@ La SPA incluye la pestaña **Configuración** (menú superior, visible solo con 
 - **Conexión con Appian** (coexistencia con PGM Appian: URL, sites PGM/SGO, Web APIs, API key), **Entra ID** (tenant, client ID, scope, issuer, audience, redirect URIs, client secret del BFF), **funcionalidades** (las constantes `PGM_*` como flags), **URLs de lanzaderas** y **usuarios de prueba**.
 
 Seguridad: los secretos se envían al BFF y se guardan cifrados (AES-256-GCM) en `PGM_CONFIG_DIR` (`/config`, volumen `pgm-config` del compose); en pantalla solo se ven enmascarados. La clave de cifrado se toma de `PGM_CONFIG_KEY` (base64, 32 bytes: `openssl rand -base64 32`); si no se define, el BFF genera `config.key` en el volumen (válido solo en local). En los entornos MAPFRE la fuente debe ser Config Server/Vault. Los cambios de Gateway/rutas se aplican a las llamadas tras reiniciar el BFF (`podman compose restart bff`); la configuración persiste en el volumen entre rebuilds (`podman volume rm pgm_pgm-config` para empezar de cero).
+
+## Perfil `pruebas`: la SPA contra los servicios legacy de PGM (Appian) u API Canal
+
+El perfil `local` usa datos sintéticos. Para probar la aplicación Angular con **servicios reales** sin API Gateway (desde un puesto de la red MAPFRE):
+
+```powershell
+$env:PGM_PERFIL="pruebas"          # perfil del BFF (por defecto local)
+podman compose -f pgm/docker-compose.yml up --build
+```
+
+1. Entra en **Configuración → Origen de datos**: `LEGACY` (los servicios que usa PGM en Appian) o `API_CANAL`, global o por capacidad (clientes, pólizas, recibos, siniestros, ventas); entorno de los servicios `PRE` (el que usa Appian TEST). La casilla «Llamada directa (solo pruebas)» viene activada en este perfil: el BFF llama a la «URL PRE» de cada servicio con sus credenciales en lugar de al Gateway. **En DEV/PRE/PRO debe estar desactivada** (ARCH-FIS-COM-001).
+2. En **Servicios y credenciales** pega las credenciales de cada connected system de Appian siguiendo `docs/pgm/07-integraciones-appian-configuracion.md` (tabla CS ↔ servicio ↔ campos) y pulsa «Probar conexión».
+3. El cambio de origen se aplica sin reiniciar; las credenciales se guardan cifradas en el volumen `pgm-config`.
+4. **Login con Entra ID**: en **Configuración → Entra ID** marca «Habilitado» y guarda. La SPA lee `/api/v1/configuracion/publica` al arrancar y hace el login (PKCE) contra el tenant/clientId configurados; el BFF exige el JWT en todas las llamadas. Requisito: `http://localhost:4200` dado de alta como *Single-page application* en el App Registration. Para volver al usuario local, desmarca «Habilitado» (si te quedas fuera, `PGM_ENTRAID_HABILITADO=false` no existe a propósito: borra `configuracion.json` del volumen o usa `podman compose exec bff rm /config/configuracion.json`).
+
+Sin NUUMA real (iMediador) en este perfil, el NUUMA y perfil SGC 3.0 se toman de «Usuarios de prueba».

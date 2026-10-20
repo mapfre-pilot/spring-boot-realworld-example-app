@@ -12,13 +12,15 @@ import {
 import { EstadoComponent } from '../components/estado.component';
 import { IconoComponent } from '../components/icono.component';
 
-type Seccion = 'gateway' | 'servicios' | 'appian' | 'entraid' | 'flags' | 'constantes' | 'usuarios';
+type Seccion =
+  'origen' | 'gateway' | 'servicios' | 'appian' | 'entraid' | 'flags' | 'constantes' | 'usuarios';
 
 export const TEXTOS_CONFIG = {
   titulo: 'Configuración',
   subtitulo:
     'Todo lo necesario para conectar PGM con los servicios reales. Los secretos se guardan cifrados en el BFF y nunca se muestran en claro.',
   secciones: {
+    origen: 'Origen de datos',
     gateway: 'API Gateway',
     servicios: 'Servicios y credenciales',
     appian: 'Conexión con Appian',
@@ -96,6 +98,64 @@ const ETIQUETA_FLAG: Record<string, string> = {
 
       @if (cfg(); as c) {
         @switch (seccion()) {
+          @case ('origen') {
+            <p class="muted">
+              Elige de dónde lee el BFF cada capacidad: <strong>API Canal</strong> (specs
+              PROD-APICANAL-*) o los <strong>servicios legacy</strong> que usa hoy PGM en Appian.
+              Ambos salen por el API Gateway; el cambio se aplica sin reiniciar.
+            </p>
+            <div class="grid grid-2">
+              <label
+                >Origen global
+                <select [(ngModel)]="c.origenDatos.global" data-testid="origen-global">
+                  <option value="API_CANAL">API Canal</option>
+                  <option value="LEGACY">Legacy PGM (Appian)</option>
+                </select></label
+              >
+              <label
+                >Entorno de los servicios (URL por entorno)
+                <select [(ngModel)]="c.origenDatos.entornoServicios">
+                  <option value="DEV">DEV</option>
+                  <option value="PRE">PRE (el que usa Appian TEST)</option>
+                  <option value="PRO">PRO</option>
+                </select></label
+              >
+            </div>
+            <h3>Por capacidad</h3>
+            <table class="tabla" data-testid="origen-capacidades">
+              <thead>
+                <tr>
+                  <th>Capacidad</th>
+                  <th>Origen</th>
+                  <th>Servicio legacy de PGM</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (cap of capacidades; track cap.clave) {
+                  <tr>
+                    <td>{{ cap.nombre }}</td>
+                    <td>
+                      <select
+                        [ngModel]="c.origenDatos.porCapacidad[cap.clave] ?? 'HEREDAR'"
+                        (ngModelChange)="c.origenDatos.porCapacidad[cap.clave] = $event"
+                      >
+                        <option value="HEREDAR">Heredar global</option>
+                        <option value="API_CANAL">API Canal</option>
+                        <option value="LEGACY">Legacy PGM</option>
+                      </select>
+                    </td>
+                    <td class="muted">{{ cap.legacy }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            <label class="inline flag">
+              <input type="checkbox" [(ngModel)]="c.origenDatos.llamadaDirectaPruebas" />
+              Llamada directa a los servicios (solo pruebas sin API Gateway): usa la «URL
+              {{ c.origenDatos.entornoServicios }}» y las credenciales de cada servicio. En
+              DEV/PRE/PRO debe estar desactivado.
+            </label>
+          }
           @case ('gateway') {
             <div class="grid grid-2">
               <label
@@ -514,6 +574,7 @@ export class ConfiguracionPageComponent {
   private readonly repo = inject(PGM_REPOSITORY);
   readonly t = TEXTOS_CONFIG;
   readonly secciones: Seccion[] = [
+    'origen',
     'gateway',
     'servicios',
     'appian',
@@ -522,7 +583,34 @@ export class ConfiguracionPageComponent {
     'constantes',
     'usuarios',
   ];
-  readonly seccion = signal<Seccion>('gateway');
+  readonly seccion = signal<Seccion>('origen');
+  readonly capacidades = [
+    {
+      clave: 'clientes',
+      nombre: 'Clientes (búsqueda y ficha)',
+      legacy: 'Clients EDGE · clients/search y client/{id}',
+    },
+    {
+      clave: 'polizas',
+      nombre: 'Pólizas',
+      legacy: 'Clients EDGE MRCBack · client/{id}/policies; Denodo productsDetail',
+    },
+    {
+      clave: 'recibos',
+      nombre: 'Recibos',
+      legacy: 'Client API · client/{id}/receipts; Denodo receiptsDetail; GESYC',
+    },
+    {
+      clave: 'siniestros',
+      nombre: 'Prestaciones / siniestros',
+      legacy: 'negocioclientes · client/{id}/claims; METS',
+    },
+    {
+      clave: 'ventas',
+      nombre: 'Ventas (tarificación Salud, presupuestos)',
+      legacy: 'Health API · individual/simulation; negocioclientes projects',
+    },
+  ];
   readonly cfg = signal<Configuracion | null>(null);
   readonly pruebas = signal<Record<string, ResultadoPrueba>>({});
   readonly cargando = signal(false);

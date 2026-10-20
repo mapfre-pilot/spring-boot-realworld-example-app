@@ -72,6 +72,18 @@ paths:
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ResultadoPrueba' } } } }
         '404': { $ref: '#/components/responses/NoEncontrado' }
+  /configuracion/publica:
+    get:
+      tags: [Configuración]
+      summary: Configuración pública (sin autenticación) que la SPA necesita antes del login
+      operationId: configuracionPublica
+      security: []
+      responses:
+        '200':
+          description: Entorno, Entra ID (sin secretos) y origen de datos
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConfiguracionPublica' }
   /configuracion/restaurar:
     post:
       tags: [configuracion]
@@ -659,7 +671,30 @@ components:
         constantes: { type: object, additionalProperties: { type: string } }
         usuariosPrueba: { type: array, items: { type: object, properties: { usuario: { type: string }, perfiles: { type: array, items: { type: string } }, nuuma: { type: string, nullable: true }, perfilSgc30: { type: string, nullable: true }, descripcion: { type: string } } } }
         ultimaModificacion: { type: string, format: date-time, nullable: true }
+        origenDatos: { $ref: '#/components/schemas/OrigenDatos' }
         modificadoPor: { type: string, nullable: true }
+    OrigenDatos:
+      type: object
+      description: Origen por capacidad. API_CANAL (PROD-APICANAL-*) o LEGACY (servicios que usa PGM en Appian). HEREDAR aplica el global.
+      properties:
+        global: { type: string, enum: [API_CANAL, LEGACY] }
+        porCapacidad:
+          type: object
+          additionalProperties: { type: string, enum: [API_CANAL, LEGACY, HEREDAR] }
+        llamadaDirectaPruebas:
+          type: boolean
+          description: Solo pruebas sin API Gateway; en DEV/PRE/PRO todo sale por el Gateway (ARCH-FIS-COM-001)
+        entornoServicios: { type: string, enum: [DEV, PRE, PRO] }
+    ConfiguracionPublica:
+      type: object
+      properties:
+        entorno: { type: string }
+        entraIdHabilitado: { type: boolean }
+        tenantId: { type: string }
+        clientId: { type: string }
+        scope: { type: string }
+        issuer: { type: string }
+        origenDatos: { $ref: '#/components/schemas/OrigenDatos' }
     ResultadoPrueba: { type: object, properties: { servicio: { type: string }, ok: { type: boolean }, httpStatus: { type: integer, nullable: true }, latenciaMs: { type: integer }, url: { type: string }, mensaje: { type: string } } }
     AccionPoliza: { type: object, properties: { codigo: { type: string }, nombre: { type: string }, destino: { type: string }, url: { type: string, nullable: true }, requiereNuuma: { type: boolean }, externa: { type: boolean } } }
     DocumentoPoliza: { type: object, properties: { id: { type: string }, tipo: { type: string }, nombre: { type: string }, fecha: { type: string, format: date }, formato: { type: string } } }

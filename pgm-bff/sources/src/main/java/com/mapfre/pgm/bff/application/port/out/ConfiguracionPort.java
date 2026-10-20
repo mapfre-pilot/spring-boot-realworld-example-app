@@ -13,4 +13,9 @@ public interface ConfiguracionPort {
     void guardarSecreto(String ambito, String nombre, String valor);
     void borrarSecreto(String ambito, String nombre);
     String origenSecretos();
+
+    /** Cambia con cada escritura; permite a los consumidores cachear la lectura sin quedarse obsoletos. */
+    default long version() {
+        return 0L;
+    }
 }

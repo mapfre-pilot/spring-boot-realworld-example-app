@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import com.mapfre.pgm.bff.application.port.in.ConfiguracionUseCase;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -34,23 +36,24 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfiguration {
 
     @Bean
-    @Profile({"local", "simulador"})
-    SecurityFilterChain localSecurity(HttpSecurity http) throws Exception {
+    @Profile({"local", "simulador", "pruebas"})
+    SecurityFilterChain localSecurity(HttpSecurity http, ConfiguracionUseCase configuracion) throws Exception {
         return http.csrf(csrf -> csrf.disable())
                 .cors(cors -> {})
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .addFilterBefore(new EntraIdDinamicoFilter(configuracion), AuthorizationFilter.class)
                 .build();
     }
 
     @Bean
-    @Profile("!local & !simulador")
+    @Profile("!local & !simulador & !pruebas")
     SecurityFilterChain secureSecurity(HttpSecurity http, @Value("${security.entraid.scope}") String scope) throws Exception {
         return http.csrf(csrf -> csrf.disable())
                 .cors(cors -> {})
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/monitoring/**", "/v3/api-docs", "/v3/api-docs.yaml", "/").permitAll()
+                        .requestMatchers("/monitoring/**", "/v3/api-docs", "/v3/api-docs.yaml", "/", "/api/v1/configuracion/publica").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/v1/**").hasAuthority("SCOPE_" + scope)
                         .anyRequest().authenticated())
@@ -59,7 +62,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    @Profile("!local & !simulador")
+    @Profile("!local & !simulador & !pruebas")
     JwtDecoder jwtDecoder(@Value("${security.entraid.jwk-set-uri}") String jwkSetUri,
                           @Value("${security.entraid.issuer}") String issuer,
                           @Value("${security.entraid.audience}") String audience) {

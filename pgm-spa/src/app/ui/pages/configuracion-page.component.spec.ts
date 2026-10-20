@@ -72,6 +72,12 @@ function config(): Configuracion {
     constantes: { PGM_URL_APPS: 'https://apps.pre.mapfre.net' },
     usuariosPrueba: [],
     ultimaModificacion: null,
+    origenDatos: {
+      global: 'API_CANAL',
+      porCapacidad: { clientes: 'HEREDAR' },
+      llamadaDirectaPruebas: false,
+      entornoServicios: 'PRE',
+    },
     modificadoPor: null,
   };
 }
@@ -116,13 +122,16 @@ describe('ConfiguracionPageComponent', () => {
   const crear = (r = repo()) => factory({ providers: [{ provide: PGM_REPOSITORY, useValue: r }] });
   let spectator: Spectator<ConfiguracionPageComponent>;
 
-  it('carga la configuración y muestra las 7 secciones y las rutas del Gateway', async () => {
+  it('carga la configuración y muestra las 8 secciones y las rutas del Gateway', async () => {
     spectator = crear();
     spectator.detectChanges();
     await spectator.fixture.whenStable();
     spectator.detectChanges();
     const texto = spectator.fixture.nativeElement.textContent as string;
     for (const s of Object.values(TEXTOS_CONFIG.secciones)) expect(texto).toContain(s);
+    expect(spectator.query('[data-testid=origen-global]')).toBeTruthy();
+    spectator.component.seccion.set('gateway');
+    spectator.detectChanges();
     expect(spectator.query('[data-testid=rutas]')?.textContent).toContain('pgo');
   });
 

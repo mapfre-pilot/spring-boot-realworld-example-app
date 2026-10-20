@@ -17,6 +17,12 @@ public class ConfiguracionController {
         this.configuracion = configuracion;
     }
 
+    /** Sin autenticación: lo que la SPA necesita antes del login (Entra ID dinámico, entorno y origen de datos). */
+    @GetMapping("/publica")
+    public Configuracion.Publica publica() {
+        return configuracion.publica();
+    }
+
     @GetMapping
     public Configuracion obtener(UsuarioActual usuario) {
         return configuracion.obtener(usuario.id(), usuario.perfiles());

@@ -630,8 +630,27 @@ export interface Configuracion {
     perfilSgc30: string | null;
     descripcion: string;
   }[];
+  origenDatos: OrigenDatos;
   ultimaModificacion: string | null;
   modificadoPor: string | null;
+}
+export type Origen = 'API_CANAL' | 'LEGACY';
+export type OrigenCapacidad = Origen | 'HEREDAR';
+/** Origen por capacidad: API Canal (specs PROD-APICANAL-*) o los servicios legacy que usa PGM en Appian. */
+export interface OrigenDatos {
+  global: Origen;
+  porCapacidad: Record<string, OrigenCapacidad>;
+  llamadaDirectaPruebas: boolean;
+  entornoServicios: 'DEV' | 'PRE' | 'PRO';
+}
+export interface ConfiguracionPublica {
+  entorno: string;
+  entraIdHabilitado: boolean;
+  tenantId: string | null;
+  clientId: string | null;
+  scope: string | null;
+  issuer: string | null;
+  origenDatos: OrigenDatos;
 }
 export interface ResultadoPrueba {
   servicio: string;

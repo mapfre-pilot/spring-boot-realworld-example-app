@@ -37,6 +37,7 @@ import org.springframework.test.context.DynamicPropertySource;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureObservability
 @ActiveProfiles("simulador")
+@org.springframework.test.context.TestPropertySource(properties = "PGM_CONFIG_DIR=target/test-config-sim")
 @TestMethodOrder(OrderAnnotation.class)
 class GatewayAdaptersTest {
 

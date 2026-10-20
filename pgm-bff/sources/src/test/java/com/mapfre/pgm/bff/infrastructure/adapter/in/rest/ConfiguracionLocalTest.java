@@ -34,7 +34,10 @@ class ConfiguracionLocalTest {
         mvc.perform(get("/api/v1/configuracion")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.entorno").value("LOCAL"))
                 .andExpect(jsonPath("$.gateway.rutas.pgo").value("/legacy/pgo"))
-                .andExpect(jsonPath("$.servicios.length()").value(18))
+                .andExpect(jsonPath("$.servicios.length()").value(24))
+                .andExpect(jsonPath("$.origenDatos.global").value("API_CANAL"))
+                .andExpect(jsonPath("$.origenDatos.llamadaDirectaPruebas").value(false))
+                .andExpect(jsonPath("$.origenDatos.porCapacidad.clientes").value("HEREDAR"))
                 .andExpect(jsonPath("$.entraId.clientId").value("c4d0e5f0-4a24-4b89-a577-bd2c809f972a"))
                 .andExpect(jsonPath("$.usuariosPrueba.length()").value(3));
     }
@@ -70,6 +73,9 @@ class ConfiguracionLocalTest {
         mvc.perform(post("/api/v1/configuracion/servicios/no-existe/prueba")).andExpect(status().isNotFound());
         mvc.perform(post("/api/v1/configuracion/restaurar")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.gateway.readTimeoutMs").value(greaterThanOrEqualTo(1)))
-                .andExpect(jsonPath("$.servicios.length()").value(18));
+                .andExpect(jsonPath("$.servicios.length()").value(24))
+                .andExpect(jsonPath("$.origenDatos.global").value("API_CANAL"))
+                .andExpect(jsonPath("$.origenDatos.llamadaDirectaPruebas").value(false))
+                .andExpect(jsonPath("$.origenDatos.porCapacidad.clientes").value("HEREDAR"));
     }
 }

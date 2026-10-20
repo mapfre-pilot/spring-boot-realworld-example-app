@@ -19,6 +19,7 @@ public class RestClientConfiguration {
     RestClient gatewayRestClient(RestClient.Builder builder, GatewayProperties props,
                                  ObjectProvider<RestClientCustomizer> customizers) {
         JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1) // Gateway y legacy MAPFRE son HTTP/1.1; evita el upgrade h2c (RST_STREAM) en POST
                 .connectTimeout(Duration.ofMillis(props.connectTimeoutMs()))
                 .build());
         factory.setReadTimeout(Duration.ofMillis(props.readTimeoutMs()));

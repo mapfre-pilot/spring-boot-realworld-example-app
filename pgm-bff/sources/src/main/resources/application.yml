@@ -86,7 +86,14 @@ pgm:
       dpve: /legacy/dpve                               # PGM_DPVE_* (Plan de pagos)
       wlcatalog: /legacy/wlcatalog                     # PGM API WLCatalog (catálogo acciones por cia+ramo, SOAP→REST)
       gesyc: /legacy/gesyc                             # GESYC consultarRecibo / imprimirRecibo (SOAP→REST)
-      mets: /legacy/mets                               # METS expedientes de prestaciones                               # PGM_DPVE_* (Plan de pagos)
+      mets: /legacy/mets                               # METS expedientes de prestaciones
+      # Legacy de PGM para las capacidades que API Canal cubriría (origen de datos = LEGACY, pestaña Configuración)
+      clients-edge-recibos: /legacy/clients-edge-recibos   # Denodo receiptsDetail/products/productsDetail
+      client-api: /legacy/client-api                   # apisb clients/1.0 /client/{id}/receipts
+      health-api: /legacy/health-api                   # apisb health/1.0 simulación y póliza Salud
+      home-api: /legacy/home-api                       # apisb home/2.0 detalle póliza Hogar
+      motor-api: /legacy/motor-api                     # apisb motor/1.0 detalle póliza Autos
+      life-api: /legacy/life-api                       # Life Risk API 1.0 detalle póliza Vida
   lanzaderas:
     - { codigo: NSE, nombre: "NSE — Nuevo Sistema de Emisión", destino: NSE, ramo: AUTOS, url: "${PGM_URL_NSE:https://nse.interno.mapfre.invalid}", requiere-nuuma: false }
     - { codigo: NSE_HOGAR, nombre: "NSE — Hogar", destino: NSE, ramo: HOGAR, url: "${PGM_URL_NSE:https://nse.interno.mapfre.invalid}/hogar", requiere-nuuma: false }

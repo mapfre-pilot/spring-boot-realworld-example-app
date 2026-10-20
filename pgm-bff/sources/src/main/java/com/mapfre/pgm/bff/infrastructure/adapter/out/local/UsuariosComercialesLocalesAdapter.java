@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 /** Catálogo sintético de usuarios reutilizado por los perfiles local y simulador. */
 @Component
-@Profile("simulador")
+@Profile({"simulador", "pruebas"})
 @Primary
 public class UsuariosComercialesLocalesAdapter implements UsuariosComercialesPort {
 

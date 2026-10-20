@@ -5,17 +5,20 @@ import { Visibilidad, VisibilidadKey } from '../../domain/models/api.models';
 import { AuthService } from '../../infrastructure/auth/auth.service';
 import { environment } from '../../../environments/environment';
 import { IconoComponent } from './icono.component';
+import { MenuLanzaderasComponent } from './menu-lanzaderas.component';
 
 interface Entrada {
   ruta: string;
   texto: string;
+  /** Se abre como pop-up de accesos por ramo (como las tarjetas de PGM en Appian) en vez de navegar. */
+  popup?: boolean;
   clave: VisibilidadKey;
 }
 
 /** Marco de la aplicación: franja de entorno, cabecera MAPFRE con menú filtrado por las visibilidades del BFF y usuario. */
 @Component({
   selector: 'pgm-main-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconoComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconoComponent, MenuLanzaderasComponent],
   template: `
     @if (entorno) {
       <div class="franja-entorno">{{ entorno }}</div>
@@ -27,10 +30,25 @@ interface Entrada {
       <nav aria-label="Menú principal">
         @for (e of entradas; track e.ruta) {
           @if (store.puede(e.clave)) {
-            <a [routerLink]="e.ruta" routerLinkActive="activa">{{ e.texto }}</a>
+            @if (e.popup) {
+              <button
+                type="button"
+                class="nav-popup"
+                [class.activa]="popup()?.ruta === e.ruta"
+                [attr.aria-expanded]="popup()?.ruta === e.ruta"
+                (click)="popup.set(popup()?.ruta === e.ruta ? null : e)"
+              >
+                {{ e.texto }}
+              </button>
+            } @else {
+              <a [routerLink]="e.ruta" routerLinkActive="activa">{{ e.texto }}</a>
+            }
           }
         }
       </nav>
+      @if (popup(); as p) {
+        <pgm-menu-lanzaderas [titulo]="p.texto" [ruta]="p.ruta" (cerrar)="popup.set(null)" />
+      }
       <div class="usuario">
         <button
           class="avatar"
@@ -46,7 +64,7 @@ interface Entrada {
             <strong>{{ store.nombre() }}</strong>
             <span class="muted">Perfil SGC 3.0: {{ store.contexto()?.perfilSgc30 ?? '—' }}</span>
             <span class="muted">NUUMA: {{ store.nuuma() ?? '—' }}</span>
-            @if (auth.habilitado) {
+            @if (auth.activo()) {
               <button class="btn-enlace" type="button" (click)="auth.logout()">
                 <pgm-icono nombre="salir" [tam]="16" /> Cerrar sesión
               </button>
@@ -115,7 +133,14 @@ interface Entrada {
       flex-wrap: wrap;
       height: 100%;
     }
-    nav a {
+    nav .nav-popup {
+      border: 0;
+      background: none;
+      cursor: pointer;
+      font: inherit;
+    }
+    nav a,
+    nav .nav-popup {
       display: flex;
       align-items: center;
       color: #333;
@@ -124,11 +149,13 @@ interface Entrada {
       border-bottom: 3px solid transparent;
       border-top: 3px solid transparent;
     }
-    nav a:hover {
+    nav a:hover,
+    nav .nav-popup:hover {
       text-decoration: none;
       border-bottom-color: var(--pgm-borde-input);
     }
-    nav a.activa {
+    nav a.activa,
+    nav .nav-popup.activa {
       font-weight: 600;
       color: #111;
       border-bottom-color: #b8bcc0;
@@ -173,6 +200,7 @@ export class MainLayoutComponent implements OnInit {
   readonly auth = inject(AuthService);
   readonly entorno = environment.entorno;
   readonly menu = signal(false);
+  readonly popup = signal<Entrada | null>(null);
   readonly iniciales = computed(() =>
     (this.store.nombre() ?? '')
       .split(/[\s.]+/)
@@ -183,10 +211,20 @@ export class MainLayoutComponent implements OnInit {
   );
   readonly entradas: Entrada[] = [
     { ruta: '/inicio', texto: 'Inicio', clave: Visibilidad.INICIO },
-    { ruta: '/nueva-produccion', texto: 'N. Producción', clave: Visibilidad.NUEVA_PRODUCCION },
-    { ruta: '/gestion-cartera', texto: 'Gest. Cartera', clave: Visibilidad.GESTION_CARTERA },
-    { ruta: '/recibos', texto: 'Recibos', clave: Visibilidad.RECIBOS },
-    { ruta: '/prestaciones', texto: 'Prestaciones', clave: Visibilidad.PRESTACIONES },
+    {
+      popup: true,
+      ruta: '/nueva-produccion',
+      texto: 'N. Producción',
+      clave: Visibilidad.NUEVA_PRODUCCION,
+    },
+    {
+      popup: true,
+      ruta: '/gestion-cartera',
+      texto: 'Gest. Cartera',
+      clave: Visibilidad.GESTION_CARTERA,
+    },
+    { popup: true, ruta: '/recibos', texto: 'Recibos', clave: Visibilidad.RECIBOS },
+    { popup: true, ruta: '/prestaciones', texto: 'Prestaciones', clave: Visibilidad.PRESTACIONES },
     { ruta: '/gestion-comercial', texto: 'Gest. Comercial', clave: Visibilidad.GESTION_COMERCIAL },
     { ruta: '/utilidades', texto: 'Utilidades', clave: Visibilidad.UTILIDADES },
     { ruta: '/cuadro-mando', texto: 'Cuadro de mando', clave: Visibilidad.CUADRO_MANDO },
