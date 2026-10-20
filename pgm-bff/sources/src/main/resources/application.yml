@@ -92,10 +92,10 @@ pgm:
 
 security:
   entraid:
-    tenant-id: ${ENTRAID_TENANT_ID:}
+    tenant-id: ${ENTRAID_TENANT_ID:93ad25dd-8cdc-4066-9727-31a8a3024f80}
     audience: ${ENTRAID_AUDIENCE:c4d0e5f0-4a24-4b89-a577-bd2c809f972a}
-    issuer: ${ENTRAID_ISSUER:https://login.microsoftonline.com/${ENTRAID_TENANT_ID:}/v2.0}
-    jwk-set-uri: ${ENTRAID_JWKS_URI:https://login.microsoftonline.com/${ENTRAID_TENANT_ID:}/discovery/v2.0/keys}
+    issuer: ${ENTRAID_ISSUER:https://login.microsoftonline.com/${ENTRAID_TENANT_ID:93ad25dd-8cdc-4066-9727-31a8a3024f80}/v2.0}
+    jwk-set-uri: ${ENTRAID_JWKS_URI:https://login.microsoftonline.com/${ENTRAID_TENANT_ID:93ad25dd-8cdc-4066-9727-31a8a3024f80}/discovery/v2.0/keys}
     scope: ${ENTRAID_SCOPE:pgm.acceso}
     groups-claim: ${ENTRAID_GROUPS_CLAIM:groups}
 

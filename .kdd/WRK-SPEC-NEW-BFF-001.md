@@ -86,7 +86,7 @@ Resueltos por el router; congelados con `activation_frozen: true`.
 - [gap] Contratos reales de API Canal y APIs de plataforma tras el API Gateway no publicados: adaptadores `@Profile("!local")` escritos contra los paths propuestos en `docs/pgm/03-mapeo-api-canal.md`; perfil `local` con datos sintéticos.
 - [gap] Onboarding SRE/observabilidad corporativa pendiente (OTLP configurable por `OTEL_EXPORTER_OTLP_ENDPOINT`).
 
-- Decisión del owner (2026-10-20, ggalv10): lo que API Canal no cubre se consume de los servicios legacy que ya usa PGM en Appian (PGO /apipgo, SGC 3.0, iMediador EDGE, BDEC/ESTRUAGE, Clients EDGE, GESYC, SGO, Click2Call), siempre a través del API Gateway interno (ARCH-FIS-COM-001 regla 1); sustituye la restricción anterior «sin legacy». Entra ID: App Registration clientId c4d0e5f0-4a24-4b89-a577-bd2c809f972a (identificador público; tenant/scope pendientes).
+- Decisión del owner (2026-10-20, ggalv10): lo que API Canal no cubre se consume de los servicios legacy que ya usa PGM en Appian (PGO /apipgo, SGC 3.0, iMediador EDGE, BDEC/ESTRUAGE, Clients EDGE, GESYC, SGO, Click2Call), siempre a través del API Gateway interno (ARCH-FIS-COM-001 regla 1); sustituye la restricción anterior «sin legacy». Entra ID: App Registration clientId c4d0e5f0-4a24-4b89-a577-bd2c809f972a (identificador público), tenant 93ad25dd-8cdc-4066-9727-31a8a3024f80, scope api://c4d0e5f0-4a24-4b89-a577-bd2c809f972a/pgm.acceso (a crear en el portal de Entra ID).
 
 ## Traceability
 | Relación | Target |

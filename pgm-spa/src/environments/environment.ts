@@ -6,8 +6,8 @@ export const environment = {
   entorno: '',
   auth: {
     enabled: true,
-    tenantId: '__ENTRA_TENANT_ID__',
+    tenantId: '93ad25dd-8cdc-4066-9727-31a8a3024f80',
     clientId: 'c4d0e5f0-4a24-4b89-a577-bd2c809f972a',
-    scopes: ['openid', 'profile', '__BFF_SCOPE__'],
+    scopes: ['openid', 'profile', 'api://c4d0e5f0-4a24-4b89-a577-bd2c809f972a/pgm.acceso'],
   },
 };
