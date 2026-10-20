@@ -14,6 +14,12 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: local
       APP_CORS_ALLOWED_ORIGINS: http://localhost:4200
+      # Pestaña «Configuración» (perfil PGM_ADMINISTRADOR): configuración en /config (volumen) y secretos cifrados AES-GCM.
+      # PGM_CONFIG_KEY: clave base64 de 32 bytes; si se omite, el BFF genera config.key en el volumen (solo local).
+      PGM_CONFIG_DIR: /config
+      PGM_CONFIG_KEY: ${PGM_CONFIG_KEY:-}
+    volumes:
+      - pgm-config:/config
     ports:
       - "${BFF_PORT:-8080}:8080"
     healthcheck:
@@ -62,3 +68,5 @@ services:
       - "${BFF_SIM_PORT:-8081}:8080"
     depends_on:
       - gateway-sim
+volumes:
+  pgm-config:

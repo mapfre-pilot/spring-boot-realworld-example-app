@@ -10,6 +10,8 @@ import {
   Cliente,
   ClienteResumen,
   ContextoUsuario,
+  Configuracion,
+  ResultadoPrueba,
   AccionPoliza,
   DocumentoPoliza,
   DetallePolizaRamo,
@@ -124,6 +126,14 @@ export interface PgmRepository {
   detalleRecibo(numero: string): Observable<ReciboDetalle>;
   duplicadoRecibo(numero: string): Observable<DuplicadoRecibo>;
   detallePrestacion(numero: string): Observable<PrestacionDetalle>;
+
+  // ---- Configuración (solo PGM_ADMINISTRADOR) ----
+  configuracion(): Observable<Configuracion>;
+  guardarConfiguracion(c: Partial<Configuracion>): Observable<Configuracion>;
+  guardarSecreto(ambito: string, nombre: string, valor: string): Observable<Configuracion>;
+  borrarSecreto(ambito: string, nombre: string): Observable<Configuracion>;
+  probarServicio(clave: string): Observable<ResultadoPrueba>;
+  restaurarConfiguracion(): Observable<Configuracion>;
 }
 
 export const PGM_REPOSITORY = new InjectionToken<PgmRepository>('PGM_REPOSITORY');

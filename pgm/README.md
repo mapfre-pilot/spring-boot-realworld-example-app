@@ -129,3 +129,13 @@ Usuarios del perfil local (cabecera `X-Usuario-Local` o `pgm.local.usuario-por-d
 - Imágenes base `acrmapfredevops` sustituidas por Temurin / nginx-unprivileged; librería UI corporativa no accesible → estilos propios.
 - Contratos reales de API Canal/plataformas tras el Gateway pendientes de publicación (PCC): los paths de `application.yml` son los propuestos en `docs/pgm/03-mapeo-api-canal.md`.
 - Plataforma funcional *Canales y Clientes* sin specs en el grafo KDD (WRK-SPEC con `platform: standalone`).
+
+## Pestaña «Configuración» (administradores)
+
+La SPA incluye la pestaña **Configuración** (menú superior, visible solo con el perfil `PGM_ADMINISTRADOR`; en el perfil `local` el usuario por defecto ya lo tiene). Desde ella se administra todo lo necesario para que PGM hable con los servicios reales:
+
+- **API Gateway**: URL base, tenant, company ID, timeouts y las 18 rutas publicadas (API Canal clientes/pólizas/recibos/siniestros/ventas y legacy PGO, SGC 3.0, iMediador, BDEC, Clients EDGE, SGO, Click2Call, ACI, firma RGPD, DPVE, WLCatalog, GESYC, METS).
+- **Servicios y credenciales**: por servicio, tipo de autenticación, URL por entorno (DEV/PRE/PRO), cabeceras y credenciales (API key, client id/secret, usuario/contraseña) con botón **Probar conexión**.
+- **Conexión con Appian** (coexistencia con PGM Appian: URL, sites PGM/SGO, Web APIs, API key), **Entra ID** (tenant, client ID, scope, issuer, audience, redirect URIs, client secret del BFF), **funcionalidades** (las constantes `PGM_*` como flags), **URLs de lanzaderas** y **usuarios de prueba**.
+
+Seguridad: los secretos se envían al BFF y se guardan cifrados (AES-256-GCM) en `PGM_CONFIG_DIR` (`/config`, volumen `pgm-config` del compose); en pantalla solo se ven enmascarados. La clave de cifrado se toma de `PGM_CONFIG_KEY` (base64, 32 bytes: `openssl rand -base64 32`); si no se define, el BFF genera `config.key` en el volumen (válido solo en local). En los entornos MAPFRE la fuente debe ser Config Server/Vault. Los cambios de Gateway/rutas se aplican a las llamadas tras reiniciar el BFF (`podman compose restart bff`); la configuración persiste en el volumen entre rebuilds (`podman volume rm pgm_pgm-config` para empezar de cero).

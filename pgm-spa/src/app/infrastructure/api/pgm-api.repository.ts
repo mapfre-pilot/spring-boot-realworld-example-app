@@ -13,6 +13,8 @@ import {
   Cliente,
   ClienteResumen,
   ContextoUsuario,
+  Configuracion,
+  ResultadoPrueba,
   AccionPoliza,
   DocumentoPoliza,
   DetallePolizaRamo,
@@ -415,6 +417,34 @@ export class PgmApiRepository implements PgmRepository {
     return this.http.get<PrestacionDetalle>(
       `${this.base}/prestaciones/${encodeURIComponent(numero)}`,
     );
+  }
+
+  // ---- Configuración (solo PGM_ADMINISTRADOR) ----
+  configuracion(): Observable<Configuracion> {
+    return this.http.get<Configuracion>(`${this.base}/configuracion`);
+  }
+  guardarConfiguracion(c: Partial<Configuracion>): Observable<Configuracion> {
+    return this.http.put<Configuracion>(`${this.base}/configuracion`, c);
+  }
+  guardarSecreto(ambito: string, nombre: string, valor: string): Observable<Configuracion> {
+    return this.http.put<Configuracion>(
+      `${this.base}/configuracion/secretos/${encodeURIComponent(ambito)}/${encodeURIComponent(nombre)}`,
+      { valor },
+    );
+  }
+  borrarSecreto(ambito: string, nombre: string): Observable<Configuracion> {
+    return this.http.delete<Configuracion>(
+      `${this.base}/configuracion/secretos/${encodeURIComponent(ambito)}/${encodeURIComponent(nombre)}`,
+    );
+  }
+  probarServicio(clave: string): Observable<ResultadoPrueba> {
+    return this.http.post<ResultadoPrueba>(
+      `${this.base}/configuracion/servicios/${encodeURIComponent(clave)}/prueba`,
+      {},
+    );
+  }
+  restaurarConfiguracion(): Observable<Configuracion> {
+    return this.http.post<Configuracion>(`${this.base}/configuracion/restaurar`, {});
   }
 }
 

@@ -49,6 +49,7 @@ export const Visibilidad = {
   UTILIDADES: 'utilidades',
   CUADRO_MANDO: 'cuadroMando',
   TARIFICACION_SALUD: 'tarificacionSalud',
+  CONFIGURACION: 'configuracion',
 } as const;
 export type VisibilidadKey = (typeof Visibilidad)[keyof typeof Visibilidad];
 
@@ -566,4 +567,77 @@ export interface PrestacionDetalle {
   codigoRamo: string;
   hitos: string[];
   oficinaTramitadora: string;
+}
+
+// ---- Pestaña Configuración (solo PGM_ADMINISTRADOR) ----
+export interface Secreto {
+  nombre: string;
+  descripcion: string;
+  informado: boolean;
+  enmascarado: string | null;
+  origen: string | null;
+}
+export type TipoAutenticacion =
+  'NINGUNA' | 'API_KEY' | 'OAUTH_CLIENT_CREDENTIALS' | 'BASIC' | 'CABECERAS' | 'COOKIE';
+export interface ServicioConfigurado {
+  clave: string;
+  nombre: string;
+  descripcion: string;
+  rutaGateway: string;
+  origen: 'API_CANAL' | 'LEGACY';
+  autenticacion: TipoAutenticacion;
+  urlPorEntorno: Record<string, string>;
+  cabeceras: Record<string, string>;
+  credenciales: Secreto[];
+  habilitado: boolean;
+}
+export interface Configuracion {
+  entorno: string;
+  gateway: {
+    baseUrl: string;
+    tenant: string;
+    companyId: string;
+    connectTimeoutMs: number;
+    readTimeoutMs: number;
+    rutas: Record<string, string>;
+  };
+  servicios: ServicioConfigurado[];
+  appian: {
+    urlBase: string;
+    sitePgm: string;
+    siteSgo: string;
+    usuarioServicio: string;
+    webApis: Record<string, string>;
+    apiKey: Secreto;
+    habilitado: boolean;
+  };
+  entraId: {
+    habilitado: boolean;
+    tenantId: string;
+    clientId: string;
+    scope: string;
+    issuer: string;
+    audience: string;
+    redirectUris: string[];
+    clientSecretBff: Secreto;
+  };
+  flags: Record<string, boolean>;
+  constantes: Record<string, string>;
+  usuariosPrueba: {
+    usuario: string;
+    perfiles: string[];
+    nuuma: string | null;
+    perfilSgc30: string | null;
+    descripcion: string;
+  }[];
+  ultimaModificacion: string | null;
+  modificadoPor: string | null;
+}
+export interface ResultadoPrueba {
+  servicio: string;
+  ok: boolean;
+  httpStatus: number | null;
+  latenciaMs: number;
+  url: string;
+  mensaje: string;
 }

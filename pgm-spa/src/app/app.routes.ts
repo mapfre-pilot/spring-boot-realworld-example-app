@@ -92,6 +92,14 @@ export const appRoutes: Route[] = [
           import('./ui/pages/cuadro-mando-page.component').then((m) => m.CuadroMandoPageComponent),
       },
       {
+        path: 'configuracion',
+        canActivate: [visibilidadGuard(Visibilidad.CONFIGURACION)],
+        loadComponent: () =>
+          import('./ui/pages/configuracion-page.component').then(
+            (m) => m.ConfiguracionPageComponent,
+          ),
+      },
+      {
         path: 'acceso-denegado',
         loadComponent: () =>
           import('./ui/pages/acceso-denegado-page.component').then(

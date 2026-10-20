@@ -190,6 +190,7 @@ export class MainLayoutComponent implements OnInit {
     { ruta: '/gestion-comercial', texto: 'Gest. Comercial', clave: Visibilidad.GESTION_COMERCIAL },
     { ruta: '/utilidades', texto: 'Utilidades', clave: Visibilidad.UTILIDADES },
     { ruta: '/cuadro-mando', texto: 'Cuadro de mando', clave: Visibilidad.CUADRO_MANDO },
+    { ruta: '/configuracion', texto: 'Configuración', clave: Visibilidad.CONFIGURACION },
   ];
 
   ngOnInit(): void {
