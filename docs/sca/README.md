@@ -37,6 +37,7 @@ exclusivamente con operaciones `get*`/`list*`. **No se ha modificado ningún obj
 21. [Pruebas comparativas SCA vs SCA2 en TEST (S1–S5)](pruebas/00-consolidado-s1-s5.md) — consolidado de las cinco sesiones paralelas (POSITIVO, NEGATIVO+GD, Acción Administrativa, Autorización, Detalle/buscador/errores): veredicto por flujo, causas raíz corregidas, hallazgos comunes a SCA y pendientes; informes detallados `pruebas/s1…s5`.
 22. [Anexo: inventario generado](anexos/inventario-generado.md) — volcado tabular (process models, integraciones, record types, referencias cruzadas).
 23. [Análisis de los servicios legacy de SCA (repos Plastic) y plan de lógica en Appian](40-analisis-servicios-legacy-sca.md) — inventario de los 9 repos del ZIP «SCA2 Servicios SCA», 19 servicios RAS (Core7 EJB, mediaciones SOA7/ESB, webMethods, GAIA/NEW) con sus operaciones y lógica, relación con las integraciones de SCAC/SCA/SCA2 que los llaman, candidatos a implementar la lógica en Appian y plan por fases; diagramas `img/40-*.svg|png`. Anexo: [matriz servicios ↔ integraciones ↔ consumidores](anexos/40-matriz-servicios-appian.md).
+24. [Diseño detallado fase 1: lógica legacy en Appian sin tocar MR01](41-diseno-logica-appian-fase1.md) — caducidad de tarea, propietario/carterización, catálogos cacheados en Aurora, caché de cabecera de una jornada y preparación de datos para decidir: objetos nuevos, puntos de conexión, pruebas y plan de 5 semanas reversible por constantes.
 
 ## Alcance y limitaciones
 
