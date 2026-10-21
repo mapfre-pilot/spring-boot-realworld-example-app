@@ -253,4 +253,13 @@ Contraste del mismo día en otra solicitud (15788199, otra sesión): instancia 1
 - **Q6 (switch Verti)**: confirmar que «switch ON» es el `FLAG` global del concepto funcional (implementado) y no el flag de oleada por nuuma (`SCA2_flagVerti`, que en SCA entra negado y en TEST es `false` para JJGONZ2/SISANS).
 - **D6** sigue abierta (sin respuesta; `SCA2 CMD Mecanizar`, R23-A).
 - **D8**: la tarjeta Verti del Detalle muestra el propietario de la solicitud (JJGONZ2 / SCA2 Users) y no quién finalizó la CA2; sólo informativo.
-- Repetir la pantalla Verti con una solicitud nueva tras `SCA2_GenerarContactoVerti` v2 (ver §9.8 si se completó).
+- ~~Repetir la pantalla Verti con una solicitud nueva tras `SCA2_GenerarContactoVerti` v2~~ → hecho en §9.8.
+
+### 9.8 Repetición tras el fix del botón: SCA2 15788208 (póliza 0005726685618, obs. «prueba r24c-2»)
+- Alta JJGONZ2 14:06:52 (aviso NEW «error al realizar la simulación… se continúa», ACEPTAR, no bloquea) → CA1 negativa → **CA nivel 2 directa, sin Verti** (Nuuma «-», GGE / GGE EXPERTOS SI24).
+- SISANS RETOMAR 14:15:57 → CORE (`SCA2_consultaGestion`): 43706312 alta FINALIZADA · 43706313 CA1 FINALIZADA NEGATIVA · 43706318 impresión FINALIZADA (JJGONZ2/OFICINA) · **43706319 CA2 INCOMPLETA nivel 2 con infoUsuario SISANS / SI24 / SI24 EXPERTOS** (#12 confirmado por segunda vez).
+- CA2 negativa SISANS 14:17:40 → tarea Verti: cabecera común y **un único botón CONTINUAR** (sin «CONTINUAR ANULACIÓN», CANCELAR ni POSPONER) → CONTINUAR sin casillas → Verti Finalizada → **Mecanización INCOMPLETA** 14:20:34 (nivel 2, GGE / GGE EXPERTOS SI24). No se pulsó ANULAR PÓLIZA.
+- Fallback 0005726683648 ya ocupado por 15788209 (otra sesión); no se tocó.
+- Grabación `r24c2-verti-boton-unico-edited.mp4`; capturas `r24c2-01…20` (`r24c2-07-detalle-sin-verti.png`, `r24c2-16-verti-boton-unico.png`, `r24c2-20-mecanizacion-incompleta.png`).
+
+**D4 cerrada como resuelta** (doc 45): Verti sólo con switch ON ∧ contacto ∧ MECANIZAR, cabecera común, botón único.
