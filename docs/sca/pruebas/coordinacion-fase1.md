@@ -7,6 +7,7 @@
 | D | 2026-10-21 | 0732000028208 (NSE-Hogar) | 15788005 | — (solo lectura, sin instancias) | Regresión antes/después de `SCA2_obtenerDatosCabecera` vía `/test` |
 | B | 2026-10-21 | 0001047017110 (wAutemis, clave 0280999) | 15788189 | SCA2 CMD Alta 12247493 | Propietario/carterización: gestor CE_RM (JJGONZ2) no propietario; regresión `nuumaEsPropietario`/Contra Anulación y sombra |
 | B | 2026-10-21 | 0001047017112 (wAutemis, clave 0280999) | 15788190 | SCA2 CMD Alta 17484381 | Propietario/carterización: usuario SI24 (SISANS) no propietario; regresión y sombra |
+| B | 2026-10-21 | 0001047017113 (wAutemis, clave 0280999) | 15788210 | SCA2 CMD Alta 12247942 | Propietario/carterización: corrección clave de producción en Contra Anulación (v57) y constante en true; prueba UI y sombra |
 | B | 2026-10-21 | — | — | Record `SCA2 Trazabilidad Cliente` filas 386-388 (operación `SOMBRA_PROPIETARIO_*`) | Filas de prueba de la regla de sombra; no borrar |
 | A | 2026-10-21 | 2002500495555 (Autos, FLOTA, vence 31/12/2026) | 15788192 (alta 10:52 UTC, PM Alta) | Alta → CA N1 (aviso «flota/sin tratamiento SCA» aceptado) | Caducidad por nivel: hoy+7 (no propietario) → 2026-10-28; fecInicioNivel 10:52:53 |
 | A | 2026-10-21 | 2002600000012 (Autos, FLOTA, vence 02/01/2027) | 15788202 (alta 11:45 UTC) | Alta → CA N1 | Caché cabecera: alta con `SCA2_USAR_CACHE_CABECERA` = false tras el cambio del Alta → fila `SCA2 Datos Cabecera` id 229 con 9 campos (igual que antes) |
