@@ -61,3 +61,5 @@ exclusivamente con operaciones `get*`/`list*`. **No se ha modificado ningún obj
 - [Ronda 24: respuestas del analista a las 17 dudas y plan de aplicación](43-ronda24-respuestas-analista.md)
 - [Propuesta de navegación tras GUARDAR en el alta (duda #9)](44-propuesta-retorno-alta-navegacion.md)
 - [Ronda 24: comportamiento de la derivación a VERTI (switch, contacto, mecanizar)](45-ronda24-derivacion-verti.md)
+- Rondas 19–23 (mantenimiento wAutemis, análisis del analista, Documentum, ANL): [37](37-ronda19-mantenimiento-pendientes-autorizar.md) · [38](38-ronda20-analisis-sca2.md) · [39](39-ronda21-documentum-referencia.md) · [40](40-ronda22-analisis-sca2.md) · [41](41-ronda23-anl-mantenimiento.md)
+- Informes de pruebas de las rondas 23–24 (sesiones hijas): [R23-A Autemis, bloqueo NEW y ANL](pruebas/r23-a-autemis-anl.md) · [R23-B NSE](pruebas/r23-b-nse.md) · [R23-C nivel 2, RETOMAR y Verti](pruebas/r23-c-nivel2-verti.md) · [R24-D batch NSE, SGD y bandeja](pruebas/r24-d-batch-sgd-errores.md)

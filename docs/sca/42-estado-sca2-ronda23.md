@@ -26,6 +26,32 @@ Ordenadas por impacto. Ninguna se ha resuelto por mi cuenta: SCA2 hace hoy lo qu
 | 16 | **Documentos de prueba afectados por el fallo de Documentum** | — | 5 solicitudes (15788028/45/98/99/106) con documento no subido al SGD | ¿Los re-subo o se dejan? | 39-ronda21 |
 | 17 | **Solicitud 15788025 desincronizada** | — | CORE anulada, SCA2 «Incompleta» | ¿Finalizarla a mano o dejarla como caso de prueba? | 34-ronda13 |
 
+### Actualización tras la ronda 24 (21/10)
+
+Estado de las 17 dudas tras las respuestas del analista (`43-ronda24-respuestas-analista.md`, `45-ronda24-derivacion-verti.md`) y los informes de las sesiones hijas:
+
+| # | Estado | Qué se hizo / qué falta |
+|---|---|---|
+| 1 | **Cerrada y aplicada** | Pantalla Verti sólo con switch ON + contacto VERTI/VENCIMIENTO + acción MECANIZAR, tras la CA, cabecera común y un único CONTINUAR (`CMD CrearAccion`, `SCA2_VertiVencimientoPrincipal` v13, `SCA2_GenerarContactoVerti` v2); inducción por contacto en `CMD Mecanizar`. Probado con 15788198/15788208 (r23-c §9). **Nueva Q6**: se ha tomado como switch el FLAG global `vertiSuscripcionInteligente` (= S en TEST); `SCA2_flagVerti` por nuuma da false para los usuarios de prueba. ¿Es ese el switch? |
+| 2 | **Abierta** | Sin respuesta del analista (D6). Ligada a la etiqueta CORE tras ANULAR: SCA «Mecanización Enviada» vs SCA2 «ANULACIÓN PENDIENTE DE AUTORIZAR». |
+| 3 | **Cerrada y aplicada** | `CMD Mecanizar` v30 reanuda sólo con `CONCLUIDA` (ciclo completo) y corta 24 h después de la respuesta. **Hallazgo**: ANL en PRE nunca marca `CONCLUIDA` para solicitudes SCA2 (autorizar: «Anular Poliza NEW» no termina; rechazar: termina sin «Cierre SGO y STCAT»), por lo que 15788199/15788205 acabarán en `ANL_TIMEOUT` (r23-a §7). **Nuevas preguntas**: ¿aceptable en PRE? ¿El rechazo se da por concluido con ESTADO=2 + evento «No Autorizado»? ¿Quién marca `CONCLUIDA`? |
+| 4 | Cerrada sin cambio | CE_MF_BK es perfil SI24. |
+| 5 | Abierta (contexto entregado) | SCA marca «ANULACIÓN REALIZADA» nada más ANULAR; SCA2 sólo tras concluir ANL (coherente con #3). Pendiente decisión. |
+| 6 | **Pendiente de OK** | Corrección localizada en `SCA2_ContraAnulacionOpciones` (usar la catalogación normalizada como SCA en la rama renovada). No aplicada; se haría sobre la v57 actual. |
+| 7 | Abierta | RGPD: componente de firma externo a SCA; ¿debe integrarlo SCA2? |
+| 8 | **Cerrada y aplicada** | `SCA2_pObtenerPolizaFecha` v2 reconsulta Emisión a +1 año; las pólizas a futuro se recuperan. El servicio de decisión devuelve ERROR en ambas apps (externo). |
+| 9 | Entregable pendiente de OK | Propuesta en `44-propuesta-retorno-alta-navegacion.md`. |
+| 10 | Cerrada sin cambio | RETOMAR por cualquier usuario del grupo. |
+| 11 | **Cerrada y aplicada** | Una carta por solicitud; fecha/usuario/grupo de impresión en el Detalle (`SCA2_DetalleSolicitud` v61). |
+| 12 | **Cerrada y aplicada** | RETOMAR lanza a CORE la misma llamada que POSPONER con el nuuma que retoma (gestiones 43706297/43706319). |
+| 13 | Cerrada (fuera de alcance) | Casilla SGC fuera de alcance; falta documentación de Suscripción Inteligente. |
+| 14 | **Cerrada y aplicada** | Batch NSE propio (`SCA2 Batch Mecanizacion NSE`, `SCA2 CMD MecanizarNSE`), desactivado con `SCA2_BOOL_BATCH_NSE = false`. Activar sólo con autorización. |
+| 15 | Abierta | Faltan ejemplos de llamadas de la Decisora/FDC. |
+| 16 | **Cerrada y aplicada** | `SCA2_subirDocumentosGD` v11 valida la referencia, error accionable y reintento (15788209). Los 5 documentos históricos no se han re-subido. **Nuevas preguntas**: duplicado en el SGD al reintentar; quién descarta la fila `DOC_GD_FAIL` tras un reintento correcto. |
+| 17 | **Cerrada y aplicada** | 15788025 registrada en la bandeja como `DESINCRONIZACION_CORE` (fila 120) sin tocarla; se resuelve desde ahí. |
+
+Además, R23-A confirmó con pólizas nuevas el **bloqueo NEW** (tras corregir la fecha «A EFECTO» del alta y la `reservaPrima` del bloqueo) y las tres acciones de la página de mantenimiento (AUTORIZAR, RECHAZAR, CANCELAR). Queda en curso la corrección del contacto Verti en `CMD Mecanizar` (`pv!contacto` se calculaba antes de cargar la solicitud; rama positiva de la inducción sin verificar). Informes: `pruebas/r23-a-autemis-anl.md`, `pruebas/r23-b-nse.md` §10, `pruebas/r23-c-nivel2-verti.md` §9, `pruebas/r24-d-batch-sgd-errores.md`.
+
 ## 2. Qué se ha desarrollado y cambiado (muy resumido)
 
 **Construcción (fase 0 → ronda 8).** SCA2 se levantó desde cero en TEST como una aplicación nueva sobre la misma BBDD/CORE: un solo site, buscador y Detalle con tarjetas por gestión, alta, motor de decisión, Contra Anulación, Acciones Administrativas, Autorización fuera de norma, Mecanización, Finalización, bandeja de errores con relanzamiento, etiquetas HU3980, documentos en Documentum, notificaciones. La diferencia de fondo con SCA: en vez de procesos de larga duración, SCA2 usa **comandos cortos** (Alta, Decidir, CrearAccion, CompletarAccion, Mecanizar, Finalizar…) y guarda el estado de la solicitud en base de datos; si algo externo falla, el comando queda en la bandeja de errores y se relanza sin perder la solicitud.
@@ -55,7 +81,7 @@ Todos los flujos comparten la misma idea: **la solicitud vive en CORE y en la ta
 **Cómo la veo.** Los flujos principales (alta → motor → CA → nivel 2 → mecanización → finalización, AA, autorización, buscador/Detalle, documentos, bandeja de errores) funcionan con paridad respecto a SCA con datos nuevos y están probados de extremo a extremo; en las últimas rondas los fallos que aparecen ya no son de diseño sino defectos puntuales (una fecha, un flag perdido, un fault externo mal tratado) que se localizan y corrigen en la misma ronda. Lo que frena el cierre no es el desarrollo sino **(a) las 17 decisiones funcionales de la tabla** y **(b) la dependencia de sistemas externos de PRE** (NEW/Central, ANL/SGO, Emisión) para verificar los ciclos wAutemis completos. La aplicación está en condiciones de que los analistas la revisen de forma guiada en TEST.
 
 **Qué queda (ordenado).**
-1. Cerrar el ciclo ANL con las solicitudes nuevas ya pendientes (15788161/15788166/15788168): AUTORIZAR, RECHAZAR y CANCELAR y comprobar que ANL llega hasta el cierre con SGO. La sesión hija R23-A se paró por límite de uso justo antes; pendiente de tu OK para reanudarla o relanzarla. **~1 sesión.**
+1. ~~Cerrar el ciclo ANL con las solicitudes nuevas~~ Hecho en la ronda 24 (AUTORIZAR/RECHAZAR/CANCELAR funcionan; bloqueo NEW OK). Lo que queda es externo o de decisión: ANL en PRE no marca `CONCLUIDA` para SCA2 (ver §1, #3). **~1 sesión.**
 2. Aplicar las decisiones de la tabla §1 cuando las tengamos. Las que implican cambio (1, 2, 3, 4, 8, 9, 10) son cada una de tamaño pequeño-medio y se prueban en la misma ronda. **~2 sesiones en total**, dependiendo de cuántas cambien el comportamiento actual.
 3. Casuísticas aún no probadas con dato nuevo: Acción Administrativa con documentos que derive realmente del motor (ninguna póliza de las listas derivó a AA), Autemis con bloqueo NEW corregido en todas sus variantes, pólizas «a efecto» con todas las combinaciones. Necesito pólizas del analista para AA. **~1 sesión** (sesiones hijas en paralelo).
 4. Evolutivos no decididos (casilla de vencimiento SGC, batch NSE, entrada desde FDC, salto al Detalle tras el alta). Si entran: **~1–2 sesiones**.

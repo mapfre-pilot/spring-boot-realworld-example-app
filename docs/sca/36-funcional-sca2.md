@@ -90,9 +90,9 @@ Se crea sólo cuando Emisión deja la anulación «pendiente de aceptar» (póli
 
 1. Pantalla de **confirmación**: datos de la anulación (fecha de CORE, motivo/detalle/causa traducidos para NEW/NSE, reserva de prima para wAutemis, importe) y botones **CANCELAR / ANULAR PÓLIZA**. Desde la ronda 13 **sólo** se muestra la confirmación; la inducción Verti no aparece aquí (error del análisis corregido).
 2. **ANULAR PÓLIZA** llama a Emisión (guardar mecanización) y crea la gestión en CORE. Avisos NSE 00000005/00000006 → autorización pendiente (§8).
-3. Si el motor de contactos indica **inducción Verti o vencimiento**, SCA2 crea la gestión «Verti/vencimiento» y, al pulsar ACEPTAR, abre la pantalla **Inducción Verti / Vencimiento** con dos casillas: «Generación de contacto a Verti» y «Generar un vencimiento a un año vista para recuperación de la póliza». CONTINUAR ejecuta la inducción (mismo proceso corporativo que SCA) y completa la mecanización. ❓ La casilla de **vencimiento (SGC a un año)** no está implementada todavía en SCA2.
-4. Tras mecanizar: si la póliza es wAutemis «pendiente de aceptar» se espera a **ANL** (desbloqueo de la anulación; SCA2 corta a 24 h con error `ANL_TIMEOUT` ⚠️ SCA espera indefinidamente), se actualiza la mecanización en CORE, se finaliza la gestión SGC y se vuelve a preguntar al motor (que puede crear una **contra anulación de nivel 2** para SI24 ❓ confirmar que aplica también tras la inducción Verti). Si NSE no responde, la mecanización queda «Incompleta» hasta que el servicio externo la actualice («Pendiente de Autorización» en el listado).
-5. ⚠️ El **batch de mecanización NSE** de SCA no tiene equivalente propio en SCA2 (diseño propuesto, pendiente de decisión).
+3. **Derivación a Verti / Vencimiento** (criterio del analista, ronda 24): la pantalla previa «Verti / Vencimiento» se muestra **después de la Contra Anulación** y sólo si se cumplen las tres condiciones a la vez: el switch funcional `vertiSuscripcionInteligente` está activo, el motor de contactos devuelve VERTI o VENCIMIENTO y la acción decidida es MECANIZAR. No aparece con contacto vacío, en saltos de nivel, en Acciones Administrativas ni con el switch apagado. Lleva la cabecera común de la solicitud y un único botón **CONTINUAR**; no decide el flujo. La **inducción** (mismo proceso corporativo CMP que SCA) se lanza al mecanizar siempre que el contacto sea VERTI/VENCIMIENTO, con independencia del switch y de la pantalla. ❓ La casilla de **vencimiento (SGC a un año)** no está implementada todavía en SCA2. ❓ Pendiente confirmar si el switch es el FLAG global del concepto funcional (lo implementado) o la marca por usuario.
+4. Tras mecanizar: si la póliza es wAutemis «pendiente de aceptar» se espera a **ANL** hasta que concluya el **ciclo completo** (Central + NEW + SGO y respuesta de autorización/rechazo); ya no basta con que ANL marque autorizado/rechazado. Si tras la respuesta aparecen errores, se esperan 24 h y la solicitud termina con error `ANL_TIMEOUT` (criterio del analista, ronda 24). Después se actualiza la mecanización en CORE, se finaliza la gestión SGC y se vuelve a preguntar al motor (que puede crear una **contra anulación de nivel 2** para SI24). Si NSE no responde, la mecanización queda «Incompleta» hasta que el servicio externo la actualice («Pendiente de Autorización» en el listado). Para pruebas, la página de mantenimiento **Pendientes de autorizar (wAutemis)** permite AUTORIZAR/RECHAZAR (lanzan `ANL Desbloquear` igual que lo haría SGO) y CANCELAR (cierra la solicitud sin pasar por ANL).
+5. SCA2 tiene su propio **batch de mecanización NSE** (`SCA2 Batch Mecanizacion NSE`), que sólo procesa solicitudes de SCA2 de origen NSE y envía los fallos a la bandeja de errores. Está **desactivado** (`SCA2_BOOL_BATCH_NSE = false`, sin planificación) hasta que el analista autorice activarlo.
 
 ## 10. Finalización, niveles y notificaciones
 
@@ -109,11 +109,11 @@ Se crea sólo cuando Emisión deja la anulación «pendiente de aceptar» (póli
 
 ## 12. Documentos
 
-Los documentos se adjuntan en Appian durante la gestión (visibles con el «ojo»), se suben al gestor documental **Documentum** al finalizar la acción y se registran en CORE (tipo de documento según la causa). Al relanzar una acción fallida se **reutiliza** la referencia de Documentum (sin duplicados). La impresión de plantillas genera la gestión 4 y el documento una sola vez (idempotente).
+Los documentos se adjuntan en Appian durante la gestión (visibles con el «ojo»), se suben al gestor documental **Documentum** al finalizar la acción y se registran en CORE (tipo de documento según la causa). Al relanzar una acción fallida se **reutiliza** la referencia de Documentum (sin duplicados). Al subir, SCA2 **valida la referencia** que devuelve el gestor documental antes de darla por buena: si falta o no es correcta, la acción no se considera completada, el usuario ve un error accionable (puede volver a adjuntar y reintentar) y queda una fila `DOC_GD_FAIL` en la bandeja de errores. ❓ Al reintentar desde pantalla el fichero puede quedar duplicado en el SGD (CORE conserva uno por tipo); ❓ si el reintento va bien, quién descarta la fila `DOC_GD_FAIL`. La impresión de plantillas genera la gestión 4 y el documento una sola vez (idempotente).
 
 ## 13. Bandeja de errores y relanzamiento (administradores)
 
-Cada comando que falla (alta, decisión, crear/completar acción, mecanizar, finalizar…) deja una fila con solicitud, comando, nodo, mensaje y payload. El administrador puede **relanzar** (vuelve a ejecutar el comando desde el punto fallido, con idempotencia: lo ya hecho no se repite) o **descartar**. Tres fallos seguidos → BLOQUEADO. Los errores de CORE/Emisión/Documentum/ANL se distinguen de los propios. ❓ Quién debe ver la bandeja (hoy sólo administradores).
+Cada comando que falla (alta, decisión, crear/completar acción, mecanizar, finalizar…) deja una fila con solicitud, comando, nodo, mensaje y payload. El administrador puede **relanzar** (vuelve a ejecutar el comando desde el punto fallido, con idempotencia: lo ya hecho no se repite) o **descartar**. Tres fallos seguidos → BLOQUEADO. Los errores de CORE/Emisión/Documentum/ANL se distinguen de los propios. Además de los comandos, la bandeja registra las subidas fallidas al SGD (`DOC_GD_FAIL`), los fallos del batch NSE y las **desincronizaciones CORE/SCA2** (`DESINCRONIZACION_CORE`: CORE da la solicitud por cerrada y SCA2 no, con el payload de ambos estados) para resolverlas desde ahí y no a mano. ❓ Quién debe ver la bandeja (hoy sólo administradores).
 
 ## 14. Lo que SCA2 hace distinto de SCA (resumen) y decisiones abiertas
 
@@ -125,10 +125,15 @@ Cada comando que falla (alta, decisión, crear/completar acción, mecanizar, fin
 | Oficina al retomar | Se pierde | Se conserva | Confirmado |
 | Pregunta «¿insiste el cliente?» | SI24 y Gestión Especial | No se pregunta; CCC/CCR = sí por defecto | Confirmado |
 | Causas SI24 | Visibles | Ocultas 13/14/16/17/18/28/31/32 + cascada | Confirmado |
-| Espera ANL | Indefinida | 24 h → error | ❓ |
-| Batch NSE | Propio | Sin equivalente | ❓ |
+| Espera ANL | Indefinida | Ciclo completo de ANL; 24 h tras la respuesta si hay errores → error | Confirmado (ronda 24) |
+| Batch NSE | Propio | Propio, desactivado (`SCA2_BOOL_BATCH_NSE`) | Confirmado; activar cuando lo autorice el analista |
 | Documento sin traspaso en CORE | No llega | No llega | Como SCA |
 | Visionado al adjuntar | No | Sí (ojo + CONTINUAR) | Evolutivo ronda 13 |
+| Pantalla previa Verti / Vencimiento | No existe | Tras la CA, sólo con switch ON + contacto VERTI/VENCIMIENTO + MECANIZAR; un botón CONTINUAR | Confirmado (ronda 24); ❓ qué switch |
+| RETOMAR (AA y nivel 2) | Sólo propietario | Cualquier usuario del grupo; la misma llamada a CORE que POSPONER con el nuuma que retoma | Confirmado (ronda 24) |
+| Impresión de la carta | Una por solicitud | Una por solicitud; fecha, usuario y grupo visibles en el Detalle | Confirmado (ronda 24) |
+| Validación de la subida al SGD | No | Referencia validada, error accionable y reintento | Evolutivo ronda 24 |
+| Mantenimiento «Pendientes de autorizar (wAutemis)» | No existe | AUTORIZAR / RECHAZAR (vía ANL Desbloquear) / CANCELAR, para pruebas | Evolutivo ronda 19 |
 | Inducción vencimiento (SGC a un año) | Sí | Pendiente | ❓ |
 | Retorno al formulario tras el alta | — | Puede verse mientras el motor decide | ❓ saltar al Detalle |
 
