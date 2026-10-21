@@ -97,7 +97,7 @@ SAIL completo de todo lo nuevo y de los interruptores: `docs/sca/sail/43-C/` (es
 
 Idempotencia comprobada: segunda ejecución de CONCEPTO → `existentesAntes 17`, 17 actualizaciones, 0 altas, 17 filas en tabla. Tercera ejecución desde el botón tras crear una fila manual → «17 filas en CORE, 1 manuales respetadas, 0 bajas lógicas, 17 filas escritas»; la fila manual quedó intacta (misma `fechaModificacion`).
 
-## 5. Pruebas (TEST, 21-10-2026; usuario `devin`, miembro de `SCA2 Administrators`)
+## 5. Pruebas (TEST, 21-10-2026; usuario administrador de la sesión (miembro de `SCA2 Administrators`))
 
 Sin solicitudes ni instancias: las reglas son puras y las pruebas de pantalla son sobre la página de mantenimiento. Datos propios reservados en `docs/sca/pruebas/coordinacion-fase1.md` (concepto manual `ZZC1`, inactivo).
 
