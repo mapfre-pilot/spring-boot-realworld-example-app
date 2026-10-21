@@ -23,3 +23,12 @@ Cada objeto Appian tiene **una única sesión propietaria**; nadie más lo guard
 4. Documentación: cada sesión escribe solo `docs/sca/43-<letra>-<pieza>.md` (diseño final, objetos y versiones, pruebas con formato `ID | Caso | Esperado | Real | OK/KO | Solicitud | Instancia | Pasos | Causa`) en la rama `feature/sca`; **no** editar `README.md` ni otros docs (lo hace el coordinador).
 5. Si una sesión necesita un objeto de otra fila, un dato o un permiso: se para y lo pide (el coordinador lo gestiona con el usuario). Dependencias conocidas: A usa provisionalmente `SCA2_nuumaEsPropietario` + `clienteCarterizado` de la cabecera para «propietario»; cuando B entregue `SCA2_esPropietarioPoliza`, el coordinador pedirá a A el cambio de llamada.
 6. Antes de guardar un objeto existente: anotar su versión actual en el doc; cambios mínimos; no reformatear SAIL ajeno.
+
+## Estado de los interruptores en TEST (21-10-2026)
+Por decisión del usuario («deja activas todas las cosas que has hecho, para que los analistas puedan probar»): `SCA2_USAR_CATALOGOS_AURORA` = **true** (v8), `SCA2_USAR_CACHE_CABECERA` = **true** (v14), `SCA2_USAR_PROPIETARIO_APPIAN` = **true** (v10; criterio legacy carterizado O clave O póliza en Contra Anulación y SGC). La caducidad por nivel (sesión A) no tiene interruptor. Cualquier pieza se desactiva poniendo su constante a `false`.
+
+## Sesiones de cierre
+| Sesión | Pieza | Objetos |
+|---|---|---|
+| **F** | PM programado de refresco de la caché de cabecera (07:05), especificado en 43-D §10 | NUEVOS: PM `SCA2 CMD RefrescarCacheCabecera`, constante `SCA2_CACHE_REFRESCO_BATCH` |
+| **G** (tras A) | Invalidación de la caché en los CMD que cambian estado (43-D §8) y, si el usuario lo aprueba, corrección del barrido de caducidad (43-A §11) | PM `SCA2 CMD Mecanizar/Finalizar/Caducar/BarridoCaducidad/CompletarAccion/Decidir/CrearAccion` |
