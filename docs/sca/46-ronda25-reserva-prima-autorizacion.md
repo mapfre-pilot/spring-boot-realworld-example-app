@@ -36,7 +36,17 @@ No se ha tocado SCA, SCAC, CORE ni ANL. 15788166 y 15788168 no se han relanzado 
 
 ## 4. Pruebas con solicitud nueva (UI)
 
-_(se completa con el informe del agente de pruebas)_
+Prueba UI (21/10 20:04–20:12 CEST, JJGONZ2; vídeo `sca2-r25-e2e-edited.mp4`): **bloqueada por datos**. Las 15 pólizas «a efecto» del ODS que quedaban libres (0001047017097/099/102/105/108/115/116/121/122/124/125/126/128/131/153) las rechaza el alta antes del formulario: «La póliza no es una póliza válida o no se encuentra disponible, por lo tanto, no se puede gestionar la anulación por SCA.» No se creó ninguna solicitud ni se tocó ninguna anterior. Regresión NSE-Autos con 2002000200336: el GUARDAR termina con excepción de NSE («Could not roll back JDBC transaction … StaleConnectionException: No hay más datos para leer del socket»), externa.
+
+| ID | Caso | Esperado | Real | OK/KO | Solicitud | Instancia | Pasos | Causa/solución |
+|---|---|---|---|---|---|---|---|---|
+| C1 | Alta A EFECTO → `mcaRsvPrima = N` | simulación aceptada con N y marca grabada | sin póliza wAutemis válida | NO PROBADO | — | — | 15 candidatas → ALTA | pedir pólizas wAutemis válidas en PRE y libres |
+| C2 | Mecanización con marca N (ANL `MCA_RESERVA_PRIMA = N`, bloqueo 200) | — | depende de C1 | NO PROBADO | — | — | — | ídem |
+| C3 | RECHAZAR → ANL ESTADO 2 → (CONCLUIDA) → `guardarAutorizacion` codEstado 3 → Autorización **Rechazada** | — | depende de C1 | NO PROBADO | — | — | acceso a mantenimiento opción 6 con `devin` OK | ídem |
+| C4 | AUTORIZAR → ANL concluye con reserva N | — | depende de C1 | NO PROBADO | — | — | — | ídem |
+| R | Regresión alta NSE-Autos | popup de simulación | excepción JDBC de NSE al GUARDAR | KO externo | — | — | alta 2002000200336 | repetir cuando NSE responda |
+
+Verificado por LCP (§3): el reintento con N de `SCA2_consultarNewAlta`/`SCA2_simularAnulacion` funciona con el contexto real de 15788168 (misma póliza, motivo y fecha).
 
 ## 5. Límite conocido
 
