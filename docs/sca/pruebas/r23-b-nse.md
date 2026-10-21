@@ -141,3 +141,106 @@ Record SCA2 (`SCA2_cargarSolicitud`): 15788155 `EN_ACCION / CONTRA_ANULAR / CONT
 - `r23-nse-edited.mp4` — comparación completa A/B/C (SCA y SCA2).
 - `r23-b-sca2-v37-edited.mp4` — reintento de B en SCA2 tras la corrección (v37).
 - Capturas: `A-SCA2-catalogacion.png`, `A-SCA-catalogacion.png`, `A-SCA2-detalle-final.png`, `A-SCA-RGPD-despues.png`, `B-SCA2-guardar-error.png`, `B-v37-SCA2-guardar-validacion.png`, `B-SCA-id-contra.png`, `B-v37-SCA2-popup.png`, `B-SCA-popup-recomprobado.png`, `C-SCA2-detalle-final.png`, `C-SCA-detalle-final.png`, `C-SCA-error-decision.png`, `C-SCA2-buscador-final.png`, `C-SCA-buscador-final-ambas.png`.
+
+---
+
+## 10. Contexto para el analista (ronda 24)
+
+Reanudación de R23-B con las respuestas del analista a las dudas #5, #6, #7 y #8. Solo se ha modificado **un objeto de SCA2** (bloque A). No se ha tocado SCA, SCAC, CORE, ANL, GAIA, PRE ni Documentum. Solicitudes nuevas de esta ronda: **SCA2 15788200** (pól. 2002600060946) y **SCA 15788203** (pól. 2002600073743).
+
+### 10.A Pólizas emitidas a futuro (#8, decidido: reconsulta +1 año)
+
+**Cómo lo hace SCA.** La detección de «emitida a futuro» está en la propia interfaz de alta (`SCA_AltaSolicitudAnulacion`, y también en `SCA_AltaSolicitudAnulacionPopUp`, `…Estrategicas`, `SCA_CalcularListaParCargaSGCOnline` y `SCA_DecisoraMain`): si la respuesta de `SCA_pObtenerPolizaFecha` no trae `poconpolizat`, repite la consulta con `pfechaconsulta: todate(a!addDateTime(today(), 1))` (**+1 día**, no +1 año). Por eso SCA, con pólizas cuyo efecto está a semanas vista, sigue sin obtener producto/efecto/vencimiento (formulario vacío en 15788158 y 15788203) y propone fecha sobre `hoy + 1 año`.
+
+**Qué se ha implementado en SCA2.** En lugar de duplicar la lógica en cada punto de llamada, la reconsulta se ha centralizado en la regla de consulta, de modo que `SCA2_AltaSolicitudPage` v37 (que ya llama a la regla en el popup, la cabecera y el reintento +1 día) recibe los datos completos sin cambios: **se ha releído el objeto vivo y sigue en v37 con los fixes R23-B (null-safe en GUARDAR); no se ha editado**.
+
+| Objeto | uuid | Versión | Cambio |
+|---|---|---|---|
+| `SCA2_pObtenerPolizaFecha` (regla) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052562` | 1 → **2** | Tras la primera llamada a Emisión (`IConsultarPoliza_1_3_0`), si la respuesta trae `pognrmensajeerrort` y no trae `poconpolizat`, y la fecha de consulta original es nula o ≤ hoy+1, repite **una sola vez** la misma consulta con `pfechaconsulta = todate(edate(today(), 12))` (+1 año). Si la segunda devuelve póliza, se devuelve esa respuesta; si no, se conserva la respuesta/error original. |
+
+Procedimiento: GET vivo → backup (`SCA2_pObtenerPolizaFecha.before-<ts>.json/.sail`) → edición mínima → PUT del objeto completo → re-GET (`versionId: 2`) → `POST /expression-rules/{uuid}/test` → prueba UI. Fragmento añadido (resumen):
+
+```appian
+local!sinPolizaConError: and(
+  a!isNotNullOrEmpty(local!respuesta),
+  a!isNullOrEmpty(index(index(local!respuesta, "MSSPObtenerPolizaFecha", null), "poconpolizat", null)),
+  a!isNotNullOrEmpty(index(index(local!respuesta, "MSSPObtenerPolizaFecha", null), "pognrmensajeerrort", null))
+),
+local!reintentarFuturo: and(
+  local!sinPolizaConError,
+  or(a!isNullOrEmpty(local!fechaConsultaOriginal), todate(local!fechaConsultaOriginal) <= today() + 1)
+),
+if(
+  local!reintentarFuturo,
+  /* segunda llamada con pfechaconsulta = todate(edate(today(), 12)); si trae poconpolizat se devuelve, si no local!respuesta */
+  ...,
+  local!respuesta
+)
+```
+
+**Pruebas de la regla (LCP, `POST …/test`)** con pólizas de la columna B del ODS:
+
+| Póliza | 1.ª consulta (hoy) | 2.ª consulta (hoy+1 año) → producto / efecto / vencimiento |
+|---|---|---|
+| 2002600060946 | sin póliza, `CODIGO INEXISTENTE [f_fila_a_fecha]` | TERCEROS AMPLIADO / 15/11/2026 / 15/11/2027 |
+| 0732600004516 | sin póliza | HOGAR PLATINO / 12/11/2026 / 12/11/2027 |
+| 2002600073743 | sin póliza | EQUILIBRIO TERCEROS / 10/11/2026 / 10/11/2027 |
+| 0732600005004 | sin póliza | HOGAR FAMILIAR / 17/11/2026 / 17/11/2027 |
+| 2002600060945 | sin póliza | BASICar TERCEROS AMPLIADO / 30/11/2026 / 30/11/2027 |
+| 2002600059907 | sin póliza | EQUILIBRIO AMPLIADO / 30/12/2026 / 30/12/2027 |
+| 9999999999999 (control) | sin póliza | sin póliza → se conserva el error original |
+
+Todas las pólizas a futuro del ODS probadas se recuperan con +1 año; **no ha quedado ningún caso en que Emisión siga sin devolverla**.
+
+**Prueba UI (grabación `r24-b-futuro-edited.mp4`)**, usuario JJGONZ2, motivo DECISION DE CLIENTE / ASEGURADO NO DESEA SEGURO / COMPROMISOS / PRESENCIAL:
+
+| Paso | SCA2 — pól. 2002600060946 → **15788200** | SCA — pól. 2002600073743 → **15788203** | ¿Igual? |
+|---|---|---|---|
+| Popup | Entra al formulario sin aviso | Entra al formulario sin aviso | Sí |
+| Cabecera | **TERCEROS AMPLIADO, efecto 15/11/2026, vencimiento 15/11/2027** (datos de la 2.ª consulta) | Producto/efecto/vencimiento **vacíos** | No (SCA2 ahora mejor; decisión #8) |
+| Catalogación propuesta | A VENCIMIENTO, fecha 15/11/2027 (la fija el servicio de catalogación) | A VENCIMIENTO, fecha 11/11/2027 | Equivalente |
+| GUARDAR | «Solicitud guardada correctamente», sin la validación «fecha superior al vencimiento» | «Se ha producido el siguiente error en el servicio de decisión:» (sin detalle); la solicitud se crea igualmente | Ver abajo |
+| Detalle | PENDIENTE, nivel 1, catalogación A VENCIMIENTO; «Alta Solicitud: Finalizada»; **sin acción siguiente** tras 5 min | PENDIENTE, nivel 1, catalogación **A EFECTO** (SCA la cambia al guardar); sin acción siguiente | Parcial |
+| CORE (`SCA2_consultaGestion`) | 43706289 acción 8 FINALIZADA | 43706296 acción 8 FINALIZADA | Sí |
+| Buscador | Visible en SCA2 y en SCA | Visible en ambas | Sí |
+
+**Por qué ninguna de las dos pasa de la alta — caso exacto para el analista.** Bandeja `SCA2 Error`: **#116, #117, #118** (solicitud 15788200, PM `SCA2 CMD Decidir`, nodo «Consultar reglas», tipo `DECISION_ERROR`, respuesta del servicio `{accion:"ERROR", grupo:"ERROR", subgrupo:"ERROR", error:""}`, 3 intentos entre 12:14:02 y 12:14:13 → BLOQUEADO). En SCA el mismo servicio de decisión devuelve el error que se muestra al guardar («…error en el servicio de decisión:» con texto vacío). Es decir, **el servicio de decisión/reglas falla con pólizas NSE emitidas a futuro en las dos aplicaciones** (también ocurrió en SCA con 0732600004759 → 15788158 en R23-B, aunque allí SCA continuó por Contra Anulación). No es una divergencia de SCA2; para reproducirlo: `SCA2_consultarDecision`/nodo «Consultar reglas» con `numPoliza=2002600060946`, origen NSE-Autos, catalogación 2, nivel 1, fecha propuesta 15/11/2027. Queda documentado en lugar de corregido (el servicio es externo). La continuidad Contra Anulación → Verti → Mecanización → ANULAR PÓLIZA con póliza a futuro **no se ha podido comparar** por este motivo.
+
+Diferencia menor observada: SCA cambia la catalogación mostrada en Detalle de A VENCIMIENTO a A EFECTO al guardar; SCA2 conserva A VENCIMIENTO. Dado que el analista ha decidido que la catalogación la determine el servicio, SCA2 se deja como está.
+
+### 10.5 (#5) Qué llamada de CORE fija «ANULACIÓN REALIZADA» (SCA 15788154) vs «ANULACIÓN PENDIENTE DE AUTORIZAR» (SCA2 15788155)
+
+- **SCA**: el estado lo fija la llamada CORE **`actualizarMecanizacion`** (`mSEActualizarMecanizacionDTO`) en el PM `SCA_Finalizar_Mecanización`, nodos 5/31, con `codEstMecanizacion = if(pv!cancel, "4", local!polizaVigente = "A", "1", "4")` y `codEstPoliza = if(local!polizaVigente = "A", "A", "V")`, más `numSituacion` (suplemento) y `centroEmisor`. Con `codEstMecanizacion = "1"` / `codEstPoliza = "A"` CORE muestra «ANULACIÓN REALIZADA» (gestión 43706159). SCA llama a esta actualización **inmediatamente** después de ANULAR PÓLIZA, sin esperar a que ANL/Emisión confirmen.
+- **SCA2**: el estado «PENDIENTE DE AUTORIZAR» lo deja la llamada CORE **`crearAutorizacion`** del PM `SCA2 CMD Mecanizar` (nodo 10), seguida de `guardarMecanizacion` (nodo 8). La llamada equivalente a `actualizarMecanizacion` existe más adelante en el mismo PM (nodo 308 prepara `sol/polizaVigente/numSituacion/centroEmisor` → nodo 309 `rule!SCA2_construirConsultaActualizarMecanizacion` → nodo 305 integración «Actualizar Mecanización» sobre `cons!SCAC_TXT_CORE7_ENDPOINT` → nodo 310 ¿OK?), pero **solo se ejecuta tras el sondeo ANL** (nodos 302/303/304, cada 5 min, hasta que `ANL Anulacion` esté desbloqueada/concluida o sea wAutemis aceptada, nodo 324). La instancia de 15788155 («SCA2 CMD Mecanizar - 20/10/2026 19:54») seguía **ACTIVE** en la espera ANL, por lo que CORE conserva el estado de `crearAutorizacion`. Es una diferencia de diseño (SCA2 espera confirmación de ANL antes de marcar la mecanización), no un parámetro distinto.
+- Pendiente de confirmar: la regla `SCA2_construirConsultaActualizarMecanizacion` referenciada por el nodo 309 **no aparece** en el listado de reglas de las aplicaciones SCA2, SCA, SCA CORE, Anulaciones ni EDA por LCP. Si realmente no existe, el nodo 305 fallará cuando ANL concluya y SCA2 nunca pasará a «ANULACIÓN REALIZADA». No se ha creado (decisión funcional / posible objeto fuera de aplicación); conviene revisarlo con el analista.
+
+### 10.6 (#6) Por qué SCA2 escribe catalogación 2 en CORE cuando calcula 1
+
+Flujo en ambas apps: el servicio REST de catalogación (`SCA_/SCA2_consultarCatalogacionRest`) devuelve `codCatalogacionDefecto` (2 en los casos A) y la lista de opciones; el usuario elige; al guardar se envía `codCatalogacion: local!tipoCatalogacion` a CORE. En el alta, **las dos aplicaciones envían 2** (lo elegido/propuesto). La «validación posterior» para NSE renovadas es `SCA_/SCA2_determinarCatalogacionRenovada` (si `polizaRenovada` y catalogación 2/3 y origen NSE-Hogar/NSE-Autos → 1), idéntica en ambas, y es la que hace que el record interno calcule 1.
+
+La diferencia está en **Contra Anulación** (donde se vuelve a escribir la catalogación en CORE con `modificarCatalogacionCodCiaCntrAnul`):
+
+- SCA: `SCA_Alta_Solicitud_Anulacion` nodo 8 guarda `antiguaCatalogacion := pv!solicitudAnulacion.datosCompletosSolicitud.datosSolicitud.catalogacion` (valor ya normalizado por la validación de renovada), lo pasa al nodo 13 CONTRA ANULAR → `SCA_ContraAnulacionPrincipal(ri!antiguaCatalogacion)` → `SCA_ContraAnulacionOpciones`: `tipoCatalogacion: if(rule!SCA_polizaRenovada(poliza: ri!numPoliza) = true, ri!antiguaCatalogacion, local!tipoCatalogacion)` → CORE recibe **1**.
+- SCA2: `SCA2_ContraAnulacionOpciones` reproduce la rama, pero sin el parámetro: `tipoCatalogacion: if(rule!SCA2_polizaRenovada(poliza: local!numPoliza) = true, index(local!datos, "catalogacion", local!catalogacion), local!catalogacion)`, donde `local!catalogacion: index(local!datos, "catalogacion", null)` y `local!datos` es la solicitud **leída de CORE** (catalogación 2). Las dos ramas del `if` devuelven el mismo valor, así que la validación de renovada **no tiene efecto** y CORE se queda con 2 aunque el record `SCA2 Solicitud` calcule 1.
+
+Es, por tanto, una validación posterior mal aplicada en SCA2 (paso: Contra Anulación → `SCA2_ContraAnulacionOpciones`, parámetro `tipoCatalogacion` de la llamada a `modificarCatalogacionCodCiaCntrAnul`). Corrección prevista (no aplicada, a la espera de confirmación): usar en la rama renovada la catalogación calculada (`rule!SCA2_determinarCatalogacionRenovada(numPoliza, catalogacion, origenPoliza)` o el valor del record SCA2) en lugar de `index(local!datos, "catalogacion", …)`.
+
+### 10.7 (#7) Paso RGPD en SCA
+
+Aparece **después de FINALIZAR la Contra Anulación negativa y antes de la consulta Verti previa**, como modal del flujo de SCA (captura `A-SCA-RGPD-despues.png`, también `A-SCA-RGPD-impresion.png`, `A-SCA-RGPD-certificacion-pendiente.png`, `B-SCA-RGPD.png`, `B-SCA-RGPD-certificacion.png`):
+
+- Título: **«Protección de datos RGPD»**. Texto: «Este cliente no ha firmado la cláusula de protección de datos RGPD. Por favor, selecciona un método de firma para continuar». Opciones: **Firma biométrica / Aceptación por email / Aceptación por SMS**; enlace «Aunque preferimos una Oficina sin papel, puedes solicitar Impresión y firma RGPD AQUÍ»; botón CONTINUAR.
+- Con «Impresión y firma» pasa a una segunda pantalla: **«¿Certificas que el gestor ha firmado la cláusula RGPD?»** con botones CANCELAR / **RGPD FIRMADA**. Lo que certifica el usuario de oficina es que el cliente ha firmado la cláusula de protección de datos; tras RGPD FIRMADA el flujo sigue a «Solicitud de consulta Verti (Asegurable/No Asegurable)» (Observaciones Verti → CONTINUAR).
+- Los textos «RGPD», «cláusula», «certificas» **no están en ninguno de los 738 objetos de la aplicación SCA** volcados por LCP (solo `SCA_GenerarContactoVerti` tiene el texto de la oferta Verti): el modal procede de un componente/aplicación de firma compartida que SCA invoca cuando el cliente no tiene la cláusula firmada (depende del dato del cliente, por eso apareció con 2002400468198 y 0732600004759). SCA2 no muestra ningún paso RGPD en el mismo punto (pasa de la CA negativa directamente a `VERTI-PRE`).
+
+### 10.8 Pendientes tras la ronda 24
+
+1. Servicio de decisión con pólizas NSE a futuro: devuelve ERROR en SCA y SCA2 (errores SCA2 #116-#118, solicitud 15788200; SCA 15788203). Requiere revisión del servicio; hasta entonces no se puede comparar CA/Verti/Mecanización con pólizas a futuro.
+2. #6: confirmar que en Contra Anulación de póliza renovada SCA2 debe enviar a CORE la catalogación normalizada (1); corrección pequeña en `SCA2_ContraAnulacionOpciones`.
+3. #5: confirmar existencia de `SCA2_construirConsultaActualizarMecanizacion`; si no existe, decidir cómo debe construir SCA2 la llamada `actualizarMecanizacion`.
+4. #7: decidir si SCA2 debe integrar el paso RGPD (componente externo) antes de Verti previa.
+
+### 10.9 Grabaciones y capturas de la ronda 24 (no en el repo)
+
+- `r24-b-futuro-edited.mp4` — alta SCA2 (2002600060946 → 15788200) y SCA (2002600073743 → 15788203).
+- Capturas: `B2-SCA2-popup.png`, `B2-SCA-popup.png`, `B2-SCA2-cabecera.png`, `B2-SCA-cabecera.png`, `B2-SCA2-catalogacion.png`, `B2-SCA-catalogacion.png`, `B2-SCA2-guardar-exito.png`, `B2-SCA-guardar-error-decision.png`, `B2-SCA2-detalle-final.png`, `B2-SCA-detalle-final.png`, `B2-SCA-buscador-ambas.png`, `B2-SCA2-buscador-final.png`.
