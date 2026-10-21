@@ -690,3 +690,137 @@ Expresión B (nodo 6, `Records`):
 **Volumen en TEST** (2026-10-21): 218 solicitudes, 144 abiertas (EN_ACCION 84, PDTE_MECANIZAR 34, MECANIZADA 9, ALTA 7, ERROR 7, PDTE_FINALIZAR 2, ERROR_DECISION 1). Hoy no hay filas `CACHE` (solo se crearán con «Actualizar datos» y, cuando A lo aplique, en el alta), así que la primera ejecución procesaría 0 filas; en régimen, como máximo las solicitudes abiertas con fila CACHE: ≤ 144 en TEST. A 3,5–6,6 s por carga en vivo, 50 filas ≈ 3–6 min secuenciales; 144 filas ≈ 8–16 min (o 3 días con batch 50). Si en PRO el volumen fuese mayor, elevar el batch o usar MNI (instancias múltiples) en el nodo 4 con `tp!instanceIndex`, manteniendo la excepción por instancia.
 
 **Pruebas sugeridas al crearlo**: (1) sin filas caducadas → termina sin escribir; (2) 2 filas caducadas de solicitudes abiertas + 1 de solicitud FINALIZADA → renueva 2, ignora 1; (3) una fila con póliza inexistente → error anotado, fila intacta, el resto renovado; (4) batch 1 → una fila por ejecución; (5) interruptor en false → el PM puede ejecutarse igualmente (solo mantiene filas; la regla no las usará) o añadir un gateway inicial `cons!SCA2_USAR_CACHE_CABECERA` para no gastar llamadas.
+
+## 11. Renovación automática en la primera carga tras la caducidad — análisis y propuesta (FASE 1, sin cambios en TEST)
+
+Requisito (21/10/2026): si al abrir la solicitud la caché no existe o está caducada, la regla llama a los servicios **y además guarda la fila y la nueva `validaHasta`** sin que el usuario pulse nada; F5 / salir y entrar deben ser rápidos. El enlace «Actualizar datos» queda como refresco opcional.
+
+### 11.1 Cómo se abren hoy las pantallas que llaman a `SCA2_obtenerDatosCabecera`
+
+| Pantalla | Cómo se llega | ¿Hay contexto de escritura (saveInto/PM) justo antes de la carga? |
+|---|---|---|
+| `SCA2_DetalleSolicitud` | Embebida en la site page `SCA2_Buscador` (`rule!SCA2_DetalleSolicitud(idSolicitud: ri!idSolicitud, …)`, `ri!` del site/URL). Se llega (1) pulsando el id en `SCA2_BuscadorTabla` (filas Aurora) o en la tabla CORE de `SCA2_Buscador` → `a!dynamicLink` con `a!save(ri!idSel / ri!idSolicitud …)`; (2) «BUSCAR SOLICITUD» con resultado único; (3) **URL directa / F5** (`$sp`) | Solo en (1) y (2) hay `saveInto`, en interfaces de **otras sesiones** (`SCA2_Buscador`, `SCA2_BuscadorTabla`); en (3) no hay ninguno |
+| `SCA2_AltaSolicitudPage` | Embebida en `SCA2_Buscador` (pestaña alta) | No; además `idSolicitud` nulo/0 → siempre en vivo (sin caché) |
+| `SCA2_AccionesAdministrativasPrincipal`, `SCA2_AnulacionFueraNormaPrincipal`, `SCA2_ContraAnulacionPrincipal` (+ `SCA2_DatosCabecera_Estrategicas`, `SCA2_ContraAnulacionOpciones`, `SCA2_MilestoneMasDatosAltaSolicitud*`) | Embebidas en `SCA2_DetalleTareas` dentro del Detalle (pestaña de acción abierta, `ri!tipoAccion`) | No (mismo contexto de carga del Detalle) |
+| `SCA2 CMD Alta`, `SCA2 CMD CrearAccion`, `SCA2 CMD Mecanizar` | Nodos de PM | Sí: ya escriben records (A escribe la fila CACHE en el alta) |
+
+Conclusión: no existe un record action ni un `a!startProcess` previo que abra el Detalle; la vía (a) «paso previo en el PM/acción que abre la pantalla» obligaría a tocar `SCA2_Buscador` y `SCA2_BuscadorTabla` (otras sesiones), **no cubriría la URL directa ni el F5** y dejaría fuera a las sub-pantallas. Se descarta.
+
+### 11.2 Propuesta: vía (b) Web API interna + integración de consulta, invocada desde el envoltorio solo cuando la caché no sirve
+
+Idea: `SCA2_obtenerDatosCabecera` sigue leyendo la caché como hoy; cuando **no hay fila vigente** (y hay `idSolicitud` real y no `forzarRefresco`), en lugar de llamar a `…Live` directamente llama a una integración GET de SCA2 → Web API `SCA2_refrescarCacheCabecera` de la propia instancia, que ejecuta `…Live`, hace el upsert de la fila `CACHE` (`fechaCache = now()`, `validaHasta` = 07:00 del día siguiente, `tipoPoliza`, `clienteCodint`) y devuelve la cabecera en JSON. El envoltorio reconstruye `SCAC_DS_datosCabecera` y lo devuelve. Si la integración falla o tarda más del timeout → **degrada a `…Live` en vivo** (resultado idéntico a hoy, sin error, solo sin guardar). Con `forzarRefresco = true` se usa la misma Web API (así el enlace «Actualizar datos» deja de necesitar su `a!writeRecords`; se puede simplificar a `a!save(local!estructuraCabecera, rule!SCA2_obtenerDatosCabecera(…, forzarRefresco: true))`).
+
+Objetos nuevos (todos de la sesión D):
+
+| Objeto | Tipo | Detalle |
+|---|---|---|
+| `SCA2_refrescarCacheCabecera` | Web API (GET, `url alias` `sca2-cache-cabecera`) | Parámetros `idSolicitud`, `numPoliza`, `forzar` (opcional). Seguridad del objeto: solo el grupo de servicio (el usuario de servicio de SCA2) como *Viewer*; el resto sin acceso. Expresión en §11.3 |
+| `SCA2 Appian Interno` | Connected System HTTP | `baseUrl` = URL de la propia instancia (`https://mapfrespain-test.appiancloud.com/suite/webapi/`), autenticación **Basic con el usuario de servicio** (contraseña guardada cifrada en el CS; en PRO, cuenta de servicio con API key: la crea un administrador en Admin Console). Un CS por entorno (TEST/PRO) con valores por entorno |
+| `SCA2_refrescarCacheCabeceraIntegracion` | Integration (GET, **«consulta de datos / no modifica»** para que Appian permita invocarla al cargar) | `relativePath` `sca2-cache-cabecera`, query params `idSolicitud`, `numPoliza`, `forzar`; timeout 30 s; `a!httpResponse` JSON |
+| `SCA2_USAR_WEBAPI_CACHE_CABECERA` | Constante Boolean | Sub-interruptor (false por defecto): permite activar/desactivar la renovación automática sin tocar la caché de lectura |
+
+Cambios en `SCA2_obtenerDatosCabecera` (misma firma: `numPoliza`, `idSolicitud`, `forzarRefresco`):
+
+```text
+usarCache (igual que hoy) → fila vigente → reconstruir (igual que hoy, sin llamadas salvo otras solicitudes)
+sin fila vigente (o forzarRefresco) y cons!SCA2_USAR_WEBAPI_CACHE_CABECERA y idSolicitud real:
+    local!resp: rule!SCA2_refrescarCacheCabeceraIntegracion(idSolicitud, numPoliza, forzar: forzarRefresco)
+    si local!resp.success y a!isNotNullOrEmpty(local!resp.result.body) → cast(SCAC_DS_datosCabecera, a!fromJson(local!resp.result.body))
+       (Document: todocument(tointeger(...)); otrasSolicitudesCabecera: lista → cast a mssConsultarSolicitudesDTO)
+    si no → rule!SCA2_obtenerDatosCabeceraLive(numPoliza, idSolicitud)      ← degradación a vivo, nunca error
+resto de casos (constante principal false, idSolicitud nulo/0) → …Live, como hoy
+```
+
+Seguridad: la Web API no es pública: exige autenticación Appian y solo el grupo de servicio tiene permiso sobre el objeto; la contraseña vive en el connected system (cifrada, no en SAIL ni en el repo); la Web API no acepta más parámetros que `idSolicitud/numPoliza/forzar` y solo escribe en `SCA2 Datos Cabecera` (fila `CACHE`). Punto a decidir: la Web API ejecuta `…Live` como el **usuario de servicio** (no el usuario que abre la pantalla), igual que `SCA2 CMD Alta` y el PM de F; `local!nuuma` de la regla sale de `loggedInUser()` → los campos que dependan del usuario (carterización/propietario) en la fila CACHE se calculan con el usuario de servicio. Es la misma limitación que ya tiene la caché compartida por solicitud. Si se quiere evitar, la Web API puede recibir `usuario` y no se puede inyectar en `…Live` sin cambiar su firma (sería un cambio de `…Live`, a decidir).
+
+Latencia: solo en el miss (una vez al día por solicitud): Live 3,4–6,6 s (igual que hoy) + salto HTTP interno ≈ 0,1–0,3 s + `a!writeRecords` ≈ 0,1 s. Los hits siguen en ≈ 0,9 s. Fallo de la Web API: coste = Live (una vez) + el intento fallido (timeout acotado a 30 s en el peor caso de red; normalmente error inmediato).
+
+### 11.3 SAIL propuesto
+
+Web API `SCA2_refrescarCacheCabecera` (GET):
+
+```sail
+=a!localVariables(
+  local!idSolicitud: a!defaultValue(http!request.queryParameters.idSolicitud, ""),
+  local!numPoliza: a!defaultValue(http!request.queryParameters.numPoliza, ""),
+  if(
+    or(a!isNullOrEmpty(local!idSolicitud), local!idSolicitud = "0", a!isNullOrEmpty(local!numPoliza)),
+    a!httpResponse(statusCode: 400, headers: {a!httpHeader(name: "Content-Type", value: "application/json")}, body: a!toJson(a!map(error: "idSolicitud/numPoliza obligatorios"))),
+    a!localVariables(
+      local!cabecera: rule!SCA2_obtenerDatosCabeceraLive(numPoliza: local!numPoliza, idSolicitud: local!idSolicitud),
+      local!tipoPoliza: rule!SCA2_obtenerTipoPoliza(numPoliza: local!numPoliza),
+      local!codInt: /* igual que el bloque de la interfaz: Vida → null; Hogar → SCA2 Datos Poliza Hogar.tomadorCodint; resto → SCA2 Datos Poliza Autos.tomadorCodint */ ...,
+      local!ahora: now(),
+      local!filaPrevia: /* query fila origenCache = CACHE de la solicitud (fields: id, fechaCache) */ ...,
+      local!idFila: if(a!isNullOrEmpty(local!filaPrevia), null, index(local!filaPrevia, 1, null)['…id']),
+      if(
+        a!isNullOrEmpty(local!cabecera),
+        a!httpResponse(statusCode: 204),
+        a!writeRecords(
+          records: 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera'( /* MISMO mapeo de §4.4 con local!cabecera, local!idFila, local!tipoPoliza, local!codInt, local!ahora */ ),
+          onSuccess: a!httpResponse(statusCode: 200, headers: {a!httpHeader(name: "Content-Type", value: "application/json")}, body: a!toJson(local!cabecera)),
+          onError: a!httpResponse(statusCode: 200, headers: {a!httpHeader(name: "Content-Type", value: "application/json")}, body: a!toJson(local!cabecera))
+        )
+      )
+    )
+  )
+)
+```
+
+(En `onError` se devuelve igualmente la cabecera: el usuario no se entera de un fallo de escritura; queda sin caché hasta la siguiente apertura.)
+
+Envoltorio (solo cambia la rama «sin fila vigente»):
+
+```sail
+if(
+  a!isNullOrEmpty(local!filaCache),
+  if(
+    and(
+      a!defaultValue(cons!SCA2_USAR_CACHE_CABECERA, false),
+      a!defaultValue(cons!SCA2_USAR_WEBAPI_CACHE_CABECERA, false),
+      a!isNotNullOrEmpty(ri!idSolicitud), tostring(ri!idSolicitud) <> "0", a!isNotNullOrEmpty(ri!numPoliza)
+    ),
+    a!localVariables(
+      local!resp: rule!SCA2_refrescarCacheCabeceraIntegracion(idSolicitud: tostring(ri!idSolicitud), numPoliza: ri!numPoliza, forzar: a!defaultValue(ri!forzarRefresco, false)),
+      local!body: if(a!defaultValue(index(local!resp, "success", false), false), index(local!resp, "result", "body", null), null),
+      if(
+        a!isNullOrEmpty(local!body),
+        rule!SCA2_obtenerDatosCabeceraLive(numPoliza: ri!numPoliza, idSolicitud: ri!idSolicitud),
+        a!localVariables(
+          local!json: a!fromJson(local!body),
+          'type!{urn:com:appian:types:SCAC}SCAC_DS_datosCabecera'(
+            datosCliente: 'type!{urn:com:appian:types:SCAC}SCAC_DS_datosCliente'( /* campos desde local!json.datosCliente; tipoClienteValor: todocument(tointeger(...)) */ ),
+            datosPoliza: 'type!{urn:com:appian:types:SCAC}SCAC_DS_datosPoliza'( /* campos desde local!json.datosPoliza */ ),
+            otrasSolicitudesCabecera: a!forEach(items: a!defaultValue(index(local!json, "otrasSolicitudesCabecera", {}), {}), expression: cast('type!{http://ejb.cfsa.pca.mapfami.dgtp.mapfre.com/}mssConsultarSolicitudesDTO', fv!item)),
+            datosContacto: 'type!{urn:com:appian:types:SCAC}SCAC_DS_datosContacto'( /* campos desde local!json.datosContacto */ )
+          )
+        )
+      )
+    ),
+    rule!SCA2_obtenerDatosCabeceraLive(numPoliza: ri!numPoliza, idSolicitud: ri!idSolicitud)
+  ),
+  /* rama con fila vigente: igual que hoy */ ...
+)
+```
+
+Nota: hoy la rama sin fila vigente también se toma con `forzarRefresco = true`; con la Web API ese caso pasa `forzar: true` (la Web API siempre recarga en vivo, el parámetro es informativo para trazas).
+
+### 11.4 Alternativa (c) valorada: hacer la escritura en `saveInto` de los puntos de entrada
+Modificar `SCA2_Buscador`/`SCA2_BuscadorTabla` (clic en el id → `a!startProcess` de un PM que renueve la caché y luego abra el Detalle) evita Web API y credenciales, pero toca interfaces de otras sesiones, añade un proceso por apertura, no cubre URL directa/F5 ni las sub-pantallas, y cambia la navegación actual. Se descarta salvo que (b) no sea aceptable por la gestión de credenciales.
+
+### 11.5 Plan de pruebas (FASE 2)
+
+| ID | Caso | Esperado |
+|---|---|---|
+| W01 | Web API por API (`GET …/webapi/sca2-cache-cabecera?idSolicitud=&numPoliza=`) con una solicitud propia | 200 JSON con la cabecera; fila `CACHE` creada/actualizada con `validaHasta` = 07:00 del día siguiente |
+| W02 | Caché caducada (fila con `validaHasta` pasado) → `/test` del envoltorio | llama a servicios (tiempo Live), devuelve cabecera idéntica a Live, y la fila queda renovada (`fechaCache` nueva, `validaHasta` futura) |
+| W03 | Segunda llamada inmediata (F5) | desde caché (< 1 s), sin llamadas a servicios (verificado con `LEE`: campo alterado en la fila se refleja) |
+| W04 | `forzarRefresco = true` | recarga en vivo vía Web API y renueva la fila |
+| W05 | Fallo de la Web API (sub-interruptor con URL inválida en el CS o Web API sin permisos) | el envoltorio devuelve la cabecera en vivo, sin error; sin fila |
+| W06 | Sub-interruptor `SCA2_USAR_WEBAPI_CACHE_CABECERA = false` | comportamiento actual (lee caché / Live sin escribir) |
+| W07 | Constante principal `false` | regresión idéntica (3 solicitudes) |
+| W08 | Seguridad: `GET` a la Web API sin autenticación / con un usuario sin permiso sobre el objeto | 401/403 |
+| W09 | UI: abrir Detalle con caché caducada, F5 | 1.ª carga lenta, F5 rápida; «Actualizar datos» sigue funcionando |
+| W10 | Convivencia con A/F/G: alta (fila A), invalidación de G (`validaHasta = now()`) → siguiente apertura renueva por Web API; PM de F no encuentra filas caducadas de solicitudes abiertas tras una apertura | coherente |
+
+Decisiones que necesito antes de la FASE 2: (1) OK a la vía (b); (2) credenciales del connected system en TEST: usuario de servicio actual con Basic (lo configuro yo con la contraseña del entorno, sin escribirla en ningún sitio) o cuenta de servicio + API key (la crea un administrador); (3) aceptar que la fila CACHE renovada por la Web API se calcula con el usuario de servicio (como ya ocurre en A y F); (4) simplificar el enlace «Actualizar datos» para que use la Web API (quitar su `a!writeRecords`).
