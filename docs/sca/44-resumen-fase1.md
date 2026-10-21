@@ -30,6 +30,12 @@ Regresión con interruptores en false idéntica en todas las piezas (A: nodo a n
 4. `SCA2 Datos Cabecera` tiene filas duplicadas por `idSolicitud` (43-D).
 5. El indicador propietario solo gobierna el botón REVISIÓN de Contra Anulación; argumentario y modal no lo usan (43-B).
 
+## Verificación integrada final (sesión H, [43-H](43-H-prueba-integrada.md))
+Dos solicitudes nuevas (15788224 Autos NSE, 15788225 wAutemis) con las tres constantes en true: todo OK, 0 KO (catálogos Aurora = CORE, caducidad hoy+7, fila CACHE, 2.ª apertura desde caché, «Actualizar datos», posponer sin tocar caducidad, Contra Anulación con sombra, invalidación por CompletarAccion, Decidir, 0 errores, 0 PM en pausa). Observaciones: página de catálogos sin total de filas salvo Motivos; `clienteNuumapropietario` vacío (no hay propietarios en TEST).
+
+## Renovación automática de la caché (43-D §11, requisito del usuario 21-10 tarde)
+Al abrir una solicitud sin caché vigente, el envoltorio llama a la Web API interna `sca2-cache-cabecera` (POST, no pública; CS `SCA2 Appian Interno`; integración de consulta) que renueva la fila y devuelve la cabecera; F5 y reentradas se sirven del record. Sub-interruptor `SCA2_USAR_WEBAPI_CACHE_CABECERA` (…5607587). En PRO: cuenta de servicio + API key.
+
 ## Pendientes
 - Aviso: la sesión R23-A modificó `CMD Mecanizar` nodo 16 en paralelo (21-10); los nodos de G siguen intactos.
 - **F** (hecho, [43-F](43-F-pm-refresco-cache.md)): PM `SCA2 CMD RefrescarCacheCabecera` v3.0 (uuid `0000f095-81a8-8000-d613-7f0000014e7a`, timer diario 07:05 Europe/Madrid, tolerante por fila, errores a `SCA2 Error`) + `SCA2_CACHE_REFRESCO_BATCH` = 50 (…5605352 v3). Punto de control: primera ejecución programada 22-10-2026 07:05.
