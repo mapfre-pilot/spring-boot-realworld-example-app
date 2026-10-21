@@ -51,12 +51,13 @@ SCA2_setDatosGestionSGC / …Estratégicas (proceso; hoy sin llamadores)
 | `SCA2_propietarioParaCaducidad` | Regla | `_a-0000f093-2064-8000-9d36-011c48011c48_5603576` | v1 | nuevo (10 tests) |
 | `SCA2_registrarSombraPropietario` | Regla | `_a-0000f093-2064-8000-9d36-011c48011c48_5603783` | v2 | nuevo |
 | `SCA2_evaluarPropietarioContraAnulacion` | Regla | `_a-0000f093-2064-8000-9d36-011c48011c48_5604455` | v1 | nuevo |
-| `SCA2_sombraPropietarioContraAnulacion` | Regla | `_a-0000f093-2064-8000-9d36-011c48011c48_5604465` | v1 | nuevo (pendiente de enganche en saveInto, fila ajena) |
+| `SCA2_sombraPropietarioContraAnulacion` | Regla | `_a-0000f093-2064-8000-9d36-011c48011c48_5604465` | v1 | nuevo (enganchada en el saveInto de FINALIZAR de `SCA2_ContraAnulacionOpciones`) |
 | `SCA2_nuumaEsPropietario` | Regla | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20051614` | v1 → **v6** (v2–v5 iteraciones de depuración) | modificado: +inputs opcionales `idSolicitud`, `numPoliza`; delega en `evaluar…`; firma y salida compatibles |
 | `SCA2_setDatosGestionSGC` | Regla | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052999` | v1 → **v2** | modificado (cambio mínimo, ver §4) |
 | `SCA2_setDatosGestionSGCEstratégicas` | Regla | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20053432` | v1 → **v2** | modificado (cambio mínimo, ver §4) |
+| `SCA2_ContraAnulacionOpciones` | Interfaz | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056435` | v54 → **v56** (v55 intermedia) | modificado: enganche de la sombra en el saveInto de FINALIZAR y paso de `idSolicitud`/`numPoliza` a `nuumaEsPropietario` (ver §4.3) |
 
-No se ha tocado ningún otro objeto (interfaces, integraciones, connected systems, CDTs, records, PMs, objetos SCA/SCAC).
+No se ha tocado ningún otro objeto (otras interfaces, integraciones, connected systems, CDTs, records, PMs, objetos SCA/SCAC).
 
 ## 4. Cambios en objetos existentes
 
@@ -73,6 +74,11 @@ Bloque `local!comprobarPropietario` (l.285-306 / l.297-318) y `local!setPropieta
 - Línea de consumo: `propietario: if(a!isNullOrEmpty(local!sombraPropietario), local!setPropietario, local!setPropietario)` (referencia necesaria para que Appian acepte la local; el valor no cambia).
 
 **Hallazgo 2 (condición invertida, documentado, no corregido en la rama actual):** la rama actual hace `if(llamarPropietario = "true", datosSGCCaducidad.propietario, tostring(ESB))`: cuando hay que calcular el propietario usa el valor de entrada (vacío) y descarta el resultado del ESB. Con la muestra de prueba, `propietario` sale `null` antes y después del cambio (interruptor `false`) y `"false"` con el interruptor en `true` (rama nueva corregida).
+
+### 4.3 `SCA2_ContraAnulacionOpciones` (v54 → v56)
+Dos cambios mínimos (autorizados por el coordinador; la interfaz es de la fila B):
+- l.123: `rule!SCA2_nuumaEsPropietario(codCia: "41", nuuma: local!nuuma, claveProd: local!claveProduccion, idSolicitud: ri!idSolicitud, numPoliza: local!numPoliza)` (dos inputs opcionales nuevos; mismo resultado con la constante en `false`).
+- Botón **FINALIZAR**, primer elemento del `saveInto`: `rule!SCA2_sombraPropietarioContraAnulacion(codCia: "41", nuuma: local!nuuma, claveProd: a!defaultValue(local!claveProduccion, index(index(local!sol, "datosPoliza", {}), "claveproduccion", "")), idSolicitud: ri!idSolicitud, numPoliza: local!numPoliza)`. Se eligió FINALIZAR porque su `saveInto` no contiene ningún smart service (CANCELAR y POSPONER ya lanzan `a!startProcess` y Appian solo ejecuta un smart service por `saveInto`), es la acción habitual del gestor y la escritura es tolerante a fallos (`onError` en `SCA2_registrarSombraPropietario`; una incidencia de la sombra no impide la acción). Con la constante en `false` la pantalla no cambia.
 
 ## 5. SAIL de las reglas nuevas
 
@@ -367,7 +373,8 @@ a!localVariables(
 5. **AND vs OR**: `SCA2_nuumaEsPropietario` (AND de clave y póliza) es más restrictiva que el legacy (OR con carterización). Con los datos de TEST disponibles (JJGONZ2 y SISANS sobre las claves de las solicitudes existentes) Estruage devuelve `N/N` y el ESB `NO PROPIETARIO`, por lo que ambas fórmulas coinciden; la sombra aportará los datos en cuanto haya gestores propietarios/carterizados. Decisión funcional pendiente (usuario).
 6. `SCA2_comprobarPropietario` con un nuuma desconocido para el ESB (`GGALV10`) devuelve vacío (sin excepción): en la rama actual `tostring(null)` → `""`.
 7. `SCAC_comprobarClienteCarterizadoIntegracion` (`_a-0000ebdd-82f8-8000-9c64-011c48011c48_12943135`): el CDT `comprobarCliente` exige `MSEComprobarCliente{pcodclien, pnumdocum}` y necesita host/endpoint; no se usa. El fallback de carterización usa `SCA2_consultarCabecera` (mismo REST que `SCA2_obtenerDatosCabecera`), solo con el interruptor en `true` y con NIF.
-8. LCP: los valores de los test cases son expresiones SAIL (texto entre comillas); los UUID de test case se regeneran en cada escritura; hay que pasar todos los inputs (`null`) en los casos de nulos; `a!toJson` exige argumentos con palabra clave.
+8. **`local!claveProduccion` de `SCA2_ContraAnulacionOpciones` (l.104) llega vacía**: lee `datosCompletosSolicitud.datosPolizaAutos/Hogar/Vida.claveproduccion`, pero `SCA2_cargarSolicitud` devuelve la clave en `datosPoliza.claveproduccion` (nivel superior; comprobado con 15788189: `datosCompletosSolicitud` solo trae `datosBasicosSolicitud` y `datosSolicitud`). Consecuencia preexistente: `local!mcaPropietarioPoliza` es siempre `false` y `SCA2_nuumaEsPropietario` **nunca llega a invocarse** desde la pantalla (la revisión de póliza renovada no se habilita por propietario). No se ha corregido (cambiaría el comportamiento visible); el enganche de la sombra usa la clave de `datosPoliza` como respaldo. Decisión pendiente del coordinador/usuario.
+9. LCP: los valores de los test cases son expresiones SAIL (texto entre comillas); los UUID de test case se regeneran en cada escritura; hay que pasar todos los inputs (`null`) en los casos de nulos; `a!toJson` exige argumentos con palabra clave.
 
 ## 7. Pruebas
 
@@ -412,19 +419,34 @@ Datos nuevos creados para esta sesión (anotados en `pruebas/coordinacion-fase1.
 | P05 | CE_RM en N3 | `propietarioParaCaducidad(N3, "ENVIAR A NIVEL 2", "CE_RM")` = true | true (T11/T12) | OK | — | — | a!test | el servicio de decisión no se invoca en esta fila |
 | P06 | Sombra: registro de coincidencia | fila `COINCIDE=S` | fila 388: `SOMBRA_PROPIETARIO_CONTRAANULACION`, `ESB=FALSE;APPIAN=FALSE;COINCIDE=S;CARTERIZACION=NA;CLAVE=N;POLIZA=N`, cliente 15788168, póliza 0001047017109 | OK | 15788168 | — | `/test` de `SCA2_sombraPropietarioContraAnulacion` | — |
 | P07 | Sombra: registro de discrepancia | fila `COINCIDE=N` | fila 387: `ESB=FALSE;APPIAN=TRUE;COINCIDE=N;CARTERIZACION=NA;CLAVE=N;POLIZA=N` (valores sintéticos) | OK | — | — | `/test` de `SCA2_registrarSombraPropietario` | — |
-| P08 | Sombra desde carga de pantalla (`nuumaEsPropietario` v2) | fila nueva | **ninguna fila** (Reaction Tree no ejecutado), sin error en pantalla | KO → rediseñado | 15788168 | — | `/test` regla, `/test` interfaz, consulta del record | hallazgo 1; enganche en saveInto (fila ajena) |
+| P08 | Sombra desde carga de pantalla (`nuumaEsPropietario` v2) | fila nueva | **ninguna fila** (Reaction Tree no ejecutado), sin error en pantalla | KO → rediseñado | 15788168 | — | `/test` regla, `/test` interfaz, consulta del record | hallazgo 1; enganche en saveInto de FINALIZAR (P11) |
+| R05 | Regresión `SCA2_ContraAnulacionOpciones` v54 → v55/v56 con interruptor false | misma salida renderizada | salida idéntica normalizando `_cId` y tokens cifrados de saveInto (15788168 y 15788190; 15788189 difiere solo por el estado cambiado en P11: argumento ejecutado y carta impresa); 7,4–11,9 s; sin error | OK | 15788168, 15788189, 15788190 | — | `/interfaces/{uuid}/test` antes/después | — |
+| P11 | **UI** (usuario técnico): detalle 15788189 → Contra Anulación → RETOMAR → oficina → argumento 1 NEGATIVO → imprimir carta → CONTINUAR → **FINALIZAR** → modal Sí/No → NO | fila de sombra y pantalla igual | fila **397**: `JJGONZ2 / SOMBRA_PROPIETARIO_CONTRAANULACION / ESB=FALSE;APPIAN=FALSE;COINCIDE=S;CARTERIZACION=NA;CLAVE=N;POLIZA=N / 15788189 / 0001047017110`; pantalla y modal como antes; solicitud sigue `EN_ACCION` | OK | 15788189 | — | Playwright sobre el site `sca2` (TEST) | con v55 no escribía por el hallazgo 8 (clave vacía → hook saltado); corregido en v56 |
 | P09 | Interruptor en `true` (solo durante la prueba): `nuumaEsPropietario` y `setDatosGestionSGC` | sin error; SGC `propietario` = regla Appian | `nuumaEsPropietario` = false (legacy coincide); SGC `propietario` = `"false"` (rama nueva) frente a `null` con `false`; constante devuelta a `false` (v9, value 0) | OK | 15788189 / 15788168 | — | PUT constante true → `/test` → PUT false → GET | — |
 | P10 | Rendimiento del modo sombra en Contra Anulación | sin llamadas añadidas en la carga | `evaluar` 150-183 ms (≈ la llamada a Estruage que ya existía); record cabecera +40 ms; pantalla 7,5-9,0 s (antes 11,6 s) | OK | 15788189 | — | diagnostics `durationMs` | — |
 
 ### 7.3 Pendientes de prueba
-- Abrir Contra Anulación **desde la UI** con cada perfil (requiere usuarios interactivos de TEST; esta sesión solo dispone del usuario técnico de la API) y comprobar la fila de sombra una vez enganchado `SCA2_sombraPropietarioContraAnulacion` en un saveInto.
+- Repetir P11 con usuarios de negocio de cada perfil (pedido al usuario por el coordinador). Guion en §9.
 - Casos con gestor propietario de clave y con cliente carterizado: no existen en los datos de TEST consultados. Matriz Estruage JJGONZ2 y SISANS × las 134 claves de producción de las solicitudes existentes: 268 consultas, todas `CLAVE=N, POLIZA=N`. ESB `comprobarPropietario` para 6 solicitudes × 2 usuarios: `NO PROPIETARIO` en 10, respuesta vacía en 2 (póliza 2002500495484, NSE-Autos).
 
 ## 8. Pendientes y decisiones
 
-1. **Enganche de la sombra (fila dueña de `SCA2_ContraAnulacionOpciones`)**: añadir en un saveInto (FINALIZAR/POSPONER/CANCELAR o apertura del argumentario) `rule!SCA2_sombraPropietarioContraAnulacion(codCia: "41", nuuma: local!nuuma, claveProd: local!claveProduccion, idSolicitud: ri!idSolicitud, numPoliza: local!numPoliza)` y, opcionalmente, pasar `idSolicitud`/`numPoliza` a `rule!SCA2_nuumaEsPropietario` (l.123) para que la sombra disponga de carterización cuando la sesión D la persista.
-2. **Persistencia de `clienteCarterizado`/`clienteNuumapropietario`** en `SCA2 Datos Cabecera` (sesión D): hoy vacíos.
+1. ~~Enganche de la sombra~~ Hecho en `SCA2_ContraAnulacionOpciones` v56 (§4.3). Solo se registra al pulsar FINALIZAR; CANCELAR/POSPONER no (un smart service por saveInto).
+2. **Persistencia de `clienteCarterizado`/`clienteNuumapropietario`** en `SCA2 Datos Cabecera`: la sesión D la cubre (CMD Alta + PM de refresco); la sombra pasará de `CARTERIZACION=NA` a 0/1 automáticamente.
+7. **Clave de producción vacía en la pantalla** (hallazgo 8): decidir si se corrige `local!claveProduccion` para que `SCA2_nuumaEsPropietario` vuelva a evaluarse en Contra Anulación.
 3. **Decisión funcional AND vs OR** en `SCA2_nuumaEsPropietario` (usuario): la sombra dará los datos; el cambio es poner la constante en `true`.
 4. **Condición invertida** de `setDatosGestionSGC(+Estratégicas)` (hallazgo 2): corregida solo en la rama nueva; decidir si se corrige la actual (sin llamadores hoy).
 5. `SCA2_propietarioParaCaducidad` queda disponible para la sesión A (caducidad); no está conectada a ningún flujo.
 6. Si se quiere la sombra también en proceso (SGC), usar el smart service *Write Records* en el PM (fuera de esta fila) en lugar de `a!writeRecords` en la regla.
+
+## 9. Guion de prueba para usuarios de negocio (por perfil)
+
+Objetivo: comprobar que la pantalla de Contra Anulación no cambia (constante en `false`) y que cada FINALIZAR deja una fila de sombra. Repetir con un gestor **propietario de su clave**, un **carterizador** del cliente, un **usuario ajeno** (otra clave/oficina), un **SI24** y un **CE_RM**.
+
+1. Dar de alta una solicitud nueva (póliza propia del perfil, no reutilizar las de la tabla de reservas) y anotar `idSolicitud`.
+2. Buscador → abrir la solicitud → desplegar «Contra Anulacion» → **RETOMAR**.
+3. Seleccionar oficina, marcar un argumento y pulsar **NEGATIVO** (o POSITIVO si se quiere finalizar de verdad); si el perfil lo exige, imprimir la carta y **CONTINUAR**.
+4. Pulsar **FINALIZAR**: aparece el modal «Se van a finalizar las acciones de contra anulación. ¿Desea continuar?». Pulsar **NO** si no se quiere finalizar (la sombra ya se ha registrado al pulsar FINALIZAR).
+5. Comprobar la fila en `SCA2 Trazabilidad Cliente` (tabla `sca2_trazabilidad_cliente`): `operacion = 'SOMBRA_PROPIETARIO_CONTRAANULACION'`, `cliente = <idSolicitud>`; `resultadoOperacion` = `ESB=<actual>;APPIAN=<legacy>;COINCIDE=S|N;CARTERIZACION=0|1|NA;CLAVE=S|N;POLIZA=S|N`.
+6. Esperado por perfil: propietario de clave → `CLAVE=S` y `APPIAN=TRUE` (si además `POLIZA=S`, `ESB=TRUE` y `COINCIDE=S`; si no, `COINCIDE=N`: es la diferencia AND/OR); carterizador → `CARTERIZACION=0` y `APPIAN=TRUE`, `ESB=FALSE` → `COINCIDE=N` (requiere la cabecera persistida por la sesión D); ajeno, SI24, CE_RM no propietarios → todo `N`/`FALSE`, `COINCIDE=S`.
+7. Anotar cualquier `COINCIDE=N` con los datos crudos de la fila y la solicitud para la decisión AND vs OR.
