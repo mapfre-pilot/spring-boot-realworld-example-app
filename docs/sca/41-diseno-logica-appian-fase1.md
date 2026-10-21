@@ -8,17 +8,17 @@ Reglas del encargo: (1) no se toca la base de datos CORE (MR01/Oracle MES) ni lo
 
 **Situación actual en SCA2 (verificada en los objetos):** el record `SCA2 Solicitud` tiene `caducidadTarea`, `fechaDietario` y `contadorPosponer`. `SCA2_configurarDatosContextoSolicitud` los inicializa a `null` en el alta; `CMD CrearAccion` y `CMD Posponer` escriben `caducidadTarea`; `SCA2_posponerTarea` pone `fechaDietario = now()`; `CMD Decidir` **no** calcula caducidad; `CMD Caducar` caduca cuando `caducidadTarea`/`fechaDietario` vencen. Para SGC, `SCA2_setDatosGestionSGC(+Estratégicas)` recibe `datosSGCCaducidad {propietario, fechaVencimiento, mismoNivel, fechaCaducidadAnterior}` y hoy delega el cálculo en la mediación.
 
-**Lógica legacy (Java `cDeterminarCaducidad`, mediación SMED2):** `caducidad = hoy + N` donde `N = caducidad.dias.propietario` si el usuario es propietario, si no `caducidad.dias.no.propietario`; si la tarea sigue en el **mismo nivel** y existe caducidad anterior, se conserva la anterior; formato CORE `dd/MM/yyyy`.
+**Lógica legacy (mediación `PCA_GestionarTareas_SMED`, nodo `cDeterminarCaducidad`; propiedades en `PCA_GestionarTareas_SPROP/pom.xml`, perfil `ENV_CID_COMMON`):** `caducidad.dias.propietario = 14`, `caducidad.dias.no.propietario = 7`. Cálculo: `caducidad = hoy + N`; si `caducidad ≥ fechaVencimiento` de la póliza se usa la **fecha de vencimiento**; si la tarea sigue en el **mismo nivel** y existe caducidad anterior, se conserva la anterior; sin fecha de vencimiento → `ERROR`. Formato CORE `dd/MM/yyyy`, vencimiento TRON `yyyy-MM-dd`. **Para qué sirve:** es la fecha en que `CMD Caducar` cierra la solicitud como `FINALIZADO_CADUCADO` y la fecha de vencimiento que se envía a SGC en la gestión comercial.
 
 **Objetos nuevos**
 | Objeto | Tipo | Detalle |
 |---|---|---|
-| `SCA2_DIAS_CADUCIDAD_PROPIETARIO` | Constante (Number, por entorno) | Valor a confirmar con OT (propiedad legacy `caducidad.dias.propietario`). |
-| `SCA2_DIAS_CADUCIDAD_NO_PROPIETARIO` | Constante (Number, por entorno) | Ídem `caducidad.dias.no.propietario`. |
-| `SCA2_calcularCaducidadTarea(propietario: Boolean, mismoNivel: Boolean, fechaCaducidadAnterior: Date, fechaBase: Date)` | Regla → Date | `if(and(mismoNivel, not(isnull(fechaCaducidadAnterior))), fechaCaducidadAnterior, a!defaultValue(fechaBase, today()) + if(propietario, cons!…_PROPIETARIO, cons!…_NO_PROPIETARIO))`. Sin llamadas externas. |
-| `SCA2_calcularCaducidadTarea_test` | Casos `a!test` (4) | propietario/mismo nivel; propietario/cambio nivel; no propietario/mismo nivel sin anterior; no propietario/cambio nivel. |
+| `SCA2_DIAS_CADUCIDAD_PROPIETARIO` | Constante (Number, por entorno) | Valor inicial **14** (legacy `caducidad.dias.propietario`); la OT puede cambiarlo editando la constante, sin despliegue. |
+| `SCA2_DIAS_CADUCIDAD_NO_PROPIETARIO` | Constante (Number, por entorno) | Valor inicial **7** (legacy `caducidad.dias.no.propietario`). |
+| `SCA2_calcularCaducidadTarea(propietario: Boolean, mismoNivel: Boolean, fechaCaducidadAnterior: Date, fechaVencimiento: Date, fechaBase: Date)` | Regla → Date | `if(and(mismoNivel, not(isnull(fechaCaducidadAnterior))), fechaCaducidadAnterior, min(a!defaultValue(fechaBase, today()) + if(propietario, cons!…_PROPIETARIO, cons!…_NO_PROPIETARIO), fechaVencimiento))`; si `fechaVencimiento` es nula devuelve null (equivale al `ERROR` legacy) y el llamador conserva el comportamiento actual. Sin llamadas externas. |
+| `SCA2_calcularCaducidadTarea_test` | Casos `a!test` (6) | propietario/mismo nivel; propietario/cambio nivel; no propietario/mismo nivel sin anterior; no propietario/cambio nivel; `hoy+N` posterior al vencimiento → vencimiento; sin vencimiento → null. |
 
-**Dónde se conecta (sin cambiar comportamiento):** `SCA2_setDatosGestionSGC` y `…Estratégicas`: rellenar `datosSGCCaducidad.fechaCaducidad` con la regla cuando venga vacía (hoy el mapa viaja sin calcular). `CMD CrearAccion`, `CMD CambiarNivel` y `CMD Posponer`: usar la regla para `caducidadTarea` en lugar del valor que ponen hoy, con `mismoNivel = (nivel origen = nivel destino)` y `fechaCaducidadAnterior = pv!sol.estado.caducidadTarea`. Mientras no se confirmen los días con OT, las constantes toman el valor que hoy produce el flujo (comparado con SCA) para que el resultado sea idéntico.
+**Dónde se conecta (sin cambiar comportamiento):** `SCA2_setDatosGestionSGC` y `…Estratégicas`: rellenar `datosSGCCaducidad.fechaCaducidad` con la regla cuando venga vacía (hoy el mapa viaja sin calcular). `CMD CrearAccion`, `CMD CambiarNivel` y `CMD Posponer`: usar la regla para `caducidadTarea` en lugar del valor que ponen hoy, con `mismoNivel = (nivel origen = nivel destino)` y `fechaCaducidadAnterior = pv!sol.estado.caducidadTarea`. Las constantes arrancan con 14/7 (valores legacy), por lo que el resultado es idéntico al actual.
 
 **Pruebas:** `a!test` de la regla; una solicitud nueva por combinación en TEST comparando `caducidadTarea` y la fecha de caducidad enviada a SGC con la que produce SCA para la misma póliza/usuario.
 
@@ -37,7 +37,7 @@ Reglas del encargo: (1) no se toca la base de datos CORE (MR01/Oracle MES) ni lo
 | `SCA2_propietarioParaCaducidad(servicioDecision, resultadoSD, codPerfil, esPropietario)` → Boolean | Casos N1/N2: `esPropietario`; N3: `resultadoSD = "ENVIAR A NIVEL 2" and codPerfil = "CE_RM"`; N4: `resultadoSD = "ENVIAR_A_NIVEL_3"`. Es la lógica de `cPropietarioYNivel`. |
 | `SCA2_USAR_PROPIETARIO_APPIAN` | Constante Boolean (interruptor): `true` → regla; `false` → `SCA2_comprobarPropietario` (ESB) como hoy. Permite comparar y volver atrás. |
 
-**Dónde se conecta:** en `SCA2_setDatosGestionSGC` / `…Estratégicas` el `local!setPropietario` pasa a `if(cons!SCA2_USAR_PROPIETARIO_APPIAN, rule!SCA2_esPropietarioPoliza(...), <llamada actual>)`. `SCA2_nuumaEsPropietario` (usado en `SCA2_ContraAnulacionOpciones`) **no se toca** en esta fase: se documenta la diferencia AND/OR y se decide con el analista si debe alinearse con el legacy.
+**Dónde se conecta:** en `SCA2_setDatosGestionSGC` / `…Estratégicas` el `local!setPropietario` pasa a `if(cons!SCA2_USAR_PROPIETARIO_APPIAN, rule!SCA2_esPropietarioPoliza(...), <llamada actual>)`. `SCA2_nuumaEsPropietario` (usado en `SCA2_ContraAnulacionOpciones` como `mcaPropietarioPoliza`: habilita la revisión de póliza renovada —propietario + renovada + efecto de anualidad en los últimos 2 meses— y se pasa al modal de argumentario/regateo (`gestionarTTQ`, `asignarSVA`, generación de contactos) y al modal Sí/No) **no se toca** en esta fase: hoy exige clave AND póliza; el legacy admite carterizado OR clave OR póliza. Decisión funcional pendiente; recomendación: alinear con el legacy.
 
 **Pruebas:** durante una semana la regla y el ESB se evalúan los dos y se registra en `SCA2 Transicion.detalle` si coinciden (modo sombra); casos: propietario de clave, carterizador no propietario, SI24, CE_RM en N3, usuario ajeno. Ahorro: una llamada ESB por gestión SGC y un servicio legacy menos.
 
@@ -65,7 +65,7 @@ Reglas del encargo: (1) no se toca la base de datos CORE (MR01/Oracle MES) ni lo
 **Diseño (caché temporal, no cambia lo que se muestra)**
 | Objeto | Detalle |
 |---|---|
-| Campos nuevos en `SCA2 Datos Cabecera`: `fechaCache` (Date and Time), `validaHasta` (Date and Time), `origenCache` (Text) | `validaHasta = fin de la jornada` (constante `SCA2_HORAS_CACHE_CABECERA`, por defecto 8 h, o fin del día natural: a decidir). |
+| Campos nuevos en `SCA2 Datos Cabecera`: `fechaCache` (Date and Time), `validaHasta` (Date and Time), `origenCache` (Text) | `validaHasta = 07:00 del día siguiente a la carga` (decisión del usuario, 20-10-2026); constante `SCA2_HORA_CADUCIDAD_CACHE_CABECERA = 7` por si cambia. |
 | `SCA2_obtenerDatosCabeceraCache(idSolicitud, numPoliza, nuuma, forzarRefresco)` | Si existe fila con `validaHasta > now()` y `forzarRefresco = false` → devuelve el record; si no → llama a `SCA2_obtenerDatosCabecera` (la actual, sin cambios), hace *upsert* en el record y devuelve el resultado. Misma estructura de salida que la regla actual. |
 | Botón «Actualizar datos» (ya existe el patrón de refresco en Detalle) | Pone `forzarRefresco = true`. Los `CMD` que cambian estado (Mecanizar, Finalizar) invalidan la caché (`validaHasta = now()`). |
 | `SCA2_USAR_CACHE_CABECERA` | Constante Boolean para activar/desactivar. |
@@ -92,4 +92,4 @@ Reglas del encargo: (1) no se toca la base de datos CORE (MR01/Oracle MES) ni lo
 
 **Qué no se hace en esta fase:** nada sobre MR01/CORE ni sus servicios; no se cambian estados, mensajes ni pantallas; no se tocan `SCA2_nuumaEsPropietario` (pendiente de decisión AND/OR), el servicio de reglas ni la alta automática. Los interruptores por constante permiten volver al comportamiento actual en cualquier momento.
 
-**Dependencias/decisiones que necesito:** valores de días de caducidad (OT); TTL de la caché de cabecera (8 h vs. fin del día); criterio AND/OR de propietario para Contra Anulación.
+**Decisiones:** días de caducidad 14/7 (valores legacy, confirmados en el ZIP; la OT puede cambiarlos en las constantes); TTL de la caché de cabecera hasta las 07:00 del día siguiente (decidido); criterio AND/OR de propietario para Contra Anulación (pendiente).
