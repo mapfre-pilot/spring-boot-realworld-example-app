@@ -1,6 +1,6 @@
 # 43-C. Catálogos del CORE como records de tablas en Aurora (fase 1, sesión C)
 
-**Fecha:** 21-10-2026 · **Entorno:** Appian TEST, aplicación SCA2 · **Estado:** construido y probado en TEST (HITO 1 aprobado; carga, reglas con interruptor y página de mantenimiento hechas). Constante `SCA2_USAR_CATALOGOS_AURORA` = **false**: las pantallas siguen leyendo de CORE hasta que el coordinador decida activarla.
+**Fecha:** 21-10-2026 · **Entorno:** Appian TEST, aplicación SCA2 · **Estado:** CERRADO — construido y probado en TEST (HITO 1 aprobado; carga, reglas con interruptor y página de mantenimiento hechas; datos de prueba borrados). Constante `SCA2_USAR_CATALOGOS_AURORA` = **false**: las pantallas siguen leyendo de CORE hasta que el coordinador decida activarla.
 
 Decisión del usuario (doc 41 §3 ajustado, doc 42 fila C): los catálogos cambian poco → **records de tablas** en la BD de SCA2 (Aurora PostgreSQL, data source `SCA2 DataBase AWS`, esquema `sca2_anulaciones`, el mismo que usa `SCA2 Solicitud`), con **carga inicial** desde CORE por las integraciones SOAP que ya existen, **sin sincronización periódica**, editables desde una página nueva de *Gestiones de mantenimiento*. CORE no se toca; las interfaces consumidoras no se tocan: el cambio va detrás de las reglas `SCA2_consultar*`, manteniendo firma y estructura de salida, tras la constante `SCA2_USAR_CATALOGOS_AURORA` (= false).
 
@@ -54,7 +54,7 @@ Campos comunes en todas: `orden` (posición en la respuesta CORE; las listas se 
 | `SCA2_consultarCausaCore` | Regla | `_a-0000f093-2064-8000-9d36-011c48011c48_5603893` | 1 | copia exacta de `SCA2_consultarCausa` v2 (incluye la ocultación SI24) |
 | `SCA2_consultarTipoArgCore` | Regla | `_a-0000f093-2064-8000-9d36-011c48011c48_5603903` | 1 | copia exacta de `SCA2_consultarTipoArg` v5 |
 | `SCA2_consultarConceptoCore` | Regla | `_a-0000f093-2064-8000-9d36-011c48011c48_5603910` | 1 | copia exacta de `SCA2_consultarConcepto` v1 |
-| `SCA2_catParametrosCarga` | Regla | `_a-0000f093-2064-8000-9d36-011c48011c48_5604030` | 1 | parejas perfil/subperfil, perfiles de causa, LN 1-3 y usuario de consulta de la carga |
+| `SCA2_catParametrosCarga` | Regla | `_a-0000f093-2064-8000-9d36-011c48011c48_5604030` | 3 (contenido = v1; v2 fue un `a!deleteRecords` temporal para borrar la fila de prueba, restaurado en v3) | parejas perfil/subperfil, perfiles de causa, LN 1-3 y usuario de consulta de la carga |
 | `SCA2_catConstruirCarga(catalogo)` | Regla | `_a-0000f093-2064-8000-9d36-011c48011c48_5604038` | 3 | lee CORE con las `*Core`, compara con el record y construye las filas a escribir (no escribe) |
 | `SCA2_catCargarDesdeCore(catalogo)` | Regla | `_a-0000f093-2064-8000-9d36-011c48011c48_5604046` | 1 | `a!writeRecords` de lo anterior; es la carga inicial / recarga (idempotente) |
 | `SCA2_catMotivosAurora(infoUsuarioDTO, codLineaNegocio)` | Regla | `_a-0000f093-2064-8000-9d36-011c48011c48_5604171` | 1 | lectura del record con la salida `consultarMotivoResponse` |
@@ -99,7 +99,7 @@ Idempotencia comprobada: segunda ejecución de CONCEPTO → `existentesAntes 17`
 
 ## 5. Pruebas (TEST, 21-10-2026; usuario administrador de la sesión (miembro de `SCA2 Administrators`))
 
-Sin solicitudes ni instancias: las reglas son puras y las pruebas de pantalla son sobre la página de mantenimiento. Datos propios reservados en `docs/sca/pruebas/coordinacion-fase1.md` (concepto manual `ZZC1`, inactivo).
+Sin solicitudes ni instancias: las reglas son puras y las pruebas de pantalla son sobre la página de mantenimiento. Datos propios reservados en `docs/sca/pruebas/coordinacion-fase1.md` (el concepto manual de prueba `ZZC1` se borró al cierre, C-20).
 
 | ID | Caso | Esperado | Real | OK/KO | Solicitud | Instancia | Pasos realizados | Posible causa/solución |
 |---|---|---|---|---|---|---|---|---|
@@ -121,14 +121,15 @@ Sin solicitudes ni instancias: las reglas son puras y las pruebas de pantalla so
 | C-16 | Baja lógica de `ZZC1` y filtro «Solo activos» | «Fila dada de baja.», desaparece con el filtro y aparece con `Activo = No` sin él | OK (captura) | OK | — | — | seleccionar → Dar de baja → confirmar → quitar filtro | — |
 | C-17 | «Recargar desde CORE» (CONCEPTO) con una fila manual presente | Mensaje con resumen; fila manual intacta; sin duplicados | «Recarga desde CORE completada: 17 filas en CORE, 1 manuales respetadas, 0 bajas lógicas, 17 filas escritas.»; 18 filas (17 CORE + 1 MANUAL), ZZC1 sin cambios | OK | — | — | botón → confirmar | 1.ª versión: error «a!save() and smart service functions cannot be used in a local variable» → el `a!writeRecords` se hace directamente en el `saveInto` (v8) |
 | C-18 | Filtro `fechaMod` de `consultarTipoArg` | Igual que CORE | 1.ª versión KO (interpretado como igualdad de fecha → 1 fila vs 43 de CORE); CORE devuelve lo modificado **desde** esa fecha. Corregido en `SCA2_catTiposArgAurora` v2/v3 y revalidado en C-07 | OK (tras corrección) | — | — | comparación de códigos devueltos | — |
-| C-19 | Página en solo lectura para un usuario no administrador | Sin botones ni formulario | **No probado** (no dispongo de un usuario de TEST sin el grupo) | — | — | — | — | pedir al coordinador un usuario no administrador o aceptar la revisión por código (`showWhen: local!esAdmin`) |
+| C-19 | Página en solo lectura para un usuario no administrador | Sin botones ni formulario | **Pendiente de usuario** (el coordinador ha pedido un usuario de TEST sin el grupo) | — | — | — | — | control por código: `showWhen: local!esAdmin` (`a!isUserMemberOfGroup(loggedInUser(), cons!SCA2_GRP_ADMINISTRADORES)`) |
+| C-20 | Limpieza: borrado físico de la fila de prueba `ZZC1` (id 18) | CONCEPTO vuelve a 17 filas, todas `origen CORE` | `a!deleteRecords` → `CountOfRecordsDeleted: 1`; recuento 17 CORE / 0 MANUAL | OK | — | — | `a!deleteRecords` ejecutado por `/test` sobre una regla propia (restaurada después) | sin datos de prueba en las tablas de catálogo |
 
 ## 6. Pendientes y decisiones
 
-- **Activar la lectura**: poner `SCA2_USAR_CATALOGOS_AURORA = true` en TEST cuando el coordinador lo decida (hoy false). Con true, cualquier combinación no cargada o catálogo vacío sigue yendo a SOAP.
-- **Índices únicos** `ux_*` (DBA; script en `docs/sca/sql/43-C-catalogos.sql`). Mientras, la unicidad la garantizan la carga y la validación de la página.
+- **Activar la lectura**: `SCA2_USAR_CATALOGOS_AURORA = true` lo decide el usuario (hoy false; esta sesión no la cambia). Con true, cualquier combinación no cargada o catálogo vacío sigue yendo a SOAP.
+- **Índices únicos** `ux_*`: trasladados al DBA (script en `docs/sca/sql/43-C-catalogos.sql`). Mientras, la unicidad la garantizan la carga y la validación de la página.
 - **Recarga completa**: la página recarga un catálogo por clic; por API se lanzan los seis. Orden recomendado: MOTIVO → DETALLE → CAUSA → TIPO_ARGUMENTO → CONCEPTO → VALOR_CONCEPTO.
 - **Fila manual con clave que luego aparezca en CORE**: la carga la respeta y no crea otra (se cuenta en `manualesRespetadas`); si se quiere que CORE prevalezca, cambiar manualmente `origen` a CORE desde la base de datos (la página no edita `origen`).
 - **Formato de fechas de tipos de argumento**: se guardan como texto `dd/MM/yyyy HH:mm:ss` tal como llegan de CORE (el CDT las trata como texto); si se desea filtrar en BD por fecha habría que añadir una columna `DATE` derivada.
-- C-19 (solo lectura para no administradores) pendiente de usuario de prueba.
-- Fila de prueba `ZZC1` (concepto, `origen MANUAL`, inactiva) queda en la tabla como evidencia; se puede borrar desde la BD si molesta.
+- C-19 (solo lectura para no administradores): pendiente de que el usuario facilite un usuario de TEST sin el grupo de administración.
+- Tablas de catálogo sin datos de prueba (la fila `ZZC1` se borró; C-20).
