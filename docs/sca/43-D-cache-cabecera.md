@@ -34,7 +34,7 @@ SCA2_obtenerDatosCabecera(numPoliza, idSolicitud, forzarRefresco?)
 | Objeto | Tipo | UUID | Versión antes → después | Cambio |
 |---|---|---|---|---|
 | `SCA2_obtenerDatosCabeceraLive` | Expression Rule | `_a-0000f093-2064-8000-9d36-011c48011c48_5603393` | nuevo, v1 | Copia exacta (carácter a carácter) de `SCA2_obtenerDatosCabecera` v2; inputs `numPoliza` Text, `idSolicitud` Text |
-| `SCA2_USAR_CACHE_CABECERA` | Constante Boolean | `_a-0000f093-2064-8000-9d36-011c48011c48_5603399` | nuevo, v9 | Valor **false** (v2–v8 son los cambios true/false de las pruebas) |
+| `SCA2_USAR_CACHE_CABECERA` | Constante Boolean | `_a-0000f093-2064-8000-9d36-011c48011c48_5603399` | nuevo, **v11** | Valor **false** (v2–v10 son los cambios true/false durante las pruebas) |
 | `SCA2_HORA_CADUCIDAD_CACHE_CABECERA` | Constante Integer | `_a-0000f093-2064-8000-9d36-011c48011c48_5603405` | nuevo, v1 | Valor 7 |
 | `SCA2_calcularValidaHastaCache` | Expression Rule (pura) | `_a-0000f093-2064-8000-9d36-011c48011c48_5603423` | nuevo, v1 | 10 casos `a!test`, 10/10 OK |
 | `SCA2_obtenerDatosCabecera` | Expression Rule | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20053304` | 2 → **5** | Envoltorio con caché; input nuevo `forzarRefresco` (Boolean, opcional). v3: primera versión; v4: acceso a campos con `fila[campo]`; v5: `fields` explícitos en la consulta |
@@ -519,10 +519,14 @@ Formato: `ID | Caso | Esperado | Real | OK/KO | Solicitud | Instancia | Pasos re
 | OFF1 | Interruptor false con fila CACHE presente | en vivo | `treboles = 0,00`; 3,54 s | OK | 15787499 | — | Constante a false; `/test` | — |
 | UI1 | Render de `SCA2_DetalleSolicitud` (`/interfaces/{uuid}/test`) con interruptor false | sin error, sin enlace | sin error; enlace no visible; 3,7–4,2 s | OK | 15787499 / 15787668 / 15788005 | — | 3 renders | — |
 | UI2 | Render con interruptor true y fila CACHE | sin error, enlace visible, más rápido | sin error; «Actualizar datos» visible; **1,3–1,7 s** | OK | 15787499 / 15787668 / 15788005 | — | 3 renders | — |
+| UI3 | Clic real en «Actualizar datos» (navegador, usuario de servicio, interruptor true) — 1.er clic | sin error; cabecera conservada; se crea 1 fila `CACHE` | sin error; LAPOVA / 94516056V / HOGAR FAMILIAR conservados; 5,7 s; fila `id 221` creada (`origenCache = CACHE`, `fechaCache 10:54`, `validaHasta 2026-10-22 07:00:00` UTC, 51 campos, `tipoPoliza NSE-Hogar`, `clienteCodint 418620322020`) | OK | 15788005 | — | Buscador → detalle → clic; comprobación de la fila por API `/data` | — |
+| UI4 | F5 tras el clic (caché vigente) | datos iguales, enlace visible, más rápido | iguales; enlace visible; 3,2 s (carga inicial 4,7 s) | OK | 15788005 | — | Recarga de la página | — |
+| UI5 | 2.º clic en «Actualizar datos» | sin error; **actualiza** la misma fila (sin duplicar) | sin error; 3,9 s; sigue 1 sola fila `CACHE` (`id 221`, `fechaCache 10:55:19`) | OK | 15788005 | — | Clic; API `/data` | — |
+| UI6 | Limpieza final | constante false, filas CACHE borradas | fila 221 borrada; constante v11 = false | OK | — | — | API | — |
 
 Pruebas intermedias que fallaron y se corrigieron: (1) v3 reconstruía con `index(fila, campo, null)` → todos los campos nulos; (2) v4 con `fila[campo]` seguía nulo porque `a!queryRecordType` **sin `fields`** devolvía filas sin datos en este contexto → v5 declara `fields` explícitos (y lo mismo en las consultas de la interfaz).
 
-Limpieza: las filas CACHE de prueba (ids 207–209, 211–213, 217–219) se borraron; la constante quedó en false (v9); `SCA2_calcularValidaHastaCache` conserva solo sus 10 casos.
+Limpieza: las filas CACHE de prueba (ids 207–209, 211–213, 217–219 por API; 221 creada por el clic en la UI) se borraron; la constante quedó en **false (v11)**; `SCA2_calcularValidaHastaCache` conserva solo sus 10 casos. Grabación y capturas de la prueba UI en la sesión. Observación de la UI: el buscador muestra 15788005 como «Solicitud Pendiente» aunque `estadoSolicitud = EN_ACCION` (etiqueta funcional, no relacionado con la caché).
 
 ### 6.4 Tiempos (resumen)
 
@@ -530,6 +534,7 @@ Limpieza: las filas CACHE de prueba (ids 207–209, 211–213, 217–219) se bor
 |---|---|---|
 | `SCA2_obtenerDatosCabecera` (API `/test`) | 3,4 – 6,6 s | 0,9 s (incluye la llamada en vivo a otras solicitudes) |
 | Render de `SCA2_DetalleSolicitud` (API `/interfaces/test`) | 3,7 – 4,2 s | 1,3 – 1,7 s |
+| Detalle en navegador (usuario de servicio) | 4,7 s (carga inicial, en vivo) | 3,2 s (F5 con caché; incluye el resto de la pantalla: tareas, gestiones CORE…) |
 | Alta (`SCA2_AltaSolicitudPage`) | no medido: con `idSolicitud` nulo/0 el alta va siempre en vivo (sin cambio) | — |
 
 ## 7. Lo que sigue siempre en vivo
@@ -555,8 +560,8 @@ No requieren invalidar (no cambian datos de cabecera): `CambiarNivel`, `Posponer
 
 ## 9. Pendientes y decisiones
 
-- **Prueba del clic «Actualizar datos» en la UI** (escritura real del record desde `saveInto`): requiere navegador con sesión en TEST y el interruptor en true unos minutos. Pendiente de autorización.
-- **`SCA2 CMD Alta` (sesión A)**: aplicar la propuesta §4.3-2 para que la caché se cree en el alta; sin ello el beneficio con el interruptor en true depende del enlace manual.
+- **`SCA2 CMD Alta` (sesión A)**: añadir el Write Records de §4.5 para que la caché se cree en el alta; sin ello el beneficio con el interruptor en true depende del enlace manual.
+- **PM `SCA2 CMD RefrescarCacheCabecera`** (§10): crear desde la UI de Designer según la especificación (+ constante `SCA2_CACHE_REFRESCO_BATCH`).
 - **Invalidación en CMD** (§8): asignar por el coordinador.
 - **Limpieza futura**: `idSolicitud` no es única en `SCA2 Datos Cabecera` (`SCA2 CMD Alta` inserta su propia fila parcial; las 206 filas previas carecen de `validaHasta`). No se ha actuado.
 - Vida/Verti: sin datos en TEST; cuando existan, repetir C01–C03 (campos `polizaRamo`, `polizaCesionderechos`, `polizaRevalorizacion`, `contactoPais`).
