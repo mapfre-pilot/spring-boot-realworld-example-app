@@ -57,3 +57,4 @@ exclusivamente con operaciones `get*`/`list*`. **No se ha modificado ningún obj
 ## Estado y previsión
 
 - [Estado de SCA2 tras la ronda 23: dudas funcionales abiertas, resumen de cambios, lógica por flujo y previsión](42-estado-sca2-ronda23.md)
+- [Ronda 24: respuestas del analista a las 17 dudas y plan de aplicación](43-ronda24-respuestas-analista.md)
