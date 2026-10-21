@@ -861,3 +861,30 @@ Pruebas realizadas (sub-interruptor en `false`; la Web API probada directamente 
 Seguridad del objeto Web API aplicada (`PUT /objects/{uuid}/security`): rol *Administrator* = grupo administrador de la aplicación SCA2 (`_e-0000f069-4e92-8000-9c18-01075c01075c_8069`, 3 miembros, incluye el usuario de servicio); *Editor* y *Viewer* vacíos (se retiró el grupo *Viewer* de la aplicación, que incluye a los usuarios de negocio). Comprobado: el usuario de servicio sigue obteniendo 200; sin autenticación 401; un usuario que no sea administrador de la aplicación no tiene permiso sobre el objeto (pendiente de comprobar con un usuario de negocio real en W08b, no dispongo de credenciales de negocio).
 
 Pendiente (esperando OK del coordinador tras la sesión H): poner `SCA2_USAR_WEBAPI_CACHE_CABECERA = true`, simplificar «Actualizar datos» (quitar su `a!writeRecords`: con `forzarRefresco: true` la regla ya renueva vía Web API) y pruebas W02–W06, W08b, W09, W10 en UI.
+
+### 11.7 Incidencia «la cabecera no se coge del record» (21/10/2026, 17:38 UTC) — diagnóstico
+
+Reporte del usuario: con la caché vigente, la cabecera parecía seguir cargándose en vivo. Diagnóstico por LCP REST, sin modificar objetos:
+
+| Paso | Qué se comprobó | Resultado |
+|---|---|---|
+| (a) | Filas de `SCA2 Datos Cabecera` con `origenCache = "CACHE"` y `validaHasta > now()` | 236 filas en total, 16 `CACHE`, **14 vigentes** (todas `validaHasta 2026-10-22 07:00`): 15788204, 205, 208, 209, 210, 211, 214, 215, 216, 220, 223, 218, 217 (altas de hoy desde las 11:49 UTC, escritas por `CMD Alta`/sesión A) y 15788005 (fila 247, Web API). **Ninguna solicitud anterior a hoy tenía fila CACHE**: en ésas la cabecera iba en vivo por diseño (solo el alta y el botón escribían). |
+| (b) | `SCA2_obtenerDatosCabecera` v6 por `POST /test` sobre 2 solicitudes con caché vigente | 15788204 → **1,28 s**; 15788211 → **0,92 s**; 15788005 → 0,93 s (Live: 3,6–7,2 s). Comprobación de rama: marcador `MARCA-CACHE-D` escrito en `clienteApoderado` de la fila 247 y **devuelto por la regla** → la salida viene del record. Con `idSolicitud` entero (15788005) idéntico. Marcador retirado. |
+| (c) | Condición de la rama de caché | `tostring(ri!idSolicitud)` en el filtro (campo TEXT); `validaHasta > now()` compara instantes (la zona horaria no afecta); `fields` explícitos; orden `fechaCache desc` + `batchSize 1` (las filas parciales de `CMD Alta`, sin `validaHasta`, quedan fuera); el `cast` al CDT no falla (0 diferencias vs Live en W07). Sin fallo. |
+| (d) | Test de interfaz `SCA2_DetalleSolicitud` con 15788005 (caché vigente) | **1,56 s / 1,21 s**. El Detalle sigue llamando en vivo, fuera de la cabecera, a `SCA2_consultarCabeceraSolicitud` (×2), `SCA2_obtenerTipoPoliza` (×2), `SCA2_cargarSolicitud`, `SCA2_consultaDetalleGestion`, `SCA2_consultarDocumentos`, etc., y a `SCA2_consultarSolicitudes` (otras solicitudes, 1 llamada): el tiempo total de la pantalla no baja a cero aunque la cabecera venga del record. |
+
+Conclusión: la rama de caché funciona. La causa más probable del reporte es haber abierto una **solicitud anterior a hoy, sin fila CACHE** (hasta la activación de 11.8 solo las altas posteriores a las 11:49 UTC la tenían).
+
+### 11.8 Activación de la renovación automática (21/10/2026, OK del coordinador sin esperar a la sesión H)
+
+- `SCA2_USAR_WEBAPI_CACHE_CABECERA` → **true** (v2). `SCA2_USAR_CACHE_CABECERA` sigue en true (v11). Ambas quedan en true.
+- `SCA2_DetalleSolicitud` v61 (cambio ajeno R24, impresión de carta) → **v62**: el enlace «Actualizar datos» queda reducido a `saveInto: a!save(local!estructuraCabecera, rule!SCA2_obtenerDatosCabecera(numPoliza: local!numPoliza, idSolicitud: ri!idSolicitud, forzarRefresco: true))`; desaparecen su `a!writeRecords`, el cálculo de `tipoPoliza`/`codInt` y la consulta de la fila previa (todo lo hace la Web API vía `SCA2_renovarCacheCabecera`). La expresión pasa de 107.599 a 87.325 caracteres; paréntesis equilibrados; sigue visible solo con `cons!SCA2_USAR_CACHE_CABECERA`.
+
+Verificación por API de la renovación automática con solicitudes antiguas sin fila CACHE:
+
+| Caso | Solicitud | 1.ª llamada | Fila | 2.ª llamada |
+|---|---|---|---|---|
+| Regla `SCA2_obtenerDatosCabecera` `/test` | 15787499 (Autos 2002000024445) | **3,81 s** (Live vía Web API) | id 249 creada, `fechaCache 2026-10-21 17:39:42`, `validaHasta 2026-10-22 07:00:00`, `origenCache CACHE` | **0,96 s** (record) |
+| Interfaz `SCA2_DetalleSolicitud` `/test` | 15787668 (wAutemis 0000006610576) | **6,09 s** | id 250 creada, `validaHasta 2026-10-22 07:00:00` (la fila parcial id 8 de `CMD Alta` queda intacta) | **1,51 s** |
+
+Salida de 15787499: respuesta de la Web API (1.ª llamada) = lectura de caché (2.ª) = `…Live` directo: **0 diferencias** campo a campo.
