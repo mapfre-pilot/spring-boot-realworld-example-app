@@ -31,7 +31,7 @@ Regresión con interruptores en false idéntica en todas las piezas (A: nodo a n
 5. El indicador propietario solo gobierna el botón REVISIÓN de Contra Anulación; argumentario y modal no lo usan (43-B).
 
 ## Pendientes
-- **F** (en curso): PM `SCA2 CMD RefrescarCacheCabecera` (07:05) + `SCA2_CACHE_REFRESCO_BATCH` desde Designer (43-D §10).
+- **F** (hecho, [43-F](43-F-pm-refresco-cache.md)): PM `SCA2 CMD RefrescarCacheCabecera` v3.0 (uuid `0000f095-81a8-8000-d613-7f0000014e7a`, timer diario 07:05 Europe/Madrid, tolerante por fila, errores a `SCA2 Error`) + `SCA2_CACHE_REFRESCO_BATCH` = 50 (…5605352 v3). Punto de control: primera ejecución programada 22-10-2026 07:05.
 - **G** (en curso): invalidación de la caché en los CMD que cambian estado (43-D §8).
 - Del usuario: caso de gestor propietario / cliente carterizado en TEST; usuarios de negocio por perfil (guiones en 43-B §9, 43-C C-19); decidir corrección del barrido; índices únicos `ux_*` para el DBA.
 - Sin camino en TEST: salto a N2 (A), pólizas Vida/Verti (D, E).
