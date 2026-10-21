@@ -38,6 +38,8 @@ exclusivamente con operaciones `get*`/`list*`. **No se ha modificado ningún obj
 22. [Anexo: inventario generado](anexos/inventario-generado.md) — volcado tabular (process models, integraciones, record types, referencias cruzadas).
 23. [Análisis de los servicios legacy de SCA (repos Plastic) y plan de lógica en Appian](40-analisis-servicios-legacy-sca.md) — inventario de los 9 repos del ZIP «SCA2 Servicios SCA», 19 servicios RAS (Core7 EJB, mediaciones SOA7/ESB, webMethods, GAIA/NEW) con sus operaciones y lógica, relación con las integraciones de SCAC/SCA/SCA2 que los llaman, candidatos a implementar la lógica en Appian y plan por fases; diagramas `img/40-*.svg|png`. Anexo: [matriz servicios ↔ integraciones ↔ consumidores](anexos/40-matriz-servicios-appian.md).
 24. [Diseño detallado fase 1: lógica legacy en Appian sin tocar MR01](41-diseno-logica-appian-fase1.md) — caducidad de tarea, propietario/carterización, catálogos cacheados en Aurora, caché de cabecera de una jornada y preparación de datos para decidir: objetos nuevos, puntos de conexión, pruebas y plan de 5 semanas reversible por constantes.
+25. [Coordinación de la fase 1](42-coordinacion-fase1.md) — reparto de objetos Appian por sesión (A–E), reglas comunes, interruptores y [reservas de datos de prueba](pruebas/coordinacion-fase1.md).
+26. Implementación fase 1 por sesión: [43-A caducidad por nivel](43-A-caducidad-por-nivel.md) · [43-B propietario y carterización](43-B-propietario-carterizacion.md) · [43-C catálogos en Aurora](43-C-catalogos-aurora.md) · [43-D caché de cabecera](43-D-cache-cabecera.md) · [43-E entrada al motor de reglas](43-E-entrada-reglas.md) — objetos, versiones, pruebas y pendientes de cada pieza.
 
 ## Alcance y limitaciones
 
