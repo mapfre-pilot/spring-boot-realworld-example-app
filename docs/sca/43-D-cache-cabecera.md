@@ -888,3 +888,29 @@ Verificación por API de la renovación automática con solicitudes antiguas sin
 | Interfaz `SCA2_DetalleSolicitud` `/test` | 15787668 (wAutemis 0000006610576) | **6,09 s** | id 250 creada, `validaHasta 2026-10-22 07:00:00` (la fila parcial id 8 de `CMD Alta` queda intacta) | **1,51 s** |
 
 Salida de 15787499: respuesta de la Web API (1.ª llamada) = lectura de caché (2.ª) = `…Live` directo: **0 diferencias** campo a campo.
+
+Pruebas en UI (agente de pruebas, usuario de servicio, clics reales, tiempo desde el clic/F5 hasta la cabecera renderizada; grabación `sca2-webapi-cabecera-edited.mp4` entregada al coordinador):
+
+| Caso | Solicitud | Acción | Tiempo | Resultado | Fila CACHE (verificada por API) |
+|---|---|---|---|---|---|
+| W09 | 15787530 (Autos 2002000008470, antigua, sin fila) | 1.ª apertura | **5,86 s** | cabecera correcta, sin error | id 251 creada (`fechaCache 17:45:26`, `validaHasta 2026-10-22 07:00`); fila parcial id 1 intacta |
+| W09 | ídem | F5 | **1,81 s** | misma cabecera | — |
+| W09 | ídem | salir al Buscador y reentrar | **0,74 s** | misma cabecera | — |
+| W03 | 15787668 (wAutemis, con fila 250) | apertura | **1,00 s** | cabecera correcta | — |
+| W04 | 15787668 | clic «Actualizar datos» (v62) | **9,77 s** | sin error, mismos datos | fila 250 **actualizada** (`fechaCache 17:48:35`), sin duplicar |
+| W02 | 15787499 (Autos, fila 249 caducada a propósito: `validaHasta 2026-10-21 06:00`) | 1.ª apertura | **4,77 s** | cabecera correcta | fila 249 **renovada** (`fechaCache 17:49:43`, `validaHasta 2026-10-22 07:00`) |
+| W02 | ídem | F5 | **1,95 s** | misma cabecera | — |
+
+Notas: en W02 la dirección sale vacía porque `…Live` ya devuelve `' '` en vía/domicilio/número/provincia/localidad/CP para esa póliza (dato de origen, no pérdida en la caché). W04 tarda ~10 s porque «Actualizar datos» fuerza Live vía Web API (4–7 s) y el Detalle se vuelve a renderizar; es el refresco manual opcional.
+
+Pruebas por API tras la UI:
+
+| Caso | Qué | Resultado |
+|---|---|---|
+| W06 | `SCA2_USAR_WEBAPI_CACHE_CABECERA = false` (2 min) y `/test` del envoltorio sobre 15787538 (sin fila) | Live 7,9 s, **sin fila escrita** (comportamiento anterior). Constante devuelta a **true** (v4). |
+| W05 | Integración con `relativePath` inexistente (`xx-no-existe`, v7): `/integrations/test` → **404**; `/test` del envoltorio sobre 15787543 (sin fila) | Live 5,64 s, **sin error y sin fila** (degradación correcta). Integración restaurada (v8, `sca2-cache-cabecera`). En un primer intento con el sufijo `-roto` la llamada siguió llegando a la Web API y creó la fila 252 de 15787539 (Appian resolvió la ruta); se repitió con una ruta claramente inexistente. |
+| W07 | Regresión con la constante principal en false | hecha en 11.6 (0 diferencias); **no se ha vuelto a apagar** la constante principal (analistas probando). |
+| W10 | Convivencia | las filas parciales de `CMD Alta` (ids 1, 4, 8…) no se tocan; la Web API actualiza la fila `CACHE` existente (250, 249) o inserta una nueva (249, 250, 251, 252); la invalidación G (`validaHasta = now()`) provoca renovación automática en la siguiente apertura (mismo mecanismo que W02); el PM F sólo encontrará filas caducadas no reabiertas. |
+| W08b | Usuario de negocio invocando la Web API directamente | **pendiente** (sin credenciales de negocio). |
+
+Estado final (21/10/2026 ~18:00 UTC): `SCA2_USAR_CACHE_CABECERA = true` (v11), `SCA2_USAR_WEBAPI_CACHE_CABECERA = true` (v4), `SCA2_refrescarCacheCabeceraIntegracion` v8, `SCA2_DetalleSolicitud` v62, `SCA2_obtenerDatosCabecera` v6, `…Live` v2. Filas CACHE creadas en estas pruebas (247, 249, 250, 251, 252) se dejan: son caché válida y es el comportamiento normal del sistema.
