@@ -8,7 +8,7 @@ Cinco piezas construidas en paralelo (sesiones A–E, reparto en [doc 42](42-coo
 | A · Caducidad por nivel | — (sin interruptor) | **activa** | `SCA2 Solicitud.caducidadTarea` = caducidad del nivel (hoy+14 propietario / hoy+7 no propietario, tope vencimiento); se fija en el alta y en cada salto de nivel; posponer / crear acción no la mueven; `fecInicioNivel` informado |
 | B · Propietario / carterización | `SCA2_USAR_PROPIETARIO_APPIAN` = **true** (v10) | activa + sombra | Contra Anulación y SGC usan el criterio legacy (carterizado O clave O póliza); cada FINALIZAR de Contra Anulación registra en `SCA2 Trazabilidad Cliente` la comparación ESB/Appian |
 | C · Catálogos en Aurora | `SCA2_USAR_CATALOGOS_AURORA` = **true** (v8) | activa | Causas/motivos/detalles/tipos de argumento/conceptos desde Aurora (fallback SOAP); página «Catálogos CORE (Aurora)» en Gestiones de mantenimiento |
-| D · Caché de cabecera | `SCA2_USAR_CACHE_CABECERA` = **true** (v14) | activa | El alta guarda la cabecera (válida hasta las 07:00 del día siguiente); Detalle con enlace «Actualizar datos»; «otras solicitudes» siempre en vivo |
+| D · Caché de cabecera | `SCA2_USAR_CACHE_CABECERA` = **true** (v20) | activa | El alta guarda la cabecera (válida hasta las 07:00 del día siguiente); Detalle con enlace «Actualizar datos»; «otras solicitudes» siempre en vivo |
 | E · Entrada al motor de reglas | — | activa (impacto cero) | `SCA2_mapearDatosDecidirAccion` delega en `SCA2_construirEntradaReglas`; paquete idéntico 13/13 |
 
 Cualquier pieza con interruptor se desactiva poniendo su constante a `false` (sin despliegue). El motor tarda unos minutos en ver el cambio de una constante.
@@ -31,7 +31,8 @@ Regresión con interruptores en false idéntica en todas las piezas (A: nodo a n
 5. El indicador propietario solo gobierna el botón REVISIÓN de Contra Anulación; argumentario y modal no lo usan (43-B).
 
 ## Pendientes
+- Aviso: la sesión R23-A modificó `CMD Mecanizar` nodo 16 en paralelo (21-10); los nodos de G siguen intactos.
 - **F** (hecho, [43-F](43-F-pm-refresco-cache.md)): PM `SCA2 CMD RefrescarCacheCabecera` v3.0 (uuid `0000f095-81a8-8000-d613-7f0000014e7a`, timer diario 07:05 Europe/Madrid, tolerante por fila, errores a `SCA2 Error`) + `SCA2_CACHE_REFRESCO_BATCH` = 50 (…5605352 v3). Punto de control: primera ejecución programada 22-10-2026 07:05.
-- **G** (en curso): invalidación de la caché en los CMD que cambian estado (43-D §8).
+- **G** (hecho, [43-G](43-G-invalidacion-cache.md)): regla `SCA2_invalidarCacheCabecera` (…5605449 v1, 5 tests) añadida al Write Records de `CMD Finalizar` [8], `CMD Caducar` [6], `CMD Mecanizar` [13][306][5], `CMD CompletarAccion` [340][7]; Decidir/CrearAccion sin tocar (encadenados tras el alta). Mecanizar verificado solo por definición.
 - Del usuario: caso de gestor propietario / cliente carterizado en TEST; usuarios de negocio por perfil (guiones en 43-B §9, 43-C C-19); decidir corrección del barrido; índices únicos `ux_*` para el DBA.
 - Sin camino en TEST: salto a N2 (A), pólizas Vida/Verti (D, E).
