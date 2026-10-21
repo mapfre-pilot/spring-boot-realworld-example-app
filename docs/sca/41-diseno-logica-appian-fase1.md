@@ -4,7 +4,9 @@
 
 Reglas del encargo: (1) no se toca la base de datos CORE (MR01/Oracle MES) ni los servicios Core7: siguen siendo el maestro y SCA2 sigue escribiendo en ellos como hoy; (2) no cambia la funcionalidad visible: las pantallas y los `CMD` hacen lo mismo, sólo cambian *de dónde* sale el dato o *cómo* se calcula; (3) todo lo nuevo se crea como objetos nuevos (`SCA2_*`) y se conecta en un único punto, de forma que se pueda volver atrás cambiando una constante.
 
-## 1. Caducidad de tarea (`determinarCaducidad` → regla Appian)
+## 1. Caducidad por nivel (`determinarCaducidad` → regla Appian)
+
+**Criterio funcional (confirmado por el usuario, 20-10-2026):** la caducidad pertenece al **nivel de intervención**, no a la tarea. Se fija al entrar en un nivel (alta → N1, cambio a N2/N3…); las tareas realizadas dentro del nivel (capturar, posponer, acciones, contactos) **no la recalculan**; solo se recalcula al cambiar de nivel. Si llega la fecha sin finalizar ni cambiar de nivel, el barrido caduca y finaliza la solicitud (`FINALIZADO_CADUCADO`).
 
 **Situación actual en SCA2 (verificada en los objetos):** el record `SCA2 Solicitud` tiene `caducidadTarea`, `fechaDietario` y `contadorPosponer`. `SCA2_configurarDatosContextoSolicitud` los inicializa a `null` en el alta; `CMD CrearAccion` y `CMD Posponer` escriben `caducidadTarea`; `SCA2_posponerTarea` pone `fechaDietario = now()`; `CMD Decidir` **no** calcula caducidad; `CMD Caducar` caduca cuando `caducidadTarea`/`fechaDietario` vencen. Para SGC, `SCA2_setDatosGestionSGC(+Estratégicas)` recibe `datosSGCCaducidad {propietario, fechaVencimiento, mismoNivel, fechaCaducidadAnterior}` y hoy delega el cálculo en la mediación.
 
@@ -18,11 +20,13 @@ Reglas del encargo: (1) no se toca la base de datos CORE (MR01/Oracle MES) ni lo
 | `SCA2_calcularCaducidadTarea(propietario: Boolean, mismoNivel: Boolean, fechaCaducidadAnterior: Date, fechaVencimiento: Date, fechaBase: Date)` | Regla → Date | `if(and(mismoNivel, not(isnull(fechaCaducidadAnterior))), fechaCaducidadAnterior, min(a!defaultValue(fechaBase, today()) + if(propietario, cons!…_PROPIETARIO, cons!…_NO_PROPIETARIO), fechaVencimiento))`; si `fechaVencimiento` es nula devuelve null (equivale al `ERROR` legacy) y el llamador conserva el comportamiento actual. Sin llamadas externas. |
 | `SCA2_calcularCaducidadTarea_test` | Casos `a!test` (6) | propietario/mismo nivel; propietario/cambio nivel; no propietario/mismo nivel sin anterior; no propietario/cambio nivel; `hoy+N` posterior al vencimiento → vencimiento; sin vencimiento → null. |
 
-**Dónde se conecta (sin cambiar comportamiento):** `SCA2_setDatosGestionSGC` y `…Estratégicas`: rellenar `datosSGCCaducidad.fechaCaducidad` con la regla cuando venga vacía (hoy el mapa viaja sin calcular). `CMD CrearAccion`, `CMD CambiarNivel` y `CMD Posponer`: usar la regla para `caducidadTarea` en lugar del valor que ponen hoy, con `mismoNivel = (nivel origen = nivel destino)` y `fechaCaducidadAnterior = pv!sol.estado.caducidadTarea`. Las constantes arrancan con 14/7 (valores legacy), por lo que el resultado es idéntico al actual.
+**Dónde se conecta:** el campo `SCA2 Solicitud.caducidadTarea` pasa a significar «caducidad del nivel actual». Se escribe **solo** en `CMD Alta` (entrada en N1, nodo «Contexto») y en `CMD CambiarNivel`/salto de nivel desde `CMD Decidir` (`mismoNivel = false`). `CMD CrearAccion` y `CMD Posponer` **dejan de escribirlo** (hoy lo hacen: es la desviación que se corrige); `fechaDietario`/`contadorPosponer` siguen igual para el posponer. `SCA2_setDatosGestionSGC(+Estratégicas)` rellena `datosSGCCaducidad.fechaCaducidad` con la misma regla (mismoNivel = true → se envía la caducidad vigente del nivel). `CMD Caducar` no cambia: caduca y finaliza cuando `caducidadTarea < today()` y la solicitud sigue abierta.
 
 **Pruebas:** `a!test` de la regla; una solicitud nueva por combinación en TEST comparando `caducidadTarea` y la fecha de caducidad enviada a SGC con la que produce SCA para la misma póliza/usuario.
 
 ## 2. Propietario de la póliza y carterización (`comprobarPropietario` ESB → regla Appian)
+
+**Qué significa:** «propietario» es si el gestor que tiene la solicitud (su nuuma) «lleva» esa póliza/cliente. Se cumple por cualquiera de tres vías, cada una en un sistema distinto: **carterización** (SGC: el cliente tiene gestor de cartera asignado; devuelve carterizado sí/no y nuuma del carterizador), **propiedad de clave** (Estruage: la clave de producción del gestor tiene la póliza) y **propiedad de póliza** (Estruage: el gestor es propietario directo). Hoy SCA2, en la gestión SGC, pregunta a una mediación ESB que consulta esas mismas fuentes; la propuesta es que Appian decida con los datos que ya tiene. El flag se usa para los días de caducidad (14/7), para la asignación/contacto en SGC y, en Contra Anulación, para la revisión de póliza renovada y el argumentario.
 
 **De dónde sale hoy la carterización en SCA2 (verificado):**
 - `SCA2_obtenerDatosCabecera` llama al REST `SCA2_consultarCabecera` (`es_pca_gestionartareas_bbe-web/esp/api/1.0/cargaCabecera` con `invocarCarterizacion: "true"`, `invocarEstruage: "true"`) y lee `respuestaCarterizacion.pcodretorno` (**0 = carterizado, 1 = no**) y `pnuuma` (nuuma del carterizador); lo guarda en `SCA2 Datos Cabecera.clienteCarterizado` («Sí/No») y `clienteNuumapropietario`.
@@ -58,6 +62,8 @@ Reglas del encargo: (1) no se toca la base de datos CORE (MR01/Oracle MES) ni lo
 
 **Pruebas:** comparar lista a lista (orden y textos) la salida del record frente a la SOAP para 3 compañías/ramos; medir tiempo de apertura del Alta antes/después.
 
+**Qué se necesita:** (a) crear 7 tablas en el esquema Aurora de SCA2 (conexión `SCA2 DataBase AWS`; nunca MR01): permiso de DDL o entrega del script al DBA; (b) hora del refresco diario (propuesta 06:00) y confirmación de que se lanza también al guardar en los mantenimientos; (c) una compañía/ramo/póliza de referencia por catálogo para la comparación.
+
 ## 4. Cabecera con caché temporal de una jornada (`cargarCabecera` / `consultarCabeceraRest`)
 
 **Situación actual:** `SCA2_obtenerDatosCabecera` se llama desde 9 interfaces y desde `CMD Alta`; cada llamada vuelve a invocar el REST `cargaCabecera` + TRON/NSE/Vida + API Clients + Estruage + productor + reserva de prima + siniestros. El record `SCA2 Datos Cabecera` (44 campos) ya existe y se rellena en el alta.
@@ -77,6 +83,8 @@ Reglas del encargo: (1) no se toca la base de datos CORE (MR01/Oracle MES) ni lo
 ## 5. Preparación de datos para decidir (`cPrepararDatosSD` → regla pura)
 
 **Situación actual:** `SCA2_mapearDatosDecidirAccion` construye el CDT `SCAC_scaServiciosReglas` (numeroAplicacion, canalEntrada, perfil/subperfil de ejecución, lineaNegocio, claveProduccion, catalogación, motivo/causa/detalle, nivelDecidirAccion, `fechaAnulacion` en `yyyy-mm-dd`, codigoSCA, compañía contraria, numeroFax, estadoUltimaGestion, anulaTecnico/Experto, nuuma, subgrupo, mecanizada…) y `SCA2_consultarServiciosReglas` añade lógica propia (si `regla = "mecanizar"` y mecanizada, consulta estado de póliza). Parte de la preparación está en el nodo «Consultar reglas» de `CMD Decidir`.
+
+**Qué se hace e impacto:** antes de preguntar al motor de reglas, Appian monta un paquete de ~30 datos de fuentes distintas (solicitud, póliza TRON, carterización, Estruage) con conversiones de formato; hoy está repartido entre una regla y nodos del PM, no es probable de forma aislada y dificulta diagnosticar decisiones erróneas. Se concentra en una regla pura con `a!test`. **Impacto funcional: ninguno** (mismo paquete de salida, el PM no cambia); beneficio: diagnóstico rápido, un único punto para añadir datos y base para sustituir el motor en el futuro.
 
 **Diseño:** regla pura `SCA2_construirEntradaReglas(sol, datosPoliza, carterizacion, estruage, nivel, regla)` → `SCAC_scaServiciosReglas`, sin llamadas externas, que concentra: formatos de fecha (CORE `dd/MM/yyyy` → `yyyy-MM-dd`), normalización `S/N`/booleanos, recibo impagado (`fechaEfectoReciboImp` desde `ESTADO_RECIBOS.FEC_EFEC_RECIBO`), carterización (`pcodretorno = 0`) y propietario (regla del punto 2). `SCA2_mapearDatosDecidirAccion` pasa a delegar en ella (misma salida); `CMD Decidir` no cambia. Casos `a!test` por tipo de póliza y por regla (`alta`, `mecanizar`, `cambioNivel`).
 
