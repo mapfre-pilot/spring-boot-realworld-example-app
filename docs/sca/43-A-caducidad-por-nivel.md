@@ -279,3 +279,62 @@ rule!SCA2_esPropietarioProvisional(nuuma: rule!CMP_obtenerNuuma(user(pp!initiato
 `SCA2 CMD CambiarNivel` · nodo 6: el mismo campo `caducidadTarea` que en CrearAccion con `pv!nivelDestino` en lugar de `pv!nuevoNivel`.
 
 Notas: `fechaVencimiento` se toma de `datosCabecera.polizaFechavencimiento` (`dd/MM/yyyy`) con respaldo `datosPoliza.fechadevencimiento` (`dd/MM/yyyy HH:mm CET`); en el alta, de `pv!cab.datosPoliza.fechaVencimiento` (`dd/MM/yyyy`). Todas se convierten con `SCA2_textoAFecha`. `claveProd` en los saltos: `datosPoliza.claveproduccion`; `nuuma` en los saltos: `datosPerfilesPca.nuuma` (gestor que dio de alta; documentado como provisional). No se creó la PV `caducidadNivel` propuesta en el HITO 1: el cálculo va inline en la escritura (misma trazabilidad en el record, menos cambios).
+
+## 9. Alcance añadido: escritura de la caché de cabecera en `SCA2 CMD Alta` (coordinación con la sesión D)
+
+Petición del coordinador (21/10/2026): el Write Records de `SCA2 Datos Cabecera` del alta (nodo 8 «Write Datos», hasta ahora 9 campos) debe escribir la cabecera completa + metadatos de caché con el mapeo de `43-D-cache-cabecera.md` §4.3/4.4, **solo** si `cons!SCA2_USAR_CACHE_CABECERA` es true; con la constante en false el alta escribe exactamente lo de hoy.
+
+Implementación (`SCA2 CMD Alta`, `0000f06f-28fc-8000-6693-7f0000014e7a`; solo cambia el nodo 8, verificado nodo a nodo antes/después; 22 nodos, 33 PV):
+
+```sail
+/* nodo 8 «Write Datos», elemento SCA2 Datos Cabecera del array de records */
+if(a!defaultValue(cons!SCA2_USAR_CACHE_CABECERA, false),
+  'recordType!…SCA2 Datos Cabecera'(
+    idSolicitud: pv!idSolicitud,
+    /* 45 campos cliente/póliza/contacto con el MISMO mapeo de D (§4.4): if(a!isNullOrEmpty(index(pv!cab,"datosX","campo",null)), null, tostring(...)) */
+    tipoPoliza: rule!SCA2_obtenerTipoPoliza(numPoliza: pv!numPoliza),
+    clienteCodint: if(rule!SCA2_obtenerTipoPoliza(numPoliza: pv!numPoliza) = cons!SCA2_TXT_VIDA_RIESGO, null,
+                      if(a!isNullOrEmpty(index(pv!datosContexto,"datosCod","codInt",null)), null, tostring(index(pv!datosContexto,"datosCod","codInt",null)))),
+    fechaCache: now(),
+    validaHasta: rule!SCA2_calcularValidaHastaCache(fechaHoraCarga: now(), hora: cons!SCA2_HORA_CADUCIDAD_CACHE_CABECERA),
+    origenCache: "CACHE"
+  ),
+  'recordType!…SCA2 Datos Cabecera'( /* los 9 campos de siempre, sin cambios */ )
+)
+```
+
+Diferencias respecto al bloque de D: `local!cabeceraLive` → `pv!cab` (misma salida de `SCA2_obtenerDatosCabecera`, ya cargada en el nodo 7); no se informa `id` (insert); `clienteCodint` sale de `pv!datosContexto.datosCod.codInt` (el mismo valor que el alta escribe en `SCA2 Datos Poliza Autos/Hogar.tomadorCodint`) porque las filas de póliza se escriben en el mismo nodo y aún no se pueden consultar. No se ha tocado `SCA2_obtenerDatosCabecera` (v5) ni el record (v11).
+
+| ID | Caso | Esperado | Real | OK/KO | Solicitud | Instancia | Pasos realizados | Posible causa/solución |
+|---|---|---|---|---|---|---|---|---|
+| CA1 | Alta con constante **false** (v11) tras el cambio | fila igual que hoy (9 campos) | fila id 229: `id` + 9 campos, `origenCache`/`fechaCache`/`validaHasta` vacíos | OK | 15788202 (2002600000012) | PM Alta (UI 11:45 UTC) | alta por UI; lectura `/record-types/{DatosCabecera}/data` | — |
+| CA2 | Alta con constante **true** (v12, solo durante la prueba) | fila completa, `origenCache = CACHE`, `validaHasta` = 07:00 del día siguiente | fila id 230: 44/53 campos informados (los 9 vacíos son nulos legítimos: apoderado, piso, puerta, escalera, telfijo, pais, fechaUltimoSiniestro, ramo, revalorizacion), `origenCache` CACHE, `fechaCache` 2026-10-21 11:49:47 UTC, `validaHasta` 2026-10-22 07:00:00, `tipoPoliza` NSE-Autos, `clienteCodint` 81895242007, `polizaClaveproduccion` 5244559 | OK | 15788204 (2002300392341) | PM Alta (UI 11:49 UTC) | constante → true; alta por UI; lectura del record; constante → **false (v13)** | Observación: `clienteNuumapropietario` llega como texto `"null"` desde la salida de la regla (mismo mapeo de D) |
+
+Estado final: `SCA2_USAR_CACHE_CABECERA` = **false** (v13).
+
+## 10. Pruebas funcionales en TEST con solicitudes nuevas (21/10/2026, usuario JJGONZ2, no propietario de ninguna póliza)
+
+Lectura de `SCA2 Solicitud` por `/record-types/{uuid}/data` tras cada paso de UI (la UI del gestor no muestra `caducidadTarea`; «Fecha anulación» es el vencimiento de la póliza).
+
+| ID | Caso | Esperado | Real | OK/KO | Solicitud | Instancia | Pasos realizados | Posible causa/solución |
+|---|---|---|---|---|---|---|---|---|
+| F1 | Alta N1 no propietario (JJGONZ2, carterizado No) | `caducidadTarea` = hoy+7 = 2026-10-28; `fecInicioNivel` = ahora | 2026-10-28 00:00; `fecInicioNivel` 2026-10-21 10:52:53 | OK | 15788192 (2002500495555, flota) | PM Alta | alta UI; lectura record | — |
+| F2 | Alta N1 segunda póliza | ídem | 2026-10-28; `fecInicioNivel` 10:59:15 | OK | 15788193 (2002600007357) | PM Alta | ídem | — |
+| F3 | Posponer en N1 no recalcula | `caducidadTarea` igual; `fechaDietario`/`contadorPosponer` informados | `caducidadTarea` 2026-10-28 (igual); `fechaDietario` 2026-10-28; `contadorPosponer` 1 | OK | 15788193 | PM Posponer (UI 11:02 UTC) | POSPONER → confirmar; lectura record antes/después | — |
+| F4 | Finalizar CA negativa en N1 no recalcula | igual mientras siga N1 | sigue N1, `caducidadTarea` 2026-10-28; el motor creó «Gestión Verti/vencimiento» y después «Mecanización» (no ejecutada: alta de gestión en CORE) | OK | 15788193 | PM Decidir/CrearAccion (UI 11:05 y 11:14 UTC) | argumento INCREMENTO PRIMA SINIESTROS → Negativo → FINALIZAR; Verti → CONTINUAR | — |
+| F5 | Alta N1 tercera póliza | hoy+7 | 2026-10-28; `fecInicioNivel` 11:20:02 | OK | 15788195 (2002600009065) | PM Alta | alta UI | — |
+| F6 | Vencimiento cercano (03/11/2026) | hoy+7 = 28/10 < 03/11 → 28/10 (el tope solo aplicaría a propietario: 04/11) | 2026-10-28 | OK | 15788194 (2002500478924) | PM Alta | alta UI (aviso acuerdo especial SI24 aceptado) | — |
+| F7 | Vencimiento pasado (27/08/2026) → tope | `caducidadTarea` = 2026-08-27 | 2026-08-27 00:00; `fecInicioNivel` 11:24:16 | OK | 15788196 (2002500378119) | PM Alta | alta UI | — |
+| F8 | Vencimiento pasado (17/08/2026) → tope | 2026-08-17 | 2026-08-17 | OK | 15788204 (2002300392341) | PM Alta | alta UI (prueba CA2) | — |
+| F9 | `SCA2 CMD BarridoCaducidad` selecciona la vencida | arranca Caducar para 15788196 | la consulta devuelve 100 ids antiguos (sin orden, `batchSize` 100) y 15788196 no entra; ninguna de las 100 cambió de estado | KO (defecto preexistente) | 15788196 | Barrido 11:28 UTC (Designer) | arranque manual «Iniciar proceso para depuración» | ver §11 |
+| F10 | `SCA2 CMD Caducar` directo sobre la vencida | caduca y finaliza | Cargar → ¿Ya ejecutado? → ¿Caducada? (now() ≥ 2026-08-27) → Write Caducada → estado `CADUCADA` (Transicion 1494 OK, version 4) → Finalizar Solicitud: integración CORE `IGenerarContraAnul` HTTP 500 «Error no catalogable 0999» → Write Error | OK parcial | 15788196 | 13307120 (11:32–11:36 UTC; PV `idSolicitud` fijada en monitorización porque el PV no es parámetro) | arranque manual + edición de PV + reintento de Cargar | el error es de CORE TEST (preexistente); la UI del gestor sigue mostrando PENDIENTE porque lee de CORE |
+| F11 | Salto a N2 recalcula `caducidadTarea` y `fecInicioNivel` | nueva caducidad hoy+N desde el salto | **no reproducido**: el motor no devolvió «IR A NIVEL 2» en el camino negativa → Verti → Mecanización, y `SCA2 CMD CambiarNivel` no tiene llamadores (ni interfaces, ni PM, ni acciones de record) | pendiente | 15788193 | — | — | ver §11 |
+
+## 11. Hallazgos fuera de la fila A (sin tocar) y pendientes
+
+1. **`SCA2 CMD BarridoCaducidad` (`0000f06f-4f69-8000-671e-7f0000014e7a`)**: nodo 6 consulta `estadoSolicitud not in {FINALIZADA, CADUCADA, ERROR}` y `caducidadTarea < now()` con `batchSize: 100` **sin orden**; nodo 4 arranca `SCA2 CMD Caducar` **una sola vez** con `{idSolicitud: pv!lista}` (lista entera en un PV Text). Con 115 solicitudes vencidas sin finalizar en TEST la tanda es siempre la misma y no caduca ninguna (sin Transicion de Caducar tras la ejecución). Propuesta: `a!forEach` o MNI por fila, orden por `caducidadTarea`, e incluir los estados finales que falten (`FINALIZADA_POSITIVO`, `CANCELADA`, `MECANIZADA`…).
+2. **`SCA2 CMD Caducar`** escribe `estadoSolicitud = "CADUCADA"` (no `FINALIZADO_CADUCADO` como dice el diseño) y después llama a CORE `IGenerarContraAnul`; en TEST devuelve 500/0999. El PV `idSolicitud` no está marcado como parámetro de arranque.
+3. **Salto de nivel**: sólo lo produce el motor de decisión (`accionCalc` «IR A NIVEL 2/3» → CrearAccion nodo 10/11) o `CMD CambiarNivel`, que hoy nadie llama. Para probar F11 hace falta un argumento/tabla de decisión que devuelva «IR A NIVEL 2» o exponer `CambiarNivel`; el SAIL del recálculo (§8.4) es el mismo que el del alta, verificado en F1–F8.
+4. Avisos de UI en TEST: «póliza flota / sin tratamiento en SCA» (2002500495555, 2002600000012) y «acuerdo especial SI24» (2002500478924) no impiden el alta ni la CA N1.
+5. `SCA2 Transicion.usuario` = «devin» en Decidir/CrearAccion: es el nombre de la cuenta de sistema que arranca los PM en TEST (preexistente, no dato de prueba).
+6. Pendiente: sustituir `rule!SCA2_esPropietarioProvisional` por `SCA2_esPropietarioPoliza` (sesión B) en los 3 PM (una línea por PM); prueba F11 cuando haya camino a N2.
