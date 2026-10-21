@@ -272,7 +272,8 @@ Salida: `SCAC_DS_datosCabecera` = `datosCliente` (14), `datosPoliza` (20), `otra
 
 Puntos de escritura:
 1. **`SCA2_DetalleSolicitud` → «Actualizar datos»** (hecho, §4.4): llama al envoltorio con `forzarRefresco: true`, actualiza `local!estructuraCabecera` y hace `a!writeRecords` sobre la fila `CACHE` (update por `id` si existe, insert si no).
-2. **`SCA2 CMD Alta` (sesión A, propuesta)**: ya llama a la regla (`cabh` → `pv!cab`) y ya escribe `SCA2 Datos Cabecera` con 9 campos. Propuesta: en ese Write Records escribir los 53 campos con el mapeo de §4.4 (`fechaCache = now()`, `validaHasta = rule!SCA2_calcularValidaHastaCache(now(), cons!SCA2_HORA_CADUCIDAD_CACHE_CABECERA)`, `origenCache = "CACHE"`, `tipoPoliza = rule!SCA2_obtenerTipoPoliza(pv!numPoliza)`, `clienteCodint` desde `SCA2 Datos Poliza Autos/Hogar.tomadorCodint`). Con ello la caché queda vigente desde el alta hasta las 07:00 del día siguiente para todas las interfaces, sin cambios en ellas.
+2. **`SCA2 CMD Alta` (sesión A, aceptado por el coordinador)**: ya llama a la regla (`cabh` → `pv!cab`) y ya escribe `SCA2 Datos Cabecera` con 9 campos. Añadir un nodo Write Records **nuevo** «Guardar caché cabecera» (sin tocar el existente) con la expresión exacta de §4.5, que con el interruptor en false devuelve `{}` y no escribe nada. Con ello la caché queda vigente desde el alta hasta las 07:00 del día siguiente para todas las interfaces, sin cambios en ellas.
+3. **Renovación al caducar**: PM programado `SCA2 CMD RefrescarCacheCabecera` (especificación en §10; no creado).
 
 Hasta que se haga (2), con el interruptor en true la caché solo existe para las solicitudes en las que alguien pulse «Actualizar datos».
 
@@ -388,6 +389,87 @@ a!sideBySideItem(
 ),
 ```
 
+### 4.5 Expresión lista para pegar en el Write Records de `SCA2 CMD Alta` (sesión A)
+
+Nodo Write Records nuevo «Guardar caché cabecera», a continuación del Write Records actual de `SCA2 Datos Cabecera` (para que `SCA2 Datos Poliza Autos/Hogar` ya estén escritos). Input `Records` = la expresión siguiente; con `cons!SCA2_USAR_CACHE_CABECERA = false` devuelve `{}` (sin fila; si el smart service no admite lista vacía, poner la misma condición en un gateway XOR delante del nodo). `pv!cab` es la salida de `rule!SCA2_obtenerDatosCabecera` (`cabh`), `pv!idSolicitud` y `pv!numPoliza` las pv existentes. Se inserta siempre una fila nueva (`id` nulo): en el alta no existe fila `CACHE` previa.
+
+```sail
+=if(
+  not(a!defaultValue(cons!SCA2_USAR_CACHE_CABECERA, false)),
+  {},
+  a!localVariables(
+    local!ahoraCache: now(),
+    /* Si el PM ya tiene el tipo de póliza en una pv, usarla en lugar de volver a llamar a la regla */
+    local!tipoPolizaCache: rule!SCA2_obtenerTipoPoliza(numPoliza: pv!numPoliza),
+    /* codInt del tomador: SCA2 Datos Poliza Hogar / Autos (deben estar ya escritos para pv!idSolicitud) */
+    local!codIntCache: if(
+      local!tipoPolizaCache = cons!SCA2_TXT_VIDA_RIESGO,
+      null,
+      if(
+        local!tipoPolizaCache = cons!SCA2_TXT_NSE_HOGAR,
+        index(a!queryRecordType(recordType: 'recordType!{55afc46c-c433-4351-94ab-1a464ffa7146}SCA2 Datos Poliza Hogar', fields: 'recordType!{55afc46c-c433-4351-94ab-1a464ffa7146}SCA2 Datos Poliza Hogar.fields.{55694c99-358f-4672-9708-eaee3cbfc652}tomadorCodint', filters: a!queryFilter(field: 'recordType!{55afc46c-c433-4351-94ab-1a464ffa7146}SCA2 Datos Poliza Hogar.fields.{12da2701-7d53-4cc8-aa00-58a1afd6e43b}idSolicitud', operator: "=", value: tostring(pv!idSolicitud)), pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1, sort: a!sortInfo(field: 'recordType!{55afc46c-c433-4351-94ab-1a464ffa7146}SCA2 Datos Poliza Hogar.fields.{54110158-060d-41d5-a35d-41c45efd2e2b}id', ascending: false)), fetchTotalCount: false).data, 1, null)['recordType!{55afc46c-c433-4351-94ab-1a464ffa7146}SCA2 Datos Poliza Hogar.fields.{55694c99-358f-4672-9708-eaee3cbfc652}tomadorCodint'],
+        index(a!queryRecordType(recordType: 'recordType!{eda2fe07-8058-472e-a245-ba87b85663ac}SCA2 Datos Poliza Autos', fields: 'recordType!{eda2fe07-8058-472e-a245-ba87b85663ac}SCA2 Datos Poliza Autos.fields.{e988271d-9f4e-4055-81d5-76e8bd78293e}tomadorCodint', filters: a!queryFilter(field: 'recordType!{eda2fe07-8058-472e-a245-ba87b85663ac}SCA2 Datos Poliza Autos.fields.{a10e3b1f-5518-4f08-b1bc-9229040e3250}idSolicitud', operator: "=", value: tostring(pv!idSolicitud)), pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1, sort: a!sortInfo(field: 'recordType!{eda2fe07-8058-472e-a245-ba87b85663ac}SCA2 Datos Poliza Autos.fields.{1858d98c-ef9c-419b-8498-ae27752a50d8}id', ascending: false)), fetchTotalCount: false).data, 1, null)['recordType!{eda2fe07-8058-472e-a245-ba87b85663ac}SCA2 Datos Poliza Autos.fields.{e988271d-9f4e-4055-81d5-76e8bd78293e}tomadorCodint']
+      )
+    ),
+    'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera'(
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{6757400e-5b8a-42fb-874b-19e5fbd8edbc}id': null,
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{09dabc7f-a0c8-468c-9b60-085a8a9bd1cc}idSolicitud': tostring(pv!idSolicitud),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{be8a5c3b-b866-4aa7-8424-e0b9fb585790}clienteNombre': if(a!isNullOrEmpty(index(pv!cab, "datosCliente", "nombre", null)), null, tostring(index(pv!cab, "datosCliente", "nombre", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{9bb6458d-2b8a-46e4-950d-f443a4d99ab1}clienteApellidos': if(a!isNullOrEmpty(index(pv!cab, "datosCliente", "apellidos", null)), null, tostring(index(pv!cab, "datosCliente", "apellidos", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{4ff02b25-e235-434c-ba96-b422befd7510}clienteNif': if(a!isNullOrEmpty(index(pv!cab, "datosCliente", "nif", null)), null, tostring(index(pv!cab, "datosCliente", "nif", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{3fc54e3e-02fe-4079-98fd-6a59db42dfaa}clienteApoderado': if(a!isNullOrEmpty(index(pv!cab, "datosCliente", "apoderado", null)), null, tostring(index(pv!cab, "datosCliente", "apoderado", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{e5e221c1-1e05-4152-9c5e-a9a7e1e40a90}clienteCarterizado': if(a!isNullOrEmpty(index(pv!cab, "datosCliente", "carterizado", null)), null, tostring(index(pv!cab, "datosCliente", "carterizado", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{0356c6be-be84-438f-9115-a5d5a5a76724}clienteNuumapropietario': if(a!isNullOrEmpty(index(pv!cab, "datosCliente", "nuumaPropietario", null)), null, tostring(index(pv!cab, "datosCliente", "nuumaPropietario", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{19903d82-74a4-4b2d-9363-442e085400ca}clienteRsvprima': if(a!isNullOrEmpty(index(pv!cab, "datosCliente", "rsvPrima", null)), null, tostring(index(pv!cab, "datosCliente", "rsvPrima", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{ab2f2789-e49e-4b66-97cd-a7ef5bfec730}clienteDtointegralidadnuevaproduccion': if(a!isNullOrEmpty(index(pv!cab, "datosCliente", "dtoIntegralidadNuevaProduccion", null)), null, tostring(index(pv!cab, "datosCliente", "dtoIntegralidadNuevaProduccion", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{f463d88a-b415-43aa-914b-9c8227fb4074}clienteTreboles': if(a!isNullOrEmpty(index(pv!cab, "datosCliente", "treboles", null)), null, tostring(index(pv!cab, "datosCliente", "treboles", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{843d65a8-ba29-4b41-a9a8-1207882c8fd8}clienteActivoclubmapfre': if(a!isNullOrEmpty(index(pv!cab, "datosCliente", "activoClubMapfre", null)), null, tostring(index(pv!cab, "datosCliente", "activoClubMapfre", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{a1faa3be-6dcf-44e0-ad0e-a8592206aab6}clientePerfilclubmapfre': if(a!isNullOrEmpty(index(pv!cab, "datosCliente", "perfilClubMapfre", null)), null, tostring(index(pv!cab, "datosCliente", "perfilClubMapfre", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{653b9880-b834-460b-b109-03c0aa5d7f3f}clienteTipoclientevalor': if(a!isNullOrEmpty(index(pv!cab, "datosCliente", "tipoClienteValor", null)), null, tostring(tointeger(index(pv!cab, "datosCliente", "tipoClienteValor", null)))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{bee4cebe-cf9d-415a-a1eb-ae8d17740f14}clienteTipoclientedesc': if(a!isNullOrEmpty(index(pv!cab, "datosCliente", "tipoClienteDesc", null)), null, tostring(index(pv!cab, "datosCliente", "tipoClienteDesc", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{965531d7-d779-4a3a-ae0e-49f63e4cfe10}clienteIdcliente': if(a!isNullOrEmpty(index(pv!cab, "datosCliente", "idCliente", null)), null, tostring(index(pv!cab, "datosCliente", "idCliente", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{b4fbe9d5-5949-4693-9c2f-8acce0349ff5}polizaNumeropoliza': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "numeroPoliza", null)), null, tostring(index(pv!cab, "datosPoliza", "numeroPoliza", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{488a1def-2853-4526-85b9-e28cb686a8db}polizaNombreproducto': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "nombreProducto", null)), null, tostring(index(pv!cab, "datosPoliza", "nombreProducto", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{4bb6981c-24f2-40d0-8852-06b0c9a064a6}polizaVehiculo': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "vehiculo", null)), null, tostring(index(pv!cab, "datosPoliza", "vehiculo", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{1c5f745d-37aa-49cb-8600-56a8e0fe9165}polizaLineanegocio': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "lineaNegocio", null)), null, tostring(index(pv!cab, "datosPoliza", "lineaNegocio", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{8dcfa2e7-3e34-4026-a59a-bcebb29be5c8}polizaFormapago': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "formaPago", null)), null, tostring(index(pv!cab, "datosPoliza", "formaPago", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{df03488b-3af6-400b-8083-a632f4c9c482}polizaFechaefecto': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "fechaEfecto", null)), null, tostring(index(pv!cab, "datosPoliza", "fechaEfecto", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{e46d7b58-2fab-4fac-aa5d-0282c8ae58d7}polizaFechavencimiento': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "fechaVencimiento", null)), null, tostring(index(pv!cab, "datosPoliza", "fechaVencimiento", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{6315089c-564a-471b-8835-a40ebdd10188}polizaAntiguedad': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "antiguedad", null)), null, tostring(index(pv!cab, "datosPoliza", "antiguedad", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{ab8c7579-6fc8-4a2e-bc13-2bf7da8123d5}polizaPlanpago': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "planPago", null)), null, tostring(index(pv!cab, "datosPoliza", "planPago", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{a1749b80-0132-47ac-9931-be0ee9c75d43}polizaPrimaactualrenovacion': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "primaActualRenovacion", null)), null, tostring(index(pv!cab, "datosPoliza", "primaActualRenovacion", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{48fcf401-d54c-45c6-805d-c1f5c9118187}polizaAcuerdo': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "acuerdo", null)), null, tostring(index(pv!cab, "datosPoliza", "acuerdo", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{349b1814-7050-4155-8ea1-87d2d9368eec}polizaClaveproduccion': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "claveProduccion", null)), null, tostring(index(pv!cab, "datosPoliza", "claveProduccion", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{65918aea-f30b-471b-a914-814c7317f0d9}polizaTipoproductor': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "tipoProductor", null)), null, tostring(index(pv!cab, "datosPoliza", "tipoProductor", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{882be471-06fe-4411-960a-f71371b7383f}polizaSiniestrosanoactual': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "siniestrosAnoActual", null)), null, tostring(index(pv!cab, "datosPoliza", "siniestrosAnoActual", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{b76b461d-80a8-4f10-8c8a-ae915cd43760}polizaFechaultimosiniestro': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "fechaUltimoSiniestro", null)), null, tostring(index(pv!cab, "datosPoliza", "fechaUltimoSiniestro", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{261fa0dc-e00c-4805-b248-88955c5012bb}polizaDtointegralidadpoliza': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "dtoIntegralidadPoliza", null)), null, tostring(index(pv!cab, "datosPoliza", "dtoIntegralidadPoliza", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{7b3b8ddd-702f-4c10-ab5e-4e04d124cbcd}polizaRamo': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "ramo", null)), null, tostring(index(pv!cab, "datosPoliza", "ramo", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{7d8b7301-8498-4950-9c2a-ced856d45674}polizaCesionderechos': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "cesionDeDerechos", null)), null, tostring(index(pv!cab, "datosPoliza", "cesionDeDerechos", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{a39a470b-6c4f-4685-b1ee-f9d1d591b757}polizaRevalorizacion': if(a!isNullOrEmpty(index(pv!cab, "datosPoliza", "revalorizacion", null)), null, tostring(index(pv!cab, "datosPoliza", "revalorizacion", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{fcec67d4-c615-4990-9165-10bf5c0a4e30}contactoVia': if(a!isNullOrEmpty(index(pv!cab, "datosContacto", "via", null)), null, tostring(index(pv!cab, "datosContacto", "via", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{d579fd3f-6ba9-4759-8153-e6bb43d4f752}contactoDomicilio': if(a!isNullOrEmpty(index(pv!cab, "datosContacto", "domicilio", null)), null, tostring(index(pv!cab, "datosContacto", "domicilio", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{79c6a806-89a5-4a14-8f4b-f51da6465263}contactoNumero': if(a!isNullOrEmpty(index(pv!cab, "datosContacto", "numero", null)), null, tostring(index(pv!cab, "datosContacto", "numero", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{5e833491-162a-4fa3-811e-9106f72efc74}contactoProvincia': if(a!isNullOrEmpty(index(pv!cab, "datosContacto", "provincia", null)), null, tostring(index(pv!cab, "datosContacto", "provincia", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{fcf9ec55-848a-4035-b468-3bfeb93adb7b}contactoLocalidad': if(a!isNullOrEmpty(index(pv!cab, "datosContacto", "localidad", null)), null, tostring(index(pv!cab, "datosContacto", "localidad", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{e9da29b2-2b7b-4570-baf4-3de4b9d8f9a0}contactoCodpostal': if(a!isNullOrEmpty(index(pv!cab, "datosContacto", "codPostal", null)), null, tostring(index(pv!cab, "datosContacto", "codPostal", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{627820e0-fc57-4997-9e38-2e16fd1c8eca}contactoTelmovil': if(a!isNullOrEmpty(index(pv!cab, "datosContacto", "telMovil", null)), null, tostring(index(pv!cab, "datosContacto", "telMovil", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{9f8584e7-619b-489a-86ed-463e4e9830ab}contactoTelfijo': if(a!isNullOrEmpty(index(pv!cab, "datosContacto", "telFijo", null)), null, tostring(index(pv!cab, "datosContacto", "telFijo", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{4a1a4e27-0e23-47ae-ba19-35da1c61d478}contactoCorreo': if(a!isNullOrEmpty(index(pv!cab, "datosContacto", "correo", null)), null, tostring(index(pv!cab, "datosContacto", "correo", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{0e80fa4a-e936-4bab-997b-544a39e339a0}contactoPiso': if(a!isNullOrEmpty(index(pv!cab, "datosContacto", "piso", null)), null, tostring(index(pv!cab, "datosContacto", "piso", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{baa3d3bc-79c0-49dc-b111-eacd1453e524}contactoPuerta': if(a!isNullOrEmpty(index(pv!cab, "datosContacto", "puerta", null)), null, tostring(index(pv!cab, "datosContacto", "puerta", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{d2f90a66-bd08-4610-a60a-988cae4049a4}contactoEscalera': if(a!isNullOrEmpty(index(pv!cab, "datosContacto", "escalera", null)), null, tostring(index(pv!cab, "datosContacto", "escalera", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{93830b86-140f-46ab-9b27-5e653c755c4b}contactoPais': if(a!isNullOrEmpty(index(pv!cab, "datosContacto", "pais", null)), null, tostring(index(pv!cab, "datosContacto", "pais", null))),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{6593228e-78fa-4648-ab2b-eea03a3d632a}tipoPoliza': local!tipoPolizaCache,
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{c082796f-ace6-4ef6-8a19-797c89e2dfc6}clienteCodint': local!codIntCache,
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{816f4439-7cf7-4f9f-8e30-aff3256daeec}fechaCache': local!ahoraCache,
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{c2c91c9b-df4f-4a96-96fc-1dcf1e6902bf}validaHasta': rule!SCA2_calcularValidaHastaCache(fechaHoraCarga: local!ahoraCache, hora: cons!SCA2_HORA_CADUCIDAD_CACHE_CABECERA),
+      'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{81701765-3488-401d-9169-822a28ca8451}origenCache': "CACHE"
+    )
+  )
+)
+```
+
 ## 5. Zona horaria (UTC vs CET)
 
 - Un `Date and Time` es un instante absoluto; la BD guarda GMT; la comparación `validaHasta > now()` es correcta en cualquier zona.
@@ -479,3 +561,127 @@ No requieren invalidar (no cambian datos de cabecera): `CambiarNivel`, `Posponer
 - **Limpieza futura**: `idSolicitud` no es única en `SCA2 Datos Cabecera` (`SCA2 CMD Alta` inserta su propia fila parcial; las 206 filas previas carecen de `validaHasta`). No se ha actuado.
 - Vida/Verti: sin datos en TEST; cuando existan, repetir C01–C03 (campos `polizaRamo`, `polizaCesionderechos`, `polizaRevalorizacion`, `contactoPais`).
 - Activación: poner `SCA2_USAR_CACHE_CABECERA = true` cuando el coordinador lo decida (reversible en cualquier momento volviendo a false).
+
+## 10. Especificación del PM `SCA2 CMD RefrescarCacheCabecera` (no creado: la API no permite crear PM en TEST)
+
+**Propósito**: renovar cada mañana las filas de caché caducadas de solicitudes abiertas, para que la primera apertura del día ya sea rápida. Mientras no exista: la regla sirve en vivo cuando no hay caché vigente (= comportamiento actual); la fila caducada se renueva al pulsar «Actualizar datos» (y, cuando A lo aplique, en cada alta).
+
+**Disparo**: evento de inicio con temporizador, diario a las **07:05** en la zona del proceso. Si el servidor de procesos está en UTC (como el usuario de servicio, §5), 07:05 UTC = 08:05/09:05 Madrid; en ese momento ya han caducado tanto las filas escritas por usuarios de Madrid (07:00 Madrid = 05:00/06:00 UTC) como las escritas por PM (07:00 UTC). Sin gateway de fin de semana (la caché del lunes se crea igualmente). Carpeta `SCA2 Artifacts`; seguridad como el resto de `SCA2 CMD *`; ejecutar como el usuario de servicio de los CMD.
+
+**Constante nueva propuesta**: `SCA2_CACHE_REFRESCO_BATCH` (Integer, 50) = máximo de filas por ejecución (las que no entren se renuevan al día siguiente o bajo demanda).
+
+**Variables de proceso**: `filas` (SCA2 Datos Cabecera, múltiple), `indice` (Integer, 1), `cabecera` (SCAC_DS_datosCabecera), `ahora` (Date and Time), `errores` (Text, múltiple), `procesadas` (Integer, 0).
+
+**Nodos** (flujo secuencial, tolerante a errores por fila):
+
+| # | Nodo | Tipo | Expresión / configuración |
+|---|---|---|---|
+| 1 | Inicio 07:05 | Start event (timer) | Recurrencia diaria, 07:05 |
+| 2 | Seleccionar filas caducadas | Script Task | `pv!filas` ← expresión A (abajo). Si `a!isNullOrEmpty(pv!filas)` → nodo 9 |
+| 3 | ¿Quedan filas? | XOR | `pv!indice <= length(pv!filas)` → 4; si no → 9 |
+| 4 | Cargar cabecera en vivo | Script Task (con flujo de excepción) | `pv!ahora` ← `now()`; `pv!cabecera` ← `rule!SCA2_obtenerDatosCabeceraLive(numPoliza: pv!filas[pv!indice][polizaNumeropoliza], idSolicitud: pv!filas[pv!indice][idSolicitud])`. Excepción (timer 90 s o error) → nodo 7 |
+| 5 | ¿Cabecera válida? | XOR | `a!isNotNullOrEmpty(pv!cabecera)` → 6; si no → 7 |
+| 6 | Actualizar fila caché | Write Records | `Records` = expresión B (abajo): misma fila (`id`), 51 campos, `fechaCache = pv!ahora`, `validaHasta = rule!SCA2_calcularValidaHastaCache(pv!ahora, cons!SCA2_HORA_CADUCIDAD_CACHE_CABECERA)`, `origenCache = "CACHE"`; `pv!procesadas` ← `pv!procesadas + 1`. Excepción → nodo 7 |
+| 7 | Anotar error de la fila | Script Task | `pv!errores` ← `append(pv!errores, "idSolicitud " & pv!filas[pv!indice][idSolicitud] & ": " & <mensaje>)`. **No** se modifica la fila (sigue caducada → la regla sirve en vivo) |
+| 8 | Siguiente | Script Task | `pv!indice` ← `pv!indice + 1`; `pv!cabecera` ← `null` → vuelve a 3 |
+| 9 | Fin | End event | Opcional: si `length(pv!errores) > 0`, nodo de aviso (correo al grupo de administradores o fila en `SCA2 Error`, objeto de otra sesión) |
+
+Expresión A (nodo 2, `pv!filas`). Estados cerrados a excluir, según los valores observados en TEST: `FINALIZADA`, `FINALIZADA_POSITIVO`, `CANCELADA` (y `CADUCADA` si se usa); el resto (`EN_ACCION`, `PDTE_MECANIZAR`, `MECANIZADA`, `ALTA`, `ERROR`, `PDTE_FINALIZAR`, `ERROR_DECISION`) se consideran abiertas. Los uuid de `SCA2 Solicitud.idSolicitud/estadoSolicitud` se toman del record (`GET /record-types/c531595c-c3b5-454c-a355-8145e7e27e9a`):
+
+```sail
+=a!localVariables(
+  local!abiertas: a!queryRecordType(
+    recordType: 'recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud',
+    fields: 'recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud.fields.{<uuid idSolicitud>}idSolicitud',
+    filters: a!queryFilter(
+      field: 'recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud.fields.{<uuid estadoSolicitud>}estadoSolicitud',
+      operator: "not in",
+      value: {"FINALIZADA", "FINALIZADA_POSITIVO", "CANCELADA", "CADUCADA"}
+    ),
+    pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 5000),
+    fetchTotalCount: false
+  ).data['recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud.fields.{<uuid idSolicitud>}idSolicitud'],
+  a!queryRecordType(
+    recordType: 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera',
+    fields: {'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{6757400e-5b8a-42fb-874b-19e5fbd8edbc}id', 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{09dabc7f-a0c8-468c-9b60-085a8a9bd1cc}idSolicitud', 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{b4fbe9d5-5949-4693-9c2f-8acce0349ff5}polizaNumeropoliza', 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{c2c91c9b-df4f-4a96-96fc-1dcf1e6902bf}validaHasta'},
+    filters: a!queryLogicalExpression(
+      operator: "AND",
+      filters: {
+        a!queryFilter(field: 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{81701765-3488-401d-9169-822a28ca8451}origenCache', operator: "=", value: "CACHE"),
+        a!queryFilter(field: 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{c2c91c9b-df4f-4a96-96fc-1dcf1e6902bf}validaHasta', operator: "<=", value: now()),
+        a!queryFilter(field: 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{09dabc7f-a0c8-468c-9b60-085a8a9bd1cc}idSolicitud', operator: "in", value: a!defaultValue(touniformstring(local!abiertas), {"-"}))
+      }
+    ),
+    pagingInfo: a!pagingInfo(
+      startIndex: 1,
+      batchSize: cons!SCA2_CACHE_REFRESCO_BATCH,
+      sort: a!sortInfo(field: 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{c2c91c9b-df4f-4a96-96fc-1dcf1e6902bf}validaHasta', ascending: true)
+    ),
+    fetchTotalCount: false
+  ).data
+)
+```
+
+Expresión B (nodo 6, `Records`):
+
+```sail
+='recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera'(
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{6757400e-5b8a-42fb-874b-19e5fbd8edbc}id': pv!filas[pv!indice]['recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{6757400e-5b8a-42fb-874b-19e5fbd8edbc}id'],
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{09dabc7f-a0c8-468c-9b60-085a8a9bd1cc}idSolicitud': pv!filas[pv!indice]['recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{09dabc7f-a0c8-468c-9b60-085a8a9bd1cc}idSolicitud'],
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{be8a5c3b-b866-4aa7-8424-e0b9fb585790}clienteNombre': if(a!isNullOrEmpty(index(pv!cabecera, "datosCliente", "nombre", null)), null, tostring(index(pv!cabecera, "datosCliente", "nombre", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{9bb6458d-2b8a-46e4-950d-f443a4d99ab1}clienteApellidos': if(a!isNullOrEmpty(index(pv!cabecera, "datosCliente", "apellidos", null)), null, tostring(index(pv!cabecera, "datosCliente", "apellidos", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{4ff02b25-e235-434c-ba96-b422befd7510}clienteNif': if(a!isNullOrEmpty(index(pv!cabecera, "datosCliente", "nif", null)), null, tostring(index(pv!cabecera, "datosCliente", "nif", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{3fc54e3e-02fe-4079-98fd-6a59db42dfaa}clienteApoderado': if(a!isNullOrEmpty(index(pv!cabecera, "datosCliente", "apoderado", null)), null, tostring(index(pv!cabecera, "datosCliente", "apoderado", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{e5e221c1-1e05-4152-9c5e-a9a7e1e40a90}clienteCarterizado': if(a!isNullOrEmpty(index(pv!cabecera, "datosCliente", "carterizado", null)), null, tostring(index(pv!cabecera, "datosCliente", "carterizado", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{0356c6be-be84-438f-9115-a5d5a5a76724}clienteNuumapropietario': if(a!isNullOrEmpty(index(pv!cabecera, "datosCliente", "nuumaPropietario", null)), null, tostring(index(pv!cabecera, "datosCliente", "nuumaPropietario", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{19903d82-74a4-4b2d-9363-442e085400ca}clienteRsvprima': if(a!isNullOrEmpty(index(pv!cabecera, "datosCliente", "rsvPrima", null)), null, tostring(index(pv!cabecera, "datosCliente", "rsvPrima", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{ab2f2789-e49e-4b66-97cd-a7ef5bfec730}clienteDtointegralidadnuevaproduccion': if(a!isNullOrEmpty(index(pv!cabecera, "datosCliente", "dtoIntegralidadNuevaProduccion", null)), null, tostring(index(pv!cabecera, "datosCliente", "dtoIntegralidadNuevaProduccion", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{f463d88a-b415-43aa-914b-9c8227fb4074}clienteTreboles': if(a!isNullOrEmpty(index(pv!cabecera, "datosCliente", "treboles", null)), null, tostring(index(pv!cabecera, "datosCliente", "treboles", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{843d65a8-ba29-4b41-a9a8-1207882c8fd8}clienteActivoclubmapfre': if(a!isNullOrEmpty(index(pv!cabecera, "datosCliente", "activoClubMapfre", null)), null, tostring(index(pv!cabecera, "datosCliente", "activoClubMapfre", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{a1faa3be-6dcf-44e0-ad0e-a8592206aab6}clientePerfilclubmapfre': if(a!isNullOrEmpty(index(pv!cabecera, "datosCliente", "perfilClubMapfre", null)), null, tostring(index(pv!cabecera, "datosCliente", "perfilClubMapfre", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{653b9880-b834-460b-b109-03c0aa5d7f3f}clienteTipoclientevalor': if(a!isNullOrEmpty(index(pv!cabecera, "datosCliente", "tipoClienteValor", null)), null, tostring(tointeger(index(pv!cabecera, "datosCliente", "tipoClienteValor", null)))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{bee4cebe-cf9d-415a-a1eb-ae8d17740f14}clienteTipoclientedesc': if(a!isNullOrEmpty(index(pv!cabecera, "datosCliente", "tipoClienteDesc", null)), null, tostring(index(pv!cabecera, "datosCliente", "tipoClienteDesc", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{965531d7-d779-4a3a-ae0e-49f63e4cfe10}clienteIdcliente': if(a!isNullOrEmpty(index(pv!cabecera, "datosCliente", "idCliente", null)), null, tostring(index(pv!cabecera, "datosCliente", "idCliente", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{b4fbe9d5-5949-4693-9c2f-8acce0349ff5}polizaNumeropoliza': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "numeroPoliza", null)), null, tostring(index(pv!cabecera, "datosPoliza", "numeroPoliza", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{488a1def-2853-4526-85b9-e28cb686a8db}polizaNombreproducto': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "nombreProducto", null)), null, tostring(index(pv!cabecera, "datosPoliza", "nombreProducto", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{4bb6981c-24f2-40d0-8852-06b0c9a064a6}polizaVehiculo': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "vehiculo", null)), null, tostring(index(pv!cabecera, "datosPoliza", "vehiculo", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{1c5f745d-37aa-49cb-8600-56a8e0fe9165}polizaLineanegocio': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "lineaNegocio", null)), null, tostring(index(pv!cabecera, "datosPoliza", "lineaNegocio", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{8dcfa2e7-3e34-4026-a59a-bcebb29be5c8}polizaFormapago': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "formaPago", null)), null, tostring(index(pv!cabecera, "datosPoliza", "formaPago", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{df03488b-3af6-400b-8083-a632f4c9c482}polizaFechaefecto': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "fechaEfecto", null)), null, tostring(index(pv!cabecera, "datosPoliza", "fechaEfecto", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{e46d7b58-2fab-4fac-aa5d-0282c8ae58d7}polizaFechavencimiento': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "fechaVencimiento", null)), null, tostring(index(pv!cabecera, "datosPoliza", "fechaVencimiento", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{6315089c-564a-471b-8835-a40ebdd10188}polizaAntiguedad': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "antiguedad", null)), null, tostring(index(pv!cabecera, "datosPoliza", "antiguedad", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{ab8c7579-6fc8-4a2e-bc13-2bf7da8123d5}polizaPlanpago': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "planPago", null)), null, tostring(index(pv!cabecera, "datosPoliza", "planPago", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{a1749b80-0132-47ac-9931-be0ee9c75d43}polizaPrimaactualrenovacion': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "primaActualRenovacion", null)), null, tostring(index(pv!cabecera, "datosPoliza", "primaActualRenovacion", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{48fcf401-d54c-45c6-805d-c1f5c9118187}polizaAcuerdo': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "acuerdo", null)), null, tostring(index(pv!cabecera, "datosPoliza", "acuerdo", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{349b1814-7050-4155-8ea1-87d2d9368eec}polizaClaveproduccion': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "claveProduccion", null)), null, tostring(index(pv!cabecera, "datosPoliza", "claveProduccion", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{65918aea-f30b-471b-a914-814c7317f0d9}polizaTipoproductor': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "tipoProductor", null)), null, tostring(index(pv!cabecera, "datosPoliza", "tipoProductor", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{882be471-06fe-4411-960a-f71371b7383f}polizaSiniestrosanoactual': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "siniestrosAnoActual", null)), null, tostring(index(pv!cabecera, "datosPoliza", "siniestrosAnoActual", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{b76b461d-80a8-4f10-8c8a-ae915cd43760}polizaFechaultimosiniestro': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "fechaUltimoSiniestro", null)), null, tostring(index(pv!cabecera, "datosPoliza", "fechaUltimoSiniestro", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{261fa0dc-e00c-4805-b248-88955c5012bb}polizaDtointegralidadpoliza': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "dtoIntegralidadPoliza", null)), null, tostring(index(pv!cabecera, "datosPoliza", "dtoIntegralidadPoliza", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{7b3b8ddd-702f-4c10-ab5e-4e04d124cbcd}polizaRamo': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "ramo", null)), null, tostring(index(pv!cabecera, "datosPoliza", "ramo", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{7d8b7301-8498-4950-9c2a-ced856d45674}polizaCesionderechos': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "cesionDeDerechos", null)), null, tostring(index(pv!cabecera, "datosPoliza", "cesionDeDerechos", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{a39a470b-6c4f-4685-b1ee-f9d1d591b757}polizaRevalorizacion': if(a!isNullOrEmpty(index(pv!cabecera, "datosPoliza", "revalorizacion", null)), null, tostring(index(pv!cabecera, "datosPoliza", "revalorizacion", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{fcec67d4-c615-4990-9165-10bf5c0a4e30}contactoVia': if(a!isNullOrEmpty(index(pv!cabecera, "datosContacto", "via", null)), null, tostring(index(pv!cabecera, "datosContacto", "via", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{d579fd3f-6ba9-4759-8153-e6bb43d4f752}contactoDomicilio': if(a!isNullOrEmpty(index(pv!cabecera, "datosContacto", "domicilio", null)), null, tostring(index(pv!cabecera, "datosContacto", "domicilio", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{79c6a806-89a5-4a14-8f4b-f51da6465263}contactoNumero': if(a!isNullOrEmpty(index(pv!cabecera, "datosContacto", "numero", null)), null, tostring(index(pv!cabecera, "datosContacto", "numero", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{5e833491-162a-4fa3-811e-9106f72efc74}contactoProvincia': if(a!isNullOrEmpty(index(pv!cabecera, "datosContacto", "provincia", null)), null, tostring(index(pv!cabecera, "datosContacto", "provincia", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{fcf9ec55-848a-4035-b468-3bfeb93adb7b}contactoLocalidad': if(a!isNullOrEmpty(index(pv!cabecera, "datosContacto", "localidad", null)), null, tostring(index(pv!cabecera, "datosContacto", "localidad", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{e9da29b2-2b7b-4570-baf4-3de4b9d8f9a0}contactoCodpostal': if(a!isNullOrEmpty(index(pv!cabecera, "datosContacto", "codPostal", null)), null, tostring(index(pv!cabecera, "datosContacto", "codPostal", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{627820e0-fc57-4997-9e38-2e16fd1c8eca}contactoTelmovil': if(a!isNullOrEmpty(index(pv!cabecera, "datosContacto", "telMovil", null)), null, tostring(index(pv!cabecera, "datosContacto", "telMovil", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{9f8584e7-619b-489a-86ed-463e4e9830ab}contactoTelfijo': if(a!isNullOrEmpty(index(pv!cabecera, "datosContacto", "telFijo", null)), null, tostring(index(pv!cabecera, "datosContacto", "telFijo", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{4a1a4e27-0e23-47ae-ba19-35da1c61d478}contactoCorreo': if(a!isNullOrEmpty(index(pv!cabecera, "datosContacto", "correo", null)), null, tostring(index(pv!cabecera, "datosContacto", "correo", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{0e80fa4a-e936-4bab-997b-544a39e339a0}contactoPiso': if(a!isNullOrEmpty(index(pv!cabecera, "datosContacto", "piso", null)), null, tostring(index(pv!cabecera, "datosContacto", "piso", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{baa3d3bc-79c0-49dc-b111-eacd1453e524}contactoPuerta': if(a!isNullOrEmpty(index(pv!cabecera, "datosContacto", "puerta", null)), null, tostring(index(pv!cabecera, "datosContacto", "puerta", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{d2f90a66-bd08-4610-a60a-988cae4049a4}contactoEscalera': if(a!isNullOrEmpty(index(pv!cabecera, "datosContacto", "escalera", null)), null, tostring(index(pv!cabecera, "datosContacto", "escalera", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{93830b86-140f-46ab-9b27-5e653c755c4b}contactoPais': if(a!isNullOrEmpty(index(pv!cabecera, "datosContacto", "pais", null)), null, tostring(index(pv!cabecera, "datosContacto", "pais", null))),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{6593228e-78fa-4648-ab2b-eea03a3d632a}tipoPoliza': pv!filas[pv!indice]['recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{6593228e-78fa-4648-ab2b-eea03a3d632a}tipoPoliza'],
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{c082796f-ace6-4ef6-8a19-797c89e2dfc6}clienteCodint': pv!filas[pv!indice]['recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{c082796f-ace6-4ef6-8a19-797c89e2dfc6}clienteCodint'],
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{816f4439-7cf7-4f9f-8e30-aff3256daeec}fechaCache': pv!ahora,
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{c2c91c9b-df4f-4a96-96fc-1dcf1e6902bf}validaHasta': rule!SCA2_calcularValidaHastaCache(fechaHoraCarga: pv!ahora, hora: cons!SCA2_HORA_CADUCIDAD_CACHE_CABECERA),
+  'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{81701765-3488-401d-9169-822a28ca8451}origenCache': "CACHE"
+)
+```
+
+**Volumen en TEST** (2026-10-21): 218 solicitudes, 144 abiertas (EN_ACCION 84, PDTE_MECANIZAR 34, MECANIZADA 9, ALTA 7, ERROR 7, PDTE_FINALIZAR 2, ERROR_DECISION 1). Hoy no hay filas `CACHE` (solo se crearán con «Actualizar datos» y, cuando A lo aplique, en el alta), así que la primera ejecución procesaría 0 filas; en régimen, como máximo las solicitudes abiertas con fila CACHE: ≤ 144 en TEST. A 3,5–6,6 s por carga en vivo, 50 filas ≈ 3–6 min secuenciales; 144 filas ≈ 8–16 min (o 3 días con batch 50). Si en PRO el volumen fuese mayor, elevar el batch o usar MNI (instancias múltiples) en el nodo 4 con `tp!instanceIndex`, manteniendo la excepción por instancia.
+
+**Pruebas sugeridas al crearlo**: (1) sin filas caducadas → termina sin escribir; (2) 2 filas caducadas de solicitudes abiertas + 1 de solicitud FINALIZADA → renueva 2, ignora 1; (3) una fila con póliza inexistente → error anotado, fila intacta, el resto renovado; (4) batch 1 → una fila por ejecución; (5) interruptor en false → el PM puede ejecutarse igualmente (solo mantiene filas; la regla no las usará) o añadir un gateway inicial `cons!SCA2_USAR_CACHE_CABECERA` para no gastar llamadas.
