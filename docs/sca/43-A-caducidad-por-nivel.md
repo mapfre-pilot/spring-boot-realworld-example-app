@@ -134,7 +134,7 @@ Dónde está el dato «propietario» y «vencimiento» hoy:
 - Tras el alta (`pv!sol`, salida de `SCA2_cargarSolicitud`): `datosCabecera.polizaFechavencimiento` (texto), `datosPoliza.fechadevencimiento` (texto; Autos/Hogar/Vida), `datosPerfilesPca.nuuma` y `codperfil`. `datosCabecera` **no** expone hoy `clienteCarterizado`, `clienteNuumapropietario` ni `polizaClaveproduccion` (están en el record, no en el mapa).
 - `rule!SCA2_nuumaEsPropietario(codCia, nuuma, claveProd)` se usa hoy en `SCA2_ContraAnulacionOpciones` con `codCia: "41"`, `nuuma` del usuario conectado y `claveProduccion` de `datosPolizaAutos/Hogar/Vida`; llama a CORE (`SCA2_consultaPropiedadClave`).
 
-## 5. Plan de cambios por nodo (pendiente de OK)
+## 5. Plan de cambios por nodo (aprobado en el HITO 1; implementación en §8)
 
 Convención común: `local!venc = todate(<texto vencimiento>)` protegido con `a!isNullOrEmpty` → `null`; propietario provisional = `or(carterizado = "Sí", rule!SCA2_nuumaEsPropietario(codCia: "41", nuuma: <NUUMA gestor>, claveProd: <clave producción>))`, también protegido (si falta clave o NUUMA → solo `carterizado`). Cuando la sesión B entregue `SCA2_esPropietarioPoliza` se sustituye esa expresión en los tres puntos (Alta, CrearAccion, CambiarNivel).
 
@@ -156,7 +156,14 @@ Efectos a tener en cuenta (derivados del criterio aprobado):
 2. Las solicitudes **ya en vuelo** sin `caducidadTarea` seguirán con el respaldo actual (`fechaDietario`) hasta su próximo salto de nivel; no se propone migración de datos.
 3. Los envíos a CORE no cambian: la fecha solo se guarda en Appian (Date).
 
-## 6. Decisiones que necesita el coordinador
+## 6. Decisiones del coordinador (OK HITO 1, 21/10/2026)
+
+- D1 Propietario provisional → regla propia `SCA2_esPropietarioProvisional` (carterizado por ese gestor OR Estruage), un único punto de llamada por PM.
+- D2 `fecInicioNivel = now()` en Alta nodo 9 y en cada salto (CrearAccion nodo 11, CambiarNivel nodo 6). Campo verificado en `SCA2 Solicitud` (`6117c6fa-c350-4877-b742-f11225ec3df0`).
+- D3 Confirmado: posponer ya no alarga; sin migración de solicitudes en vuelo; `SCA2 Tarea.fechaCaducidad` y `SCA2_obtenerCaducidadNivel` no cambian.
+- D4 `SCA2_cargarSolicitud` es de la fila A; cambio aditivo.
+
+### 6.1 Decisiones planteadas originalmente
 
 - **D1** Propietario provisional: ¿aplicar literalmente `SCA2_nuumaEsPropietario(...) OR carterizado = "Sí"` (añade una llamada CORE en Alta y en cada salto de nivel) o, hasta que llegue `SCA2_esPropietarioPoliza` (sesión B), usar solo datos ya cargados: `carterizado = "Sí" OR nuumaPropietario = NUUMA del gestor`? Propuesta de esta sesión: la segunda (sin llamadas nuevas), salvo indicación contraria.
 - **D2** `fecInicioNivel`: hoy solo lo escribe `CMD CambiarNivel`. ¿Se informa también en Alta (nodo 9) y en `CrearAccion` nodo 11 al cambiar de nivel? Es coherente con «caducidad del nivel» y no afecta a nada visible.
@@ -168,3 +175,107 @@ Efectos a tener en cuenta (derivados del criterio aprobado):
 - OK del coordinador → aplicar §5 (A1–A3, B1–B3, C1, D1) con cambios mínimos y versiones anotadas.
 - Pruebas funcionales en TEST con solicitudes nuevas (alta N1 propietario / no propietario / vencimiento cercano; crear acción y posponer sin cambio; salto a N2; caducidad vencida → `CMD Caducar` → `FINALIZADO_CADUCADO`), registro en `docs/sca/pruebas/coordinacion-fase1.md` y comparación con SCA cuando sea posible.
 - Sustituir el propietario provisional por `SCA2_esPropietarioPoliza` cuando lo entregue la sesión B.
+
+## 8. Implementación realizada tras el OK del HITO 1 (21/10/2026)
+### 8.1 Objetos nuevos adicionales
+
+| Objeto | Tipo | UUID | Versión | Para qué |
+|---|---|---|---|---|
+| `SCA2_esPropietarioProvisional` | Regla | `_a-0000f093-2064-8000-9d36-011c48011c48_5604058` | 1 | Propietario provisional (D1): carterizado por ese gestor o Estruage (`SCA2_nuumaEsPropietario`). 6 casos de prueba nativos (parte pura) 6/6 OK. Se sustituirá por `SCA2_esPropietarioPoliza` (sesión B) cambiando una línea por PM. |
+| `SCA2_textoAFecha` | Regla | `_a-0000f093-2064-8000-9d36-011c48011c48_5604118` | 1 | Convierte a Date el texto de vencimiento (`dd/MM/yyyy`, `yyyy-MM-dd`, `dd-MM-yyyy`, con o sin hora; Date/DateTime → `todate`). 9 casos nativos 9/9 OK. |
+### 8.2 SAIL de las reglas nuevas
+
+`SCA2_esPropietarioProvisional(nuuma, codCia, claveProd, carterizado, nuumaPropietario: Text) → Boolean`
+
+```sail
+/* Propietario PROVISIONAL de la póliza para la caducidad por nivel (fase 1).
+   Sustituir por rule!SCA2_esPropietarioPoliza (sesión B) cuando esté disponible.
+   - Parte pura: cliente carterizado por ESE gestor (carterizado = "Sí" y nuumaPropietario = nuuma).
+   - Si no, propiedad de la clave en Estruage (rule!SCA2_nuumaEsPropietario). */
+a!localVariables(
+  local!carterizadoPorGestor: and(
+    a!defaultValue(ri!carterizado, "") = "Sí",
+    a!isNotNullOrEmpty(ri!nuuma),
+    a!defaultValue(ri!nuumaPropietario, "") = ri!nuuma
+  ),
+  if(
+    local!carterizadoPorGestor,
+    true,
+    if(
+      or(a!isNullOrEmpty(ri!nuuma), a!isNullOrEmpty(ri!claveProd)),
+      false,
+      a!defaultValue(
+        rule!SCA2_nuumaEsPropietario(
+          codCia: a!defaultValue(ri!codCia, "41"),
+          nuuma: ri!nuuma,
+          claveProd: ri!claveProd
+        ),
+        false
+      )
+    )
+  )
+)
+```
+
+`SCA2_textoAFecha(texto: Any Type) → Date`
+
+```sail
+/* Convierte a Date el texto de fecha de vencimiento que llega de CORE/NSE/Vida
+   (caducidad por nivel, fase 1). Acepta "yyyy-MM-dd", "dd/MM/yyyy" y "dd-MM-yyyy",
+   con o sin hora detrás; si ya es Date/DateTime lo convierte; si no se reconoce -> null. */
+a!localVariables(
+  local!t: trim(tostring(a!defaultValue(ri!texto, ""))),
+  local!s: left(local!t, 10),
+  if(
+    a!isNullOrEmpty(ri!texto),
+    null,
+    if(
+      or(typeof(ri!texto) = typeof(today()), typeof(ri!texto) = typeof(now())),
+      todate(ri!texto),
+      if(
+        and(len(local!s) = 10, mid(local!s, 5, 1) = "-", mid(local!s, 8, 1) = "-"),
+        date(tointeger(left(local!s, 4)), tointeger(mid(local!s, 6, 2)), tointeger(right(local!s, 2))),
+        if(
+          and(len(local!s) = 10, or(mid(local!s, 3, 1) = "/", mid(local!s, 3, 1) = "-"), or(mid(local!s, 6, 1) = "/", mid(local!s, 6, 1) = "-")),
+          date(tointeger(right(local!s, 4)), tointeger(mid(local!s, 4, 2)), tointeger(left(local!s, 2))),
+          null
+        )
+      )
+    )
+  )
+)
+```
+### 8.3 Objetos existentes modificados (versión antes → después)
+
+| Objeto | UUID | Antes → después | Cambio |
+|---|---|---|---|
+| `SCA2_cargarSolicitud` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20054954` | v7 → v8 | Aditivo: la consulta de `SCA2 Datos Cabecera` pide además `clienteCarterizado`, `clienteNuumapropietario`, `polizaClaveproduccion` y el mapa `datosCabecera` expone esas tres claves al final (nada renombrado ni reordenado). |
+| `SCA2 CMD Alta` | `0000f06f-28fc-8000-6693-7f0000014e7a` | API sin versionId; copia antes/después guardada (`obj/Alta_antes.json`/`_despues.json`) | PV nueva `propietarioNivel` (Boolean). Nodo 7 «Contexto»: salida adicional → `pv!propietarioNivel`. Nodo 9 «Write Solicitud»: campos nuevos `fecInicioNivel: now()` y `caducidadTarea: rule!SCA2_calcularCaducidadNivel(...)` tras `nivelIntervencion: 1`. Resto de nodos (22) idéntico. |
+| `SCA2 CMD CrearAccion` | `0000f06f-0eaa-8000-6594-7f0000014e7a` | ídem | Nodo 11 «Write Nivel»: añade `fecInicioNivel: now()` y `caducidadTarea` recalculada con `mismoNivel = (pv!nuevoNivel = nivel actual)`. Nodo 7 «Write Tarea»: se elimina SOLO el campo `caducidadTarea` de `SCA2 Solicitud`; `SCA2 Tarea.fechaCaducidad` (regla legacy) se conserva. Resto de nodos (40) idéntico. |
+| `SCA2 CMD CambiarNivel` | `0000f06f-8a54-8000-6759-7f0000014e7a` | ídem | Nodo 6 «Write CambiarNivel»: añade `caducidadTarea` recalculada con `mismoNivel = (pv!nivelDestino = nivel actual)`; `fecInicioNivel: now()` ya existía. Resto (13 nodos) idéntico. |
+| `SCA2 CMD Posponer` | `0000f06f-8a47-8000-6751-7f0000014e7a` | ídem | Nodo 5 «Write Posponer»: se elimina SOLO `caducidadTarea: pv!fechaDietario`; conserva `fechaDietario`, `contadorPosponer`, `estadoTarea` y `SCA2 Tarea.fechaCaducidad`. Resto (12 nodos) idéntico. |
+
+Sin cambios: `SCA2 CMD Caducar`, `SCA2 CMD BarridoCaducidad`, `SCA2 CMD Decidir`, `SCA2_configurarDatosContextoSolicitud`, `SCA2_posponerTarea`, `SCA2_obtenerCaducidadNivel`.
+### 8.4 SAIL exacto añadido en los PM
+
+`SCA2 CMD Alta` · nodo 7 «Contexto» · salida → `pv!propietarioNivel`:
+
+```sail
+rule!SCA2_esPropietarioProvisional(nuuma: rule!CMP_obtenerNuuma(user(pp!initiator, "email")), codCia: "41", claveProd: a!defaultValue(index(index(ac!cabh,"datosPoliza",null),"claveProduccion",null), index(ac!cabh,"claveProduccion",null)), carterizado: index(ac!cabh,"carterizado",null), nuumaPropietario: index(ac!cabh,"nuumaPropietario",null))
+```
+
+`SCA2 CMD Alta` · nodo 9 «Write Solicitud» · campos añadidos a `SCA2 Solicitud` (tras `nivelIntervencion: 1`):
+
+```sail
+'recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud.fields.{6117c6fa-c350-4877-b742-f11225ec3df0}fecInicioNivel': now(), 'recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud.fields.{d7ef3591-6cc4-4094-9ebf-878665a93660}caducidadTarea': rule!SCA2_calcularCaducidadNivel(propietario: a!defaultValue(pv!propietarioNivel, false), mismoNivel: false, fechaCaducidadAnterior: null, fechaVencimiento: rule!SCA2_textoAFecha(texto: index(index(pv!cab,"datosPoliza",null),"fechaVencimiento",null)), fechaBase: today()), 
+```
+
+`SCA2 CMD CrearAccion` · nodo 11 «Write Nivel» · campos añadidos (tras `nivelIntervencion: pv!nuevoNivel`):
+
+```sail
+'recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud.fields.{6117c6fa-c350-4877-b742-f11225ec3df0}fecInicioNivel': now(), 'recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud.fields.{d7ef3591-6cc4-4094-9ebf-878665a93660}caducidadTarea': rule!SCA2_calcularCaducidadNivel(propietario: rule!SCA2_esPropietarioProvisional(nuuma: index(index(pv!sol,"datosPerfilesPca",null),"nuuma",null), codCia: "41", claveProd: index(index(pv!sol,"datosPoliza",null),"claveproduccion",null), carterizado: index(index(pv!sol,"datosCabecera",null),"clienteCarterizado",null), nuumaPropietario: index(index(pv!sol,"datosCabecera",null),"clienteNuumapropietario",null)), mismoNivel: tointeger(pv!nuevoNivel) = tointeger(index(index(pv!sol,"estado",null),"nivelIntervencion",null)), fechaCaducidadAnterior: todate(index(index(pv!sol,"estado",null),"caducidadTarea",null)), fechaVencimiento: rule!SCA2_textoAFecha(texto: a!defaultValue(index(index(pv!sol,"datosCabecera",null),"polizaFechavencimiento",null), index(index(pv!sol,"datosPoliza",null),"fechadevencimiento",null))), fechaBase: today()), 
+```
+
+`SCA2 CMD CambiarNivel` · nodo 6: el mismo campo `caducidadTarea` que en CrearAccion con `pv!nivelDestino` en lugar de `pv!nuevoNivel`.
+
+Notas: `fechaVencimiento` se toma de `datosCabecera.polizaFechavencimiento` (`dd/MM/yyyy`) con respaldo `datosPoliza.fechadevencimiento` (`dd/MM/yyyy HH:mm CET`); en el alta, de `pv!cab.datosPoliza.fechaVencimiento` (`dd/MM/yyyy`). Todas se convierten con `SCA2_textoAFecha`. `claveProd` en los saltos: `datosPoliza.claveproduccion`; `nuuma` en los saltos: `datosPerfilesPca.nuuma` (gestor que dio de alta; documentado como provisional). No se creó la PV `caducidadNivel` propuesta en el HITO 1: el cálculo va inline en la escritura (misma trazabilidad en el record, menos cambios).
