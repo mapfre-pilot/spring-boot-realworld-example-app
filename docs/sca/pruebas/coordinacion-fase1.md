@@ -17,6 +17,9 @@
 | A | 2026-10-21 | 2002600009065 (Autos, vence 20/01/2027) | 15788195 (alta 11:20 UTC) | Alta → CA N1 | Caducidad por nivel: hoy+7 = 2026-10-28 |
 | A | 2026-10-21 | 2002300392341 (Autos NSE, vencida 17/08/2026) | 15788204 (alta 11:49 UTC) | Alta → CA N1 | Caché cabecera: alta con constante = true (v12, solo durante la prueba; vuelta a false v13) → fila `SCA2 Datos Cabecera` id 230 completa, `origenCache` CACHE, `validaHasta` 2026-10-22 07:00; caducidadTarea tope 2026-08-17 |
 | A | 2026-10-21 | 2002600005548 (Autos) | NO creada: ya tenía solicitud abierta antigua (no tocada) | — | descartada |
+| A | 2026-10-21 | 2002500493434 (Autos, vence 21/01/2027) | 15788206 (alta 12:03 UTC) | Alta → CA N1 | Regresión `SCA2_esPropietarioPoliza`: caducidadTarea hoy+7; cabecera con 9 campos pese a constante true (cambio de constante minutos antes) |
+| A | 2026-10-21 | 2002600009078 (Autos, vence 20/01/2027) | 15788211 (alta 12:19 UTC) | Alta → CA N1 | Regresión + caché activa: caducidadTarea hoy+7; `SCA2 Datos Cabecera` id 236 completa, CACHE, validaHasta 22/10 07:00, nuumaPropietario null |
+| A | 2026-10-21 | 2002400517348, 2002500495478, 2002500448422 | NO creadas (alta bloqueada: estado póliza / solicitud pendiente SCA / solicitud abierta) | — | descartadas |
 | E | 2026-10-21 | 0002729392590 (wAutemis) | 15788188 | Alta 678429; Decidir 13306893; CrearAccion 17484380 (tarea CA abierta) | Prueba funcional F01 tras delegar `SCA2_mapearDatosDecidirAccion` v4 en `SCA2_construirEntradaReglas` |
 | E | 2026-10-21 | 0000023400212 (NSE-Autos) | 15788191 | Alta 14351538; Decidir 269114374; CrearAccion 17484392 (tarea AA abierta) | Prueba funcional F02 (ídem) |
 | E | 2026-10-21 | 2002000157937, 0001047017109, 0730780285731, 0005726682097 | 15788155, 15788168, 15788163, 15788149 | — (solo lectura, sin instancias) | Regresión antes/después de `SCA2_mapearDatosDecidirAccion` vía `/test` |
