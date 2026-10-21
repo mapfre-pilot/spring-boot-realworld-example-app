@@ -332,9 +332,39 @@ Lectura de `SCA2 Solicitud` por `/record-types/{uuid}/data` tras cada paso de UI
 
 ## 11. Hallazgos fuera de la fila A (sin tocar) y pendientes
 
-1. **`SCA2 CMD BarridoCaducidad` (`0000f06f-4f69-8000-671e-7f0000014e7a`)**: nodo 6 consulta `estadoSolicitud not in {FINALIZADA, CADUCADA, ERROR}` y `caducidadTarea < now()` con `batchSize: 100` **sin orden**; nodo 4 arranca `SCA2 CMD Caducar` **una sola vez** con `{idSolicitud: pv!lista}` (lista entera en un PV Text). Con 115 solicitudes vencidas sin finalizar en TEST la tanda es siempre la misma y no caduca ninguna (sin Transicion de Caducar tras la ejecución). Propuesta: `a!forEach` o MNI por fila, orden por `caducidadTarea`, e incluir los estados finales que falten (`FINALIZADA_POSITIVO`, `CANCELADA`, `MECANIZADA`…).
+1. **`SCA2 CMD BarridoCaducidad` (`0000f06f-4f69-8000-671e-7f0000014e7a`)** — defecto preexistente, **sin tocar**: nodo 6 consulta `estadoSolicitud not in {FINALIZADA, CADUCADA, ERROR}` y `caducidadTarea < now()` con `batchSize: 100` **sin orden**; nodo 4 arranca `SCA2 CMD Caducar` **una sola vez** con `{idSolicitud: pv!lista}` (la lista entera en un PV Text, que `Caducar` no puede tratar). Con 115 solicitudes vencidas sin finalizar en TEST la tanda es siempre la misma y no caduca ninguna (sin `SCA2 Transicion` de Caducar tras la ejecución del 21/10 11:28 UTC).
+   **Propuesta (pendiente de decisión del usuario; fila de otra sesión):**
+   - Consulta ordenada por `caducidadTarea` ascendente (`a!sortInfo`) y `batchSize` por constante nueva `SCA2_BARRIDO_CADUCIDAD_LOTE` (p. ej. 200), con el filtro de estados finales completo (`FINALIZADA`, `FINALIZADA_POSITIVO`, `CANCELADA`, `MECANIZADA`, `CADUCADA`, `ERROR`… según los valores reales de `SCA2 Solicitud.estadoSolicitud`).
+   - Un arranque de `SCA2 CMD Caducar` **por solicitud**: nodo Start Process con MNI (`pv!lista` como variable de iteración) o `a!forEach` sobre la lista; en `CMD Caducar` marcar la PV `idSolicitud` como **parámetro de arranque** (hoy no lo es: al lanzar a mano hay que fijarla en monitorización).
+   - Estado final: el diseño dice `FINALIZADO_CADUCADO` y el PM escribe `CADUCADA`. Opciones: (a) mantener `CADUCADA` y añadirla a los filtros de buscador/pantallas que hoy tratan `FINALIZADA` (menor cambio); (b) cambiar a `FINALIZADO_CADUCADO` y revisar todos los puntos que comparan literales (`Barrido` nodo 6, buscador, cuadro de mando, `SCA2_cargarSolicitud`, transiciones). Impacto: cualquier literal nuevo que no esté en los filtros deja solicitudes «vivas» en el buscador. Recomendación: (a) mientras CORE siga siendo maestro.
+   - La llamada CORE `IGenerarContraAnul` tras el `Write Caducada` falla en TEST (500/0999): conviene que `Caducar` registre el error en `SCA2 Transicion` sin deshacer el estado Appian (hoy ya es así) y que el barrido no reintente las ya `CADUCADA`.
 2. **`SCA2 CMD Caducar`** escribe `estadoSolicitud = "CADUCADA"` (no `FINALIZADO_CADUCADO` como dice el diseño) y después llama a CORE `IGenerarContraAnul`; en TEST devuelve 500/0999. El PV `idSolicitud` no está marcado como parámetro de arranque.
 3. **Salto de nivel**: sólo lo produce el motor de decisión (`accionCalc` «IR A NIVEL 2/3» → CrearAccion nodo 10/11) o `CMD CambiarNivel`, que hoy nadie llama. Para probar F11 hace falta un argumento/tabla de decisión que devuelva «IR A NIVEL 2» o exponer `CambiarNivel`; el SAIL del recálculo (§8.4) es el mismo que el del alta, verificado en F1–F8.
 4. Avisos de UI en TEST: «póliza flota / sin tratamiento en SCA» (2002500495555, 2002600000012) y «acuerdo especial SI24» (2002500478924) no impiden el alta ni la CA N1.
 5. `SCA2 Transicion.usuario` = «devin» en Decidir/CrearAccion: es el nombre de la cuenta de sistema que arranca los PM en TEST (preexistente, no dato de prueba).
 6. Pendiente: sustituir `rule!SCA2_esPropietarioProvisional` por `SCA2_esPropietarioPoliza` (sesión B) en los 3 PM (una línea por PM); prueba F11 cuando haya camino a N2.
+
+
+## 12. Sustitución por `SCA2_esPropietarioPoliza` (sesión B) y constantes activas (21/10/2026)
+
+- `SCA2_esPropietarioPoliza` (`_a-0000f093-2064-8000-9d36-011c48011c48_5603496`, v4 de B): `(codCia, nuuma, claveProd, numPoliza, idSolicitud, codRetornoCarterizacion, mcaPropiedadClave, mcaPropiedadPoliza, soloDatosLocales) → Boolean`; fórmula legacy `codRetorno = 0 OR MCA_PROPIEDAD_CLAVE = "S" OR MCA_PROPIEDAD_POLIZA = "S"`. Probada por API: `codRetorno 0 → true`; `1 + flags N/N → false`; `1 + clave S → true`; `1 + JJGONZ2/5244559 sin flags → false` (consulta Estruage).
+- Sustituida `rule!SCA2_esPropietarioProvisional` en los 3 PM (una sola llamada por PM; `PUT` verificado nodo a nodo, solo cambian los nodos indicados): `SCA2 CMD Alta` nodo 7 «Contexto» (salida `propietarioNivel`), `SCA2 CMD CrearAccion` nodo 11 «Write Nivel», `SCA2 CMD CambiarNivel` nodo 6 «Write CambiarNivel». `codRetornoCarterizacion` se deriva de los datos ya cargados (sin repetir la llamada de carterización): carterizado por ESE gestor (`carterizado` empieza por "S" y `nuumaPropietario` = NUUMA del gestor) → 0; carterizado informado pero no por él → 1; `carterizado` vacío → null (la regla de B lo resuelve con el record/servicio). Los flags Estruage se pasan a null (la regla consulta `SCA2_consultaPropiedadClave`).
+
+```sail
+a!localVariables(
+  local!nuumaGestor: <NUUMA>,              /* Alta: rule!CMP_obtenerNuuma(user(pp!initiator,"email")); CrearAccion/CambiarNivel: pv!sol.datosPerfilesPca.nuuma */
+  local!carterizado: <CARTERIZADO>,        /* Alta: ac!cabh.carterizado; otros: pv!sol.datosCabecera.clienteCarterizado */
+  local!nuumaPropietario: <NUUMA_PROP>,    /* Alta: ac!cabh.nuumaPropietario; otros: pv!sol.datosCabecera.clienteNuumapropietario */
+  rule!SCA2_esPropietarioPoliza(
+    codCia: "41", nuuma: local!nuumaGestor, claveProd: <CLAVE_PROD>, numPoliza: <NUM_POLIZA>, idSolicitud: pv!idSolicitud,
+    codRetornoCarterizacion: if(a!isNullOrEmpty(local!carterizado), null,
+      if(and(left(upper(tostring(local!carterizado)), 1) = "S", a!isNotNullOrEmpty(local!nuumaGestor),
+             lower(a!defaultValue(tostring(local!nuumaPropietario), "")) = lower(tostring(local!nuumaGestor))), 0, 1)),
+    mcaPropiedadClave: null, mcaPropiedadPoliza: null
+  )
+)
+```
+
+- `SCA2_esPropietarioProvisional` → v2: sin llamadores, descripción «OBSOLETA …» (no se borra).
+- `SCA2 CMD Alta` nodo 8: `clienteNuumapropietario` pasa a null cuando la salida de la regla trae vacío o el texto `"null"`.
+- **Constantes activas en TEST desde el 21/10/2026 por decisión del usuario** (los analistas prueban con todo activo): `SCA2_USAR_CACHE_CABECERA` = true (v14, puesta por el coordinador) y `SCA2_USAR_PROPIETARIO_APPIAN` (`…_5603472`, de B) = true. No se devuelven a false.
