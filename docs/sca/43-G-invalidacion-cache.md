@@ -109,6 +109,8 @@ Prueba manual por `/test` (solo lectura, no escribe): `"G-TEMP-1"` → 1 registr
 | `SCA2 CMD Mecanizar` | `0000f06f-4cfc-8000-66d3-7f0000014e7a` | [13] «Write Éxito», [306] «Write Mecanización OK», [5] «Write Caducada» | MECANIZADA tras Guardar Mecanización/Crear Autorización en CORE; `mecanizacionRealizada = true` tras Actualizar Mecanización (ANL); CADUCADA |
 | `SCA2 CMD CompletarAccion` | `0000f06f-1307-8000-65b1-7f0000014e7a` | [340] «Write FINALIZADA_POSITIVO / CANCELADA», [7] «Write PDTE_FINALIZAR» | Cierre tras «Finalizar Solicitud» CORE OK; CA cancelada → PDTE_FINALIZAR (arranca Finalizar) |
 
+Concurrencia: tras mi PUT, otra sesión (R23-A) modificó `SCA2 CMD Mecanizar` nodo 16 «Cargar» (v31); releído a las 13:45 UTC: los nodos [13], [5] y [306] conservan el sufijo de invalidación y solo difiere el nodo 16, así que ambos cambios conviven.
+
 No se tocan: [9] «Write AUTORIZACION» ni [330] «Write Transicion OK» de CompletarAccion (solo `procesoActivo`/Transición), [12] «Write Error» de Mecanizar, ni ningún otro nodo.
 
 ### 2.3 PM de la lista que NO se tocan (justificación aceptada en el HITO 1)
