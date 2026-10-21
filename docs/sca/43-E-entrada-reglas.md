@@ -1,15 +1,15 @@
 # 43-E — Preparación de la entrada al motor de reglas (`SCA2_construirEntradaReglas`)
 
-**Sesión E** de la fase 1 «lógica legacy en Appian» (doc 41 §5, doc 42 fila E). Entorno: **Appian TEST**, aplicación `SCA2 Sistema Comercial de Anulaciones SCA2`. Estado: **HITO 1 alcanzado** (inventario + regla nueva + pruebas; `SCA2_mapearDatosDecidirAccion` **sin tocar**, pendiente de OK para la delegación).
+**Sesión E** de la fase 1 «lógica legacy en Appian» (doc 41 §5, doc 42 fila E). Entorno: **Appian TEST**, aplicación `SCA2 Sistema Comercial de Anulaciones SCA2`. Estado: **HITO 2 completado** (inventario, regla pura + tests, `SCA2_mapearDatosDecidirAccion` delegada en la regla nueva con regresión 13/13 y pruebas funcionales con solicitudes nuevas). Decisiones del coordinador tras el HITO 1: replicar exactamente el comportamiento actual (sin rama Vida ni conversiones nuevas), recibo impagado/carterización/propietario fuera, delegación aprobada.
 
 ## 1. Situación actual verificada (objetos leídos por LCP)
 
 | Objeto | Tipo | UUID | Versión | Papel hoy |
 |---|---|---|---|---|
 | `SCA2 CMD Decidir` | PM | `0000f06f-0eab-8000-6595-7f0000014e7a` | — | Nodo «Cargar»: `pv!sol = rule!SCA2_cargarSolicitud(pv!idSolicitud)`. Nodo «Consultar reglas»: `rule!SCA2_mapearDatosDecidirAccion(datosSolicitud: pv!sol, origenPoliza: pv!sol.estado.origenPoliza, nivelIntervencion: pv!sol.estado.nivelIntervencion ó 1)` y después `rule!SCA2_consultarServiciosReglas(scaServicioReglas: index(dto,1,dto), poliza: sol.datosCompletosSolicitud.datosBasicosSolicitud.numpoliza, codCia: sol.datosPerfilesPca.codcompania, regla: pv!regla ó "accion")`. Salidas: `accion`, `codPerfil` (grupo o perfil), `codSubPerfil`, `destinoMecanizar` (MECANIZAR + lineaNegocio 3 → REDIRECCION_VIDA). **No se toca** (solo lectura). |
-| `SCA2_mapearDatosDecidirAccion` | Regla | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052813` | **3** | Construye el CDT. **No es pura**: llama a `rule!SCA2_consultaBBDDSCA(idSolicitud, devolverSolicitud: true, devolverGestiones: true, devolverMecanizacion: true, resto false)` (REST `consultarOptimizadoProceso`). Tres ramas por `origenPoliza`: `NSE-Hogar` / `NSE-Autos`+`wAutemis`+`wAutemisM` / resto (CDT a nulo). Devuelve una **lista de 1 CDT**. |
+| `SCA2_mapearDatosDecidirAccion` | Regla | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052813` | **3 → 4** (delegada, §6) | Hasta v3 construía el CDT. **No es pura**: llama a `rule!SCA2_consultaBBDDSCA(idSolicitud, devolverSolicitud: true, devolverGestiones: true, devolverMecanizacion: true, resto false)` (REST `consultarOptimizadoProceso`). Tres ramas por `origenPoliza`: `NSE-Hogar` / `NSE-Autos`+`wAutemis`+`wAutemisM` / resto (CDT a nulo). Devuelve una **lista de 1 CDT**. |
 | `SCA2_mapearDatosDecidirAccionEstrategicas` | Regla | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20051782` | 1 | Variante con inputs de record y rama Vida. **Sin consumidores** en la aplicación (código muerto). No se toca. |
-| `SCA2_consultarServiciosReglas` | Regla | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20053316` | 1 | Si `regla = "mecanizar"` y `mecanizada = true` y `rule!SCA2_obtenerEstadoPoliza(poliza) = "V"`, **reconstruye** el CDT con `mecanizada: false` (y sin `descripcionSCA`, `codigoCompaniaContraria`, `numeroFax`, `subgrupo`, `motivoContacto`, `modoAcceso`); llama a la integración y devuelve `{error, accion, grupo, subgrupo}`. **No tocada** en el HITO 1. |
+| `SCA2_consultarServiciosReglas` | Regla | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20053316` | 1 (sin cambios) | Si `regla = "mecanizar"` y `mecanizada = true` y `rule!SCA2_obtenerEstadoPoliza(poliza) = "V"`, **reconstruye** el CDT con `mecanizada: false` (y sin `descripcionSCA`, `codigoCompaniaContraria`, `numeroFax`, `subgrupo`, `motivoContacto`, `modoAcceso`); llama a la integración y devuelve `{error, accion, grupo, subgrupo}`. **No tocada** en el HITO 1. |
 | `SCA2_consultaBBDDSCA` | Regla | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20051242` | 3 | `cast(SCAC_consultaBBDDSCA, body)`. Devuelve `solicitud` como **texto** `[numSolicitudPca:…,codTipEstSolicPca:2,…]` y `mecanizacion` como **lista de textos** `[numGestionPca:43706156,codTipEstMecaniza:2,codUsr:…]`. |
 | `SCA2_cargarSolicitud` | Regla | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20054954` | 7 | Mapa `estado`, `datosCompletosSolicitud{datosBasicosSolicitud, datosSolicitud}`, `datosPerfilesPca`, `datosPolizaAutos/Hogar/Vida`, `datosProductor`, `datosCabecera` (sin `clienteCarterizado`/`clienteNuumapropietario`). |
 | `SCA2_scaServiciosReglas` | Integración | `1670a583-311b-4f10-94d3-ff0e3bdf00b3` | 1 | `POST sca_servicios/api/1.0/compania/{codCia}/poliza/{poliza}/{regla}`, body `a!toJson_17r1(parametros)`. No se toca. |
@@ -66,23 +66,26 @@ Regla **pura** `SCA2_construirEntradaReglas` (sin `rule!` externas ni consultas)
 
 Conversiones concentradas: fecha CORE `dd/MM/yyyy` (texto, Date, DateTime con hora) → `yyyy-MM-dd`; marcas `S`/`N`/`true`/`false`/Boolean → Boolean (nulo se mantiene); nivel nulo → 1; `estadoUltimaGestion` y `mecanizada` con la misma lógica de `split` que hoy; `mecanizar` + mecanización previa + `extras.estadoPoliza = "V"` → `mecanizada = false` (la lógica que hoy hace `SCA2_consultarServiciosReglas`, de forma opcional: si `extras` no llega, el resultado es el de hoy). Rama por defecto idéntica a la actual (todo nulo salvo `estadoUltimaGestion` = `codTipEstMecaniza` y `mecanizada`).
 
-Diferencias **deliberadas** respecto a la regla actual, solo alcanzables con datos que hoy no se dan en TEST (verificado en §5): (1) `origenPoliza = "Vida"` monta el CDT completo con `datosPolizaVida` (hoy: todo nulo); (2) marca texto `"S"` → `true` (hoy: `false` por cast); (3) fecha en texto ISO → se respeta (hoy: basura). Para la delegación del HITO 2 se mantiene todo lo demás idéntico.
+**Comportamiento replicado exactamente** (decisión del coordinador, impacto cero): `origenPoliza = "Vida"` cae en la rama por defecto (todo nulo) como hoy; las marcas se pasan tal cual y las convierte el CDT (texto `"S"` → `false`, como hoy); `fechaAnulacion` = `text(fecanulacion, "yyyy-mm-dd")` como hoy. La única lógica adicional es opcional (`regla = "mecanizar"` + `extras.estadoPoliza`), inactiva cuando `extras` no llega.
+
+**Mejoras documentadas, NO implementadas** (para una fase posterior con validación funcional): (1) rama Vida con `datosPolizaVida.lineadenegocio/claveproduccion`; (2) normalización `S`/`N`/`true`/`false` → Boolean; (3) fecha robusta (texto `dd/MM/yyyy`, `yyyy-MM-dd`, DateTime con hora) → `yyyy-MM-dd`; (4) `estadoUltimaGestion` leyendo `codTipEstMecaniza` del texto de mecanización. Se probaron en la v2 de la regla (regresión idéntica salvo en esas tres entradas, que hoy no se dan) y se retiraron en la v3/v4.
 
 ## 4. Objetos creados (TEST)
 
 | Objeto | Tipo | UUID | Versión | Carpeta |
 |---|---|---|---|---|
-| `SCA2_construirEntradaReglas` | Regla de expresión | `_a-0000f093-2064-8000-9d36-011c48011c48_5603604` | 2 | `SCA2 Rules and Constants` |
-| `SCA2_construirEntradaReglas_test` | Regla de expresión (13 casos, sin inputs) | `_a-0000f093-2064-8000-9d36-011c48011c48_5603728` | 1 | `SCA2 Rules and Constants` |
+| `SCA2_construirEntradaReglas` | Regla de expresión (nueva) | `_a-0000f093-2064-8000-9d36-011c48011c48_5603604` | **4** (v2 = HITO 1; v3/v4 = réplica exacta) | `SCA2 Rules and Constants` |
+| `SCA2_construirEntradaReglas_test` | Regla de expresión (nueva; 13 casos, sin inputs) | `_a-0000f093-2064-8000-9d36-011c48011c48_5603728` | **3** | `SCA2 Rules and Constants` |
+| `SCA2_mapearDatosDecidirAccion` | Regla de expresión (**modificada**: delega) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052813` | 3 → **4** | `SCA2 Rules and Constants` |
 | Casos de prueba (test cases) de `SCA2_construirEntradaReglas` | 12 test cases `RESULT_ASSERTIONS` (TC01–TC12, §5.2) | — | — | en la propia regla |
 
-Objetos **no modificados**: `SCA2_mapearDatosDecidirAccion` (v3), `SCA2_consultarServiciosReglas` (v1), PM `SCA2 CMD Decidir`.
+Objetos **no modificados**: `SCA2_consultarServiciosReglas` (v1), PM `SCA2 CMD Decidir`, `SCA2_mapearDatosDecidirAccionEstrategicas` (sin llamadores; se documenta, no se toca).
 
 ## 5. Pruebas
 
-### 5.1 Regresión «antes» (regla actual v3 por `POST /expression-rules/{uuid}/test`) vs. regla nueva (misma entrada)
+### 5.1 Regresión «antes» (`SCA2_mapearDatosDecidirAccion` v3 por `POST /expression-rules/{uuid}/test`) vs. regla nueva (v4) y vs. `mapearDatosDecidirAccion` delegada (v4)
 
-Entradas reales: `datosSolicitud` = `SCA2_cargarSolicitud(id)` y `mecanizacion` = `SCA2_consultaBBDDSCA(id, …)` ejecutadas por LCP sobre solicitudes **ya existentes** en TEST (solo lectura; no se crearon ni modificaron solicitudes en el HITO 1). Comparación campo a campo de los 24 campos del CDT.
+Entradas reales: `datosSolicitud` = `SCA2_cargarSolicitud(id)` y `mecanizacion` = `SCA2_consultaBBDDSCA(id, …)` ejecutadas por LCP sobre solicitudes **ya existentes** en TEST (solo lectura; no se crearon ni modificaron solicitudes en el HITO 1). Comparación campo a campo de los 24 campos del CDT. Resultado final: **13/13 idénticos** tanto para `SCA2_construirEntradaReglas` v4 (entradas directas) como para `SCA2_mapearDatosDecidirAccion` v4 ya delegada (misma firma `datosSolicitud/origenPoliza/nivelIntervencion`; 0,9 s por caso, igual que la v3).
 
 | ID | Caso | Esperado | Real | OK/KO | Solicitud | Instancia | Pasos realizados | Posible causa/solución |
 |---|---|---|---|---|---|---|---|---|
@@ -96,11 +99,11 @@ Entradas reales: `datosSolicitud` = `SCA2_cargarSolicitud(id)` y `mecanizacion` 
 | R08 | `usuario` y `fecanulacion` nulos | `nuuma` y `fechaAnulacion` nulos | Idéntico | OK | 15788155 | — | variante | — |
 | R09 | sin `datosPolizaAutos` | `lineaNegocio`/`claveProduccion` nulos | Idéntico | OK | 15788155 | — | variante | — |
 | R10 | sin `datosSolicitud` (mapa interno nulo) | campos de solicitud nulos, `mecanizada` true | Idéntico | OK | 15788155 | — | variante | — |
-| R11 | `origenPoliza` = "Vida" | **Diferencia deliberada**: hoy todo nulo; nuevo CDT completo con `datosPolizaVida` | Difiere solo en esta rama | OK (documentado) | 15788155 | — | variante | Decisión §7.1 |
-| R12 | marcas `mcaanulatecnico` = "S" (texto) | **Diferencia deliberada**: hoy `false`; nuevo `true` | Difiere solo en `anulaTecnico` | OK (documentado) | 15788155 | — | variante | El record trae Boolean; no alcanzable hoy |
-| R13 | `fecanulacion` texto ISO "2026-11-05" | **Diferencia deliberada**: hoy "Date out of range (-20261105)"; nuevo "2026-11-05" | Difiere solo en `fechaAnulacion` | OK (documentado) | 15788155 | — | variante | El record trae Date; no alcanzable hoy |
+| R11 | `origenPoliza` = "Vida" | CDT vacío idéntico (rama por defecto) | Idéntico (v2 difería: se retiró la rama Vida) | OK | 15788155 | — | variante | Mejora pendiente §7 |
+| R12 | marcas `mcaanulatecnico` = "S" (texto) | `false` por cast, idéntico | Idéntico (v2 difería: se retiró la normalización) | OK | 15788155 | — | variante | Mejora pendiente §7 |
+| R13 | `fecanulacion` texto ISO "2026-11-05" | mismo texto que hoy ("Date out of range…") | Idéntico (v2 difería: se retiró la conversión robusta) | OK | 15788155 | — | variante | Mejora pendiente §7 |
 
-Salidas «antes» guardadas (fuera del repo, sesión E): `antes_cargar_<id>.json`, `antes_consulta_<id>.json`, `antes_mapear.json`, `antes_mapear_variantes.json`; «después»: `despues_nueva.json`. Tiempo de evaluación de la regla nueva por LCP: < 1 s por caso (la actual, 0,9 s incluida la consulta REST).
+Salidas «antes» guardadas (fuera del repo, sesión E): `antes_cargar_<id>.json`, `antes_consulta_<id>.json`, `antes_mapear.json`, `antes_mapear_variantes.json`; «después»: `despues_nueva_v4.json` (regla nueva) y `despues_mapear_v4.json` (regla delegada). Gotcha encontrado: `text(x, "yyyy-mm-dd")` falla con «null parameter» si `x` sale de `index()` sobre un `local!` Map, pero no con el `reduce(index(_,_,null), ri!datosSolicitud, {…})` original; por eso la v4 conserva la expresión original. Tiempo de evaluación de la regla nueva por LCP: < 1 s por caso (la actual, 0,9 s incluida la consulta REST).
 
 ### 5.2 Casos de prueba (test cases) de `SCA2_construirEntradaReglas` — 12/12 OK (datos sintéticos, póliza ficticia 2002000000001, solicitud ficticia 99000001)
 
@@ -108,41 +111,60 @@ Salidas «antes» guardadas (fuera del repo, sesión E): `antes_cargar_<id>.json
 |---|---|---|---|---|---|---|---|---|
 | TC01 | Autos, nivel 1, regla `alta`, mecanización previa | lineaNegocio 1, clave 5259034, fecha 2026-11-05, nuuma USUPRUEBA, mecanizada true, estadoUltimaGestion 2, nivel 1, codigoSCA 99000001 | igual | OK | sintética | — | `POST …/test-cases/run` | — |
 | TC02 | Hogar, regla `alta`, sin mecanizar | lineaNegocio 2, clave 0084048, mecanizada false | igual | OK | sintética | — | ídem | — |
-| TC03 | Vida, regla `alta` | lineaNegocio 3, clave 0099001, fecha 2026-11-05 | igual | OK | sintética | — | ídem | — |
+| TC03 | Vida, regla `alta` → rama por defecto | lineaNegocio/claveProduccion/nuuma nulos, mecanizada false | igual | OK | sintética | — | ídem | — |
 | TC04 | wAutemisM, regla `cambioNivel`, nivel 3 | lineaNegocio 1, nivel 3, mecanizada true | igual | OK | sintética | — | ídem | — |
 | TC05 | regla `mecanizar`, mecanización previa, `extras.estadoPoliza` = V | mecanizada false | igual | OK | sintética | — | ídem | — |
 | TC06 | regla `mecanizar` sin `extras` (como hoy) | mecanizada true | igual | OK | sintética | — | ídem | — |
-| TC07 | marcas texto S / N | anulaTecnico true, anulaExperto false | igual | OK | sintética | — | ídem | — |
-| TC08 | fecha texto con hora "05/11/2026 16:01 CEST" | fechaAnulacion 2026-11-05 | igual | OK | sintética | — | ídem | — |
+| TC07 | marcas texto S / N (cast actual del CDT) | anulaTecnico false, anulaExperto false | igual | OK | sintética | — | ídem | — |
+| TC08 | fecha como Date `date(2026,11,5)` | fechaAnulacion 2026-11-05 | igual | OK | sintética | — | ídem | — |
 | TC09 | origen nulo | lineaNegocio/nuuma/estadoUltimaGestion nulos, mecanizada true | igual | OK | sintética | — | ídem | — |
 | TC10 | `datosSolicitud` y `mecanizacion` nulos | sin error; lineaNegocio nulo, nivel 1, mecanizada false | igual | OK | sintética | — | ídem | — |
 | TC11 | `datosPoliza` explícito | lineaNegocio 7, clave 1234567 | igual | OK | sintética | — | ídem | — |
 | TC12 | con recibo impagado (`fecefecimpagado` informado) | mismo CDT que TC01 (el CDT no lo transporta) | igual | OK | sintética | — | ídem | — |
 
-La regla `SCA2_construirEntradaReglas_test` (sin inputs) repite estos casos más «fecha como Date» y devuelve `{todosOk: true, casos: 13}` (ejecutada por LCP: 13/13 OK).
+La regla `SCA2_construirEntradaReglas_test` v3 (sin inputs) repite estos casos más «fecha como texto dd/MM/yyyy» y devuelve `{todosOk: true, casos: 13}` (ejecutada por LCP: 13/13 OK). Ejecución final de los 12 test cases sobre la regla v4: 12/12 OK.
 
-### 5.3 Pruebas funcionales en TEST (alta → `CMD Decidir`)
+### 5.3 Pruebas funcionales en TEST con solicitudes NUEVAS (alta por el site `sca2` → `CMD Decidir` con `mapearDatosDecidirAccion` v4 delegada)
 
-**No realizadas en el HITO 1** (no hay cambio funcional todavía: `mapearDatosDecidirAccion` no ha sido modificada). Se harán en el HITO 2 con solicitudes nuevas (misma póliza/causa/motivo antes y después, comparación de `SCA2 Transicion` y del resultado del motor, tiempos) y se registrarán en `docs/sca/pruebas/coordinacion-fase1.md`.
+| ID | Caso | Esperado | Real | OK/KO | Solicitud | Instancia | Pasos realizados | Posible causa/solución |
+|---|---|---|---|---|---|---|---|---|
+| F01 | wAutemis, póliza 0002729392590, DECISION DE CLIENTE / PRECIO / ME HA SUBIDO MUCHO LA PRIMA, A EFECTO 06/10/2026 (mismos datos que la solicitud anterior 15788161 de la misma póliza) | Misma decisión que 15788161: `accion` CONTRAANULAR, `codPerfil` CE_RM, `codSubPerfil` CE_RM_OFICINA; tarea de Contra anulación | `accion` CONTRAANULAR, CE_RM / CE_RM_OFICINA, `errorDecision` nulo; `SCA2 Transicion`: Alta → ALTA (10:39:34), Decidir ALTA → DECIDIDA (10:39:40), CrearAccion → EN_ACCION; pantalla «Contra anulación». CDT de la nueva solicitud = CDT de 15788161 salvo `codigoSCA`, `mecanizada` (false vs true) y `estadoUltimaGestion` (2 vs 4), esperable por el estado CORE distinto | OK | **15788188** | Alta pid 678429; Decidir pid **13306893** (10:39:36 → 10:39:47, 10,8 s); CrearAccion pid 17484380 | UI: Alta → póliza → motivo/detalle/causa → GUARDAR → «mismos datos» Sí → aviso simulación NEW «Aceptar» → tarea CA. LCP: records Solicitud/Transicion, `/processes/{pid}/variables`, `cargarSolicitud` + `mapear` v4 | Aviso «NEW nos indica un error al realizar la simulación» es previo a esta fase (entorno TEST) |
+| F02 | NSE-Autos, póliza 0000023400212, DECISION DE CLIENTE / VENTA DEL VEHICULO / NO VOY A COMPRARME OTRO COCHE, A FECHA 21/10/2026 (misma causa que la anterior 15788044) | Decisión coherente con el flujo anterior (15788044: CrearAccion → EN_ACCION → CompletarAccion → PDTE_FINALIZAR): Acciones administrativas | `accion` ACCIONES ADMINISTRATIVAS, CE_RM / CE_RM_OFICINA, `errorDecision` nulo; Transicion: ALTA (10:45:32) → DECIDIDA (10:45:42) → EN_ACCION (10:45:45); pantalla «Acciones administrativas» con documentación compra/venta | OK | **15788191** | Alta pid 14351538; Decidir pid **269114374** (10:45:35 → 10:45:47, 12,2 s); CrearAccion pid 17484392 | ídem (aviso documental «contrato de compra/venta» → Aceptar) | La instancia Decidir de 15788044 ya no existe (404): comparación por flujo de transiciones, no por variables |
+| F03 | NSE-Autos pólizas 2002000138905 y 2002100425210 | Alta | Rechazadas por SCA/CORE: «La póliza tiene pendiente una solicitud en SCA» | — (no aplicable) | — | — | UI alta | Dato de CORE; se eligió otra póliza |
 
-## 6. Plan del HITO 2 (tras el OK)
+Las tareas de F01 y F02 se dejan abiertas (no se finalizan). Hora de Appian = hora de Madrid. Ninguna fila nueva en la bandeja de errores. Los datos quedan reservados en `docs/sca/pruebas/coordinacion-fase1.md`.
 
-1. Anotar versión actual de `SCA2_mapearDatosDecidirAccion` (v3) y sustituir su cuerpo por: misma cabecera y la llamada a `rule!SCA2_consultaBBDDSCA(...)` como hoy, y a continuación `rule!SCA2_construirEntradaReglas(datosSolicitud: ri!datosSolicitud, datosPoliza: null, origenPoliza: ri!origenPoliza, nivelIntervencion: ri!nivelIntervencion, regla: null, mecanizacion: local!consulta, extras: null)`. Firma y salida idénticas (lista de 1 CDT). Sin constante interruptor: la reversibilidad es volver a la v3 (doc 42 no asigna interruptor a E).
-2. Repetir R01–R10 contra la regla modificada y comparar con las salidas «antes» guardadas.
-3. Solicitudes nuevas en TEST (Autos NSE, wAutemis, Hogar) → `CMD Decidir`; comparar `accion`/`codPerfil`/`SCA2 Transicion` con una solicitud equivalente anterior y registrar póliza/idSolicitud/instancia/tiempos.
-4. `SCA2_consultarServiciosReglas` **no** se toca salvo petición expresa (su reconstrucción del CDT para `mecanizar` pierde 6 campos hoy nulos; mover esa lógica a `extras.estadoPoliza` sería un segundo paso con su propia regresión).
+## 6. Delegación de `SCA2_mapearDatosDecidirAccion` (HITO 2, ejecutado)
 
-## 7. Pendientes y decisiones que necesita la sesión E
+Versión anotada antes del cambio: **v3** (copia completa guardada en la sesión, `mapear_v3_backup.json`). Cambio mínimo: se conservan la cabecera, `local!idSolicitud` y la llamada `local!consulta: rule!SCA2_consultaBBDDSCA(...)` tal cual; se elimina el `local!origenPoliza` (lo calcula la regla nueva) y todo el `a!match` de ~230 líneas se sustituye por:
 
-1. **Rama Vida** (R11/TC03): la regla nueva monta el CDT completo para `origenPoliza = "Vida"` (hoy la regla actual devuelve todo nulo). No hay solicitudes Vida en TEST. ¿Se mantiene así en la delegación (impacto solo para Vida, hoy inexistente) o se replica exactamente el comportamiento actual (todo nulo) hasta decidir?
-2. **Recibo impagado, carterización y propietario**: el CDT `SCAC_scaServiciosReglas` no tiene campos para ellos y el motor no los recibe hoy en ninguna rama. Opciones: (a) dejarlos fuera (lo hecho: la regla no incluye un input `cabecera` sin uso); (b) añadir una segunda regla pura `SCA2_construirContextoReglas(datosSolicitud, cabecera) → Map {reciboImpagado, fecEfecReciboImpagado, carterizado, propietario}` para diagnóstico/`SCA2 Transicion.detalle` (objeto fuera de la fila E: lo gestiona el coordinador); (c) esperar a `SCA2_esPropietarioPoliza` de la sesión B.
-3. **`estadoUltimaGestion`**: hoy sale siempre el estado de la solicitud (`codTipEstSolicPca`) porque `mecanizacion` es una lista de textos y `codTipEstMecaniza` nunca se lee; en la rama por defecto sale nulo. La regla nueva replica el comportamiento (impacto cero). ¿Se quiere corregir (leer `codTipEstMecaniza` del texto) en una fase posterior? Afectaría a la decisión del motor.
-4. `descripcionSCA` y `codigoCompaniaContraria` van **siempre nulos** porque `SCA2_cargarSolicitud` no expone `descpca` ni `codciacontraria`. Replicado tal cual; anotar para el equipo funcional.
-5. `SCA2_mapearDatosDecidirAccionEstrategicas` no tiene consumidores (candidata a retirar; fuera de la fila E).
+```sail
+  /* Montaje del CDT delegado en la regla pura SCA2_construirEntradaReglas (misma salida que antes) */
+  rule!SCA2_construirEntradaReglas(
+    datosSolicitud: ri!datosSolicitud,
+    datosPoliza: null,
+    origenPoliza: ri!origenPoliza,
+    nivelIntervencion: ri!nivelIntervencion,
+    regla: null,
+    mecanizacion: local!consulta,
+    extras: null
+  )
+```
 
-## 8. SAIL de los objetos nuevos
+Firma y salida idénticas (lista de 1 CDT). Sin constante interruptor (doc 42 no asigna ninguna a E): la reversión es restaurar la v3 desde el histórico de versiones. `SCA2_consultarServiciosReglas` no se ha tocado. SAIL completo en §8.3.
 
-### 8.1 `SCA2_construirEntradaReglas`
+## 7. Pendientes y hallazgos (decisiones ya tomadas por el coordinador tras el HITO 1)
+
+1. **Mejoras no implementadas** (fase posterior, con validación funcional): rama Vida en la entrada a reglas (hoy una solicitud Vida llegaría al motor con el CDT a nulo), normalización S/N y fecha robusta, y `estadoUltimaGestion` real (hoy siempre `codTipEstSolicPca`; `codTipEstMecaniza` nunca se lee porque la mecanización llega como lista de textos). Todas cambiarían la entrada del motor → requieren OK funcional.
+2. **Recibo impagado, carterización y propietario**: fuera de esta pieza (decisión). El CDT `SCAC_scaServiciosReglas` no tiene campos y el motor no los recibe; gap frente al legacy `cPrepararDatosSD` ya trasladado al usuario.
+3. `descripcionSCA` y `codigoCompaniaContraria` van **siempre nulos** (`SCA2_cargarSolicitud` no expone `descpca` ni `codciacontraria`). Anotar para el equipo funcional.
+4. `SCA2_consultarServiciosReglas` reconstruye el CDT para `mecanizar` perdiendo 6 campos (hoy nulos) y vuelve a llamar a `SCA2_obtenerEstadoPoliza`; candidata a mover a `extras.estadoPoliza` de la regla nueva en un paso posterior con su propia regresión.
+5. `SCA2_mapearDatosDecidirAccionEstrategicas` no tiene llamadores (candidata a retirar; fuera de la fila E).
+6. En TEST no hay solicitudes Vida; la rama Vida del motor sigue sin probarse de extremo a extremo.
+
+## 8. SAIL de los objetos
+
+### 8.1 `SCA2_construirEntradaReglas` (v4)
 
 ```sail
 /**********************************************************************************
@@ -155,8 +177,8 @@ La regla `SCA2_construirEntradaReglas_test` (sin inputs) repite estos casos más
     - datosSolicitud (Map): salida de rule!SCA2_cargarSolicitud (estado, datosCompletosSolicitud,
       datosPerfilesPca, datosPolizaAutos/Hogar/Vida, datosCabecera...).
     - datosPoliza (Map, opcional): datos de póliza ya resueltos. Si es nulo se toma
-      datosPolizaHogar / datosPolizaAutos / datosPolizaVida según origenPoliza.
-    - origenPoliza (Text): "NSE-Hogar" | "NSE-Autos" | "wAutemis" | "wAutemisM" | "Vida".
+      datosPolizaHogar / datosPolizaAutos según origenPoliza.
+    - origenPoliza (Text): "NSE-Hogar" | "NSE-Autos" | "wAutemis" | "wAutemisM" (otros -> CDT a nulo, como hoy).
     - nivelIntervencion (Text): nivel actual; nulo -> 1.
     - regla (Text): "accion" | "alta" | "mecanizar" | "cambioNivel"... Solo influye si
       regla = "mecanizar" y extras.estadoPoliza está informado.
@@ -166,8 +188,9 @@ La regla `SCA2_construirEntradaReglas_test` (sin inputs) repite estos casos más
       estadoPoliza ("V" = vigente; si regla = "mecanizar", mecanizada = true y "V" -> mecanizada false).
 
   Salida: lista con un único SCAC_scaServiciosReglas (misma forma que SCA2_mapearDatosDecidirAccion).
-  Si origenPoliza no es ninguno de los soportados, devuelve el CDT con todo a nulo salvo
-  estadoUltimaGestion (codTipEstMecaniza) y mecanizada, igual que la regla original.
+  Si origenPoliza no es ninguno de los soportados (p. ej. Vida), devuelve el CDT con todo a nulo
+  salvo estadoUltimaGestion (codTipEstMecaniza) y mecanizada, igual que la regla original.
+  Impacto funcional cero: misma salida que SCA2_mapearDatosDecidirAccion v3 para cualquier entrada.
 ***********************************************************************************/
 a!localVariables(
   local!origenPoliza: if(
@@ -181,8 +204,7 @@ a!localVariables(
     local!origenPoliza = "wAutemis",
     local!origenPoliza = "wAutemisM"
   ),
-  local!esVida: local!origenPoliza = "Vida",
-  local!soportada: or(local!esHogar, local!esAutos, local!esVida),
+  local!soportada: or(local!esHogar, local!esAutos),
 
   /* Póliza: la recibida o la del origen */
   local!poliza: if(
@@ -194,11 +216,7 @@ a!localVariables(
       if(
         local!esAutos,
         index(ri!datosSolicitud, "datosPolizaAutos", null),
-        if(
-          local!esVida,
-          index(ri!datosSolicitud, "datosPolizaVida", null),
-          null
-        )
+        null
       )
     )
   ),
@@ -258,66 +276,19 @@ a!localVariables(
     local!mcaMecanizada
   ),
 
-  /* Fecha de anulación: CORE dd/MM/yyyy (texto, Date o DateTime) -> TRON yyyy-MM-dd */
-  local!fecAnulacion: index(local!datosSol, "fecanulacion", null),
-  local!fecAnulacionTexto: if(
-    a!isNullOrEmpty(local!fecAnulacion),
-    "",
-    tostring(local!fecAnulacion)
-  ),
-  local!fechaAnulacion: if(
-    a!isNullOrEmpty(local!fecAnulacion),
-    null,
-    if(
-      typeof(local!fecAnulacion) = typeof(""),
-      if(
-        and(len(local!fecAnulacionTexto) >= 10, mid(local!fecAnulacionTexto, 3, 1) = "/"),
-        right(left(local!fecAnulacionTexto, 10), 4) & "-" & mid(local!fecAnulacionTexto, 4, 2) & "-" & left(local!fecAnulacionTexto, 2),
-        if(
-          and(len(local!fecAnulacionTexto) >= 10, mid(local!fecAnulacionTexto, 5, 1) = "-"),
-          left(local!fecAnulacionTexto, 10),
-          text(local!fecAnulacion, "yyyy-mm-dd")
-        )
-      ),
-      text(local!fecAnulacion, "yyyy-mm-dd")
-    )
+  /* Fecha de anulación: Date del record (CORE dd/MM/yyyy) -> texto yyyy-MM-dd, como la regla original */
+  local!fechaAnulacion: text(
+    reduce(
+      index(_, _, null),
+      ri!datosSolicitud,
+      { "datosCompletosSolicitud", "datosSolicitud", "fecanulacion" }
+    ),
+    "yyyy-mm-dd"
   ),
 
-  /* Marcas S/N o booleanos -> Boolean (nulo se mantiene nulo) */
-  local!mcaTecnico: index(local!datosSol, "mcaanulatecnico", null),
-  local!mcaExperto: index(local!datosSol, "mcaanulaexperto", null),
-  local!anulaTecnico: if(
-    a!isNullOrEmpty(local!mcaTecnico),
-    null,
-    if(
-      typeof(local!mcaTecnico) = typeof(true),
-      local!mcaTecnico,
-      a!match(
-        value: upper(tostring(local!mcaTecnico)),
-        equals: "S", then: true,
-        equals: "N", then: false,
-        equals: "TRUE", then: true,
-        equals: "FALSE", then: false,
-        default: null
-      )
-    )
-  ),
-  local!anulaExperto: if(
-    a!isNullOrEmpty(local!mcaExperto),
-    null,
-    if(
-      typeof(local!mcaExperto) = typeof(true),
-      local!mcaExperto,
-      a!match(
-        value: upper(tostring(local!mcaExperto)),
-        equals: "S", then: true,
-        equals: "N", then: false,
-        equals: "TRUE", then: true,
-        equals: "FALSE", then: false,
-        default: null
-      )
-    )
-  ),
+  /* Marcas anula técnico / experto: se pasan tal cual (el CDT las convierte a Boolean, como la regla original) */
+  local!anulaTecnico: index(local!datosSol, "mcaanulatecnico", null),
+  local!anulaExperto: index(local!datosSol, "mcaanulaexperto", null),
 
   local!usuario: index(local!datosSol, "usuario", null),
   local!nivel: if(
@@ -388,12 +359,12 @@ a!localVariables(
 )
 ```
 
-### 8.2 `SCA2_construirEntradaReglas_test`
+### 8.2 `SCA2_construirEntradaReglas_test` (v3)
 
 ```sail
 /**********************************************************************************
   SCA2_construirEntradaReglas_test
-  Casos de prueba de la regla pura SCA2_construirEntradaReglas (datos sintéticos).
+  Casos de prueba de la regla pura SCA2_construirEntradaReglas (datos sintéticos). La regla replica la salida de SCA2_mapearDatosDecidirAccion v3.
   Devuelve una lista de mapas {id, caso, esperado, real, ok}; todosOk indica si pasan todos.
 ***********************************************************************************/
 a!localVariables(
@@ -434,7 +405,7 @@ a!localVariables(
   local!t01: index(rule!SCA2_construirEntradaReglas(datosSolicitud: local!sol, origenPoliza: "NSE-Autos", nivelIntervencion: "1", regla: "alta", mecanizacion: local!consMecanizada), 1, null),
   /* T02 Hogar */
   local!t02: index(rule!SCA2_construirEntradaReglas(datosSolicitud: local!sol, origenPoliza: "NSE-Hogar", nivelIntervencion: "1", regla: "alta", mecanizacion: local!consSinMecanizar), 1, null),
-  /* T03 Vida */
+  /* T03 Vida: sin rama propia, CDT a nulo (como la regla original) */
   local!t03: index(rule!SCA2_construirEntradaReglas(datosSolicitud: local!sol, origenPoliza: "Vida", nivelIntervencion: "1", regla: "alta", mecanizacion: local!consSinMecanizar), 1, null),
   /* T04 wAutemisM, cambio de nivel a 3 */
   local!t04: index(rule!SCA2_construirEntradaReglas(datosSolicitud: local!sol, origenPoliza: "wAutemisM", nivelIntervencion: "3", regla: "cambioNivel", mecanizacion: local!consMecanizada), 1, null),
@@ -442,12 +413,12 @@ a!localVariables(
   local!t05: index(rule!SCA2_construirEntradaReglas(datosSolicitud: local!sol, origenPoliza: "NSE-Autos", nivelIntervencion: "1", regla: "mecanizar", mecanizacion: local!consMecanizada, extras: a!map(estadoPoliza: "V")), 1, null),
   /* T06 mecanizar sin estado de póliza (comportamiento actual) */
   local!t06: index(rule!SCA2_construirEntradaReglas(datosSolicitud: local!sol, origenPoliza: "NSE-Autos", nivelIntervencion: "1", regla: "mecanizar", mecanizacion: local!consMecanizada), 1, null),
-  /* T07 marcas S/N en texto */
+  /* T07 marcas S/N en texto: cast del CDT como hoy (ambas false) */
   local!solSN: a!update(local!sol, "datosCompletosSolicitud", a!update(local!sol.datosCompletosSolicitud, "datosSolicitud", a!update(local!datosSol, {"mcaanulatecnico", "mcaanulaexperto"}, {"S", "N"}))),
   local!t07: index(rule!SCA2_construirEntradaReglas(datosSolicitud: local!solSN, origenPoliza: "NSE-Autos", nivelIntervencion: "1", regla: "alta", mecanizacion: local!consMecanizada), 1, null),
-  /* T08 fecha de anulación como Date y como texto con hora */
+  /* T08 fecha de anulación como Date y como texto dd/MM/yyyy */
   local!solFecDate: a!update(local!sol, "datosCompletosSolicitud", a!update(local!sol.datosCompletosSolicitud, "datosSolicitud", a!update(local!datosSol, "fecanulacion", date(2026, 11, 5)))),
-  local!solFecHora: a!update(local!sol, "datosCompletosSolicitud", a!update(local!sol.datosCompletosSolicitud, "datosSolicitud", a!update(local!datosSol, "fecanulacion", "05/11/2026 16:01 CEST"))),
+  local!solFecHora: a!update(local!sol, "datosCompletosSolicitud", a!update(local!sol.datosCompletosSolicitud, "datosSolicitud", a!update(local!datosSol, "fecanulacion", "05/11/2026"))),
   local!t08a: index(rule!SCA2_construirEntradaReglas(datosSolicitud: local!solFecDate, origenPoliza: "NSE-Autos", nivelIntervencion: "1", regla: "alta", mecanizacion: local!consMecanizada), 1, null),
   local!t08b: index(rule!SCA2_construirEntradaReglas(datosSolicitud: local!solFecHora, origenPoliza: "NSE-Autos", nivelIntervencion: "1", regla: "alta", mecanizacion: local!consMecanizada), 1, null),
   /* T09 origen nulo -> CDT vacío */
@@ -467,17 +438,17 @@ a!localVariables(
       real: tostring(local!t01.lineaNegocio) & "|" & tostring(local!t01.claveProduccion) & "|" & tostring(local!t01.fechaAnulacion) & "|" & tostring(local!t01.nuuma) & "|" & tostring(local!t01.mecanizada) & "|" & tostring(local!t01.estadoUltimaGestion) & "|" & tostring(local!t01.nivelDecidirAccion) & "|" & tostring(local!t01.perfilEjecucion) & "|" & tostring(local!t01.codigoSCA)),
     a!map(id: "T02", caso: "Hogar", esperado: "2|0084048|false",
       real: tostring(local!t02.lineaNegocio) & "|" & tostring(local!t02.claveProduccion) & "|" & tostring(local!t02.mecanizada)),
-    a!map(id: "T03", caso: "Vida", esperado: "3|0099001|2026-11-05",
-      real: tostring(local!t03.lineaNegocio) & "|" & tostring(local!t03.claveProduccion) & "|" & tostring(local!t03.fechaAnulacion)),
+    a!map(id: "T03", caso: "Vida -> CDT a nulo (como hoy)", esperado: "|||false",
+      real: tostring(local!t03.lineaNegocio) & "|" & tostring(local!t03.claveProduccion) & "|" & tostring(local!t03.fechaAnulacion) & "|" & tostring(local!t03.mecanizada)),
     a!map(id: "T04", caso: "wAutemisM cambio de nivel a 3", esperado: "1|3|true",
       real: tostring(local!t04.lineaNegocio) & "|" & tostring(local!t04.nivelDecidirAccion) & "|" & tostring(local!t04.mecanizada)),
     a!map(id: "T05", caso: "mecanizar con mecanización previa y póliza vigente", esperado: "false",
       real: tostring(local!t05.mecanizada)),
     a!map(id: "T06", caso: "mecanizar sin estado de póliza (como hoy)", esperado: "true",
       real: tostring(local!t06.mecanizada)),
-    a!map(id: "T07", caso: "marcas S/N en texto", esperado: "true|false",
+    a!map(id: "T07", caso: "marcas S/N en texto (cast actual: ambas false)", esperado: "false|false",
       real: tostring(local!t07.anulaTecnico) & "|" & tostring(local!t07.anulaExperto)),
-    a!map(id: "T08", caso: "fecha Date y texto con hora", esperado: "2026-11-05|2026-11-05",
+    a!map(id: "T08", caso: "fecha Date y texto dd/MM/yyyy", esperado: "2026-11-05|2026-11-05",
       real: tostring(local!t08a.fechaAnulacion) & "|" & tostring(local!t08b.fechaAnulacion)),
     a!map(id: "T09", caso: "origen nulo -> CDT vacío", esperado: "||||true",
       real: tostring(local!t09.lineaNegocio) & "|" & tostring(local!t09.nivelDecidirAccion) & "|" & tostring(local!t09.nuuma) & "|" & tostring(local!t09.estadoUltimaGestion) & "|" & tostring(local!t09.mecanizada)),
@@ -497,6 +468,38 @@ a!localVariables(
   a!map(
     todosOk: and(a!forEach(local!resultado, fv!item.ok)),
     casos: local!resultado
+  )
+)
+```
+
+### 8.3 `SCA2_mapearDatosDecidirAccion` (v4, delegada)
+
+```sail
+a!localVariables(
+  /*Consulta de BBDD (solicitud y mecanización) para la entrada a reglas*/
+  local!idSolicitud: index(index(index(ri!datosSolicitud, "datosCompletosSolicitud", null), "datosBasicosSolicitud", null), "idSolicitud", null),
+  local!consulta: rule!SCA2_consultaBBDDSCA(
+      idSolicitud: local!idSolicitud,
+      devolverSolicitud: true,
+      devolverObservaciones: false,
+      devolverGestiones: true,
+      devolverMecanizacion: true,
+      devolverAcciones: false,
+      devolverAutorizaciones: false,
+      devolverNotificaciones: false,
+      devolverSGO: false,
+      devolverCTO: false
+  ),
+
+  /* Montaje del CDT delegado en la regla pura SCA2_construirEntradaReglas (misma salida que antes) */
+  rule!SCA2_construirEntradaReglas(
+    datosSolicitud: ri!datosSolicitud,
+    datosPoliza: null,
+    origenPoliza: ri!origenPoliza,
+    nivelIntervencion: ri!nivelIntervencion,
+    regla: null,
+    mecanizacion: local!consulta,
+    extras: null
   )
 )
 ```

@@ -12,3 +12,6 @@
 | A | 2026-10-21 | 2002600000012 (Autos, vence 02/01/2027) | pendiente de alta | Alta → CA N1 | Caducidad por nivel: segunda alta (propietario/no propietario según datos) |
 | A | 2026-10-21 | 2002500478924 (Autos, vence 03/11/2026) | pendiente de alta | Alta | Caducidad por nivel: vencimiento cercano (tope si propietario) |
 | A | 2026-10-21 | 2002500378119 (Autos, vencida 27/08/2026); reserva 2002300392341 | pendiente de alta | Alta → BarridoCaducidad → CMD Caducar | Caducidad por nivel: tope por vencimiento pasado + caducar → FINALIZADO_CADUCADO |
+| E | 2026-10-21 | 0002729392590 (wAutemis) | 15788188 | Alta 678429; Decidir 13306893; CrearAccion 17484380 (tarea CA abierta) | Prueba funcional F01 tras delegar `SCA2_mapearDatosDecidirAccion` v4 en `SCA2_construirEntradaReglas` |
+| E | 2026-10-21 | 0000023400212 (NSE-Autos) | 15788191 | Alta 14351538; Decidir 269114374; CrearAccion 17484392 (tarea AA abierta) | Prueba funcional F02 (ídem) |
+| E | 2026-10-21 | 2002000157937, 0001047017109, 0730780285731, 0005726682097 | 15788155, 15788168, 15788163, 15788149 | — (solo lectura, sin instancias) | Regresión antes/después de `SCA2_mapearDatosDecidirAccion` vía `/test` |
