@@ -824,3 +824,38 @@ Modificar `SCA2_Buscador`/`SCA2_BuscadorTabla` (clic en el id → `a!startProces
 | W10 | Convivencia con A/F/G: alta (fila A), invalidación de G (`validaHasta = now()`) → siguiente apertura renueva por Web API; PM de F no encuentra filas caducadas de solicitudes abiertas tras una apertura | coherente |
 
 Decisiones que necesito antes de la FASE 2: (1) OK a la vía (b); (2) credenciales del connected system en TEST: usuario de servicio actual con Basic (lo configuro yo con la contraseña del entorno, sin escribirla en ningún sitio) o cuenta de servicio + API key (la crea un administrador); (3) aceptar que la fila CACHE renovada por la Web API se calcula con el usuario de servicio (como ya ocurre en A y F); (4) simplificar el enlace «Actualizar datos» para que use la Web API (quitar su `a!writeRecords`).
+
+### 11.6 Implementación FASE 2 (21/10/2026, por LCP REST; sub-interruptor en `false`, sin cambios de comportamiento visibles)
+
+Objetos (nombre · tipo · uuid · versión):
+
+| Objeto | Tipo | UUID | Versión | Detalle |
+|---|---|---|---|---|
+| `SCA2_USAR_WEBAPI_CACHE_CABECERA` | Constante Boolean | `_a-0000f093-2064-8000-9d36-011c48011c48_5607587` | v1 = **false** | Sub-interruptor de la renovación automática |
+| `SCA2 Appian Interno` | Connected System HTTP | `_a-0000f093-2064-8000-9d36-011c48011c48_5607593` | v2 | `baseUrl` `https://mapfrespain-test.appiancloud.com/suite/webapi/`, autenticación Basic con el usuario de servicio (contraseña cifrada en el CS, preemptiva). **En PRO: cuenta de servicio + API key** (Admin Console) y `baseUrl` de PRO |
+| `SCA2_refrescarCacheCabecera` | Web API **POST** `sca2-cache-cabecera` | `324a1ee4-2312-4565-aa36-a383db17b36f` | — (la API no devuelve versión) | `?idSolicitud=&numPoliza=&usuario=`; 400 si faltan parámetros, 204 si no hay cabecera, 200 JSON con la cabecera; `isPublic = false` (401 sin autenticación) |
+| `SCA2_renovarCacheCabecera` | Expression Rule | `_a-0000f093-2064-8000-9d36-011c48011c48_5607622` | v2 | Lógica de la Web API: `…Live(usuario)` + construcción de la fila `CACHE` (update si existe fila `CACHE` de la solicitud, insert si no; `tipoPoliza`, `clienteCodint`, `fechaCache = now()`, `validaHasta` = `SCA2_calcularValidaHastaCache`). Devuelve `a!map(fila, cabecera, error)`; **no escribe** |
+| `SCA2_refrescarCacheCabeceraIntegracion` | Integration POST, uso **QUERY** | `0002bd57-3b75-480f-8e36-6f3bd3f9f3f9` | v4 | Query params `idSolicitud`, `numPoliza`, `usuario`, `forzar`; timeout 30 s; `bodyType application/json` (sin cuerpo); respuesta `RETURN_RAW` |
+| `SCA2_obtenerDatosCabeceraLive` | Expression Rule | `…_5603393` | v1 → **v2** | Input opcional `usuario` (Text). Cambios mínimos: `local!nuuma: rule!CMP_obtenerNuuma(user(a!defaultValue(ri!usuario, loggedInUser()), "email"))` y en las dos consultas de siniestros `idUsuario: if(a!isNullOrEmpty(ri!usuario), <igual que hoy>, index(split(user(ri!usuario, "username"), "@"), 1, ""))`. Sin `usuario` el comportamiento es idéntico |
+| `SCA2_obtenerDatosCabecera` | Expression Rule | `…_20053304` | v5 → **v6** | Rama «sin fila vigente»: si `cons!SCA2_USAR_CACHE_CABECERA` y `cons!SCA2_USAR_WEBAPI_CACHE_CABECERA` e `idSolicitud` real → integración (`usuario: loggedInUser()`, `forzar: ri!forzarRefresco`); si `success` y 200 → `cast(SCAC_DS_datosCabecera, a!fromJson(body))` con `tipoClienteValor` reconstruido (`todocument(tointeger(json.datosCliente.tipoClienteValor.id))`); en cualquier otro caso → `…Live` (como hoy) |
+
+Dependencia del usuario conectado (decisión 3): en `…Live` dependen de `loggedInUser()` el `nuuma` que se envía a `cargaCabecera` (carterización/propietario) y el `idUsuario` de las consultas de siniestros. Por eso el envoltorio pasa `usuario: loggedInUser()` a la Web API y ésta a `…Live(usuario)`: la fila `CACHE` se calcula con el usuario que abre la pantalla, aunque la Web API se ejecute con el usuario de servicio. `SCA2_obtenerInformacionUsuario()` (roles/perfil) sigue evaluándose con el usuario de servicio: solo se usa para el `idUsuario` de siniestros, que ya se deriva de `usuario`.
+
+Hallazgos técnicos de la implementación:
+- **`a!writeRecords` no se ejecuta en una Web API GET** (HTTP 500 en TEST con cualquier escritura, incluso `records: {}`); con **POST** funciona. Por eso Web API e integración son POST; la integración se marca de uso «consulta» (`usage = QUERY`) para poder invocarla al cargar las interfaces (el uso es independiente del método HTTP).
+- La expresión de una Web API no puede superar **4.000 caracteres** → la lógica va en `SCA2_renovarCacheCabecera` y la Web API solo llama a la regla y hace el `a!writeRecords`.
+- La API LCP **evalúa** la expresión de la Web API al guardarla (sin `http!request`): la expresión empieza con `if(a!isNullOrEmpty(http!request), a!httpResponse(statusCode: 204), …)` y los parámetros se leen con `index(index(http!request, "queryParameters", a!map()), "idSolicitud", "")`.
+- En el JSON `tipoClienteValor` llega como `{"id": 44}` (Document); el resto de campos son texto y el `cast` al CDT los reconstruye sin pérdida.
+
+Pruebas realizadas (sub-interruptor en `false`; la Web API probada directamente con el usuario de servicio):
+
+| ID | Caso | Esperado | Real | OK/KO | Solicitud | Instancia | Pasos realizados | Posible causa/solución |
+|---|---|---|---|---|---|---|---|---|
+| W01 | `POST /suite/webapi/sca2-cache-cabecera?idSolicitud=15788005&numPoliza=0732000028208` (Basic, usuario de servicio) | 200 JSON = cabecera Live; fila `CACHE` creada con `validaHasta` 07:00 del día siguiente | 200 en 4,0 s, JSON completo (LAPOVA, 94516056V, HOGAR FAMILIAR…); fila id 247: `fechaCache 2026-10-21 17:10:29`, `validaHasta 2026-10-22 07:00:00`, `tipoPoliza NSE-Hogar`, `clienteCodint 418620322020` | OK | 15788005 | — | curl + `GET /record-types/{uuid}/data` | — |
+| W01b | Misma llamada sin parámetros | 400 | 400 `{"error":"Parámetros idSolicitud y numPoliza obligatorios"}` | OK | — | — | curl | — |
+| W08a | Misma llamada sin autenticación | 401 | 401 `APNX-1-4187-000` | OK | — | — | curl | — |
+| W01c | `POST /integrations/{uuid}/test` (idSolicitud 15788005) | `success = true`, 200, body JSON | `success true`, `statusCode 200`, `Content-Type application/json`, 1.420 bytes, 4,5 s | OK | 15788005 | — | LCP | Antes de fijar `bodyType` fallaba con «MIME type may not be blank» |
+| W07 | Regresión envoltorio v6 (sub-interruptor false) vs `…Live` v2, `POST /expression-rules/{uuid}/test` | salida idéntica | 0 diferencias en 47/47/55 campos (Autos 15787499, wAutemis 15787668, Hogar 15788005 —ésta servida desde la fila 247 en 0,9 s—) | OK | 15787499 / 15787668 / 15788005 | — | LCP | — |
+| W00 | Regresión `…Live` v2 sin `usuario` vs v1 | idéntica | misma salida que la regresión anterior (0 diferencias en las 3 solicitudes) | OK | ídem | — | LCP | — |
+
+Pendiente (esperando OK del coordinador tras la sesión H): seguridad del objeto Web API (viewers = solo administradores de SCA2; hoy hereda los grupos por defecto de la app), poner `SCA2_USAR_WEBAPI_CACHE_CABECERA = true`, simplificar «Actualizar datos» (quitar su `a!writeRecords`: con `forzarRefresco: true` la regla ya renueva vía Web API) y pruebas W02–W06, W08b, W09, W10 en UI.
