@@ -586,21 +586,21 @@ No requieren invalidar (no cambian datos de cabecera): `CambiarNivel`, `Posponer
 | 8 | Siguiente | Script Task | `pv!indice` ← `pv!indice + 1`; `pv!cabecera` ← `null` → vuelve a 3 |
 | 9 | Fin | End event | Opcional: si `length(pv!errores) > 0`, nodo de aviso (correo al grupo de administradores o fila en `SCA2 Error`, objeto de otra sesión) |
 
-Expresión A (nodo 2, `pv!filas`). Estados cerrados a excluir, según los valores observados en TEST: `FINALIZADA`, `FINALIZADA_POSITIVO`, `CANCELADA` (y `CADUCADA` si se usa); el resto (`EN_ACCION`, `PDTE_MECANIZAR`, `MECANIZADA`, `ALTA`, `ERROR`, `PDTE_FINALIZAR`, `ERROR_DECISION`) se consideran abiertas. Los uuid de `SCA2 Solicitud.idSolicitud/estadoSolicitud` se toman del record (`GET /record-types/c531595c-c3b5-454c-a355-8145e7e27e9a`):
+Expresión A (nodo 2, `pv!filas`). Estados cerrados a excluir, según los valores observados en TEST: `FINALIZADA`, `FINALIZADA_POSITIVO`, `CANCELADA` (y `CADUCADA` si se usa); el resto (`EN_ACCION`, `PDTE_MECANIZAR`, `MECANIZADA`, `ALTA`, `ERROR`, `PDTE_FINALIZAR`, `ERROR_DECISION`) se consideran abiertas. Los uuid de `SCA2 Solicitud.idSolicitud/estadoSolicitud` son los del record en TEST (`GET /record-types/c531595c-c3b5-454c-a355-8145e7e27e9a`):
 
 ```sail
 =a!localVariables(
   local!abiertas: a!queryRecordType(
     recordType: 'recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud',
-    fields: 'recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud.fields.{<uuid idSolicitud>}idSolicitud',
+    fields: 'recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud.fields.{f2b6f90b-183b-493e-81c1-d1dd65a6cbd9}idSolicitud',
     filters: a!queryFilter(
-      field: 'recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud.fields.{<uuid estadoSolicitud>}estadoSolicitud',
+      field: 'recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud.fields.{65f4378b-cf90-4761-b1d0-16ace177a82c}estadoSolicitud',
       operator: "not in",
       value: {"FINALIZADA", "FINALIZADA_POSITIVO", "CANCELADA", "CADUCADA"}
     ),
     pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 5000),
     fetchTotalCount: false
-  ).data['recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud.fields.{<uuid idSolicitud>}idSolicitud'],
+  ).data['recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud.fields.{f2b6f90b-183b-493e-81c1-d1dd65a6cbd9}idSolicitud'],
   a!queryRecordType(
     recordType: 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera',
     fields: {'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{6757400e-5b8a-42fb-874b-19e5fbd8edbc}id', 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{09dabc7f-a0c8-468c-9b60-085a8a9bd1cc}idSolicitud', 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{b4fbe9d5-5949-4693-9c2f-8acce0349ff5}polizaNumeropoliza', 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{c2c91c9b-df4f-4a96-96fc-1dcf1e6902bf}validaHasta'},
