@@ -4,6 +4,7 @@
 |---|---|---|---|---|---|
 | D | 2026-10-21 | 2002000024445 (NSE-Autos) | 15787499 | — (solo lectura, sin instancias) | Regresión antes/después de `SCA2_obtenerDatosCabecera` vía `/test` |
 | D | 2026-10-21 | 0000006610576 (wAutemis) | 15787668 | — (solo lectura, sin instancias) | Regresión antes/después de `SCA2_obtenerDatosCabecera` vía `/test` |
+| D | 2026-10-21 | 2002000008470 (NSE-Autos) | 15787530 | — (solo lectura; se crea su fila CACHE por renovación automática) | Prueba UI W09 renovación automática (1.ª apertura crea fila, F5 desde caché) |
 | D | 2026-10-21 | 0732000028208 (NSE-Hogar) | 15788005 | — (solo lectura, sin instancias) | Regresión antes/después de `SCA2_obtenerDatosCabecera` vía `/test` |
 | D | 2026-10-21 | 0732000028208 (NSE-Hogar) | 15788005 | — (sin instancias; fila CACHE id 247 en SCA2 Datos Cabecera creada por la Web API SCA2_refrescarCacheCabecera) | Pruebas de la Web API/integración de renovación automática de la caché (43-D §11); la fila se renueva en cada prueba |
 | B | 2026-10-21 | 0001047017110 (wAutemis, clave 0280999) | 15788189 | SCA2 CMD Alta 12247493 | Propietario/carterización: gestor CE_RM (JJGONZ2) no propietario; regresión `nuumaEsPropietario`/Contra Anulación y sombra |
