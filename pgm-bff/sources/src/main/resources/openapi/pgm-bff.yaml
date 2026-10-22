@@ -707,7 +707,7 @@ components:
       properties:
         numero: { type: string }
         ramo: { type: string }
-        tipoDetalle: { type: string, enum: [AUTOS, SALUD, VIDA, HOGAR, CONSUMO_PROTEGIDO, HIPOTECA_SEGURA, GENERICA] }
+        tipoDetalle: { type: string, enum: [AUTOS, SALUD, VIDA, HOGAR, GENERICA] }
         idPoliza: { type: string, nullable: true }
         primasPeriodicas: { type: boolean }
         noDisponiblePorOrigen: { type: array, items: { type: string } }
@@ -790,7 +790,7 @@ components:
     Problem:
       type: object
       properties: { type: { type: string, format: uri }, title: { type: string }, status: { type: integer }, detail: { type: string }, instance: { type: string } }
-    Ramo: { type: string, enum: [AUTOS, HOGAR, SALUD, VIDA, DECESOS, AHORRO, EMPRESAS, OTROS] }
+    Ramo: { type: string, enum: [AUTOS, HOGAR, SALUD, VIDA, DECESOS, AHORRO, RIESGO, EMPRESAS, OTROS] }
     Tipologia: { type: string, enum: [PARTICULAR, AUTONOMO, EMPRESA] }
     EstadoCliente: { type: string, enum: [EN_VIGOR, POTENCIAL, ANULADO] }
     ContextoUsuario:
@@ -854,7 +854,7 @@ components:
         riesgo: { type: string }
         acciones: { type: array, items: { type: string } }
         lanzadera: { type: string }
-        tipoDetalle: { type: string, enum: [AUTOS, SALUD, VIDA, HOGAR, CONSUMO_PROTEGIDO, HIPOTECA_SEGURA, GENERICA] }
+        tipoDetalle: { type: string, enum: [AUTOS, SALUD, VIDA, HOGAR, GENERICA] }
     Recibo:
       type: object
       properties:

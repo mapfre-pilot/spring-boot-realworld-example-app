@@ -88,13 +88,7 @@ public class DetalleService implements DetallePolizaUseCase, DetalleReciboUseCas
     }
 
     private static DetallePolizaRamo detalleNoDisponible(Poliza poliza, String origen, String motivo) {
-        Poliza.TipoDetalle tipo = poliza.tipoDetalle() != null ? poliza.tipoDetalle() : switch (poliza.ramo()) {
-            case AUTOS -> Poliza.TipoDetalle.AUTOS;
-            case SALUD -> Poliza.TipoDetalle.SALUD;
-            case VIDA, AHORRO -> Poliza.TipoDetalle.VIDA;
-            case HOGAR -> Poliza.TipoDetalle.HOGAR;
-            default -> Poliza.TipoDetalle.GENERICA;
-        };
+        Poliza.TipoDetalle tipo = Poliza.clasificarTipoDetalle(poliza.ramo(), poliza.numero());
         return new DetallePolizaRamo(poliza.numero(), poliza.ramo(), tipo, null, false,
                 List.of("idPoliza"), java.util.Map.of(), List.of(), List.of(),
                 List.of(new DisponibilidadPorOrigen("detalle por ramo", origen, false, motivo)));

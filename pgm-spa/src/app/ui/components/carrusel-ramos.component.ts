@@ -9,6 +9,7 @@ export const ETIQUETA_RAMO: Record<Ramo, string> = {
   VIDA: 'Vida',
   DECESOS: 'Decesos',
   AHORRO: 'Ahorro',
+  RIESGO: 'Vida',
   EMPRESAS: 'Empresas',
   OTROS: 'Otros',
 };
@@ -20,6 +21,7 @@ export const DESCRIPCION_RAMO: Record<Ramo, string> = {
   VIDA: 'Riesgo, accidentes y solución global',
   DECESOS: 'Decesos y asistencia familiar',
   AHORRO: 'Ahorro, rentas y jubilación',
+  RIESGO: 'Vida Riesgo',
   EMPRESAS: 'Multirriesgo empresarial y comercios, responsabilidad civil, autónomos y pymes',
   OTROS: 'Agropecuario y otros ramos',
 };
@@ -31,6 +33,7 @@ export const ICONO_RAMO: Record<Ramo, NombreIcono> = {
   VIDA: 'vida',
   DECESOS: 'decesos',
   AHORRO: 'ahorro',
+  RIESGO: 'vida',
   EMPRESAS: 'empresas',
   OTROS: 'otros',
 };

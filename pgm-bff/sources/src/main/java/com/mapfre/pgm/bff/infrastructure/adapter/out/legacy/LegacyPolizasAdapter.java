@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Locale;
 
 /**
  * Pólizas por los servicios legacy de PGM en Appian: carrusel {@code GET /MRCBack_be-web/api/1.0/client/{id}/policies}
@@ -65,42 +64,24 @@ public class LegacyPolizasAdapter implements PolizasPort {
 
     @Override
     public Optional<DetallePolizaRamo> detalleRamo(Poliza poliza) {
-        String producto = poliza.producto() == null ? "" : poliza.producto().toUpperCase(Locale.ROOT);
         String route;
         String path;
         java.util.function.Function<org.springframework.web.client.RestClient.RequestHeadersUriSpec<?>,
                 org.springframework.web.client.RestClient.RequestHeadersSpec<?>> uri;
-        Poliza.TipoDetalle tipo = poliza.tipoDetalle() == null ? Poliza.TipoDetalle.GENERICA : poliza.tipoDetalle();
-        // La referencia SAIL define estas integraciones, pero no incluye el selector de producto de Consumo/Hipoteca.
-        if (producto.contains("CONSUMO PROTEGIDO")) {
-            tipo = Poliza.TipoDetalle.CONSUMO_PROTEGIDO;
-            route = "home-api";
-            path = gw.rutaConfigurada("home-api-detalle");
-            uri = s -> s.uri(gw.url(route, path), poliza.numero());
-        } else if (producto.contains("HIPOTECA SEGURA")) {
-            tipo = Poliza.TipoDetalle.HIPOTECA_SEGURA;
-            route = "home-api";
-            path = gw.rutaConfigurada("home-api-detalle");
-            uri = s -> s.uri(gw.url(route, path), poliza.numero());
-        } else if (poliza.ramo() == com.mapfre.pgm.bff.domain.model.Ramo.SALUD) {
-            tipo = Poliza.TipoDetalle.SALUD;
+        Poliza.TipoDetalle tipo = Poliza.clasificarTipoDetalle(poliza.ramo(), poliza.numero());
+        if (tipo == Poliza.TipoDetalle.SALUD) {
             route = "health-api";
             path = gw.rutaConfigurada("health-api-detalle");
             uri = s -> s.uri(gw.url(route, path), poliza.numero());
-        } else if (poliza.ramo() == com.mapfre.pgm.bff.domain.model.Ramo.HOGAR) {
-            tipo = Poliza.TipoDetalle.HOGAR;
+        } else if (tipo == Poliza.TipoDetalle.HOGAR) {
             route = "home-api";
             path = gw.rutaConfigurada("home-api-detalle");
             uri = s -> s.uri(gw.url(route, path), poliza.numero());
-        } else if (poliza.ramo() == com.mapfre.pgm.bff.domain.model.Ramo.AUTOS) {
-            tipo = Poliza.TipoDetalle.AUTOS;
+        } else if (tipo == Poliza.TipoDetalle.AUTOS) {
             route = "motor-api";
             path = gw.rutaConfigurada("motor-api-detalle");
             uri = s -> s.uri(gw.url(route, path) + "?companyId={companyId}", poliza.numero(), poliza.companyId());
-        } else if ((poliza.ramo() == com.mapfre.pgm.bff.domain.model.Ramo.VIDA
-                || poliza.ramo() == com.mapfre.pgm.bff.domain.model.Ramo.AHORRO)
-                && poliza.numero().length() < 11) {
-            tipo = Poliza.TipoDetalle.VIDA;
+        } else if (tipo == Poliza.TipoDetalle.VIDA && poliza.numero().length() < 11) {
             route = "life-api";
             path = gw.rutaConfigurada("life-api-detalle");
             uri = s -> s.uri(gw.url(route, path), poliza.numero());
@@ -129,28 +110,18 @@ public class LegacyPolizasAdapter implements PolizasPort {
         String estado = Optional.ofNullable(j.texto("status", "estado", "policyStatus", "situacion")).orElse("").toUpperCase();
         Poliza.EstadoPoliza e = estado.contains("ANUL") || estado.contains("CANCEL") || estado.contains("BAJA") ? Poliza.EstadoPoliza.ANULADA
                 : estado.contains("SUSP") ? Poliza.EstadoPoliza.SUSPENDIDA : Poliza.EstadoPoliza.EN_VIGOR;
-        return new Poliza(j.texto("policyNumber", "numeroPoliza", "numero", "policyId"),
+        String numero = j.texto("policyNumber", "numeroPoliza", "numero", "policyId");
+        var ramo = Ramos.de(j.texto("branchCode", "codigoRamo", "ramo"),
+                j.texto("branchDescription", "branch", "descripcionRamo", "productLine"));
+        return new Poliza(numero,
                 Optional.ofNullable(clienteId).orElse(j.texto("clientId", "idCliente")),
-                Ramos.de(j.texto("branchCode", "codigoRamo", "ramo"), j.texto("branchDescription", "branch", "descripcionRamo", "productLine")),
+                ramo,
                 j.texto("productDescription", "product", "producto", "productName"), e,
                 j.fecha("effectiveDate", "fechaEfecto", "startDate"), j.fecha("expirationDate", "fechaVencimiento", "endDate", "renewalDate"),
                 j.decimal("annualPremium", "primaAnual", "premium", "primaTotal"), j.texto("paymentMethod", "formaPago", "paymentFrequency"),
                 j.texto("riskDescription", "riesgo", "risk", "licensePlate", "address"), List.of(), null,
-                tipoDetalle(j.texto("branchCode", "codigoRamo", "ramo"),
-                        j.texto("branchDescription", "branch", "descripcionRamo", "productLine"),
-                        j.texto("productDescription", "product", "producto", "productName")),
+                Poliza.clasificarTipoDetalle(ramo, numero),
                 j.texto("companyId", "companyCode", "company"));
-    }
-
-    private static Poliza.TipoDetalle tipoDetalle(String codigo, String descripcion, String producto) {
-        String valor = (codigo + " " + descripcion + " " + producto).toUpperCase(Locale.ROOT);
-        if (valor.contains("AUTO") || valor.contains("MOTOR")) return Poliza.TipoDetalle.AUTOS;
-        if (valor.contains("SALUD")) return Poliza.TipoDetalle.SALUD;
-        if (valor.contains("VIDA")) return Poliza.TipoDetalle.VIDA;
-        if (valor.contains("CONSUMO")) return Poliza.TipoDetalle.CONSUMO_PROTEGIDO;
-        if (valor.contains("HIPOTECA")) return Poliza.TipoDetalle.HIPOTECA_SEGURA;
-        if (valor.contains("HOGAR")) return Poliza.TipoDetalle.HOGAR;
-        return Poliza.TipoDetalle.GENERICA;
     }
 
     private static DetallePolizaRamo mapearDetalle(Poliza poliza, Poliza.TipoDetalle tipo, Map<String, Object> body) {

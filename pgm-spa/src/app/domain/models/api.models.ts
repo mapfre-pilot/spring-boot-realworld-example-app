@@ -2,7 +2,7 @@
 export type Tipologia = 'PARTICULAR' | 'AUTONOMO' | 'EMPRESA';
 export type EstadoCliente = 'EN_VIGOR' | 'POTENCIAL' | 'ANULADO';
 export type Ramo =
-  'AUTOS' | 'HOGAR' | 'SALUD' | 'VIDA' | 'DECESOS' | 'AHORRO' | 'EMPRESAS' | 'OTROS';
+  'AUTOS' | 'HOGAR' | 'SALUD' | 'VIDA' | 'DECESOS' | 'AHORRO' | 'RIESGO' | 'EMPRESAS' | 'OTROS';
 export const RAMOS: Ramo[] = [
   'AUTOS',
   'HOGAR',
@@ -157,8 +157,7 @@ export interface Poliza {
   riesgo: string;
   acciones: string[];
   lanzadera: string | null;
-  tipoDetalle?:
-    'AUTOS' | 'SALUD' | 'VIDA' | 'HOGAR' | 'CONSUMO_PROTEGIDO' | 'HIPOTECA_SEGURA' | 'GENERICA';
+  tipoDetalle?: 'AUTOS' | 'SALUD' | 'VIDA' | 'HOGAR' | 'GENERICA';
 }
 
 export interface Recibo {

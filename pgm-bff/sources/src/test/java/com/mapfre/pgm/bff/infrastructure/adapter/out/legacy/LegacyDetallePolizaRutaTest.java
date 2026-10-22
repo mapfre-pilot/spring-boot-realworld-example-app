@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.mapfre.pgm.bff.domain.model.Poliza;
@@ -31,18 +32,14 @@ class LegacyDetallePolizaRutaTest {
 
     static Stream<Arguments> integraciones() {
         return Stream.of(
-                Arguments.of("SAL-1", Ramo.SALUD, "Salud", "health-api", "health-api-detalle", "SAL-1",
-                        Map.of("contractData", Map.of("policyId", "SAL-1"))),
-                Arguments.of("HOG-1", Ramo.HOGAR, "Hogar", "home-api", "home-api-detalle", "HOG-1",
-                        Map.of("policyId", "HOG-1")),
-                Arguments.of("AUT-1", Ramo.AUTOS, "Autos", "motor-api", "motor-api-detalle", "AUT-1",
-                        Map.of("policyGeneralInformation", Map.of("referenceNumber", "AUT-1"))),
-                Arguments.of("VID-1", Ramo.VIDA, "Vida", "life-api", "life-api-detalle", "VID-1",
-                        Map.of("contractData", Map.of("policyId", "VID-1"))),
-                Arguments.of("CON-1", Ramo.HOGAR, "Consumo protegido", "home-api", "home-api-detalle", "CON-1",
-                        Map.of("policyId", "CON-1")),
-                Arguments.of("HIP-1", Ramo.HOGAR, "Hipoteca segura", "home-api", "home-api-detalle", "HIP-1",
-                        Map.of("policyId", "HIP-1")));
+                Arguments.of("SAL-000102", Ramo.SALUD, "Salud", "health-api", "health-api-detalle", "SAL-000102",
+                        Map.of("contractData", Map.of("policyId", "SAL-000102"))),
+                Arguments.of("HOG-000101", Ramo.HOGAR, "Hogar", "home-api", "home-api-detalle", "HOG-000101",
+                        Map.of("policyId", "HOG-000101")),
+                Arguments.of("AUT-000100", Ramo.AUTOS, "Autos Santander", "motor-api", "motor-api-detalle", "AUT-000100",
+                        Map.of("policyGeneralInformation", Map.of("referenceNumber", "AUT-000100"))),
+                Arguments.of("VID-000103", Ramo.RIESGO, "Vida Riesgo", "life-api", "life-api-detalle", "VID-000103",
+                        Map.of("contractData", Map.of("policyId", "VID-000103"))));
     }
 
     @ParameterizedTest
@@ -61,6 +58,21 @@ class LegacyDetallePolizaRutaTest {
         assertThat(detalle.disponibilidadPorOrigen()).singleElement()
                 .satisfies(disponibilidad -> assertThat(disponibilidad.origen()).isEqualTo("LEGACY"));
         verify(gateway).get(eq(ruta), eq(path), any(ParameterizedTypeReference.class), any());
+    }
+
+    @org.junit.jupiter.api.Test
+    void noSolicitaDetalleParaLongitudOnceDoceNiRamoGenerico() {
+        var once = poliza("RIE-0000011", Ramo.RIESGO, "Vida Riesgo");
+        var twelve = poliza("RIE-00000011", Ramo.RIESGO, "Vida Riesgo");
+        var generic = poliza("DEC-000201", Ramo.DECESOS, "Decesos");
+
+        assertThat(Poliza.clasificarTipoDetalle(once.ramo(), once.numero())).isEqualTo(Poliza.TipoDetalle.VIDA);
+        assertThat(adapter.detalleRamo(once)).isEmpty();
+        assertThat(Poliza.clasificarTipoDetalle(twelve.ramo(), twelve.numero())).isEqualTo(Poliza.TipoDetalle.GENERICA);
+        assertThat(adapter.detalleRamo(twelve)).isEmpty();
+        assertThat(Poliza.clasificarTipoDetalle(generic.ramo(), generic.numero())).isEqualTo(Poliza.TipoDetalle.GENERICA);
+        assertThat(adapter.detalleRamo(generic)).isEmpty();
+        verifyNoInteractions(gateway);
     }
 
     private static Poliza poliza(String numero, Ramo ramo, String producto) {

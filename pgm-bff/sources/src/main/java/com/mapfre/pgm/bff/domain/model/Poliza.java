@@ -27,6 +27,15 @@ public record Poliza(
                 acciones, lanzadera, tipoDetalle, null);
     }
 
+    public static TipoDetalle clasificarTipoDetalle(Ramo ramo, String numero) {
+        if (ramo == Ramo.SALUD) return TipoDetalle.SALUD;
+        if (ramo == Ramo.HOGAR) return TipoDetalle.HOGAR;
+        if (ramo == Ramo.AUTOS) return TipoDetalle.AUTOS;
+        if ((ramo == Ramo.VIDA || ramo == Ramo.AHORRO || ramo == Ramo.RIESGO)
+                && numero != null && numero.length() <= 11) return TipoDetalle.VIDA;
+        return TipoDetalle.GENERICA;
+    }
+
     public enum EstadoPoliza { EN_VIGOR, ANULADA, SUSPENDIDA }
-    public enum TipoDetalle { AUTOS, SALUD, VIDA, HOGAR, CONSUMO_PROTEGIDO, HIPOTECA_SEGURA, GENERICA }
+    public enum TipoDetalle { AUTOS, SALUD, VIDA, HOGAR, GENERICA }
 }

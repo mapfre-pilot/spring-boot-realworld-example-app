@@ -12,6 +12,7 @@ final class Ramos {
         if (d.contains("HOGAR") || d.contains("COMUNIDAD") || d.contains("PATRIMONI") || d.contains("HOME")) return Ramo.HOGAR;
         if (d.contains("SALUD") || d.contains("HEALTH") || d.contains("DENTAL")) return Ramo.SALUD;
         if (d.contains("DECESO")) return Ramo.DECESOS;
+        if (d.contains("RIESGO")) return Ramo.RIESGO;
         if (d.contains("AHORRO") || d.contains("RENTA") || d.contains("UNIT") || d.contains("PLAN")) return Ramo.AHORRO;
         if (d.contains("VIDA") || d.contains("LIFE")) return Ramo.VIDA;
         if (d.contains("EMPRESA") || d.contains("COMERCIO") || d.contains("RC") || d.contains("PYME")) return Ramo.EMPRESAS;

@@ -18,8 +18,8 @@ class DetallePolizaTipoLocalTest {
         assertTipo("SAL-000102", Poliza.TipoDetalle.SALUD);
         assertDetalle("VID-000103", Poliza.TipoDetalle.VIDA, true);
         assertTipo("HOG-000101", Poliza.TipoDetalle.HOGAR);
-        assertTipo("CON-000600", Poliza.TipoDetalle.CONSUMO_PROTEGIDO);
-        assertTipo("HIP-000601", Poliza.TipoDetalle.HIPOTECA_SEGURA);
+        assertSinDetalle("RIE-0000011", Poliza.TipoDetalle.VIDA);
+        assertSinDetalle("RIE-00000011", Poliza.TipoDetalle.GENERICA);
         assertTipo("DEC-000201", Poliza.TipoDetalle.GENERICA);
     }
 
@@ -39,5 +39,14 @@ class DetallePolizaTipoLocalTest {
                 .get()
                 .extracting(detalle -> detalle.tipoDetalle())
                 .isEqualTo(tipo);
+    }
+
+    private void assertSinDetalle(String numero, Poliza.TipoDetalle tipo) {
+        assertThat(adapter.detalle(numero).flatMap(adapter::detalleRamo))
+                .get()
+                .satisfies(detalle -> {
+                    assertThat(detalle.tipoDetalle()).isEqualTo(tipo);
+                    assertThat(detalle.idPoliza()).isNull();
+                });
     }
 }

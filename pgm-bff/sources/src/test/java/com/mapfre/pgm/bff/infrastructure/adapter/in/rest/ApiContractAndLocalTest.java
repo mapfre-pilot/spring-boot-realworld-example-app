@@ -61,7 +61,7 @@ class ApiContractAndLocalTest {
 
     @Test
     void pestanasDeLaFicha() throws Exception {
-        mvc.perform(get("/api/v1/clientes/C-1001/productos")).andExpect(jsonPath("$.total").value(4));
+        mvc.perform(get("/api/v1/clientes/C-1001/productos")).andExpect(jsonPath("$.total").value(6));
         mvc.perform(get("/api/v1/clientes/C-1001/recibos")).andExpect(jsonPath("$.total").value(4));
         mvc.perform(get("/api/v1/clientes/C-1001/prestaciones")).andExpect(jsonPath("$.total").value(3));
         mvc.perform(get("/api/v1/clientes/C-1001/presupuestos")).andExpect(jsonPath("$.total").value(1));

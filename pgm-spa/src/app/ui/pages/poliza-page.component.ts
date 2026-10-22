@@ -8,12 +8,12 @@ import {
   DetallePolizaRamo,
   DocumentoPoliza,
   Poliza,
+  Prestacion,
   Recibo,
 } from '../../domain/models/api.models';
 import { ETIQUETA_RAMO } from '../components/carrusel-ramos.component';
 import { EstadoComponent } from '../components/estado.component';
 import { IconoComponent } from '../components/icono.component';
-import { Columna, TablaExportableComponent } from '../components/tabla-exportable.component';
 
 /** Textos literales del diálogo de acciones de póliza y de la ficha de póliza en PGM (área B). */
 export const TEXTOS_POLIZA = {
@@ -28,131 +28,73 @@ export const TEXTOS_POLIZA = {
   sinDocumentos: 'No hay documentación disponible para esta póliza',
   cerrar: 'CERRAR',
 };
-export type TipoDetallePoliza =
-  'AUTOS' | 'SALUD' | 'VIDA' | 'HOGAR' | 'CONSUMO_PROTEGIDO' | 'HIPOTECA_SEGURA' | 'GENERICA';
-export const PESTANAS_AUTOS_SECCIONES = [
-  'Inf. general',
-  'Riesgo',
-  'Figuras tomador',
-  'Observaciones',
-] as const;
-export const PESTANAS_HOGAR_SECCIONES = [
-  'Riesgo',
-  'Figuras',
-  'Vivienda',
-  'Tomador/Asegurado',
-  'Observaciones',
-] as const;
-export const PESTANAS_AUTOS_INFO_GENERAL = [
-  'Inf. general',
-  'Figuras',
-  'Coberturas',
-  'Bonus malus',
-  'Autorizaciones',
-  'Pago',
-  'Recibos',
-  'Prestaciones',
-] as const;
-export const PESTANAS_AUTOS_RIESGO = [
-  'Características',
-  'Carrozados específicos',
-  'Equipamientos',
-  'Estado del vehículo',
-] as const;
-export const PESTANAS_AUTOS_FIGURAS_TOMADOR = [
-  'Datos Generales',
-  'Domicilios',
-  'Formas de contacto',
-] as const;
-export const PESTANAS_AUTOS_OBSERVACIONES = [
-  'Cláusulas generales',
-  'Observaciones nivel póliza',
-] as const;
-export const PESTANAS_HOGAR_RIESGO = [
-  'Objeto asegurado',
-  'Protecciones',
-  'Observaciones objeto asegurado',
-] as const;
-export const PESTANAS_HOGAR_FIGURAS = [
-  'Datos Generales',
-  'Domicilios',
-  'Formas de contacto',
-] as const;
-export const PESTANAS_HOGAR_VIVIENDA = [
-  'Información Catastro',
-  'Datos de la vivienda',
-  'Forma aseguramiento',
-] as const;
-export const PESTANAS_HOGAR_TOMADOR = [
-  'Datos Personales',
-  'Domicilio',
-  'Contacto',
-  'Correspondencia',
-] as const;
-export const PESTANAS_HOGAR_ASEGURADO = ['Datos Personales', 'Domicilio'] as const;
-export const PESTANAS_HOGAR_OBSERVACIONES = [
-  'Cláusulas generales',
-  'Observaciones nivel póliza',
-] as const;
+export type TipoDetallePoliza = 'AUTOS' | 'SALUD' | 'VIDA' | 'HOGAR' | 'GENERICA';
 
-export function pestanasPoliza(
-  tipoDetalle: TipoDetallePoliza,
+export interface ResultadoDispatcherPoliza {
+  tipoDetalle: TipoDetallePoliza;
+  pestanas: string[];
+}
+
+export function dispatchPestanasPoliza(
+  ramo: string,
+  numeroPoliza: string,
   idPoliza: string | null,
   primasPeriodicas = false,
-): string[] {
-  const conId = Boolean(idPoliza);
-  switch (tipoDetalle) {
-    case 'AUTOS':
-      return conId
-        ? ['Vehículos', 'Coberturas', 'Intervinientes', 'Recibos', 'Prestaciones']
-        : ['Recibos', 'Prestaciones'];
-    case 'SALUD':
-      return conId
-        ? ['Intervinientes', 'Coberturas', 'Recibos', 'Prestaciones']
-        : ['Recibos', 'Prestaciones'];
-    case 'VIDA':
-      return conId
-        ? [
-            'Intervinientes',
-            'Estructura comercial',
-            'Coberturas',
-            'Recibos',
-            'Prestaciones',
-            'Documentos',
-            ...(primasPeriodicas ? ['Primas'] : []),
-          ]
-        : ['Recibos', 'Prestaciones'];
-    case 'HOGAR':
-      return conId
-        ? ['Inf. general', 'Figuras', 'Coberturas', 'Autorizaciones', 'Pagos']
-        : ['Recibos', 'Prestaciones'];
-    case 'CONSUMO_PROTEGIDO':
-    case 'HIPOTECA_SEGURA':
-      return conId ? [
-        'Inf. General',
-        'Inf. Objeto Asegurado',
-        'Fig. Participantes',
-        'Coberturas/Garantías/Prestaciones',
-        'Observaciones y Cláusulas',
-        'Autorizaciones',
-        'Entorno ec',
-      ] : ['Recibos', 'Prestaciones'];
-    default:
-      return ['Recibos', 'Prestaciones'];
+): ResultadoDispatcherPoliza {
+  let tipoDetalle: TipoDetallePoliza;
+  if (ramo === 'SALUD') {
+    tipoDetalle = 'SALUD';
+  } else if (ramo.includes('AUTOS')) {
+    tipoDetalle = 'AUTOS';
+  } else if (
+    (ramo.includes('RIESGO') || ramo.includes('AHORRO')) &&
+    numeroPoliza.length <= 11
+  ) {
+    tipoDetalle = 'VIDA';
+  } else if (ramo.includes('HOGAR')) {
+    tipoDetalle = 'HOGAR';
+  } else {
+    tipoDetalle = 'GENERICA';
   }
+
+  if (tipoDetalle === 'HOGAR') return { tipoDetalle, pestanas: [] };
+  if (!idPoliza) return { tipoDetalle, pestanas: ['Recibos', 'Prestaciones'] };
+  if (tipoDetalle === 'SALUD') {
+    return { tipoDetalle, pestanas: ['Intervinientes', 'Coberturas', 'Recibos', 'Prestaciones'] };
+  }
+  if (tipoDetalle === 'AUTOS') {
+    return {
+      tipoDetalle,
+      pestanas: ['Vehículos', 'Coberturas', 'Intervinientes', 'Recibos', 'Prestaciones'],
+    };
+  }
+  if (tipoDetalle === 'VIDA') {
+    return {
+      tipoDetalle,
+      pestanas: [
+        'Intervinientes',
+        'Estructura comercial',
+        'Coberturas',
+        'Recibos',
+        'Prestaciones',
+        'Documentos',
+        ...(primasPeriodicas ? ['Primas'] : []),
+      ],
+    };
+  }
+  return { tipoDetalle, pestanas: ['Recibos', 'Prestaciones'] };
 }
 
 /** /polizas/:numero — ficha de póliza (resumen, bloques por ramo, acciones del catálogo y recibos). */
 @Component({
   selector: 'pgm-poliza-page',
   imports: [
-    DatePipe,
     CurrencyPipe,
+    DatePipe,
     KeyValuePipe,
     RouterLink,
     EstadoComponent,
     IconoComponent,
-    TablaExportableComponent,
   ],
   template: `
     <pgm-estado [cargando]="cargando()" [error]="error()" />
@@ -182,111 +124,90 @@ export function pestanasPoliza(
             {{ t.acciones }}
           </button>
         </div>
+        @if (pestanasPara(p).length) {
         <div class="subtabs" role="tablist" data-testid="pestanas-poliza">
           @for (tab of pestanasPara(p); track tab) {
             <button
               type="button"
               role="tab"
               [class.activa]="pestana() === tab"
-              (click)="seleccionarPestana(tab, p)"
+              (click)="pestana.set(tab)"
             >
               {{ tab }}
             </button>
           }
         </div>
-        @if (p.tipoDetalle === 'AUTOS' && pestana() === 'Vehículos') {
-          <div class="subtabs" role="tablist" data-testid="subpestanas-autos">
-            @for (tab of pestanasDetalleAutos; track tab) {
-              <button
-                type="button"
-                role="tab"
-                [class.activa]="seccionDetalle() === tab"
-                (click)="seleccionarSeccionDetalle(tab)"
-                >{{ tab }}</button
-              >
-            }
-          </div>
-        }
-        @if (p.tipoDetalle === 'HOGAR' && pestana() === 'Inf. general') {
-          <div class="subtabs" role="tablist" data-testid="subpestanas-hogar">
-            @for (tab of pestanasDetalleHogar; track tab) {
-              <button
-                type="button"
-                role="tab"
-                [class.activa]="seccionDetalle() === tab"
-                (click)="seleccionarSeccionDetalle(tab)"
-                >{{ tab }}</button
-              >
-            }
-          </div>
-        }
-        @if (p.tipoDetalle === 'AUTOS' && pestana() === 'Vehículos') {
-          <div class="subtabs" role="tablist" data-testid="pestanas-detalle-autos">
-            @for (tab of pestanasHijasDetalle(); track tab) {
-              <button
-                type="button"
-                role="tab"
-                [class.activa]="pestanaDetalle() === tab"
-                (click)="pestanaDetalle.set(tab)"
-                >{{ tab }}</button
-              >
-            }
-          </div>
-        }
-        @if (p.tipoDetalle === 'HOGAR' && pestana() === 'Inf. general') {
-          <div class="subtabs" role="tablist" data-testid="pestanas-detalle-hogar">
-            @if (seccionDetalle() === 'Tomador/Asegurado') {
-              @for (figura of pestanasFiguraHogar; track figura) {
-                <button
-                  type="button"
-                  role="tab"
-                  [class.activa]="figuraHogar() === figura"
-                  (click)="seleccionarFiguraHogar(figura)"
-                  >{{ figura }}</button
-                >
-              }
-            }
-            @for (tab of pestanasHijasDetalle(); track tab) {
-              <button
-                type="button"
-                role="tab"
-                [class.activa]="pestanaDetalle() === tab"
-                (click)="pestanaDetalle.set(tab)"
-                >{{ tab }}</button
-              >
-            }
-          </div>
         }
         <h2>{{ t.resumen }}</h2>
         @if (pestana() === 'Recibos') {
           <p>{{ t.recibos }}</p>
-        } @else if (pestana() !== 'Prestaciones') {
+        } @else if (pestana() && pestana() !== 'Prestaciones') {
           <h2>{{ pestana() }}</h2>
         }
         @if (detalle(); as d) {
           @if (pestana() === 'Coberturas' && d.garantias.length) {
             <table class="tabla" data-testid="coberturas-poliza">
-              <thead><tr><th>Garantía</th><th>Capital</th><th>Franquicia</th></tr></thead>
+              <thead><tr>
+                @for (columna of columnasCoberturas(p); track columna) {
+                  <th>{{ columna }}</th>
+                }
+              </tr></thead>
               <tbody>
                 @for (g of d.garantias; track g.codigo) {
                   <tr>
-                    <td>{{ g.nombre }}</td>
-                    <td>{{ g.capital !== null ? (g.capital | currency: 'EUR') : 'Incluida' }}</td>
-                    <td>{{ g.franquicia ?? '—' }}</td>
+                    @for (columna of columnasCoberturas(p); track columna) {
+                      <td>{{ valorCobertura(g, columna) }}</td>
+                    }
                   </tr>
                 }
               </tbody>
             </table>
           }
-          @if (pestana() === 'Intervinientes' && d.beneficiarios.length) {
+          @if (pestana() === 'Intervinientes' && (d.beneficiarios.length || p.tipoDetalle !== 'VIDA')) {
+            @if (p.tipoDetalle !== 'VIDA') {
+              <h3>Intervinientes ({{ d.beneficiarios.length }})</h3>
+            }
             <table class="tabla" data-testid="intervinientes-poliza">
-              <thead><tr><th>Beneficiario</th><th>Parentesco</th><th>%</th></tr></thead>
+              <thead><tr>
+                @for (columna of columnasIntervinientes(p); track columna) {
+                  <th>{{ columna }}</th>
+                }
+              </tr></thead>
               <tbody>
                 @for (b of d.beneficiarios; track $index) {
-                  <tr><td>{{ b.nombre }}</td><td>{{ b.parentesco }}</td><td>{{ b.porcentaje }}</td></tr>
+                  <tr>
+                    @for (columna of columnasIntervinientes(p); track columna) {
+                      <td>{{ valorInterviniente(b, columna) }}</td>
+                    }
+                  </tr>
                 }
               </tbody>
             </table>
+          }
+          @if (p.tipoDetalle === 'VIDA' && pestana() === 'Estructura comercial') {
+            <table class="tabla" data-testid="estructura-comercial">
+              <thead><tr>@for (columna of columnasEstructuraComercial; track columna) { <th>{{ columna }}</th> }</tr></thead>
+              <tbody><tr>@for (columna of columnasEstructuraComercial; track columna) { <td>{{ valorCampo(d, columna) }}</td> }</tr></tbody>
+            </table>
+          }
+          @if (p.tipoDetalle === 'VIDA' && pestana() === 'Documentos') {
+            <div class="botones">
+              <button type="button" class="btn" (click)="abrirAcciones()">Duplicado de póliza</button>
+              <button type="button" class="btn btn-secundario" (click)="cargarDocumentos()">Lector de documentos</button>
+            </div>
+            @if (documentos(); as docs) {
+              @for (documento of docs; track documento.id) {
+                <p>{{ documento.nombre }}</p>
+              }
+            }
+          }
+          @if (p.tipoDetalle === 'VIDA' && pestana() === 'Primas') {
+            <dl class="datos">
+              @for (campo of camposPrimasVida; track campo) {
+                <dt>{{ campo }}</dt>
+                <dd>{{ valorCampo(d, campo) }}</dd>
+              }
+            </dl>
           }
           <div class="grid grid-2 bloques" data-testid="bloques-ramo">
             @for (b of bloquesParaPestana(d); track b[0]) {
@@ -305,12 +226,39 @@ export function pestanasPoliza(
       </section>
       @if (pestana() === 'Recibos') {
         <section class="card">
-        <pgm-tabla-exportable
-          [titulo]="t.recibos"
-          [nombreFichero]="'recibos-' + p.numero"
-          [columnas]="columnas"
-          [filas]="recibos()"
-        />
+          <table class="tabla" data-testid="recibos-poliza">
+            <thead><tr><th>Icono ramo</th><th>Método de pago</th><th>Importe</th><th>Fechas</th><th>Estado</th></tr></thead>
+            <tbody>
+              @for (recibo of recibos(); track recibo.numero) {
+                <tr>
+                  <td>{{ recibo.ramo }}</td>
+                  <td>{{ recibo.formaPago }}</td>
+                  <td>{{ recibo.importe | currency: 'EUR' }}</td>
+                  <td>Nº recibo {{ recibo.numero }} · Inicio {{ recibo.fechaEmision | date: 'dd/MM/yyyy' }} · Fin {{ recibo.fechaVencimiento | date: 'dd/MM/yyyy' }}</td>
+                  <td>{{ recibo.estado }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </section>
+      }
+      @if (pestana() === 'Prestaciones') {
+        <section class="card">
+          <table class="tabla" data-testid="prestaciones-poliza">
+            <thead><tr><th>Icono ramo</th><th>Descripción prestación</th><th>Importe</th><th>Fechas</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody>
+              @for (prestacion of prestaciones(); track prestacion.numero) {
+                <tr>
+                  <td>{{ prestacion.ramo }}</td>
+                  <td>{{ prestacion.descripcion }}</td>
+                  <td></td>
+                  <td>No. expediente {{ prestacion.numero }} · Ocurrencia {{ prestacion.fechaOcurrencia | date: 'dd/MM/yyyy' }} · Apertura {{ prestacion.fechaApertura | date: 'dd/MM/yyyy' }}</td>
+                  <td>{{ prestacion.estado }}</td>
+                  <td></td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </section>
       }
 
@@ -465,6 +413,7 @@ export class PolizaPageComponent {
   readonly poliza = signal<Poliza | null>(null);
   readonly detalle = signal<DetallePolizaRamo | null>(null);
   readonly recibos = signal<Recibo[]>([]);
+  readonly prestaciones = signal<Prestacion[]>([]);
   readonly acciones = signal<AccionPoliza[]>([]);
   readonly seleccionada = signal<AccionPoliza | null>(null);
   readonly documentos = signal<DocumentoPoliza[] | null>(null);
@@ -474,20 +423,27 @@ export class PolizaPageComponent {
   readonly error = signal<string | null>(null);
   readonly etiquetas = ETIQUETA_RAMO;
   readonly pestana = signal('');
-  readonly pestanaDetalle = signal<string>('');
-  readonly seccionDetalle = signal<string>('');
-  readonly figuraHogar = signal<'Tomador' | 'Asegurado'>('Tomador');
-  readonly pestanasDetalleAutos = PESTANAS_AUTOS_SECCIONES;
-  readonly pestanasDetalleHogar = PESTANAS_HOGAR_SECCIONES;
-  readonly pestanasFiguraHogar = ['Tomador', 'Asegurado'] as const;
-  readonly columnas: Columna<Recibo>[] = [
-    { clave: 'numero', titulo: 'Recibo' },
-    { clave: 'estado', titulo: 'Estado' },
-    { clave: 'importe', titulo: 'Importe (€)' },
-    { clave: 'fechaEmision', titulo: 'Emisión' },
-    { clave: 'fechaVencimiento', titulo: 'Vencimiento' },
-    { clave: 'formaPago', titulo: 'Forma de pago' },
-    { clave: 'ibanEnmascarado', titulo: 'IBAN' },
+  readonly columnasEstructuraComercial = [
+    'Intervinientes',
+    'Aport.',
+    'Clave productor',
+    'TP',
+    'O.D.',
+    'F. inicio',
+    'Nombre',
+    'Año 1',
+    'Año 2',
+    'Nº Sucesivos',
+    'Sucesivos (%)',
+  ];
+  readonly camposPrimasVida = [
+    'Prima única',
+    'Prima periódica',
+    'Importe aportación',
+    'Periodicidad aportación',
+    'Tipo Revalorizacíon',
+    '% Revalorización',
+    'Día de cobro',
   ];
 
   constructor() {
@@ -503,18 +459,17 @@ export class PolizaPageComponent {
       const p = await firstValueFrom(this.repo.fichaPoliza(numero));
       this.poliza.set(p);
       this.pestana.set(this.pestanasPara(p)[0] ?? '');
-      const [recibos, detalle] = await Promise.all([
+      const [recibos, detalle, prestaciones] = await Promise.all([
         firstValueFrom(this.repo.recibosPoliza(numero)),
         firstValueFrom(this.repo.detallePolizaRamo(numero)).catch(() => null),
+        firstValueFrom(this.repo.prestacionesCliente(p.clienteId))
+          .then((lista) => lista.items.filter((item) => item.polizaNumero === numero))
+          .catch(() => []),
       ]);
       this.recibos.set(recibos.items);
       this.detalle.set(detalle);
+      this.prestaciones.set(prestaciones);
       this.pestana.set(this.pestanasPara(p)[0] ?? '');
-      this.seccionDetalle.set(
-        p.tipoDetalle === 'AUTOS' ? PESTANAS_AUTOS_SECCIONES[0] : PESTANAS_HOGAR_SECCIONES[0],
-      );
-      this.figuraHogar.set('Tomador');
-      this.pestanaDetalle.set(this.pestanasHijasDetalle()[0] ?? '');
     } catch (e) {
       const err = e as { status?: number; error?: { detail?: string }; message?: string };
       if (err.status === 403) {
@@ -530,86 +485,74 @@ export class PolizaPageComponent {
   pestanasPara(p: Poliza, idPoliza?: string | null): string[] {
     const detalle = this.detalle();
     const idPolizaDetalle = idPoliza !== undefined ? idPoliza : detalle?.idPoliza ?? null;
-    return pestanasPoliza(
-      (p.tipoDetalle ?? 'GENERICA') as TipoDetallePoliza,
+    return dispatchPestanasPoliza(
+      p.ramo,
+      p.numero,
       idPolizaDetalle,
       this.detalle()?.primasPeriodicas ?? false,
-    );
+    ).pestanas;
   }
 
   bloquesParaPestana(detalle: DetallePolizaRamo): [string, Record<string, string>][] {
     const clavesPorPestana: Record<string, string[]> = {
-      Vehículos: ['Vehículo', 'Conductores'],
-      Coberturas: ['Coberturas'],
-      Intervinientes: ['Intervinientes', 'Figuras', 'Beneficiarios'],
-      'Inf. general': ['Vivienda', 'Datos del contrato'],
-      'Inf. General': ['Inf. General'],
-      'Inf. Objeto Asegurado': ['Objeto asegurado', 'Vivienda'],
-      'Fig. Participantes': ['Participantes', 'Intervinientes'],
-      'Coberturas/Garantías/Prestaciones': ['Coberturas', 'Garantías', 'Garantias'],
-      'Observaciones y Cláusulas': ['Observaciones', 'Cláusulas'],
+      Vehículos: ['Vehículo', 'Vehículos', 'Riesgo', 'Datos del tomador'],
+      Coberturas: ['Coberturas', 'Garantías', 'Garantias'],
+      Intervinientes: ['Intervinientes', 'Figuras', 'Beneficiarios', 'Datos del tomador', 'Datos del asegurado'],
       'Estructura comercial': ['Estructura comercial'],
+      Documentos: ['Documentos'],
+      Primas: ['Primas'],
     };
-    const claves = clavesPorPestana[this.pestana()] ?? [
-      this.pestana(),
-      this.seccionDetalle(),
-      this.pestanaDetalle(),
-    ];
+    const claves = clavesPorPestana[this.pestana()] ?? [this.pestana()];
     const normalizar = (texto: string) => texto.trim().toLocaleLowerCase('es');
     return Object.entries(detalle.bloques).filter(([clave]) =>
       claves.some((esperada) => normalizar(clave) === normalizar(esperada)),
     );
   }
 
-  seleccionarPestana(tab: string, poliza: Poliza): void {
-    this.pestana.set(tab);
-    this.seccionDetalle.set(
-      poliza.tipoDetalle === 'AUTOS' ? PESTANAS_AUTOS_SECCIONES[0] : PESTANAS_HOGAR_SECCIONES[0],
-    );
-    this.pestanaDetalle.set(this.pestanasHijasDetalle()[0] ?? '');
-  }
-
-  seleccionarSeccionDetalle(tab: string): void {
-    this.seccionDetalle.set(tab);
-    this.pestanaDetalle.set(this.pestanasHijasDetalle()[0] ?? '');
-  }
-
-  seleccionarFiguraHogar(figura: 'Tomador' | 'Asegurado'): void {
-    this.figuraHogar.set(figura);
-    this.pestanaDetalle.set(this.pestanasHijasDetalle()[0] ?? '');
-  }
-
-  pestanasHijasDetalle(): readonly string[] {
-    if (this.detalle()?.tipoDetalle === 'AUTOS') {
-      switch (this.seccionDetalle()) {
-        case 'Inf. general':
-          return PESTANAS_AUTOS_INFO_GENERAL;
-        case 'Riesgo':
-          return PESTANAS_AUTOS_RIESGO;
-        case 'Figuras tomador':
-          return PESTANAS_AUTOS_FIGURAS_TOMADOR;
-        case 'Observaciones':
-          return PESTANAS_AUTOS_OBSERVACIONES;
-        default:
-          return [];
-      }
+  columnasCoberturas(poliza: Poliza): string[] {
+    if (poliza.tipoDetalle === 'AUTOS') return ['Descripción', 'Suma'];
+    if (poliza.tipoDetalle === 'SALUD') return ['Nombre', 'Cobertura', 'Obligatoria', 'Contratada'];
+    if (poliza.tipoDetalle === 'VIDA') {
+      return ['Garantía', 'Capital/Renta', 'Prima neta anual', 'Fondo', 'Títulos', 'Importe', 'VLP', 'Fecha VLP'];
     }
-    switch (this.seccionDetalle()) {
-      case 'Riesgo':
-        return PESTANAS_HOGAR_RIESGO;
-      case 'Figuras':
-        return PESTANAS_HOGAR_FIGURAS;
-      case 'Vivienda':
-        return PESTANAS_HOGAR_VIVIENDA;
-      case 'Tomador/Asegurado':
-        return this.figuraHogar() === 'Tomador'
-          ? PESTANAS_HOGAR_TOMADOR
-          : PESTANAS_HOGAR_ASEGURADO;
-      case 'Observaciones':
-        return PESTANAS_HOGAR_OBSERVACIONES;
-      default:
-        return [];
+    return [];
+  }
+
+  columnasIntervinientes(poliza: Poliza): string[] {
+    return poliza.tipoDetalle === 'VIDA'
+      ? ['Suceso', 'Beneficiarios', '%']
+      : ['Nombre', 'Tipo de Documento', 'Nº Documento', 'Fecha Nacimiento', 'Figura'];
+  }
+
+  valorInterviniente(
+    beneficiario: DetallePolizaRamo['beneficiarios'][number],
+    columna: string,
+  ): string {
+    if (columna === 'Suceso') return beneficiario.parentesco;
+    if (columna === 'Beneficiarios' || columna === 'Nombre') return beneficiario.nombre;
+    if (columna === 'Nº Documento') return beneficiario.documento;
+    if (columna === '%') return String(beneficiario.porcentaje);
+    if (columna === 'Figura') return beneficiario.parentesco;
+    return '';
+  }
+
+  valorCobertura(garantia: DetallePolizaRamo['garantias'][number], columna: string): string {
+    if (columna === 'Descripción' || columna === 'Nombre' || columna === 'Garantía') {
+      return garantia.nombre;
     }
+    if (columna === 'Suma' || columna === 'Capital/Renta' || columna === 'Importe') {
+      return garantia.capital === null ? '' : String(garantia.capital);
+    }
+    return '';
+  }
+
+  valorCampo(detalle: DetallePolizaRamo, campo: string): string {
+    const buscado = campo.trim().toLocaleLowerCase('es');
+    for (const bloque of Object.values(detalle.bloques)) {
+      const entrada = Object.entries(bloque).find(([clave]) => clave.trim().toLocaleLowerCase('es') === buscado);
+      if (entrada) return entrada[1];
+    }
+    return '';
   }
 
   async abrirAcciones(): Promise<void> {

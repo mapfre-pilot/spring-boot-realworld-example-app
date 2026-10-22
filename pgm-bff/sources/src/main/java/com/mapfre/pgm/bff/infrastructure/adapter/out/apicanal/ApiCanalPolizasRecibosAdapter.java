@@ -96,13 +96,7 @@ public class ApiCanalPolizasRecibosAdapter implements PolizasPort, RecibosPort, 
     @Override
     @CircuitBreaker(name = "apicanal") @Retry(name = "apicanal-lectura")
     public Optional<DetallePolizaRamo> detalleRamo(Poliza poliza) {
-        Poliza.TipoDetalle tipo = poliza.tipoDetalle() == null ? switch (poliza.ramo()) {
-            case AUTOS -> Poliza.TipoDetalle.AUTOS;
-            case SALUD -> Poliza.TipoDetalle.SALUD;
-            case VIDA, AHORRO -> Poliza.TipoDetalle.VIDA;
-            case HOGAR -> Poliza.TipoDetalle.HOGAR;
-            default -> Poliza.TipoDetalle.GENERICA;
-        } : poliza.tipoDetalle();
+        Poliza.TipoDetalle tipo = Poliza.clasificarTipoDetalle(poliza.ramo(), poliza.numero());
         return Optional.of(new DetallePolizaRamo(poliza.numero(), poliza.ramo(), tipo, null, false,
                 List.of("detalle por ramo"), Map.of(), List.of(), List.of(),
                 List.of(new DisponibilidadPorOrigen("detalle por ramo", "API_CANAL", false,
