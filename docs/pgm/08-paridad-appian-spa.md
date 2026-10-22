@@ -33,7 +33,7 @@ La cadena viva es `PGM_FichaCliente_v2` → `PGM_iMediador_Gestiones` (rama Venc
 | Appian (interfaz viva) | SPA | Estado |
 |---|---|---|
 | `PGM_TablaVencimientos_V2`: «Venc. / Oport.», «Clase de Vcto.», «Producto / Riesgo», «F. Venci. / Opor.», «Prima / Saldo», «Entidad competencia», «Usuario», «Comentarios», «Anexos» | Las mismas columnas en el mismo orden | igual |
-| `PGM_FiltrosVencimientos_V2`: filtros «Todos», «Completo», «Incompleto»; campos «Producto», «Fecha Desde», «Fecha Hasta», «Contratado» (Sí/No); botones «Limpiar» y «Ver resultados». El `label` SAIL «Tipo Acción» del selector de producto está colapsado, no es un filtro adicional | Se conservan los filtros y botones visibles; sin selector adicional «Tipo Acción» ni opción «Todos» en Contratado | igual |
+| `PGM_FiltrosVencimientos_V2`: filtros «Todos», «Completo», «Incompleto»; campos «Producto», «Fecha Desde», «Fecha Hasta», «Contratado» (Sí/No); botones «Limpiar» y «Ver resultados». El `label` SAIL «Tipo Acción» del selector de producto está colapsado, no es un filtro adicional; «Limpiar» vuelve al estado «Todos» y vacía los demás criterios | Se conservan los filtros y botones visibles; sin selector adicional «Tipo Acción» ni opción «Todos» en Contratado; «Limpiar» restablece todos los criterios | igual |
 | En la rama viva no hay acción de alta «+ Vencimiento» en `PGM_ResumenVencimientos`, `PGM_FiltrosVencimientos_V2` ni `PGM_TablaVencimientos_V2` | Se retira el botón de alta de la barra SPA | igual |
 
 ## Páginas del site

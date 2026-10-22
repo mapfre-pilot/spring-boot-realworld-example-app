@@ -147,8 +147,24 @@ describe('GestionComercialClienteComponent', () => {
     expect(filtros).toContain('Limpiar');
     expect(filtros).toContain('Ver resultados');
     expect(filtros).not.toContain('Tipo Acción');
+    expect(spectator.query('select[name="producto"]')?.textContent).toContain('Autos');
     expect(spectator.query('select[name="tipo"]')).toBeNull();
     expect(spectator.queryAll('input[type="radio"][name="contratado"]')).toHaveLength(2);
+    spectator.component.filtro.clase = 'COMPLETO';
+    spectator.component.filtro.producto = 'AUTOS';
+    spectator.component.filtro.desde = '2026-11-15';
+    spectator.component.filtro.hasta = '2026-12-31';
+    spectator.component.filtro.contratado = true;
+    spectator.component.limpiarFiltros();
+    expect(spectator.component.filtro).toEqual({
+      producto: null,
+      tipo: null,
+      desde: null,
+      hasta: null,
+      contratado: null,
+      clase: null,
+    });
+    await spectator.fixture.whenStable();
   });
 
   it('muestra el bloqueo literal de Actividad comercial cuando el usuario no tiene NUUMA', async () => {

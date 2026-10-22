@@ -119,7 +119,7 @@ const euros = (v: unknown) =>
                   productosVencimientos().length === 0 ? 'Sin opciones' : 'Selecciona'
                 }}</option>
                 @for (r of productosVencimientos(); track r) {
-                  <option [ngValue]="r">{{ r }}</option>
+                  <option [ngValue]="r">{{ etiquetaProducto(r) }}</option>
                 }
               </select></label
             >
@@ -872,6 +872,11 @@ export class GestionComercialClienteComponent {
     return `${v ?? ''}`.replace(/_/g, ' ');
   }
 
+  etiquetaProducto(producto: Ramo): string {
+    const normalizado = producto.toLocaleLowerCase('es');
+    return normalizado.charAt(0).toLocaleUpperCase('es') + normalizado.slice(1);
+  }
+
   async cargarTodo(): Promise<void> {
     this.detalleOportunidad.set(null);
     this.detalleGestion.set(null);
@@ -897,7 +902,7 @@ export class GestionComercialClienteComponent {
       desde: null,
       hasta: null,
       contratado: null,
-      clase: this.filtro.clase,
+      clase: null,
     };
     void this.cargarOportunidades();
   }
