@@ -51,3 +51,17 @@ Verificado por LCP (§3): el reintento con N de `SCA2_consultarNewAlta`/`SCA2_si
 ## 5. Límite conocido
 
 La salida «Guardar autorización» del nodo 308 sólo se ejecuta cuando ANL marca `CONCLUIDA` (criterio de espera decidido por el analista, duda #3). En PRE ANL no concluye el ciclo para solicitudes SCA2 (r23-a §7), así que en TEST sólo se puede comprobar simulando la conclusión en la fila ANL de la solicitud de prueba.
+
+## 6. Componente de inducción Verti (CMP Inducir Cliente Completo) visible para el usuario
+
+Petición del usuario (21/10): «cuando se llama al proceso de Verti se tiene que mostrar en la pantalla para que el usuario pueda completar el componente … y después de completar continúe en SCA2».
+
+**Diagnóstico.** `SCA2 CMD Mecanizar` nodo 330 arrancaba el CMP **asíncrono** y seguía; los formularios del CMP (User Input Tasks de `CMP Inducir Cliente Completo Fase 1/2`, asignadas a `usuarioAppian` = quien pulsa ANULAR PÓLIZA) quedaban como tareas Appian que el site SCA2 no muestra. En SCA, `SCA Finalizar Mecanización` nodo 17 «Inducción Verti» es un **subproceso síncrono encadenado**: el usuario ve el formulario del componente justo después de ANULAR PÓLIZA y la mecanización continúa al terminarlo.
+
+**Cambio (TEST).**
+| Objeto | Versión | Cambio |
+|---|---|---|
+| PM `SCA2 CMD Mecanizar` | v32 → v33 (42 nodos; aviso «Too many nodes») | 331 → **332 «Write Tarea INDUCCION»** (`SCA2 Tarea` tipo `INDUCCION`, «Inducción Verti/Vencimiento (componente)», PENDIENTE, asignada al usuario de la solicitud) → **330 síncrono** (espera a que el usuario complete el componente; guarda `pp.id` en la PV nueva `induccionProcessId`) → **333 «Write cierre Tarea INDUCCION»** (COMPLETADA, `fechaCierre`, `proceso` = id del CMP) → 8 Guardar Mecanización. Orden idéntico a SCA: primero la inducción, después bloqueo NEW / ANL / CORE |
+| `SCA2_DetalleTareas` | v30 → v31 | Tipo `INDUCCION` en la normalización y rama propia en el `a!match`: tarjeta con el estado (pendiente por *usuario* / completado el *fecha*), enlace «Abrir mis tareas de Appian para completar el componente» (`/suite/tempo/tasks`) y VOLVER |
+
+**Límites.** El PM padre del CMP sólo tiene PVs de entrada, no devuelve resultado (los datos de AGC/RGPD/vencimientos viven en Fase 1/2 y no suben), así que SCA2 sólo puede registrar que el componente terminó y cuándo. LCP no expone process reports, por lo que no se puede abrir la tarea concreta con `a!processTaskLink`; se enlaza a la lista de tareas de Appian del usuario. Prueba con solicitud nueva pendiente (misma falta de pólizas válidas que §4).
