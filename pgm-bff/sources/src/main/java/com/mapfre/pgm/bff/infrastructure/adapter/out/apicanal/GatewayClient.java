@@ -106,6 +106,14 @@ public class GatewayClient {
         return props.companyId() == null || props.companyId().isBlank() ? "1" : props.companyId();
     }
 
+    public String rutaConfigurada(String clave) {
+        String ruta = props.rutas().get(clave);
+        if (ruta == null || ruta.isBlank()) {
+            throw new IllegalStateException("Ruta de gateway no configurada: " + clave);
+        }
+        return ruta;
+    }
+
     public <T, B> T post(String ruta, String path, B body, ParameterizedTypeReference<T> tipo) {
         return postInterno(ruta, path, body, spec -> spec.body(tipo));
     }

@@ -38,7 +38,11 @@ public class InMemoryRecibosAdapter implements RecibosPort {
                 switch (r.formaPago()) { case "Domiciliación" -> "Domiciliación bancaria"; case "Tarjeta" -> "Pago con tarjeta"; default -> r.formaPago(); },
                 "Tomador de la póliza", "Oficina 0001 · Agente 12345",
                 r.importe(), r.importe().multiply(new BigDecimal("0.08")).setScale(2, java.math.RoundingMode.HALF_UP),
-                r.estado() == Recibo.EstadoRecibo.DEVUELTO ? List.of("Devolución bancaria", "Reenvío al banco") : List.of()));
+                r.estado() == Recibo.EstadoRecibo.DEVUELTO ? List.of("Devolución bancaria", "Reenvío al banco") : List.of(),
+                List.of(
+                        new DisponibilidadPorOrigen("Datos Personales", "LOCAL", false, "El perfil local no contiene los datos personales del pagador."),
+                        new DisponibilidadPorOrigen("Contacto", "LOCAL", false, "El perfil local no contiene los datos de contacto del pagador."),
+                        new DisponibilidadPorOrigen("Correspondencia", "LOCAL", false, "El perfil local no contiene los datos de correspondencia del pagador."))));
     }
 
     @Override

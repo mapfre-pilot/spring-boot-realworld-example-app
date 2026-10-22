@@ -16,8 +16,19 @@ public final class PosicionCliente {
     public record DocumentoPoliza(String id, String tipo, String nombre, LocalDate fecha, String formato) {}
 
     /** Bloques específicos por ramo de la ficha de póliza (Vida/Ahorro: garantías y beneficiarios; Autos: vehículo/conductores; Hogar: vivienda). */
-    public record DetallePolizaRamo(String numero, Ramo ramo, Map<String, Map<String, String>> bloques, List<Garantia> garantias,
-                                    List<Beneficiario> beneficiarios) {}
+    public record DetallePolizaRamo(String numero, Ramo ramo, Poliza.TipoDetalle tipoDetalle, String idPoliza,
+                                    boolean primasPeriodicas, List<String> noDisponiblePorOrigen, Map<String, Map<String, String>> bloques,
+                                    List<Garantia> garantias, List<Beneficiario> beneficiarios,
+                                    List<DisponibilidadPorOrigen> disponibilidadPorOrigen) {
+        public DetallePolizaRamo(String numero, Ramo ramo, Poliza.TipoDetalle tipoDetalle, String idPoliza,
+                                 boolean primasPeriodicas, List<String> noDisponiblePorOrigen,
+                                 Map<String, Map<String, String>> bloques, List<Garantia> garantias,
+                                 List<Beneficiario> beneficiarios) {
+            this(numero, ramo, tipoDetalle, idPoliza, primasPeriodicas, noDisponiblePorOrigen, bloques, garantias,
+                    beneficiarios, List.of());
+        }
+    }
+    public record DisponibilidadPorOrigen(String dato, String origen, boolean disponible, String motivo) {}
     public record Garantia(String codigo, String nombre, BigDecimal capital, String franquicia) {}
     public record Beneficiario(String nombre, String documento, String parentesco, BigDecimal porcentaje) {}
 
@@ -27,7 +38,14 @@ public final class PosicionCliente {
 
     /** Detalle interno de recibo (PGM_Detalle_Recibos*, visible si PGM_visualizacionRecibos). */
     public record ReciboDetalle(Recibo recibo, String producto, String riesgo, String metodoPagoLiteral, String pagador,
-                                String estructuraComercial, BigDecimal cuota, BigDecimal comisiones, List<String> gestiones) {}
+                                String estructuraComercial, BigDecimal cuota, BigDecimal comisiones, List<String> gestiones,
+                                List<DisponibilidadPorOrigen> disponibilidadPagador) {
+        public ReciboDetalle(Recibo recibo, String producto, String riesgo, String metodoPagoLiteral, String pagador,
+                             String estructuraComercial, BigDecimal cuota, BigDecimal comisiones, List<String> gestiones) {
+            this(recibo, producto, riesgo, metodoPagoLiteral, pagador, estructuraComercial, cuota, comisiones, gestiones,
+                    List.of());
+        }
+    }
 
     /** Menú ⋮ del recibo: Consulta Recibos (ConsuWeb, externo), Visualizar duplicado, Detalle (si flag). */
     public record AccionRecibo(String codigo, String nombre, String tipo, String url) {}

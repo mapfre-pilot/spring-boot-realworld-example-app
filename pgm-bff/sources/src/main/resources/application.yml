@@ -94,6 +94,10 @@ pgm:
       home-api: /legacy/home-api                       # apisb home/2.0 detalle póliza Hogar
       motor-api: /legacy/motor-api                     # apisb motor/1.0 detalle póliza Autos
       life-api: /legacy/life-api                       # Life Risk API 1.0 detalle póliza Vida
+      health-api-detalle: /health/1.0/individual/policy/{policyId}
+      home-api-detalle: /esp/srv/api/home/2.0/policy/{numPoliza}/detail
+      motor-api-detalle: /srv/api/1.0/motor/policy/{referenceNumber}/detail
+      life-api-detalle: /apisbcpolizas_int-web/api/life/1.0/individual/policy/{idPoliza}
   lanzaderas:
     - { codigo: NSE, nombre: "NSE — Nuevo Sistema de Emisión", destino: NSE, ramo: AUTOS, url: "${PGM_URL_NSE:https://nse.interno.mapfre.invalid}", requiere-nuuma: false }
     - { codigo: NSE_HOGAR, nombre: "NSE — Hogar", destino: NSE, ramo: HOGAR, url: "${PGM_URL_NSE:https://nse.interno.mapfre.invalid}/hogar", requiere-nuuma: false }

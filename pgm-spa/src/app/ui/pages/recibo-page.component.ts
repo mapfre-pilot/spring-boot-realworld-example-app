@@ -15,6 +15,8 @@ export const TEXTOS_RECIBO = {
   detalle: 'Detalle del recibo',
   duplicadoGenerado: 'Duplicado generado',
 };
+export const PESTANAS_RECIBO = ['Datos Generales', 'Desglose económico', 'Gestiones'] as const;
+export const PESTANAS_PAGADOR = ['Datos Personales', 'Contacto', 'Correspondencia'] as const;
 
 /** /recibos/:numero — detalle del recibo con el menú de acciones de PGM. */
 @Component({
@@ -63,6 +65,18 @@ export const TEXTOS_RECIBO = {
             </div>
           </details>
         </div>
+        <div class="subtabs" role="tablist" data-testid="pestanas-recibo">
+          @for (tab of pestanas; track tab) {
+            <button
+              type="button"
+              role="tab"
+              [class.activa]="pestana() === tab"
+              (click)="pestana.set(tab)"
+            >
+              {{ tab }}
+            </button>
+          }
+        </div>
         @if (mensaje(); as m) {
           <div
             class="alerta"
@@ -73,44 +87,128 @@ export const TEXTOS_RECIBO = {
             <pgm-icono nombre="aviso" [tam]="16" /> {{ m }}
           </div>
         }
-        <dl class="datos">
-          <dt>Ramo</dt>
-          <dd>{{ etiquetas[r.ramo] }}</dd>
-          <dt>Importe</dt>
-          <dd>
-            <strong>{{ r.importe | currency: 'EUR' }}</strong>
-          </dd>
-          <dt>Emisión</dt>
-          <dd>{{ r.fechaEmision | date: 'dd/MM/yyyy' }}</dd>
-          <dt>Vencimiento</dt>
-          <dd>{{ r.fechaVencimiento | date: 'dd/MM/yyyy' }}</dd>
-          <dt>Forma de pago</dt>
-          <dd>{{ r.formaPago }}</dd>
-          <dt>IBAN</dt>
-          <dd>{{ r.ibanEnmascarado ?? '—' }}</dd>
-        </dl>
-        @if (detalle(); as d) {
-          <h2>{{ t.detalle }}</h2>
-          <dl class="datos" data-testid="detalle-recibo">
-            <dt>Producto</dt>
-            <dd>{{ d.producto }}</dd>
-            <dt>Riesgo</dt>
-            <dd>{{ d.riesgo }}</dd>
-            <dt>Método de pago</dt>
-            <dd>{{ d.metodoPagoLiteral }}</dd>
-            <dt>Pagador</dt>
-            <dd>{{ d.pagador }}</dd>
-            <dt>Estructura comercial</dt>
-            <dd>{{ d.estructuraComercial }}</dd>
-            <dt>Cuota</dt>
-            <dd>{{ d.cuota | currency: 'EUR' }}</dd>
-            <dt>Comisiones</dt>
-            <dd>{{ d.comisiones | currency: 'EUR' }}</dd>
-            <dt>Gestiones</dt>
-            <dd>{{ d.gestiones.join(', ') || '—' }}</dd>
-          </dl>
+        @switch (pestana()) {
+          @case ('Datos Generales') {
+            <dl class="datos" data-testid="datos-generales-recibo">
+              <dt>Ramo</dt>
+              <dd>{{ etiquetas[r.ramo] }}</dd>
+              <dt>Emisión</dt>
+              <dd>{{ r.fechaEmision | date: 'dd/MM/yyyy' }}</dd>
+              <dt>Vencimiento</dt>
+              <dd>{{ r.fechaVencimiento | date: 'dd/MM/yyyy' }}</dd>
+              <dt>Forma de pago</dt>
+              <dd>{{ r.formaPago }}</dd>
+              <dt>Pagador</dt>
+              <dd>
+                <button type="button" class="btn-enlace" (click)="pagadorAbierto.set(true)">
+                  Datos del pagador
+                </button>
+              </dd>
+            </dl>
+          }
+          @case ('Desglose económico') {
+            <dl class="datos" data-testid="desglose-economico-recibo">
+              <dt>Importe</dt>
+              <dd>
+                <strong>{{ r.importe | currency: 'EUR' }}</strong>
+              </dd>
+              <dt>IBAN</dt>
+              <dd>{{ r.ibanEnmascarado ?? '—' }}</dd>
+              @if (detalle(); as d) {
+                <dt>Cuota</dt>
+                <dd>{{ d.cuota | currency: 'EUR' }}</dd>
+                <dt>Comisiones</dt>
+                <dd>{{ d.comisiones | currency: 'EUR' }}</dd>
+              }
+            </dl>
+          }
+          @case ('Gestiones') {
+            @if (detalle(); as d) {
+              <ul data-testid="gestiones-recibo">
+                @for (gestion of d.gestiones; track gestion) {
+                  <li>{{ gestion }}</li>
+                }
+              </ul>
+            }
+          }
         }
       </section>
+      @if (pagadorAbierto()) {
+        <div class="backdrop" role="presentation">
+          <div class="dialogo" role="dialog" aria-modal="true" data-testid="dialogo-pagador">
+            <h2>Datos del pagador</h2>
+            <div class="subtabs">
+              @for (tab of pestanasPagador; track tab) {
+                <button
+                  type="button"
+                  [class.activa]="pestanaPagador() === tab"
+                  (click)="pestanaPagador.set(tab)"
+                >
+                  {{ tab }}
+                </button>
+              }
+            </div>
+            @switch (pestanaPagador()) {
+              @case ('Datos Personales') {
+                @for (disponibilidad of disponibilidadPagador(pestanaPagador()); track disponibilidad.origen) {
+                  <p class="alerta alerta-info">{{ disponibilidad.origen }}: {{ disponibilidad.motivo }}</p>
+                }
+                <dl class="datos">
+                  <dt>¿Actua como asegurado?</dt>
+                  <dd>—</dd>
+                  <dt>Nombre y apellidos</dt>
+                  <dd>{{ detalle()?.pagador ?? '—' }}</dd>
+                  <dt>Tipo de documento</dt>
+                  <dd>—</dd>
+                  <dt>Nº de documento</dt>
+                  <dd>—</dd>
+                  <dt>Fecha de nacimiento</dt>
+                  <dd>—</dd>
+                  <dt>Nacionalidad</dt>
+                  <dd>—</dd>
+                  <dt>Sexo</dt>
+                  <dd>—</dd>
+                  <dt>Tipo de persona</dt>
+                  <dd>—</dd>
+                  <dt>Estado civil</dt>
+                  <dd>—</dd>
+                  <dt>Idioma</dt>
+                  <dd>—</dd>
+                </dl>
+              }
+              @case ('Contacto') {
+                @for (disponibilidad of disponibilidadPagador(pestanaPagador()); track disponibilidad.origen) {
+                  <p class="alerta alerta-info">{{ disponibilidad.origen }}: {{ disponibilidad.motivo }}</p>
+                }
+                <dl class="datos">
+                  <dt>Email</dt>
+                  <dd>—</dd>
+                  <dt>Teléfono</dt>
+                  <dd>—</dd>
+                  <dt>Teléfono móvil</dt>
+                  <dd>—</dd>
+                  <dt>Fax</dt>
+                  <dd>—</dd>
+                </dl>
+              }
+              @case ('Correspondencia') {
+                @for (disponibilidad of disponibilidadPagador(pestanaPagador()); track disponibilidad.origen) {
+                  <p class="alerta alerta-info">{{ disponibilidad.origen }}: {{ disponibilidad.motivo }}</p>
+                }
+                <dl class="datos">
+                  <dt>Destinatario</dt>
+                  <dd>—</dd>
+                  <dt>Direccion</dt>
+                  <dd>—</dd>
+                </dl>
+              }
+            }
+            <button type="button" class="btn btn-secundario" (click)="pagadorAbierto.set(false)">
+              CERRAR
+            </button>
+          </div>
+        </div>
+      }
     }
   `,
   styles: [
@@ -180,6 +278,11 @@ export class ReciboPageComponent {
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);
   readonly etiquetas = ETIQUETA_RAMO;
+  readonly pestanas = PESTANAS_RECIBO;
+  readonly pestana = signal<(typeof PESTANAS_RECIBO)[number]>(this.pestanas[0]);
+  readonly pestanasPagador = PESTANAS_PAGADOR;
+  readonly pestanaPagador = signal<(typeof PESTANAS_PAGADOR)[number]>(this.pestanasPagador[0]);
+  readonly pagadorAbierto = signal(false);
 
   constructor() {
     effect(() => void this.cargar(this.numero()));
@@ -221,6 +324,10 @@ export class ReciboPageComponent {
         true,
       );
     }
+  }
+
+  disponibilidadPagador(pestana: string) {
+    return this.detalle()?.disponibilidadPagador?.filter((dato) => dato.dato === pestana) ?? [];
   }
 
   private informar(texto: string, error: boolean): void {

@@ -80,23 +80,49 @@ public class InMemoryPolizasAdapter implements PolizasPort {
     }
 
     @Override
-    public Optional<DetallePolizaRamo> detalleRamo(String numeroPoliza) {
-        return detalle(numeroPoliza).map(p -> switch (p.ramo()) {
-            case VIDA, AHORRO -> new DetallePolizaRamo(p.numero(), p.ramo(),
-                    Map.of("Datos del contrato", Map.of("Modalidad", p.producto(), "Duración", "Anual renovable", "Capital asegurado", "60.000,00 €")),
+    public Optional<DetallePolizaRamo> detalleRamo(Poliza p) {
+        return Optional.ofNullable(p).map(poliza -> switch (tipoDetalle(poliza)) {
+            case VIDA -> new DetallePolizaRamo(poliza.numero(), poliza.ramo(),
+                    tipoDetalle(poliza), poliza.numero(), true, List.of(),
+                    Map.of("Datos del contrato", Map.of("Modalidad", poliza.producto(), "Duración", "Anual renovable", "Capital asegurado", "60.000,00 €")),
                     List.of(new Garantia("FALL", "Fallecimiento", new BigDecimal("60000.00"), null),
                             new Garantia("IPA", "Invalidez permanente absoluta", new BigDecimal("60000.00"), null)),
-                    List.of(new Beneficiario("Beneficiario designado (demo)", "***", "Cónyuge", new BigDecimal("100"))));
-            case AUTOS -> new DetallePolizaRamo(p.numero(), p.ramo(),
-                    Map.of("Vehículo", Map.of("Descripción", p.riesgo(), "Uso", "Particular", "Garaje", "Sí"),
+                    List.of(new Beneficiario("Beneficiario designado (demo)", "***", "Cónyuge", new BigDecimal("100"))),
+                    List.of(new DisponibilidadPorOrigen("Datos del contrato", "LOCAL", true, "Datos sintéticos del perfil local.")));
+            case AUTOS -> new DetallePolizaRamo(poliza.numero(), poliza.ramo(),
+                    tipoDetalle(poliza), poliza.numero(), false, List.of(),
+                    Map.of("Vehículo", Map.of("Descripción", poliza.riesgo(), "Uso", "Particular", "Garaje", "Sí"),
                            "Conductores", Map.of("Habitual", "Tomador", "Antigüedad carné", "> 10 años")),
                     List.of(new Garantia("RC", "Responsabilidad civil", null, null),
-                            new Garantia("DP", "Daños propios", null, "300 €")), List.of());
-            case HOGAR -> new DetallePolizaRamo(p.numero(), p.ramo(),
-                    Map.of("Vivienda", Map.of("Dirección", p.riesgo(), "Tipo", "Piso", "Metros", "95 m²", "Continente", "150.000 €", "Contenido", "30.000 €")),
-                    List.of(new Garantia("INC", "Incendio", null, null), new Garantia("AGUA", "Daños por agua", null, null)), List.of());
-            default -> new DetallePolizaRamo(p.numero(), p.ramo(), Map.of("Producto", Map.of("Descripción", p.producto(), "Riesgo", p.riesgo())), List.of(), List.of());
+                            new Garantia("DP", "Daños propios", null, "300 €")), List.of(),
+                    List.of(new DisponibilidadPorOrigen("Vehículo", "LOCAL", true, "Datos sintéticos del perfil local.")));
+            case HOGAR -> new DetallePolizaRamo(poliza.numero(), poliza.ramo(),
+                    tipoDetalle(poliza), poliza.numero(), false, List.of(),
+                    Map.of("Vivienda", Map.of("Dirección", poliza.riesgo(), "Tipo", "Piso", "Metros", "95 m²", "Continente", "150.000 €", "Contenido", "30.000 €")),
+                    List.of(new Garantia("INC", "Incendio", null, null), new Garantia("AGUA", "Daños por agua", null, null)), List.of(),
+                    List.of(new DisponibilidadPorOrigen("Vivienda", "LOCAL", true, "Datos sintéticos del perfil local.")));
+            case SALUD -> sintetico(poliza, "Datos de póliza", Map.of("Producto", poliza.producto(), "Asegurados", poliza.riesgo()));
+            case CONSUMO_PROTEGIDO -> sintetico(poliza, "Inf. General", Map.of("Producto", poliza.producto(), "Estado", poliza.estado().name(), "Importe", "92,00 €"));
+            case HIPOTECA_SEGURA -> sintetico(poliza, "Inf. general", Map.of("Producto", poliza.producto(), "Estado", poliza.estado().name(), "Importe", "180,00 €"));
+            case GENERICA -> sintetico(poliza, "Resumen", Map.of("Producto", poliza.producto(), "Descripción del riesgo", poliza.riesgo()));
         });
+    }
+
+    private static DetallePolizaRamo sintetico(Poliza poliza, String bloque, Map<String, String> campos) {
+        return new DetallePolizaRamo(poliza.numero(), poliza.ramo(), tipoDetalle(poliza), poliza.numero(), false,
+                List.of(), Map.of(bloque, campos), List.of(), List.of(),
+                List.of(new DisponibilidadPorOrigen(bloque, "LOCAL", true, "Datos sintéticos del perfil local.")));
+    }
+
+    private static Poliza.TipoDetalle tipoDetalle(Poliza p) {
+        if (p.tipoDetalle() != null) return p.tipoDetalle();
+        return switch (p.ramo()) {
+            case AUTOS -> Poliza.TipoDetalle.AUTOS;
+            case SALUD -> Poliza.TipoDetalle.SALUD;
+            case VIDA, AHORRO -> Poliza.TipoDetalle.VIDA;
+            case HOGAR -> Poliza.TipoDetalle.HOGAR;
+            default -> Poliza.TipoDetalle.GENERICA;
+        };
     }
 
     @Override

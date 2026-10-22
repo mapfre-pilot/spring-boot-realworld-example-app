@@ -702,12 +702,27 @@ components:
     Beneficiario: { type: object, properties: { nombre: { type: string }, documento: { type: string }, parentesco: { type: string }, porcentaje: { type: number } } }
     DetallePolizaRamo:
       type: object
+      required: [numero, ramo, tipoDetalle, idPoliza, noDisponiblePorOrigen, bloques, garantias, beneficiarios]
+      discriminator: { propertyName: tipoDetalle }
       properties:
         numero: { type: string }
         ramo: { type: string }
+        tipoDetalle: { type: string, enum: [AUTOS, SALUD, VIDA, HOGAR, CONSUMO_PROTEGIDO, HIPOTECA_SEGURA, GENERICA] }
+        idPoliza: { type: string, nullable: true }
+        primasPeriodicas: { type: boolean }
+        noDisponiblePorOrigen: { type: array, items: { type: string } }
+        disponibilidadPorOrigen: { type: array, items: { $ref: '#/components/schemas/DisponibilidadPorOrigen' } }
         bloques: { type: object, additionalProperties: { type: object, additionalProperties: { type: string } } }
         garantias: { type: array, items: { $ref: '#/components/schemas/Garantia' } }
         beneficiarios: { type: array, items: { $ref: '#/components/schemas/Beneficiario' } }
+    DisponibilidadPorOrigen:
+      type: object
+      required: [dato, origen, disponible, motivo]
+      properties:
+        dato: { type: string }
+        origen: { type: string, enum: [API_CANAL, LEGACY, LOCAL] }
+        disponible: { type: boolean }
+        motivo: { type: string }
     EstadoAnterior: { type: object, properties: { polizaNumero: { type: string }, ramo: { type: string }, producto: { type: string }, estado: { type: string }, fechaEfecto: { type: string, format: date }, fechaBaja: { type: string, format: date }, motivoBaja: { type: string } } }
     ReciboDetalle:
       type: object
@@ -721,6 +736,10 @@ components:
         cuota: { type: number }
         comisiones: { type: number }
         gestiones: { type: array, items: { type: string } }
+        disponibilidadPagador:
+          type: array
+          description: Disponibilidad por origen de los campos del pagador mostrados en Datos Personales, Contacto y Correspondencia.
+          items: { $ref: '#/components/schemas/DisponibilidadPorOrigen' }
     AccionRecibo: { type: object, properties: { codigo: { type: string }, nombre: { type: string }, tipo: { type: string, enum: [EXTERNA, OPERACION, INTERNA] }, url: { type: string, nullable: true } } }
     DuplicadoRecibo: { type: object, properties: { numeroRecibo: { type: string }, nombreFichero: { type: string }, tipoMime: { type: string }, contenidoBase64: { type: string } } }
     PrestacionDetalle:
@@ -823,6 +842,7 @@ components:
       type: object
       properties:
         numero: { type: string }
+        companyId: { type: string, nullable: true }
         clienteId: { type: string }
         ramo: { $ref: '#/components/schemas/Ramo' }
         producto: { type: string }
@@ -834,6 +854,7 @@ components:
         riesgo: { type: string }
         acciones: { type: array, items: { type: string } }
         lanzadera: { type: string }
+        tipoDetalle: { type: string, enum: [AUTOS, SALUD, VIDA, HOGAR, CONSUMO_PROTEGIDO, HIPOTECA_SEGURA, GENERICA] }
     Recibo:
       type: object
       properties:

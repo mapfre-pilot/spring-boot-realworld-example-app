@@ -40,7 +40,18 @@ import {
 } from '../components/tabla-exportable.component';
 
 type Principal = 'posicion' | 'comercial' | 'presupuestos';
-type Pestana = 'productos' | 'prestaciones' | 'recibos' | 'sgo';
+type Pestana = 'productos' | 'estados-anteriores' | 'prestaciones' | 'recibos';
+export const PESTANAS_FICHA_PRINCIPALES = [
+  'Posición del cliente',
+  'Gestión comercial',
+  'Presupuestos',
+] as const;
+export const PESTANAS_POSICION = [
+  'Productos',
+  'Estados Anteriores',
+  'Prestaciones',
+  'Recibos',
+] as const;
 
 const badgeEstado = (v: unknown): string =>
   'badge' +
@@ -213,18 +224,14 @@ const textoEstado = (v: unknown): string => `${v ?? ''}`.replace(/_/g, ' ');
       </section>
 
       <div class="tabs principales">
-        <button [class.activa]="principal() === 'posicion'" (click)="principal.set('posicion')">
-          Posición del cliente
-        </button>
-        <button [class.activa]="principal() === 'comercial'" (click)="principal.set('comercial')">
-          Gestión comercial
-        </button>
-        <button
-          [class.activa]="principal() === 'presupuestos'"
-          (click)="principal.set('presupuestos')"
-        >
-          Presupuestos
-        </button>
+        @for (etiqueta of pestanasFicha; track etiqueta) {
+          <button
+            [class.activa]="principal() === principalDeEtiqueta(etiqueta)"
+            (click)="principal.set(principalDeEtiqueta(etiqueta))"
+          >
+            {{ etiqueta }}
+          </button>
+        }
       </div>
 
       <section class="card">
@@ -232,30 +239,14 @@ const textoEstado = (v: unknown): string => `${v ?? ''}`.replace(/_/g, ' ');
           @case ('posicion') {
             <div class="row cabecera-posicion">
               <div class="subtabs">
-                <button
-                  [class.activa]="pestana() === 'productos'"
-                  (click)="pestana.set('productos')"
-                >
-                  Productos
-                </button>
-                <button
-                  [class.activa]="pestana() === 'prestaciones'"
-                  (click)="pestana.set('prestaciones')"
-                >
-                  Prestaciones ({{ prestaciones().length }})
-                </button>
-                <button
-                  [class.activa]="pestana() === 'estados-anteriores'"
-                  (click)="pestana.set('estados-anteriores'); cargarEstadosAnteriores()"
-                >
-                  Estados anteriores ({{ estadosAnteriores().length }})
-                </button>
-                <button [class.activa]="pestana() === 'recibos'" (click)="pestana.set('recibos')">
-                  Recibos ({{ recibos().length }})
-                </button>
-                <button [class.activa]="pestana() === 'sgo'" (click)="pestana.set('sgo')">
-                  SGO ({{ sgo().length }})
-                </button>
+                @for (etiqueta of pestanasPosicion; track etiqueta) {
+                  <button
+                    [class.activa]="etiquetaPestana(pestana()) === etiqueta"
+                    (click)="seleccionarPestana(etiqueta)"
+                  >
+                    {{ etiqueta }}
+                  </button>
+                }
               </div>
               @if (pestana() === 'productos') {
                 <select
@@ -284,6 +275,15 @@ const textoEstado = (v: unknown): string => `${v ?? ''}`.replace(/_/g, ' ');
             </div>
             @switch (pestana()) {
               @case ('productos') {
+                @if (asesor360Url(); as urlAsesor360) {
+                  <a
+                    class="btn-enlace"
+                    [href]="urlAsesor360"
+                    target="_blank"
+                    rel="noopener"
+                    >Asesor 360°</a
+                  >
+                }
                 <table class="tabla productos">
                   <thead>
                     <tr>
@@ -428,14 +428,6 @@ const textoEstado = (v: unknown): string => `${v ?? ''}`.replace(/_/g, ' ');
                   nombreFichero="prestaciones"
                   [columnas]="colPrestaciones"
                   [filas]="prestaciones()"
-                />
-              }
-              @case ('sgo') {
-                <pgm-tabla-exportable
-                  titulo="Solicitudes SGO"
-                  nombreFichero="sgo"
-                  [columnas]="colSgo"
-                  [filas]="sgo()"
                 />
               }
             }
@@ -826,6 +818,8 @@ export class FichaClientePageComponent {
   readonly error = signal<string | null>(null);
   readonly principal = signal<Principal>('posicion');
   readonly pestana = signal<Pestana | 'estados-anteriores'>('productos');
+  readonly pestanasFicha = PESTANAS_FICHA_PRINCIPALES;
+  readonly pestanasPosicion = PESTANAS_POSICION;
   readonly filtroRamo = signal<Ramo | null>(null);
   readonly verAlertas = signal(false);
   readonly filtroEstado = signal<string>('EN_VIGOR');
@@ -953,12 +947,48 @@ export class FichaClientePageComponent {
     });
   }
 
+  principalDeEtiqueta(etiqueta: (typeof PESTANAS_FICHA_PRINCIPALES)[number]): Principal {
+    return ({
+      'Posición del cliente': 'posicion',
+      'Gestión comercial': 'comercial',
+      Presupuestos: 'presupuestos',
+    } as const)[etiqueta];
+  }
+
+  etiquetaPestana(pestana: Pestana | 'estados-anteriores'): (typeof PESTANAS_POSICION)[number] {
+    return ({
+      productos: 'Productos',
+      'estados-anteriores': 'Estados Anteriores',
+      prestaciones: 'Prestaciones',
+      recibos: 'Recibos',
+    } as const)[pestana];
+  }
+
+  seleccionarPestana(etiqueta: (typeof PESTANAS_POSICION)[number]): void {
+    const pestana: Pestana | 'estados-anteriores' = {
+      Productos: 'productos',
+      'Estados Anteriores': 'estados-anteriores',
+      Prestaciones: 'prestaciones',
+      Recibos: 'recibos',
+    }[etiqueta] as Pestana | 'estados-anteriores';
+    this.pestana.set(pestana);
+    if (pestana === 'estados-anteriores') void this.cargarEstadosAnteriores();
+  }
+
   ramo(r: Poliza['ramo']): string {
     return ETIQUETA_RAMO[r];
   }
 
   lanzaderaDe(p: Poliza): Lanzadera | undefined {
     return this.lanzaderas().find((l) => l.codigo === p.lanzadera || l.ramo === p.ramo);
+  }
+
+  asesor360Url(): string | null {
+    const base = this.lanzaderas().find((l) => l.codigo === 'PORTAL_INTERNO')?.url;
+    const documento = this.cliente()?.documento;
+    return base && documento
+      ? `${base.replace(/\/+$/, '')}/pya360appft/?origen=PGM&documento=${encodeURIComponent(documento)}`
+      : null;
   }
 
   async cargar(id: string): Promise<void> {

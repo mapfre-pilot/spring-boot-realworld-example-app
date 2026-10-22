@@ -56,7 +56,7 @@ public final class OrigenDatosRouters {
         @Override public Optional<Poliza> detalle(String n) { return d().detalle(n); }
         @Override public List<AccionPoliza> accionesPoliza(String n) { return d().accionesPoliza(n); }
         @Override public List<DocumentoPoliza> documentosPoliza(String n) { return d().documentosPoliza(n); }
-        @Override public Optional<DetallePolizaRamo> detalleRamo(String n) { return d().detalleRamo(n); }
+        @Override public Optional<DetallePolizaRamo> detalleRamo(Poliza p) { return d().detalleRamo(p); }
         @Override public List<EstadoAnterior> estadosAnteriores(String id) { return d().estadosAnteriores(id); }
     }
 

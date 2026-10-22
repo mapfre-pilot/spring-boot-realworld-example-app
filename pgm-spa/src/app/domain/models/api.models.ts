@@ -145,6 +145,7 @@ export interface Cliente {
 
 export interface Poliza {
   numero: string;
+  companyId?: string | null;
   clienteId: string;
   ramo: Ramo;
   producto: string;
@@ -156,6 +157,8 @@ export interface Poliza {
   riesgo: string;
   acciones: string[];
   lanzadera: string | null;
+  tipoDetalle?:
+    'AUTOS' | 'SALUD' | 'VIDA' | 'HOGAR' | 'CONSUMO_PROTEGIDO' | 'HIPOTECA_SEGURA' | 'GENERICA';
 }
 
 export interface Recibo {
@@ -524,9 +527,20 @@ export interface Beneficiario {
 export interface DetallePolizaRamo {
   numero: string;
   ramo: Ramo;
+  tipoDetalle: Poliza['tipoDetalle'];
+  idPoliza: string | null;
+  primasPeriodicas: boolean;
+  noDisponiblePorOrigen: string[];
+  disponibilidadPorOrigen?: DisponibilidadPorOrigen[];
   bloques: Record<string, Record<string, string>>;
   garantias: Garantia[];
   beneficiarios: Beneficiario[];
+}
+export interface DisponibilidadPorOrigen {
+  dato: string;
+  origen: 'API_CANAL' | 'LEGACY' | 'LOCAL' | string;
+  disponible: boolean;
+  motivo: string;
 }
 export interface EstadoAnterior {
   polizaNumero: string;
@@ -547,6 +561,7 @@ export interface ReciboDetalle {
   cuota: number;
   comisiones: number;
   gestiones: string[];
+  disponibilidadPagador?: DisponibilidadPorOrigen[];
 }
 export interface AccionRecibo {
   codigo: string;

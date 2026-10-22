@@ -43,6 +43,12 @@ export const TEXTOS_ACCIONES = {
   solicitar: 'SOLICITAR',
   anadirEmpresa: 'AÑADIR EMPRESA',
 };
+export const PESTANAS_MAS_DATOS = [
+  'Más datos',
+  'Datos de contacto',
+  'Origen de los datos',
+] as const;
+export const PESTANAS_COMUNICACIONES = ['Alertas', 'Interacciones', 'Reclamaciones'] as const;
 
 type Dialogo =
   | null
@@ -211,74 +217,100 @@ type Dialogo =
             }
             @case ('comunicaciones') {
               <h2>{{ t.centroComunicaciones }}</h2>
-              <div class="tabs">
-                @for (p of periodos; track p.valor) {
+              <div class="tabs" role="tablist" data-testid="pestanas-comunicaciones">
+                @for (p of pestanasComunicaciones; track p) {
                   <button
                     type="button"
-                    [class.activa]="periodo() === p.valor"
-                    (click)="cambiarPeriodo(p.valor)"
+                    role="tab"
+                    [class.activa]="pestanaComunicacion() === p"
+                    (click)="pestanaComunicacion.set(p)"
                   >
-                    {{ p.texto }}
+                    {{
+                      p === 'Alertas'
+                        ? 'Alertas (' + (comunicaciones()?.alertas?.length ?? 0) + ')'
+                        : p === 'Interacciones'
+                          ? 'Interacciones (' + (comunicaciones()?.interacciones?.length ?? 0) + ')'
+                          : 'Reclamaciones (' + (comunicaciones()?.reclamaciones?.length ?? 0) + ')'
+                    }}
                   </button>
                 }
               </div>
+              <label
+                >Periodo
+                <select [ngModel]="periodo()" (ngModelChange)="cambiarPeriodo($event)">
+                  @for (p of periodos; track p.valor) {
+                    <option [value]="p.valor">{{ p.texto }}</option>
+                  }
+                </select>
+              </label>
               @if (comunicaciones(); as cm) {
-                <h3>Alertas ({{ cm.alertas.length }})</h3>
-                @for (a of cm.alertas; track $index) {
-                  <div class="fila">
-                    <strong>{{ a.tipo }}</strong> · {{ a.texto }}
-                    <span class="muted">{{ a.fecha | date: 'dd/MM/yyyy' }}</span>
-                  </div>
-                }
-                <h3>Interacciones ({{ cm.interacciones.length }})</h3>
-                @if (!cm.interacciones.length && !cm.reclamaciones.length && !cm.alertas.length) {
-                  <p class="muted">{{ t.sinComunicaciones }}</p>
-                }
-                <table class="tabla">
-                  <thead>
-                    <tr>
-                      <th>Fecha</th>
-                      <th>Canal</th>
-                      <th>Motivo</th>
-                      <th>Descripción</th>
-                      <th>Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (i of cm.interacciones; track i.id) {
-                      <tr>
-                        <td>{{ i.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
-                        <td>{{ i.canal }}</td>
-                        <td>{{ i.motivo }}</td>
-                        <td>{{ i.descripcion }}</td>
-                        <td>{{ i.estado }}</td>
-                      </tr>
+                @switch (pestanaComunicacion()) {
+                  @case ('Alertas') {
+                    @if (!cm.alertas.length) {
+                      <p class="muted">{{ t.sinComunicaciones }}</p>
                     }
-                  </tbody>
-                </table>
-                <h3>Reclamaciones ({{ cm.reclamaciones.length }})</h3>
-                <table class="tabla">
-                  <thead>
-                    <tr>
-                      <th>Fecha</th>
-                      <th>Canal</th>
-                      <th>Motivo</th>
-                      <th>Descripción</th>
-                      <th>Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (i of cm.reclamaciones; track i.id) {
-                      <tr>
-                        <td>{{ i.fecha | date: 'dd/MM/yyyy' }}</td>
-                        <td>{{ i.canal }}</td>
-                        <td>{{ i.motivo }}</td>
-                        <td>{{ i.descripcion }}</td>
-                        <td>{{ i.estado }}</td>
-                      </tr>
+                    @for (a of cm.alertas; track $index) {
+                      <div class="fila">
+                        <strong>{{ a.tipo }}</strong> · {{ a.texto }}
+                        <span class="muted">{{ a.fecha | date: 'dd/MM/yyyy' }}</span>
+                      </div>
                     }
-                  </tbody>
-                </table>
+                  }
+                  @case ('Interacciones') {
+                    @if (!cm.interacciones.length) {
+                      <p class="muted">{{ t.sinComunicaciones }}</p>
+                    }
+                    <table class="tabla">
+                      <thead>
+                        <tr>
+                          <th>Fecha</th>
+                          <th>Canal</th>
+                          <th>Motivo</th>
+                          <th>Descripción</th>
+                          <th>Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (i of cm.interacciones; track i.id) {
+                          <tr>
+                            <td>{{ i.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
+                            <td>{{ i.canal }}</td>
+                            <td>{{ i.motivo }}</td>
+                            <td>{{ i.descripcion }}</td>
+                            <td>{{ i.estado }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  }
+                  @case ('Reclamaciones') {
+                    @if (!cm.reclamaciones.length) {
+                      <p class="muted">{{ t.sinComunicaciones }}</p>
+                    }
+                    <table class="tabla">
+                      <thead>
+                        <tr>
+                          <th>Fecha</th>
+                          <th>Canal</th>
+                          <th>Motivo</th>
+                          <th>Descripción</th>
+                          <th>Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (i of cm.reclamaciones; track i.id) {
+                          <tr>
+                            <td>{{ i.fecha | date: 'dd/MM/yyyy' }}</td>
+                            <td>{{ i.canal }}</td>
+                            <td>{{ i.motivo }}</td>
+                            <td>{{ i.descripcion }}</td>
+                            <td>{{ i.estado }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  }
+                }
               }
             }
             @case ('cdd') {
@@ -765,7 +797,7 @@ export class AccionesClienteComponent {
   readonly mensaje = signal<string | null>(null);
   readonly error = signal(false);
 
-  readonly pestanasMasDatos = ['Más datos', 'Datos de contacto', 'Origen de los datos'] as const;
+  readonly pestanasMasDatos = PESTANAS_MAS_DATOS;
   readonly pestana = signal<(typeof this.pestanasMasDatos)[number]>('Más datos');
   readonly masDatos = signal<MasDatos | null>(null);
   nuevoTelefono = '';
@@ -778,6 +810,8 @@ export class AccionesClienteComponent {
   ];
   readonly periodo = signal<PeriodoComunicaciones>('30D');
   readonly comunicaciones = signal<Comunicaciones | null>(null);
+  readonly pestanasComunicaciones = PESTANAS_COMUNICACIONES;
+  readonly pestanaComunicacion = signal<(typeof this.pestanasComunicaciones)[number]>('Alertas');
 
   tipoDocumento = '';
   readonly documentos = signal<DocumentoCliente[] | null>(null);

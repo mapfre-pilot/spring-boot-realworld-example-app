@@ -95,9 +95,18 @@ public class ApiCanalPolizasRecibosAdapter implements PolizasPort, RecibosPort, 
 
     @Override
     @CircuitBreaker(name = "apicanal") @Retry(name = "apicanal-lectura")
-    public Optional<DetallePolizaRamo> detalleRamo(String numeroPoliza) {
-        return gw.get("api-canal-polizas", "/companies/{c}/policies/{n}/detail", new ParameterizedTypeReference<DetallePolizaRamo>() {},
-                s -> s.uri(gw.url("api-canal-polizas", "/companies/{c}/policies/{n}/detail"), gw.companyId(), numeroPoliza));
+    public Optional<DetallePolizaRamo> detalleRamo(Poliza poliza) {
+        Poliza.TipoDetalle tipo = poliza.tipoDetalle() == null ? switch (poliza.ramo()) {
+            case AUTOS -> Poliza.TipoDetalle.AUTOS;
+            case SALUD -> Poliza.TipoDetalle.SALUD;
+            case VIDA, AHORRO -> Poliza.TipoDetalle.VIDA;
+            case HOGAR -> Poliza.TipoDetalle.HOGAR;
+            default -> Poliza.TipoDetalle.GENERICA;
+        } : poliza.tipoDetalle();
+        return Optional.of(new DetallePolizaRamo(poliza.numero(), poliza.ramo(), tipo, null, false,
+                List.of("detalle por ramo"), Map.of(), List.of(), List.of(),
+                List.of(new DisponibilidadPorOrigen("detalle por ramo", "API_CANAL", false,
+                        "API Canal no publica el detalle de póliza por ramo utilizado por PGM."))));
     }
 
     @Override
@@ -112,7 +121,19 @@ public class ApiCanalPolizasRecibosAdapter implements PolizasPort, RecibosPort, 
     public Optional<ReciboDetalle> detalleCompleto(String numeroRecibo) {
         // GESYC consultarRecibo (SOAP) → fachada REST del Gateway
         return gw.get("gesyc", "/receipts/{n}", new ParameterizedTypeReference<ReciboDetalle>() {},
-                s -> s.uri(gw.url("gesyc", "/receipts/{n}"), numeroRecibo));
+                s -> s.uri(gw.url("gesyc", "/receipts/{n}"), numeroRecibo)).map(d -> new ReciboDetalle(
+                d.recibo(), d.producto(), d.riesgo(), d.metodoPagoLiteral(), d.pagador(), d.estructuraComercial(),
+                d.cuota(), d.comisiones(), d.gestiones(), disponibilidadPagador()));
+    }
+
+    private static List<DisponibilidadPorOrigen> disponibilidadPagador() {
+        return List.of("Datos Personales", "Contacto", "Correspondencia").stream()
+                .flatMap(dato -> List.of(
+                        new DisponibilidadPorOrigen(dato, "API_CANAL", false,
+                                "API Canal no expone los datos del pagador requeridos por PGM."),
+                        new DisponibilidadPorOrigen(dato, "LEGACY", false,
+                                "El adaptador legacy no mapea los campos de pagador de esta pestaña.")).stream())
+                .toList();
     }
 
     @Override

@@ -14,6 +14,7 @@ import com.mapfre.pgm.bff.domain.model.PosicionCliente.*;
 import com.mapfre.pgm.bff.domain.model.Ramo;
 import java.util.Set;
 import com.mapfre.pgm.bff.domain.exception.RecursoNoEncontradoException;
+import com.mapfre.pgm.bff.domain.exception.SistemaExternoException;
 import com.mapfre.pgm.bff.domain.model.Poliza;
 import com.mapfre.pgm.bff.domain.model.Recibo;
 import java.util.List;
@@ -77,9 +78,26 @@ public class DetalleService implements DetallePolizaUseCase, DetalleReciboUseCas
 
     @Override
     public DetallePolizaRamo detalleRamo(String numeroPoliza, String usuario, List<String> perfiles) {
-        polizaVisible(numeroPoliza, usuario, perfiles);
-        return polizasPort.detalleRamo(numeroPoliza)
-                .orElseThrow(() -> new RecursoNoEncontradoException("detalle-poliza", numeroPoliza));
+        Poliza poliza = polizaVisible(numeroPoliza, usuario, perfiles);
+        try {
+            return polizasPort.detalleRamo(poliza).orElseGet(() -> detalleNoDisponible(poliza,
+                    "LEGACY", "El ramo no tiene una integración de detalle definida en PGM_FichaPoliza."));
+        } catch (SistemaExternoException e) {
+            return detalleNoDisponible(poliza, "LEGACY", "No se pudo recuperar el detalle de la integración configurada.");
+        }
+    }
+
+    private static DetallePolizaRamo detalleNoDisponible(Poliza poliza, String origen, String motivo) {
+        Poliza.TipoDetalle tipo = poliza.tipoDetalle() != null ? poliza.tipoDetalle() : switch (poliza.ramo()) {
+            case AUTOS -> Poliza.TipoDetalle.AUTOS;
+            case SALUD -> Poliza.TipoDetalle.SALUD;
+            case VIDA, AHORRO -> Poliza.TipoDetalle.VIDA;
+            case HOGAR -> Poliza.TipoDetalle.HOGAR;
+            default -> Poliza.TipoDetalle.GENERICA;
+        };
+        return new DetallePolizaRamo(poliza.numero(), poliza.ramo(), tipo, null, false,
+                List.of("idPoliza"), java.util.Map.of(), List.of(), List.of(),
+                List.of(new DisponibilidadPorOrigen("detalle por ramo", origen, false, motivo)));
     }
 
     @Override

@@ -38,6 +38,11 @@ export const TEXTOS_GC = {
   accionNoDisponible: (u: string) =>
     `Esta acción aún no está disponible en PGM para tu usuario (${u})`,
 };
+export const PESTANAS_GESTION_COMERCIAL = [
+  'Vencimientos',
+  'Actividad Comercial',
+  'Gestiones',
+] as const;
 
 const fechaCorta = (v: unknown) => (v ? new Date(`${v}`).toLocaleDateString('es-ES') : '-');
 const fechaHora = (v: unknown) =>
@@ -55,27 +60,15 @@ const euros = (v: unknown) =>
   imports: [CommonModule, FormsModule, IconoComponent, TablaExportableComponent],
   template: `
     <div class="subtabs" role="tablist">
-      <button
-        role="tab"
-        [class.activa]="seccion() === 'vencimientos'"
-        (click)="seccion.set('vencimientos')"
-      >
-        Vencimientos
-      </button>
-      <button
-        role="tab"
-        [class.activa]="seccion() === 'actividad'"
-        (click)="seccion.set('actividad')"
-      >
-        Actividad comercial
-      </button>
-      <button
-        role="tab"
-        [class.activa]="seccion() === 'gestiones'"
-        (click)="seccion.set('gestiones')"
-      >
-        Gestiones
-      </button>
+      @for (etiqueta of pestanas; track etiqueta) {
+        <button
+          role="tab"
+          [class.activa]="seccion() === seccionDeEtiqueta(etiqueta)"
+          (click)="seccion.set(seccionDeEtiqueta(etiqueta))"
+        >
+          {{ etiqueta }}
+        </button>
+      }
     </div>
 
     @switch (seccion()) {
@@ -416,9 +409,25 @@ const euros = (v: unknown) =>
         @if (!store.puede(V.GESTIONES_SGC30)) {
           <div class="alerta alerta-info">
             <pgm-icono nombre="info" /> {{ textos.sinPermisoGestiones }}
+            <span>{{ textos.accionNoDisponible(nuuma()) }}… {{ textos.puedesSgc20 }}</span>
+            <a class="btn-enlace" [href]="urlSgc20" target="_blank" rel="noopener">
+              {{ textos.accesoSgc20 }}
+            </a>
           </div>
         } @else {
           <div class="chips-estado">
+            <label class="filtro-gestiones"
+              >Estado
+              <select
+                aria-label="Filtro de estado de gestiones"
+                [ngModel]="filtroGestion()"
+                (ngModelChange)="filtroGestion.set($event)"
+              >
+                @for (f of filtrosGestion; track f.valor) {
+                  <option [value]="f.valor">{{ f.etiqueta }}</option>
+                }
+              </select>
+            </label>
             <button
               class="btn-enlace"
               (click)="cargarGestiones()"
@@ -436,7 +445,7 @@ const euros = (v: unknown) =>
               titulo="Gestiones SGC 3.0"
               nombreFichero="gestiones"
               [columnas]="colGestiones"
-              [filas]="gestiones()"
+              [filas]="gestionesVisibles()"
               [mensajeVacio]="textos.sinGestiones"
               [navegable]="true"
               (filaSeleccionada)="abrirGestion($event)"
@@ -656,6 +665,8 @@ export class GestionComercialClienteComponent {
   ];
 
   readonly seccion = signal<'vencimientos' | 'actividad' | 'gestiones'>('vencimientos');
+  readonly pestanas = PESTANAS_GESTION_COMERCIAL;
+  readonly urlSgc20 = 'https://sgc20.mapfre.net/';
   readonly verFiltros = signal(false);
   readonly oportunidades = signal<Oportunidad[]>([]);
   readonly resumen = signal<ResumenOportunidades | null>(null);
@@ -673,6 +684,33 @@ export class GestionComercialClienteComponent {
   readonly gestiones = signal<GestionComercial[]>([]);
   readonly errorGestiones = signal<string | null>(null);
   readonly detalleGestion = signal<GestionDetalle | null>(null);
+  readonly filtrosGestion = [
+    { valor: 'VIGENTES', etiqueta: 'Vigentes' },
+    { valor: 'TODAS', etiqueta: 'Todas' },
+    { valor: 'EN_CURSO', etiqueta: 'En curso' },
+    { valor: 'SIN_ASIGNAR', etiqueta: 'Sin asignar' },
+    { valor: 'PENDIENTE', etiqueta: 'Pendiente' },
+    { valor: 'CERRADAS', etiqueta: 'Cerradas' },
+    { valor: 'CERRADA_POSITIVA', etiqueta: 'Cerrada Positiva' },
+    { valor: 'CERRADA_NEGATIVA', etiqueta: 'Cerrada Negativa' },
+    { valor: 'CADUCADA', etiqueta: 'Caducada' },
+  ] as const;
+  seccionDeEtiqueta(etiqueta: (typeof PESTANAS_GESTION_COMERCIAL)[number]) {
+    return {
+      Vencimientos: 'vencimientos',
+      'Actividad Comercial': 'actividad',
+      Gestiones: 'gestiones',
+    }[etiqueta] as 'vencimientos' | 'actividad' | 'gestiones';
+  }
+  readonly filtroGestion = signal<(typeof this.filtrosGestion)[number]['valor']>('VIGENTES');
+  readonly gestionesVisibles = computed(() => {
+    const f = this.filtroGestion();
+    const abiertas = ['ABIERTA', 'EN_CURSO', 'SIN_ASIGNAR', 'PENDIENTE'];
+    if (f === 'TODAS') return this.gestiones();
+    if (f === 'VIGENTES') return this.gestiones().filter((g) => abiertas.includes(g.estado));
+    if (f === 'CERRADAS') return this.gestiones().filter((g) => g.estado.startsWith('CERRADA'));
+    return this.gestiones().filter((g) => g.estado === f);
+  });
   readonly errorDetalleGestion = signal(false);
   readonly puedeAnadir = computed(() => this.store.puede(Visibilidad.ANADIR_VENCIMIENTO));
   readonly nuuma = computed(() => this.store.contexto()?.estructura?.nuuma ?? 'sin Nuuma');
