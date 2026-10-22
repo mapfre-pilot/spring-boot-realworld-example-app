@@ -53,6 +53,33 @@ export const PESTANAS_POSICION = [
   'Recibos',
 ] as const;
 
+export type RamoResumen = Exclude<Ramo, 'RIESGO'>;
+
+export function ramoTarjetaResumen(ramo: Ramo): RamoResumen {
+  return ramo === 'RIESGO' ? 'VIDA' : ramo;
+}
+
+export function calcularContadoresResumen(
+  polizas: readonly Pick<Poliza, 'ramo' | 'estado'>[],
+  oportunidades: readonly Pick<Oportunidad, 'ramo'>[],
+  presupuestos: readonly Pick<Presupuesto, 'ramo'>[],
+): Record<RamoResumen, ContadorRamo> {
+  const contadores = Object.fromEntries(
+    RAMOS.map((ramo) => [ramo, { polizas: 0, vencimientos: 0, presupuestos: 0 }]),
+  ) as Record<RamoResumen, ContadorRamo>;
+  const incrementar = (ramo: Ramo, contador: keyof ContadorRamo) => {
+    contadores[ramoTarjetaResumen(ramo)][contador]++;
+  };
+
+  polizas
+    .filter((poliza) => poliza.estado === 'EN_VIGOR')
+    .forEach((poliza) => incrementar(poliza.ramo, 'polizas'));
+  oportunidades.forEach((oportunidad) => incrementar(oportunidad.ramo, 'vencimientos'));
+  presupuestos.forEach((presupuesto) => incrementar(presupuesto.ramo, 'presupuestos'));
+
+  return contadores;
+}
+
 const badgeEstado = (v: unknown): string =>
   'badge' +
   (['ANULADA', 'ANULADO', 'RECHAZADA', 'DEVUELTO'].includes(`${v}`)
@@ -830,7 +857,7 @@ export class FichaClientePageComponent {
     return this.polizas().filter(
       (p) =>
         (!f || (f === 'EN_VIGOR' ? p.estado === 'EN_VIGOR' : p.estado !== 'EN_VIGOR')) &&
-        (!r || p.ramo === r),
+        (!r || ramoTarjetaResumen(p.ramo) === ramoTarjetaResumen(r)),
     );
   });
   readonly totalPrima = computed(() =>
@@ -843,17 +870,9 @@ export class FichaClientePageComponent {
     if (!f) return null;
     return Math.floor((Date.now() - new Date(f).getTime()) / (365.25 * 24 * 3600 * 1000));
   });
-  readonly contadores = computed(() => {
-    const c = Object.fromEntries(
-      RAMOS.map((r) => [r, { polizas: 0, vencimientos: 0, presupuestos: 0 }]),
-    ) as Record<Ramo, ContadorRamo>;
-    this.polizas()
-      .filter((p) => p.estado === 'EN_VIGOR')
-      .forEach((p) => c[p.ramo].polizas++);
-    this.oportunidades().forEach((o) => c[o.ramo].vencimientos++);
-    this.presupuestos().forEach((p) => c[p.ramo].presupuestos++);
-    return c;
-  });
+  readonly contadores = computed(() =>
+    calcularContadoresResumen(this.polizas(), this.oportunidades(), this.presupuestos()),
+  );
 
   readonly dialogo = signal(false);
   readonly bloqueoVto = signal(false);

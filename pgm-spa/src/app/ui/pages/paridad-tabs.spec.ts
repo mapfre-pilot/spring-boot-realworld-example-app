@@ -1,4 +1,8 @@
-import { PESTANAS_FICHA_PRINCIPALES, PESTANAS_POSICION } from './ficha-cliente-page.component';
+import {
+  calcularContadoresResumen,
+  PESTANAS_FICHA_PRINCIPALES,
+  PESTANAS_POSICION,
+} from './ficha-cliente-page.component';
 import {
   PESTANAS_COMUNICACIONES,
   PESTANAS_MAS_DATOS,
@@ -22,6 +26,28 @@ describe('barras de pestañas de paridad PGM', () => {
       'Prestaciones',
       'Recibos',
     ]);
+  });
+
+  it('agrega RIESGO en Vida al cargar la posición y conserva Ahorro', () => {
+    const contadores = calcularContadoresResumen(
+      [
+        { ramo: 'AUTOS', estado: 'EN_VIGOR' },
+        { ramo: 'HOGAR', estado: 'EN_VIGOR' },
+        { ramo: 'SALUD', estado: 'EN_VIGOR' },
+        { ramo: 'RIESGO', estado: 'EN_VIGOR' },
+        { ramo: 'RIESGO', estado: 'ANULADA' },
+        { ramo: 'AHORRO', estado: 'EN_VIGOR' },
+      ],
+      [{ ramo: 'RIESGO' }],
+      [{ ramo: 'AHORRO' }],
+    );
+
+    expect(contadores.AUTOS.polizas).toBe(1);
+    expect(contadores.HOGAR.polizas).toBe(1);
+    expect(contadores.SALUD.polizas).toBe(1);
+    expect(contadores.VIDA).toEqual({ polizas: 1, vencimientos: 1, presupuestos: 0 });
+    expect(contadores.AHORRO).toEqual({ polizas: 1, vencimientos: 0, presupuestos: 1 });
+    expect('RIESGO' in contadores).toBe(false);
   });
 
   it('mantiene recibo y pagador', () => {
