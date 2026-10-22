@@ -10,3 +10,4 @@ Regla: cada sesión sólo modifica los objetos de su columna; GET vivo antes de 
 | Informe | `r27-a-cabecera-si24-reasignar.md` | `r27-b-argumentos-nivel2-decision.md` | `r27-c-orquestacion-mecanizar-cmp.md` |
 
 ## Estado (cada sesión añade una línea al empezar/terminar: fecha, sesión, pólizas/solicitudes usadas, objetos tocados con versión)
+- 2026-10-22 18:5x · R27-A (sesión 6a331a22) · EMPIEZA. Pólizas libres comprobadas (`SCA2_consultarSolicitudes` → sin solicitud): 0005726681296, 0005726681221, 0005726682856, 0005726681370, 0005726681408 (0005726682038/4215/4349 ya tienen solicitud). Objetos en edición: `SCA2_MilestoneMasDatosAltaSolicitud` (+`_Estrategicas`) pestaña inicial, `SCA2_DetalleSolicitud` (tab inicial, texto SI24, botones RETOMAR/REASIGNAR), `SCA2_AltaSolicitudPage` (sólo `local!tab` inicial; no asignada a nadie, se avisa).
