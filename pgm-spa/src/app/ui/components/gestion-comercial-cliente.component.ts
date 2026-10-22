@@ -110,32 +110,37 @@ const euros = (v: unknown) =>
           <form class="filtros" (ngSubmit)="cargarOportunidades()">
             <label
               >Producto
-              <select [(ngModel)]="filtro.producto" name="producto">
-                <option [ngValue]="null">Todos</option>
-                @for (r of ramos; track r) {
+              <select
+                [(ngModel)]="filtro.producto"
+                name="producto"
+                [disabled]="productosVencimientos().length === 0"
+              >
+                <option [ngValue]="null" disabled>{{
+                  productosVencimientos().length === 0 ? 'Sin opciones' : 'Selecciona'
+                }}</option>
+                @for (r of productosVencimientos(); track r) {
                   <option [ngValue]="r">{{ r }}</option>
                 }
               </select></label
             >
-            <label
-              >Tipo Acción
-              <select [(ngModel)]="filtro.tipo" name="tipo">
-                <option [ngValue]="null">Todos</option>
-                <option value="VENCIMIENTO">Vencimiento</option>
-                <option value="OPORTUNIDAD">Oportunidad</option>
-                <option value="CROSSELLING">Crosselling</option>
-              </select></label
-            >
             <label>Fecha Desde <input type="date" [(ngModel)]="filtro.desde" name="desde" /></label>
             <label>Fecha Hasta <input type="date" [(ngModel)]="filtro.hasta" name="hasta" /></label>
-            <label
-              >Contratado
-              <select [(ngModel)]="filtro.contratado" name="contratado">
-                <option [ngValue]="null">Todos</option>
-                <option [ngValue]="true">Sí</option>
-                <option [ngValue]="false">No</option>
-              </select></label
-            >
+            <fieldset class="filtro-contratado">
+              <legend>Contratado</legend>
+              <label>
+                <input type="radio" name="contratado" [(ngModel)]="filtro.contratado" [value]="true" />
+                Sí
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="contratado"
+                  [(ngModel)]="filtro.contratado"
+                  [value]="false"
+                />
+                No
+              </label>
+            </fieldset>
             <button type="button" class="btn-secundario" (click)="limpiarFiltros()">Limpiar</button>
             <button type="submit" class="btn">Ver resultados</button>
           </form>
@@ -584,6 +589,23 @@ const euros = (v: unknown) =>
         color: var(--gris-oscuro, #555);
         gap: 0.2rem;
       }
+      .filtro-contratado {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        border: 0;
+      }
+      .filtro-contratado legend {
+        padding: 0;
+        color: var(--gris-oscuro, #555);
+        font-size: 0.8rem;
+      }
+      .filtros .filtro-contratado label {
+        flex-direction: row;
+        align-items: center;
+      }
       .panel-detalle {
         border: 1px solid var(--borde, #ddd);
         border-radius: 6px;
@@ -677,6 +699,12 @@ export class GestionComercialClienteComponent {
   readonly oportunidades = signal<Oportunidad[]>([]);
   readonly resumen = signal<ResumenOportunidades | null>(null);
   readonly errorOportunidades = signal<string | null>(null);
+  readonly productosVencimientos = computed(() => {
+    const productos = this.oportunidades()
+      .map(({ ramo }) => ramo)
+      .filter((ramo): ramo is Ramo => typeof ramo === 'string' && ramo.length > 0);
+    return [...new Set(productos)].sort((a, b) => a.localeCompare(b, 'es'));
+  });
   readonly detalleOportunidad = signal<OportunidadDetalle | null>(null);
   readonly nuevoVencimiento = signal(false);
   readonly mensajeAlta = signal<string | null>(null);
@@ -724,7 +752,6 @@ export class GestionComercialClienteComponent {
     () =>
       !!(
         this.filtro.producto ||
-        this.filtro.tipo ||
         this.filtro.desde ||
         this.filtro.hasta ||
         this.filtro.contratado !== null ||

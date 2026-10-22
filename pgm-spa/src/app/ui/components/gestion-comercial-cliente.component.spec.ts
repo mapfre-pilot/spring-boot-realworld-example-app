@@ -137,6 +137,18 @@ describe('GestionComercialClienteComponent', () => {
     expect(texto).toContain('Clase de Vcto.');
     expect(texto).toContain('Allianz');
     expect(texto).not.toContain('+ Vencimiento');
+    spectator.component.verFiltros.set(true);
+    spectator.detectChanges();
+    const filtros = spectator.query('.filtros')?.textContent ?? '';
+    expect(filtros).toContain('Producto');
+    expect(filtros).toContain('Fecha Desde');
+    expect(filtros).toContain('Fecha Hasta');
+    expect(filtros).toContain('Contratado');
+    expect(filtros).toContain('Limpiar');
+    expect(filtros).toContain('Ver resultados');
+    expect(filtros).not.toContain('Tipo Acción');
+    expect(spectator.query('select[name="tipo"]')).toBeNull();
+    expect(spectator.queryAll('input[type="radio"][name="contratado"]')).toHaveLength(2);
   });
 
   it('muestra el bloqueo literal de Actividad comercial cuando el usuario no tiene NUUMA', async () => {
