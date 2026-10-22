@@ -65,3 +65,15 @@ Petición del usuario (21/10): «cuando se llama al proceso de Verti se tiene qu
 | `SCA2_DetalleTareas` | v30 → v31 | Tipo `INDUCCION` en la normalización y rama propia en el `a!match`: tarjeta con el estado (pendiente por *usuario* / completado el *fecha*), enlace «Abrir mis tareas de Appian para completar el componente» (`/suite/tempo/tasks`) y VOLVER |
 
 **Límites.** El PM padre del CMP sólo tiene PVs de entrada, no devuelve resultado (los datos de AGC/RGPD/vencimientos viven en Fase 1/2 y no suben), así que SCA2 sólo puede registrar que el componente terminó y cuándo. LCP no expone process reports, por lo que no se puede abrir la tarea concreta con `a!processTaskLink`; se enlaza a la lista de tareas de Appian del usuario. Prueba con solicitud nueva pendiente (misma falta de pólizas válidas que §4).
+
+### 6.1 Prueba R25-5 (22/10, solicitud nueva 15788255 / 0001047017138, JJGONZ2)
+
+| ID | Caso | Esperado | Real | OK/KO | Solicitud | Instancia |
+|---|---|---|---|---|---|---|
+| 1 | Alta → CA negativa → Verti (CONTINUAR sin casillas) → ANULAR PÓLIZA | contacto Verti y Mecanizar arrancado | contacto `[VERTI, VENCIMIENTO]`; Mecanizar 16448044 (modelo v34) iniciado 11:43:42 | OK | 15788255 | 16448044 |
+| 2 | Tarea «Inducción Verti/Vencimiento (componente)» en el Detalle | tarjeta con estado y enlace a tareas Appian | 1.ª apertura KO: `style: "NORMAL"` inválido en VOLVER → **`SCA2_DetalleTareas` v32** (OUTLINE); después tarjeta «pendiente por JJGONZ2» + enlace `/suite/tempo/tasks` | OK (tras v32) | 15788255 | — |
+| 3 | Formularios del CMP asignados al usuario | completar como usuario | tarea «Solicitud Cotización» (cliente 38918268) → consulta Verti → espera → «Riesgo NO ASEGURABLE en Verti» → ENTENDIDO | OK (rama no asegurable; sin RGPD/Robinson) | 15788255 | CMP 16448045 |
+| 4 | Mecanizar espera al CMP y continúa | `induccionProcessId` informado, tarea COMPLETADA, mecanización sigue | antes null → después 16448045; tarjeta «Componente completado el 22/10/2026 11:48. La mecanización de SCA2 ha continuado»; Mecanizar COMPLETED 11:48:43, `guardarMecanizacion.success=true`, Detalle «Anulación Realizada» | OK | 15788255 | 16448044 |
+| 5 | Bloqueo NEW + ANL tras la inducción | nivel 00000005 → nodo 340 | **no ocurrió**: `pv!observaciones` (nvlCumplimiento de la anulación wAutemis que envía la pantalla) llegó null, así que el nodo 9 fue por «Sí» (Guardar Mecanización/CORE) y no por «wAutemis pdte. aceptar → Autorización»; `bloqueoCentral`, `estadoAnl`, `mcaReservaPrima` nulas | **A INVESTIGAR** | 15788255 | 16448044 |
+
+Vídeo: `sca2-r255-v32-cmp-edited.mp4`. Pendiente: averiguar por qué la respuesta de anulación wAutemis de 15788255 no trae `nvlCumplimiento` (¿póliza anulada directa / respuesta de error de NEW?) — la lógica de `SCA2_MecanizacionPrincipal` v18 para `local!anulacion` es la misma que en v17 salvo que omite la llamada con reserva «S» cuando el alta registró «N». Observación del probador: la tarjeta mostraba NIVEL 1 antes y NIVEL 2 después del cierre (sin interpretar).
