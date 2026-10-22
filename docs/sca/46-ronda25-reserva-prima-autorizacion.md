@@ -24,7 +24,7 @@ Petición del analista aplicada: cuando la simulación del alta devuelve la exce
 | 6 | PM `SCA2 CMD Alta` | PV nueva `mcaRsvPrima` (Text, parámetro) | Los dos Write de `SCA2 Datos Solicitud` graban `mcarsvprima` |
 | 7 | `SCA2_cargarSolicitud` | v8 → v9 | Lee `mcarsvprima` → `datosSolicitud.mcaRsvPrima` |
 | 8 | `SCA2_MecanizacionPrincipal` | v17 → v18 | Si `mcaRsvPrima = "N"` no se intenta la consulta/simulación con `S` (va directa a `N`). Paridad SCA: a Mecanizar viajan `mcaReservaPrima`/`importeRsvPrima` de **wAutemis** (`confirReserva`/`importeOperacion`) cuando la póliza es wAutemis |
-| 9 | PM `SCA2 CMD Mecanizar` | v31 → v32 | Nodo 308 «Preparar actualización»: salida nueva `guardarAutorizacion` = `SCA2_guardarAutorizacion` (wAutemis y nivel 00000005/6; `mcaAutorizada`/`codEstado` = S/2 si la póliza está anulada, N/3 si sigue vigente; paridad SCA). Nodo 340: `reservaPrima = "S"` si la marca es "S" o "Sí" (antes sólo "Sí" → siempre N). PV nueva `guardarAutorizacion` |
+| 9 | PM `SCA2 CMD Mecanizar` | v32 → v33 según Appian | Nodo 308 «Preparar actualización»: salida nueva `guardarAutorizacion` = `SCA2_guardarAutorizacion` (wAutemis y nivel 00000005/6; `mcaAutorizada`/`codEstado` = S/2 si la póliza está anulada, N/3 si sigue vigente; paridad SCA). Nodo 340: `reservaPrima = "S"` si la marca es "S" o "Sí" (antes sólo "Sí" → siempre N). PV nueva `guardarAutorizacion` |
 
 No se ha tocado SCA, SCAC, CORE ni ANL. 15788166 y 15788168 no se han relanzado ni modificado.
 
@@ -61,7 +61,7 @@ Petición del usuario (21/10): «cuando se llama al proceso de Verti se tiene qu
 **Cambio (TEST).**
 | Objeto | Versión | Cambio |
 |---|---|---|
-| PM `SCA2 CMD Mecanizar` | v32 → v33 (42 nodos; aviso «Too many nodes») | 331 → **332 «Write Tarea INDUCCION»** (`SCA2 Tarea` tipo `INDUCCION`, «Inducción Verti/Vencimiento (componente)», PENDIENTE, asignada al usuario de la solicitud) → **330 síncrono** (espera a que el usuario complete el componente; guarda `pp.id` en la PV nueva `induccionProcessId`) → **333 «Write cierre Tarea INDUCCION»** (COMPLETADA, `fechaCierre`, `proceso` = id del CMP) → 8 Guardar Mecanización. Orden idéntico a SCA: primero la inducción, después bloqueo NEW / ANL / CORE |
+| PM `SCA2 CMD Mecanizar` | v33 → v34 según Appian (42 nodos; aviso «Too many nodes») | 331 → **332 «Write Tarea INDUCCION»** (`SCA2 Tarea` tipo `INDUCCION`, «Inducción Verti/Vencimiento (componente)», PENDIENTE, asignada al usuario de la solicitud) → **330 síncrono** (espera a que el usuario complete el componente; guarda `pp.id` en la PV nueva `induccionProcessId`) → **333 «Write cierre Tarea INDUCCION»** (COMPLETADA, `fechaCierre`, `proceso` = id del CMP) → 8 Guardar Mecanización. Orden idéntico a SCA: primero la inducción, después bloqueo NEW / ANL / CORE |
 | `SCA2_DetalleTareas` | v30 → v31 | Tipo `INDUCCION` en la normalización y rama propia en el `a!match`: tarjeta con el estado (pendiente por *usuario* / completado el *fecha*), enlace «Abrir mis tareas de Appian para completar el componente» (`/suite/tempo/tasks`) y VOLVER |
 
 **Límites.** El PM padre del CMP sólo tiene PVs de entrada, no devuelve resultado (los datos de AGC/RGPD/vencimientos viven en Fase 1/2 y no suben), así que SCA2 sólo puede registrar que el componente terminó y cuándo. LCP no expone process reports, por lo que no se puede abrir la tarea concreta con `a!processTaskLink`; se enlaza a la lista de tareas de Appian del usuario. Prueba con solicitud nueva pendiente (misma falta de pólizas válidas que §4).
