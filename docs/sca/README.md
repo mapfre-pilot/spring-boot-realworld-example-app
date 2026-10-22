@@ -65,3 +65,4 @@ exclusivamente con operaciones `get*`/`list*`. **No se ha modificado ningún obj
 - Informes de pruebas de las rondas 23–24 (sesiones hijas): [R23-A Autemis, bloqueo NEW y ANL](pruebas/r23-a-autemis-anl.md) · [R23-B NSE](pruebas/r23-b-nse.md) · [R23-C nivel 2, RETOMAR y Verti](pruebas/r23-c-nivel2-verti.md) · [R24-D batch NSE, SGD y bandeja](pruebas/r24-d-batch-sgd-errores.md)
 - [46 — Ronda 25: autorización CORE tras ANL y reserva/devolución de prima en la simulación del alta](46-ronda25-reserva-prima-autorizacion.md)
 - [47 — Ronda 26 (a+b): componente Inducir Cliente (Verti) completable dentro del sitio SCA2 hasta el fin del proceso principal (firma RGPD y subprocesos)](47-ronda26-induccion-verti-embebida.md)
+- [48 — Ronda 27: tercer Análisis SCA2 (cabecera, SI24, REASIGNAR, orden de argumentos, decisión lenta, orquestación Mecanizar→CMP): clasificación y reparto](48-ronda27-analisis-sca2.md)

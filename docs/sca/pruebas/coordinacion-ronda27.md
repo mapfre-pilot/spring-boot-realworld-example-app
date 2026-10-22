@@ -1,0 +1,12 @@
+# Coordinación ronda 27 (22/10/2026) — 3 sesiones hijas en paralelo sobre SCA2 TEST y `feature/sca`
+
+Regla: cada sesión sólo modifica los objetos de su columna; GET vivo antes de cada PUT; informes en ficheros distintos; sin PR. Las solicitudes de prueba se crean nuevas (ver lista de protegidas en el prompt).
+
+| | R27-A cabecera / SI24 / REASIGNAR | R27-B argumentos nivel 2 / decisión lenta | R27-C orquestación Mecanizar → CMP |
+|---|---|---|---|
+| Objetos Appian | `SCA2_DatosCabecera` (+ constante/regla de pestaña inicial), `SCA2_DetalleSolicitud`, `SCA2_DetalleTareas` (sólo botones RETOMAR/REASIGNAR y texto SI24), textos/constantes del mensaje SI24 | `SCA2_ContraAnulacionOpciones`, `SCA2_ContraAnulacionPrincipal`, reglas `SCA2_*Argument*`, PM `SCA2 CMD CrearAccion` / `CompletarAccion` (sólo decisión tras CA, sin tocar la rama Verti) | PM `SCA2 CMD Mecanizar`, `SCA2 CMD Finalizar`, `CompletarAccion` (sólo tras mecanización), `SCA2_MecanizacionPrincipal`, `SCA2_InduccionVertiPanel`, `SCA2_obtenerTareaInduccion`, `SCA2_tareasInduccionVerti`, `SCA2_decidir*` de contacto/mecanizar |
+| Pólizas | wAutemis «que derivan», desde el FINAL de la lista | wAutemis «que derivan», desde el PRINCIPIO | NSE Autos recién emitidas, desde el FINAL de la hoja |
+| Usuarios UI | JJGONZ2 + SISANS | JJGONZ2 + SISANS | JJGONZ2 |
+| Informe | `r27-a-cabecera-si24-reasignar.md` | `r27-b-argumentos-nivel2-decision.md` | `r27-c-orquestacion-mecanizar-cmp.md` |
+
+## Estado (cada sesión añade una línea al empezar/terminar: fecha, sesión, pólizas/solicitudes usadas, objetos tocados con versión)
