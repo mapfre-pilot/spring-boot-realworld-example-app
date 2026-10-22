@@ -10,6 +10,7 @@ import {
 import { PESTANAS_GESTION_COMERCIAL } from '../components/gestion-comercial-cliente.component';
 import {
   dispatchPestanasPoliza,
+  VISTAS_POLIZA_SAIL,
 } from './poliza-page.component';
 import { PESTANAS_PAGADOR, PESTANAS_RECIBO } from './recibo-page.component';
 
@@ -53,6 +54,22 @@ describe('barras de pestañas de paridad PGM', () => {
   it('mantiene recibo y pagador', () => {
     expect(PESTANAS_RECIBO).toEqual(['Datos Generales', 'Desglose económico', 'Gestiones']);
     expect(PESTANAS_PAGADOR).toEqual(['Datos Personales', 'Contacto', 'Correspondencia']);
+  });
+
+  it('reproduce títulos y columnas literales de las cajas SAIL de póliza', () => {
+    expect(VISTAS_POLIZA_SAIL.AUTOS['Coberturas'][0]).toMatchObject({
+      titulo: 'Coberturas y garantias',
+      columnas: ['Coberturas', 'Suma asegurada'],
+    });
+    expect(VISTAS_POLIZA_SAIL.VIDA['Intervinientes'].map((caja) => caja.titulo)).toEqual([
+      'Tomador',
+      'Asegurados',
+      'Beneficiarios',
+    ]);
+    expect(VISTAS_POLIZA_SAIL.VIDA['Intervinientes'][2].columnas).toEqual([
+      'Suceso',
+      'Beneficiarios',
+    ]);
   });
 
   it('mantiene comunicaciones, más datos y gestión comercial', () => {

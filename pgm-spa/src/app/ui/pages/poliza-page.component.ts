@@ -1,4 +1,4 @@
-import { CurrencyPipe, DatePipe, KeyValuePipe } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, effect, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -21,7 +21,6 @@ export const TEXTOS_POLIZA = {
   ir: 'IR',
   documentacion: 'Documentación de emisión',
   consultaDescarga: 'CONSULTA DESCARGA DOCUMENTOS',
-  resumen: 'Resumen Póliza',
   recibos: 'Recibos de la póliza',
   garantias: 'Garantías',
   beneficiarios: 'Beneficiarios',
@@ -34,6 +33,86 @@ export interface ResultadoDispatcherPoliza {
   tipoDetalle: TipoDetallePoliza;
   pestanas: string[];
 }
+
+type TipoCajaPoliza = 'campos' | 'garantias' | 'intervinientes' | 'beneficiarios' | 'recibos' | 'prestaciones' | 'documentos';
+
+interface CajaPolizaSAIL {
+  titulo: string;
+  tipo: TipoCajaPoliza;
+  bloque?: string;
+  campos?: string[];
+  columnas?: string[];
+  contador?: 'garantias' | 'intervinientes' | 'recibos' | 'prestaciones';
+}
+
+export const VISTAS_POLIZA_SAIL: Record<TipoDetallePoliza, Record<string, CajaPolizaSAIL[]>> = {
+  AUTOS: {
+    Vehículos: [
+      { titulo: '$riesgo', tipo: 'campos', bloque: 'Vehículo', campos: ['Marca', 'Matrícula', 'Modelo', 'Número de bastidor', 'Color', 'Código vehículo', 'Tipo de vehículo', 'Referencia vehículo', 'Información detallada del vehículo', 'Número de puertas', 'Número de caballos', 'Combustible', 'Cilindrada', 'Tipo de cambio', 'Precio de venta'] },
+      { titulo: 'Tomador', tipo: 'campos', bloque: 'Datos del tomador', campos: ['Nombre', 'NIF/CIF', 'Genero', 'F. Nacimiento', 'Email', 'Tlfn. Móvil', 'Dirección'] },
+    ],
+    Coberturas: [
+      { titulo: 'Coberturas y garantias', tipo: 'garantias', contador: 'garantias', columnas: ['Coberturas', 'Suma asegurada'] },
+    ],
+    Intervinientes: [
+      { titulo: 'Tomador', tipo: 'campos', bloque: 'Datos del tomador', campos: ['Nombre', 'NIF/CIF', 'Genero', 'F. Nacimiento', 'Email', 'Tlfn. Móvil', 'Dirección'] },
+      { titulo: 'Intervinientes', tipo: 'intervinientes', contador: 'intervinientes', columnas: ['Nombre', 'Tipo de Documento', 'Nº Documento', 'Fecha Nacimiento', 'Figura'] },
+    ],
+    Recibos: [
+      { titulo: 'Recibos', tipo: 'recibos', contador: 'recibos', columnas: ['Nº recibo', 'Método de pago', 'Importe', 'Inicio', 'Fin', 'Estado'] },
+    ],
+    Prestaciones: [
+      { titulo: 'Prestaciones', tipo: 'prestaciones', contador: 'prestaciones', columnas: ['No. expediente', 'Descripción prestación', 'Importe', 'Ocurrencia', 'Apertura', 'Estado', 'Acciones'] },
+    ],
+  },
+  SALUD: {
+    Intervinientes: [
+      { titulo: 'Datos del tomador', tipo: 'campos', bloque: 'Datos del tomador', campos: ['Nº Documento', 'Dirección', 'Estado Civil', 'Sexo', 'Fecha de nacimiento', 'Número de teléfono personal'] },
+      { titulo: 'Intervinientes', tipo: 'intervinientes', contador: 'intervinientes', columnas: ['Nombre', 'Tipo de Documento', 'Nº Documento', 'Fecha Nacimiento', 'Figura'] },
+    ],
+    Coberturas: [
+      { titulo: 'Coberturas contratadas', tipo: 'garantias', columnas: ['Nombre', 'Cobertura', 'Obligatoria', 'Contratada'] },
+    ],
+    Recibos: [
+      { titulo: 'Recibos', tipo: 'recibos', contador: 'recibos', columnas: ['Nº recibo', 'Método de pago', 'Importe', 'Inicio', 'Fin', 'Estado'] },
+    ],
+    Prestaciones: [
+      { titulo: 'Prestaciones', tipo: 'prestaciones', contador: 'prestaciones', columnas: ['No. expediente', 'Descripción prestación', 'Importe', 'Ocurrencia', 'Apertura', 'Estado', 'Acciones'] },
+    ],
+  },
+  VIDA: {
+    Intervinientes: [
+      { titulo: 'Tomador', tipo: 'campos', bloque: 'Datos del tomador', campos: ['El Tomador es asegurado', 'Nombre y apellidos', 'NIF/CIF', 'Profesión', 'F. Nacimiento', 'Tlfn. Particular', 'Tlfn. Móvil', 'Preguntas', '¿Tiene establecida su residencia habitual en España?', '¿Es o ha sido persona de responsabilidad pública, familiar en primer grado o allegado a ésta por relación personal o empresarial?', '¿Es residente fiscal en terceros países?', 'Domicilio', 'Fiscal', 'Cobro', 'Prestación', 'Comunicación'] },
+      { titulo: 'Asegurados', tipo: 'campos', bloque: 'Datos del asegurado', campos: ['Nombre y apellidos', 'NIF/CIF', 'Profesión', 'F. Nacimiento', 'Sexo'] },
+      { titulo: 'Beneficiarios', tipo: 'beneficiarios', columnas: ['Suceso', 'Beneficiarios'] },
+    ],
+    'Estructura comercial': [
+      { titulo: 'Datos', tipo: 'campos', bloque: 'Estructura comercial', columnas: ['Intervinientes', 'Aport.', 'Clave productor', 'TP', 'O.D.', 'F. inicio', 'Nombre', 'Año 1', 'Año 2', 'Nº Sucesivos', 'Sucesivos (%)'] },
+    ],
+    Coberturas: [
+      { titulo: 'Garantias y capitales', tipo: 'garantias', contador: 'garantias', columnas: ['Garantía', 'Capital/Renta', 'Prima neta anual', 'Fondo', '%', 'Títulos', 'Importe', 'VLP', 'Fecha VLP'] },
+    ],
+    Recibos: [
+      { titulo: 'Recibos', tipo: 'recibos', contador: 'recibos', columnas: ['Nº recibo', 'Método de pago', 'Importe', 'Inicio', 'Fin', 'Estado'] },
+    ],
+    Prestaciones: [
+      { titulo: 'Prestaciones', tipo: 'prestaciones', columnas: ['No. expediente', 'Descripción prestación', 'Importe', 'Ocurrencia', 'Apertura', 'Estado', 'Acciones'] },
+    ],
+    Documentos: [{ titulo: 'Documentos', tipo: 'documentos' }],
+    Primas: [
+      { titulo: 'Primas', tipo: 'campos', bloque: 'Primas', campos: ['Prima única', 'Prima periódica', 'Importe aportación', 'Periodicidad aportación', 'Tipo Revalorizacíon', '% Revalorización', 'Día de cobro'] },
+    ],
+  },
+  HOGAR: {},
+  GENERICA: {
+    Recibos: [
+      { titulo: 'Recibos', tipo: 'recibos', contador: 'recibos', columnas: ['Nº recibo', 'Método de pago', 'Importe', 'Inicio', 'Fin', 'Estado'] },
+    ],
+    Prestaciones: [
+      { titulo: 'Prestaciones', tipo: 'prestaciones', contador: 'prestaciones', columnas: ['No. expediente', 'Descripción prestación', 'Importe', 'Ocurrencia', 'Apertura', 'Estado', 'Acciones'] },
+    ],
+  },
+};
 
 export function dispatchPestanasPoliza(
   ramo: string,
@@ -91,7 +170,6 @@ export function dispatchPestanasPoliza(
   imports: [
     CurrencyPipe,
     DatePipe,
-    KeyValuePipe,
     RouterLink,
     EstadoComponent,
     IconoComponent,
@@ -138,129 +216,79 @@ export function dispatchPestanasPoliza(
           }
         </div>
         }
-        <h2>{{ t.resumen }}</h2>
-        @if (pestana() === 'Recibos') {
-          <p>{{ t.recibos }}</p>
-        } @else if (pestana() && pestana() !== 'Prestaciones') {
-          <h2>{{ pestana() }}</h2>
-        }
+        <dl class="datos poliza-cabecera" data-testid="cabecera-poliza">
+          <dt>Ramo</dt><dd>{{ p.ramo }}</dd>
+          <dt>Producto comercial</dt><dd>{{ p.producto }}</dd>
+          <dt>Descripción del riesgo</dt><dd>{{ valorSeguro(p.riesgo) }}</dd>
+          <dt>Prima</dt><dd>{{ p.primaAnual | currency: 'EUR' }}</dd>
+          <dt>Estado</dt><dd>{{ p.estado }}</dd>
+          <dt>Fecha efecto/vencimiento</dt><dd>{{ p.fechaEfecto | date: 'dd/MM/yyyy' }} / {{ p.fechaVencimiento | date: 'dd/MM/yyyy' }}</dd>
+          <dt>Forma de pago</dt><dd>{{ valorSeguro(p.formaPago) }}</dd>
+        </dl>
         @if (detalle(); as d) {
-          @if (pestana() === 'Coberturas' && d.garantias.length) {
-            <table class="tabla" data-testid="coberturas-poliza">
-              <thead><tr>
-                @for (columna of columnasCoberturas(p); track columna) {
-                  <th>{{ columna }}</th>
-                }
-              </tr></thead>
-              <tbody>
-                @for (g of d.garantias; track g.codigo) {
-                  <tr>
-                    @for (columna of columnasCoberturas(p); track columna) {
-                      <td>{{ valorCobertura(g, columna) }}</td>
+          @for (caja of cajasParaPestana(p, d); track $index) {
+            <section class="poliza-caja" [attr.data-testid]="'caja-' + caja.titulo">
+              <h2>{{ tituloCaja(caja, d, p) }}</h2>
+              @if (caja.tipo === 'campos') {
+                @if (caja.columnas?.length) {
+                  <table class="tabla" data-testid="estructura-comercial">
+                    <thead><tr>@for (columna of caja.columnas; track columna) { <th>{{ columna }}</th> }</tr></thead>
+                    <tbody><tr>@for (columna of caja.columnas; track columna) { <td>{{ valorBloque(d, caja.bloque, columna) }}</td> }</tr></tbody>
+                  </table>
+                } @else {
+                  <dl class="datos">
+                    @for (campo of caja.campos ?? []; track campo) {
+                      <dt>{{ campo }}</dt><dd>{{ valorBloque(d, caja.bloque, campo) }}</dd>
                     }
-                  </tr>
+                  </dl>
                 }
-              </tbody>
-            </table>
-          }
-          @if (pestana() === 'Intervinientes' && (d.beneficiarios.length || p.tipoDetalle !== 'VIDA')) {
-            @if (p.tipoDetalle !== 'VIDA') {
-              <h3>Intervinientes ({{ d.beneficiarios.length }})</h3>
-            }
-            <table class="tabla" data-testid="intervinientes-poliza">
-              <thead><tr>
-                @for (columna of columnasIntervinientes(p); track columna) {
-                  <th>{{ columna }}</th>
-                }
-              </tr></thead>
-              <tbody>
-                @for (b of d.beneficiarios; track $index) {
-                  <tr>
-                    @for (columna of columnasIntervinientes(p); track columna) {
-                      <td>{{ valorInterviniente(b, columna) }}</td>
+              } @else if (caja.tipo === 'garantias') {
+                <table class="tabla" data-testid="coberturas-poliza">
+                  <thead><tr>@for (columna of caja.columnas ?? []; track columna) { <th>{{ columna }}</th> }</tr></thead>
+                  <tbody>@for (garantia of d.garantias; track garantia.codigo) {
+                    <tr>@for (columna of caja.columnas ?? []; track columna) { <td>{{ valorCobertura(d, garantia, columna) }}</td> }</tr>
+                  }</tbody>
+                </table>
+              } @else if (caja.tipo === 'intervinientes' || caja.tipo === 'beneficiarios') {
+                <table class="tabla" data-testid="intervinientes-poliza">
+                  <thead><tr>@for (columna of caja.columnas ?? []; track columna) { <th>{{ columna }}</th> }</tr></thead>
+                  <tbody>
+                    @if (caja.tipo === 'beneficiarios') {
+                      @for (fila of d.beneficiarios; track $index) {
+                        <tr>@for (columna of caja.columnas ?? []; track columna) { <td>{{ valorBeneficiario(fila, columna) }}</td> }</tr>
+                      }
+                    } @else {
+                      @for (fila of filasIntervinientes(d); track $index) {
+                        <tr>@for (columna of caja.columnas ?? []; track columna) { <td>{{ valorFila(fila, columna) }}</td> }</tr>
+                      }
                     }
-                  </tr>
-                }
-              </tbody>
-            </table>
-          }
-          @if (p.tipoDetalle === 'VIDA' && pestana() === 'Estructura comercial') {
-            <table class="tabla" data-testid="estructura-comercial">
-              <thead><tr>@for (columna of columnasEstructuraComercial; track columna) { <th>{{ columna }}</th> }</tr></thead>
-              <tbody><tr>@for (columna of columnasEstructuraComercial; track columna) { <td>{{ valorCampo(d, columna) }}</td> }</tr></tbody>
-            </table>
-          }
-          @if (p.tipoDetalle === 'VIDA' && pestana() === 'Documentos') {
-            <div class="botones">
-              <button type="button" class="btn" (click)="abrirAcciones()">Duplicado de póliza</button>
-              <button type="button" class="btn btn-secundario" (click)="cargarDocumentos()">Lector de documentos</button>
-            </div>
-            @if (documentos(); as docs) {
-              @for (documento of docs; track documento.id) {
-                <p>{{ documento.nombre }}</p>
+                  </tbody>
+                </table>
+              } @else if (caja.tipo === 'recibos') {
+                <table class="tabla" data-testid="recibos-poliza">
+                  <thead><tr>@for (columna of caja.columnas ?? []; track columna) { <th>{{ columna }}</th> }</tr></thead>
+                  <tbody>@for (recibo of recibos(); track recibo.numero) {
+                    <tr>@for (columna of caja.columnas ?? []; track columna) { <td>{{ valorRecibo(recibo, columna) }}</td> }</tr>
+                  }</tbody>
+                </table>
+              } @else if (caja.tipo === 'prestaciones') {
+                <table class="tabla" data-testid="prestaciones-poliza">
+                  <thead><tr>@for (columna of caja.columnas ?? []; track columna) { <th>{{ columna }}</th> }</tr></thead>
+                  <tbody>@for (prestacion of prestaciones(); track prestacion.numero) {
+                    <tr>@for (columna of caja.columnas ?? []; track columna) { <td>{{ valorPrestacion(prestacion, columna) }}</td> }</tr>
+                  }</tbody>
+                </table>
+              } @else if (caja.tipo === 'documentos') {
+                <div class="botones">
+                  <button type="button" class="btn" (click)="abrirAcciones()">Duplicado de póliza</button>
+                  <button type="button" class="btn btn-secundario" (click)="cargarDocumentos()">Lector de documentos</button>
+                </div>
+                @if (documentos(); as docs) { @for (documento of docs; track documento.id) { <p>{{ documento.nombre }}</p> } }
               }
-            }
+            </section>
           }
-          @if (p.tipoDetalle === 'VIDA' && pestana() === 'Primas') {
-            <dl class="datos">
-              @for (campo of camposPrimasVida; track campo) {
-                <dt>{{ campo }}</dt>
-                <dd>{{ valorCampo(d, campo) }}</dd>
-              }
-            </dl>
-          }
-          <div class="grid grid-2 bloques" data-testid="bloques-ramo">
-            @for (b of bloquesParaPestana(d); track b[0]) {
-              <div>
-                <h3>{{ b[0] }}</h3>
-                <dl class="datos">
-                  @for (c of b[1] | keyvalue; track c.key) {
-                    <dt>{{ c.key }}</dt>
-                    <dd>{{ c.value }}</dd>
-                  }
-                </dl>
-              </div>
-            }
-          </div>
         }
       </section>
-      @if (pestana() === 'Recibos') {
-        <section class="card">
-          <table class="tabla" data-testid="recibos-poliza">
-            <thead><tr><th>Icono ramo</th><th>Método de pago</th><th>Importe</th><th>Fechas</th><th>Estado</th></tr></thead>
-            <tbody>
-              @for (recibo of recibos(); track recibo.numero) {
-                <tr>
-                  <td>{{ recibo.ramo }}</td>
-                  <td>{{ recibo.formaPago }}</td>
-                  <td>{{ recibo.importe | currency: 'EUR' }}</td>
-                  <td>Nº recibo {{ recibo.numero }} · Inicio {{ recibo.fechaEmision | date: 'dd/MM/yyyy' }} · Fin {{ recibo.fechaVencimiento | date: 'dd/MM/yyyy' }}</td>
-                  <td>{{ recibo.estado }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </section>
-      }
-      @if (pestana() === 'Prestaciones') {
-        <section class="card">
-          <table class="tabla" data-testid="prestaciones-poliza">
-            <thead><tr><th>Icono ramo</th><th>Descripción prestación</th><th>Importe</th><th>Fechas</th><th>Estado</th><th>Acciones</th></tr></thead>
-            <tbody>
-              @for (prestacion of prestaciones(); track prestacion.numero) {
-                <tr>
-                  <td>{{ prestacion.ramo }}</td>
-                  <td>{{ prestacion.descripcion }}</td>
-                  <td></td>
-                  <td>No. expediente {{ prestacion.numero }} · Ocurrencia {{ prestacion.fechaOcurrencia | date: 'dd/MM/yyyy' }} · Apertura {{ prestacion.fechaApertura | date: 'dd/MM/yyyy' }}</td>
-                  <td>{{ prestacion.estado }}</td>
-                  <td></td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </section>
-      }
 
       @if (dialogoAcciones()) {
         <div class="backdrop" role="presentation">
@@ -340,6 +368,14 @@ export function dispatchPestanasPoliza(
     `
       .bloques {
         margin-top: 1rem;
+      }
+      .poliza-cabecera {
+        margin-top: 1rem;
+      }
+      .poliza-caja {
+        margin-top: 1rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e2e5e7;
       }
       .bloques h3,
       .dialogo h3 {
@@ -423,29 +459,6 @@ export class PolizaPageComponent {
   readonly error = signal<string | null>(null);
   readonly etiquetas = ETIQUETA_RAMO;
   readonly pestana = signal('');
-  readonly columnasEstructuraComercial = [
-    'Intervinientes',
-    'Aport.',
-    'Clave productor',
-    'TP',
-    'O.D.',
-    'F. inicio',
-    'Nombre',
-    'Año 1',
-    'Año 2',
-    'Nº Sucesivos',
-    'Sucesivos (%)',
-  ];
-  readonly camposPrimasVida = [
-    'Prima única',
-    'Prima periódica',
-    'Importe aportación',
-    'Periodicidad aportación',
-    'Tipo Revalorizacíon',
-    '% Revalorización',
-    'Día de cobro',
-  ];
-
   constructor() {
     effect(() => void this.cargar(this.numero()));
   }
@@ -493,66 +506,84 @@ export class PolizaPageComponent {
     ).pestanas;
   }
 
-  bloquesParaPestana(detalle: DetallePolizaRamo): [string, Record<string, string>][] {
-    const clavesPorPestana: Record<string, string[]> = {
-      Vehículos: ['Vehículo', 'Vehículos', 'Riesgo', 'Datos del tomador'],
-      Coberturas: ['Coberturas', 'Garantías', 'Garantias'],
-      Intervinientes: ['Intervinientes', 'Figuras', 'Beneficiarios', 'Datos del tomador', 'Datos del asegurado'],
-      'Estructura comercial': ['Estructura comercial'],
-      Documentos: ['Documentos'],
-      Primas: ['Primas'],
+  cajasParaPestana(poliza: Poliza, detalle: DetallePolizaRamo): CajaPolizaSAIL[] {
+    if (!poliza.tipoDetalle || poliza.tipoDetalle === 'HOGAR' || !this.pestana()) return [];
+    const cajas = VISTAS_POLIZA_SAIL[poliza.tipoDetalle][this.pestana()] ?? [];
+    if (poliza.tipoDetalle !== 'VIDA' || this.pestana() !== 'Intervinientes') return cajas;
+    const tomadorAsegurado = detalle.bloques?.['Datos del tomador']?.['El Tomador es asegurado'];
+    return cajas.filter((caja) => caja.titulo !== 'Asegurados' || tomadorAsegurado?.toLowerCase() === 'false');
+  }
+
+  tituloCaja(caja: CajaPolizaSAIL, detalle: DetallePolizaRamo, poliza: Poliza): string {
+    const titulo = caja.titulo === '$riesgo' ? this.valorSeguro(poliza.riesgo) : caja.titulo;
+    if (!caja.contador) return titulo;
+    const cuenta = {
+      garantias: detalle.garantias?.length ?? 0,
+      intervinientes: this.filasIntervinientes(detalle).length,
+      recibos: this.recibos().length,
+      prestaciones: this.prestaciones().length,
+    }[caja.contador];
+    return `${titulo} (${cuenta})`;
+  }
+
+  valorBloque(detalle: DetallePolizaRamo, bloque: string | undefined, campo: string): string {
+    if (!bloque) return 'No disponible';
+    return this.valorSeguro(detalle.bloques?.[bloque]?.[campo]);
+  }
+
+  filasIntervinientes(detalle: DetallePolizaRamo): Record<string, string>[] {
+    return Object.entries(detalle.bloques ?? {})
+      .filter(([clave]) => clave.startsWith('Interviniente '))
+      .map(([, fila]) => fila);
+  }
+
+  valorFila(fila: Record<string, string>, campo: string): string {
+    return this.valorSeguro(fila[campo]);
+  }
+
+  valorBeneficiario(beneficiario: DetallePolizaRamo['beneficiarios'][number], campo: string): string {
+    if (campo === 'Suceso') return this.valorSeguro(beneficiario.parentesco);
+    if (campo === 'Beneficiarios') return this.valorSeguro(beneficiario.nombre);
+    return 'No disponible';
+  }
+
+  valorCobertura(detalle: DetallePolizaRamo, garantia: DetallePolizaRamo['garantias'][number], columna: string): string {
+    if (columna === 'Coberturas' || columna === 'Nombre' || columna === 'Garantía') return this.valorSeguro(garantia.nombre);
+    if (columna === 'Suma asegurada' || columna === 'Capital/Renta') {
+      return garantia.capital == null ? this.valorSeguro(garantia.franquicia) : String(garantia.capital);
+    }
+    return this.valorSeguro(detalle.bloques?.[`Garantía ${garantia.codigo}`]?.[columna]);
+  }
+
+  valorRecibo(recibo: Recibo, columna: string): string {
+    const valores: Record<string, unknown> = {
+      'Nº recibo': recibo.numero,
+      'Método de pago': recibo.formaPago,
+      Importe: recibo.importe == null ? null : `${recibo.importe} €`,
+      Inicio: recibo.fechaEmision,
+      Fin: recibo.fechaVencimiento,
+      Estado: recibo.estado,
     };
-    const claves = clavesPorPestana[this.pestana()] ?? [this.pestana()];
-    const normalizar = (texto: string) => texto.trim().toLocaleLowerCase('es');
-    return Object.entries(detalle.bloques).filter(([clave]) =>
-      claves.some((esperada) => normalizar(clave) === normalizar(esperada)),
-    );
+    return this.valorSeguro(valores[columna]);
   }
 
-  columnasCoberturas(poliza: Poliza): string[] {
-    if (poliza.tipoDetalle === 'AUTOS') return ['Descripción', 'Suma'];
-    if (poliza.tipoDetalle === 'SALUD') return ['Nombre', 'Cobertura', 'Obligatoria', 'Contratada'];
-    if (poliza.tipoDetalle === 'VIDA') {
-      return ['Garantía', 'Capital/Renta', 'Prima neta anual', 'Fondo', 'Títulos', 'Importe', 'VLP', 'Fecha VLP'];
-    }
-    return [];
+  valorPrestacion(prestacion: Prestacion, columna: string): string {
+    const valores: Record<string, unknown> = {
+      'No. expediente': prestacion.numero,
+      'Descripción prestación': prestacion.descripcion,
+      Importe: 'No disponible',
+      Ocurrencia: prestacion.fechaOcurrencia,
+      Apertura: prestacion.fechaApertura,
+      Estado: prestacion.estado,
+      Acciones: 'No disponible',
+    };
+    return this.valorSeguro(valores[columna]);
   }
 
-  columnasIntervinientes(poliza: Poliza): string[] {
-    return poliza.tipoDetalle === 'VIDA'
-      ? ['Suceso', 'Beneficiarios', '%']
-      : ['Nombre', 'Tipo de Documento', 'Nº Documento', 'Fecha Nacimiento', 'Figura'];
-  }
-
-  valorInterviniente(
-    beneficiario: DetallePolizaRamo['beneficiarios'][number],
-    columna: string,
-  ): string {
-    if (columna === 'Suceso') return beneficiario.parentesco;
-    if (columna === 'Beneficiarios' || columna === 'Nombre') return beneficiario.nombre;
-    if (columna === 'Nº Documento') return beneficiario.documento;
-    if (columna === '%') return String(beneficiario.porcentaje);
-    if (columna === 'Figura') return beneficiario.parentesco;
-    return '';
-  }
-
-  valorCobertura(garantia: DetallePolizaRamo['garantias'][number], columna: string): string {
-    if (columna === 'Descripción' || columna === 'Nombre' || columna === 'Garantía') {
-      return garantia.nombre;
-    }
-    if (columna === 'Suma' || columna === 'Capital/Renta' || columna === 'Importe') {
-      return garantia.capital === null ? '' : String(garantia.capital);
-    }
-    return '';
-  }
-
-  valorCampo(detalle: DetallePolizaRamo, campo: string): string {
-    const buscado = campo.trim().toLocaleLowerCase('es');
-    for (const bloque of Object.values(detalle.bloques)) {
-      const entrada = Object.entries(bloque).find(([clave]) => clave.trim().toLocaleLowerCase('es') === buscado);
-      if (entrada) return entrada[1];
-    }
-    return '';
+  valorSeguro(valor: unknown): string {
+    if (valor === null || valor === undefined || valor === '') return 'No disponible';
+    if (typeof valor === 'object') return 'No disponible';
+    return String(valor);
   }
 
   async abrirAcciones(): Promise<void> {
