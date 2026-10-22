@@ -136,7 +136,7 @@ describe('GestionComercialClienteComponent', () => {
     expect(texto).toContain('Entidad competencia');
     expect(texto).toContain('Clase de Vcto.');
     expect(texto).toContain('Allianz');
-    expect(texto).toContain('+ Vencimiento');
+    expect(texto).not.toContain('+ Vencimiento');
   });
 
   it('muestra el bloqueo literal de Actividad comercial cuando el usuario no tiene NUUMA', async () => {

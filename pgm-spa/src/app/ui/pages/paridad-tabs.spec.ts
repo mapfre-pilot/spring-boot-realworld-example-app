@@ -2,17 +2,28 @@ import {
   calcularContadoresResumen,
   PESTANAS_FICHA_PRINCIPALES,
   PESTANAS_POSICION,
+  ORDEN_CABECERA_CLIENTE_SAIL,
 } from './ficha-cliente-page.component';
 import {
   PESTANAS_COMUNICACIONES,
   PESTANAS_MAS_DATOS,
 } from '../components/acciones-cliente.component';
-import { PESTANAS_GESTION_COMERCIAL } from '../components/gestion-comercial-cliente.component';
+import {
+  COLUMNAS_VENCIMIENTOS_SAIL,
+  PESTANAS_GESTION_COMERCIAL,
+} from '../components/gestion-comercial-cliente.component';
 import {
   dispatchPestanasPoliza,
   VISTAS_POLIZA_SAIL,
 } from './poliza-page.component';
 import { PESTANAS_PAGADOR, PESTANAS_RECIBO } from './recibo-page.component';
+import {
+  PESTANAS_GESTION_CARTERA,
+  PESTANAS_MODALIDAD_SALUD,
+  PESTANAS_MODALIDAD_VIDA,
+  PESTANAS_NUEVA_PRODUCCION,
+  PESTANAS_PRESTACIONES,
+} from './lanzaderas-ramo-page.component';
 
 describe('barras de pestañas de paridad PGM', () => {
   it('mantiene el orden de ficha y posición', () => {
@@ -54,6 +65,64 @@ describe('barras de pestañas de paridad PGM', () => {
   it('mantiene recibo y pagador', () => {
     expect(PESTANAS_RECIBO).toEqual(['Datos Generales', 'Desglose económico', 'Gestiones']);
     expect(PESTANAS_PAGADOR).toEqual(['Datos Personales', 'Contacto', 'Correspondencia']);
+  });
+
+  it('reproduce literales y orden de la cabecera de cliente viva', () => {
+    expect(ORDEN_CABECERA_CLIENTE_SAIL).toEqual([
+      'Métodos de contacto cliente',
+      'Nuevo email',
+      'Nuevo fijo',
+      'Nuevo móvil',
+      'Alertas urgentes',
+      'Avisos e interacciones',
+      'Refrescar ficha',
+      'DNI',
+      'RGPD',
+      'ACI',
+      'En Familia',
+      'Plan de pagos',
+      'ClubMAPFRE',
+      'Descuento vinculación',
+      'Total prima (Tomador/Titular)',
+      'Posición bancaria',
+    ]);
+  });
+
+  it('mantiene el orden literal de columnas de Vencimientos', () => {
+    expect(COLUMNAS_VENCIMIENTOS_SAIL).toEqual([
+      'Venc. / Oport.',
+      'Clase de Vcto.',
+      'Producto / Riesgo',
+      'F. Venci. / Opor.',
+      'Prima / Saldo',
+      'Entidad competencia',
+      'Usuario',
+      'Comentarios',
+      'Anexos',
+    ]);
+  });
+
+  it('mantiene el orden de pestañas de las páginas del site', () => {
+    expect(PESTANAS_GESTION_CARTERA).toEqual([
+      'Agropecuario',
+      'Automóviles',
+      'Empresas',
+      'Patrimoniales',
+      'Salud',
+      'Vida',
+    ]);
+    expect(PESTANAS_PRESTACIONES).toEqual(['Automóviles', 'Salud']);
+    expect(PESTANAS_NUEVA_PRODUCCION).toEqual([
+      'Agropecuario',
+      'Ahorro',
+      'Automóviles',
+      'Empresas',
+      'Patrimoniales',
+      'Salud',
+      'Vida',
+    ]);
+    expect(PESTANAS_MODALIDAD_SALUD).toEqual(['Particulares']);
+    expect(PESTANAS_MODALIDAD_VIDA).toEqual(['Particulares', 'Colectivos']);
   });
 
   it('reproduce títulos y columnas literales de las cajas SAIL de póliza', () => {

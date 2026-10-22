@@ -9,8 +9,7 @@ export const ETIQUETA_ESTADO: Record<Cliente['estado'], string> = {
 };
 
 /**
- * Indicadores de la ficha 360. vista="chips": estado, tipología, VIP, Robinson, exclusivo corredor, menor, descuento.
- * vista="palancas": DNI, RGPD, ACI, Cliente Total, plan de pagos, En Familia, DpV (como en la cabecera de PGM en Appian).
+ * Indicadores de ficha y palancas visibles en la cabecera Appian.
  */
 @Component({
   selector: 'pgm-indicadores-cliente',
@@ -56,6 +55,10 @@ export const ETIQUETA_ESTADO: Record<Cliente['estado'], string> = {
             <div class="estado">{{ c().palancas[p.clave] ? p.si : p.no }}</div>
           </div>
         }
+        <div class="palanca">
+          <div class="titulo"><strong>ClubMAPFRE</strong></div>
+          <div class="estado">No disponible</div>
+        </div>
       </div>
     }
   `,
@@ -110,13 +113,6 @@ export class IndicadoresClienteComponent {
       { clave: 'altaAci', texto: 'ACI', si: 'Alta en ACI', no: 'Potencial' },
       { clave: 'enFamilia', texto: 'En Familia', si: 'Con unidad familiar', no: 'Sin familia' },
       { clave: 'planPagos', texto: 'Plan de pagos', si: 'Contratado', no: 'Potencial' },
-      {
-        clave: 'clienteTotal',
-        texto: 'Cliente Total',
-        si: 'Cliente Total',
-        no: 'No es Cliente Total',
-      },
-      { clave: 'dpv', texto: 'DpV', si: 'Con DpV', no: 'Sin DpV' },
     ];
 
   esMenor(): boolean {

@@ -52,6 +52,24 @@ export const PESTANAS_POSICION = [
   'Prestaciones',
   'Recibos',
 ] as const;
+export const ORDEN_CABECERA_CLIENTE_SAIL = [
+  'Métodos de contacto cliente',
+  'Nuevo email',
+  'Nuevo fijo',
+  'Nuevo móvil',
+  'Alertas urgentes',
+  'Avisos e interacciones',
+  'Refrescar ficha',
+  'DNI',
+  'RGPD',
+  'ACI',
+  'En Familia',
+  'Plan de pagos',
+  'ClubMAPFRE',
+  'Descuento vinculación',
+  'Total prima (Tomador/Titular)',
+  'Posición bancaria',
+] as const;
 
 export type RamoResumen = Exclude<Ramo, 'RIESGO'>;
 
@@ -129,9 +147,12 @@ const textoEstado = (v: unknown): string => `${v ?? ''}`.replace(/_/g, ' ');
       <section class="ficha">
         <div class="cabecera-cliente">
           <h1>
-            {{ c.nombre }} {{ c.apellidos }} <span class="doc">({{ c.documento }})</span>
+          {{ c.nombre }} {{ c.apellidos }} <span class="doc">({{ c.documento }})</span>
           </h1>
           <pgm-indicadores-cliente [c]="c" />
+          @if (c.tipologia === 'EMPRESA' && c.palancas.clienteTotal) {
+            <span class="chip">Cliente Total</span>
+          }
           <pgm-acciones-cliente [cliente]="c" (cambio)="cargar(c.id)" />
           <span class="sep"></span>
           <button
@@ -140,24 +161,44 @@ const textoEstado = (v: unknown): string => `${v ?? ''}`.replace(/_/g, ' ');
             (click)="llamar(c)"
             title="Llamar desde el centro de comunicaciones"
           >
-            <pgm-icono nombre="telefono" /> {{ c.telefono || '–' }}
+            <pgm-icono nombre="telefono" /> {{ c.telefono || 'No disponible' }}
           </button>
           <span class="sep"></span>
-          <span class="contacto"><pgm-icono nombre="email" /> {{ c.email || '–' }}</span>
-          <span class="spacer"></span>
-          <button
-            class="btn-icono"
-            type="button"
-            [attr.aria-label]="'Alertas (' + c.alertas.length + ')'"
-            (click)="verAlertas.set(!verAlertas())"
-          >
-            <pgm-icono nombre="campana" [tam]="22" />
-            @if (c.alertas.length) {
-              <span class="punto">{{ c.alertas.length }}</span>
+          <span class="contacto"><pgm-icono nombre="email" /> {{ c.email || 'No disponible' }}</span>
+          <div class="metodos-contacto">
+            <button
+              class="btn-enlace"
+              type="button"
+              (click)="verMetodosContacto.set(!verMetodosContacto())"
+            >
+              Métodos de contacto cliente
+            </button>
+            @if (verMetodosContacto()) {
+              <span>Nuevo email: {{ c.email || 'No disponible' }}</span>
+              <span>Nuevo fijo: No disponible</span>
+              <span>Nuevo móvil: {{ c.telefono || 'No disponible' }}</span>
             }
-          </button>
-          <button class="btn-icono" type="button" aria-label="Recargar" (click)="cargar(c.id)">
+          </div>
+          <span class="spacer"></span>
+          @if (store.puede(V.GESTIONES_SGC30) && c.alertas.length > 0) {
+            <button class="btn-enlace" type="button" (click)="verAlertas.set(!verAlertas())">
+              <pgm-icono nombre="campana" [tam]="22" />
+              Alertas urgentes
+              <span class="punto">{{ c.alertas.length }}</span>
+            </button>
+          }
+          @if (store.puede(V.GESTIONES_SGC30) && c.alertas.length > 0) {
+            <button
+              class="btn-enlace"
+              type="button"
+              (click)="verAlertas.set(!verAlertas())"
+            >
+              Avisos e interacciones
+            </button>
+          }
+          <button class="btn-enlace" type="button" (click)="cargar(c.id)">
             <pgm-icono nombre="refrescar" [tam]="20" />
+            Refrescar ficha
           </button>
         </div>
 
@@ -184,54 +225,25 @@ const textoEstado = (v: unknown): string => `${v ?? ''}`.replace(/_/g, ' ');
           </div>
         }
 
-        <div class="datos-cliente">
-          <div>
-            <span class="etiqueta">Edad</span><strong>{{ edad() ?? '–' }} años</strong>
-          </div>
-          <div>
-            <span class="etiqueta">Nacimiento</span
-            ><strong>{{ c.fechaNacimiento | date: 'dd/MM/yyyy' }} · {{ c.nacionalidad }}</strong>
-          </div>
-          <div class="ancho">
-            <span class="etiqueta">Dirección habitual</span>
-            <strong class="mayus"
-              >{{ c.direccion.via }} {{ c.direccion.numero }}, {{ c.direccion.codigoPostal }},
-              {{ c.direccion.localidad }}, {{ c.direccion.provincia }}</strong
-            >
-          </div>
-          <div>
-            <span class="etiqueta">Oficina gestora</span><strong>{{ c.oficinaGestora }}</strong>
-          </div>
-          <div>
-            <span class="etiqueta">Gestor</span><strong>{{ c.gestorAsignado }}</strong>
-          </div>
-        </div>
-
         <div class="franja">
           <pgm-indicadores-cliente [c]="c" vista="palancas" />
           <div class="cifras">
             <div class="cifra-bloque">
-              <span class="cifra">{{ c.descuentoVinculacion ?? 0 }}%</span>
+              <span class="cifra">{{
+                c.descuentoVinculacion === null || c.descuentoVinculacion === undefined
+                  ? 'No disponible'
+                  : c.descuentoVinculacion + '%'
+              }}</span>
               <span class="rojo">Descuento vinculación</span>
             </div>
             <div class="cifra-bloque">
-              <span class="cifra">{{ totalPrima() | currency: 'EUR' }}</span>
-              <span>Total prima (tomador/titular)</span>
-              <small class="muted">*No contabiliza productos anulados</small>
-            </div>
-            <div>
-              <span class="chip-titulo">Familia</span>
-              @for (m of c.familia; track m.clienteId) {
-                <a [routerLink]="['/clientes', m.clienteId]" class="familiar"
-                  >{{ m.nombre }} <span class="muted">({{ m.parentesco }})</span></a
-                >
-              } @empty {
-                <span class="muted">Sin unidad familiar</span>
-              }
+              <span class="cifra">{{ totalPrima() ? (totalPrima() | currency: 'EUR') : 'No disponible' }}</span>
+              <span>Total prima (Tomador/Titular)</span>
+              <small class="muted">*No contabiliza productos Asegurado</small>
             </div>
             <div>
               <span class="chip-titulo">Posición bancaria</span>
-              <span>{{ c.posicionBancaria ?? 'Sin posición bancaria' }}</span>
+              <span>{{ c.posicionBancaria ?? 'No disponible' }}</span>
             </div>
           </div>
         </div>
@@ -689,6 +701,18 @@ const textoEstado = (v: unknown): string => `${v ?? ''}`.replace(/_/g, ' ');
     .contacto pgm-icono {
       color: var(--pgm-rojo);
     }
+    .metodos-contacto {
+      display: flex;
+      flex: 1 1 100%;
+      flex-direction: column;
+      gap: 0.15rem;
+      padding-top: 0.5rem;
+      font-size: 0.82rem;
+      color: var(--pgm-texto-2);
+    }
+    .metodos-contacto strong {
+      color: var(--pgm-texto);
+    }
     button.contacto {
       cursor: pointer;
     }
@@ -849,6 +873,7 @@ export class FichaClientePageComponent {
   readonly pestanasPosicion = PESTANAS_POSICION;
   readonly filtroRamo = signal<Ramo | null>(null);
   readonly verAlertas = signal(false);
+  readonly verMetodosContacto = signal(false);
   readonly filtroEstado = signal<string>('EN_VIGOR');
   readonly llamadaId = signal<string | null>(null);
   readonly polizasFiltradas = computed(() => {

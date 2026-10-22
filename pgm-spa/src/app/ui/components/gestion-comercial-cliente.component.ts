@@ -43,6 +43,17 @@ export const PESTANAS_GESTION_COMERCIAL = [
   'Actividad Comercial',
   'Gestiones',
 ] as const;
+export const COLUMNAS_VENCIMIENTOS_SAIL = [
+  'Venc. / Oport.',
+  'Clase de Vcto.',
+  'Producto / Riesgo',
+  'F. Venci. / Opor.',
+  'Prima / Saldo',
+  'Entidad competencia',
+  'Usuario',
+  'Comentarios',
+  'Anexos',
+] as const;
 
 const fechaCorta = (v: unknown) => (v ? new Date(`${v}`).toLocaleDateString('es-ES') : '-');
 const fechaHora = (v: unknown) =>
@@ -94,11 +105,6 @@ const euros = (v: unknown) =>
           <button class="btn-enlace" (click)="verFiltros.set(!verFiltros())">
             <pgm-icono nombre="buscar" /> Filtros
           </button>
-          @if (puedeAnadir()) {
-            <button class="btn" style="margin-left:auto" (click)="nuevoVencimiento.set(true)">
-              + Vencimiento
-            </button>
-          }
         </div>
         @if (verFiltros()) {
           <form class="filtros" (ngSubmit)="cargarOportunidades()">
@@ -765,27 +771,27 @@ export class GestionComercialClienteComponent {
 
   readonly colOportunidades: Columna<Oportunidad>[] = [
     {
-      clave: 'ramo',
-      titulo: 'Producto / Riesgo',
-      formato: (v, f) => `${v}${f.polizaNumero ? ' · ' + f.polizaNumero : ''}`,
-    },
-    {
       clave: 'tipo',
       titulo: 'Venc. / Oport.',
       formato: (v) => (v === 'VENCIMIENTO' ? 'Vencimiento' : 'Oportunidad'),
     },
-    { clave: 'anexos', titulo: 'Anexos', formato: (v) => (Number(v) > 0 ? `${v} doc.` : '-') },
-    { clave: 'usuario', titulo: 'Usuario', formato: (v) => `${v ?? '-'}` },
-    { clave: 'entidadCompetencia', titulo: 'Entidad competencia', formato: (v) => `${v ?? '-'}` },
-    { clave: 'fecha', titulo: 'F. Venci. / Opor.', formato: fechaCorta },
-    { clave: 'prima', titulo: 'Prima / Saldo', formato: euros },
-    { clave: 'comentarios', titulo: 'Comentarios', formato: (v) => `${v ?? ''}` },
     {
       clave: 'clase',
       titulo: 'Clase de Vcto.',
       formato: (v) => `${v ?? '-'}`,
       etiqueta: (v) => `badge${v === 'COMPLETO' ? '' : v === 'INCOMPLETO' ? ' naranja' : ' gris'}`,
     },
+    {
+      clave: 'ramo',
+      titulo: 'Producto / Riesgo',
+      formato: (v, f) => `${v}${f.polizaNumero ? ' · ' + f.polizaNumero : ''}`,
+    },
+    { clave: 'fecha', titulo: 'F. Venci. / Opor.', formato: fechaCorta },
+    { clave: 'prima', titulo: 'Prima / Saldo', formato: euros },
+    { clave: 'entidadCompetencia', titulo: 'Entidad competencia', formato: (v) => `${v ?? '-'}` },
+    { clave: 'usuario', titulo: 'Usuario', formato: (v) => `${v ?? '-'}` },
+    { clave: 'comentarios', titulo: 'Comentarios', formato: (v) => `${v ?? ''}` },
+    { clave: 'anexos', titulo: 'Anexos', formato: (v) => (Number(v) > 0 ? `${v} doc.` : '-') },
   ];
   readonly colActividad: Columna<ActividadComercial>[] = [
     { clave: 'fecha', titulo: 'Fecha y hora', formato: fechaHora },

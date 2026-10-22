@@ -77,14 +77,18 @@ describe('IndicadoresClienteComponent', () => {
     expect(texto).not.toContain('VIP');
   });
 
-  it('vista palancas: estado de DNI, RGPD, ACI, En Familia, plan de pagos, Cliente Total y DpV', () => {
+  it('vista palancas: estado de DNI, RGPD, ACI, En Familia, plan de pagos y ClubMAPFRE', () => {
     spectator = createComponent({ props: { c: base, vista: 'palancas' } });
     const palancas = spectator.queryAll('.palanca');
-    expect(palancas).toHaveLength(7);
+    expect(palancas).toHaveLength(6);
     const texto = spectator.element.textContent ?? '';
     expect(texto).toContain('Documentación digitalizada');
     expect(texto).toContain('RGPD no firmado');
     expect(texto).toContain('Potencial');
+    expect(texto).toContain('ClubMAPFRE');
+    expect(texto).toContain('No disponible');
+    expect(texto).not.toContain('DpV');
+    expect(texto).not.toContain('Cliente Total');
     expect(spectator.queryAll('.palanca.activa')).toHaveLength(2);
   });
 });
