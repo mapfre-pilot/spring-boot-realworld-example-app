@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1060" viewBox="0 0 1600 1060" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <marker id="ar" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker>
+    <marker id="arR" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#c0392b"/></marker>
+  </defs>
+  <rect width="1600" height="1060" fill="#fff"/>
+  <text x="800" y="36" text-anchor="middle" font-size="26" font-weight="bold" fill="#222">SCA / SCA2 — Mapa de servicios legacy y quién los llama desde Appian</text>
+  <text x="800" y="60" text-anchor="middle" font-size="14" fill="#666">Fuente: repos Plastic del ZIP "SCA2 Servicios SCA" (ES_SSCC_SCA_*) cruzados con los objetos de SCA2 / SCA / SCAC en Appian TEST (20-10-2026)</text>
+
+  <!-- Capa 1: Appian -->
+  <rect x="30" y="85" width="1540" height="150" rx="10" fill="#e8f1fb" stroke="#2e6db4" stroke-width="2"/>
+  <text x="45" y="108" font-size="16" font-weight="bold" fill="#1f4e86">1. APPIAN (TEST) — presentación + proceso (sustituye al FRONT JSF y al BPM webMethods GPC55)</text>
+  <rect x="50" y="120" width="330" height="100" rx="8" fill="#fff" stroke="#2e6db4"/>
+  <text x="215" y="142" text-anchor="middle" font-size="14" font-weight="bold">SCA2 (nuevo)</text>
+  <text x="215" y="162" text-anchor="middle" font-size="12">80 interfaces · 220 reglas · 13 PM "CMD"</text>
+  <text x="215" y="180" text-anchor="middle" font-size="12">104 integraciones propias (copia de SCAC)</text>
+  <text x="215" y="198" text-anchor="middle" font-size="12">+ 8 integraciones SCAC reutilizadas</text>
+  <rect x="400" y="120" width="330" height="100" rx="8" fill="#fff" stroke="#2e6db4"/>
+  <text x="565" y="142" text-anchor="middle" font-size="14" font-weight="bold">SCA (actual)</text>
+  <text x="565" y="162" text-anchor="middle" font-size="12">101 interfaces · 237 reglas · 59 PM · 10 decisiones</text>
+  <text x="565" y="180" text-anchor="middle" font-size="12">5 Web API (Decisora, Reserva prima, Eliminar tareas)</text>
+  <text x="565" y="198" text-anchor="middle" font-size="12">Sin integraciones propias → usa SCAC</text>
+  <rect x="750" y="120" width="400" height="100" rx="8" fill="#fff" stroke="#2e6db4"/>
+  <text x="950" y="142" text-anchor="middle" font-size="14" font-weight="bold">SCAC — SCA CORE (capa de integración)</text>
+  <text x="950" y="162" text-anchor="middle" font-size="12">166 integraciones · 21 connected systems · 1.124 tipos</text>
+  <text x="950" y="180" text-anchor="middle" font-size="12">7 Web API de entrada (SGO, STCAT, IA, documentos)</text>
+  <text x="950" y="198" text-anchor="middle" font-size="12">~95 SOAP (ri!endpoint) + ~70 REST</text>
+  <rect x="1170" y="120" width="380" height="100" rx="8" fill="#fff" stroke="#2e6db4" stroke-dasharray="5,3"/>
+  <text x="1360" y="142" text-anchor="middle" font-size="14" font-weight="bold">Otras apps Appian relacionadas</text>
+  <text x="1360" y="162" text-anchor="middle" font-size="12">ANL (desbloqueo wAutemis), CMP, PGM</text>
+  <text x="1360" y="180" text-anchor="middle" font-size="12">BD Aurora PostgreSQL (SCA2 DataBase AWS / SCAC AWS DB)</text>
+  <text x="1360" y="198" text-anchor="middle" font-size="12">Estado de solicitud/tareas/errores en records</text>
+
+  <!-- flechas Appian -> capas -->
+  <line x1="950" y1="235" x2="330" y2="300" stroke="#555" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="950" y1="235" x2="800" y2="300" stroke="#555" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="950" y1="235" x2="1230" y2="300" stroke="#555" stroke-width="2" marker-end="url(#ar)"/>
+
+  <!-- Capa 2: Core7 EJB -->
+  <rect x="30" y="300" width="600" height="330" rx="10" fill="#fdf3e7" stroke="#d68910" stroke-width="2"/>
+  <text x="45" y="323" font-size="16" font-weight="bold" fill="#9a5d00">2. CORE7 — PCA_CORECFSA (EJB · JPA · Oracle MES) · repo CODE/CORE</text>
+  <text x="45" y="342" font-size="12" fill="#555">Servicios de núcleo: persistencia de solicitud y gestiones. Appian los llama vía SOAP (SCAC_* / SCA2_*).</text>
+  <g font-size="12">
+    <rect x="45" y="352" width="280" height="60" rx="6" fill="#fff" stroke="#d68910"/><text x="55" y="370" font-weight="bold">IGenerarContraAnul (34 op.)</text><text x="55" y="386">generarStudAnul, consultaDetalle, finalizar, estado,</text><text x="55" y="402">observaciones, notificaciones, contacto, cabecera…</text>
+    <rect x="335" y="352" width="280" height="60" rx="6" fill="#fff" stroke="#d68910"/><text x="345" y="370" font-weight="bold">IContraAnularPCA (7 op.)</text><text x="345" y="386">altaContraAnul, finalizarContraAnulPca,</text><text x="345" y="402">generarCntrAnu, modificarCatalogacion/IDSTCAT</text>
+    <rect x="45" y="420" width="280" height="60" rx="6" fill="#fff" stroke="#d68910"/><text x="55" y="438" font-weight="bold">IGestionarAccAdmPCA (10 op.)</text><text x="55" y="454">alta/guardar/consultarAccAdm, decl. jurada,</text><text x="55" y="470">consultarDocumentos, modificarCrearDocumento*</text>
+    <rect x="335" y="420" width="280" height="60" rx="6" fill="#fff" stroke="#d68910"/><text x="345" y="438" font-weight="bold">IGestionarAutorizacionesPCA (6 op.)</text><text x="345" y="454">crear/guardar/consultar/aceptarAutorizacion</text><text x="345" y="470">+ existencia/estado autorización SGO</text>
+    <rect x="45" y="488" width="280" height="60" rx="6" fill="#fff" stroke="#d68910"/><text x="55" y="506" font-weight="bold">IGestionarArgumentosPCA (6 op.)</text><text x="55" y="522">consultar/guardarTipoArg, modificarArgumento,</text><text x="55" y="538">guardarEjecuArg, consultaListArg</text>
+    <rect x="335" y="488" width="280" height="60" rx="6" fill="#fff" stroke="#d68910"/><text x="345" y="506" font-weight="bold">IGestionarConceptosPCA (8 op.)</text><text x="345" y="522">conceptos, clases productoras, variables</text><text x="345" y="538">validarConceptosPCA, validarProductoresPCA</text>
+    <rect x="45" y="556" width="280" height="60" rx="6" fill="#fff" stroke="#d68910"/><text x="55" y="574" font-weight="bold">IMecanizarPCA (4) · IConsultarGestionesPCA (2)</text><text x="55" y="590">guardar/actualizar/validarMecanizacion(New)</text><text x="55" y="606">consultaGestion (histórico), consultaDetalleGestion</text>
+    <rect x="335" y="556" width="280" height="60" rx="6" fill="#fff" stroke="#d68910" stroke-dasharray="4,3"/><text x="345" y="574" font-weight="bold">IGestionarSgoPCA (4 op.) — sin uso en Appian</text><text x="345" y="590">tareas y gestiones SGO en SCA (tablas CORE)</text><text x="345" y="606">+ decisores ILOG N1/N2/N3 y MecanizarNivel1</text>
+  </g>
+
+  <!-- Capa 3: SOA7/ESB mediaciones -->
+  <rect x="650" y="300" width="470" height="330" rx="10" fill="#eafaf1" stroke="#1e8449" stroke-width="2"/>
+  <text x="665" y="323" font-size="16" font-weight="bold" fill="#145a32">3. SOA7 / ESB — mediaciones WESB (SOA/SMED + SGO)</text>
+  <text x="665" y="342" font-size="12" fill="#555">Servicios compuestos: orquestan Core7 + externos. Appian usa 3.</text>
+  <g font-size="12">
+    <rect x="665" y="352" width="440" height="78" rx="6" fill="#fff" stroke="#c0392b" stroke-width="2"/>
+    <text x="675" y="370" font-weight="bold" fill="#c0392b">IGestionarProcesoSCA · IGestionarPCA · IFinalizarAnulacionPCA · SGC</text>
+    <text x="675" y="388">determinarAccion, determinarCaducidad, finalizarSolicitud,</text>
+    <text x="675" y="404">iniciarProcesoPCA, cerrarTareas, completarMecanizacion, acceso, cabecera</text>
+    <text x="675" y="420" fill="#c0392b">→ NO los llama Appian: lógica reimplementada en PM/reglas de SCA y SCA2</text>
+    <rect x="665" y="438" width="440" height="52" rx="6" fill="#fff" stroke="#1e8449"/>
+    <text x="675" y="456" font-weight="bold">IObtenerInformacionSCA.comprobarPropietario (ESB) ✔ Appian</text>
+    <text x="675" y="472">Estruage propiedadClave + Carterización comprobarCliente + TRON pólizas</text>
+    <rect x="665" y="498" width="440" height="52" rx="6" fill="#fff" stroke="#1e8449"/>
+    <text x="675" y="516" font-weight="bold">ICargarGestionPCA (SGC, Soa7) ✔ · IActualizarPCA (STCAT, Soa7) ✔ Appian</text>
+    <text x="675" y="532">cargaGestionPCA / obtenerOficinas · actualizarResPCA (respuesta a STCAT)</text>
+    <rect x="665" y="558" width="440" height="60" rx="6" fill="#fff" stroke="#1e8449" stroke-dasharray="4,3"/>
+    <text x="675" y="576" font-weight="bold">ITramitarSgoPCA (ESB) · DOCUMENTUM_SMED · CHEQUE · CSAT</text>
+    <text x="675" y="592">consultarParametrosSGO (SGO) · crear/recuperar/modificar documento (SGD)</text>
+    <text x="675" y="608">susceptibilidad cheque · CSAT — Appian usa REST/SOAP directos</text>
+  </g>
+
+  <!-- Capa 4: externos -->
+  <rect x="1140" y="300" width="430" height="330" rx="10" fill="#f4ecf7" stroke="#7d3c98" stroke-width="2"/>
+  <text x="1155" y="323" font-size="16" font-weight="bold" fill="#4a235a">4. SISTEMAS EXTERNOS (directos desde Appian)</text>
+  <text x="1155" y="342" font-size="12" fill="#555">Antes vía mediaciones; hoy SCAC los llama uno a uno.</text>
+  <g font-size="12">
+    <text x="1155" y="366" font-weight="bold">Pólizas / emisión</text><text x="1155" y="382">TRON IEmitirAutosPolizas · NSE IConsultarPoliza · Vida REST</text>
+    <text x="1155" y="398">Gescom · planes de pago · prerrenovación · siniestros REST</text>
+    <text x="1155" y="420" font-weight="bold">Estructura comercial / cliente</text><text x="1155" y="436">Estruage IEstrServicios · IConsDatEstr · productor · BDEC</text>
+    <text x="1155" y="452">API Clients · terceros · carterización</text>
+    <text x="1155" y="474" font-weight="bold">Central NEW / GAIA (webservices)</text><text x="1155" y="490">GestionarAnulacionesPolizasAutosNew: consultar/bloquear</text>
+    <text x="1155" y="506">IGestionarContraanulacionSca · simularAnulacion SOAP/REST</text>
+    <text x="1155" y="528" font-weight="bold">Gestión documental / notificación</text><text x="1155" y="544">SGD REST documents-web · BS Documentum · SCGD</text>
+    <text x="1155" y="560">Mail · SGC cargaGcOnLine · SGO Web API · STCAT</text>
+    <text x="1155" y="582" font-weight="bold">Reglas y procesos</text><text x="1155" y="598">sca_servicios/…/reglas (REST) · es_pca_gestionartareas</text>
+    <text x="1155" y="614">webMethods wmbig: aceptarPolizaParaAnularNew…</text>
+  </g>
+
+  <!-- Capa 5: lo que no está en Appian: FRONT y BPM -->
+  <rect x="30" y="655" width="1540" height="130" rx="10" fill="#f2f3f4" stroke="#7f8c8d" stroke-width="2"/>
+  <text x="45" y="678" font-size="16" font-weight="bold" fill="#424949">5. LEGACY SUSTITUIDO — no se migra, sirve de referencia funcional</text>
+  <g font-size="12">
+    <rect x="45" y="690" width="370" height="82" rx="6" fill="#fff" stroke="#7f8c8d"/>
+    <text x="55" y="708" font-weight="bold">FRONT JSF (FWEB · FCMD 222 comandos · FPROXY 1.599)</text>
+    <text x="55" y="724">Pantallas Alta, Contra Anulación, Acc. Administrativas,</text>
+    <text x="55" y="740">Autorización, Mecanización, Argumentos, Conceptos, Buscador…</text>
+    <text x="55" y="756">→ equivalen a las 80/101 interfaces de SCA2/SCA</text>
+    <rect x="430" y="690" width="370" height="82" rx="6" fill="#fff" stroke="#7f8c8d"/>
+    <text x="440" y="708" font-weight="bold">BPM webMethods GPC55 (LES0009001123:5555)</text>
+    <text x="440" y="724">GestionarProcesoAnulaciones, GestionarTareasProcesoPCA,</text>
+    <text x="440" y="740">GestionarTareaMecanizarAnulNI, GestionarTareaAutorizacion</text>
+    <text x="440" y="756">→ equivalen a los PM de SCA y a los CMD de SCA2</text>
+    <rect x="815" y="690" width="370" height="82" rx="6" fill="#fff" stroke="#7f8c8d"/>
+    <text x="825" y="708" font-weight="bold">API SCA (GAIA_INTEGRATION_CODE, Spring REST)</text>
+    <text x="825" y="724">POST /altaAutomatica: valida, consulta póliza, productor,</text>
+    <text x="825" y="740">cliente, siniestros y lanza iniciarProcesoPCA (desde NEW)</text>
+    <text x="825" y="756">→ candidato a Web API de alta en SCA2</text>
+    <rect x="1200" y="690" width="355" height="82" rx="6" fill="#fff" stroke="#7f8c8d"/>
+    <text x="1210" y="708" font-weight="bold">Config Documentum PROCANU (SGD_CONFIG)</text>
+    <text x="1210" y="724">Mapping tipo documental PCA, queries, BizSession</text>
+    <text x="1210" y="740">por entorno (DESA/PRE/PRO) + .dar</text>
+    <text x="1210" y="756">→ referencia para metadatos que SCA2 envía al SGD</text>
+  </g>
+
+  <!-- Leyenda -->
+  <g font-size="11.5">
+    <rect x="30" y="805" width="1540" height="235" rx="10" fill="#fff" stroke="#bbb"/>
+    <text x="45" y="828" font-size="15" font-weight="bold" fill="#222">Lógica de proceso legacy (mediaciones) y dónde vive hoy en Appian</text>
+    <text x="45" y="852" font-weight="bold">determinarAccion</text><text x="215" y="852">ILOG N1/N2/N3 + MecanizarNivel1 + propietario (Estruage/Carterización) + caducidad</text><text x="965" y="852" fill="#1e8449">→ SCA "Decidir Accion" / SCA2 "CMD Decidir" vía REST de reglas</text>
+    <text x="45" y="874" font-weight="bold">determinarCaducidad</text><text x="215" y="874">hoy + N días (propietario / no propietario) · mismo nivel conserva la anterior</text><text x="965" y="874" fill="#c0392b">→ candidato a regla Appian (hoy en servicio de reglas) — "CMD Caducar"</text>
+    <text x="45" y="896" font-weight="bold">finalizarSolicitud</text><text x="215" y="896">Core finalizar + estado + notificaciones + STCAT + inducción Verti + SGC + mail NoAutos</text><text x="965" y="896" fill="#1e8449">→ SCA "Finalizar Solicitud" · SCA2 "CMD Finalizar" + "CMD Mecanizar"</text>
+    <text x="45" y="918" font-weight="bold">comprobarAcceso</text><text x="215" y="918">accesoStudPorModo + póliza TRON/NSE/Salud + validaciones (cía. Caixa, acuerdos BBVA, fecha futura)</text><text x="965" y="918" fill="#c0392b">→ SCA2_comprobacionesPreviasWM / validacionesPreviasPopupAlta — completar</text>
+    <text x="45" y="940" font-weight="bold">cargarCabecera</text><text x="215" y="940">16 consultas (Estruage, carterización, productor, cliente, NSE, Gescom, salud, PaP, TeCuidamos…)</text><text x="965" y="940" fill="#1e8449">→ SCA2_obtenerDatosCabecera + consultarCabeceraRest — ya migrado</text>
+    <text x="45" y="962" font-weight="bold">iniciarProcesoPCA</text><text x="215" y="962">generarStudAnul (Core) + registrarSolicitudAnulacion (webMethods) + estado + SGC</text><text x="965" y="962" fill="#1e8449">→ SCA "Alta Solicitud Anulacion" / SCA2 "CMD Alta" (Core7 directo)</text>
+    <text x="45" y="984" font-weight="bold">gestionarSGC/finalizarSGC</text><text x="215" y="984">consultaDetalle + propietario + caducidad + cargaGestionPCA (SGC) + notificación</text><text x="965" y="984" fill="#1e8449">→ SCA "Gestion SGC" / SCA2_guardarGestionSGC + setDatosGestionSGC</text>
+    <text x="45" y="1006" font-weight="bold">completarMecanizacion</text><text x="215" y="1006">completarMecanizarAnulNI (webMethods) + tareaActivaProceso + altaGestionSGC</text><text x="965" y="1006" fill="#1e8449">→ SCA "Mecanizacion" · SCA2 "CMD Mecanizar" + bloqueo en Central NEW</text>
+    <text x="45" y="1028" font-weight="bold">Leyenda</text><text x="215" y="1028" fill="#1e8449">verde: lógica ya reimplementada en Appian</text><text x="560" y="1028" fill="#c0392b">rojo: candidato a llevar/completar en Appian</text><text x="965" y="1028" fill="#555">línea discontinua: servicio legacy sin consumidor Appian</text>
+  </g>
+</svg>
