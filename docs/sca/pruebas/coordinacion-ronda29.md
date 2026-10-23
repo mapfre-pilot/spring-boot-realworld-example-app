@@ -1,0 +1,9 @@
+# Coordinación ronda 29 (23/10/2026) — 3 sesiones hijas en paralelo
+
+| | R29-A redirección / checks Verti / tarjetas Detalle | R29-B argumentos dos tablas / documentos | R29-C contacto reutilizable / CMP en paralelo |
+|---|---|---|---|
+| Objetos | `SCA2_DetalleTareas`, `SCA2_VertiVencimientoPrincipal`, `SCA2_DetalleSolicitud`, `CMD CrearAccion` (guardar opción), CDT `SCA2 Datos Solicitud`/`SCA2_cargarSolicitud` (campo opción Verti/Vencimiento) | `SCA2_ContraAnulacion*`, reglas/integraciones/PM de documentos (`SCA2_*Documento*`, `*SGD*`, `*Documentum*`) | PM `CMD Mecanizar`, `CMD Finalizar`, reglas de contacto (`SCA2_*Contacto*`, `SCA2_decidir*`), `SCA2_MecanizacionPrincipal`, CDT `SCA2 Datos Solicitud`/`SCA2_cargarSolicitud` (campo contacto; PUT propio con GET vivo) |
+| Pólizas | NSE «recién emitidas» desde el PRINCIPIO | wAutemis «que derivan» libres o NSE desde el FINAL | NSE «recién emitidas» desde la MITAD |
+| Informe | `r29-a-redireccion-verti-tarjetas.md` | `r29-b-argumentos-dos-tablas-documentos.md` | `r29-c-contacto-paralelo.md` |
+
+## Estado (cada sesión añade una línea al empezar/terminar)

@@ -66,3 +66,4 @@ exclusivamente con operaciones `get*`/`list*`. **No se ha modificado ningún obj
 - [46 — Ronda 25: autorización CORE tras ANL y reserva/devolución de prima en la simulación del alta](46-ronda25-reserva-prima-autorizacion.md)
 - [47 — Ronda 26 (a+b): componente Inducir Cliente (Verti) completable dentro del sitio SCA2 hasta el fin del proceso principal (firma RGPD y subprocesos)](47-ronda26-induccion-verti-embebida.md)
 - [48 — Ronda 27: tercer Análisis SCA2 (cabecera, SI24, REASIGNAR, orden de argumentos, decisión lenta, orquestación Mecanizar→CMP): clasificación y reparto](48-ronda27-analisis-sca2.md)
+- [49 — Ronda 29: cuarto Análisis SCA2 (contacto reutilizable, redirección automática, checks Verti, CMP en paralelo, dos tablas de argumentos, documentos, tarjetas Detalle)](49-ronda29-analisis-sca2.md)
