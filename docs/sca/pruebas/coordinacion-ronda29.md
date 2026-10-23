@@ -7,3 +7,4 @@
 | Informe | `r29-a-redireccion-verti-tarjetas.md` | `r29-b-argumentos-dos-tablas-documentos.md` | `r29-c-contacto-paralelo.md` |
 
 ## Estado (cada sesión añade una línea al empezar/terminar)
+- R29-B (sesión https://mapfre.devinenterprise.com/sessions/16462ce826d4426fab0de5f2d80caccb) EMPEZADA 23/10 10:45 UTC — en edición: `SCA2_ContraAnulacionArgumentarioEstrategicas`, `SCA2_AccionesAdministrativasDocumentacion` (ojo de documentos de la CA; no está en otra columna).
