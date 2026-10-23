@@ -1,5 +1,7 @@
 # 47 — Ronda 26: componente Inducir Cliente (Verti) completable dentro del sitio SCA2
 
+> **Superado por la ronda 28 (23/10/2026, `pruebas/r28-cmp-sincrono-encadenado.md`)**: el componente Inducir Cliente se ejecuta entero, síncrono y **encadenado** desde ANULAR PÓLIZA (`a!startProcessLink` en `SCA2_MecanizacionPrincipal` + nodo Sub-Process encadenado 334 en `SCA2 CMD Mecanizar`), por lo que la primera pantalla se abre sola y no hace falta la entrada por panel. El panel `SCA2_InduccionVertiPanel` se ha retirado de `SCA2_DetalleTareas` y `SCA2_DetalleSolicitud` (la interfaz, `SCA2_tareasInduccionVerti`, `SCA2_obtenerTareaInduccion` y las constantes `SCA2_PM_CMP_*` quedan sin uso, no se borran), y las tarjetas VERTI e INDUCCION ya no se muestran en «Gestiones realizadas». Lo que sigue describe el estado de las rondas 26/26-b.
+
 Petición (22/10): «Cuando se llama al proceso de Verti [CMP Inducir Cliente Completo] se tiene que mostrar en la pantalla para que el usuario pueda completar el componente … no quiero que lo abra en el tempo, sino en la misma página de SCA2 … y vemos que tal queda».
 
 ## 1. Qué es el CMP y por qué no se puede «embeber»
