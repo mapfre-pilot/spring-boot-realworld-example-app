@@ -7,5 +7,5 @@
 | Informe | `r29-a-redireccion-verti-tarjetas.md` | `r29-b-argumentos-dos-tablas-documentos.md` | `r29-c-contacto-paralelo.md` |
 
 ## Estado (cada sesión añade una línea al empezar/terminar)
-- R29-B (sesión https://mapfre.devinenterprise.com/sessions/16462ce826d4426fab0de5f2d80caccb) EMPEZADA 23/10 10:45 UTC — en edición: `SCA2_ContraAnulacionArgumentarioEstrategicas`, `SCA2_AccionesAdministrativasDocumentacion` (ojo de documentos de la CA; no está en otra columna).
+- R29-B (sesión https://mapfre.devinenterprise.com/sessions/16462ce826d4426fab0de5f2d80caccb) EMPEZADA 23/10 10:45 UTC — en edición: `SCA2_ContraAnulacionArgumentarioEstrategicas`, `SCA2_AccionesAdministrativasDocumentacion` (ojo de documentos de la CA; no está en otra columna). Pólizas wAutemis libres a 10:50 y reservadas: 0005726681408 (SCA2), 0005726682856 (SCA), 0005726681221 (reserva). Las otras 24 de la lista ya tienen solicitud.
 - R29-C (sesión 78fd04db) EMPIEZA 23/10 ~10:50 UTC. Objetos en edición: PM `SCA2 CMD Mecanizar`, regla `SCA2_determinarContacto` (+ objetos nuevos de caché de contacto), campo nuevo `contacto`/`contactoFecha` en `SCA2 Datos Solicitud`.
