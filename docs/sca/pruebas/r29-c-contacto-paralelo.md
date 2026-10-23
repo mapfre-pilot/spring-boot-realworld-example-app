@@ -161,3 +161,10 @@ En el nodo 334, la consulta obtiene el campo de R29-A mediante `a!queryRecordTyp
 
 - Grabación anotada única (8 min 49 s): `R29C_UI-edited.mp4` (no se sube al repo; adjunta en el mensaje final de la sesión).
 - Informe UI y capturas fuera del repo: `~/sca2work/r29c/testing/INFORME_UI.md`, `30_LCP_cache_post_CMP_15788323.png`, `29_SCA2_15788323_post_CMP_induccion_abierta.png`, `20_SCA_CMP_403.png`.
+
+## 10. Limpieza (23/10/2026)
+
+Reglas temporales de prueba borradas con LCP `DELETE /expression-rules/{uuid}` (respuesta 204; re-GET 404). Copia previa guardada en local, fuera del repo:
+
+- `SCA2_tmpR29cMapeo` — `_a-0000f097-8800-8000-9d3b-011c48011c48_5616702`
+- `SCA2_tmpR29cLeerCacheContacto` — `_a-0000f097-8800-8000-9d3b-011c48011c48_5616731`
