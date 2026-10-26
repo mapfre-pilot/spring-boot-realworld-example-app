@@ -64,5 +64,15 @@ Total: 28 objetos modificados, 136 sustituciones.
 - `SCA2_altaSGO`, `SCA2_altaSGORehabilitar`, `SCA2_altaSGOVida`: sin `/test` porque llaman a SGO real (crearían gestiones); el cambio es solo `sistema: "SGO"` → `cons!SCA2_TXT_CANAL_SGO`, con diff y validación idénticos.
 - `SCA2_comprobarUserTareaActiva` y `SCA2_isUsuarioProceso` están en «Se conservan»; modificados igualmente (lote D).
 
-## Prueba UI
-PENDIENTE_UI
+## Prueba UI (veredicto: parcial, sin errores de expresión)
+Grabada con el agente de pruebas en TEST (JJGONZ2 y SISANS). Solicitud **nueva 15788369**, póliza 2002600060945 (sin solicitudes previas), observación «Prueba R32».
+
+| Paso | Resultado |
+|---|---|
+| Buscador: listado, columna Estado (etiquetas y colores), filtro de estado («Pendiente») | OK, sin errores de expresión |
+| Alta: pantalla de alta, popup y «Más datos» (Datos cliente, Datos póliza, Otras sol. anulación, Datos contacto) | OK, sin errores de expresión |
+| Guardado y reapertura desde el buscador; detalle (canal PRESENCIAL, catalogación A VENCIMIENTO, gestión Alta Solicitud Finalizada) | OK con JJGONZ2 y SISANS |
+| Decisión posterior | La decisora devolvió `{"accion":"ERROR"}` (3 `DECISION_ERROR` en «SCA2 CMD Decidir / Consultar reglas»); el listado muestra «Error en el servicio de decisión». Mismo patrón **preexistente** en 15788053 (15/10), 15788161 y 15788164 (20/10) y 15788200 (21/10): fallo del servicio externo, no de pantalla. No se relanzó. |
+| Contra anulación / mantenimiento | **No probado en UI**: no se generó tarea de contra anulación (por el error de decisión) y ningún perfil tiene entrada visible de mantenimiento. |
+
+No recorridas en UI (cubiertas solo por `/interfaces/test`): `SCA2_DetalleErrores`, `SCA2_MecanizacionPrincipal`, `SCA2_ModalDescuentosVida`, `SCA2_GestionMantenimientoMenu`, `SCA2_GestionAplicacionRecords`, `SCA2_ValoresConceptoGestionConceptosyClases`, `SCA2_EliminarValorConcepto`, `SCA2_AnadirModificarGestionAplicacion`, `SCA2_TablaGestionArgumentos`.
