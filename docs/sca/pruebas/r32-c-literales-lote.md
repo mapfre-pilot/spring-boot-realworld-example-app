@@ -13,24 +13,24 @@ Ronda 32 (SCA vs SCA2, Appian TEST). Origen: `docs/sca/54-ronda31-constantes-y-o
 
 | Objeto | Versión antes→después | Literales sustituidos | Prueba |
 |---|---|---|---|
-| `SCA2_AccionesAdministrativasCatalogacion` | 1→2 | `"#6495ED"`→`SCA2_VAL_COLOR_AZUL_CLARO` ×1, `"CE_MF_RECIBOS_CCC"`→`SCA2_TXT_SUBPERFIL_CE_MF_RECIBOS_CCC` ×1, `"CE_MF_RECIBOS_CCR"`→`SCA2_TXT_SUBPERFIL_CE_MF_RECIBOS_CCR` ×1 | validate =; UI (ver §4) |
-| `SCA2_AccionesAdministrativasDocumentacion` | 5→6 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×3, `"BAJA TEMPORAL"`→`SCA2_TXT_CAUSA_BAJA_TEMPORAL` ×1, `"BAJA VEHICULO"`→`SCA2_TXT_CAUSA_BAJA_VEHICULO` ×1, `"CE_MF_CENTRAL_AT"`→`SCA2_TXT_PERFIL_CE_MF_CENTRAL_AT` ×1, `"CE_MF_CONTROL"`→`SCA2_TXT_PERFIL_CE_MF_CONTROL` ×1 | validate =; UI (ver §4) |
-| `SCA2_AccionesAdministrativasPrincipal` | 23→24 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×5, `"#FFFFFF"`→`SCA2_VAL_COLOR_BLANCO` ×1, `"ACCADM"`→`SCA2_TXT_TIPO_GESTION_ACCADM` ×2, `"ACCIONES ADMINISTRATIVAS"`→`SCA2_TXT_ACCION_ACCIONES_ADMINISTRATIVAS` ×2, `"BAJA TEMPORAL"`→`SCA2_TXT_CAUSA_BAJA_TEMPORAL` ×1, `"BAJA VEHICULO"`→`SCA2_TXT_CAUSA_BAJA_VEHICULO` ×1, `"FINALIZADA"`→`SCA2_TXT_ESTADO_SOL_FINALIZADA` ×1, `"PENDIENTE"`→`SCA2_TXT_ESTADO_TAREA_PENDIENTE` ×1 | validate =; UI (ver §4) |
-| `SCA2_AltaGestionArgumento` | 1→2 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×3, `"#F5F5F5"`→`SCA2_VAL_COLOR_GRIS_CLARO` ×1, `"DOCS_SCA_001"`→`SCA2_TXT_SGD_COD_DOCUMENTAL` ×1 | validate =; UI (ver §4) |
-| `SCA2_AltaGestionConcepto` | 1→2 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×1, `"CE_RM"`→`SCA2_TXT_PERFIL_CE_RM` ×1, `"CE_RM_OFICINA"`→`SCA2_TXT_SUBPERFIL_CE_RM_OFICINA` ×1 | validate =; UI (ver §4) |
-| `SCA2_AnadirGestionConceptosyClases` | 1→2 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×2, `"CE_RM"`→`SCA2_TXT_PERFIL_CE_RM` ×5, `"CE_RM_OFICINA"`→`SCA2_TXT_SUBPERFIL_CE_RM_OFICINA` ×5 | validate =; UI (ver §4) |
-| `SCA2_BandejaErrores` | 11→12 | `"PENDIENTE"`→`SCA2_TXT_ESTADO_TAREA_PENDIENTE` ×4 | validate =; UI (ver §4) |
-| `SCA2_BuscarCompaniasContrarias` | 1→2 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×1, `"#F5F5F5"`→`SCA2_VAL_COLOR_GRIS_CLARO` ×1 | validate =; UI (ver §4) |
-| `SCA2_DatosCabecera_Estrategicas` | 2→3 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×3, `"#F5F5F5"`→`SCA2_VAL_COLOR_GRIS_CLARO` ×2 | validate =; UI (ver §4) |
-| `SCA2_DetalleTareas` | 38→39 | `"#FFFFFF"`→`SCA2_VAL_COLOR_BLANCO` ×1, `"#ffffff"`→`SCA2_VAL_COLOR_BLANCO` ×1, `"ACCIONES ADMINISTRATIVAS"`→`SCA2_TXT_ACCION_ACCIONES_ADMINISTRATIVAS` ×1, `"AUTORIZACION"`→`SCA2_TXT_ACCION_AUTORIZACION` ×9, `"CADUCADA"`→`SCA2_TXT_ESTADO_SOL_CADUCADA` ×1, `"COMPLETADA"`→`SCA2_TXT_ESTADO_TAREA_COMPLETADA` ×2, `"CONTRA ANULAR"`→`SCA2_TXT_ACCION_CONTRA_ANULAR` ×8, `"CONTRAANULAR"`→`SCA2_TXT_ACCION_CONTRAANULAR` ×1, `"EN_ACCION"`→`SCA2_TXT_ESTADO_SOL_EN_ACCION` ×1, `"FINALIZADA"`→`SCA2_TXT_ESTADO_SOL_FINALIZADA` ×2, `"FINALIZADA_POSITIVO"`→`SCA2_TXT_ESTADO_SOL_FINALIZADA_POSITIVO` ×1, `"MECANIZAR"`→`SCA2_TXT_ACCION_MECANIZAR` ×7, `"PENDIENTE"`→`SCA2_TXT_ESTADO_TAREA_PENDIENTE` ×9, `"VERTI"`→`SCA2_TXT_CONTACTO_VERTI` ×9 | validate =; UI (ver §4) |
-| `SCA2_GenerarContactoVerti` | 2→3 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×3, `"#6495ED"`→`SCA2_VAL_COLOR_AZUL_CLARO` ×1, `"#FFFFFF"`→`SCA2_VAL_COLOR_BLANCO` ×3 | validate =; UI (ver §4) |
-| `SCA2_GestionConceptosYClases` | 1→2 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×1 | validate =; UI (ver §4) |
-| `SCA2_MantenimientoPendientesAutorizar` | 2→3 | `"SGO"`→`SCA2_TXT_CANAL_SGO` ×2 | validate =; UI (ver §4) |
-| `SCA2_MensajeEliminacionConcepto` | 1→2 | `"#ff8000"`→`SCA2_VAL_COLOR_NARANJA` ×1 | validate =; UI (ver §4) |
-| `SCA2_MensajeEliminacionDocumento` | 1→2 | `"#ff8000"`→`SCA2_VAL_COLOR_NARANJA` ×1 | validate =; UI (ver §4) |
-| `SCA2_ModalClaveProduccion` | 1→2 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×4 | validate =; UI (ver §4) |
-| `SCA2_PieDePagina` | 1→2 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×8 | validate =; UI (ver §4) |
-| `SCA2_TablaOtrasSolAnulacion` | 8→9 | `"#ffffff"`→`SCA2_VAL_COLOR_BLANCO` ×1, `"CADUCADA"`→`SCA2_TXT_ESTADO_SOL_CADUCADA` ×4, `"CADUCADA_NEGATIVA"`→`SCA2_TXT_ESTADO_SOL_CADUCADA_NEGATIVA` ×1, `"FINALIZADA"`→`SCA2_TXT_ESTADO_SOL_FINALIZADA` ×2, `"FINALIZADA_NEG_CONTRA"`→`SCA2_TXT_ESTADO_SOL_FINALIZADA_NEG_CONTRA` ×3, `"FINALIZADA_NO_REQ"`→`SCA2_TXT_ESTADO_SOL_FINALIZADA_NO_REQ` ×2, `"FINALIZADA_POSITIVO"`→`SCA2_TXT_ESTADO_SOL_FINALIZADA_POSITIVO` ×2, `"FINALIZADA_SIN_ANULAR"`→`SCA2_TXT_ESTADO_SOL_FINALIZADA_SIN_ANULAR` ×2, `"PENDIENTE"`→`SCA2_TXT_ESTADO_TAREA_PENDIENTE` ×1, `"PENDIENTE_AUTORIZACION"`→`SCA2_TXT_ESTADO_SOL_PENDIENTE_AUTORIZACION` ×2 | validate =; UI (ver §4) |
+| `SCA2_AccionesAdministrativasCatalogacion` | 1→2 | `"#6495ED"`→`SCA2_VAL_COLOR_AZUL_CLARO` ×1, `"CE_MF_RECIBOS_CCC"`→`SCA2_TXT_SUBPERFIL_CE_MF_RECIBOS_CCC` ×1, `"CE_MF_RECIBOS_CCR"`→`SCA2_TXT_SUBPERFIL_CE_MF_RECIBOS_CCR` ×1 | validate =; render LCP OK; UI no comprobable (sección solo FDC) |
+| `SCA2_AccionesAdministrativasDocumentacion` | 5→6 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×3, `"BAJA TEMPORAL"`→`SCA2_TXT_CAUSA_BAJA_TEMPORAL` ×1, `"BAJA VEHICULO"`→`SCA2_TXT_CAUSA_BAJA_VEHICULO` ×1, `"CE_MF_CENTRAL_AT"`→`SCA2_TXT_PERFIL_CE_MF_CENTRAL_AT` ×1, `"CE_MF_CONTROL"`→`SCA2_TXT_PERFIL_CE_MF_CONTROL` ×1 | validate =; render LCP OK; UI OK |
+| `SCA2_AccionesAdministrativasPrincipal` | 23→24 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×5, `"#FFFFFF"`→`SCA2_VAL_COLOR_BLANCO` ×1, `"ACCADM"`→`SCA2_TXT_TIPO_GESTION_ACCADM` ×2, `"ACCIONES ADMINISTRATIVAS"`→`SCA2_TXT_ACCION_ACCIONES_ADMINISTRATIVAS` ×2, `"BAJA TEMPORAL"`→`SCA2_TXT_CAUSA_BAJA_TEMPORAL` ×1, `"BAJA VEHICULO"`→`SCA2_TXT_CAUSA_BAJA_VEHICULO` ×1, `"FINALIZADA"`→`SCA2_TXT_ESTADO_SOL_FINALIZADA` ×1, `"PENDIENTE"`→`SCA2_TXT_ESTADO_TAREA_PENDIENTE` ×1 | validate =; render LCP OK; UI OK |
+| `SCA2_AltaGestionArgumento` | 1→2 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×3, `"#F5F5F5"`→`SCA2_VAL_COLOR_GRIS_CLARO` ×1, `"DOCS_SCA_001"`→`SCA2_TXT_SGD_COD_DOCUMENTAL` ×1 | validate =; render LCP OK; UI sin permiso (admin) |
+| `SCA2_AltaGestionConcepto` | 1→2 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×1, `"CE_RM"`→`SCA2_TXT_PERFIL_CE_RM` ×1, `"CE_RM_OFICINA"`→`SCA2_TXT_SUBPERFIL_CE_RM_OFICINA` ×1 | validate =; render LCP OK; UI sin permiso (admin) |
+| `SCA2_AnadirGestionConceptosyClases` | 1→2 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×2, `"CE_RM"`→`SCA2_TXT_PERFIL_CE_RM` ×5, `"CE_RM_OFICINA"`→`SCA2_TXT_SUBPERFIL_CE_RM_OFICINA` ×5 | validate =; render LCP OK; UI sin permiso (admin) |
+| `SCA2_BandejaErrores` | 11→12 | `"PENDIENTE"`→`SCA2_TXT_ESTADO_TAREA_PENDIENTE` ×4 | validate =; render LCP OK; UI sin permiso (admin) |
+| `SCA2_BuscarCompaniasContrarias` | 1→2 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×1, `"#F5F5F5"`→`SCA2_VAL_COLOR_GRIS_CLARO` ×1 | validate =; render LCP OK; UI OK |
+| `SCA2_DatosCabecera_Estrategicas` | 2→3 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×3, `"#F5F5F5"`→`SCA2_VAL_COLOR_GRIS_CLARO` ×2 | validate =; render LCP OK; UI OK |
+| `SCA2_DetalleTareas` | 38→39 | `"#FFFFFF"`→`SCA2_VAL_COLOR_BLANCO` ×1, `"#ffffff"`→`SCA2_VAL_COLOR_BLANCO` ×1, `"ACCIONES ADMINISTRATIVAS"`→`SCA2_TXT_ACCION_ACCIONES_ADMINISTRATIVAS` ×1, `"AUTORIZACION"`→`SCA2_TXT_ACCION_AUTORIZACION` ×9, `"CADUCADA"`→`SCA2_TXT_ESTADO_SOL_CADUCADA` ×1, `"COMPLETADA"`→`SCA2_TXT_ESTADO_TAREA_COMPLETADA` ×2, `"CONTRA ANULAR"`→`SCA2_TXT_ACCION_CONTRA_ANULAR` ×8, `"CONTRAANULAR"`→`SCA2_TXT_ACCION_CONTRAANULAR` ×1, `"EN_ACCION"`→`SCA2_TXT_ESTADO_SOL_EN_ACCION` ×1, `"FINALIZADA"`→`SCA2_TXT_ESTADO_SOL_FINALIZADA` ×2, `"FINALIZADA_POSITIVO"`→`SCA2_TXT_ESTADO_SOL_FINALIZADA_POSITIVO` ×1, `"MECANIZAR"`→`SCA2_TXT_ACCION_MECANIZAR` ×7, `"PENDIENTE"`→`SCA2_TXT_ESTADO_TAREA_PENDIENTE` ×9, `"VERTI"`→`SCA2_TXT_CONTACTO_VERTI` ×9 | validate =; render LCP OK; UI OK |
+| `SCA2_GenerarContactoVerti` | 2→3 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×3, `"#6495ED"`→`SCA2_VAL_COLOR_AZUL_CLARO` ×1, `"#FFFFFF"`→`SCA2_VAL_COLOR_BLANCO` ×3 | validate =; render LCP OK; UI no comprobable (rama Verti no activada) |
+| `SCA2_GestionConceptosYClases` | 1→2 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×1 | validate =; render LCP OK; UI sin permiso (admin) |
+| `SCA2_MantenimientoPendientesAutorizar` | 2→3 | `"SGO"`→`SCA2_TXT_CANAL_SGO` ×2 | validate =; render LCP OK; UI sin permiso (admin) |
+| `SCA2_MensajeEliminacionConcepto` | 1→2 | `"#ff8000"`→`SCA2_VAL_COLOR_NARANJA` ×1 | validate =; render LCP OK; UI sin permiso (admin) |
+| `SCA2_MensajeEliminacionDocumento` | 1→2 | `"#ff8000"`→`SCA2_VAL_COLOR_NARANJA` ×1 | validate =; render LCP OK; UI sin permiso (admin) |
+| `SCA2_ModalClaveProduccion` | 1→2 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×4 | validate =; render LCP OK; UI OK |
+| `SCA2_PieDePagina` | 1→2 | `"#000000"`→`SCA2_VAL_COLOR_NEGRO` ×8 | validate =; render LCP OK; UI OK |
+| `SCA2_TablaOtrasSolAnulacion` | 8→9 | `"#ffffff"`→`SCA2_VAL_COLOR_BLANCO` ×1, `"CADUCADA"`→`SCA2_TXT_ESTADO_SOL_CADUCADA` ×4, `"CADUCADA_NEGATIVA"`→`SCA2_TXT_ESTADO_SOL_CADUCADA_NEGATIVA` ×1, `"FINALIZADA"`→`SCA2_TXT_ESTADO_SOL_FINALIZADA` ×2, `"FINALIZADA_NEG_CONTRA"`→`SCA2_TXT_ESTADO_SOL_FINALIZADA_NEG_CONTRA` ×3, `"FINALIZADA_NO_REQ"`→`SCA2_TXT_ESTADO_SOL_FINALIZADA_NO_REQ` ×2, `"FINALIZADA_POSITIVO"`→`SCA2_TXT_ESTADO_SOL_FINALIZADA_POSITIVO` ×2, `"FINALIZADA_SIN_ANULAR"`→`SCA2_TXT_ESTADO_SOL_FINALIZADA_SIN_ANULAR` ×2, `"PENDIENTE"`→`SCA2_TXT_ESTADO_TAREA_PENDIENTE` ×1, `"PENDIENTE_AUTORIZACION"`→`SCA2_TXT_ESTADO_SOL_PENDIENTE_AUTORIZACION` ×2 | validate =; render LCP OK; UI OK |
 | `SCA2_actualizarVariable` | 1→2 | `"CE_MF_CONTROL"`→`SCA2_TXT_PERFIL_CE_MF_CONTROL` ×1 | validate =; sin `/test` (llama a integración de escritura PCA) |
 | `SCA2_calcularEstadoSolicitud` | 3→4 | `"CADUCADA"`→`SCA2_TXT_ESTADO_SOL_CADUCADA` ×1 | validate =; `/test` 25 casos antes=después |
 | `SCA2_catParametrosCarga` | 3→4 | `"CE_MF_BK"`→`SCA2_TXT_PERFIL_CE_MF_BK` ×2, `"CE_MF_SI24"`→`SCA2_TXT_PERFIL_CE_MF_SI24` ×2, `"CE_MF_SI24_EXPERTO"`→`SCA2_TXT_SUBPERFIL_CE_MF_SI24_EXPERTO` ×1, `"CE_RM"`→`SCA2_TXT_PERFIL_CE_RM` ×3, `"CE_RM_OFICINA"`→`SCA2_TXT_SUBPERFIL_CE_RM_OFICINA` ×2 | validate =; `/test` 1 casos antes=después |
@@ -143,7 +143,7 @@ Mismas entradas antes y después del cambio; se compara `result` y `error`:
 
 ### 4.2 Interfaces (UI)
 
-Ver §6 (prueba UI con solicitud nueva, grabada).
+Ver §6: prueba UI con solicitud nueva `15788368` grabada y renderizado LCP de las 18 interfaces.
 
 ## 5. Decisiones y literales NO sustituidos
 
@@ -166,9 +166,42 @@ Notas semánticas:
 
 ## 6. Prueba UI
 
-PENDIENTE_UI
+### 6.1 Prueba UI grabada con solicitud nueva
+
+- Entorno TEST, site `/suite/sites/sca2`, login SSO Mapfre NO PRO con `JJGONZ2` (RED MAPFRE / OFICINA); `SISANS` para comprobar las páginas de administración.
+- **Solicitud nueva `15788368`**, póliza NSE Autos `2002000065541`, motivo 1 / detalle 5 / causa 14, canal PRESENCIAL, catalogación A FECHA, observación «Prueba regresión R32-C detalle». Las dos pólizas candidatas anteriores tenían solicitud abierta y se descartaron sin abrirlas.
+- Flujo: alta → Acciones administrativas (el motor la decide; se abre la documentación y el modal Añadir documento, que se cancela sin guardar; no se pulsa FINALIZAR) → detalle de la solicitud (cabecera, clave de producción, compañías contrarias, detalle de tareas, otras solicitudes, pie).
+- Resultado: ninguna pantalla mostró `Expression evaluation error` ni errores de definición de interfaz; colores y estilos normales (fondo gris claro, textos negros, estados naranja/verde, botones blancos). La solicitud queda con Acciones administrativas *Incompleta*; no se ha tocado ninguna solicitud antigua.
+- Limitaciones: las páginas `errores` y `gestiones-mantenimiento` solo son visibles para `SCA2_GRP_ADMINISTRADORES`; con `JJGONZ2` y `SISANS` muestran «La página no existe o no tiene permiso para verla» (no se han modificado grupos). Catalogación (solo origen FDC) y contacto Verti/Vencimiento no se activan con esta póliza NSE.
+- Evidencia: grabación y capturas adjuntas en el mensaje final de la sesión R32-C.
+
+### 6.2 Renderizado de las 18 interfaces por LCP (`POST /interfaces/{uuid}/test`)
+
+Para cubrir las interfaces que la UI no alcanza, se renderizaron todas las interfaces del lote (versión nueva) con `POST /interfaces/{uuid}/test`, usando la solicitud nueva `15788368` cuando la interfaz la recibe. Todas devuelven HTTP 200 sin error de evaluación y los colores sustituidos aparecen con su valor literal en el SAIL resultante (p. ej. `#000000`, `#FFFFFF`, `#F5F5F5`, `#6495ED`, `#FF8000`). `SCA2_AccionesAdministrativasCatalogacion` sin entradas da `not(null)` en la línea 25 (`disabled: not(ri!activoPanCatalogacion)`, línea idéntica antes y después); con `activoPanCatalogacion` = true/false renderiza sin error.
+
+| Interfaz | Entradas | HTTP | Resultado render | UI |
+|---|---|---|---|---|
+| `SCA2_AccionesAdministrativasCatalogacion` | {"activoPanCatalogacion": "true/false"} | 200 | sin error | UI no comprobable (sección solo FDC) |
+| `SCA2_AccionesAdministrativasDocumentacion` | — | 200 | sin error | UI OK |
+| `SCA2_AccionesAdministrativasPrincipal` | {"idSolicitud": "15788368"} | 200 | sin error | UI OK |
+| `SCA2_AltaGestionArgumento` | — | 200 | sin error | UI sin permiso (admin) |
+| `SCA2_AltaGestionConcepto` | — | 200 | sin error | UI sin permiso (admin) |
+| `SCA2_AnadirGestionConceptosyClases` | — | 200 | sin error | UI sin permiso (admin) |
+| `SCA2_BandejaErrores` | — | 200 | sin error | UI sin permiso (admin) |
+| `SCA2_BuscarCompaniasContrarias` | {"show": true} | 200 | sin error | UI OK |
+| `SCA2_DatosCabecera_Estrategicas` | {"numPoliza": "2002000065541", "numSolicitud": "15788368"} | 200 | sin error | UI OK |
+| `SCA2_DetalleTareas` | {"idSolicitud": "15788368"} | 200 | sin error | UI OK |
+| `SCA2_GenerarContactoVerti` | {"mostrarVerti": true, "mostrarVencimiento": true} | 200 | sin error | UI no comprobable (rama Verti no activada) |
+| `SCA2_GestionConceptosYClases` | — | 200 | sin error | UI sin permiso (admin) |
+| `SCA2_MantenimientoPendientesAutorizar` | — | 200 | sin error | UI sin permiso (admin) |
+| `SCA2_MensajeEliminacionConcepto` | — | 200 | sin error | UI sin permiso (admin) |
+| `SCA2_MensajeEliminacionDocumento` | — | 200 | sin error | UI sin permiso (admin) |
+| `SCA2_ModalClaveProduccion` | {"showClaveProduccion": true, "numPoliza": "2002000065541"} | 200 | sin error | UI OK |
+| `SCA2_PieDePagina` | — | 200 | sin error | UI OK |
+| `SCA2_TablaOtrasSolAnulacion` | {"numPoliza": "2002000065541", "idSolicitudSel": "15788368"} | 200 | sin error | UI OK |
 
 ## 7. Pendientes
 
 - Hallazgo `CE_MF_BK_EXPERTOSI24` (ver §5): decidir si se crea constante propia o si el valor de CORE es `CE_MF_BK_EXPERTO_SI24`.
+- UI de las páginas de administración (`errores`, `gestiones-mantenimiento`), de Catalogación (origen FDC) y de contacto Verti: pendiente con un usuario de `SCA2_GRP_ADMINISTRADORES` y una póliza FDC / Verti; cubiertas por render LCP.
 - Ningún objeto fuera del lote C ha sido necesario ni modificado.
