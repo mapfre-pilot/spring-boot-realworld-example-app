@@ -110,3 +110,7 @@ Constantes: `SCA2_PM_BATCH_CADUCIDAD`, `SCA2_TXT_EMAIL_DUE_PARA_ALTITUDE`, `SCA2
 
 ## Se conservan
 `SCA2_MENSAJE_ERROR_DECISORA`, `SCA2_RedirigirGesvida`, `SCA2_TIPOS_DE_GESTION`, `SCA2_TXT_ACCIONES`, `SCA2_TXT_ESTADOS_SOLICITUD_CA`, `SCA2_TXT_GENERAR_SOLICITUD`, `SCA2_comprobarUserTareaActiva`, `SCA2_esOleadaDecisora`, `SCA2_flagVerti`, `SCA2_isUsuarioProceso`, `SCA2_obtenerTareasSolicitudAlta`
+
+## Estado R32-D
+- 26/10 R32-D: **reservados** los 28 objetos del lote D (en curso: PUT literal→`cons!`).
+- 26/10 R32-D: constante nueva `SCA2_TXT_ESTADO_SOL_PENDIENTE` = `PENDIENTE` (TEXT, `_a-0000f099-f136-8000-9d3c-011c48011c48_5624233`, carpeta SCA2 Rules and Constants) para el estado interno de **solicitud** «PENDIENTE» (no estaba en la especificación). Para el estado PENDIENTE de tarea/gestión/error se usa `SCA2_TXT_ESTADO_TAREA_PENDIENTE` (su descripción lo cubre).
