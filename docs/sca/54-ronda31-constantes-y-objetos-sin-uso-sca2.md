@@ -77,3 +77,16 @@ Los objetos de la ronda 26 que quedaron sin uso funcional (`SCA2_InduccionVertiP
 1. ¿Borro ya el lote 0 (temporales + copias no cableadas) y las constantes sin uso de catálogo que no se vayan a usar?
 2. ¿Conservo las piezas «Decisora» para la fachada SCA→SCA2?
 3. ¿Arranco el lote 1 (perfiles/estados/acciones) con sesiones hijas?
+
+## 7. Resultado de la ronda 32 (ejecución, 26-10-2026)
+
+Coordinación en `docs/sca/pruebas/coordinacion-ronda32.md`; informes `r32-a-constantes-y-borrado.md`, `r32-b-literales-lote.md`, `r32-c-*.md`, `r32-d-*.md`.
+
+| Hija | Resultado | Pruebas |
+|---|---|---|
+| R32-A (commit 7086e38) | 58 constantes nuevas (incl. `SCA2_VAL_COLOR_VERDE_OSCURO`=#008C47 porque `SCA2_VAL_COLOR_VERDE` ya existía con #00E663; `SCA2_VAL_NSE_COD_ERROR_4022` INTEGER = póliza PRRA/deficitaria). **66 objetos borrados** (52 reglas/interfaces/integraciones + 14 constantes, backups JSON), sin tocar PMs. 14 del lote no borrados por tener dependientes indirectos (`SCA2_ObtenerDatos*`, `SCA2_ObtenerNivelesCoberturaAutos`, `SCA2_RecordToCdtSolicitudAnulacion`, `SCA2_setDatosGestionSGC`, 3 constantes DUE usadas por `SCA2_notificarNivel`, `SCA2_renovarCacheCabecera` usada por la Web API). Candidatos pendientes: PMs `SCA2 CMD BarridoCaducidad` y `SCA2 CMD RegistrarDesincronizacion` (confirmar temporizador). `SCA2_PM_BATCH_CADUCIDAD` apuntaba a un PM de SCA. | UI solicitud nueva 15788370 (alta → CA → detalle) OK; bandeja sin errores de esa solicitud. |
+| R32-B (commit c1ec9f6) | 28 objetos, 228 literales → constantes | 12 reglas `/test` iguales; UI 15788366 alta → CA positiva → buscador/detalle/notificaciones OK; modales y Verti/vencimiento sólo validate. |
+| R32-C (commit e00dfca) | 27/28 objetos, 188 literales → 40 constantes | 8 reglas `/test` iguales (50 casos); 18 interfaces render OK; UI 15788368 alta/AA/detalle OK; páginas admin y catalogación/Verti sólo render. |
+| R32-D | 28 objetos, 136 literales → constantes | 11 reglas `/test` 275/275 iguales; 14 interfaces render OK; UI 15788369 alta/detalle OK; **servicio de decisión devolvió ERROR** (preexistente desde el 15-21/10, 3 `DECISION_ERROR` en bandeja), por lo que CA y mantenimiento no se vieron. |
+
+Hallazgo corregido respecto a §4: el análisis de «sin referencias» no seguía referencias indirectas (reglas usadas sólo desde otras reglas usadas por PM); los 14 objetos afectados se conservan. Pendientes: decisión sobre los 2 PMs sin consumidores y revisar el `DECISION_ERROR` del motor en TEST (ajeno a la ronda).

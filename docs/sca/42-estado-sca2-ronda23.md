@@ -105,3 +105,9 @@ Estimación total para dejar SCA2 lista para la validación formal de los analis
 - Probado con solicitudes nuevas (Autos): económico sin tréboles (15788328/15788344) y con tréboles OK (15788329/15788332) → fila ECONOMICO en CORE (`consultarBonoCliente`); tréboles KO (15788335), no económico (15788330) y negativo (15788331) → no inserta.
 - No concluyente: Hogar argumento 1 (15788338) cierra sin fila ECONOMICO (hipótesis: el listado no marca `mcaEconomico`); error de CORE (15788337); SVA sin Club MAPFRE falla antes en `SCA2_ContraAnulacionModalSVA` (defecto previo); SCA no generó la tarea en TEST (15788333).
 - Dudas analista: registrar o no el fallo de CORE (sólo posible en el proceso de cierre, no en el modal); `FEC_APLICACION` con fecha Appian; corregir SCA (inserta aunque fallen tréboles); la consulta devuelve `ECONOMICO` y `numTipBon` 0; ¿argumento 1 económico en Hogar? / respaldo `SCA2_obtenerMarcaEconomica`; incidencias SVA y estado «Incompleta».
+
+## Actualización rondas 31-32 (grupos, Decisora, fachada SCA→SCA2, constantes y limpieza)
+
+- Análisis (sólo lectura): grupos y permisos SCA→SCA2 (doc 51), Web API Decisora y migración (doc 52), SCA como fachada con SCA2 detrás (doc 53), constantes vs literales y objetos sin uso (doc 54).
+- Ejecutado en TEST (ronda 32): 58 constantes nuevas de negocio (perfiles, estados, acciones, códigos externos, colores); 552 literales sustituidos por `cons!` en 83 objetos con cambio funcional cero (regresión `/test` + UI con solicitudes nuevas 15788366/68/69/70); 66 objetos sin uso borrados. Detalle en doc 54 §7.
+- Pendiente de decisión: PMs `SCA2 CMD BarridoCaducidad` / `SCA2 CMD RegistrarDesincronizacion`; `DECISION_ERROR` del motor en TEST (preexistente); dudas de los docs 51-53 para analistas.
