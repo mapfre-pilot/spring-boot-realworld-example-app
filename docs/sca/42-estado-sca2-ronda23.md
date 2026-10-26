@@ -98,3 +98,10 @@ Todos los flujos comparten la misma idea: **la solicitud vive en CORE y en la ta
 5. Documentación final para analistas y traspaso (actualizar `36-funcional-sca2.md` con las decisiones, manual de pruebas): **media sesión**.
 
 Estimación total para dejar SCA2 lista para la validación formal de los analistas: **4–6 sesiones de trabajo**, de las que la mitad depende de recibir las decisiones y las pólizas. Los tiempos de espera externos (respuestas del analista, disponibilidad de PRE) son los que marcarán el calendario, no el desarrollo.
+
+## Actualización ronda 30 (argumento económico → A2139022_MES)
+
+- `SCA2_ContraAnulacionModalRecuperacionPoliza` v5 → **v9**: tras tréboles/TTQ/SVA y sólo con `return = false`, si `argumentoEconomico = "S"` llama a `SCA2_marcarAsignacionBonificacionIntegracion` (CORE `marcarAsignacionBonificacion`: ECONOMICO / «Arg. Econ.» / `left(desc,20)` / codArg / póliza / solicitud / `today()`). Detalle y pruebas en `docs/sca/50-ronda30-argumento-economico.md` y `docs/sca/pruebas/r30-argumento-economico.md` (commit 699ffa2).
+- Probado con solicitudes nuevas (Autos): económico sin tréboles (15788328/15788344) y con tréboles OK (15788329/15788332) → fila ECONOMICO en CORE (`consultarBonoCliente`); tréboles KO (15788335), no económico (15788330) y negativo (15788331) → no inserta.
+- No concluyente: Hogar argumento 1 (15788338) cierra sin fila ECONOMICO (hipótesis: el listado no marca `mcaEconomico`); error de CORE (15788337); SVA sin Club MAPFRE falla antes en `SCA2_ContraAnulacionModalSVA` (defecto previo); SCA no generó la tarea en TEST (15788333).
+- Dudas analista: registrar o no el fallo de CORE (sólo posible en el proceso de cierre, no en el modal); `FEC_APLICACION` con fecha Appian; corregir SCA (inserta aunque fallen tréboles); la consulta devuelve `ECONOMICO` y `numTipBon` 0; ¿argumento 1 económico en Hogar? / respaldo `SCA2_obtenerMarcaEconomica`; incidencias SVA y estado «Incompleta».
