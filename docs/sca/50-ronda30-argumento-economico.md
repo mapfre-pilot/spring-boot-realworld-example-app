@@ -43,3 +43,22 @@ nuevas (argumento económico con y sin tréboles, fallo/cancelación) y comparac
 
 Puntos a confirmar con el analista (no bloquean): (1) FEC_APLICACION la fija Appian con `today()` como en SCA (no SYSDATE del
 backend); (2) en SCA la inserción se produce aunque fallen los tréboles — ¿se corrige también en SCA?
+
+## 4. Resultado (R30, 26/10/2026)
+
+Implementado y probado en TEST. Informe completo: [`pruebas/r30-argumento-economico.md`](pruebas/r30-argumento-economico.md).
+
+- **Cambio**: `SCA2_ContraAnulacionModalRecuperacionPoliza` (`_a-0000f069-4f37-8000-9cc8-011c48011c48_20052951`) **v5 → v9**.
+  Entre el paso 7 (SVA) y el 8 llama a `SCA2_marcarAsignacionBonificacionIntegracion` con `codIdCampana ECONOMICO`,
+  `codTipBon "Arg. Econ."`, `numTipBon` = código del argumento, `codDocum` = 20 primeros caracteres de la descripción,
+  póliza, solicitud, `mcaAplicada S` y `fecAplicacion today()`, sólo si el argumento es económico **y** tréboles/TTQ/SVA han ido bien.
+  No se ha tocado ningún objeto fuera de SCA2.
+- **Si CORE falla**: el positivo se cierra igual y el error no se registra. Registrarlo en la bandeja `SCA2 Error` desde el
+  modal no es posible (Appian sólo permite un smart service por clic y el cierre positivo ya lanza uno); se probó y bloqueaba el cierre.
+- **Pruebas** (solicitudes nuevas): económico sin tréboles (15788328, 15788344) y con tréboles OK (15788329, 15788332) →
+  fila ECONOMICO en CORE; tréboles KO (15788335), no económico (15788330) y negativo (15788331) → sin fila; fallo de CORE
+  (15788337) → positivo cerrado sin error.
+- **No probado**: SVA con cliente sin Club MAPFRE (falla antes `SCA2_ContraAnulacionModalSVA`, defecto previo) y la comparación
+  en pantalla con SCA (SCA no genera la tarea en TEST).
+- **Pendiente con el analista**: en Hogar, el argumento 1 «SERVICIOS MAPFRE» no generó fila (15788338); tratamiento del error
+  de CORE; `FEC_APLICACION`; corregir SCA, que inserta aunque fallen los tréboles.
