@@ -1,4 +1,4 @@
-# 56 · Optimización de `SCA2_consultarListadoArgumentosREST` — análisis y propuesta
+# 59 · Optimización de `SCA2_consultarListadoArgumentosREST` — análisis y propuesta
 
 > Alcance: análisis y propuesta. **No se ha modificado ningún objeto Appian, servicio ni dato.**
 > Entorno analizado: Appian TEST (`mapfrespain-test`). Leyenda: **[Observado]** comprobado en objeto/log/código · **[Inferido]** deducido, a confirmar · **[Pendiente]** no verificable con lo disponible.
