@@ -18,10 +18,10 @@ Datos: usar códigos de prueba nuevos (argumentos ≥ 990 distintos de 999; valo
 ## Objetos en edición
 | Sesión | Objeto | Versión al reservar | Estado |
 |---|---|---|---|
-| R34-A | `SCA2_ContraAnulacionCompaniaCatalogacion` (RECARGAR ARGUMENTO; sólo lo usa `SCA2_ContraAnulacionOpciones`) | v6 | RESERVADO |
-| R34-A | `SCA2_ContraAnulacionOpciones` | v59 | RESERVADO |
-| R34-A | `SCA2_ContraAnulacionArgumentarioEstrategicas` | v6 | RESERVADO |
-| R34-A | `SCA2_ContraAnulacionSGO` (modales tréboles/retos/SVA; sólo lo usa `SCA2_ContraAnulacionOpciones`) | v1 | RESERVADO |
-| R34-A | `SCA2_ContraAnulacionModalRecuperacionPoliza` | v10 | RESERVADO |
-| R34-A | `SCA2_ContraAnulacionModalRetos` | v1 | RESERVADO |
-| R34-A | `SCA2_ContraAnulacionModalSVAEmail` | v1 | RESERVADO |
+| R34-A | `SCA2_ContraAnulacionCompaniaCatalogacion` (RECARGAR ARGUMENTO; sólo lo usa `SCA2_ContraAnulacionOpciones`) | v6 → v7 | APLICADO (pruebas en curso) |
+| R34-A | `SCA2_ContraAnulacionOpciones` | v59 → v60 | APLICADO (pruebas en curso) |
+| R34-A | `SCA2_ContraAnulacionArgumentarioEstrategicas` | v6 → v7 | APLICADO (pruebas en curso) |
+| R34-A | `SCA2_ContraAnulacionSGO` (modales tréboles/retos/SVA; sólo lo usa `SCA2_ContraAnulacionOpciones`) | v1 → v2 | APLICADO (pruebas en curso) |
+| R34-A | `SCA2_ContraAnulacionModalRecuperacionPoliza` | v10 → v11 | APLICADO (pruebas en curso) |
+| R34-A | `SCA2_ContraAnulacionModalRetos` | v1 → v2 | APLICADO (pruebas en curso) |
+| R34-A | `SCA2_ContraAnulacionModalSVAEmail` | v1 → v2 | APLICADO (pruebas en curso) |
