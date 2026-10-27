@@ -14,3 +14,14 @@ Datos: usar códigos de prueba nuevos (argumentos ≥ 990 distintos de 999; valo
 - Sólo objetos SCA2. Prohibido modificar SCA/SCAC/CORE/CMP/NSE/ANL. Solicitudes y datos NUEVOS para probar.
 - Lectura viva → backup → cambio mínimo → relectura/comparación; validación LCP y UI con usuario de pantalla; comparar siempre con SCA.
 - Informe en `docs/sca/pruebas/r34-*.md` + commit/push en `feature/sca` con la lista de objetos y versiones tocadas.
+
+## Objetos en edición
+| Sesión | Objeto | Versión al reservar | Estado |
+|---|---|---|---|
+| R34-A | `SCA2_ContraAnulacionCompaniaCatalogacion` (RECARGAR ARGUMENTO; sólo lo usa `SCA2_ContraAnulacionOpciones`) | v6 | RESERVADO |
+| R34-A | `SCA2_ContraAnulacionOpciones` | v59 | RESERVADO |
+| R34-A | `SCA2_ContraAnulacionArgumentarioEstrategicas` | v6 | RESERVADO |
+| R34-A | `SCA2_ContraAnulacionSGO` (modales tréboles/retos/SVA; sólo lo usa `SCA2_ContraAnulacionOpciones`) | v1 | RESERVADO |
+| R34-A | `SCA2_ContraAnulacionModalRecuperacionPoliza` | v10 | RESERVADO |
+| R34-A | `SCA2_ContraAnulacionModalRetos` | v1 | RESERVADO |
+| R34-A | `SCA2_ContraAnulacionModalSVAEmail` | v1 | RESERVADO |
