@@ -10,5 +10,5 @@ Origen: petición de cuadro de mando en Process HQ sobre SCA2 (ver `docs/sca/61-
 ## Objetos en edición
 | Objeto | Sesión | Estado |
 |---|---|---|
-| Constante nueva `SCA2_USAR_OBSERVABILIDAD` | R36-A | EN CURSO |
-| PM `SCA2 CMD Alta`, `CMD Caducar`, `CMD CompletarAccion`, `CMD CrearAccion`, `CMD Decidir`, `CMD Finalizar`, `CMD Mecanizar`, `CMD MecanizarNSE`, `CMD Posponer` (sólo nodos de escritura de `SCA2 Transicion`) | R36-A | RESERVADO |
+| Constante nueva `SCA2_USAR_OBSERVABILIDAD` y regla nueva `SCA2_calcularDuracionMs` | R36-A | HECHO |
+| PM `SCA2 CMD Alta`, `CMD Caducar`, `CMD CompletarAccion`, `CMD CrearAccion`, `CMD Decidir`, `CMD Finalizar`, `CMD Mecanizar`, `CMD MecanizarNSE`, `CMD Posponer` (sólo nodos de escritura de `SCA2 Transicion`) | R36-A | LIBERADO. Hecho en 7; Caducar y Mecanizar sin modificar (ver doc 61 §3) |
