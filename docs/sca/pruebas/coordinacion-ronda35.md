@@ -23,3 +23,5 @@ Pólizas: `polizas/bloque-R35-B.txt`. Para TTQ Hogar usar pólizas `073…` del 
 | `SCA2_AccionesAdministrativasDocumentacion` (v6) | R35-B | EN EDICIÓN |
 | `SCA2_ContraAnulacionModalRecuperacionPoliza` (v11) | R35-B | EN EDICIÓN |
 | Constantes nuevas `SCA2_TXT_EXTENSIONES_DOCUMENTO`, `SCA2_TXT_MSG_EXTENSION_DOCUMENTO`, `SCA2_TXT_OBS_TREBOLES_APLICADOS` | R35-B | CREACIÓN |
+| `SCA2_VisualizarDocumento` (v2), `SCA2_VisualizarDocumentoContraanularEstrategicas` (v2) — punto 4 tamaño del visor | R35-B | EN EDICIÓN |
+| `SCA2_consultarListadoArgumentosREST` (v2) — timeout 60 s → paridad SCAC 300 s (hallazgo R35-A «No hay argumentos disponibles») | R35-B | EN EDICIÓN |
