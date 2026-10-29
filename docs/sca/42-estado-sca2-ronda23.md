@@ -117,3 +117,6 @@ Argumento económico confirmado OK por el analista. Corregidos: recarga del argu
 
 ## Ronda 35 (29/10/2026) — 6.º Análisis SCA2
 Alta: espera de la decisión sin volver al formulario + aviso de «tardando más» + detección de solicitud en curso con consulta/RETOMAR (límite: refresco mínimo 30 s en Appian). Documentos: imágenes admitidas (lista del DNI) y visor sin sobredimensionar. Tréboles: observación «Se han aplicado Y tréboles al cliente» aplicada, pendiente de probar con póliza TTQ vigente. Timeout del argumentario igualado a SCA (300 s). Pólizas del analista: `pruebas/polizas/` con bloques por sesión y REGISTRO.md. Detalle y dudas en `56-ronda35-analisis-sca2.md`.
+
+## Ronda 37 (29/10/2026) — respuestas del analista a la ronda 35
+`.jpeg` admitido (documentos y DNI, probado). Observación de lo aplicado extendida a Retos y SVA, grabada sólo con éxito del servicio (pendiente de prueba en pantalla por falta de pólizas con Retos/SVA/TTQ en TEST). Visor ≈800 px aprobado. Detalle en `56-ronda35-analisis-sca2.md` y `pruebas/r37-a-jpeg-observaciones-retos-sva.md`.

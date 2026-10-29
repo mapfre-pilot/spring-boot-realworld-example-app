@@ -30,3 +30,9 @@ Otros: 15788547 lista 9 argumentos en el detalle y 7 en la CA (filtro heredado d
 - Extender la observación a Retos y SVA indicando lo aplicado en cada caso, sólo cuando el servicio lo registre.
 - Anchura del visor ≈800 px: OK.
 Pendientes de respuesta: sondeo 30 s vs 15 s y tope de espera (punto 1). Ejecución: `pruebas/coordinacion-ronda37.md`.
+
+## Resultado ronda 37 (29/10; informe `pruebas/r37-a-jpeg-observaciones-retos-sva.md`, commit 1ea096c)
+| Punto | Resultado | Objetos SCA2 | Duda |
+|---|---|---|---|
+| `.jpeg` | **Probado OK** (15788582, póliza 0732500060414): JPEG como documento y como DNI al SGD y visible; TXT rechazado con mensaje que lista JPEG. | `SCA2_TXT_EXTENSIONES_DOCUMENTO` v2, `SCA2_TXT_MSG_EXTENSION_DOCUMENTO` v2, `SCA2_TXT_MSG_EXTENSION_DNI` v1 (nueva), `SCA2_AccionesAdministrativasDocumentacion` v8 | — |
+| Observación Retos/SVA | **Aplicado, no probado en pantalla**: 15 pólizas del bloque (15788582–15788600) sin Retos, SVA ni TTQ en la CA. Retos: texto sólo si `asignarRetos` devuelve éxito; SVA: sólo tras `asignarSVA` con `codSVA` y marcado CORE OK; se añade con « - »; en fallo no se graba. TTQ sin cambios. SCA no graba nada para Retos/SVA (texto análogo al de tréboles). | `SCA2_ContraAnulacionOpciones` v62, `SCA2_ContraAnulacionSGO` v4, `SCA2_ContraAnulacionModalRecuperacionPoliza` v14, `SCA2_TXT_OBS_RETOS_APLICADOS` v1, `SCA2_TXT_OBS_SVA_APLICADO` v1 | D1 textos exactos; D2 Retos informa `numTipBon` (enviado al servicio, como SCA) y no el del modal; D3 SVA OK en Club pero fallo de marcado CORE → positivo sin observación (heredado); D4 pólizas TEST con Retos/SVA/TTQ para probar en pantalla |
