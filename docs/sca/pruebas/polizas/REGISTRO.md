@@ -15,3 +15,7 @@ Reglas: empezar por la primera póliza libre del bloque; no usar pólizas de otr
 | Póliza | Sesión | Fecha | Solicitud(es) | Uso / estado final |
 |---|---|---|---|---|
 | 0732400126663 | analista | 28/10 | — | Hogar, caso del punto 1 de la ronda 35 (no usar) |
+| 2002600052346 | R35-A QA UI | 29/10 11:28 UTC | 15788534 (ajena, no abierta) | Ocupada en UI: Solicitud Pendiente, creación 29/10 12:21:33 UI. Excluida sin abrir/modificar. |
+| 2002600074045 | R35-A QA UI | 29/10 11:28–11:34 UTC | 15788537 | Libre en búsqueda UI antes de alta. Creada 12:30:44 UI; aviso adicional y ACEPTAR→CA. Popup detecta en curso, consulta sin acción y RETOMAR→CA propia. Pendiente, no se ejecutan argumentos. |
+| 0730080016454 | R35-A QA UI | 29/10 11:35–11:41 UTC | 15788542 | Libre en búsqueda UI; dos formularios antes de crear. Creada 12:37:43 UI; espera adicional sin GUARDAR, ACEPTAR→CA. GUARDAR en pestaña paralela detecta solicitud en curso; consulta y RETOMAR→CA propia (~80 s). Búsqueda final una sola solicitud. Incidencia secundaria: tras RETOMAR la CA no muestra argumentos (antes ocho); no se recarga ni ejecuta ninguno. Pendiente. |
+| 2002600042670 | R35-A QA UI | 29/10 11:41–11:45 UTC | 15788545 | Libre en búsqueda UI antes de alta. GUARDAR ~11:43:08 UTC, confirmación ~11:43:50 UTC; creada 12:43:54 UI. Aviso adicional sin formulario/GUARDAR; ACEPTAR→CA propia (nueve argumentos sin ejecutar)→detalle. Pendiente, CA Incompleta al volver. Bandeja errores bloqueada: página inexistente o sin permiso para JJGONZ2; ausencia de errores no verificada. Última póliza utilizada. |
