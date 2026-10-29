@@ -36,10 +36,18 @@ Carga inicial: 327 de 338 solicitudes (Process HQ descarta las que no tienen tra
 
 Se siguió el protocolo: lectura viva, copia de seguridad JSON, cambio mínimo, guardado y relectura comparando nodo a nodo. En cada modelo solo cambiaron los nodos que escriben `SCA2 Transicion`, y las variables de proceso son idénticas.
 
-Pendiente de decisión (no modificados):
-- `SCA2 CMD Caducar` y `SCA2 CMD Mecanizar`: Appian no permite guardarlos por un aviso que ya existía antes. En los nodos «Write Caducada» y «Write Éxito», `modifiedBy` usa `a!localVariables(local!o: rule!SCA2_insertarObservaciones(...), pp!initiator)`: la variable `local!o` no se usa. Como Appian evalúa las variables locales solo cuando se usan, es probable que esas observaciones no se estén grabando en CORE. **Sin verificar.** Opciones: usar `local!o` (cambia el comportamiento), quitarlo (no cambia lo que pasa hoy) o dejar estos dos comandos sin duración.
-- `SCA2 Tarea`: no se han unificado los estados COMPLETADA y FINALIZADA, porque pueden significar cosas distintas (cerrada por el gestor o cerrada por el sistema). Requiere decisión funcional.
-- Registro de llamadas a servicios externos (NSE, CORE, GD, Verti, argumentos), con servicio, solicitud, duración, resultado y error: no creado. Requiere decidir si se quiere una tabla nueva.
+Ampliación (petición: tabla de servicios sí; Caducar/Mecanizar «la mejor opción sin afectar a la lógica»; no unificar estados de tarea):
+| Objeto | Cambio |
+|---|---|
+| PM `SCA2 CMD Caducar` (3 escrituras) y `SCA2 CMD Mecanizar` (5 escrituras) | Se añade `duracionMs` a las escrituras de `SCA2 Transicion`. Para poder guardarlos se quitó la variable local `local!o` (llamada a `SCA2_insertarObservaciones` que nunca se usaba) de `modifiedBy` en «Write Caducada» y «Write Éxito»; se mantiene `pp!initiator`. Appian solo evalúa las variables locales que se usan, así que esa observación nunca se grababa: el comportamiento real no cambia. |
+| Record nuevo `SCA2 Llamada Servicio` (tabla `sca2_llamada_servicio`, relación N:1 con `SCA2 Solicitud`, inversa `llamadasServicio`) | Una fila por llamada a servicio externo: solicitud, comando, nodo, servicio (integración), resultado OK/ERROR, código HTTP, mensaje de error (máx. 255), `processId`, inicio, fin y `duracionMs`. No guarda peticiones ni respuestas. |
+| 14 nodos de llamada en 6 PM: `Alta` (1), `CompletarAccion` (3), `Mecanizar` (3), `MecanizarNSE` (3), `Caducar` (1), `Finalizar` (1) | En el nodo de llamada se recogen hora de inicio y fin, éxito, código HTTP y mensaje en 6 variables de proceso nuevas (`llamadaInicio`, `llamadaFin`, `llamadaOk`, `llamadaHttp`, `llamadaMsg`, `llamadaWrErr`). Detrás se inserta un paso «Registrar llamada …» (Write Records) que solo escribe si `SCA2_USAR_OBSERVABILIDAD` es `true`, con «parar si hay error» desactivado: si falla el registro, el proceso sigue igual. El paso enlaza con el mismo destino que tenía la llamada. |
+
+Sin cubrir: `SCA2 CMD ObtenerDocumentoGD` (`consultaDocumento`) y las llamadas hechas dentro de pasos de script («Guardar impresion CA», «Bloquear póliza en Central (NEW)»).
+
+Corrección posterior: el mensaje de error se truncaba a 1.000 caracteres, pero la columna `MENSAJE_ERROR` es VARCHAR(255). Se cambió el truncado a 255 en los 14 nodos para que una llamada con error largo no deje de registrarse.
+
+No hecho (por decisión): unificar COMPLETADA/FINALIZADA en `SCA2 Tarea`.
 
 Efecto secundario detectado: después de guardar los modelos con LCP, los comandos que se lanzan solos desde otro proceso (Decidir y CrearAccion tras el alta) graban como usuario `devin`; antes grababan `deployment.user`. Appian los ejecuta con el usuario que publicó por última vez el modelo que los lanza. Para que vuelva a salir `deployment.user`, hay que republicar esos modelos con ese usuario (por ejemplo, con un despliegue por paquete).
 
@@ -50,12 +58,21 @@ Efecto secundario detectado: después de guardar los modelos con LCP, los comand
 | Decidir y CrearAccion automáticos | `duracionMs` 5.405 y 3.674; estados ALTA → DECIDIDA → EN_ACCION |
 | POSPONER desde la contra anulación | Comando grabado como `SCA2 CMD Posponer` (sin fecha), `duracionMs` 4.681, EN_ACCION → PENDIENTE |
 
+| Alta póliza Autos `2002100002294` → solicitud `15788581` (Desaparición del riesgo / Baja de vehículo / Baja temporal) | Alta 11.053 ms; llamada `SCA2_generarStudAnul` OK, HTTP 200, 798 ms |
+| Acciones administrativas: «el cliente no entrega documentación» → FINALIZAR | CompletarAccion 5.440 ms → Decidir (MECANIZAR) → CrearAccion (PDTE_MECANIZAR) |
+| ANULAR PÓLIZA | Mecanizar 5.440 y 6.272 ms (2 transiciones); llamada `SCA2_guardarMecanizacionIntegracion` OK, 200, 191 ms; después CrearAccion → Decidir → CrearAccion → Finalizar 5.011 ms; llamada `SCA2_finalizarSolicitudIntegracion` OK, 200, 1.630 ms. Solicitud FINALIZADA |
+
+Comprobado en la misma solicitud: tareas ACCIONES ADMINISTRATIVAS (COMPLETADA) y MECANIZAR (FINALIZADA) cerradas como siempre, sin errores nuevos en `SCA2 Error`. Las ramas de CompletarAccion con llamada (autorización, contra anulación PCA) no se recorrieron en esta prueba. Caducar no se ha probado con una solicitud nueva (no hay barrido de caducidad activo en SCA2).
+
+Coste: el paso de registro es un insert de una fila pequeña por llamada (1 a 3 por comando). En las duraciones de los comandos no se aprecia diferencia: la variación normal entre ejecuciones (por ejemplo, Decidir, que no tiene llamadas instrumentadas, entre 5,3 y 9,9 s) es mayor que lo que pueda añadir el insert. El record está sincronizado; con volumen real conviene purgar filas antiguas.
+
 No se tocaron solicitudes antiguas. Póliza anotada en `pruebas/polizas/REGISTRO.md`.
 
 ## 5. Qué se puede ver en Process HQ
 - Mapa del proceso (niveles Básico a Completo): caminos reales, bucles (Decidir y CrearAccion repetidos), tiempos entre pasos.
 - Variantes: recorridos más frecuentes y recorridos raros.
 - Con `duracionMs` (solo en solicitudes nuevas): cuánto tarda cada comando.
+- Tiempos y errores por servicio externo: record `SCA2 Llamada Servicio` (fuera del proceso de Process HQ; se consulta como record o en informes sobre él).
 - Datos de caso para filtrar: estado, nivel, grupo, canal, origen y línea de negocio.
 
 Limitaciones:

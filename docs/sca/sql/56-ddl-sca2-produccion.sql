@@ -760,6 +760,22 @@ CREATE TABLE IF NOT EXISTS sca2_transicion (
 );
 COMMENT ON TABLE sca2_transicion IS 'SCA2 Transicion: Historico de transiciones de estado / comandos ejecutados (trazabilidad e idempotencia).';
 
+CREATE TABLE IF NOT EXISTS sca2_llamada_servicio (
+  "ID" SERIAL PRIMARY KEY,
+  "ID_SOLICITUD" VARCHAR(255),
+  "COMANDO" VARCHAR(255),
+  "NODO" VARCHAR(255),
+  "SERVICIO" VARCHAR(255),
+  "RESULTADO" VARCHAR(255),
+  "CODIGO_HTTP" INTEGER,
+  "MENSAJE_ERROR" VARCHAR(255),
+  "PROCESS_ID" INTEGER,
+  "FECHA_INICIO" TIMESTAMP,
+  "FECHA_FIN" TIMESTAMP,
+  "DURACION_MS" INTEGER
+);
+COMMENT ON TABLE sca2_llamada_servicio IS 'SCA2 Llamada Servicio: registro de llamadas a servicios externos (observabilidad). Solo se rellena con SCA2_USAR_OBSERVABILIDAD = true.';
+
 CREATE TABLE IF NOT EXISTS sca2_trazabilidad_cliente (
   "ID" SERIAL PRIMARY KEY,
   "FECHA" TIMESTAMP,
@@ -781,6 +797,7 @@ COMMENT ON TABLE sca2_trazabilidad_cliente IS 'SCA2 Trazabilidad Cliente: Copia 
 -- ALTER TABLE sca2_otras_solicitudes_cabecera ADD CONSTRAINT fk_sca2_otras_solicitudes_cabecera_solicitud FOREIGN KEY ("ID_SOLICITUD") REFERENCES sca2_solicitud ("ID_SOLICITUD");
 -- ALTER TABLE sca2_niveles_cobertura_autos ADD CONSTRAINT fk_sca2_niveles_cobertura_autos_solicitud FOREIGN KEY ("ID_SOLICITUD") REFERENCES sca2_solicitud ("ID_SOLICITUD");
 -- ALTER TABLE sca2_transicion ADD CONSTRAINT fk_sca2_transicion_solicitud FOREIGN KEY ("ID_SOLICITUD") REFERENCES sca2_solicitud ("ID_SOLICITUD");
+-- ALTER TABLE sca2_llamada_servicio ADD CONSTRAINT fk_sca2_llamada_servicio_solicitud FOREIGN KEY ("ID_SOLICITUD") REFERENCES sca2_solicitud ("ID_SOLICITUD");
 -- ALTER TABLE sca2_error ADD CONSTRAINT fk_sca2_error_solicitud FOREIGN KEY ("ID_SOLICITUD") REFERENCES sca2_solicitud ("ID_SOLICITUD");
 -- ALTER TABLE sca2_tarea ADD CONSTRAINT fk_sca2_tarea_solicitud FOREIGN KEY ("ID_SOLICITUD") REFERENCES sca2_solicitud ("ID_SOLICITUD");
 
