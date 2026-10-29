@@ -22,4 +22,11 @@ Pólizas: `polizas/bloque-reserva-1.txt` (801-1200), anotando cada una en `poliz
 ## Objetos en edición
 | Objeto | Sesión | Estado |
 |---|---|---|
-| (lo rellena R37-A) | | |
+| `SCA2_TXT_EXTENSIONES_DOCUMENTO` (v1) | R37-A | EN EDICIÓN |
+| `SCA2_TXT_MSG_EXTENSION_DOCUMENTO` (v1) | R37-A | EN EDICIÓN |
+| `SCA2_AccionesAdministrativasDocumentacion` (v7) | R37-A | EN EDICIÓN (mensaje DNI a constante) |
+| `SCA2_ContraAnulacionSGO` (v2) | R37-A | EN EDICIÓN |
+| `SCA2_ContraAnulacionModalRecuperacionPoliza` (v13) | R37-A | EN EDICIÓN |
+| `SCA2_ContraAnulacionOpciones` (v61) | R37-A | EN EDICIÓN (dato aplicado) |
+| `SCA2_ContraAnulacionModalRetos` (v2), `SCA2_ContraAnulacionModalSVAEmail` (v2) | R37-A | RESERVADO (sólo si hace falta) |
+| Constantes nuevas `SCA2_TXT_OBS_RETOS_APLICADOS`, `SCA2_TXT_OBS_SVA_APLICADO`, `SCA2_TXT_MSG_EXTENSION_DNI` | R37-A | EN CREACIÓN |
