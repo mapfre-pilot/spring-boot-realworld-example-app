@@ -8,4 +8,6 @@ Origen: «Analisis SCA2.docx» (6.º) + `polizasDevin.csv` (970.823 pólizas par
 | 2 | Carga de documentos: permitir imágenes además de PDF (como en la carga de DNI) | Necesidad | Aceptar los mismos formatos de imagen que la carga de DNI en la carga de documentos de la solicitud; comprobar que SGD/visor los acepta. | R35-B |
 | 3 | Tréboles: en el detalle, el argumento positivo muestra los 20 ofrecidos pero no los 17 aplicados | Necesidad | Al aplicar tréboles (ACEPTAR de la pantalla TTQ, R34-A), guardar en **observaciones** del argumento «Se han aplicado Y tréboles al cliente» y mostrarlo en la consulta de la solicitud. | R35-B |
 
+| 4 | Los documentos mostrados (PDF de oposición a la renovación, imagen del DNI) salen sobredimensionados | Necesidad | Adaptar el visor al tamaño real del documento (PDF e imágenes) sin sobredimensionar. Añadido el 29/10 por el usuario. | R35-B |
+
 Coordinación y pólizas: `pruebas/coordinacion-ronda35.md`, `pruebas/polizas/` (bloques por sesión y registro de uso). Informes: `pruebas/r35-a-espera-decision-solicitud-en-curso.md`, `pruebas/r35-b-documentos-imagen-observaciones-treboles.md`.
