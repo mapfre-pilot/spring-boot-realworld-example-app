@@ -23,3 +23,10 @@ Coordinación y pólizas: `pruebas/coordinacion-ronda35.md`, `pruebas/polizas/` 
 | — | Hallazgo R35-A: CA «No hay argumentos disponibles» tras RETOMAR/RECARGAR | **Corregido**: timeout de `SCA2_consultarListadoArgumentosREST` 60 s (SCA 300 s); el servicio de TEST tardó >60 s. Igualado a 300 s. No era regresión de R34-A. | `SCA2_consultarListadoArgumentosREST` v3 | — |
 
 Otros: 15788547 lista 9 argumentos en el detalle y 7 en la CA (filtro heredado de SCA). Pólizas usadas registradas en `pruebas/polizas/REGISTRO.md`.
+
+## Respuestas del analista (29/10) → ronda 37
+- `.jpeg`: añadirlo (también al DNI).
+- Observaciones de tréboles: grabar sólo cuando el servicio ha aplicado los tréboles en Club MAPFRE y en el candidato (como SCA). **Punto 3 probado por el analista con póliza TTQ: correcto** («Se han aplicado 15 tréboles al cliente» en el detalle).
+- Extender la observación a Retos y SVA indicando lo aplicado en cada caso, sólo cuando el servicio lo registre.
+- Anchura del visor ≈800 px: OK.
+Pendientes de respuesta: sondeo 30 s vs 15 s y tope de espera (punto 1). Ejecución: `pruebas/coordinacion-ronda37.md`.

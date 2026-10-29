@@ -6,7 +6,8 @@ Fuente: `polizasDevin-2026-10-30.txt.gz` (970.823 pólizas: 554.707 Hogar `073�
 |---|---|---|---|
 | 1-400 | `bloque-R35-A.txt` | R35-A (espera decisión / solicitud en curso) | asignado 29/10 |
 | 401-800 | `bloque-R35-B.txt` | R35-B (documentos imagen / observaciones tréboles) | asignado 29/10 |
-| 801-1200 | `bloque-reserva-1.txt` | libre | — |
+| 801-1200 | `bloque-reserva-1.txt` | R37-A (`.jpeg`, observaciones Retos/SVA) | asignado 29/10 |
+| 1201-1600 | `bloque-reserva-2.txt` | libre | — |
 
 Reglas: empezar por la primera póliza libre del bloque; no usar pólizas de otro bloque ni las de rondas anteriores (`polizas-ronda9.md`, `polizas-ronda10.md`); una póliza con solicitud abierta queda «ocupada» hasta que se finalice; anotar también las que no sirven (error de alta, sin tarea, etc.).
 
