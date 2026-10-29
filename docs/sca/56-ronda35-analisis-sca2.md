@@ -11,3 +11,15 @@ Origen: «Analisis SCA2.docx» (6.º) + `polizasDevin.csv` (970.823 pólizas par
 | 4 | Los documentos mostrados (PDF de oposición a la renovación, imagen del DNI) salen sobredimensionados | Necesidad | Adaptar el visor al tamaño real del documento (PDF e imágenes) sin sobredimensionar. Añadido el 29/10 por el usuario. | R35-B |
 
 Coordinación y pólizas: `pruebas/coordinacion-ronda35.md`, `pruebas/polizas/` (bloques por sesión y registro de uso). Informes: `pruebas/r35-a-espera-decision-solicitud-en-curso.md`, `pruebas/r35-b-documentos-imagen-observaciones-treboles.md`.
+
+## Resultados de la ronda 35 (29/10; informes `pruebas/r35-a-espera-decision-solicitud-en-curso.md`, `pruebas/r35-b-documentos-imagen-observaciones-treboles.md`)
+
+| # | Punto | Resultado | Objetos SCA2 | Pregunta abierta |
+|---|---|---|---|---|
+| 1 | Espera de decisión / solicitud en curso | **Corregido**: el alta lanzaba `CMD Alta` síncrono y al agotar 30 s sin tarea volvía a mostrar el formulario aunque la solicitud se seguía creando (Alta → Decidir → motor → CrearAccion, 20-25 s en TEST). Ahora el alta queda en espera (formulario y GUARDAR ocultos), aviso «está tardando un poco más…», ACEPTAR abre la gestión; si se vuelve a GUARDAR con solicitud en vuelo: «Existe una solicitud en curso… ¿quiere consultarla?» → detalle → RETOMAR → CA. Probado 15788537 (Autos), 15788542 (Hogar), regresión 15788545. Caso >30 s del analista no reproducido. | `SCA2_AltaSolicitudPage` v42, `SCA2_AltaSolicitudAnulacionPopUp` v11, `SCA2_consultarSolicitudEnCurso` v2, 9 constantes `SCA2_VAL_ESPERA_DECISION_*`/`SCA2_TXT_*` | Appian no refresca por debajo de 30 s: ¿vale sondeo de 30 s o se exige 15 s (otro mecanismo)? ¿Tope de espera / salida si el proceso se bloquea? |
+| 2 | Documentos con imagen | **Aplicado**: PDF, PNG, TIFF, JPG (lista del DNI) en constante; JPG/PNG al SGD y vistos; TXT rechazado. | `SCA2_AccionesAdministrativasDocumentacion` v7, `SCA2_TXT_EXTENSIONES_DOCUMENTO`, `SCA2_TXT_MSG_EXTENSION_DOCUMENTO` | ¿Añadir `.jpeg`? TIFF/DOCX y rechazo al MODIFICAR sin probar. |
+| 3 | Observaciones «Se han aplicado Y tréboles» | **Aplicado, sin probar en pantalla**: ninguna póliza del bloque ofrecía TTQ vigente. | `SCA2_ContraAnulacionModalRecuperacionPoliza` v13, `SCA2_TXT_OBS_TREBOLES_APLICADOS` | Separador con observaciones del gestor; ¿sólo TTQ?; pólizas con TTQ vigente. |
+| 4 | Visor sobredimensionado | **Aplicado**: visor centrado ≈800 px para PDF e imagen. | `SCA2_VisualizarDocumento` v3, `SCA2_VisualizarDocumentoContraanularEstrategicas` v3 | ¿Anchura adecuada? |
+| — | Hallazgo R35-A: CA «No hay argumentos disponibles» tras RETOMAR/RECARGAR | **Corregido**: timeout de `SCA2_consultarListadoArgumentosREST` 60 s (SCA 300 s); el servicio de TEST tardó >60 s. Igualado a 300 s. No era regresión de R34-A. | `SCA2_consultarListadoArgumentosREST` v3 | — |
+
+Otros: 15788547 lista 9 argumentos en el detalle y 7 en la CA (filtro heredado de SCA). Pólizas usadas registradas en `pruebas/polizas/REGISTRO.md`.
