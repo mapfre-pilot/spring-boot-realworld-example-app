@@ -16,3 +16,10 @@ Pólizas: `polizas/bloque-R35-B.txt`. Para TTQ Hogar usar pólizas `073…` del 
 - Buenas prácticas ronda 32: nada de literales de negocio a pelo (constantes `SCA2_*`); textos nuevos de usuario en constante.
 - «La aplicación tiene que funcionar perfecta»: regresión mínima al final (alta → CA → detalle → bandeja de errores) con una póliza nueva del bloque.
 - Informe `docs/sca/pruebas/r35-*.md`, capturas en `docs/sca/img/`, REGISTRO.md actualizado, commit/push en `feature/sca`.
+
+## Objetos en edición
+| Objeto | Sesión | Estado |
+|---|---|---|
+| `SCA2_AccionesAdministrativasDocumentacion` (v6) | R35-B | EN EDICIÓN |
+| `SCA2_ContraAnulacionModalRecuperacionPoliza` (v11) | R35-B | EN EDICIÓN |
+| Constantes nuevas `SCA2_TXT_EXTENSIONES_DOCUMENTO`, `SCA2_TXT_MSG_EXTENSION_DOCUMENTO`, `SCA2_TXT_OBS_TREBOLES_APLICADOS` | R35-B | CREACIÓN |
