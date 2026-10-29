@@ -62,3 +62,38 @@ Limitaciones:
 - Las transiciones antiguas no tienen duración.
 - Errores y tareas no forman parte del mapa: se analizan como datos relacionados del caso.
 - Los tiempos de servicios externos no existen hasta que se cree el registro de llamadas.
+
+## 6. Vistas e indicadores creados (Process Insights, proceso «SCA2 Solicitudes»)
+Vistas fijadas (datos a 29/10, 329 solicitudes):
+
+| Vista | Filtro (Estado Solicitud) | Solicitudes | Duración mediana / media |
+|---|---|---|---|
+| Solicitudes cerradas | CADUCADA, CANCELADA, FINALIZADA, FINALIZADA_POSITIVO | 119 | 6m 27s / 2h 52m |
+| Solicitudes abiertas | distinto de los cuatro anteriores | 210 | 3m 11s / 2h 16m |
+| Solicitudes en error | ERROR, ERROR_DECISION | 14 | 4m 29s / 5h 14m |
+| Pendientes de mecanizar | PDTE_MECANIZAR | 38 | 8m 13s / 6h 34m |
+
+Indicadores (KPI) fijados en «Todos los casos»:
+
+| KPI | Tipo | Valor |
+|---|---|---|
+| Duración mediana del caso | Duración (estándar) | 4m 32s |
+| Duración promedio del caso | Duración (estándar) | 2h 29m |
+| Media de aplazamientos por solicitud | Agregación, promedio de `Contador Posponer` | 1,05 |
+| % solicitudes en ERROR | Recuento, Estado Solicitud = ERROR | 3,04 % (10) |
+| % solicitudes pendientes de mecanizar | Recuento, Estado Solicitud = PDTE_MECANIZAR | 11,55 % (38) |
+
+Nota: `Contador Posponer` va de 1 a 3, así que parece empezar en 1 y no en 0. Sin confirmar; si es así, el KPI de aplazamientos debe leerse como «1 = ninguno».
+
+## 7. Lo que ya enseña el mapa (nivel Básico, datos de TEST)
+- Recorrido principal: Alta → Decidir (326, 20 s) → CrearAccion (325, 34 s) → CompletarAccion (207, 29 min).
+- Reprocesos: CompletarAccion vuelve a Decidir 159 veces y CrearAccion vuelve a Decidir 94 veces. Decidir se ejecuta 602 veces para 329 solicitudes.
+- CrearAccion repetido sobre sí mismo 67 veces, con 2 h de media: es el tramo más lento.
+- Mecanizar se repite sobre sí mismo 68 veces (42 min): reintentos de mecanización.
+- Mecanizar → Finalizar: solo 4 casos y 2 días de media.
+- 161 solicitudes terminan su historia en CrearAccion: siguen abiertas con una acción pendiente.
+- En niveles Moderado a Completo aparecen 55 actividades «SCA2 CMD Posponer - fecha». Son transiciones antiguas grabadas antes del cambio; las nuevas salen como «SCA2 CMD Posponer». El catálogo tiene 63 actividades por ese motivo. Los datos antiguos no se han tocado.
+
+## 8. Lo que no ofrece Process HQ aquí
+- Los KPIs de recuento por atributo sólo usan atributos del caso (estado, canal, grupo, usuario…), no los de la transición (resultado, comando). Errores por comando o por código no se pueden sacar como KPI con el proceso actual; se ven en el record `SCA2 Error`.
+- La pestaña «Toda la información» está vacía: el proceso no tiene informes adicionales.
