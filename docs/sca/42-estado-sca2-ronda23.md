@@ -120,3 +120,6 @@ Alta: espera de la decisión sin volver al formulario + aviso de «tardando más
 
 ## Ronda 37 (29/10/2026) — respuestas del analista a la ronda 35
 `.jpeg` admitido (documentos y DNI, probado). Observación de lo aplicado extendida a Retos y SVA, grabada sólo con éxito del servicio (pendiente de prueba en pantalla por falta de pólizas con Retos/SVA/TTQ en TEST). Visor ≈800 px aprobado. Detalle en `56-ronda35-analisis-sca2.md` y `pruebas/r37-a-jpeg-observaciones-retos-sva.md`.
+
+## Ronda 38 (30/10/2026) — `SCA2 CMD RefrescarCacheCabecera` y errores de la caché de cabecera
+MNI no aplicado: el bucle ya va por lotes de 50 filas (≈400 nodos) y el tiempo lo marcan los servicios en vivo; MNI no mejora y añade riesgo (alternativa por lotes documentada). Errores `REFRESCO_CACHE_RECORTE`/`varchar(255)` corregidos: el enlace GESVIDA (≈287 caracteres) se guarda sin prefijo fijo y se recompone al leer (`SCA2_construirFilaCacheCabecera` v2, `SCA2_renovarCacheCabecera` v3, `SCA2_obtenerDatosCabecera` v7). Hallazgos abiertos: caducidad grabada a 07:00 GMT frente al timer 07:05 Madrid; filas duplicadas por solicitud. Detalle en `pruebas/r38-a-refrescar-cache-cabecera-mni.md`.
