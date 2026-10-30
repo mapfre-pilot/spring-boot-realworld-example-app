@@ -18,4 +18,7 @@ Pólizas (si hace falta solicitud nueva para la regresión): `polizas/bloque-res
 ## Objetos en edición
 | Objeto | Sesión | Estado |
 |---|---|---|
-| (lo rellena R38-A) | | |
+| `SCA2_construirFilaCacheCabecera` (v1→v2) | R38-A | Modificado y probado |
+| `SCA2_renovarCacheCabecera` (v2→v3) | R38-A | Modificado |
+| `SCA2_obtenerDatosCabecera` (v6→v7) | R38-A | Modificado |
+| PM `SCA2 CMD RefrescarCacheCabecera` (v6.0) | R38-A | Solo lectura y ejecución de prueba (sin cambios) |
