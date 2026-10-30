@@ -43,3 +43,5 @@ Reglas: empezar por la primera póliza libre del bloque; no usar pólizas de otr
 | 2002300260145 | R37-A QA UI | 29/10 | 15788599 | Libre en búsqueda UI; alta nueva; CA consultada sin ejecutar argumentos: no ofrece Retos (286/287), SVA (252/254/365) ni TU TE QUEDAS. Pendiente/ocupada. |
 | 0731180058542 | R37-A QA UI | 29/10 | 15788600 | Libre en búsqueda UI; alta nueva; CA consultada sin ejecutar argumentos: no ofrece Retos (286/287), SVA (252/254/365) ni TU TE QUEDAS. Pendiente/ocupada. |
 | 0731900095024 | R38-A regresión | 30/10 | 15788603 | Hogar; alta nueva JJGONZ2; CA y detalle con cabecera correcta; sin ejecutar argumentos. Pendiente/ocupada. |
+| 0731900342035 | R38-A fila única | 30/10 | 15788604 | Hogar; alta nueva JJGONZ2; tras el alta quedaron 2 filas de caché (474/475): motivó `SCA2_obtenerDatosCabecera` v8; al abrir la cabecera quedó 1 (475). Sin ejecutar argumentos. Pendiente/ocupada. |
+| 2002500019302 | R38-A fila única y caducada | 30/10 | 15788607 | Autos; alta nueva JJGONZ2; CA y detalle con cabecera correcta; prueba de dos pestañas y fila caducada. Sin ejecutar argumentos. Pendiente/ocupada. |

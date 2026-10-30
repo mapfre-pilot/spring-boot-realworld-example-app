@@ -2,6 +2,8 @@
 
 **Sesión F** de la fase 1 «lógica legacy en Appian» (doc 42 fila F; especificación en doc 43-D §10). Entorno: **Appian TEST** (`mapfrespain-test`), aplicación `SCA2 Sistema Comercial de Anulaciones SCA2` (`_a-0000f069-4f37-8000-9cc8-011c48011c48_20050128`). Estado: **construido, publicado (v3.0) y probado** con solicitudes nuevas. Ningún otro objeto de SCA2 se ha modificado.
 
+> **Actualización R38-A (30/10/2026): refresco programado desactivado por decisión funcional.** «La renovación de la caché la hace SOLO el usuario al abrir la cabecera». Se ha retirado el temporizador del evento de inicio sin borrar el PM ni sus nodos; el PM queda disponible para lanzarse a mano (§6).
+
 > Método: el MCP `appian-dev-mcp-c90b` no arranca en la sesión (sin credenciales en su entorno). Lectura, creación de la constante y del PM, datos de prueba y arranques manuales por la API LCP REST (`/constants`, `POST /process-models`, `GET /process-models/{uuid}`, `GET|PUT|DELETE /record-types/{uuid}/data`, `POST /process-models/{uuid}/test`, `POST /expression-rules/{uuid}/test`). Lo que la API no expone (temporizador de inicio, excepción del nodo 4, flujo de excepción, valor inicial de una PV, publicación, seguridad) se hizo en **Appian Designer / Process Modeler** con el usuario de servicio. Las solicitudes de prueba se dieron de alta desde la UI de SCA2 (`/suite/sites/sca2`).
 
 ## 1. Objetos creados
@@ -68,3 +70,10 @@ Limpieza final: constante en 50 (v3); filas 237/238/240 renovadas con sus póliz
 4. Comprobar el 22/10 a partir de las 07:05 CEST que la instancia programada arranca y termina (Monitorización → «SCA2 CMD RefrescarCacheCabecera»).
 5. Excepción del nodo 4 a 2 minutos (no 90 s) por limitación del modeler.
 6. No probado: fila CACHE de una solicitud finalizada (no hay solicitudes finalizadas propias); la exclusión está en la consulta (expresión A del §10) y se verificó por lectura.
+
+## 6. Refresco programado desactivado (R38-A, 30/10/2026)
+
+- Decisión funcional del usuario: la renovación la hace **solo la apertura de la cabecera** (recarga en vivo si la fila está caducada o no existe, Web API `sca2-cache-cabecera`). Detalle y pruebas en [`pruebas/r38-a-refrescar-cache-cabecera-mni.md`](pruebas/r38-a-refrescar-cache-cabecera-mni.md) §13.
+- En Designer se retiró **solo** el desencadenador `Timer Diario 07:05` del evento `Inicio 07:05` (configuración anterior: recurrencia diaria 07:05, zona `pm!timezone` = Madrid, «Retrasar por 0 minutos»). El nodo de inicio conserva su nombre y siguen los 13 nodos y las 9 variables. Para volver a programarlo basta con añadir de nuevo ese desencadenador.
+- El PM se puede lanzar a mano (Designer → Iniciar proceso para depuración, o `POST /process-models/{uuid}/test`). Renueva las filas caducadas de solicitudes abiertas (lote `SCA2_CACHE_REFRESCO_BATCH` = 50, sin cambios), una llamada por solicitud porque ya hay una sola fila por solicitud.
+- La caducidad pasa a las **05:00 Europe/Madrid** (`SCA2_calcularValidaHastaCache` v2); el §3 queda superado en ese punto.

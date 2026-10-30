@@ -29,4 +29,5 @@ Pólizas (si hace falta solicitud nueva para la regresión): `polizas/bloque-res
 | `SCA2_obtenerFilasDuplicadasCacheCabecera` (nueva, v2) | R38-A | Creada y probada |
 | `SCA2_renovarCacheCabecera` (v3→v4) | R38-A | Modificado (fila única) |
 | Web API `SCA2_refrescarCacheCabecera` | R38-A | Modificada en Designer (borra filas sobrantes) |
-| PM `SCA2 CMD RefrescarCacheCabecera` (temporizador) | R38-A | EN EDICIÓN: desactivar temporizador en Designer |
+| PM `SCA2 CMD RefrescarCacheCabecera` (v6.0→v7.0) | R38-A | Temporizador retirado en Designer (refresco programado desactivado); 13 nodos y 9 variables intactos; arranque manual probado |
+| `SCA2_obtenerDatosCabecera` (v7→v8) | R38-A | Modificado (con más de una fila por solicitud renueva por la Web API, que deja una) |

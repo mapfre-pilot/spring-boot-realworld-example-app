@@ -11,7 +11,7 @@ Petición: «revisa el modelo SCA2 CMD RefrescarCacheCabecera para ver si se pue
 | MNI en el PM | **No se aplica.** Es viable técnicamente, pero no mejora lo suficiente para compensar los riesgos (§4). El PM **no se ha modificado** (sigue en v6.0, temporizador 07:05 intacto). |
 | Errores de campos de la caché | **Corregido.** Causa: el campo `polizaFechaultimosiniestro` guarda, en pólizas Vida, el **enlace GESVIDA (~287 caracteres)** y la columna es `VARCHAR(255)`: el refresco lo recortaba (avisos `REFRESCO_CACHE_RECORTE`, antes `value too long for type character varying(255)`) y la cabecera servida desde caché mostraba el enlace **truncado**. Ahora se guarda sin el prefijo fijo y se recompone al leer (§5). |
 | Regresión | Alta nueva (póliza 0731900095024, solicitud 15788603) → CA y detalle con cabecera correcta, sin errores de evaluación en consola (§6). |
-| Hallazgos sin corregir (fuera del encargo) | `validaHasta` se graba a las 07:00 **GMT** (08:00 en Madrid) y el temporizador corre a las 07:05 Madrid; filas duplicadas por solicitud (§7). Se dejan para decisión. |
+| Hallazgos de §7 (decididos por el usuario después) | Caducidad a las **05:00 Europe/Madrid** (§10); **una sola fila por solicitud** y limpieza de duplicados (§11); fila id 471 borrada (§12); **refresco programado desactivado** por decisión funcional (§13). |
 
 ## 2. Estado actual del PM (v6.0, sin cambios)
 
@@ -136,11 +136,11 @@ Regresión UI (JJGONZ2, testing agent): alta nueva con la póliza **073190009502
 
 ## 8. Riesgos y dudas (para decidir)
 
-- ¿Se quiere renovar **todas** las filas caducadas cada día (hoy 91 > lote de 50)? Si sí: subproceso por lotes con MNI configurado en Designer (§4).
-- ¿Corregir la hora de caducidad (§7.1) a 07:00 Madrid o mover el temporizador a las 08:05/09:05?
-- ¿Corregir la duplicidad (§7.2)?
-- Fila `SCA2 Datos Cabecera` id 471 con `idSolicitud = X` y póliza `X` (30/10 07:55 Madrid), creada por una llamada a la Web API con parámetros de prueba de origen no identificado; no se ha borrado.
-- 38 errores HTTP 404 de recursos `/suite/...` en la consola durante la regresión: causa sin determinar.
+- Lote de 50: decidido **no tocar** (la cabecera renueva en vivo al abrir si está caducada); con el refresco programado desactivado (§13) ya no aplica.
+- Hora de caducidad (§7.1): **resuelto**, 05:00 Madrid (§10).
+- Duplicidad (§7.2): **resuelto**, una fila por solicitud (§11).
+- Fila id 471 (`X`/`X`): **borrada** con backup (§12).
+- 38 errores HTTP 404 de recursos `/suite/...` en la consola: decidido **no tocar**.
 - Alternativa definitiva al recorte: ampliar la columna `POLIZA_FECHAULTIMOSINIESTRO` (requiere DDL de BD).
 
 ## 9. No probado y motivo
@@ -149,3 +149,96 @@ Regresión UI (JJGONZ2, testing agent): alta nueva con la póliza **073190009502
 - AMU/memoria por instancia: Appian no lo muestra en la monitorización de la aplicación.
 
 Backups locales (fuera del repo, sin secretos): `pm_live_before.json`, `bk_construir_v1_before.json`, `bk_renovar_v2_before.json`, `bk_obtener_v6_before.json`, `cache_before.csv`, `cache_after.csv`.
+
+## 10. Caducidad a las 05:00 de Madrid (decisión del usuario)
+
+Decisión: «la idea es que caduque a las 5 am de España […] para asegurarnos que cuando empieza la jornada laboral no haya nada antiguo».
+
+| Objeto | Versión | Cambio |
+|---|---|---|
+| `SCA2_HORA_CADUCIDAD_CACHE_CABECERA` | v1→v3 | Valor 7 → **5**. Descripción actualizada (sin refresco programado). |
+| `SCA2_TXT_ZONA_HORARIA_CACHE_CABECERA` | nueva (v1) | Texto `Europe/Madrid`: zona en la que se interpreta la hora. |
+| `SCA2_calcularValidaHastaCache` | v1→v2 | Devuelve el **primer corte a las 05:00 Madrid posterior a la carga**. Construye los cortes de los días −1…+2 a la hora de la constante y los pasa a GMT con `gmt(…, cons!SCA2_TXT_ZONA_HORARIA_CACHE_CABECERA)`, de modo que no depende de la zona del usuario ni del proceso y cambia sola entre invierno (04:00 GMT) y verano (03:00 GMT). |
+
+Antes, la regla usaba la zona del contexto (en PM y Web API, GMT): las filas caducaban a las 07:00 GMT = 08:00/09:00 en Madrid.
+
+Pruebas por `POST /expression-rules/{uuid}/test` (resultado en GMT, 12/12 correctas):
+
+| Carga (GMT) | `validaHasta` (GMT) | En Madrid |
+|---|---|---|
+| 30/10/2026 09:15 (hoy) | 31/10/2026 04:00 | 31/10 05:00 CET |
+| 30/10/2026 03:30 | 30/10/2026 04:00 | 30/10 05:00 CET |
+| 30/10/2026 04:00 (justo en el corte) | 31/10/2026 04:00 | 31/10 05:00 CET |
+| 30/10/2026 23:30 | 31/10/2026 04:00 | 31/10 05:00 CET |
+| 15/07/2026 09:15 (verano) | 16/07/2026 03:00 | 16/07 05:00 CEST |
+| 15/07/2026 02:30 | 15/07/2026 03:00 | 15/07 05:00 CEST |
+| 15/07/2026 03:30 | 16/07/2026 03:00 | 16/07 05:00 CEST |
+| 24/10/2026 09:00 (víspera cambio de hora) | 25/10/2026 04:00 | 25/10 05:00 CET |
+| 24/10/2026 23:30 | 25/10/2026 04:00 | 25/10 05:00 CET |
+| 28/03/2026 12:00 (víspera cambio a verano) | 29/03/2026 03:00 | 29/03 05:00 CEST |
+| 29/03/2026 12:00 | 30/03/2026 03:00 | 30/03 05:00 CEST |
+| 31/12/2026 23:59 | 01/01/2027 04:00 | 01/01 05:00 CET |
+
+Además: con `hora = 7` explícita devuelve 06:00 GMT (07:00 Madrid) y con fecha nula devuelve nulo. La regla la usan `SCA2 CMD Alta` (nodo `Write Datos`), `SCA2_construirFilaCacheCabecera` (PM de refresco) y `SCA2_renovarCacheCabecera` (Web API): todos pasan a grabar 05:00 Madrid sin tocarlos. Fila real renovada por la Web API tras el cambio: solicitud 15788603, `validaHasta = 2026-10-31 04:00:00` GMT (05:00 Madrid).
+
+## 11. Una sola fila de caché por solicitud (decisión del usuario: «no debería haber duplicados»)
+
+**Causa.** La Web API `SCA2_refrescarCacheCabecera` (la llama la cabecera al abrirla si la caché está caducada o no existe) buscaba la fila previa antes de la carga en vivo (≈5–8 s) y solo entre las filas `CACHE`. Dos evaluaciones casi simultáneas de la cabecera (p. ej. la carga de la página y su recarga, o dos pestañas) no encontraban fila y las dos insertaban (106 parejas `CACHE+CACHE` separadas 3–6 s). Las 6 parejas «fila parcial sin origen + CACHE» venían de altas antiguas con el interruptor de caché apagado.
+
+**Solución (sin DDL):**
+
+| Objeto | Versión | Cambio |
+|---|---|---|
+| `SCA2_obtenerIdFilaCacheCabecera` | nueva (v1) | Id de la fila de la solicitud con **mayor id, de cualquier origen** (`null` si no hay). |
+| `SCA2_obtenerFilasDuplicadasCacheCabecera` | nueva (v2) | Filas de la solicitud **salvo la de mayor id**, listas para `a!deleteRecords` (`{}` si no sobra ninguna). |
+| `SCA2_renovarCacheCabecera` | v3→v4 | La fila a actualizar es la de `SCA2_obtenerIdFilaCacheCabecera`, y se consulta **después** de la carga en vivo (reduce la ventana de carrera de ≈6 s a milisegundos). Si existe una fila parcial del alta, se reutiliza y pasa a ser `CACHE` completa: no se pierde nada, porque la fila completa contiene todos los campos de la parcial. |
+| `SCA2_obtenerDatosCabecera` | v7→v8 | Si la caché está vigente pero la solicitud tiene **más de una fila**, va por la ruta de la Web API (carga en vivo, reescribe la fila de mayor id y borra las demás). Cubre el duplicado que deja `SCA2 CMD Alta` (ver abajo). Con una sola fila no cambia nada (sigue sirviéndose de caché, 0,2 s). |
+| Web API `SCA2_refrescarCacheCabecera` | Designer | En el `onSuccess` de `a!writeRecords`, `a!deleteRecords` de las filas sobrantes de la solicitud (misma respuesta 200 con éxito o error del borrado). Si aun así dos llamadas insertan a la vez, la que termina después borra la de menor id: siempre queda 1 fila. |
+
+**Criterio de unificación.** Se conserva una fila por solicitud: la `CACHE` más reciente (en la limpieza) o la de mayor id (en la escritura, que tras la limpieza es la única). Los lectores de la tabla (`SCA2_obtenerDatosCabecera`, `SCA2_cargarSolicitud`, `SCA2_DetalleCabecera`, `SCA2_esPropietarioPoliza`, `SCA2_evaluarPropietarioContraAnulacion`, `SCA2_invalidarCacheCabecera`) toman una sola fila: con una fila por solicitud todos leen la misma.
+
+**`SCA2 CMD Alta` no se modifica.** La prueba con una solicitud nueva (15788604, §14) mostró que el alta deja siempre dos filas: durante el propio proceso (269154000, 07:51:19–07:51:41 GMT) la cabecera se evalúa, no encuentra fila y llama a la Web API (fila 474, 07:51:23), y después el nodo de escritura del alta inserta la suya sin buscar la existente (fila 475, 07:51:29). En lugar de editar el alta, `SCA2_obtenerDatosCabecera` v8 detecta las dos filas en la primera apertura y deja una por la Web API (coste: una carga en vivo de 5–8 s en esa primera apertura). No se guarda el PM por LCP porque eso hace que sus subprocesos graben el usuario de la sesión en los datos. **PM de refresco**: actualiza la fila seleccionada por su id, no crea filas; con una fila por solicitud, una llamada por solicitud.
+
+**Limpieza (30/10/2026).** Backup previo de las 460 filas y de las 113 que se borran (fuera del repo: `cache_pre_limpieza.csv`, `backup_filas_borradas.csv`). Borradas con una regla temporal `a!deleteRecords` (eliminada después): 106 `CACHE` antiguas de parejas `CACHE+CACHE`, 6 filas parciales de parejas parcial+`CACHE` y la fila 471 (§12). Resultado: **347 filas, 347 solicitudes, 0 duplicados**. La solicitud 15788603 (dos filas, 472/473) quedó con una al llamar a la Web API nueva: se borró la 472.
+
+**Propuesta (no aplicada, requiere DDL):** índice único sobre `ID_SOLICITUD` en la tabla de `SCA2 Datos Cabecera`. Con él la segunda inserción simultánea fallaría en vez de duplicar; antes habría que confirmar que ningún flujo inserta a propósito dos filas.
+
+## 12. Fila id 471 (decisión del usuario: «puedes borrar esa fila»)
+
+Contenido guardado antes de borrar: `id 471`, `idSolicitud X`, `polizaNumeropoliza X`, `tipoPoliza/polizaLineanegocio Vida`, `origenCache CACHE`, `fechaCache 2026-10-30 06:55:27`, `validaHasta 2026-10-31 07:00:00` (GMT), cliente vacío (`clienteApellidos " "`, `clienteCarterizado Sí`, `clienteNuumapropietario "null"`), producto `" - "`, acuerdo `" - "`, clave `" / "`, vehículo `" /  / 0 años"`, prima `-`, siniestros 0, enlace GESVIDA solo con los parámetros vacíos. Borrada en la limpieza del §11; comprobado por API que no queda.
+
+## 13. Refresco programado desactivado (decisión funcional)
+
+Decisión: «la renovación de la caché la hace SOLO el usuario al abrir la cabecera (recarga en vivo si caducada/inexistente). NO muevas el temporizador a las 06:00: DESACTÍVALO […] sin borrar el PM ni sus nodos (el PM queda disponible para lanzarse a mano)».
+
+- **Antes** (Designer, evento de inicio `Inicio 07:05` → Desencadenadores): desencadenador `Timer Diario 07:05`, recurrencia diaria a las 07:05, zona `pm!timezone` (Madrid). Designer 26.x no tiene casilla de activar/desactivar el temporizador; desmarcar «Recurrencia del temporizador» lo habría dejado como arranque único, así que se **retiró solo el desencadenador**.
+- **Después**: PM publicado **v7.0**; el evento de inicio muestra «No hay eventos configurados». Se conservan el nodo `Inicio 07:05`, los 13 nodos, las 9 variables, conexiones y expresiones (comparación LCP antes/después nodo a nodo). Única diferencia de serialización: en `Actualizar fila caché` y `Registrar en SCA2 Error` desaparece el literal `value: 1` de `PauseOnError`, que mantiene su expresión `=false()` (equivalente).
+- **Arranque manual**: proceso 537589544 (PM v7.0), 07:43:40–07:47:51 GMT, COMPLETED, 43 filas procesadas, sin errores de escritura.
+- Para volver a programarlo basta con añadir de nuevo el desencadenador Timer en el evento de inicio.
+
+Capturas: `../img/r38a-pm-timer-antes.png`, `../img/r38a-pm-timer-condiciones-antes.png`, `../img/r38a-pm-zona-horaria-antes.png`, `../img/r38a-pm-timer-desactivado.png`, `../img/r38a-pm-designer-despues.png`, `../img/r38a-pm-manual.png`.
+
+## 14. Pruebas de fila única y caducada (datos nuevos)
+
+Ronda con datos nuevos (usuario de pantalla JJGONZ2, sitio SCA2; filas comprobadas por API). Fechas en GMT; `31/10/2026 04:00` GMT = 05:00 Madrid.
+
+| Caso | Esperado | Real | OK/KO | Solicitud |
+|---|---|---|---|---|
+| Alta nueva (v7) | 1 fila | **2 filas** (474/475, 07:51:23/07:51:29): la Web API durante el alta y el nodo de escritura del alta. Motivó `SCA2_obtenerDatosCabecera` v8 (§11) | KO → corregido | 15788604 (póliza 0731900342035, Hogar) |
+| Abrir la cabecera con 2 filas vigentes (v8) | Queda 1, la de mayor id | 474/475 → **475**, CACHE, `fechaCache 07:56:20`, `validaHasta 31/10 04:00` | OK | 15788604 |
+| Tres recargas | Misma fila y fecha (se sirve de caché) | 475 sin cambios | OK | 15788604 |
+| Alta nueva (v8) y primera apertura | 2 filas tras el alta, 1 tras abrir | 477/478 → **478** (08:01:22) | OK | 15788607 (póliza 2002500019302, Autos) |
+| Dos pestañas JJGONZ2 a la vez (clics con 1 ms de diferencia), partiendo de 2 filas (clon temporal de 478) | Queda 1 | 478/479 → **479** (`fechaCache 08:08:38`); dos recargas paralelas más sin cambios | OK | 15788607 |
+| Fila caducada (`validaHasta` puesta a 29/10 04:00 con una regla temporal, ya borrada) | Al abrir, recarga en vivo y queda 1 fila con el siguiente corte | Fila **479**, CACHE, `fechaCache 08:15:40`, `validaHasta 31/10 04:00` (05:00 CET) | OK | 15788607 |
+| Recuento global final | 0 solicitudes con más de una fila | **350 filas, 0 duplicadas** (08:17:27) | OK | Todas |
+| CA y detalle | Mismos datos de cabecera | Cabecera coincidente en alta, detalle y CA; argumentos sin ejecutar | OK | 15788604, 15788607 |
+| Consola | Sin errores de campos de cabecera | 0 errores de cabecera; quedan 5 HTTP 404 `/suite/...` ya conocidos (fuera de alcance) y 1 aviso de metadatos | OK | 15788604, 15788607 |
+
+Las reglas temporales de prueba (clon de fila y caducar fila) se borraron tras usarlas (GET 404).
+
+Capturas: `../img/r38a-r3-15788604-detalle-1600.png`, `../img/r38a-r3-cache-estable-1600.png`, `../img/r38a-r3-alta-generada-1600.png`, `../img/r38a-r3-jjg-dos-pestanas-final-1600.png`, `../img/r38a-r3-recargas-paralelas-estables-1600.png`, `../img/r38a-r3-caducada-renovada-1600.png`, `../img/r38a-r3-ca-cabecera-1600.png`, `../img/r38a-r3-ca-argumentos-pendientes-1600.png`.
+
+**Límites:**
+- Sin índice único en BD, dos escrituras exactamente simultáneas pueden dejar dos filas un instante; la siguiente apertura las reduce a una (v8). La garantía estructural es la propuesta DDL del §11.
+- Sigue sin verse en pantalla una cabecera Vida con el enlace GESVIDA largo (no hay póliza Vida libre en el bloque de reserva).
+- La primera apertura tras cada alta hace una carga en vivo (5–8 s) para dejar una sola fila. Evitarlo exigiría que el nodo de escritura de `SCA2 CMD Alta` reutilice la fila existente (`rule!SCA2_obtenerIdFilaCacheCabecera`); no se ha hecho porque guardar ese PM con el usuario técnico deja rastro en los datos de sus subprocesos. **Decisión pendiente del usuario.**

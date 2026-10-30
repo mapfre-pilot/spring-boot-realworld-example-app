@@ -5,6 +5,11 @@ Entorno: Appian TEST (`mapfrespain-test`), aplicación `SCA2 Sistema Comercial d
 
 > Estado: **construido y probado en TEST** con el interruptor `cons!SCA2_USAR_CACHE_CABECERA = false` (comportamiento visible idéntico al anterior). Pendientes en §9.
 
+> **Actualización R38-A (30/10/2026)** — ver [`pruebas/r38-a-refrescar-cache-cabecera-mni.md`](pruebas/r38-a-refrescar-cache-cabecera-mni.md) §10–§14:
+> - La caché caduca a las **05:00 Europe/Madrid** del día siguiente (`SCA2_HORA_CADUCIDAD_CACHE_CABECERA = 5`, `SCA2_TXT_ZONA_HORARIA_CACHE_CABECERA = Europe/Madrid`, `SCA2_calcularValidaHastaCache` v2), en invierno y en verano y en cualquier contexto (interfaz, PM, Web API). Sustituye a las «07:00» de este documento y al §5.
+> - **Refresco programado desactivado por decisión funcional**: la renovación la hace solo el usuario al abrir la cabecera (Web API `sca2-cache-cabecera` si la fila está caducada o no existe). El PM `SCA2 CMD RefrescarCacheCabecera` se conserva para lanzarlo a mano (doc 43-F §6).
+> - **Una sola fila por `idSolicitud`** en `SCA2 Datos Cabecera`, de cualquier origen: sustituye a la decisión 4 del §1 (ya no conviven la fila del alta y la `CACHE`). `SCA2_renovarCacheCabecera` v4 reutiliza la fila existente y la Web API borra las sobrantes. Duplicados históricos limpiados.
+
 ## 1. Objetivo y resumen del diseño final
 
 `SCA2_obtenerDatosCabecera(numPoliza, idSolicitud)` se invoca desde 9 interfaces y desde los PM `SCA2 CMD Alta`, `SCA2 CMD CrearAccion` y `SCA2 CMD Mecanizar`; cada invocación dispara ~15 llamadas externas (REST `cargaCabecera`, TRON/NSE/Vida, API Clients, Estruage, productor, reserva de prima, siniestros, otras solicitudes) y tarda 3,4–6,6 s. La pieza D reutiliza el resultado guardado en el record `SCA2 Datos Cabecera` (por `idSolicitud`) hasta las **07:00 del día siguiente** a la carga.
