@@ -45,3 +45,6 @@ Reglas: empezar por la primera póliza libre del bloque; no usar pólizas de otr
 | 0731900095024 | R38-A regresión | 30/10 | 15788603 | Hogar; alta nueva JJGONZ2; CA y detalle con cabecera correcta; sin ejecutar argumentos. Pendiente/ocupada. |
 | 0731900342035 | R38-A fila única | 30/10 | 15788604 | Hogar; alta nueva JJGONZ2; tras el alta quedaron 2 filas de caché (474/475): motivó `SCA2_obtenerDatosCabecera` v8; al abrir la cabecera quedó 1 (475). Sin ejecutar argumentos. Pendiente/ocupada. |
 | 2002500019302 | R38-A fila única y caducada | 30/10 | 15788607 | Autos; alta nueva JJGONZ2; CA y detalle con cabecera correcta; prueba de dos pestañas y fila caducada. Sin ejecutar argumentos. Pendiente/ocupada. |
+| 0732200358232 | R40 trazas NSE | 30/10 | 15788676 | NSE-Hogar; alta nueva JJGONZ2; CA negativa → mecanización; dos trazas «Consulta NSE:» persistidas. Sin ANULAR. Pendiente/ocupada. |
+| 0002729345675 | R40 regresión NEW | 30/10 | 15788678 | Bloqueada tras alta (R40): Alta Finalizada, PENDIENTE nivel 1, sin CA ni mecanización tras esperar y reabrir. Pendiente/ocupada. |
+| 0009905058771 | R40 / R41 | 30/10 | 15788681 | NSE-Autos migrada; alta con ACEPTAR deshabilitado→habilitado (R41); CA negativa y Vencimiento; mecanización con dos trazas «Consulta NSE:». Sin ANULAR. Pendiente/ocupada. |
