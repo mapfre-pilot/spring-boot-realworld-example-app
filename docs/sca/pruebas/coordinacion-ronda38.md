@@ -22,3 +22,11 @@ Pólizas (si hace falta solicitud nueva para la regresión): `polizas/bloque-res
 | `SCA2_renovarCacheCabecera` (v2→v3) | R38-A | Modificado |
 | `SCA2_obtenerDatosCabecera` (v6→v7) | R38-A | Modificado |
 | PM `SCA2 CMD RefrescarCacheCabecera` (v6.0) | R38-A | Solo lectura y ejecución de prueba (sin cambios) |
+| `SCA2_calcularValidaHastaCache` (v1→v2) | R38-A | Modificado y probado (05:00 Europe/Madrid) |
+| `SCA2_HORA_CADUCIDAD_CACHE_CABECERA` (v1→v3, valor 7→5) | R38-A | Modificado |
+| `SCA2_TXT_ZONA_HORARIA_CACHE_CABECERA` (nueva, v1) | R38-A | Creada |
+| `SCA2_obtenerIdFilaCacheCabecera` (nueva, v1) | R38-A | Creada y probada |
+| `SCA2_obtenerFilasDuplicadasCacheCabecera` (nueva, v2) | R38-A | Creada y probada |
+| `SCA2_renovarCacheCabecera` (v3→v4) | R38-A | Modificado (fila única) |
+| Web API `SCA2_refrescarCacheCabecera` | R38-A | Modificada en Designer (borra filas sobrantes) |
+| PM `SCA2 CMD RefrescarCacheCabecera` (temporizador) | R38-A | EN EDICIÓN: desactivar temporizador en Designer |
