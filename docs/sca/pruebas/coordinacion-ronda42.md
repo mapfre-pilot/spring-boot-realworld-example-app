@@ -26,3 +26,6 @@ Pólizas: `polizas/bloque-R42-A.txt` (1601-2000), anotando cada una en `polizas/
 ## Objetos en edición
 | Objeto | Sesión | Estado |
 |---|---|---|
+| `SCA2_AltaSolicitudPage` (v43), `SCA2_DetalleTareas` (v39), `SCA2_ContraAnulacionOpciones` (v63), `SCA2_MecanizacionPrincipal` (v22), `SCA2_AccionesAdministrativasPrincipal` (v24), `SCA2_VertiVencimientoPrincipal` (v16), `SCA2_AnulacionFueraNormaPrincipal` (v24), `SCA2_AltaSolicitudAnulacionPopUp` (v11) | R42-A | EN EDICIÓN (03/11): backup tomado; medición «antes» en curso |
+| PMs `SCA2 CMD Alta`, `SCA2 CMD Decidir`, `SCA2 CMD CrearAccion`, `SCA2 CMD CompletarAccion`, `SCA2 CMD Posponer` | R42-A | EN EDICIÓN (03/11): solo encadenamiento y modo síncrono de los Start Process |
+| Constantes nuevas `SCA2_VAL_ESPERA_*` / `SCA2_TXT_ESPERA_*` / `SCA2_TXT_COMPROBAR_AHORA` | R42-A | EN EDICIÓN (03/11) |
