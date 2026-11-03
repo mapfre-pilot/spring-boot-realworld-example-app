@@ -26,8 +26,9 @@ Los PMs de la ronda 42 están encadenados y con subprocesos síncronos: conserva
 | Objeto | Sesión | Estado |
 |---|---|---|
 | IF `SCA2_AltaSolicitudPage` (v49→v50) | R44-A | modificado: ACEPTAR deshabilitado tras el primer clic |
-| PM `SCA2 CMD Mecanizar` (nodo 331 «¿Inducir Verti?») | R44-A | modificado: no induce VERTI/Vencimiento si viene de Acc. Adm. |
-| PM `SCA2 CMD Finalizar` (nodo nuevo 14) | R44-A | modificado: actualiza mecanización NSE a ANULACIÓN REALIZADA |
-| ER `SCA2_actualizarMecanizacionAnulacionNse` | R44-A | nuevo |
+| PM `SCA2 CMD Mecanizar` v44→v45 (nodo 331 «¿Inducir Verti?») | R44-A | modificado: no induce VERTI/Vencimiento si viene de Acc. Adm. |
+| PM `SCA2 CMD Finalizar` v12→v14 (nodos nuevos 14, 15, 16) | R44-A | modificado: espera la respuesta de NSE y actualiza la mecanización a ANULACIÓN REALIZADA |
+| ER `SCA2_actualizarMecanizacionAnulacionNse` (v1→v3) | R44-A | nuevo |
+| Constante `SCA2_VAL_ESPERA_NSE_FINALIZAR_MAX_INTENTOS` | R44-A | nueva |
 | ER `SCA2_vieneDeAccionAdministrativa` | R44-A | nuevo |
 | Constantes `SCA2_TXT_COD_EST_MECANIZACION_ANULADA`, `SCA2_TXT_EST_GESTION_INCOMPLETA`, `SCA2_TXT_ACCION_GESTION_MECANIZACION`, `SCA2_TXT_ACCION_GESTION_ACCADM` | R44-A | nuevas |
