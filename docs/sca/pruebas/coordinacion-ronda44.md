@@ -25,3 +25,9 @@ Los PMs de la ronda 42 están encadenados y con subprocesos síncronos: conserva
 ## Objetos en edición
 | Objeto | Sesión | Estado |
 |---|---|---|
+| IF `SCA2_AltaSolicitudPage` (v49→v50) | R44-A | modificado: ACEPTAR deshabilitado tras el primer clic |
+| PM `SCA2 CMD Mecanizar` (nodo 331 «¿Inducir Verti?») | R44-A | modificado: no induce VERTI/Vencimiento si viene de Acc. Adm. |
+| PM `SCA2 CMD Finalizar` (nodo nuevo 14) | R44-A | modificado: actualiza mecanización NSE a ANULACIÓN REALIZADA |
+| ER `SCA2_actualizarMecanizacionAnulacionNse` | R44-A | nuevo |
+| ER `SCA2_vieneDeAccionAdministrativa` | R44-A | nuevo |
+| Constantes `SCA2_TXT_COD_EST_MECANIZACION_ANULADA`, `SCA2_TXT_EST_GESTION_INCOMPLETA`, `SCA2_TXT_ACCION_GESTION_MECANIZACION`, `SCA2_TXT_ACCION_GESTION_ACCADM` | R44-A | nuevas |
