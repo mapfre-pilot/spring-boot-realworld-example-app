@@ -8,7 +8,8 @@ Fuente: `polizasDevin-2026-10-30.txt.gz` (970.823 pólizas: 554.707 Hogar `073�
 | 401-800 | `bloque-R35-B.txt` | R35-B (documentos imagen / observaciones tréboles) | asignado 29/10 |
 | 801-1200 | `bloque-reserva-1.txt` | R37-A (`.jpeg`, observaciones Retos/SVA) | asignado 29/10 |
 | 1201-1600 | `bloque-reserva-2.txt` | R38-A / R40-R41 (agente de pruebas) | en uso 30/10 |
-| 1601-2000 | `bloque-R42-A.txt` | R42-A (espera síncrona sin 30 s) | asignado 30/10 |
+| 1601-2000 | `bloque-R42-A.txt` | R42-A (espera síncrona sin 30 s) / R43-A regresión | asignado 30/10 |
+| 2001-2400 | `bloque-R44-A.txt` | R44-A (estados de mecanización y acciones administrativas) | asignado 03/11 |
 
 Reglas: empezar por la primera póliza libre del bloque; no usar pólizas de otro bloque ni las de rondas anteriores (`polizas-ronda9.md`, `polizas-ronda10.md`); una póliza con solicitud abierta queda «ocupada» hasta que se finalice; anotar también las que no sirven (error de alta, sin tarea, etc.).
 
