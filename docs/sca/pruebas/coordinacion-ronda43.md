@@ -23,3 +23,6 @@ No tocar los objetos de la ronda 42 salvo lo imprescindible (espera síncrona de
 ## Objetos en edición
 | Objeto | Sesión | Estado |
 |---|---|---|
+| `SCA2_getCodAgenteVida` (regla) | R43-A | en edición |
+| `SCA2_AltaSolicitudPage` (interfaz, v47) | R43-A | en edición |
+| Constantes nuevas `SCA2_INT_LINEA_NEGOCIO_VIDA` | R43-A | en edición |
