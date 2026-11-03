@@ -23,8 +23,15 @@ No tocar los objetos de la ronda 42 salvo lo imprescindible (espera síncrona de
 ## Objetos en edición
 | Objeto | Sesión | Estado |
 |---|---|---|
-| `SCA2_getCodAgenteVida` (regla) | R43-A | en edición |
-| `SCA2_AltaSolicitudPage` (interfaz, v47) | R43-A | en edición |
-| `SCA2_construirContextoAlta` (regla) | R43-A | en edición |
-| `SCA2_PreGenerarStudAnul` (regla) | R43-A | en edición |
-| Constantes nuevas `SCA2_INT_LINEA_NEGOCIO_VIDA`, `SCA2_INT_COD_CIA_VIDA`, `SCA2_TXT_COD_RAMO_VIDA` | R43-A | en edición |
+| `SCA2_getCodAgenteVida` (regla) | R43-A | terminado: v1 → v2 |
+| `SCA2_AltaSolicitudPage` (interfaz) | R43-A | terminado: v47 → v49 (espera síncrona R42-A intacta) |
+| `SCA2_construirContextoAlta` (regla) | R43-A | terminado: v13 → v14 |
+| `SCA2_PreGenerarStudAnul` (regla) | R43-A | liberado: v3 de prueba revertida, v4 = v2 |
+| Constantes nuevas `SCA2_INT_LINEA_NEGOCIO_VIDA`, `SCA2_INT_COD_CIA_VIDA`, `SCA2_TXT_COD_RAMO_VIDA` | R43-A | creadas (v1) |
+
+## Resultado R43-A
+Informe: `r43-a-poliza-vida-cabecera-motivos.md` (UI: `r43-a-informe-testing-agent.md`).
+- Cabecera Vida 0005912432: AG y «105333 / 5324209» en SCA2 (1.ª y 2.ª apertura). Causa: `SCA2_getCodAgenteVida` con la entrada tipada como record type.
+- Motivo/detalle/causa Vida: línea 3 en el alta (DECISION DE CLIENTE). Catálogo idéntico a SCA. MALA GESTION oculto igual que en SCA (duda).
+- Alta Vida completa: **pendiente**. CORE devuelve 4004 «Datos insuficientes» en generarStudAnul (PDTE-9158129, PDTE-735385, PDTE-735412).
+- Regresión: Hogar 15788719 y Autos 15788720 hasta la Contra anulación.
