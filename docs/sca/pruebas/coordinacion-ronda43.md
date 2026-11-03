@@ -25,4 +25,5 @@ No tocar los objetos de la ronda 42 salvo lo imprescindible (espera síncrona de
 |---|---|---|
 | `SCA2_getCodAgenteVida` (regla) | R43-A | en edición |
 | `SCA2_AltaSolicitudPage` (interfaz, v47) | R43-A | en edición |
-| Constantes nuevas `SCA2_INT_LINEA_NEGOCIO_VIDA` | R43-A | en edición |
+| `SCA2_construirContextoAlta` (regla) | R43-A | en edición |
+| Constantes nuevas `SCA2_INT_LINEA_NEGOCIO_VIDA`, `SCA2_INT_COD_CIA_VIDA`, `SCA2_TXT_COD_RAMO_VIDA` | R43-A | en edición |
