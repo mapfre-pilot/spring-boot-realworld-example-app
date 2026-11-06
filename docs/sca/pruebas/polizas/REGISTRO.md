@@ -89,3 +89,8 @@ Reglas: empezar por la primera póliza libre del bloque; no usar pólizas de otr
 | 2002100303453 | R45-D anulación realizada | 06/11 | 15788803 | OK: Finalizada. Anulación realizada azul; NSE 7 |
 | 2002500316057 | R45-D contra anulación positiva | 06/11 | 15788806 | OK: Finalizado Contra Anulación Positiva verde |
 | 0732000131328 | R45-D cancelada | 06/11 | 15788807 | OK: Cancelada gris desde contra-anulación |
+| 0006059023 | R45-A (A1) Vida sin estructura comercial | 06/11 | — | OK: aviso «Póliza sin estructura comercial. No es posible realizar la solicitud.», GUARDAR bloqueado. En SCA: póliza no válida. Sin alta. |
+| 0006000328 | R45-A (A2/alta) Vida clave completa | 06/11 | PDTE-269184418 | Clave 184720372 / 0035099. Alta DECISION DE CLIENTE / ASEGURADO NO DESEA SEGURO / COMPROMISOS, A VENCIMIENTO: CORE 4004 en generarStudAnul. |
+| 0006000397 | R45-A (alta) Vida con estructura comercial | 06/11 | PDTE-748230 | Clave 184720372 / 0035099, estructura 014/03/0372. CORE 4004. |
+| 0006059601 | R45-A (alta) Vida con estructura y prima | 06/11 | PDTE-269184469 | Clave 184720372 / 0035099, prima 182.51. CORE 4004. Se paran las altas Vida. |
+| 0006059703 | R45-A (A2) productor "1" + 95900 | 06/11 | — | Solo consulta en Designer: 959000728 / 5316255. Sin alta. |

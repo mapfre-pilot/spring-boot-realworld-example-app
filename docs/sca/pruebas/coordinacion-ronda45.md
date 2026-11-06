@@ -27,7 +27,7 @@ C4. (08) Contra anulación con usuario distinto de Red Mapfre (Si24, central, CC
 D1. (tabla) Etiquetas y colores de la lista de solicitudes según `cod_tip_est_solic` / `cod_tip_est_mecaniza` (y gestión máx.): ver la tabla del anexo. En concreto, mecanización incompleta con solicitud 4/5 y mecanización 7 → «Mecanización enviada» (naranja), atendiendo a lo que devolvió la simulación.
 
 ## Reparto y objetos propios (reservar en la tabla antes de editar; liberar con vN→vM)
-- **R45-A Vida y alta**: A1, A2, A3. `SCA2_getCodAgenteVida`, `SCA2_consultaClaveVida`, `SCA2_consultarClavevida`, `SCA2_consultaClave*`, `SCA2_obtenerEstructuraComercial`, `SCA2_consultarEstructuraComercial`, `SCA2_obtenerDatosCabeceraLive` (solo la parte Vida), `SCA2_construirContextoAlta`, `SCA2_PreGenerarStudAnul`, `SCA2_AltaSolicitudPage`, integraciones/constantes SCA2 nuevas de estructuras comerciales.
+- **R45-A Vida y alta** — TERMINADA (informe `r45-a-vida-clave-produccion.md`): A1 OK, A2 OK (duda D1), alta Vida KO por CORE 4004, A3 no verificable en Vida. A1, A2, A3. `SCA2_getCodAgenteVida`, `SCA2_consultaClaveVida`, `SCA2_consultarClavevida`, `SCA2_consultaClave*`, `SCA2_obtenerEstructuraComercial`, `SCA2_consultarEstructuraComercial`, `SCA2_obtenerDatosCabeceraLive` (solo la parte Vida), `SCA2_construirContextoAlta`, `SCA2_PreGenerarStudAnul`, `SCA2_AltaSolicitudPage`, integraciones/constantes SCA2 nuevas de estructuras comerciales.
 - **R45-B ANL / mecanización**: B1-B4. `SCA2_AccionesAdministrativas*`, `SCA2_MecanizacionPrincipal`, PMs `SCA2 CMD Mecanizar`, `…MecanizarNSE`, `…CompletarAccion`, `…Decidir`, `…CrearAccion`, `…Finalizar`, reglas de llamada a ANL (`SCA2_obtenerAnulacion`, constructores de la petición ANL).
 - **R45-C Si24** — TERMINADA (informe `r45-c-si24.md`): C1-C4. Interfaces y reglas de contra anulación (`SCA2_ContraAnulacion*`, condición de FINALIZAR), aviso Si24 de la cabecera/detalle, condición y enlace de Verti/Vencimiento → inducción (si hay que tocar un PM de R45-B, pedirlo en la tabla y esperar a que esté libre).
 - **R45-D Lista de solicitudes** — TERMINADA (informe `r45-d-estados-lista.md`): D1. Reglas de etiqueta/color de estado (`SCA2_textoEstadoSolicitud` y las del buscador/lista y tarjetas del detalle), constantes nuevas.
@@ -46,12 +46,12 @@ Si un objeto no está en tu lista y otra sesión lo tiene reservado: no tocarlo.
 ## Objetos en edición
 | Objeto | Sesión | Estado |
 |---|---|---|
-| ER `SCA2_obtenerDatosCabeceraLive` (parte Vida) | R45-A | en edición |
-| IF `SCA2_AltaSolicitudPage` | R45-A | en edición |
-| ER `SCA2_construirContextoAlta` | R45-A | en edición |
-| ER `SCA2_consultarEstructuraComercial` + integración `SCA2_consultaEstructuraComercialVida` | R45-A | en edición |
-| ER `SCA2_getCodAgenteVida`, `SCA2_PreGenerarStudAnul` | R45-A | reservado (lectura; solo si hace falta) |
-| Constantes/reglas nuevas `SCA2_*` de clave de producción Vida | R45-A | en edición |
+| ER `SCA2_obtenerDatosCabeceraLive` (parte Vida) | R45-A | libre (v1→v2) |
+| IF `SCA2_AltaSolicitudPage` | R45-A | libre (v50→v51) |
+| ER `SCA2_construirContextoAlta` | R45-A | libre (v4→v6) |
+| ER `SCA2_consultarEstructuraComercial` + integración `SCA2_consultaEstructuraComercialVida` | R45-A | libre (ER sin cambios; integración v2→v3) |
+| ER `SCA2_getCodAgenteVida`, `SCA2_PreGenerarStudAnul` | R45-A | libre (sin cambios) |
+| Constantes/reglas nuevas `SCA2_*` de clave de producción Vida | R45-A | libre (`SCA2_TXT_POLIZA_SIN_ESTRUCTURA_TITULO` v1, `SCA2_TXT_POLIZA_SIN_ESTRUCTURA_COMERCIAL` v1) |
 | IF `SCA2_ContraAnulacionOpciones` (aviso SI24, FINALIZAR; fase 2: perfiles Si24/GGE D2) | R45-C | en edición (v6) |
 | ER `SCA2_calcularEstadoSolicitud` | R45-D | liberado (v3→v4) |
 | ER `SCA2_colorEstadoSolicitud` | R45-D | liberado (v3→v4) |
