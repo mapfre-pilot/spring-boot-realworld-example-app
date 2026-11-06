@@ -179,3 +179,85 @@ Capturas: `../img/r45-d2-F{1,3,4,5}-{lista,detalle,otras}.png`.
 | F3 lista | F3 detalle | F3 otras solicitudes |
 |---|---|---|
 | ![](../img/r45-d2-F3-lista.png) | ![](../img/r45-d2-F3-detalle.png) | ![](../img/r45-d2-F3-otras.png) |
+
+## 9. Fase 3 — revisión de la regresión B1 (15788805)
+
+06/11/2026, Appian TEST, usuario funcional JJGONZ2. Diagnóstico de solo lectura sobre las solicitudes existentes; después se creó exclusivamente la nueva solicitud autorizada 15788822 para observar el mismo recorrido B1. **Objetos modificados en fase 3: ninguno. No hubo reservas ni importaciones.** Tiempos de carga no remedidos porque la precarga no cambió.
+
+### Diagnóstico en solo lectura
+
+B1 (póliza 2002100087562) había mostrado «Solicitud Finalizada sin anular» y tarjeta «Mecanización incompleta». La comparación actual con F3 no reproduce el fallo:
+
+| Solicitud | Mecanizaciones BBDD SCA | Código extraído | Gestión acción 5 | Estado gestión | ¿Otra INCOMPLETA? |
+|---|---|---|---|---|---|
+| 15788805 | 1: `[numGestionPca:43708008,codTipEstMecaniza:1,codUsr:JJGONZ2]` | 1 | 43708008 | ANULACION REALIZADA | No |
+| 15788803 | 1: `[numGestionPca:43708005,codTipEstMecaniza:1,codUsr:JJGONZ2]` | 1 | 43708005 | ANULACION REALIZADA | No |
+
+`SCA2_consultaGestion` devuelve tres gestiones en cada solicitud (acciones 8, 3 y 5); una sola mecanización, ninguna INCOMPLETA. Se contrastó también `SCA2_consultaBBDDSCA` con los flags exactos de precarga (`devolverMecanizacion:true`, gestiones y resto false): mismo código 1. Con estado CORE 5, la regla común devuelve «Finalizada. Anulación realizada», tanto con precarga como usando el fallback.
+
+La extracción de `local!mecPrecargadas` convierte `mecanizacion` a texto y toma la **primera aparición textual** de `codTipEstMecaniza:`, hasta la coma o el corchete; no ordena por fecha ni selecciona la más reciente:
+
+```appian
+trim(if(
+  find("codTipEstMecaniza:", local!mecTexto) = 0,
+  "",
+  index(split(
+    index(split(local!mecTexto, "codTipEstMecaniza:"), 2, ""),
+    {",", "]"}
+  ), 1, "")
+))
+```
+
+Aquí solo hay un elemento: no se está ignorando una segunda mecanización. La ausencia de código por sí sola tampoco explica el fallo si llegan las gestiones actuales: la regla ya reconoce el literal `ANULACION REALIZADA` como fallback.
+
+**Fuente de `local!estadoCard` en `SCA2_DetalleSolicitud`:** `local!gestionesCore` toma `MSSConsultaGestion` de `SCA2_consultaGestion(ri!idSolicitud)`. Para mecanización filtra acción `"5"`; selecciona por ordinal de tarjeta, alineando por el final si hay más gestiones que tareas y usando la última del tipo si falta ese ordinal. No ordena por fecha. `local!gestionCA` es la gestión seleccionada. Para esta tarjeta no interviene `local!estadoAut`: toma `codEstGestion` de esa gestión CORE; si falta, cae a `local!itemAccion.estado` y finalmente a `INCOMPLETA`. No usa las filas parcialmente vacías de `gestiones` de BBDD SCA.
+
+**Comparación de export anterior a R45-D y export nuevo** (`1be41949-ea19-4d61-a6fb-86dba8c62842`, COMPLETED): `SCA2_DetalleSolicitud` v2→v3 solo añade los dos `showWhen` de R45-C F4: RETOMAR restringido según asignación para CA/mecanización/Verti, y REASIGNAR oculto en CA nivel 2 para CE_MF_SI24. La selección de gestión y el cálculo de `local!estadoCard` son idénticos. `SCA2_consultaGestion` v2→v2 y `SCA2_consultaBBDDSCA` v3→v3 conservan sus definiciones. La atribución R45-C procede de coordinación y los comentarios del diff, no de una auditoría de usuario por versión.
+
+**Resultado actual: no se reproduce.** 15788805 muestra «Finalizada. Anulación realizada», azul, en lista, dato del detalle y «Otras sol.»; tarjeta «Anulacion Realizada». Capturas actuales revisadas:
+
+| Lista | Detalle y tarjeta | Otras solicitudes |
+|---|---|---|
+| ![](../img/r45-d3-15788805-lista.png) | ![](../img/r45-d3-15788805-detalle.png) | ![](../img/r45-d3-15788805-otras.png) |
+
+### Prueba nueva por el camino B1: 15788822
+
+Póliza **2002200051799**, primera de `polizas/bloque-R45-D.txt` ausente del registro; sin solicitudes previas en «Otras sol.». Alta DECISION DE CLIENTE / VENTA DEL VEHICULO / NO VOY A COMPRARME OTRO COCHE, PRESENCIAL, A FECHA 06/11/2026 → Acción Administrativa VILLALBA, «El cliente no entrega documentación» → anulación a vencimiento **01/02/2027** → simulación INFORMATIVO → ANULAR PÓLIZA una vez, **11:32:35** → retorno automático al detalle al finalizar el flujo. Gestión 5 **43708057**, suplemento NSE **5**.
+
+Horas de shell obtenidas con `date +%T`; CORE/UI lleva una hora más (fin gestión CORE 12:33:16 = shell 11:33:16). Primera lectura tras retorno: tarjeta **«Incompleta»**, observada por DOM antes de recargar, sin captura de ese primer estado. Referencia temporal 11:33:14; t0 empieza 11:33:15, t2 11:35:26 (~2m12s), t5 11:38:23 (~5m09s). t0 no es el instante del clic ANULAR: empieza unos 40 segundos después, tras el retorno.
+
+Se recargó el navegador en cada punto. Las vistas y consultas son secuenciales, no una instantánea atómica:
+
+| Punto | Hora capturas (shell) | Lista | Estado solicitud en detalle | Tarjeta mecanización | Otras sol. | codTipEstMecaniza | codEstGestion (acción 5) |
+|---|---|---|---|---|---|---|---|
+| t0 | 11:33:21–24 | Póliza Anulada. Solicitud Pendiente Nive… (truncado), naranja | Finalizada. Anulación realizada, azul | Anulacion Realizada | Finalizada. Anulación realizada, azul | 1 | ANULACION REALIZADA |
+| ~t2 | 11:35:38–40 | Finalizada. Anulación realizada, azul | Igual, azul | Anulacion Realizada | Igual, azul | 1 | ANULACION REALIZADA |
+| ~t5 | 11:38:36–38 | Finalizada. Anulación realizada, azul | Igual, azul | Anulacion Realizada | Igual, azul | 1 | ANULACION REALIZADA |
+
+| Punto | Lista | Detalle y tarjeta | Otras solicitudes |
+|---|---|---|---|
+| t0 | ![](../img/r45-d3-nueva-t0-lista.png) | ![](../img/r45-d3-nueva-t0-detalle.png) | ![](../img/r45-d3-nueva-t0-otras.png) |
+| t2 | ![](../img/r45-d3-nueva-t2-lista.png) | ![](../img/r45-d3-nueva-t2-detalle.png) | ![](../img/r45-d3-nueva-t2-otras.png) |
+| t5 | ![](../img/r45-d3-nueva-t5-lista.png) | ![](../img/r45-d3-nueva-t5-detalle.png) | ![](../img/r45-d3-nueva-t5-otras.png) |
+
+**Conclusión:** hay estados transitorios visibles mientras NSE/CORE termina: tarjeta «Incompleta» al retornar y lista naranja en t0, con convergencia a azul. Detalle y «Otras sol.» ya estaban azules dentro de los segundos de t0; la lista se confirmó azul en la siguiente muestra (~t2) y siguió igual en ~t5. La evidencia es compatible con convergencia en menos de 2 minutos, pero el muestreo no mide el instante exacto de cambio de la lista (t0→siguiente captura: 2m17s). **No se reprodujo «Solicitud Finalizada sin anular».** La causa más probable de B1 es una observación durante esa transición: **inferencia, no demostrada**. No se consultó CORE en el instante de la tarjeta Incompleta, por lo que no se distingue entre transición del backend y retención de variables de la interfaz abierta.
+
+Incidencia auxiliar: en t0 `ev.py` evaluó pero su captura de Designer agotó 30s. Se recuperó el resultado original del DOM sin repetir la consulta; las tres capturas funcionales t0 sí se guardaron. No se repitió el alta ni ANULAR PÓLIZA.
+
+### Tabla de resultados y regresión
+
+| ID | Caso | Esperado | Real | OK/KO | Solicitud | Instancia | Pasos realizados | Posible causa/solución |
+|---|---|---|---|---|---|---|---|---|
+| D3-B1 | Revisión B1 en las 3 vistas | Finalizada. Anulación realizada, azul; tarjeta realizada | Correcto en las 3 vistas; una mecanización código 1 y gestión 5 realizada | OK, fallo no reproducido | 15788805 | No visible en el site | Consultas de solo lectura, comparación con 15788803, recarga y capturas | Probable observación transitoria histórica; inferencia no demostrada. Sin cambio. |
+| D3-N | Nueva B1, sin documentación | Convergencia a anulación realizada | Incompleta al retorno, lista naranja t0; detalle/Otras azules en t0 y todo azul en t2/t5 | OK | 15788822 | No visible en el site | Alta A FECHA → AA sin documentación → vencimiento → ANULAR PÓLIZA → finalizar; recargas y consultas t0/t2/t5 | Transición observada; no se reproduce el literal rojo. |
+| D3-F1 | Regresión lista pendiente | Solicitud Pendiente, naranja | Igual | OK | 15788799 | No visible en el site | Recargar lista y comprobar etiqueta/color | Sin regresión. |
+| D3-F3 | Regresión lista realizada | Finalizada. Anulación realizada, azul | Igual | OK | 15788803 | No visible en el site | Igual que D3-F1 | Sin regresión. |
+| D3-F4 | Regresión lista CA positiva | Finalizado Contra Anulación Positiva, verde | Igual | OK | 15788806 | No visible en el site | Igual que D3-F1 | Sin regresión. |
+| D3-F5 | Regresión lista cancelada | Cancelada, gris | Igual | OK | 15788807 | No visible en el site | Igual que D3-F1 | Sin regresión. |
+| D3-29 | Combinaciones de etiqueta/color | 29/29 | 29/29 fórmula fase 1 y 29/29 regla desplegada | OK | No aplica, datos simulados | No aplica | Ejecutar q5.txt con ev.py, comparar cases.py; repetir mismos casos invocando la regla desplegada | q5 contiene fórmula embebida: se distingue de la prueba adicional del objeto actual. |
+
+Capturas de regresión: [F1](../img/r45-d3-regresion-F1-lista.png), [F3](../img/r45-d3-regresion-F3-lista.png), [F4](../img/r45-d3-regresion-F4-lista.png), [F5](../img/r45-d3-regresion-F5-lista.png). Resultado: **F1/F3/F4/F5 OK; 29/29 en ambas pruebas**.
+
+### Pendiente / decisión funcional
+
+Si el analista quiere un estado explícito mientras NSE no ha terminado o un refresco automático en lugar del estado intermedio, es una **decisión funcional, no implementada**. Si R45-B vuelve a observar el fallo, pedir captura con la hora para cruzarla con la gestión CORE y los datos que recibió la interfaz. No cambiar la regla ni procesos sin una entrada real que reproduzca el fallo.
