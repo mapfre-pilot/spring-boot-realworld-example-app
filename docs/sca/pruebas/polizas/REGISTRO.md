@@ -10,6 +10,10 @@ Fuente: `polizasDevin-2026-10-30.txt.gz` (970.823 pólizas: 554.707 Hogar `073�
 | 1201-1600 | `bloque-reserva-2.txt` | R38-A / R40-R41 (agente de pruebas) | en uso 30/10 |
 | 1601-2000 | `bloque-R42-A.txt` | R42-A (espera síncrona sin 30 s) / R43-A regresión | asignado 30/10 |
 | 2001-2400 | `bloque-R44-A.txt` | R44-A (estados de mecanización y acciones administrativas) | asignado 03/11 |
+| 2401-2800 | `bloque-R45-B.txt` | R45-B (ANL pendiente de autorizar, fecha suplemento, Acc. Adm. a vencimiento) | asignado 06/11 |
+| 2801-3200 | `bloque-R45-C.txt` | R45-C (Si24: avisos, Verti/inducción, Finalizar CA) | asignado 06/11 |
+| 3201-3600 | `bloque-R45-D.txt` | R45-D (etiquetas de estado de la lista de solicitudes) | asignado 06/11 |
+| Vida (analista 06/11) | `bloque-R45-A-vida.txt` | R45-A (Vida: clave de producción, sin estructura comercial, alta) | asignado 06/11 |
 
 Reglas: empezar por la primera póliza libre del bloque; no usar pólizas de otro bloque ni las de rondas anteriores (`polizas-ronda9.md`, `polizas-ronda10.md`); una póliza con solicitud abierta queda «ocupada» hasta que se finalice; anotar también las que no sirven (error de alta, sin tarea, etc.).
 

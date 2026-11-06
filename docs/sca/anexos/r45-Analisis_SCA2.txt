@@ -1,0 +1,72 @@
+Contesto sobre el correo.
+¿Vale esperar hasta 10 min a NSE?
+Los servicios de anulación, tanto Autemis como NSE resuelve la anulación como respuesta al servicio de anulación que se lanza desde el proceso ANL y tras eso lanza lanza la finalización de la solicitud. No sé si es necesario espera.
+Si la solicitud se finaliza con la mecanización incompleta, la lista muestra «Pendiente de Autorización». ¿Qué estado debería mostrar?
+Revisar los estados que ha pasado Pedro en el otro correo.
+¿Por qué NSE no respondió en 15788754 (causa 33, con reserva de prima)?
+No ha avanzado el proceso ANL, pero tampoco lo veo en las trazas. No sabría ver esta solicitud.
+¿Hay alguna póliza con controles 05/06 para probar «pendiente de autorizar»? ¿Corregimos en otra ronda el error de «Tipo catalogación» al dar de alta wAutemis?
+Buscamos casos con controles técnicos 05 / 06 y lo probamos a mano. Detállame esta corrección en qué consiste para poder tomar una decisión de si el cambio es correcto o no.
+Adicionalmente incluyo temas a revisar y en su caso corregir.
+Prueba A Vencimiento Acc Adm.
+Cuando en Acciones Administrativas se marca el check de no entrega documentación. O no se informan los documento que se necesitan.
+Póliza: 2729220153
+ [IMG x1]
+Se anula al vencimiento
+ [IMG x1]
+Cuando el nivel de cumplimiento es 00000004 o 00000005 se trata de una mecanización que se tiene que gestionar por el flujo de pendiente de autorizar. Hay que revisar cómo estamos integrando la llamada a ANL y los datos que estamos pasando, porque
+ [IMG x1]
+Porque veo que se está pasando algún dato mal.
+El dato de la fecha de suplemento se está informando mal a ANL. Se tiene que informar a ANL en la fecha de suplemento la fecha de anulación que tenemos en SCA y con que se han lanzado la simulación en la gestión de mecanización.
+ [IMG x1]
+Regresión con póliza Autemis Acuerdo paso a Si24.
+Cuando pasamos a anular tras a la contra anulación aparece esta ventana y sale el mensaje que la póliza es de Si24. Se tiene que quitar este mensaje si se está tratando la solicitud en este punto por Si24.
+ [IMG x1]
+Posteriormente se viaja a Verti/Vencimiento, pero no enlaza directamente con el componente de inducción.
+ [IMG x1]
+Prueba Autemis póliza acuerdos Si24 Nivel 1
+Aparece el mensaje de que esta póliza es de Si24 cuando estoy tratando con un usuario de Si24 - SISANS
+Póliza: 0002729280594
+ [IMG x1]
+Contra anulación Si24. Condición en Finaliza Contra anulación para Si24.
+Para un usuario distinto a Red Mapfre (en este caso el usuario de Si24, pero aplica a usuario de central y de CCC) se le permite finalizar la contra anulación sin entregar ningún documento ni carta de solicitud de anulación. Por tanto el botón Finalizar se activará en cuanto tengamos algún argumento de retención ejecutado como negativo.
+ [IMG x1]
+Botones a bloquear en mensajes transitorios entre gestiones.
+Tras el alta de solicitud, en este mensaje hay que bloquear el botón Aceptar una vez pulsado.
+ [IMG x1]
+Contesto yo a una de las preguntas. Acá tenemos el problema de que seguramente core no le devuelva bien lo que toca, pero si puede ver los estados de solicitu y mecanización le puede ayudar.
+Si la solicitud se finaliza con la mecanización incompleta, la lista muestra «Pendiente de Autorización». ¿Qué estado debería mostrar?
+Cuando la mecanización es incompleta se tiene que mostrar el estado de "Mecanización enviada" en naranja pues se supone que estamos con un estado de solicitud 4 o 5, y un estado de mecanización 7. Es verdad que no siempre core te devuelve lo correcto, por lo que hay que atender a lo que nos devolvió la simulación, ya que en una Acción administrativa no siempre va a quedar pendiente de autorización, puede haber enviado a anular.
+Esta sería la tabla de etiquetas a mostrar segun los estados de solicitu y mecanizar:
+=== TABLE
+Estado Listado | Observación funcional | Estados cod_tip_est_solic y cod_tip_est_mecaniza)
+Solicitud Pendiente (naranja) | La póliza está postpuesta o se cerró en:Una contra anulaciónUna acción administrativaAnulación Fuera de NormaSin haber confirmado aun la pantalla de Anulación/Subscripción | Estado de solicitud: 1 y Estado de mecanizar vacíoEstado de solicitud: 2 y Estado de mecanizar vacíoEstado de solicitud 4 o 5, Estado de mecanización N/A, Estado de Gestión (max) 8
+Póliza Anulada. Solicitud Pendiente Nivel 2 (Naranja) | La póliza fue anulada pero ha saltado de Nivel (ocurre del 1 al 2) | Estado de solicitud: 2 y Estado de mecanizar 1 , y estado de gestión 5
+Mecanización Enviada (naranja) | Se confirmó la pantalla de anulación | Estado de solicitud 4 o 5, Estado de mecanización 7
+Cancelada (Gris) | La póliza la canceló en usuario en:Una contra anulaciónUna acción administrativaAnulación Fuera de NormaDijo NO en la pantalla de Anulación/suscripción (Nuevo, ahora mismo lo estamos dando como mecanización incompleta, pero no es correcto) | -Estados de solicitud 14 y Estado de mecanizar vacío.-Estados de solicitud 14 y Estado de mecanizar 4. (ojo)
+Solicitud Finalizada sin anular (rojo) | La póliza finaliza negativa pero no ha sido anulada:Caso de contra anulación que finalizan directamente de forma negativa pero las reglas de decisión no han llevado a mecanizar.Casos de no contra anulación donde SI24 finaliza directamente de forma negativa (ha enviado a oficina).Dio un error NSE y se quedó la mecanización incompleta. | Estado solicitud: 4 / Estado mecanizar VacíoEstado solicitud: 5 / Estado mecanizar Vacío.Estado solicitud: 2 / Estado mecanizar: 3
+Solicitud Finalizada. Rechazada anulación (rojo) | La póliza finaliza negativa pero no ha sido anulada:Se rechazó la suscripción en NEW/NSE y ha quedado como cerrada sin mecanizar |  Estado de solicitud 5 y Estado de mecanizar: 4Estado de solicitud 4 y Estado de mecanizar: 4
+Finalizado Contra Anulación Positiva Verde | La póliza se finalizó positivamente en:Una contra anulación | Estado de solicitud: 3 y Estado de mecanizar vacío
+Finalizada. Anulación realizada (azul) | La póliza se ha anulado debido a:Una contra anulación finalizad negativa que fue directo a anular.Una contra anulación finalizad negativa que fue a suscribir y se aceptó y anuló.Una acción administrativa o mecanización directa que fue directo a anular.Una acción administrativa o mecanización que fue a suscribir y se aceptó y anuló.Una Autorización del director que se autorizó y anulóUna mecanización directa que se anuló | Estado de solicitud 5 y Estado de mecanizar: 1Estado de solicitud 4 y Estado de mecanizar: 1
+Pendiente de Autorización (Naranja) | La póliza está pendiente de NSE o NEW:Después de una contra anulaciónDespués de una acción administrativaDespués de una Autorización (fuera de norma)Después de una mecanización directa | Estado de solicitud 5 y Estado de mecanizar: 2Estado de solicitud 4 y Estado de mecanizar: 2
+Solicitud Caducada (Gris) | La solicitud caducó en:En contra anulación u autorización del director (no media documentación)En acciones administrativas (donde media documentación)La pantalla de anulación/confirmación nunca fue confirmada por el usuario, en acciones, contra u otra acción.Estaba en pleno proceso de Autorización por parte de NEW/NSE y no se recibió respuesta ni de operacional o el Batch de SCA. | Estado de solicitud 6 y Estado de mecanizar vacíoEstado de solicitud 6 y Estado de mecanizar: 3Estado de solicitud 6 y Estado de mecanizar: 5Estado de solicitud 12 y Estado de mecanizar vacíoEstado de solicitud 12 y Estado de mecanizar: 3Estado de solicitud 12 y Estado de mecanizar: 5
+Anulada Caducada (Gris) | La solicitud caducó por que la póliza está anulada ya:Estaba en contra anulaciónEn acciones administrativasEn autorización del director.La pantalla de Anulación/suscripción no había sido confirmada por el usuario.Estaba en pleno proceso de Autorización por parte de NEW/NSE | Estado de solicitud 11 y Estado de mecanizar vacíoEstado de solicitud 11 y Estado de mecanizar: 3Estado de solicitud 11 y Estado de mecanizar: 5Estado de solicitud 20
+Cuando de la consulta de vida no sea capaz de sacar la clave de producción de Vida (en "Clave de producción" saca la "clave de vida /  clave de tron") que sería la de la parte izquierda tiene que decir que no hay estructura comercial y no se puede continuar como hace SCA. (Si falta la parte derecha podría continuar)
+ [IMG x1]
+ [IMG x1]
+DEVIN, igualito que SCA normal, está colocando mal la clave de producción de vida y de tron. Vamos a ver si con DEVIN lo dejamos como dios manda de  una vez por todas.
+ [IMG x1]
+En primer lugar, el 1842 es incompleto, tendría que poner 18420372 , ¿de donde sale estos datos?
+En la consulta de póliza hay dos campos"producersData":    {
+      "salesOfficeCode": "0372",
+      "producerCommissions": [      {
+         "producerCode": "18472",
+      ...
+Por lo tanto la parte izquierda del campo lleva 18472 y 0372 concatenado.
+Puede ocurrir que  "producerCode": "1" en cuyo caso hay que buscar el siguiente  "producerCode", ya que no nos vale el 1. Si ocurriera que no existe otro producerCode entonces se trata de una póliza sin estructura comercial y hay que indicarlo como hemos dicho en otro correo.
+Una vez tenemos salesOfficeCode y producerCode hay que ir al servicio de estructurascomerciales (https://wportalinterno.pre.mapfre.net/ES_AUAD_ESTRUAGE_SERVICIOS_REST_be-web/api/1.0) y ahí con el campo codAgenteVida igual a producerCode
+ Y  codOficinaDirecta igual a salesOfficeCode, se recoge el campo codAgente, Para el ejemplo que nos ocupa devuelve 0035099
+ [IMG x1]
+Por lo que el campo Clave de producción esperado es 18420372 / 0035099
+Finalmente no guarda bien (con la misma póliza)
+ [IMG x1]
