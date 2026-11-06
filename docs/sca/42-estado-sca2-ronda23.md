@@ -132,3 +132,140 @@ Cabecera Vida corregida (`SCA2_getCodAgenteVida` v2: entrada con el CDT `SCAC_DS
 
 ## Ronda 44 (03/11/2026) — estados tras acciones administrativas y mecanización (8.º Análisis SCA2)
 Informe: `pruebas/r44-a-estados-acc-adm-mecanizacion.md` (commit 37a35b7). ACEPTAR del alta deshabilitado tras el primer clic (`SCA2_AltaSolicitudPage` v50). Sin inducción VERTI/Vencimiento cuando la solicitud viene de Acción Administrativa, como SCA (`SCA2 CMD Mecanizar` v45, regla `SCA2_vieneDeAccionAdministrativa`). La mecanización «Incompleta» se debía a que SCA2 cerraba la solicitud en CORE antes de que NSE escribiera el suplemento en ANL: `SCA2 CMD Finalizar` v14 espera a NSE (1 min, máx. 10) y actualiza la mecanización (`SCA2_actualizarMecanizacionAnulacionNse`). Probado OK con 15788751 (NSE Autos), 15788752 (NSE Hogar) y 15788753 (entrega de documentos): «ANULACION REALIZADA» y lista «Finalizada. Anulación realizada». Sin probar: pendiente de autorizar (sin pólizas con controles 05/06), wAutemis (error previo en «Tipo catalogación» del alta) y anulación directa 15788754 (NSE no respondió en 10 min; quedó «Incompleta» y la lista muestra «Pendiente de Autorización»).
+
+## Ronda 45 (06/11/2026) — 9.º «Análisis SCA2»
+
+**Contexto.** En TEST, el MCP y la LCP siguen caídos por el feature toggle `ae.dev-copilot-api.lcp-api-plugin = false` (las rutas `lcp-api/*` dan 404 y el MCP rechaza las herramientas); la incidencia queda pendiente de Appian Support. Se trabajó con Deployment API v2, generando `versionUuid` nuevos para los paquetes parciales, y con Appian Designer. Los cambios y pruebas fueron en SCA2.
+
+Fuentes de detalle: `pruebas/coordinacion-ronda45.md`, `pruebas/r45-a-vida-clave-produccion.md`, `pruebas/r45-b-anl-pendiente-autorizar.md`, `pruebas/r45-c-si24.md`, `pruebas/r45-d-estados-lista.md` y `pruebas/polizas/REGISTRO.md`.
+
+### Resultados por sesión
+
+#### R45-A — Vida
+
+| Casos | Resultado | Solicitudes usadas |
+|---|---|---|
+| A1, Vida sin estructura comercial | **OK** en SCA2: aviso y GUARDAR bloqueado. Comparación con SCA: **no comparable**, SCA rechaza la Vida en la validación previa. | `0006059023`; sin solicitud creada |
+| A2, clave de producción y estructura comercial | **OK**: `0006000328`, `0006000397` y `0006059601` muestran `184720372 / 0035099`; el productor «1» seguido de otro válido se resolvió en Designer. | `0006000328`, `0006000397`, `0006059601`, `0006059703` (solo Designer; sin alta) |
+| Alta Vida en CORE | **KO**: tres altas devuelven 4004 en `generarStudAnul`; probar `codCiaUsuario` 3 tampoco lo corrige. | `PDTE-269184418`, `PDTE-748230`, `PDTE-269184469`, `PDTE-13377305` (sin solicitud CORE) |
+| A3, doble clic en ACEPTAR | **KO visual / OK sin duplicados** en Hogar y Autos; **no probado** en Vida. La comparación SCA tiene el mismo comportamiento. | `15788809`, `15788813`; `15788810` creada, doble clic no medido; SCA `15788814` |
+| Origen de la Vida histórica y respuesta CORE | **No comparable / no concluyente**: lectura de `15788717` no identifica el camino de creación ni el campo que falta. | `15788717` (solo lectura) |
+
+#### R45-B — ANL y mecanización
+
+| Casos | Resultado | Solicitudes usadas |
+|---|---|---|
+| B2a, `fecAnulacion` / `fechaSuplemento` para NSE y wAutemis | **OK** para la fecha enviada en NSE (`15788805`) y wAutemis con vencimiento a menos de 18 meses (`15788828`). **KO externo NEW 916** al vencer a más de 18 meses (`15788817`). | `15788768` (solo lectura/regla), `15788805`, `15788817` (solo lectura), `15788828` |
+| B2b, controles 05/06 y pendiente de autorizar | **KO / no conseguido**: no se obtuvieron casos reales 4/5 + 2 ni 4/5 + 7. En el cribado, 42 NSE respondieron fault 4021 sin controles; la wAutemis `15788828` quedó 4 + mecanización INCOMPLETA. | `15788828`; cribado de 45 pólizas, sin otras solicitudes nuevas |
+| B1, Acción Administrativa sin documentación | **OK en CORE** (`15788805`, anulación realizada); discrepancia inicial de etiqueta/UI, revisada por R45-D. | `15788805` |
+| B4, NO en Anulación/Suscripción | **KO** para solicitud 14. La mecanización quedó en código 4 en `15788815`; la fase 2 para forzar el 14 no funcionó y se revirtió. | `15788811`, `15788815`, `15788821`, `15788826` |
+| D6, ANL sin `TIPO_FLUJO` | **KO externo**: `15788754` quedó sin suplemento, con la gestión de mecanización incompleta. | `15788754` (solo lectura) |
+| D8, cierre wAutemis tras ANULAR NEW | **OK E2E** tras la espera: `15788830` finalizó con mecanización realizada; regresión NSE también **OK** con `15788831`. | `15788828` (diagnóstico), `15788830`, `15788831` |
+
+#### R45-C — Si24
+
+| Casos | Resultado | Solicitudes usadas |
+|---|---|---|
+| C1/C3, aviso Si24 | **OK**: no aparece al usuario Si24; se mantiene para Red Mapfre. | `15788800`, `15788801`, `15788804` |
+| C4, FINALIZAR sin carta/DNI con argumento negativo | **OK** para SISANS; Red Mapfre sigue necesitando carta. | `15788800`, `15788801` |
+| C2, Verti/Vencimiento e inducción | **OK** el enlace a la tarea; **KO externo** en la consulta del agente de CMP. El caso de vencimiento futuro también queda en error de integración ANL. | `15788801`, `15788817` |
+| P1/P2, nivel 2, RETOMAR y modal Sí/No | **OK**, incluidos los flags de perfil corregidos; el vencimiento pasado de `15788808` explicó que no se lanzaran mecanización ni inducción. | `15788808`, `15788812` |
+| F4, asignación y botones RETOMAR/REASIGNAR | **OK** en las pruebas de asignación, tarea propia y tarea sin asignar; **pendiente** decidir si la Verti de nivel 2 debe asignarse al usuario o al grupo Si24. | `15788816`, `15788824`, `15788825` |
+| Comparación funcional en SCA | **No comparable**: el alta se quedó bloqueada en el popup. | `0002729325303`; sin solicitud |
+
+#### R45-D — Estados
+
+| Casos | Resultado | Solicitudes usadas |
+|---|---|---|
+| Tabla de estados y colores | **OK**, 29/29 combinaciones verificadas en la regla desplegada. | Regla de prueba en Designer; sin solicitud |
+| F1, F3, F4 y F5: pendiente, anulación realizada, contra-anulación positiva y cancelada | **OK** en lista; coherencia lista/detalle/«Otras solicitudes» verificada en fase 2. | `15788799`, `15788803`, `15788806`, `15788807` |
+| F2: mecanización enviada / pendiente de autorización | **KO para el caso objetivo / no reproducido**: la solicitud quedó en nivel 2 (NSE 6). | `15788802` |
+| B1, revisión y prueba nueva | **OK / no se reprodujo** la etiqueta incorrecta; en la prueba nueva se observaron estados transitorios y convergencia a azul en t2/t5. | `15788805`, `15788822` |
+| Comparación en SCA | **Parcial / no comparable**: casos 1–3 solo en lista inicial; después falló la navegación de SCA. | `15788799`; sin solicitud nueva para los casos restantes |
+
+### Errores externos observados
+
+| Sistema | Error / caso | Evidencia |
+|---|---|---|
+| CORE | 4004 «Datos insuficientes» en `generarStudAnul` para altas Vida | Tres altas con clave, estructura y prima; el intento con `codCiaUsuario` 3 dio el mismo resultado. |
+| NEW / GAIA | Error 916: «La Fecha de Efecto no puede ser mayor o menor en 18 meses que la Fecha de Mecanización» | wAutemis con vencimiento a ~21 meses; `fechaSuplemento` enviada coincide con la fecha de anulación. |
+| CMP | «No es posible realizar la inducción. Se ha producido un error al consultar los datos del agente» | `15788801` y `15788817`; CMP es externo a SCA2. |
+| ANL | `REDIRIGIR_NEW = true` y `TIPO_FLUJO` vacío | `15788754`: ANL no lanzó NSE/NEW y no registró suplemento. |
+| NSE | Fault 4021: «Se produjo un error no controlado al validar los datos de la anulación» | Las 42 pólizas NSE del cribado no devolvieron controles técnicos 05/06. |
+
+### Objetos modificados
+
+| Sesión | Objeto | Versión / resultado |
+|---|---|---|
+| R45-A | Integración `SCA2_consultaEstructuraComercialVida` | v2 → v3 |
+| R45-A | ER `SCA2_obtenerDatosCabeceraLive` (parte Vida) | v1 → v2 |
+| R45-A | IF `SCA2_AltaSolicitudPage` | v50 → v51 |
+| R45-A | ER `SCA2_construirContextoAlta` | v4 → v6 |
+| R45-A | ER `SCA2_construirContextoAlta` (prueba `codCiaUsuario` 3) | v6 → v7 → v8; cambio revertido, contenido final de v8 = v6 |
+| R45-A | Constantes `SCA2_TXT_POLIZA_SIN_ESTRUCTURA_TITULO` y `SCA2_TXT_POLIZA_SIN_ESTRUCTURA_COMERCIAL` | Nuevas, v1 |
+| R45-B | ER `SCA2_construirSolicitudAnulacionAnlTraducida` | vN → vN+1 (un guardado en Designer; versión numérica no indicada) |
+| R45-B | ER `SCA2_actualizarMecanizacionAnulacionNse`; PM `SCA2 CMD Finalizar` | v3 → v4; v14 → v15 |
+| R45-B | ER `SCA2_actualizarMecanizacionAnulacionNse` (fase 2) | v4 → v5 → v6 → v7; fase 2 revertida, contenido final = v4 |
+| R45-B | PM `SCA2 CMD Finalizar` (fase 2) | v15 → v16 → v17; fase 2 revertida, contenido final = v15 |
+| R45-B | Constantes `SCA2_TXT_MCA_ESTADO_FINAL_CANCELADA` (9) y `SCA2_TXT_COD_ESTADO_SOL_CANCELADA` (14) | Nuevas, v1; quedan sin uso tras revertir fase 2 |
+| R45-B | ER `SCA2_actualizarMecanizacionAnulacionNse` (espera wAutemis/ANL) | v5 → v6; probado E2E en fase 5, sin cambios adicionales |
+| R45-C | IF `SCA2_ContraAnulacionOpciones` | v5 → v6 → v7 |
+| R45-C | IF `SCA2_DetalleTareas` | v3 → v4 → v5 |
+| R45-C | IF `SCA2_DetalleSolicitud` | v2 → v3 → v4 |
+| R45-D | ER `SCA2_calcularEstadoSolicitud` | v3 → v4 → v5 |
+| R45-D | ER `SCA2_colorEstadoSolicitud` | v3 → v4 |
+| R45-D | IF `SCA2_BuscadorTabla` y `SCA2_Buscador` | v3 → v4 → v5 |
+| R45-D | IF `SCA2_TablaOtrasSolAnulacion` | v2 → v3 |
+| R45-D | IF `SCA2_SolicitudAnulacion` | v3 → v4 → v5 |
+| R45-D | 15 constantes `SCA2_TXT_ETQ_ESTADO_*` / `SCA2_TXT_COD_EST_MECANIZACION_*` | Nuevas, v1 |
+| R45-D | Constante `SCA2_TXT_COD_EST_MECANIZACION_SIN` | Nueva, v1 |
+
+### Dudas para el analista
+
+#### Vida: clave y alta
+
+1. **R45-A D1 — clave de producción:** ¿la parte izquierda es `184720372` (concatenación literal, implementado) o `18420372` como pone el ejemplo? Si es lo segundo, ¿qué regla quita el `7`?
+2. **R45-A D2 — CORE 4004:** con compañía 3, ramo 101, producto, clave `codAgente`, estructura DGT/DT/oficina, prima y `codInt`, CORE sigue con 4004. ¿Qué dato exige CORE para Vida? ¿`numApli` (qué valor para Vida)? ¿Se puede obtener la petición de un alta Vida correcta (p. ej. la 15788717 de R43) o el detalle del 4004 en el log de CORE?
+3. **R45-A D3 — `fecValidez`:** ¿debe enviarse explícitamente (y con qué fecha: hoy, efecto o anulación)? Hoy el servicio responde sin él.
+4. **R45-A D4 — estructura comercial y prima:** se envían ahora a CORE (antes vacías, también en SCA). Si CORE no las quiere para Vida, ¿se pueden quitar (cambio solo en `SCA2_construirContextoAlta`)?
+5. **R45-A D5 — ACEPTAR visual:** en SCA2 (y en SCA) el botón no se ve deshabilitado tras el primer clic, aunque no se duplica nada. ¿Basta con que no haya duplicados o se quiere además un cambio visual inmediato? Lo segundo no se puede hacer en SAIL antes de la respuesta del servidor; habría que separar el clic (marcar) de la navegación, lo que añade un paso.
+
+#### ANL, CORE, NEW y NSE
+
+6. **R45-B D1 — cancelación desde mecanización:** ¿se acepta 5+4 («Rechazada anulación», como haría SCA) o debe usarse otro servicio para dejar la solicitud en 14?
+7. **R45-B D1, fase 2 — servicio CORE:** `finalizarContraAnulPca` con 9 no cancela una solicitud sin gestión de contra-anulación. ¿Qué servicio de CORE debe cancelar (14) desde la mecanización?
+8. **R45-B D5 — fecha de suplemento a más de 18 meses:** NEW rechaza la anulación a vencimiento con error 916. ¿Qué `fechaSuplemento` debe ir en ese caso, o SCA2 debe impedirlo?
+9. **R45-B D6 — ANL sin `TIPO_FLUJO`:** en `15788754`, ANL acepta con `REDIRIGIR_NEW` y `TIPO_FLUJO` vacío y no lanza NSE/NEW. ¿Cómo debe tratarlo SCA2?
+10. **R45-B D7 — fecha del nivel NEW:** NEW solo devuelve 00000005 (Norma 58) cuando la fecha de efecto está cerca de hoy. En una anulación A VENCIMIENTO no devuelve nivel y SCA2 sigue el camino normal. ¿Debe SCA2 consultar el nivel con otra fecha (¿la de hoy?) para ir a pendiente de autorizar, como SCA?
+11. **R45-B D8 — estado final wAutemis:** en `15788828`, CORE dejó solicitud 4 «Pendiente de Autorización» + mecanización INCOMPLETA, aunque NEW respondió true y la póliza aparece anulada en NEW. ¿Qué estado final debía quedar y quién lo fijaba? **Resuelta en fase 5:** `15788830` terminó con la mecanización ANULACIÓN REALIZADA tras esperar a ANL.
+12. **R45-B D9 — nivel 00000004 de wAutemis:** el cribado con `SCA2_consultarAnulacionPoliza` y la fecha de vencimiento devuelve `nvlCumplimiento` 00000004, pero la pantalla de `15788830` lo muestra vacío y no va a pendiente de autorizar. ¿Debe 00000004 ir a pendiente de autorizar en wAutemis?
+13. **R45-B D2 — espera NSE máxima:** ¿cuál es el máximo de espera NSE aceptable (10 min actual)?
+14. **R45-B D3 — «Tipo catalogación» de wAutemis:** ¿qué opción elegir entre las cuatro propuestas: inicializar «A FECHA» como valor válido, ampliar las opciones, limpiar el valor no permitido o decidir que wAutemis siempre debe usar «A FECHA»?
+15. **R45-B D4 — etiqueta tras B1:** revisar la etiqueta «Finalizada sin anular» con CORE 5 + ANULACIÓN REALIZADA. **Contrastada en R45-D:** no se reprodujo como estado final; en `15788822` se observó un estado transitorio mientras concluía NSE/CORE.
+
+#### Si24, Verti e inducción
+
+16. **R45-C D1 — aviso Si24:** se resolvió que «la solicitud la trata Si24» significa usuario gestor Si24, perfil `CE_MF_BK` (GGE) o nivel de intervención > 1. ¿Se debe ocultar también a central y CCC, o solo a Si24/GGE?
+17. **R45-C D2 — perfiles (resuelta):** se corrigieron en fase 2 los flags `codPerfilSi24Experto/Front/GGE`, que antes salían siempre `false` al leerse de un campo inexistente de `infoUsuarioDTO`; SCA los calcula de `codSubPerfil`/`codPerfil`.
+18. **R45-C D3 — CMP «datos del agente»:** la inducción de la 0002729325300 (wAutemis, acuerdo VW PLURI) devuelve «error al consultar los datos del agente» en CMP. ¿Es esperable en TEST para pólizas de acuerdo/concesionario? SCA2 marca la gestión de inducción como Finalizada.
+19. **R45-C D4 — perfiles y documentación:** C4 se aplica a cualquier perfil distinto de Red Mapfre (`codPerfil` ≠ perfil RM). ¿Hay otros perfiles que deban seguir exigiendo carta/DNI?
+20. **R45-C D5 — Verti de nivel 2:** ¿la Verti del nivel 2 debe ir al usuario del alta o al usuario/grupo Si24?
+21. **R45-C D5b — RETOMAR/REASIGNAR (resuelta):** ¿deben limitarse RETOMAR/REASIGNAR al usuario asignado, como en SCA? Se limitó RETOMAR a la tarea propia o sin asignar y se ajustó REASIGNAR en CA nivel 2 para `CE_MF_SI24` en `SCA2_DetalleSolicitud` v4. La asignación de la Verti de nivel 2 sigue siendo la pregunta abierta anterior.
+22. **R45-C D6 — caducidad (explicada):** `15788808` estaba caducada por la fecha de vencimiento pasada. Con vencimiento futuro (`15788817`), el encadenado llegó a ANL e inducción; ANL quedó en error de integración y CMP falló al consultar el agente (externos).
+23. **R45-C D7 — REASIGNAR en CA1 de otro grupo:** si el usuario no comparte grupo/nivel y no puede gestionar la tarea, SCA2 oculta toda la botonera. ¿Debe ver REASIGNAR, como en SCA?
+24. **R45-C D8 — error de ANL en TEST:** ¿es esperado que ANL deje la anulación de la 0002729325306 (GO INSURANCE PLURIANUAL, wAutemis) en «Gestionar Error Integración Anulacion», bloqueando NSE y dejando la mecanización Incompleta?
+
+#### Etiquetas y estado transitorio
+
+25. **R45-D Q1 — estado 4/5 con mecanización incompleta:** para solicitud 4/5 + mecanización 3 (incompleta) o 5, hoy aparece «Pendiente de Autorización» o lo que resulte de la lógica anterior por gestiones. ¿Qué etiqueta debe mostrarse? (Ejemplo 15788455.)
+26. **R45-D Q2 — filtro Estado:** el filtro usa el estado SCA2 persistido, no la etiqueta D1; con «Cancelada» aparecen filas con otras etiquetas. ¿Debe filtrar por la etiqueta D1?
+27. **R45-D Q3 — combinaciones fuera de tabla:** ¿qué etiqueta corresponde a solicitud 2 + mecanización 1 sin gestión 5; 2 + mecanización 2/4/7; 14 + mecanización distinta de vacía/4; 3 + cualquier mecanización; y estados 7–10, 13, 15–19? Hoy se aplica la lógica anterior.
+28. **R45-D fase 3 — mientras NSE termina:** ¿se quiere un estado explícito mientras NSE no ha terminado o un refresco automático en lugar del estado intermedio observado? No implementado.
+
+### Pendientes
+
+- No se consiguieron casos reales 4/5 + 2 ni 4/5 + 7. El cribado NSE devolvió fault 4021; las wAutemis no dieron la combinación buscada al usar la fecha de vencimiento.
+- Acción Administrativa activa: no hubo prueba UI; las solicitudes nuevas solo mostraban las acciones como «Pendiente», sin tarea activa.
+- R45-C deja abiertas estas solicitudes de prueba: `15788816` (Verti nivel 2 de JJGONZ2), `15788817` (mecanización Incompleta/error ANL), `15788824` (Verti SISANS abierta) y `15788825` (CA1 JJGONZ2 abierta).
+- También quedan anotadas en R45-C `15788808` (mecanización Incompleta), `15788812` (Verti SISANS abierta) y las CA abiertas de `15788800` y `15788804`.
+- R45-D no obtuvo prueba real para 4/5 + 2 o 4/5 + 7; la solicitud `15788802` terminó en nivel 2.
