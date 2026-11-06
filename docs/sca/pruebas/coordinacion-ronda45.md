@@ -29,7 +29,7 @@ D1. (tabla) Etiquetas y colores de la lista de solicitudes según `cod_tip_est_s
 ## Reparto y objetos propios (reservar en la tabla antes de editar; liberar con vN→vM)
 - **R45-A Vida y alta**: A1, A2, A3. `SCA2_getCodAgenteVida`, `SCA2_consultaClaveVida`, `SCA2_consultarClavevida`, `SCA2_consultaClave*`, `SCA2_obtenerEstructuraComercial`, `SCA2_consultarEstructuraComercial`, `SCA2_obtenerDatosCabeceraLive` (solo la parte Vida), `SCA2_construirContextoAlta`, `SCA2_PreGenerarStudAnul`, `SCA2_AltaSolicitudPage`, integraciones/constantes SCA2 nuevas de estructuras comerciales.
 - **R45-B ANL / mecanización**: B1-B4. `SCA2_AccionesAdministrativas*`, `SCA2_MecanizacionPrincipal`, PMs `SCA2 CMD Mecanizar`, `…MecanizarNSE`, `…CompletarAccion`, `…Decidir`, `…CrearAccion`, `…Finalizar`, reglas de llamada a ANL (`SCA2_obtenerAnulacion`, constructores de la petición ANL).
-- **R45-C Si24**: C1-C4. Interfaces y reglas de contra anulación (`SCA2_ContraAnulacion*`, condición de FINALIZAR), aviso Si24 de la cabecera/detalle, condición y enlace de Verti/Vencimiento → inducción (si hay que tocar un PM de R45-B, pedirlo en la tabla y esperar a que esté libre).
+- **R45-C Si24** — TERMINADA (informe `r45-c-si24.md`): C1-C4. Interfaces y reglas de contra anulación (`SCA2_ContraAnulacion*`, condición de FINALIZAR), aviso Si24 de la cabecera/detalle, condición y enlace de Verti/Vencimiento → inducción (si hay que tocar un PM de R45-B, pedirlo en la tabla y esperar a que esté libre).
 - **R45-D Lista de solicitudes**: D1. Reglas de etiqueta/color de estado (`SCA2_textoEstadoSolicitud` y las del buscador/lista y tarjetas del detalle), constantes nuevas.
 Si un objeto no está en tu lista y otra sesión lo tiene reservado: no tocarlo.
 
@@ -52,14 +52,14 @@ Si un objeto no está en tu lista y otra sesión lo tiene reservado: no tocarlo.
 | ER `SCA2_consultarEstructuraComercial` + integración `SCA2_consultaEstructuraComercialVida` | R45-A | en edición |
 | ER `SCA2_getCodAgenteVida`, `SCA2_PreGenerarStudAnul` | R45-A | reservado (lectura; solo si hace falta) |
 | Constantes/reglas nuevas `SCA2_*` de clave de producción Vida | R45-A | en edición |
-| IF `SCA2_ContraAnulacionOpciones` (aviso SI24, FINALIZAR) | R45-C | en edición |
+| IF `SCA2_ContraAnulacionOpciones` (aviso SI24, FINALIZAR) | R45-C | liberado v5→v6 |
 | ER `SCA2_calcularEstadoSolicitud` | R45-D | en edición |
 | ER `SCA2_colorEstadoSolicitud` | R45-D | en edición |
 | IF `SCA2_BuscadorTabla` (columna Estado) | R45-D | en edición |
 | IF `SCA2_Buscador` (solo columna Estado de «Otras solicitudes») | R45-D | en edición |
 | Constantes nuevas `SCA2_TXT_ETQ_ESTADO_*` y `SCA2_TXT_COD_EST_MECANIZACION_*` | R45-D | en edición |
 | ER `SCA2_construirSolicitudAnulacionAnlTraducida` (fecAnulacion → `fechaSuplemento` ANL, B2) | R45-B | en edición |
-| IF `SCA2_DetalleTareas` (enlace CA → Verti/Vencimiento) | R45-C | en edición |
+| IF `SCA2_DetalleTareas` (enlace CA → Verti/Vencimiento) | R45-C | liberado v3→v4 |
 
 ## Dudas abiertas para el usuario/analista
 - D1: ¿la parte izquierda es `producerCode`‖`salesOfficeCode` = 184720372, o 18420372 como escribe el analista?
