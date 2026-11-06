@@ -48,7 +48,7 @@ Si un objeto no está en tu lista y otra sesión lo tiene reservado: no tocarlo.
 |---|---|---|
 | ER `SCA2_obtenerDatosCabeceraLive` (parte Vida) | R45-A | libre (v1→v2) |
 | IF `SCA2_AltaSolicitudPage` | R45-A | libre (v50→v51) |
-| ER `SCA2_construirContextoAlta` | R45-A | libre (v4→v6) |
+| ER `SCA2_construirContextoAlta` | R45-A | **en edición** (fase 2: `codCiaUsuario` de Vida, máx. 2 altas; v4→v6) |
 | ER `SCA2_consultarEstructuraComercial` + integración `SCA2_consultaEstructuraComercialVida` | R45-A | libre (ER sin cambios; integración v2→v3) |
 | ER `SCA2_getCodAgenteVida`, `SCA2_PreGenerarStudAnul` | R45-A | libre (sin cambios) |
 | Constantes/reglas nuevas `SCA2_*` de clave de producción Vida | R45-A | libre (`SCA2_TXT_POLIZA_SIN_ESTRUCTURA_TITULO` v1, `SCA2_TXT_POLIZA_SIN_ESTRUCTURA_COMERCIAL` v1) |
