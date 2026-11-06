@@ -95,3 +95,6 @@ Reglas: empezar por la primera póliza libre del bloque; no usar pólizas de otr
 | 0006000397 | R45-A (alta) Vida con estructura comercial | 06/11 | PDTE-748230 | Clave 184720372 / 0035099, estructura 014/03/0372. CORE 4004. |
 | 0006059601 | R45-A (alta) Vida con estructura y prima | 06/11 | PDTE-269184469 | Clave 184720372 / 0035099, prima 182.51. CORE 4004. Se paran las altas Vida. |
 | 0006059703 | R45-A (A2) productor "1" + 95900 | 06/11 | — | Solo consulta en Designer: 959000728 / 5316255. Sin alta. |
+| 0002729325301 | R45-C fase 2 (P1, P2, riesgo VERTI) | 06/11 | 15788808 | Autemis acuerdo GRUPO VW FINANCIADO 1 AÑO, clave 5227650. JJGONZ2 CA nivel 1 negativa (carta) → CA nivel 2 GGE SISANS sin aviso Si24 → Verti (asignada a JJGONZ2, RETOMAR) → ANULAR PÓLIZA. Mecanización Incompleta. |
+| 0002729325302 | R45-C fase 2 (D2, regresión C3/C4) | 06/11 | 15788812 | Autemis acuerdo GRUPO VW FINANCIADO 1 AÑO, clave 5227649. SISANS canal SI24: sin aviso, FINALIZAR tras negativo, modal ilocalizables → NO → Verti directa. Verti abierta. |
+| 0002729325303 | R45-C fase 2 (comparación SCA) | 06/11 | — | Acuerdo SEAT GO. Intento de alta en `sca-site` bloqueado en el popup de alta; sin solicitud. |
