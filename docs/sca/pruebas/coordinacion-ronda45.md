@@ -59,6 +59,9 @@ Si un objeto no está en tu lista y otra sesión lo tiene reservado: no tocarlo.
 | IF `SCA2_Buscador` (solo columna Estado de «Otras solicitudes») | R45-D | liberado (v3→v4) |
 | Constantes nuevas `SCA2_TXT_ETQ_ESTADO_*` y `SCA2_TXT_COD_EST_MECANIZACION_*` | R45-D | liberado (15 nuevas, v1) |
 | ER `SCA2_construirSolicitudAnulacionAnlTraducida` (fecAnulacion → `fechaSuplemento` ANL, B2) | R45-B | en edición |
+| IF `SCA2_DetalleSolicitud` (tarjetas de estado) | R45-D | en edición (fase 2) |
+| IF `SCA2_TablaOtrasSolAnulacion` (columna Estado) | R45-D | en edición (fase 2) |
+| IF `SCA2_BuscadorTabla`, IF `SCA2_Buscador` (mecanización en lote) | R45-D | en edición (fase 2) |
 | IF `SCA2_DetalleTareas` (enlace CA → Verti/Vencimiento; fase 2: restringir VERTI de otro usuario) | R45-C | en edición (v4) |
 
 ## Dudas abiertas para el usuario/analista
