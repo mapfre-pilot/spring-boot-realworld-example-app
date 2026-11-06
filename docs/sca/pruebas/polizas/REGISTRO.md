@@ -15,6 +15,7 @@ Fuente: `polizasDevin-2026-10-30.txt.gz` (970.823 pólizas: 554.707 Hogar `073�
 | 3201-3600 | `bloque-R45-D.txt` | R45-D (etiquetas de estado de la lista de solicitudes) | asignado 06/11 |
 | 3601-3640 | `bloque-R45-A2.txt` | R45-A (A3: ACEPTAR tras el alta, con Autos/Hogar) | asignado 06/11 |
 | 3641-4040 | `bloque-R45-B2.txt` | R45-B fase 3 (B2b: controles 05/06 / nivel 4-5, wAutemis < 18 meses) | asignado 06/11 |
+| 40 wAutemis (`000272…`) de las líneas 4061-7570 | `bloque-R45-B3-wautemis.txt` | R45-B fase 5 (D8: E2E cierre wAutemis tras NEW) | asignado 06/11 |
 | Vida (analista 06/11) | `bloque-R45-A-vida.txt` | R45-A (Vida: clave de producción, sin estructura comercial, alta) | asignado 06/11 |
 
 Reglas: empezar por la primera póliza libre del bloque; no usar pólizas de otro bloque ni las de rondas anteriores (`polizas-ronda9.md`, `polizas-ronda10.md`); una póliza con solicitud abierta queda «ocupada» hasta que se finalice; anotar también las que no sirven (error de alta, sin tarea, etc.).
