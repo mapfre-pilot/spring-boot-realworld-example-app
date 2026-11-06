@@ -84,3 +84,8 @@ Reglas: empezar por la primera póliza libre del bloque; no usar pólizas de otr
 | 0002729325308 | R45-C (C3/C4 Red Mapfre) | 06/11 | 15788800 | Autemis acuerdo GRUPO VW FINANCIADO 1 AÑO. JJGONZ2: aviso de acuerdo visible; negativo → FINALIZAR sigue deshabilitado (carta). CA abierta. |
 | 0002729325309 | R45-C (C3) | 06/11 | 15788804 | Autemis acuerdo GRUPO VW FINANCIADO 1 AÑO. SISANS: sin aviso Si24. CA abierta. |
 | 2002100087562 | R45-B (B1/B2a) Autos sin documentación | 06/11 | 15788805 | Libre (bloque R45-B, sin solicitudes previas en «Otras sol.»). Alta DECISION DE CLIENTE / VENTA DEL VEHICULO / NO VOY A COMPRARME OTRO COCHE, PRESENCIAL, A FECHA 06/11/2026. AA con check «El cliente no entrega documentación» → simulación 03/03/2027 (vencimiento), INFORMATIVO, sin controles 05/06; solicitud A VENCIMIENTO 03/03/2027. Resultado mecanización/ANL: ver informe r45-b. |
+| 0732400126579 | R45-D pendiente | 06/11 | 15788799 | OK: Solicitud Pendiente naranja |
+| 2002200407025 | R45-D mecanización enviada/autorización | 06/11 | 15788802 | No reproducido objetivo: Póliza Anulada. Solicitud Pendiente Nivel 2 naranja; NSE 6 |
+| 2002100303453 | R45-D anulación realizada | 06/11 | 15788803 | OK: Finalizada. Anulación realizada azul; NSE 7 |
+| 2002500316057 | R45-D contra anulación positiva | 06/11 | 15788806 | OK: Finalizado Contra Anulación Positiva verde |
+| 0732000131328 | R45-D cancelada | 06/11 | 15788807 | OK: Cancelada gris desde contra-anulación |
