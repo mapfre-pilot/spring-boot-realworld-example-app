@@ -66,6 +66,7 @@ Si un objeto no está en tu lista y otra sesión lo tiene reservado: no tocarlo.
 | IF `SCA2_BuscadorTabla`, IF `SCA2_Buscador` (mecanización precargada), ER `SCA2_calcularEstadoSolicitud`, constante `SCA2_TXT_COD_EST_MECANIZACION_SIN` | R45-D | liberado (v4→v5; constante nueva v1) |
 | IF `SCA2_DetalleTareas` (enlace CA → Verti/Vencimiento; fase 2: restringir VERTI de otro usuario) | R45-C | libre (v3→v4→v5) |
 | IF `SCA2_DetalleSolicitud` (fase 4: RETOMAR solo propia/sin asignar en VERTI/mecanización/CA; REASIGNAR oculto a CE_MF_SI24 en CA nivel 2) | R45-C | libre (v2→v3→v4) |
+| ER `SCA2_actualizarMecanizacionAnulacionNse` (fase 4, D8: espera wAutemis a que ANL cierre la mecanización antes de `finalizarSolicitud`) | R45-B | **en edición** |
 
 ## Dudas abiertas para el usuario/analista
 - D1: ¿la parte izquierda es `producerCode`‖`salesOfficeCode` = 184720372, o 18420372 como escribe el analista?
