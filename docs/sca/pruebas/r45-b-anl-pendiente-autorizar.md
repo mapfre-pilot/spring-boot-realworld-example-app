@@ -56,7 +56,11 @@ Cadena: `SCA2 CMD Mecanizar` → ANL Alta (`solicitudAnulacion` = `SCA2_construi
 
 a) **Espera NSE (R44, hasta 10 × 1 min)**. NSE responde de forma asíncrona: en 15788805 la respuesta (suplemento 7) llegó 10 s después de la llamada y `SCA2 CMD Finalizar` 9171261 la encontró al 2.º ciclo (`contadorNse` = 2). En R44 bastó 1 ciclo. Sin espera, Finalizar cerraría la solicitud con la mecanización INCOMPLETA (el error original de R44). **Propuesta: mantenerla**, valorando bajar el máximo (p. ej. 3–5 min) o el intervalo a 30 s; no aplica a cancelaciones (B4) ni a wAutemis.
 
-b) **15788754** (solo lectura): **no investigada en esta sesión** por falta de tiempo. Pendiente revisar su instancia ANL (sin relanzar ni modificar nada).
+b) **15788754** (solo lectura, sin relanzar ni modificar):
+- CORE: solicitud **5** (`fecEstado` 03/11/2026 18:57:01), `mcaMecanizada` N, `catalogacion` 4, `codCausa` 28, `fecAnulacion` 03/11/2026. Gestiones 43707852 FINALIZADA (18:42:57), 43707853 FINALIZADA (18:47:00), **43707854 (mecanización) INCOMPLETA** (18:57:01).
+- ANL: Anulacion **2350** (póliza 0001012089910, BASICar TERCEROS AMPLIADO, origen NSE-Autos, vto 21/08/2027), creada 18:47 por «ANL Alta» y «ANL Aceptar» (ambas terminadas en el mismo minuto). `FECHA_SUPLEMENTO` = `FECHA_ANULACION` = 03/11/2026 (fecha del día: anterior al cambio B2a), `TIPO_ANULACION` 3, **`REDIRIGIR_NEW` = true**, **`TIPO_FLUJO` vacío**, `NUMERO_SUPLEMENTO` vacío, `CONCLUIDA` false, último evento tipo 24.
+- No hay integraciones ANL registradas para la 2350 (`ANL_getIntegracionesByIdAnulacion` → 0 elementos) ni procesos NSE/ANL posteriores en Monitorización (búsquedas por solicitud, póliza y «Anulacion# 2350»).
+- Interpretación: ANL aceptó la anulación pero la marcó para redirigir a NEW sin tipo de flujo, así que no llamó a NSE ni a NEW y la anulación quedó abierta sin suplemento. `SCA2 CMD Finalizar` esperó los 10 ciclos de R44 (18:47 → 18:57) sin respuesta y cerró la mecanización como INCOMPLETA y la solicitud en 5. Es decir, SCA2 hizo lo previsto; el motivo de que no se anulara está en la decisión de ANL (`REDIRIGIR_NEW` con `TIPO_FLUJO` vacío), y ANL no es objeto SCA2. Duda D6: ¿qué debe hacer SCA2 cuando ANL acepta sin lanzar NSE/NEW (avisar, reintentar, dejar pendiente)?
 
 c) **«Tipo catalogación» en el alta wAutemis** (lenguaje funcional): al dar de alta una póliza wAutemis el desplegable «Tipo catalogación» solo ofrece «A FECHA», pero la pantalla arranca con el valor 1 propuesto por el servicio de catalogación, que no está entre las opciones; Appian lo considera inválido y muestra el error. Opciones para el analista:
 1. Inicializar el desplegable con el valor por defecto válido («A FECHA») cuando solo exista esa opción.
@@ -98,13 +102,14 @@ c) **«Tipo catalogación» en el alta wAutemis** (lenguaje funcional): al dar d
 - D1 (B4): para que la solicitud quede en 14 hace falta una llamada de CORE que la cancele; `finalizarSolicitud` no tiene estado y deja 5. ¿Se acepta 5+4 («Rechazada anulación», como haría SCA) o debe usarse otro servicio (¿cuál?) para dejar 14? No se ha inventado.
 - D1 (fase 2): con `finalizarContraAnulPca` 9 CORE no cancela una solicitud sin gestión de contra anulación (15788821, 15788826). ¿Qué servicio de CORE debe cancelar (14) desde la mecanización? Hasta entonces queda 5 + 4.
 - D5 (B2a wAutemis): NEW rechaza la anulación a vencimiento a más de 18 meses (error 916). ¿Qué `fechaSuplemento` debe ir en ese caso, o SCA2 debe impedirlo?
+- D6 (B3b): 15788754 — ANL acepta con `REDIRIGIR_NEW` y `TIPO_FLUJO` vacío y no lanza NSE/NEW; ¿cómo debe tratarlo SCA2?
 - D2 (B3a): ¿máximo de espera NSE aceptable (10 min actual)?
 - D3 (B3c): elegir opción 1–4 para «Tipo catalogación» wAutemis.
 - D4 (B1): etiqueta «Finalizada sin anular» con CORE 5 + ANULACIÓN REALIZADA → revisar con R45-D.
 
 ## Limitaciones y pendientes
 
-- B2b sin probar (no hay póliza con controles 05/06 en el bloque usado).
+- B2b sin probar. En fase 2 solo se simularon 2 pólizas más (15788821, 15788826: INFORMATIVO sin controles). Vía Designer, la simulación NSE (`SCA2_simularAnulacionPoliza`) da nivel 00000005 cuando `listaControltecnico` trae `tipoError` 3; para wAutemis lo da `nvlCumplimiento` de `SCA2_consultarAnulacionPoliza`. No se completaron las ~40 simulaciones: hace falta otro bloque de pólizas o seguir en otra sesión.
 - B2a ruta wAutemis: fecha verificada en 15788817 (R45-C); falta una wAutemis nueva con vencimiento a menos de 18 meses para ver la anulación completa.
 - SCA real no comparado con solicitud nueva.
 - LCP/MCP caídos: cambios por Deployment API y Designer.
