@@ -46,9 +46,9 @@ Cadena: `SCA2 CMD Mecanizar` → ANL Alta (`solicitudAnulacion` = `SCA2_construi
 
 a) **Espera NSE (R44, hasta 10 × 1 min)**. NSE responde de forma asíncrona: en 15788805 la respuesta (suplemento 7) llegó 10 s después de la llamada y `SCA2 CMD Finalizar` 9171261 la encontró al 2.º ciclo (`contadorNse` = 2). En R44 bastó 1 ciclo. Sin espera, Finalizar cerraría la solicitud con la mecanización INCOMPLETA (el error original de R44). **Propuesta: mantenerla**, valorando bajar el máximo (p. ej. 3–5 min) o el intervalo a 30 s; no aplica a cancelaciones (B4) ni a wAutemis.
 
-b) **15788754** (solo lectura, alta del analista): con los datos disponibles el proceso ANL no tuvo respuesta antes de que Finalizar cerrara la solicitud (misma situación que corrige la espera R44); no se ha relanzado ni modificado. Queda como pendiente revisar su instancia ANL con el analista si necesita más detalle.
+b) **15788754** (solo lectura): **no investigada en esta sesión** por falta de tiempo. Pendiente revisar su instancia ANL (sin relanzar ni modificar nada).
 
-c) **«Tipo catalogación» en el alta wAutemis** (lenguaje funcional): al dar de alta una póliza wAutemis el desplegable «Tipo catalogación» solo ofrece «A FECHA», pero la pantalla arranca con un valor interno (1 = A EFECTO/defecto del servicio) que no está entre las opciones; Appian lo considera inválido y muestra el error. Opciones para el analista:
+c) **«Tipo catalogación» en el alta wAutemis** (lenguaje funcional): al dar de alta una póliza wAutemis el desplegable «Tipo catalogación» solo ofrece «A FECHA», pero la pantalla arranca con el valor 1 propuesto por el servicio de catalogación, que no está entre las opciones; Appian lo considera inválido y muestra el error. Opciones para el analista:
 1. Inicializar el desplegable con el valor por defecto válido («A FECHA») cuando solo exista esa opción.
 2. Ampliar las opciones para incluir el valor que propone el servicio de catalogación.
 3. Impedir que la pantalla mantenga valores fuera de la lista (limpiar el valor al cargar las opciones).
