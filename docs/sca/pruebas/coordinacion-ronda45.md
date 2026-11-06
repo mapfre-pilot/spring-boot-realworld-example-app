@@ -49,4 +49,4 @@ Si un objeto no está en tu lista y otra sesión lo tiene reservado: no tocarlo.
 
 ## Dudas abiertas para el usuario/analista
 - D1: ¿la parte izquierda es `producerCode`‖`salesOfficeCode` = 184720372, o 18420372 como escribe el analista?
-- D2: «Revisar los estados que ha pasado Pedro en el otro correo»: no tenemos ese correo.
+- D2: resuelta (06/11, usuario): «los estados de Pedro» son la tabla de etiquetas del documento (punto D1).
