@@ -1,0 +1,701 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<contentHaul xmlns:a="http://www.appian.com/ae/types/2009">
+    <versionUuid>_a-0000f0a4-c27c-8000-9d46-011c48011c48_5665508</versionUuid>
+    <bodyVersionUuid>0IcmFMwo</bodyVersionUuid>
+    <rule>
+        <name>SCA2_construirContextoAlta</name>
+        <uuid>_a-0000f069-4f37-8000-9cc8-011c48011c48_20056014</uuid>
+        <description>[SCA2] Construye iniciarProcesoPCA (Map) desde consultarPolizas+infoUsuario para CMD Alta</description>
+        <parentUuid>_a-0000f069-4f37-8000-9cc8-011c48011c48_20050135</parentUuid>
+        <visibility>
+            <advertise>false</advertise>
+            <hierarchy>true</hierarchy>
+            <indexable>true</indexable>
+            <quota>false</quota>
+            <searchable>true</searchable>
+            <system>false</system>
+            <unlogged>false</unlogged>
+        </visibility>
+        <definition>a!localVariables(
+  local!tipoP: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20052969"(numPoliza: ri!numPoliza),
+  local!esAut: local!tipoP = #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050815",
+  /* R43-A: rama Vida Riesgo como SCA_AltaSolicitudAnulacionEstrategicas (servicio de Vida, cía 3, ramo 101) */
+  local!esVida: local!tipoP = #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050809",
+  local!polVida: if(local!esVida,
+    #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051494"(numPoliza: ri!numPoliza, responseDetailLevel: ""), null),
+  local!contratoVida: reduce(index(_, _, null), local!polVida, {"contractData", 1}),
+  local!codOficinaVida: reduce(index(_, _, null), local!polVida, {"producersData", 1, "salesOfficeCode"}),
+  local!codAgtVida: if(local!esVida,
+    #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20052771"(producersData: index(local!polVida, "producersData", null)), null),
+  local!claveProduccionVida: if(local!esVida,
+    a!defaultValue(
+      index(#"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051386"(codCompania: #"_a-0000f0a4-c27c-8000-9d46-011c48011c48_5665489",
+        codOficinaDirecta: local!codOficinaVida, codAgenteVida: local!codAgtVida), "codAgente", null),
+      index(#"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051380"(codCia: #"_a-0000f0a4-c27c-8000-9d46-011c48011c48_5665489",
+        codOficina: local!codOficinaVida, codAgente: local!codAgtVida), "idClaveProduccion", null)),
+    null),
+  local!fechaVida: #"SYSTEM_SYSRULES_forEach"(
+    items: {index(local!contratoVida, "effectiveDate", null), index(local!contratoVida, "dueDate", null)},
+    expression: a!localVariables(
+      local!p: split(left(a!defaultValue(tostring(fv!item), ""), 10), "/"),
+      if(count(local!p) = 3,
+        date(tointeger(index(local!p, 3, null)), tointeger(index(local!p, 2, null)), tointeger(index(local!p, 1, null))),
+        null))),
+  local!polizaNSE: if(
+    or(local!esAut, local!esVida),
+    null,
+    a!localVariables(
+      local!r: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20052562"({
+        pcodcia: 41, pnumpoliza: ri!numPoliza, pnumapli: 0,
+        pnumsptoapli: 0, pmcaconsultaglobal: "S", pmcalk: "S"
+      }),
+      if(
+        or(
+          a!isNullOrEmpty(index(local!r, "MSSPObtenerPolizaFecha", null)),
+          a!isNullOrEmpty(index(index(local!r, "MSSPObtenerPolizaFecha", null), "poconpolizat", null))
+        ),
+        #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20052562"({
+          pcodcia: 41, pnumpoliza: ri!numPoliza, pnumapli: 0,
+          pnumsptoapli: 0, pmcaconsultaglobal: "S", pmcalk: "S",
+          pfechaconsulta: todate(a!addDateTime(today(), 1))
+        }),
+        local!r
+      )
+    )
+  ),
+  local!pca: if(local!esVida, null, index(
+    #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050912"(P_NUM_POLIZA: ri!numPoliza),
+    "MSSConsultarPolizas",
+    "DATOS_PCA",
+    null
+  )),
+  local!pol: index(local!pca, "DATOS_POLIZA", {}),
+  local!to: index(local!pca, "DATOS_TO", {}),
+  local!strc: index(local!pca, "DATOS_STR_COMER", {}),
+  local!veh: index(local!pca, "DATOS_VEHIC", {}),
+  local!ch: index(local!pca, "DATOS_CH", {}),
+  local!rec: index(local!pca, "ESTADO_RECIBOS", {}),
+  local!polNSE: reduce(index(_, _, null), local!polizaNSE,
+    {"MSSPObtenerPolizaFecha", "poconpolizat", "array", 1, "datosgeneralespol", "array", 1}),
+  local!agNSE: reduce(index(_, _, null), local!polizaNSE,
+    {"MSSPObtenerPolizaFecha", "poconpolizat", "array", 1, "agente", "array", 1}),
+  local!sptoNSE: reduce(index(_, _, null), local!polizaNSE,
+    {"MSSPObtenerPolizaFecha", "poconpolizat", "array", 1, "datosgeneralesspto", "array", 1}),
+  local!figNSE: reduce(index(_, _, null), local!polizaNSE,
+    {"MSSPObtenerPolizaFecha", "poconpolizat", "array", "figurasparticipantes", 1, "array", "figuraparticipante"}),
+  local!tomadorNSE: index(index(local!figNSE,
+    wherecontains("TO", index(local!figNSE, "codinterv", null))), 1, null),
+  local!conductorNSE: index(index(local!figNSE,
+    wherecontains("CH", index(local!figNSE, "codinterv", null))), 1, null),
+  local!caracPolNSE: reduce(index(_, _, null), local!polizaNSE,
+    {"MSSPObtenerPolizaFecha", "poconpolizat", "array", 1, "caracteristicas", "array"}),
+  local!caracNSE: index(
+    reduce(index(_, _, null), local!polizaNSE,
+      {"MSSPObtenerPolizaFecha", "poconpolizat", "array", 1, "riesgos", "array", 1, "caracteristicas", "array"}),
+    wherecontains(
+      {"COD_CATEGORIA", "COD_MARCA", "COD_MODELO", "COD_TIPO_VEHIC", "FEC_PRIM_MATRIC", "NUM_MATRICULA"},
+      index(reduce(index(_, _, null), local!polizaNSE,
+        {"MSSPObtenerPolizaFecha", "poconpolizat", "array", 1, "riesgos", "array", 1, "caracteristicas", "array"}),
+        "codcampo", null))),
+  local!planesNSE: reduce(index(_, _, null), local!polizaNSE,
+    {"MSSPObtenerPolizaFecha", "poconpolizat", "array", "planespago", 1, "array", 1}),
+  local!codciaNSE: reduce(index(_, _, null), local!polizaNSE,
+    {"MSSPObtenerPolizaFecha", "poconpolizat", "array", 1, "codcia"}),
+  local!pfNSE: reduce(index(_, _, null), local!tomadorNSE,
+    {"datospersonales", "array", 1, "personafisica"}),
+  local!usr: index(#"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051686"(), "infoUsuarioDTO", {}),
+  local!perfil: a!defaultValue(index(local!usr, "codPerfil", null), #"_a-0000f099-f136-8000-9d3c-011c48011c48_5623884"),
+  local!subPerfil: a!defaultValue(index(local!usr, "codSubPerfil", null), #"_a-0000f099-f136-8000-9d3c-011c48011c48_5623926"),
+  local!nuuma: a!defaultValue(index(split(tostring(ri!usuario), "@"), 1, null), index(local!usr, "nuuma", null)),
+  local!catalog: a!defaultValue(ri!catalogacion, "1"),
+  local!impago: if(
+    local!esAut,
+    index(local!rec, "MCA_IMPAGADOS", "N") = "S",
+    index(local!sptoNSE, "codestadopoliza", "") = "5"
+  ),
+  local!usrMap: {codPerfil: local!perfil, codSubPerfil: local!subPerfil},
+  local!canal: a!defaultValue(
+    ri!canalEntrada,
+    index(#"_a-0000f069-4f37-8000-9cc8-011c48011c48_20052593"(usuario: local!usrMap, impago: local!impago), "default", null)
+  ),
+  local!medio: index(
+    #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20052599"(usuario: local!usrMap, codCanalEntrada: local!canal),
+    "default",
+    null
+  ),
+  /* codTpOrigen como SCA: "1" solo si wAutemis con FEC_EFEC_RECIBO; si no, por motivo */
+  local!tpOrigen: if(
+    and(local!esAut, a!isNotNullOrEmpty(index(local!rec, "FEC_EFEC_RECIBO", null))),
+    "1",
+    a!match(
+      value: tostring(ri!motivo),
+      equals: "3", then: "3",
+      equals: "1", then: "2",
+      equals: "2", then: "4",
+      default: null
+    )
+  ),
+  local!searchAPI: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051026"(
+    request: {"policyNumber": ri!numPoliza, "searchDetail": {"potencialInd": true()}}),
+  local!profileAPI: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051038"(clientId: index(local!searchAPI, "clientId", null)),
+  local!contactMethodAPI: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051050"(idCliente: index(local!searchAPI, "clientId", null)),
+  local!consultaClave: reduce(index(_, _, null),
+    #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051410"(
+      codCia: if(local!esAut, "1", "41"),
+      codTerceroAgt: if(local!esAut,
+        index(local!strc, "CLAVE_PRODUCCION", ""),
+        index(local!agNSE, "codterceroagt", "")),
+      codIdioma: "ES_es"),
+    {"MSSConsultaClave", "p_objeto_agt_clave_s", "COD_CLASE_AGT"}),
+  local!tipoProductor: reduce(index(_, _, null),
+    #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051068"(pidclaseclaveprod: local!consultaClave),
+    {"MSSObtenerDatosProductor", "plistadatosprod", 1}),
+  local!fecEfec: if(local!esAut, index(local!pol, "FEC_EFEC_PER", null), local!esVida, index(local!fechaVida, 1, null), index(local!sptoNSE, "fecefecpoliza", null)),
+  local!fecVcto: if(local!esAut, index(local!pol, "FEC_VCTO_PER", null), local!esVida, index(local!fechaVida, 2, null), index(local!sptoNSE, "fecvctopoliza", null)),
+  {
+    infoUsuarios: {
+      codCiaUsuario: index(local!usr, "codCiaUsuario", 41),
+      nuuma: local!nuuma,
+      codPerfil: local!perfil,
+      codSubPerfil: local!subPerfil
+    },
+    datosCod: {
+      codCausa: ri!causa,
+      codMedioComunicacion: local!medio,
+      codTpCanalEntrada: local!canal,
+      codTpNegocio: ri!lineaNegocio,
+      codTpOrigen: local!tpOrigen,
+      codTpCatalogacion: local!catalog,
+      codCIAContraria: ri!idCompania,
+      codClaveProduccion: if(local!esAut,
+        index(local!strc, "CLAVE_PRODUCCION", null),
+        local!esVida, local!claveProduccionVida,
+        index(local!agNSE, "codterceroagt", null)),
+      codInt: if(local!esAut,
+        index(local!to, "COD_INT", null),
+        local!esVida, index(local!searchAPI, "clientId", null),
+        index(local!tomadorNSE, "codint", null)),
+      perfilTeCuidamos: null,
+      socioTeCuidamos: null,
+      numDocumento: if(local!esAut,
+        index(local!to, "NUM_DOCUM", null),
+        local!esVida, index(local!searchAPI, "identityDocumentNumber", null),
+        index(local!tomadorNSE, "coddocum", null))
+    },
+    datosNumCod: {
+      numPoliza: ri!numPoliza,
+      codMotivo: ri!motivo,
+      codDetalle: ri!detalle,
+      numApli: index(if(local!esAut, local!pol, local!polNSE),
+        if(local!esAut, "NUM_APLI", "numapli"), null),
+      codRamo: if(local!esVida, #"_a-0000f0a4-c27c-8000-9d46-011c48011c48_5665495",
+        index(if(local!esAut, local!pol, local!polNSE),
+        if(local!esAut, "COD_RAMO", "codproducto"), null)),
+      codProducto: if(
+        local!esAut,
+        index(local!pol, "COD_PRODUCTO", null),
+        local!esVida,
+        index(local!contratoVida, "commercialProductCode", null),
+        if(
+          index(index(local!caracNSE, 1, null), "valcampo", "") = "00000009",
+          "AU01",
+          if(
+            or(
+              index(index(local!caracNSE, 1, null), "valcampo", "") = "00000006",
+              index(index(local!caracNSE, 1, null), "valcampo", "") = "00000007",
+              index(index(local!caracNSE, 1, null), "valcampo", "") = "00000008",
+              index(index(local!caracNSE, 1, null), "valcampo", "") = "00000019"
+            ),
+            "AU02",
+            ""
+          )
+        )
+      ),
+      codCompania: if(local!esAut, index(local!pol, "COD_CIA", null), local!esVida, tostring(#"_a-0000f0a4-c27c-8000-9d46-011c48011c48_5665489"), local!codciaNSE),
+      idSolicitud: null,
+      idGestionSGC: a!defaultValue(ri!idGestionSGC, 0),
+      idGestionSTCAT: null,
+      txtSistemaOrigen: "",
+      codAccionComercial: if(
+        or(local!catalog = "4", local!catalog = "1"),
+        "2707",
+        if(or(local!catalog = "2", local!catalog = "3"), "6098", null)
+      ),
+      numFaxPCA: ri!numFax,
+      estructComercial: {
+        DGT: index(local!agNSE, "codelemnivel1", index(local!strc, "DGT", null)),
+        codSubcentral: index(local!agNSE, "codelemnivel2", index(local!strc, "COD_SUBCENTRAL", null)),
+        codOfidir: index(local!agNSE, "codelemnivel3", index(local!strc, "COD_OFIDIR", null))
+      }
+    },
+    datosOtros: {
+      nomProducto: if(local!esAut,
+        index(local!pol, "NOM_PRODUCTO", null),
+        local!esVida, index(local!contratoVida, "commercialProductName", null),
+        index(local!sptoNSE, "nomprodcomercial", null)),
+      observaciones: ri!observaciones,
+      descCausa: ri!descCausa,
+      prima: if(local!esAut,
+        index(local!pol, "IMP_PRIMA", null),
+        todecimal(index(local!planesNSE, "impprimatotalperiodo", null))),
+      tipCliente: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051170"(
+        desc: reduce(index(_, _, null), local!profileAPI, {"actualTypology", "typologyDesc"}),
+        value: reduce(index(_, _, null), local!profileAPI, {"actualTypology", "typologyValue"}),
+        category: reduce(index(_, _, null), local!profileAPI, {"actualTypology", "clientCategory"})),
+      identificadorClave: if(local!esAut,
+        index(local!veh, "MATRICULA", null),
+        index(index(local!caracNSE, 6, null), "valcampo", null)),
+      canalDeEjecucion: local!perfil,
+      contacto: local!canal,
+      tlfPasoExperto: index(index(index(local!contactMethodAPI,
+        wherecontains("TELEFONO MOVIL",
+          touniformstring(index(local!contactMethodAPI, "contactMethodTypeDesc", null)))),
+        "contactMethodValue", null), 1, null),
+      codIntegridadCliente: null
+    },
+    datosFec: {
+      fecAnulacion: if(
+        a!isNotNullOrEmpty(ri!fecAnulacion),
+        a!localVariables(
+          local!fs: left(tostring(ri!fecAnulacion), 10),
+          local!f: split(local!fs, "-"),
+          if(length(local!f) = 3,
+            index(local!f, 3, "") &amp; "/" &amp; index(local!f, 2, "") &amp; "/" &amp; index(local!f, 1, ""),
+            local!fs)),
+        if(
+          local!catalog = "4",
+          text(today(), "dd/MM/yyyy"),
+          if(
+            or(local!catalog = "2", local!catalog = "3"),
+            text(local!fecVcto, "dd/MM/yyyy"),
+            text(local!fecEfec, "dd/MM/yyyy")
+          )
+        )
+      ),
+      /* Paridad SCA (SCA_AltaSolicitudAnulacion): CORE no admite la fecha de recibo aquí (4005) */
+      fecImpagoPCA: null,
+      fecEstado: null,
+      fecSolicitudAnul: local!fecVcto
+    },
+    datosReemplazo: {
+      numPolizaReemplazo: null,
+      numApliReemplazo: "0",
+      codCiaReemplazo: if(local!esAut, index(local!pol, "COD_CIA", null), local!esVida, tostring(#"_a-0000f0a4-c27c-8000-9d46-011c48011c48_5665489"), local!codciaNSE),
+      oficinaUsuario: null,
+      oficinaDirectaUsuario: null
+    },
+    datosProductor: {
+      accesosgc: index(local!tipoProductor, "accesosgc", null),
+      desccanal: index(local!tipoProductor, "desccanal", null),
+      descclaseprod: index(local!tipoProductor, "descclaseprod", null),
+      descsubcanal: index(local!tipoProductor, "descsubcanal", null),
+      esredtel: index(local!tipoProductor, "esredtel", null),
+      essi24: index(local!tipoProductor, "essi24", null),
+      estele: index(local!tipoProductor, "estele", null),
+      idcanal: index(local!tipoProductor, "idcanal", null),
+      idclaseprod: index(local!tipoProductor, "idclaseprod", null),
+      idsubcanal: index(local!tipoProductor, "idsubcanal", null),
+      tipoaccesosgc: index(local!tipoProductor, "tipoaccesosgc", null),
+      tipomediacion: index(local!tipoProductor, "tipomediacion", null),
+      anulaExpertos: a!defaultValue(index(local!tipoProductor, "anulaExpertos", null), false),
+      anulaTecnicos: a!defaultValue(index(local!tipoProductor, "anulaTecnicos", null), false)
+    },
+    datosPolizaAutos: {
+      vehiculo: {
+        codTipCntrLocalizador: if(local!esAut, index(local!veh, "COD_TIP_CONTR_LOCALIZADOR", null), null),
+        codTipLocalizador: if(local!esAut, index(local!veh, "COD_TIP_LOCALIZADOR", null), null)
+      },
+      codPromocion: if(local!esAut, index(local!pol, "COD_PROMOCION", null), null),
+      tomador: {
+        codCalificacion: if(local!esAut,
+          index(local!to, "COD_CALIFICACION", null),
+          index(index(local!caracPolNSE,
+            wherecontains("COD_SCORE", index(local!caracPolNSE, "codcampo", null))),
+            "valcampo", null)),
+        fechaDeNacimiento: if(local!esAut,
+          index(local!to, "FEC_NACIMIENTO", null),
+          index(local!pfNSE, "fecnac", null))
+      },
+      conductor: {
+        estadoCivil: if(local!esAut,
+          index(local!to, "ESTADO_CIVIL", null),
+          a!defaultValue(
+            reduce(index(_, _, null), local!conductorNSE,
+              {"licencia", "array", 1, "personafisica", "codtipestcivil"}),
+            "2")),
+        fechaCarne: if(local!esAut, index(local!ch, "FEC_CARNET", null),
+          reduce(index(_, _, null), local!conductorNSE,
+            {"datospersonales", "array", 1, "fecexplicencia"}))
+      },
+      codGama: if(local!esAut, index(local!pol, "COD_GAMA", null), null),
+      descGama: if(local!esAut, index(local!pol, "DESC_GAMA", null), null),
+      estructuraComercial: {
+        codOficinaComercial: if(local!esAut,
+          index(local!strc, "OFICINA_COMERCIAL", null),
+          index(local!agNSE, "nomelemnivel4", null)),
+        codClaseAgente: index(local!tipoProductor, "idclaseprod", null)
+      },
+      acuerdo: if(local!esAut,
+        index(local!pol, "COD_ACUERDO", null),
+        index(local!polNSE, "codacuerdo", null)),
+      tipoDeAcuerdo: if(local!esAut, index(local!pol, "TIP_ACUERDO", null), null),
+      fechaEfectoAnualidadCurso: local!fecEfec,
+      fechaDeEfectoInicial: if(local!esAut,
+        index(local!pol, "FEC_EFECT_INI", null),
+        index(local!sptoNSE, "fecefecspto", null)),
+      fechaDeVencimiento: local!fecVcto,
+      fechaDeEfectoAnulacion: if(local!esAut, index(local!pol, "FEC_EFEC_ANUL", null), null)
+    },
+    datosPolizaHogar: {
+      tomador: {
+        codCalificacion: if(local!esAut, null,
+          index(index(local!caracPolNSE,
+            wherecontains("COD_SCORE", index(local!caracPolNSE, "codcampo", null))),
+            "valcampo", null)),
+        fechaDeNacimiento: if(local!esAut, null, index(local!pfNSE, "fecnac", null)),
+        tomadorEsConductor: null
+      },
+      estructuraComercial: {
+        codOficinaComercial: if(local!esAut, null, index(local!agNSE, "nomelemnivel4", null))
+      }
+    },
+    datosContexto: {
+      canal: local!perfil,
+      idioma: ri!idioma,
+      idNegocio: ri!lineaNegocio,
+      rol: "SOLICITUD",
+      usuario: local!nuuma
+    }
+  }
+)
+</definition>
+        <namedTypedValue>
+            <name>numPoliza</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>motivo</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>detalle</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>causa</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>catalogacion</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>canalEntrada</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>lineaNegocio</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>idGestionSGC</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>fecAnulacion</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>observaciones</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>idioma</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>usuario</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>numFax</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>idCompania</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>descCausa</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <preferredEditor>legacy</preferredEditor>
+        <offlineEnabled>false</offlineEnabled>
+    </rule>
+    <roleMap public="true">
+        <role inherit="true" allowForAll="false" name="readers">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="authors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="administrators">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyReaders">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAuthors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAdministrators">
+            <users/>
+            <groups/>
+        </role>
+    </roleMap>
+    <typedValue>
+        <type>
+            <name>RuleTestConfig?list</name>
+            <namespace>http://www.appian.com/ae/types/2009</namespace>
+        </type>
+        <value>
+            <el>
+                <a:name>Test Case 1</a:name>
+                <a:description>Test input values</a:description>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">"0007051068625"</a:value>
+                    <a:nameRef>numPoliza</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">"1"</a:value>
+                    <a:nameRef>motivo</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">"1"</a:value>
+                    <a:nameRef>detalle</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">"1"</a:value>
+                    <a:nameRef>causa</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                    <a:nameRef>catalogacion</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">"1"</a:value>
+                    <a:nameRef>canalEntrada</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">"1"</a:value>
+                    <a:nameRef>lineaNegocio</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                    <a:nameRef>idGestionSGC</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                    <a:nameRef>fecAnulacion</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                    <a:nameRef>observaciones</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                    <a:nameRef>idioma</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                    <a:nameRef>usuario</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                    <a:nameRef>numFax</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                    <a:nameRef>idCompania</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                    <a:nameRef>descCausa</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:assertions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                <a:isDefault>true</a:isDefault>
+            </el>
+            <el>
+                <a:name>smoke: inputs nulos no error</a:name>
+                <a:description/>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">null</a:value>
+                    <a:nameRef>numPoliza</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">null</a:value>
+                    <a:nameRef>motivo</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">null</a:value>
+                    <a:nameRef>detalle</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">null</a:value>
+                    <a:nameRef>causa</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">null</a:value>
+                    <a:nameRef>catalogacion</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">null</a:value>
+                    <a:nameRef>canalEntrada</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">null</a:value>
+                    <a:nameRef>lineaNegocio</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">null</a:value>
+                    <a:nameRef>idGestionSGC</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">null</a:value>
+                    <a:nameRef>fecAnulacion</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">null</a:value>
+                    <a:nameRef>observaciones</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">null</a:value>
+                    <a:nameRef>idioma</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">null</a:value>
+                    <a:nameRef>usuario</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                    <a:nameRef>numFax</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                    <a:nameRef>idCompania</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                    <a:nameRef>descCausa</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:assertions>
+                    <a:expectedOutput xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                    <a:resultAssertions>true()</a:resultAssertions>
+                </a:assertions>
+                <a:isDefault>false</a:isDefault>
+            </el>
+        </value>
+    </typedValue>
+    <mcpEnabled>false</mcpEnabled>
+    <history>
+        <historyInfo versionUuid="_a-0000f069-4f37-8000-9cc8-011c48011c48_20064462"/>
+        <historyInfo versionUuid="_a-0000f069-4f37-8000-9cc8-011c48011c48_20077682"/>
+        <historyInfo versionUuid="_a-0000f099-f136-8000-9d3c-011c48011c48_5624452"/>
+        <historyInfo versionUuid="_a-0000f0a4-c27c-8000-9d46-011c48011c48_5665508"/>
+    </history>
+</contentHaul>

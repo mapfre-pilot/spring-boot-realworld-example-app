@@ -1,0 +1,489 @@
+# S5 — Detalle, estados, asignación de tareas, buscador, bandeja de errores y mecanización/caducidad (SCA vs SCA2, TEST)
+
+Fecha: 30/09/2026 · Entorno: `mapfrespain-test` · Usuario funcional UI: `JJGONZ2@mapfrenopro.onmicrosoft.com` (RED MAPFRE / CE_RM / OFICINA, nivel 1).
+Referencia funcional: **SCA TEST**. Solo se han modificado objetos de la aplicación **SCA2** (procedimiento GET vivo → backup → PUT completo → re-GET → `/test` → repetir UI). No se ha tocado SCA, SCAC, CORE, GAIA, PRE ni Documentum.
+
+## 1. Pólizas y solicitudes creadas
+
+| App | Póliza | idSolicitud | Alta (gestión CORE acción 8) | Ruta | Estado final CORE de la gestión Contra Anulación |
+|---|---|---|---|---|---|
+| SCA | `2002000000999` | **15787696** | 43704806 · FINALIZADA · 30/09/2026 11:34:04 · obs. `Prueba S5 Devin` | Contra Anular → NEGATIVO → carta → FINALIZAR | 43704815 · acción 2 · **FINALIZADA NEGATIVA** · fin 30/09/2026 12:11:30 · obs. `Prueba S5 negativo,Prueba S5 negativo` · documento tipo 6 `0900ab4481a04a8d`; gestión adicional 43704832 (acción 4, FINALIZADA 12:06:50) |
+| SCA2 | `2002000061523` | **15787699** | 43704810 · FINALIZADA · 30/09/2026 11:34:55 · obs. `Prueba S5 Devin` | Contra Anular → NEGATIVO → carta → FINALIZAR (fallo, ver §4.1) → cierre CORE directo | 43704812 · acción 2 · **FINALIZADA CANCELADA** · fin 30/09/2026 12:24:29 · sin observación ni documento |
+
+Póliza de reserva `2002000059216`: **usada en la fase 5** (autorizada por el analista) → solicitud SCA2 **15787716** (ver §8). Datos del alta en ambas: motivo `DECISION DE CLIENTE` · detalle `PRECIO` · causa `ME HA SUBIDO MUCHO LA PRIMA` · canal `PRESENCIAL` · catalogación `A VENCIMIENTO`.
+
+`SCA_consultarSolicitudes` / `SCA2_consultarSolicitudes` (tpBusqueda 0): ambas devuelven `codEstSolic: "2"`; `fecResolucion` 30/09/2026 12:11:30 (SCA) y 30/09/2026 12:24:29 (SCA2, tras el cierre CORE directo).
+
+## 2. Tabla paso a paso SCA vs SCA2
+
+Leyenda veredicto: **=** igual · **≠→OK** divergencia exclusiva SCA2 corregida en esta sesión · **≠ pend.** divergencia SCA2 pendiente · **≠ común** también ocurre en SCA / servicio externo (no se corrige) · **n/p** no probado.
+
+| # | Paso | SCA (15787696) | SCA2 (15787699) | Veredicto |
+|---|---|---|---|---|
+| 1 | Alta (motivo → Contra Anular) | Gestión 43704806 FINALIZADA, obs. `Prueba S5 Devin`; solicitud `codEstSolic 2` | Gestión 43704810 FINALIZADA, misma obs.; record `SCA2 Solicitud` EN_ACCION / interfazActiva CONTRA_ANULAR | = |
+| 2 | Buscador · pestaña Póliza | Fila con estado `Solicitud Pendiente` (naranja), resolución `-`, botones por fila | Igual; la fila de 15787699 aparece como `Solicitud Pendiente` | ≠→OK (antes SCA2 mostraba `Contra anulación en curso`; `SCA2_textoEstadoSolicitud` v4→v6) |
+| 3 | Buscador · pestaña Cliente / Nº documento (`34615123P`) | Devuelve la solicitud | Devuelve la solicitud | = |
+| 4 | Buscador · filtro Estado = Pendiente | Incluye la solicitud | Incluye 15787699 | ≠→OK (`SCA2_Buscador` v11→v12: agrupa estados internos equivalentes con `operator: "in"`) |
+| 5 | Buscador · filtro Estado = Finalizada negativa | Incluye 15787696 tras FINALIZAR | Excluye 15787699 (record sigue `PDTE_FINALIZAR`, ver §4.2) | ≠ pend. (coherente con el record; el defecto es el estado del record, no el filtro) |
+| 6 | Buscador · columnas, orden, paginación, colores | Columnas y orden equivalentes; colores por estado | Equivalentes; `Solicitud Pendiente` naranja como SCA | = |
+| 7 | Buscador · solicitudes PDTE-* | n/a (SCA no las genera) | Ocultas del buscador; van a `/errores` (interfaz `SCA2_BandejaErrores`, probado por LCP) | = (diseño SCA2 documentado en doc 11) |
+| 8 | Buscador · solicitud creada en la otra app | 15787699 (creada en SCA2) visible en SCA con `Solicitud Pendiente`, obs. `Prueba S5 Devin` en "últimas solicitudes gestionadas" | 15787696 (creada en SCA) **no** existe como record SCA2 → no abre detalle en SCA2 | ≠ común / limitación por diseño (SCA2 solo tiene record de sus propias solicitudes; documentado, no corregido) |
+| 9 | Detalle · cabecera / Datos cliente / Datos póliza / Solicitud | Nombre `GAXVEF CAPIA`, apellidos `GOSIJTUEV JYABOG`, NIF `34615123P`, RSV 0,00 €, Dto 12 %, Club Oro | Idénticos | = |
+| 10 | Detalle · acordeón Alta Solicitud | `Finalizada` verde, fechas y observación CORE de la gestión acción 8 | Igual (fechas/obs. desde CORE) | ≠→OK (`SCA2_DetalleSolicitud` v15→v16: usa la gestión CORE acción 8 en lugar de timestamps del record) |
+| 11 | Detalle · tarjeta Contra Anulación (abierta) | Fecha inicio CORE, nivel 1, perfil RED MAPFRE, grupo OFICINA, nuuma JJGONZ2, argumentos ejecutados, documentos, observaciones | Igual (ya alineado en doc 12 §12.4) | = |
+| 12 | Detalle · argumentos: NEGATIVO sobre `INCREMENTO PRIMA SINIESTROS` | Tag `Negativo` rojo | Tag `Negativo` rojo | = |
+| 13 | Detalle · orden de argumentos en la tabla | TARJETA BANKINTER, OPORTUNIDAD DE DESCUENTOS, CAMBIO DE FORMA DE PAGO… | REDUCCION DE COBERTURAS, SERVICIOS MAPFRE, GESTION COMPETENCIA… (mismos argumentos, distinto orden) | ≠ común (el orden lo devuelve el servicio CORE/GAIA; SCA pagina 10 por página) |
+| 14 | Acción Contra Anular · POSITIVO | Ventana de confirmación única, plantilla de carta con nombre/apellidos y fecha del día | Igual tras correcciones; prueba cancelada en la confirmación (no aceptada) | ≠→OK (`SCA2_ContraAnulacionOpciones` v15→v18: `tostring()` en `codTipoArgumento`, modal duplicado, nombre/apellidos y `today()` en la carta; `SCA2_ContraAnulacionRehabilitacion` v1→v2) |
+| 15 | Acción Contra Anular · NEGATIVO + observación `Prueba S5 negativo` | Obs. persistida en CORE | Obs. no persistida (ver §4.1) | ≠→OK parcial (payload corregido v20, pendiente re-ejecución UI) |
+| 16 | Acción · botón FINALIZAR bloqueado sin carta | Mensaje de documentación obligatoria | Igual tras corrección | ≠→OK (`SCA2_ContraAnulacionOpciones` v12→v13) |
+| 17 | Acción · subir carta (GD) | Documento tipo 6 persistido, visible en Detalle | Subida OK en UI; F5 en la acción pierde la carta no confirmada | ≠ común (en SCA la carta tampoco sobrevive a F5 antes de FINALIZAR) |
+| 18 | Acción · FINALIZAR | `CORRECTO`; gestión FINALIZADA NEGATIVA, fecha fin, doc. y obs. en CORE | `CORRECTO` en pantalla pero gestión INCOMPLETA, sin fecha fin, sin doc./obs. | ≠→OK parcial (§4.1: payload `finalizarCAPca` corregido en v20; CORE cerrado con la regla corregida) |
+| 19 | Detalle tras cierre · tarjeta CA | `Finalizada Negativa` rojo, fin 12:11:30, carta y observaciones | `Finalizada Cancelada`, fin 12:24:29, sin documentos ni observaciones; color **naranja** (SCA: azul) | ≠→OK color (`SCA2_DetalleSolicitud` v19→v20) · docs/obs ≠ pend. (§4.3) |
+| 20 | Detalle · botones RETOMAR / REASIGNAR con gestión cerrada | No se muestran | No se muestran | = |
+| 21 | Tareas · RETOMAR (gestión abierta) | Retomar disponible solo para el propietario de la tarea (`SCA_queryProcessReport`) | RETOMAR ejecutado en SCA2: reabre la acción, tarea reasignada a JJGONZ2 | = (SCA no re-probado con RETOMAR: la gestión ya estaba cerrada) |
+| 22 | Tareas · REASIGNAR | Solo visible si la tarea es de otro usuario (`local!reasignar`) | Igual: no visible siendo JJGONZ2 el asignado; pool solo con JJGONZ2 | = (no ejecutable con un único usuario del pool; `SCA2_DetalleSolicitud` v18→v19 corrige el `saveInto` de REASIGNAR) |
+| 23 | Navegación · F5 en Detalle | Mantiene detalle | Mantiene detalle | = |
+| 24 | Navegación · URL directa al detalle | Abre el detalle | Abre el detalle (`$sp` cifrado del site) | = |
+| 25 | Navegación · atrás desde la acción | Vuelve al buscador con resultados perdidos (pantalla vacía) | Vuelve al detalle | ≠ común (defecto exclusivo de SCA; SCA2 se comporta mejor, no se toca) |
+| 26 | Mecanización (`PDTE_MECANIZAR`) | No alcanzado | No alcanzado | n/p |
+| 27 | Caducidad | Timer/receiveMessage en el PM de SCA (revisado en doc 11) | `SCA2 CMD BarridoCaducidad` / `CMD Caducar` (revisado); **no lanzado** para no afectar a solicitudes ajenas (el barrido no filtra por solicitud) | n/p |
+| 19b | Detalle · color tarjeta CA tras v20 | `Finalizada Cancelada` azul | `Finalizada Cancelada` azul (ronda 4, también tras F5) | ≠→OK |
+| 19c | Detalle · acordeón `Impresion` | SCA muestra un tercer acordeón `Impresion — Finalizada` (verde) en 15787696 (gestión adicional 43704832, acción 4) | SCA2 no tiene acordeón `Impresion` en su detalle (15787699 no tiene impresión, no comparable directamente) | n/p — confirmar con analista si SCA2 debe mostrarlo |
+| 19d | Detalle · F5 con acordeón CA expandido | Mantiene el detalle | Mantiene el detalle pero el acordeón vuelve contraído; recarga ~30 s con pantalla vacía; `$sp` cambia | ≠ pend. (menor; no corregido) |
+| 28 | Bandeja de errores `/errores` | n/a (SCA usa alertas/PM pausado) | Ruta `/suite/sites/sca2/page/errores` devuelve "La página no existe o no tiene permiso para verla" con JJGONZ2: la página tiene `visibilityExpr: a!isUserMemberOfGroup(loggedInUser(), cons!SCA2_GRP_ADMINISTRADORES)` (site v8, JJGONZ2 fue retirado de administradores en doc 11). Por LCP, `SCA2_DetalleErrores(idSolicitud 15787699)` → sin filas; `SCA2_BandejaErrores` → renderiza errores de otras solicitudes con Relanzar | n/p en UI (por diseño: solo admins) · no hay `SCA2 Error` de 15787699 |
+
+## 3. Estados CORE observados tras cada acción
+
+| Momento | SCA 15787696 | SCA2 15787699 |
+|---|---|---|
+| Tras Alta | 43704806 acción 8 FINALIZADA 11:34:04 | 43704810 acción 8 FINALIZADA 11:34:55 |
+| Tras Contra Anular (gestión abierta) | 43704815 acción 2 INCOMPLETA, inicio 11:35 | 43704812 acción 2 INCOMPLETA, inicio 11:35:12 |
+| Tras NEGATIVO + carta + FINALIZAR (UI) | 43704815 FINALIZADA NEGATIVA 12:11:30, obs. `Prueba S5 negativo,Prueba S5 negativo`, doc tipo 6; 43704832 acción 4 FINALIZADA 12:06:50 | 43704812 **sigue INCOMPLETA**; record `PDTE_FINALIZAR` (v4, 10:15:53 UTC), `estadoTarea PENDIENTE`; `SCA2_consultaDetalleGestion`: observaciones null, listadoDocumentos null; `SCA2_consultarDocumentos`: null |
+| Tras corrección v20 + test directo `SCA2_finalizarContraAnulPca` (`mcaEstadoFinal "9"`) | — | 43704812 **FINALIZADA CANCELADA** 12:24:29; `consultarSolicitudes.fecResolucion` 12:24:29; record `SCA2 Solicitud` **sigue `PDTE_FINALIZAR`** |
+
+## 4. Divergencias encontradas
+
+### 4.1 Corregida (parcial): FINALIZAR de Contra Anulación no cerraba la gestión CORE — `SCA2_ContraAnulacionOpciones` v19→v20
+
+`SCA2_CMD_CompletarAccion` (uuid `0000f06f-1307-8000-65b1-7f0000014e7a`) nodo `Finalizar CA PCA` pasa `pv!resultado.finalizarCAPca` a `rule!SCA2_finalizarContraAnulPca` → `SCA2_finalizarContraAnulPcaIntegracion` (`PCA_CORECFSA_HTTPRouter/IContraAnularPCA`). La interfaz enviaba un mapa plano (`codSolicitud, ciaContraria, catalogacion, resultado, observaciones, nuuma`) que no corresponde al CDT `finalizarContraAnulPca` (`MSEFinalizarContraAnulPca{mcaEstadoFinal, nivelIntervencion, codSolicitud, infoUsuario{…}}`), por lo que la llamada no cerraba la gestión aunque la UI mostrara `CORRECTO`.
+
+```text
+/* antes (v19) */
+finalizarCAPca: { codSolicitud: ri!idSolicitud, ciaContraria: local!ciaContraria, catalogacion: local!catalogacion,
+                  resultado: local!estadoContraAnul, observaciones: local!observaciones, nuuma: local!nuuma },
+/* después (v20) — FINALIZAR ("9") y cierre POSITIVO ("3") */
+finalizarCAPca: a!map(
+  MSEFinalizarContraAnulPca: a!map(
+    mcaEstadoFinal: "9", nivelIntervencion: local!nivelIntervencion, codSolicitud: ri!idSolicitud,
+    infoUsuario: a!map(codCiaUsuario: local!codCiaUsuario, nuuma: local!nuuma, codPerfil: local!codPerfil,
+                       codSubPerfil: index(local!data, "codSubPerfil", ""))),
+  ciaContraria: local!ciaContraria, catalogacion: local!catalogacion)
+```
+
+Primer PUT rechazado (`Unused Local Variables at line: 59 — local!ciaContraria`); se conservaron `ciaContraria`/`catalogacion` fuera del mapa de integración y el segundo PUT devolvió 200 (v20). Re-GET idéntico; `/test` de la interfaz 200 sin error. Test directo de `SCA2_finalizarContraAnulPca` con el payload anidado para 15787699: `success: true`, `MSSFinalizarContraAnulPca.respuesta: true` → gestión 43704812 cerrada en CORE como **FINALIZADA CANCELADA** (`mcaEstadoFinal 9` = cancelación; el cierre NEGATIVO con observación/carta corresponde al flujo NEGATIVO previo, que ya había perdido su payload).
+
+**Pendiente**: repetir FINALIZAR desde la UI de SCA2 con v20 sobre una solicitud nueva (con 15787699 la gestión ya está cerrada y una segunda llamada a CORE sería sobre una gestión finalizada). No se ha vuelto a ejecutar para no salir del alcance autorizado.
+
+### 4.2 Corregida en fase 5 (§8.2): record `SCA2 Solicitud` 15787699 estaba en `PDTE_FINALIZAR`
+
+`SCA2_CMD_CompletarAccion` escribe `PDTE_FINALIZAR` antes de llamar a CORE y solo escribe `FINALIZADA` (`interfazActiva FIN`, `procesoActivo null`) si `pv!resultado.finalizadoCA = true`, `mcaEstadoFinal ∈ {9,3,CANCELADO}` o `codEstado = 5`. Con el payload v19 la integración no devolvió éxito, el proceso no llegó a `Write FINALIZADA` y tampoco registró `SCA2 Error` (no hay filas en `SCA2_DetalleErrores`). El cierre directo por regla no pasa por el proceso, así que el record permanece `PDTE_FINALIZAR` (v4) y el buscador SCA2 sigue mostrando `Solicitud Pendiente` / resolución `-` mientras CORE ya muestra la gestión cerrada. Causa exacta del silencio del proceso (sin `Write Error`) **no verificada**. Propuesta: (a) reintentar el flujo completo con v20 en una solicitud nueva; (b) si se confirma que `Finalizar CA PCA` puede fallar sin `Write Error`, añadir rama de error/`SCA2 Error` en el PM (no se ha modificado el PM en esta sesión). No se ha corregido el record a mano.
+
+### 4.3 Pendiente: documentos y observaciones de la Contra Anulación no persistidos en SCA2 (causa raíz localizada en §8.5)
+
+En SCA la gestión cerrada muestra la carta (tipo 6) y las observaciones; en SCA2 `SCA2_consultaDetalleGestion` devuelve `observaciones null`, `listadoDocumentos null`. Es consecuencia de 4.1 (el NEGATIVO/carta/FINALIZAR original no llegó a CORE; el cierre posterior fue una cancelación sin payload), no un defecto del Detalle (§12.4 ya lee documentos/observaciones de CORE). Se resolverá al repetir el flujo con v20.
+
+### 4.4 Corregida: color de la etiqueta de estado de la tarjeta Contra Anulación — `SCA2_DetalleSolicitud` v19→v20
+
+SCA usa la decisión `SCA_D_ColorEstadoGestion(gestion, estado)` (objeto Decision, no accesible por LCP; colores muestreados en pantalla: FINALIZADA `#008C47`, FINALIZADA NEGATIVA `#DF0027`, FINALIZADA CANCELADA `#0D82BD`). SCA2 usaba un `a!match` inline con `default: "#E46B15"` (naranja) para cualquier estado no listado.
+
+```text
+equals: "FINALIZADA", then: "#008C47",
+equals: "FINALIZADA POSITIVA", then: "#008C47",
++ equals: "FINALIZADA NEGATIVA", then: cons!SCA2_VAL_COLOR_ROJO,
++ equals: "FINALIZADA CANCELADA", then: "#0D82BD",
+equals: "CANCELADA", then: "#9F9F9F",
+default: "#E46B15"
+```
+
+PUT 200 (v20), re-GET idéntico, `/test` con `idSolicitud 15787699` → 200 sin error, 4,6 s. Validación UI ronda 4: `Finalizada Cancelada` azul en SCA2 igual que en SCA (muestreo de píxel equivalente), `Finalizada` verde en ambas; se mantiene tras F5. El rojo de `FINALIZADA NEGATIVA` en SCA2 **no está validado en runtime** (no hay solicitud SCA2 finalizada negativa; 15787696 no existe como record SCA2).
+
+### 4.5 Corregidas antes en esta sesión (resumen)
+
+| Objeto | uuid | Versión | Cambio |
+|---|---|---|---|
+| `SCA2_textoEstadoSolicitud` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20063670` | 4 → 6 | Estados internos `EN_ACCION`, `PENDIENTE`, `EN_PROCESO`, `PDTE`, `ALTA`, `DECIDIDA`, `PDTE_FINALIZAR` → `Solicitud Pendiente` (SCA no muestra `Contra anulación en curso`) |
+| `SCA2_DetalleSolicitud` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055572` | 15 → 16 | Acordeón Alta: estado/fechas/observación desde la gestión CORE acción 8 |
+| `SCA2_DetalleSolicitud` | ídem | 18 → 19 | REASIGNAR: `saveInto` llama directamente a `rule!SCA2_reasignarTarea(idTarea)` (eliminado `local!reasignado` sin uso) |
+| `SCA2_DetalleSolicitud` | ídem | 19 → 20 | Colores FINALIZADA NEGATIVA / FINALIZADA CANCELADA (§4.4) |
+| `SCA2_ContraAnulacionOpciones` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056435` | 12 → 13 | FINALIZAR bloqueado sin carta/argumento como SCA |
+| `SCA2_ContraAnulacionOpciones` | ídem | 15 → 16 | `contains({"286","287"}, tostring(index(local!argumentoSeleccionado,"codTipoArgumento","")))` y `{"358","356"}` (error `Invalid types` en POSITIVO) |
+| `SCA2_ContraAnulacionOpciones` | ídem | 17 → 18 | Formulario principal oculto mientras hay modal (`showWhen: and(not(local!showPopup), not(local!mcaVentana…))`) — confirmación POSITIVO duplicada |
+| `SCA2_ContraAnulacionOpciones` | ídem | 18 → 19 | Plantilla de carta: `clienteNombre`/`clienteApellidos` desde `datosCabecera` raíz de `SCA2_cargarSolicitud`; `anho: tostring(year(today()))`, `dia: tostring(day(today()))` |
+| `SCA2_ContraAnulacionOpciones` | ídem | 19 → 20 | Payload `finalizarCAPca` anidado `MSEFinalizarContraAnulPca` (§4.1) |
+| `SCA2_ContraAnulacionRehabilitacion` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20060049` | 1 → 2 | `a!cardLayout(contents: rule!SCA2_ContraAnulacionModalInformativo(...), showWhen: a!defaultValue(ri!mcaVentanaInfo, false), showBorder: false)` |
+| `SCA2_Buscador` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055660` | 11 → 12 | Filtro Estado con `operator: "in"` agrupando estados internos equivalentes (PENDIENTE, PENDIENTE_AUTORIZACION, FINALIZADA_NEG_CONTRA, CADUCADA) |
+
+Backups SAIL/JSON antes/después en `~/sca2work/backup/` (fuera del repo). Objetos SCA2 consultados sin modificar: `SCA2_CMD_CompletarAccion`, `SCA2_CMD_Finalizar`, `SCA2_finalizarContraAnulPca`, `SCA2_finalizarContraAnulPcaIntegracion`, `SCA2_DetalleErrores`, `SCA2_BandejaErrores`, `SCA2_contarErroresPendientes`, `SCA2_relanzarError`, `SCA2_D_ColorEstadoGestion`, site `SCA2 Anulaciones` (v8).
+
+### 4.6 Divergencias comunes / no corregibles en SCA2
+
+- Orden de argumentos ejecutados (lo devuelve el servicio CORE/GAIA).
+- F5 en la pantalla de acción pierde la carta subida y no confirmada (igual en SCA).
+- Navegador atrás desde la acción deja el buscador SCA vacío (defecto de SCA; SCA2 correcto).
+- Solicitud creada en SCA no abre en SCA2 (SCA2 solo tiene record de sus propias solicitudes; la inversa sí funciona porque SCA consulta CORE).
+- `/errores` solo visible para `SCA2_GRP_ADMINISTRADORES` (decisión de diseño, doc 11); JJGONZ2 no es admin.
+
+## 5. Limitaciones y pendientes
+
+1. ~~FINALIZAR SCA2 con v20 no re-ejecutado desde UI~~ → re-ejecutado en fase 5 con 15787716 (§8.4): no cierra por excepción en «Subir documentos GD» (§8.5).
+2. ~~Record 15787699 en `PDTE_FINALIZAR`~~ → alineado en fase 5 con `SCA2 CMD Finalizar` (§8.2).
+3. ~~Sin `SCA2 Error` para el fallo silencioso de `Finalizar CA PCA`~~ → rama de error añadida en fase 5 (`SCA2 CMD CompletarAccion`, §8.1). Queda pendiente el caso de **excepción** en un nodo (proceso pausado, §8.5).
+4. **REASIGNAR** no ejecutable en ninguna app: el pool solo contiene a JJGONZ2. **RETOMAR** en SCA no ejecutado (gestión ya cerrada cuando se probó en SCA2).
+5. **Mecanización** no probada: ninguna solicitud llegó a `PDTE_MECANIZAR`.
+6. **Caducidad** no probada: el barrido SCA2 no admite filtro por solicitud y afectaría a solicitudes ajenas; SCA caduca por timer del PM.
+7. **Bandeja de errores** validada solo por LCP (`SCA2_BandejaErrores`/`SCA2_DetalleErrores` renderizan; no hay error de 15787699); la UI `/errores` requiere usuario administrador. Relanzar no probado sobre error propio (no se produjo ninguno).
+8. POSITIVO en SCA2 probado hasta la confirmación y cancelado (no autorizado a aceptarse en este escenario).
+9. Color rojo `FINALIZADA NEGATIVA` en SCA2 v20 validado solo por `/test` (sin solicitud SCA2 finalizada negativa).
+10. Acordeón `Impresion` (gestión acción 4) existe en el detalle SCA y no en SCA2: no comparable con 15787699; pendiente de confirmar alcance.
+11. `SCA_D_ColorEstadoGestion` es un objeto Decision no legible por LCP; los colores SCA se han obtenido muestreando la pantalla.
+
+## 6. Preguntas para el analista
+
+- ~~¿Se corrige a mano el record 15787699?~~ Resuelto (§8.2).
+- ~~¿Debe `SCA2_CMD_CompletarAccion` registrar `SCA2 Error`…?~~ Hecho (§8.1). Nuevas preguntas en §8.7.
+- ¿Debe el detalle SCA2 mostrar el acordeón `Impresion` (gestiones acción 4) como SCA?
+- ~~¿Se autoriza una póliza nueva…?~~ Autorizada y usada (15787716, §8.4).
+
+## 7. Evidencias (fuera del repo, en la máquina de la sesión)
+
+Grabaciones (`~/screencasts/`):
+- `sca-sca2-fase2-v18/sca-sca2-fase2-v18-edited.mp4` — Contra Anular, NEGATIVO, POSITIVO (cancelado), carta, FINALIZAR, F5, URL directa, buscador y filtros en SCA y SCA2.
+- `sca-sca2-fase3/sca-sca2-fase3-edited.mp4` — detalle tras cierre CORE, buscador, `/errores`.
+- `sca-sca2-fase4/sca-sca2-fase4-edited.mp4` — validación del color de estado (v20 `SCA2_DetalleSolicitud`), solo lectura.
+
+Capturas (`~/sca2work/shots/`): `f2_05_negativo_sca|sca2`, `f2_07_tooltip_reejecutar_sca|sca2`, `f2_08_positivo_v16_sca`, `f2_20_positivo_v18_sca2`, `f2_09_plantilla_sca`, `f2_19_plantilla_v18_sca2`, `f2_10_subir_carta_sca|sca2`, `f2_11_carta_entregada_sca`, `f2_13_botones_detalle_sca|sca2`, `f2_15_finalizar_confirmacion_sca|sca2`, `f2_16_finalizar_resultado_sca|sca2`, `f2_18_f5_pierde_carta_sca2`, `f2_21_detalle_final_sca`, `f2_21_detalle_final_f5_sca2`, `f2_22_url_directa_sca|sca2`, `f2_23_buscador_final_sca`, `f2_25_filtro_pendiente_sca|sca2`, `f2_26_filtro_final_negativo_sca|sca2`, `f3_01_detalle_sca|sca2`, `f3_01_detalle_15787699_en_sca`, `f3_01_documentos_sca|sca2|15787699_en_sca`, `f3_02_buscador_sca2`, `f3_02_buscador_15787699_en_sca`, `f3_03_accion_sca2`, `f3_04_errores_sca2`, `f4_01_color_ca_sca|sca2`, `f4_01_color_ca_f5_sca2`, `f4_02_negativa_sca`.
+
+## 8. Fase 5 (30/09/2026, 12:30–14:00 CEST) — decisiones del analista: `SCA2 Error` en `Finalizar CA PCA`, record 15787699 y re-prueba con la póliza de reserva
+
+Instrucciones recibidas: (1) alinear el record 15787699 con CORE preferiblemente con el mecanismo propio de SCA2; (2) corregir `SCA2_CMD_CompletarAccion` para que, si `Finalizar CA PCA` no devuelve éxito, persista `SCA2 Error`, deje el record en `PDTE_FINALIZAR` y la UI no muestre «CORRECTO»; (3) alta nueva en SCA2 con la póliza de reserva `2002000059216` y repetir NEGATIVO + carta + FINALIZAR desde la UI. Coordinación con S2: no se ha tocado la lógica del resultado NEGATIVO (`estadoFinalizarCA`, `a!submitUploadedFiles`, `mcaVentanaVisualizarDoc`, visor `SCA2_VisualizarDocumentoContraanularEstrategicas`, payload anidado `MSEFinalizarContraAnulPca`); antes de cada PUT se hizo GET vivo y tras el re-GET se comprobó que esas marcas seguían presentes (v21→v22, v23→v24 de `SCA2_ContraAnulacionOpciones`; la v23 intermedia es de S2 y conserva los cambios de la v22).
+
+Hallazgo de infraestructura útil para todas las sesiones: `POST /process-models/{uuid}/test` del LCP (body `{"inputs":{...},"timeoutSeconds":60}`) **arranca una instancia real** del PM y devuelve `processId`, `status` (`COMPLETED`/`ERROR`) y los `processVariables` finales; `/start` e `/instances` devuelven 501. Es la única vía no-UI para ejecutar un CMD de SCA2.
+
+### 8.1 `SCA2 CMD CompletarAccion` — rama de error de `Finalizar CA PCA` (≠→OK)
+
+Estado previo (GET vivo 12:35): el nodo 301 `Finalizar CA PCA` (Call Integration `38e21b61-…`) no guardaba ninguna salida; el XOR 200 `¿Write fail?` posterior solo evaluaba `pv!wrErr` (errores de *Write Records*), de modo que un fallo de la integración seguía por el `defaultPath` → `Start finalizar` → `SCA2 CMD Finalizar` → record `FINALIZADA` con la gestión CORE sin cerrar, sin fila `SCA2 Error` y con «CORRECTO» en pantalla. No existe nodo `Write FINALIZADA` en este PM (lo escribe `SCA2 CMD Finalizar` tras `successPca`); el flag «nunca informado» era la salida `Success` de 301.
+
+Cambio (PUT completo, 33 nodos, backups `~/sca2work/backup/SCA2_CMD_CompletarAccion.live_104612.json` / `.after_104612.json`; el LCP no expone `versionId` para PM):
+
+```text
+processVariables += caSuccess (Boolean), caErr (Any Type), caBody (Any Type)
+
+nodo 301 Finalizar CA PCA
+  outputs: Success → pv!caSuccess ; Error → pv!caErr
+  customOutputs: ac!Result.body → pv!caBody
+  conexión: 301 → 320 (antes 301 → 200)
+
+nodo 320 (nuevo, XOR) «¿CA ok?»
+  Error → 321 si:
+    or(a!defaultValue(pv!caSuccess, false) <> true,
+       search("<faultstring>", tostring(a!defaultValue(pv!caBody, ""))) > 0,
+       search("<respuesta>false</respuesta>", tostring(a!defaultValue(pv!caBody, ""))) > 0,
+       a!isNotNullOrEmpty(pv!caErr))
+  default → 200 «¿Write fail?» (flujo original: CA positiva → End, resto → Start finalizar)
+
+nodo 321 (nuevo, script) «Capturar error CA»  → 199 «Write Error»
+  wrNodo   = "Finalizar CA PCA"
+  wrCodigo = "FINALIZAR_CA_ERROR"
+  wrErrMsg = mensaje de pv!caErr | <faultstring> | "IContraAnularPCA ha devuelto respuesta=false" | "IContraAnularPCA no ha devuelto éxito"
+  wrErr    = true
+
+nodo 199 Write Error (SCA2 Error) += campo payload:
+  a!toJson(a!map(nodo, idTarea, finalizarCAPca: index(pv!resultado,"finalizarCAPca"), estadoFinalizar, mcaEstadoFinal, operacion,
+                 respuesta: tostring(pv!caBody), errorIntegracion: tostring(pv!caErr)))
+```
+
+Comportamiento resultante: el record ya está en `PDTE_FINALIZAR` (nodo 7, antes de la llamada) y `Write Error` no lo modifica, por lo que queda visible en `/errores` (`SCA2 Error.estado = PENDIENTE`, `comando = pp!name`, `nodo`, `codigo`, `mensaje`, `payload`) y **no** se arranca `SCA2 CMD Finalizar`. Es el mismo criterio que `SCA_Finalizar_Contra_Anulacion` (`MSSFinalizarContraAnulPca.respuesta = false` → «Añadir Error») y que `SCA2 CMD Finalizar` (`pv!successPca <> true` → `Write Error`).
+
+Verificación: `POST /process-models/…/test` con `{idSolicitud: "15787699", idTarea: 18}` (tarea ya completada) → `status COMPLETED` por la rama `¿Ya ejecutado?` (el PM publica y arranca con las nuevas PV). La rama de error **no se ha podido provocar** (CORE devuelve `respuesta=true` incluso con `codSolicitud "0"`, probado con `SCA2_finalizarContraAnulPca`), así que queda validada por expresión y por paridad con `SCA2 CMD Finalizar`, no por ejecución. Limitación de diseño detectada al preparar el relanzamiento: `SCA2_CMD_MarcarErrorRelanzado` arranca `CompletarAccion` solo con `idSolicitud`/`idTarea` (sin `resultado`) y `¿Ya ejecutado?` corta por la `SCA2 Transicion` escrita en `Write PDTE_FINALIZAR`, por lo que **Relanzar desde `/errores` sería hoy un no-op** para este comando (ver pregunta §8.7).
+
+### 8.2 Record 15787699 alineado con CORE mediante `SCA2 CMD Finalizar` (≠→OK)
+
+- Antes (`SCA2_cargarSolicitud`): `estadoSolicitud PDTE_FINALIZAR`, `interfazActiva CONTRA_ANULAR`, `procesoActivo CONTRAANULAR`, `estadoTarea PENDIENTE`, `version 4`, `modifiedAt 10:15:53 UTC`. `SCA2 Tarea` id 18 (`CONTRAANULAR`) ya `COMPLETADA`.
+- Mecanismo propio: `POST /process-models/{SCA2 CMD Finalizar}/test` `{idSolicitud: "15787699"}` → `processId 13144407`, `status COMPLETED`, `successPca true`, `wrErr false`, `idGestionCalc "0"` (sin SGC). Respuesta CORE `finalizarSolicitudResponse.MSSFinalizarSolicitud.respuesta=true`.
+- Después: `estadoSolicitud FINALIZADA`, `interfazActiva FIN`, `procesoActivo null`, `version 5`, `modifiedAt 10:58:54 UTC`; transición `SCA2 Transicion` `PDTE_FINALIZAR → FINALIZADA` (`SCA2 CMD Finalizar`). No ha hecho falta escritura directa.
+- CORE tras el cierre: `SCA2_consultarSolicitudes` → `codEstSolic "14"` (antes "2"), `fecResolucion 30/09/2026 12:24:29`; gestiones 43704810 acción 8 `FINALIZADA`, 43704812 acción 2 `FINALIZADA CANCELADA` (sin cambios).
+- `estadoTarea` del record seguía `PENDIENTE` porque **ningún CMD de SCA2 lo actualizaba** (solo se escribe `PENDIENTE` en `CrearAccion`/`Posponer`/`CompletarAccion`; S1 y S3 observaron lo mismo). Corrección de diseño mínima: `SCA2 CMD Finalizar`, nodo `Write FINALIZADA`, añade `estadoTarea: "COMPLETADA"` (PUT completo, 13 nodos, backups `SCA2_CMD_Finalizar.live_112157.json` / `.after_112157.json`). Para 15787699 el campo queda `PENDIENTE` (el CMD ya se ejecutó y `¿Ya ejecutado?` impide repetirlo); la tarea real (`SCA2 Tarea` 18) sí está `COMPLETADA`.
+
+### 8.3 `SCA2_ContraAnulacionOpciones` v21→v22 — la UI no muestra «CORRECTO» si el PM informa error (≠→OK)
+
+En SCA el mensaje final depende del resultado del PM (`Se ha producido un error al finalizar la solicitud`). En SCA2 el botón FINALIZAR y el cierre positivo (`onFinalizarPositivo`) hacían `a!startProcess(..., onSuccess: {})` asíncrono y a continuación `a!save(ri!onCompletar, true)` → «CORRECTO» siempre. Cambio en ambas llamadas (docs Appian *Start Process*: con `isSynchronous: true` `onSuccess` se evalúa al terminar el proceso y expone `fv!processInfo.pv`; `onIncomplete` salta si el proceso se cancela, **falla por error de nodo**, supera 30 s o el usuario no tiene permiso de visualización):
+
+```text
+a!startProcess(processModel: cons!SCA2_PM_CMD_COMPLETAR_ACCION, processParameters: {...sin cambios...},
+  onSuccess: if(a!defaultValue(index(fv!processInfo, "pv", "wrErr", null), false),
+    { a!save(local!mensajeInfo, "Se ha producido un error al finalizar la contra anulación: " & wrErrMsg & ". El error queda registrado en la bandeja de errores para su relanzamiento."),
+      a!save(local!mcaVentanaInfo, true) },
+    a!save(ri!onCompletar, true)),
+  onIncomplete: { a!save(local!mensajeInfo, "No se ha podido confirmar la finalización de la contra anulación. Revise el estado de la solicitud o la bandeja de errores antes de volver a intentarlo."),
+                  a!save(local!mcaVentanaInfo, true) },
+  isSynchronous: true)
+```
+
+Se eliminó el `a!save(ri!onCompletar, true)` incondicional. `POST /interfaces/…/test` (idSolicitud 15787699) → 200 sin error. Backups `SCA2_ContraAnulacionOpciones.live_105707.sail` / `.new_105707.sail`.
+
+### 8.4 Re-prueba UI con la póliza de reserva — solicitud SCA2 **15787716**
+
+| # | Paso | SCA (lectura de la misma solicitud) | SCA2 (15787716) | Veredicto |
+|---|---|---|---|---|
+| 29 | Alta SCA2 póliza `2002000059216` (DECISION DE CLIENTE / PRECIO / ME HA SUBIDO MUCHO LA PRIMA, PRESENCIAL, A VENCIMIENTO, obs. `Prueba S5 fase5 Devin`) | Aparece en «Últimas solicitudes gestionadas» como `Pendiente`, obs. y fecha `2026-09-30 13:02:34` | «Su solicitud se ha generado correctamente. Se le va a redirigir a la acción correspondiente»; id 15787716; gestión 43704862 acción 8 `FINALIZADA` 13:02:34 | = |
+| 30 | Contra Anular · RETOMAR · argumento `INCREMENTO PRIMA SINIESTROS` NEGATIVO | — | Negativo, usuario JJGONZ2 (igual que en la ronda 2) | = |
+| 31 | Plantilla de carta + carta firmada (PDF TEST) + obs. `Prueba S5 fase5 negativo` | — | Plantilla con nombre/apellidos y fecha `30 de Septiembre de 2026` (v18); carta entregada 30/09/2026 | = |
+| 32 | FINALIZAR → confirmación «Se va a finalizar la gestión de contra anulación» → ACEPTAR (una sola vez) | «CORRECTO» / error del PM | **No «CORRECTO»**: modal «No se ha podido confirmar la finalización de la contra anulación. Revise el estado de la solicitud o la bandeja de errores antes de volver a intentarlo.» (`onIncomplete`, v22/v23). El modal aparece **duplicado** (dos ACEPTAR) | ≠→OK (mensaje) / ≠→OK (duplicado, §8.6) |
+| 33 | Detalle tras F5 · tarjeta CA | `Incompleta` naranja, inicio 13:02:52, sin fin, sin documentos ni observaciones | Igual: `Incompleta` naranja, sin fin, «No hay documentos a mostrar», observaciones `-` | = (ambas leen CORE; el cierre no llegó a CORE, §8.5) |
+| 34 | Buscador · fila | `Pendiente`, obs. `Prueba S5 fase5 Devin`, fecha `2026-09-30 13:02:34` | `Solicitud Pendiente` naranja, obs. `-`, fecha `30/09/2026 13:02:42` (record, no CORE) | ≠ pend. (observación/fecha de la fila: SCA2 muestra datos del record en vez de CORE; no corregido en esta fase) |
+| 35 | Buscador · filtro «Finalizado negativo con contraanulación» | — | «No hay resultados para dicha búsqueda» (coherente: la solicitud no está finalizada) | no probado el positivo del filtro |
+| 36 | Rojo `FINALIZADA NEGATIVA` en la tarjeta | — | No alcanzado (gestión `INCOMPLETA`) | no probado |
+
+Estado backend tras la prueba (LCP): record `SCA2 Solicitud` id 41 `PDTE_FINALIZAR` / `CONTRA_ANULAR` / `CONTRAANULAR`, `version 4`, `modifiedAt 11:07:26 UTC`; gestión CA 43704863 `INCOMPLETA`; `codEstSolic "2"`; **ninguna fila `SCA2 Error`** (`SCA2_BandejaErrores` por LCP no contiene 15787716); no hay documentos ni observaciones en CORE.
+
+### 8.5 Causa raíz del cierre fallido de 15787716: excepción en «Subir documentos GD» (dominio S2; no corregido aquí)
+
+Diagnóstico de solo lectura en Appian Designer → Monitoring (usuario técnico), instancia **11036933** de `SCA2 CMD CompletarAccion` (Monitoring la etiqueta como versión 17.0 del PM; 13:07 CEST, iniciada por JJGONZ2, `idTarea 26`): el proceso está **pausado por excepción** en el nodo 310 «Subir documentos GD»: `rule!SCA2_subirDocumentosGD` (a!forEach, línea 23) → `rule!SCA2_altaDocumento` línea 27 `document(ri!file, "name")` → «Document Does Not Exist or has been Deleted». PV: `resultado.listaNombreDocs = "555711_6_15787716"`, `mcaEstadoFinal = estadoFinalizar = "4"` (es decir, la instancia se arrancó ya con la **v23 de S2**, incluida `a!submitUploadedFiles`), `finalizarCAPca.MSEFinalizarContraAnulPca{mcaEstadoFinal 4, nivelIntervencion 1, codSolicitud 15787716, infoUsuario{41, JJGONZ2, CE_RM, CE_RM_OFICINA}}`, `docsResult`/`caSuccess`/`caErr`/`caBody` vacíos, `wrErr = false`. Enlace: `https://mapfrespain-test.appiancloud.com/suite/process/startdesigner.none?processId=11036933`.
+
+- Encaja con el pendiente 3.2 de S2 (documento subido en SCA2 no registrado en CORE/GD): el fichero del `a!fileUploadField` fuera de un formulario de tarea es temporal; `CMP_existeObjeto` lo dio por existente pero al ejecutar `document()` ya no estaba. S2 introdujo `a!submitUploadedFiles` en la v23 de `SCA2_ContraAnulacionOpciones` y la instancia ya se arrancó con esa versión (`mcaEstadoFinal 4`), así que la consolidación no basta: el id `555711` no es accesible como documento cuando `SCA2_altaDocumento` lo lee (posible fichero temporal ya purgado o sin permisos para el contexto `runAs DESIGNER` del nodo). Debe cerrarlo S2. **No se ha modificado** `SCA2_subirDocumentosGD` ni `SCA2_altaDocumento`.
+- Consecuencias para el alcance de S5: (a) la nueva rama `¿CA ok?` no llegó a ejecutarse (el fallo es anterior a `Finalizar CA PCA`); (b) una **excepción** de nodo no pasa por `Write Error` → no hay fila `SCA2 Error` ni traza en `/errores`, el record queda en `PDTE_FINALIZAR` y el proceso pausado (comportamiento equivalente al «PM pausado» de SCA, no al diseño de errores relanzables de SCA2); (c) la UI sí reaccionó bien: `onIncomplete` → aviso, sin falso «CORRECTO».
+- La instancia 11036933 **no se ha cancelado ni reanudado**; una vez corregida la subida GD puede reanudarse desde Monitoring (el nodo reintenta y el flujo continuaría por `Finalizar CA PCA` → `¿CA ok?`), o cancelarse y relanzar. Un segundo FINALIZAR desde la UI no serviría: `¿Ya ejecutado?` (transición `CompletarAccion`/idTarea) termina el PM sin hacer nada y, al no haber `wrErr`, mostraría «CORRECTO» (limitación de idempotencia, §8.7).
+
+### 8.6 `SCA2_ContraAnulacionOpciones` v23→v24 — modal informativo duplicado (≠→OK)
+
+SCA (`SCA_ContraAnulacionOpciones` l. 3281) renderiza un único `SCA_ContraAnulacionModalInformativo` con `showWhen: local!mcaVentanaInfo`. SCA2 lo renderizaba dos veces cuando `mcaVentanaInfo = true`: dentro de `SCA2_ContraAnulacionRehabilitacion` (condición `or(mcaVentanaRecuperacion, mcaVentanaInfo, urlNSE)`) y dentro de `SCA2_ContraAnulacionDescuentos` (condición `or(showDescuentosVida, mcaVentanaInfo)`). Cambio mínimo: `if(local!showDescuentosVida, rule!SCA2_ContraAnulacionDescuentos(..., mcaVentanaInfo: false, ...))`. Re-GET v24 con las marcas de S2 intactas (`submitUploadedFiles` 1, `estadoFinalizarCA` 4, `mcaVentanaVisualizarDoc` 5…); `/test` (15787716) 200 sin error. Pendiente de re-probar en UI (no se ha repetido FINALIZAR sobre 15787716 por §8.5).
+
+### 8.7 Preguntas / pendientes nuevos para el analista
+
+1. **Relanzar `CompletarAccion` desde `/errores`**: `SCA2_CMD_MarcarErrorRelanzado` no pasa `resultado` y `¿Ya ejecutado?` corta por la transición de `Write PDTE_FINALIZAR`. Propuesta (no aplicada): guardar `payload` (ya se persiste en §8.1) y que el relanzamiento arranque `CompletarAccion` con `resultado: a!fromJson(payload)` y una marca `relanzado` que salte `¿Ya ejecutado?` hasta `Subir documentos GD`/`Finalizar CA PCA`. ¿Se aprueba?
+2. ~~Excepciones de nodo (caso 8.5)~~ → resuelto para «Subir documentos GD» con guard no lanzante (§8.10). Queda como criterio general para el resto de nodos de regla de los CMD.
+3. **15787716**: la instancia 11036933 ya se reanudó y terminó por la rama controlada (§8.10); el record sigue `PDTE_FINALIZAR` con fila `SCA2 Error DOC_GD_FAIL`. Para cerrarlo hace falta repetir NEGATIVO + carta + FINALIZAR con la consolidación de ficheros de S2 (el Relanzar actual es no-op, punto 1) o cerrarlo con `SCA2 CMD Finalizar` como 15787699.
+4. Buscador SCA2: observación y fecha de la fila salen del record (`-`, hora de alta del record) y en SCA de CORE (observación del alta, `fecSolicitud`). Divergencia menor no corregida en esta fase.
+5. `codEstSolic "14"` tras `finalizarSolicitud` de `SCA2 CMD Finalizar` sobre una gestión `FINALIZADA CANCELADA` (15787699): confirmar significado funcional (S2 documentó `"5"` para el cierre tras `FINALIZADA`).
+
+### 8.8 Objetos SCA2 modificados en la fase 5
+
+| Objeto | uuid | Versión | Cambio |
+|---|---|---|---|
+| `SCA2 CMD CompletarAccion` (PM) | `0000f06f-1307-8000-65b1-7f0000014e7a` | sin versionId en LCP (31 → 33 nodos; backups `live_104612` / `after_104612`) | PV `caSuccess`/`caErr`/`caBody`; salidas del nodo 301; XOR 320 `¿CA ok?`; script 321 `Capturar error CA`; `payload` en `Write Error` (§8.1) |
+| `SCA2_ContraAnulacionOpciones` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056435` | 21 → 22 | `a!startProcess` síncrono con `onSuccess` condicionado a `fv!processInfo.pv.wrErr` y `onIncomplete` (§8.3) |
+| `SCA2_ContraAnulacionOpciones` | ídem | 23 → 24 (la 23 es de S2) | Modal informativo una sola vez (§8.6) |
+| `SCA2 CMD Finalizar` (PM) | `0000f06f-1309-8000-65b3-7f0000014e7a` | sin versionId (13 nodos; backups `live_112157` / `after_112157`) | `Write FINALIZADA` += `estadoTarea: "COMPLETADA"` (§8.2) |
+
+### 8.9 Evidencias de la fase 5 (fuera del repo)
+
+- Grabación `~/screencasts/sca-sca2-fase5/sca-sca2-fase5-edited.mp4` (alta, NEGATIVO, plantilla, carta, FINALIZAR, detalle/F5, buscador y filtro en SCA2; lectura en SCA).
+- Capturas `~/sca2work/shots/f5_01_alta_*_sca2`, `f5_02_opciones_sca2`, `f5_03_negativo_sca2`, `f5_04_plantilla_sca2`, `f5_05_carta_entregada_sca2`, `f5_06_confirmacion_sca2`, `f5_07_resultado_sca2` (modal duplicado), `f5_08_detalle_sca|sca2`, `f5_09_documentos_sca|sca2`, `f5_10_buscador_sca|sca2`, `f5_11_filtro_negativo_sca2`, y las capturas de Monitoring de la instancia 11036933: `f5d_01_procesos`, `f5d_02_diagrama`, `f5d_03_variables_resultado`, `f5d_04_variables_wr`, `f5d_05_error_completo`, `f5d_06_historial_inicio`, `f5d_07_historial_final`, `f5d_08_nodo_estado`.
+- Grabación del diagnóstico `~/screencasts/sca-sca2-fase5-diagnostico/sca-sca2-fase5-diagnostico-edited.mp4` (Designer → Monitoring, solo lectura) y de la reanudación `~/screencasts/sca-sca2-fase5-reanudar/sca-sca2-fase5-reanudar-edited.mp4` (capturas `f5r_01`…`f5r_12`).
+- Backups LCP en `~/sca2work/backup/` y scripts de edición en `~/sca2work/edits/` (`edit_completar.py`, `edit_opciones.py`, `edit_opciones_dup.py`, `edit_finalizar.py`).
+
+### 8.10 Resiliencia de «Subir documentos GD» (petición del analista a raíz del hallazgo de S4) — `SCA2_documentoAccesible` (nueva) + `SCA2_subirDocumentosGD` v2→v3
+
+Hallazgo compartido por S4: varias instancias de `SCA2 CMD CompletarAccion` (17325135 de 15787714, 12088128 de 15787717 y la 11036933 de 15787716) estaban pausadas por excepción en «Subir documentos GD» porque el fichero de `a!fileUploadField` en una página de site es temporal si no se consolida con `a!submitUploadedFiles` antes del `a!startProcess`. Verificado por LCP (`GET /process-models/{uuid}/processes` y `GET /processes/{id}`, que sí funcionan y devuelven `status`, `error` y `variables`): las tres siguen `ACTIVE` con el mismo `error`.
+
+Causa raíz exacta (reproducida con `POST /expression-rules/SCA2_subirDocumentosGD/test`, inputs de la instancia 11036933): `CMP_existeObjeto("Document", 555711)` devuelve **true** (usa `getcontentobjectdetailsbyid`, que sí ve el objeto), pero `document(555711, "name")` en `SCA2_altaDocumento` l.27 lanza «Document Does Not Exist or has been Deleted». El detalle del objeto lo explica: `Parent: Centro de conocimiento de documentos temporales, Parent Id: 7, State: Invactive Published, Created by: JJGONZ2 11:06:41 UTC` — es un fichero temporal no consolidado. Como SAIL no tiene try/catch, la única forma de no pausar el PM es que el guard sea no lanzante y se evalúe antes de `document()`/`todocument()`.
+
+Cambios (solo SCA2; GET vivo → backup → PUT → re-GET → `/test`):
+
+| Objeto | uuid | Versión | Cambio |
+|---|---|---|---|
+| `SCA2_documentoAccesible` (nueva, `POST /expression-rules` con `appUuid` SCA2) | `_a-0001f076-8f0a-8000-9d26-011c48011c48_5483484` | 1 → 2 | `a!map(idDoc, existe, temporal, inactivo, accesible, motivo, detalle)`: `existe` = `CMP_existeObjeto`; `temporal` = `find("Parent Id: 7,"|"documentos temporales", detalle)`; `inactivo` = `find("State: Inactive")`; `accesible = existe ∧ ¬temporal ∧ ¬inactivo`. No lanza excepción con id nulo, inexistente o temporal |
+| `SCA2_subirDocumentosGD` | `_a-0001f076-8f0a-8000-9d26-011c48011c48_5481351` | 2 → 3 (la v2 es de otra sesión, conservada) | `existe` pasa a ser `SCA2_documentoAccesible(idDoc).accesible`; un documento no accesible ya **no** se omite en silencio (`success:true, omitido:true`) sino que devuelve `success:false, omitido:true, mensaje: "Documento 555711 (tipo 6) no accesible: Documento temporal no consolidado (a!submitUploadedFiles) en Appian"` → `success` global false |
+
+Flujo resultante en `SCA2 CMD CompletarAccion` (sin tocar el PM: los nodos 311 `¿Docs GD ok?` → 312 `Capturar error documentos` (`wrNodo "Subir documentos GD"`, `wrCodigo "DOC_GD_FAIL"`, `wrErrMsg = docsResult.mensaje`) → 199 `Write Error` → End ya existían): el record queda en `PDTE_FINALIZAR`, se persiste la fila `SCA2 Error` (relanzable en `/errores`), **no** se llama a `Finalizar CA PCA` (la gestión CORE no se cierra sin la carta, coherente con SCA) y el PM termina en vez de pausarse; la UI (v22/v24) recibe `pv!wrErr=true` por `onSuccess` y muestra el aviso de error en lugar de «CORRECTO».
+
+Tests LCP tras el PUT:
+
+```text
+SCA2_documentoAccesible(555711)     → existe true, temporal true, accesible false, motivo "Documento temporal no consolidado…"
+SCA2_documentoAccesible(null)       → existe false, accesible false, motivo "Documento inexistente en Appian"   (sin excepción)
+SCA2_documentoAccesible(999999999)  → ídem
+SCA2_subirDocumentosGD(15787716, {"555711_6_15787716"}, CA, JJGONZ2) → success false, numSubidos 0, mensaje "Error subiendo documentos: Documento 555711 (tipo 6) no accesible: …"  (antes: excepción)
+SCA2_subirDocumentosGD(15787716, {}, CA, JJGONZ2)                    → success true, "OK"
+```
+
+Nota: `SCA2_subirDocumentosGD` evalúa `SCA2_documentoAccesible` dos veces por documento (`acceso` y `existe` dentro del mismo `a!map`); coste de dos `getcontentobjectdetailsbyid` por fichero, aceptable para 1-3 documentos.
+
+Verificación en la instancia real (Monitoring, usuario técnico; grabación `sca-sca2-fase5-reanudar`): se reanudó **solo** el nodo «Subir documentos GD» de la instancia 11036933 (15787716) con «Iniciar» (Appian cancela la ejecución fallida y reevalúa el nodo con la regla v3). Resultado: `¿Docs GD ok?` → `Capturar error documentos` → `Write Error` → End, proceso **COMPLETED** a las 13:30 CEST (confirmado por `GET /processes/11036933`: `status COMPLETED`, `completedTaskCount 7`). Variables finales: `wrErr true`, `wrNodo "Subir documentos GD"`, `wrCodigo "DOC_GD_FAIL"`, `docsResult.success false`, `docsResult.mensaje "Error subiendo documentos: Documento 555711 (tipo 6) no accesible: Documento temporal no consolidado (a!submitUploadedFiles) en Appian"`. Fila `SCA2 Error` creada (leída con `POST /interfaces/SCA2_BandejaErrores/test`, ya que `/errores` sigue devolviendo «La página no existe o no tiene permiso para verla» a JJGONZ2): `Solicitud 15787716 · Comando "SCA2 CMD CompletarAccion - 30/09/2026 13:07 CEST" · Código DOC_GD_FAIL · Mensaje "Error subiendo documentos" · Intentos 1 · Fecha 30/09/2026 13:30 CEST`. Record 15787716 sigue en `PDTE_FINALIZAR` (fuera del buscador) y el detalle SCA2 muestra la gestión CA `Incompleta` sin documentos, igual que SCA.
+
+Pendiente menor detectado: `wrErrMsg` del nodo 312 queda con el texto por defecto («Error subiendo documentos») aunque `docsResult.mensaje` está informado — `index(pv!docsResult, "mensaje", default)` sobre el Dictionary del PV devuelve el default. Propuesta (no aplicada, requiere una instancia nueva para validarla): `a!defaultValue(tostring(property(pv!docsResult, "mensaje", null)), "Error subiendo documentos")`. Las instancias 12088128 (15787717) y 17325135 (15787714) de otras sesiones siguen pausadas: al reanudarlas con la regla v3 terminarán por la misma rama controlada (SCA2 Error `DOC_GD_FAIL`); no se han tocado.
+
+## 9. Fase 6 (30/09/2026, 14:00–14:40 CEST) — relanzamiento real desde `SCA2 Error`, cierre POSITIVO condicionado a CORE, `finalizarSolicitud` y ciclo final con la póliza `2002000094020`
+
+Peticiones del analista atendidas en esta fase: (1) aplicar la propuesta de `wrErrMsg` del §8.10; (2) hacer real el Relanzar de `SCA2 CMD CompletarAccion` desde la bandeja `/errores`; (3) ciclo punta a punta en SCA2 con la póliza nueva `2002000094020`; (4) hallazgo S1 ronda 2: el cierre POSITIVO no debe escribir `FINALIZADA_POSITIVO` hasta que CORE confirme; (5) hallazgo S1 §10.3: reponer la llamada a `finalizarSolicitud` tras el éxito real de la CA positiva. Procedimiento por objeto: GET vivo inmediatamente antes → backup local → edición mínima → PUT completo → re-GET → comprobación de marcas de S1/S2 (CDT del nodo 301, `contains()` en 6/200, nodo 330, `a!submitUploadedFiles` en `SCA2_ContraAnulacionOpciones`) → `/test` → UI.
+
+### 9.1 `wrErrMsg` del nodo 312 «Capturar error documentos» (≠→OK)
+
+`index(pv!docsResult, "mensaje", "Error subiendo documentos")` devolvía el valor por defecto sobre un Dictionary; sustituido por `a!defaultValue(tostring(property(pv!docsResult, "mensaje", null)), "Error subiendo documentos")`. Verificado en la fila `SCA2 Error` 42 de 15787724 (§9.5): `mensaje = "Error subiendo documentos: "` (texto real de `SCA2_subirDocumentosGD`).
+
+### 9.2 Relanzar desde `/errores` deja de ser no-op (≠→OK)
+
+- Nueva regla **`SCA2_parametrosRelanzarCompletarAccion`** (`_a-0001f076-8f0a-8000-9d26-011c48011c48_5483721`, v3): dada `idError` (o la fila PENDIENTE más reciente de `idSolicitud`) lee la fila `SCA2 Error`, normaliza el comando (quita el sufijo de fecha que `pp!name` añade), reconstruye `resultado` desde `payload` con `a!fromJson` y lo **retipa** (`finalizadoCA` → `toboolean`, `estadoFinalizar`/`mcaEstadoFinal`/`operacion`/`codEstado`/`tipoGestion`/`nuuma` → `tostring`, `listaNombreDocs` → lista) y devuelve `idTarea`, `relanzado=true`, `relanzadoDesdeError=true`.
+- **`SCA2 CMD MarcarErrorRelanzado`** (`0000f073-49f2-8000-d0e7-7f0000014e7a`): carga esos parámetros y arranca `SCA2 CMD CompletarAccion` con `idSolicitud`, `idTarea`, `resultado` y `relanzado=true` (antes solo marcaba la fila y arrancaba el CMD sin `resultado`, que terminaba en `¿Ya ejecutado?`).
+- **`SCA2 CMD CompletarAccion`**: nueva PV `relanzado`; `¿Ya ejecutado?` (nodo 4) y `¿Trazabilidad?` (13) no cortan/duplican cuando `relanzado=true`; nodo 199 «Write Error» persiste `payload = a!toJson({nodo, idTarea, resultado, finalizarCAPca, estadoFinalizar, mcaEstadoFinal, operacion, respuesta, errorIntegracion, …})`; la clave de idempotencia de 330 «Write Transicion OK» incorpora `"-R" & pp!id` en relanzamientos (el primer relanzamiento positivo falló con `duplicate key … CLAVE_IDEMPOTENCIA`).
+- Errores corregidos por el camino: `Cancel?` pausaba con «Cannot compare incompatible operands of type Any Type and type Boolean» al comparar valores sin tipar reconstruidos del JSON (resuelto con el retipado anterior; S2 además cambió `in {…}` por `contains()` en 6/200).
+- Verificación: fila `DOC_GD_FAIL` de 15787716 (relanzada, sigue en error controlado por documento temporal no consolidado → mismo `SCA2 Error`, sin pausa) y filas `FINALIZAR_CA_ERROR` de 15787719/15787722 (§9.4). Las instancias 16282979 y 16282981 (15787716, v21 pausadas en `Cancel?` por la causa anterior) se cancelaron desde Monitoring a las 14:13/14:14 CEST; no se tocó 12088128 (15787717) ni 17325135 (15787714).
+
+### 9.3 Nodo 301 «Finalizar CA PCA»: el input `consulta` debe ser el CDT SOAP (≠→OK)
+
+El PM enviaba un Dictionary (`pv!resultado.finalizarCAPca`) y CORE respondía `The endpoint reference (EPR) for the Operation not found` (la regla `SCA2_finalizarContraAnulPca`, que usa la misma integración con un Map, sí funcionaba). La expresión del nodo construye ahora `'type!{http://ejb.cfsa.pca.mapfami.dgtp.mapfre.com/}finalizarContraAnulPca'(MSEFinalizarContraAnulPca: finalizarContraAnulDTO(mcaEstadoFinal, nivelIntervencion, codSolicitud, infoUsuario: infoUsuarioDTO(nuuma, codCiaUsuario, codPerfil, codSubPerfil)))` a partir de `pv!resultado.finalizarCAPca.MSEFinalizarContraAnulPca.*`, como hace `SCA_Finalizar_Contra_Anulacion` (nodo 92). Desde entonces `IContraAnularPCA` devuelve `<respuesta>true</respuesta>` en todas las instancias (15787719, 15787722, 15787724).
+
+### 9.4 Cierre POSITIVO condicionado al éxito real de CORE (hallazgo S1 ronda 2, ≠→OK)
+
+- Nodo 7 «Write PDTE_FINALIZAR» ya no escribe `FINALIZADA_POSITIVO`/`FIN`/`procesoActivo=null` de forma anticipada: siempre `PDTE_FINALIZAR` y conserva interfaz/proceso previos.
+- Nodo 200: la rama «CA positiva» (`finalizadoCA=true` y `estadoFinalizar="3"`) va al nuevo nodo **340 «Write FINALIZADA_POSITIVO»** (`estadoSolicitud=FINALIZADA_POSITIVO`, `interfazActiva=FIN`, `procesoActivo=null`) → **341 `¿Write fail?`** → **342 `WRITE_FAIL`** → 199. Solo se alcanza tras `320 ¿CA ok?` = éxito (Success, sin `<faultstring>`, sin `<respuesta>false</respuesta>`), 330 «Write Transicion OK» y, ahora, 350–352 (§9.5).
+- Casos reales: 15787719 y 15787722 (S1, `IContraAnularPCA` caído a las 11:31/11:42 UTC, record en `FINALIZADA_POSITIVO` con CORE `INCOMPLETA`) relanzados desde su fila `SCA2 Error` con `SCA2 CMD MarcarErrorRelanzado`: CA 43704871/43704875 `FINALIZADA POSITIVA` (fecFin 13:55:54 / 13:56:12 CEST), record `FINALIZADA_POSITIVO`/`FIN`/`null`, CMD `COMPLETED`, `wrErr=false`.
+
+### 9.5 `finalizarSolicitud` tras la CA positiva (hallazgo S1 §10.3, ≠→OK)
+
+Referencia SCA (leída por LCP, sin modificar): `SCA_Finalizar_Contra_Anulacion` → subproceso `SCA Finalizar Solicitud` (v46) → nodo 2 «Finalizar Solicitud» (`SCAC_finalizarSolicitudIntegracion`, endpoint `PCA_CORECFSA_HTTPRouter/IGenerarContraAnul`). **El payload que SCA envía realmente por la red** es `finalizarSolicitud(MSEFinalizarSolicitud: mseFinalizarSolicitudDTO(idSolicitud, infoUsuario: infoUsuarioDTO(codCiaUsuario: "", nuuma, codPerfil, codSubPerfil)))`; la PV `mseFinalizarSolicitud` (con `datosAnulacion` y `codCiaUsuario=41`) se rellena en el nodo 7 del PM padre, pero el nodo 2 **no** la mapea al CDT de la integración (`datosAnulacion` no viaja). Se ha replicado por tanto el payload de red de SCA, no el de la PV. El evento «2 minutos» (nodo 9) solo introduce espera en pólizas no Vida; no se replica.
+
+Cambio en `SCA2 CMD CompletarAccion` (37→44 nodos): `320 ¿CA ok?` (default) → **350 «¿CA positiva?»** (`finalizadoCA=true` y `estadoFinalizar="3"`) → **351 «Finalizar Solicitud»** (Call Integration `SCA2_finalizarSolicitudIntegracion` `71a92ce6-69ef-4731-b519-358a052e6996`, `host=cons!SCAC_VAL_HOST_CORE7`, `endpoint="PCA_CORECFSA_HTTPRouter/IGenerarContraAnul"`, `consulta` = CDT anterior con `idSolicitud: pv!idSolicitud` e `infoUsuario` tomado de `pv!resultado.finalizarCAPca.MSEFinalizarContraAnulPca.infoUsuario`; salidas `fsSuccess`/`fsErr`/`fsBody`, PVs nuevas) → **352 «¿Finalizar Solicitud ok?»** (`fsSuccess<>true` ∨ `<faultstring>` ∨ `<faultcode>` ∨ `fsErr` → **353 «Capturar error Finalizar Solicitud»** `FINALIZAR_SOLICITUD_ERROR` → 199 «Write Error», que añade `respuestaFinalizarSolicitud`/`errorFinalizarSolicitud` al payload) → 330 → 200 → 340. Si `finalizarSolicitud` falla, el record se queda en `PDTE_FINALIZAR` con fila `SCA2 Error` relanzable (la CA ya está `FINALIZADA POSITIVA` en CORE; el relanzamiento vuelve a llamar a `IContraAnularPCA`, que la deja igual, y a `finalizarSolicitud`). La rama NEGATIVA (`estadoFinalizar` 2/4) y `Autorizacion` no pasan por 351.
+
+Verificación con las solicitudes relanzadas (test de la integración `SCA2_finalizarSolicitudIntegracion` con el mismo payload que el nodo 351, `host=core7.pre.mapfre.net`):
+
+| Solicitud | Póliza | `codEstSolic` antes | Respuesta CORE | `codEstSolic` después | Hora |
+|---|---|---|---|---|---|
+| 15787719 | 2002000058825 | 2 | `<MSSFinalizarSolicitud><respuesta>true</respuesta>` | **3** (inmediato) | 14:23:34 |
+| 15787722 | 2002000011336 | 2 | `respuesta=true` | **3** (inmediato) | 14:24:10 |
+
+Igual que SCA 15787701 (`codEstSolic=3`, «Finalizada positivamente» en el buscador SCA). Sin `host` la integración devuelve `404 Not Found` (el Host header es obligatorio en el router CORE). El nodo 351 no se ha ejercitado aún desde un ciclo POSITIVO real de UI (no hay póliza autorizada para ello); 15787723 (S1) no se ha tocado.
+
+### 9.6 Ciclo final SCA2 con la póliza `2002000094020` → solicitud **15787724** (UI, agente de pruebas)
+
+| Paso | Hora CEST | SCA2 | Veredicto |
+|---|---|---|---|
+| Alta (causa «ME HA SUBIDO MUCHO LA PRIMA», PRESENCIAL, A VENCIMIENTO, obs. «Prueba S5 ciclo final Devin») | 14:03:57 | Solicitud 15787724, redirige a Contra Anular; CORE gestión 43704879 acción 8 `FINALIZADA` | = SCA |
+| Contra Anular → argumento «INCREMENTO PRIMA SINIESTROS — Negativo» | 14:06:43 | Gestión 43704880 acción 2 `INCOMPLETA` | = SCA |
+| Adjuntar carta firmada | 14:09 | 1.er intento: «No tiene privilegios suficientes para cargar un archivo en la carpeta designada» (`SCA2_FLD_CONTRA_ANULACION` → carpeta «SCA2 Contra Anulacion», modificada por otra sesión en ese momento); 2.º intento OK («Carta firmada entregada — 30/09/2026», documento 555817 consolidado en la carpeta, `State: Active Published`) | divergencia transitoria (permisos de carpeta, corregida externamente); no se ha tocado la seguridad |
+| FINALIZAR + ACEPTAR (una sola vez) | 14:09:54 / 14:10:07 | Mensaje **«Se ha producido un error al finalizar la contra anulación: Error subiendo documentos:. El error queda registrado en la bandeja de errores para su relanzamiento.»** (no «CORRECTO»). Instancia `CompletarAccion` 268956522 v25 `COMPLETED` 12:10:07–12:10:34Z, `wrNodo=Subir documentos GD`, `wrCodigo=DOC_GD_FAIL`, `docsResult.resultados[0] = {idDoc 555817, tipo 6, template DOCS_SCA_SOAN_0001, success=false, omitido=false, mensaje=null}` → `SCA2_altaDocumento` (Documentum) devolvió `success=false` sin cuerpo a las 12:10:07Z, el mismo segundo en que se creó el documento (`Created on 12:10:07`); el guard `SCA2_documentoAccesible` lo daba por accesible. Fila `SCA2 Error` **42** PENDIENTE. Record `PDTE_FINALIZAR`/`CONTRA_ANULAR`/`CONTRAANULAR`, gestión CORE `INCOMPLETA`, sin documentos | error controlado (diseño SCA2); SCA no tiene equivalente (pausaría el PM) |
+| Detalle/buscador tras el error | 14:12 | SCA2 y SCA muestran lo mismo: gestión `Incompleta` (naranja), inicio 14:04:15, fin «-», sin documentos ni observaciones de CA; buscador «Solicitud Pendiente» (SCA2) / «Pendiente» (SCA); filtro «Finalizado negativo con contraanulación» sin resultados en ambas. SCA2 ofrece RETOMAR en el detalle incompleto; SCA no | = (RETOMAR: divergencia menor, ya documentada en §2) |
+| **Relanzar desde `SCA2 Error` 42** (`SCA2 CMD MarcarErrorRelanzado` por LCP, sin repetir FINALIZAR) | 14:23:36 | Instancia `CompletarAccion` **15251175** v29 `COMPLETED` 12:23:40–12:23:50Z, `relanzado=true`, `wrErr=false`, `docsResult.success=true` (idReferencia `b8ca31a0f2455022`, `bbdd.success=true`), `caSuccess=true`, `IContraAnularPCA` `<respuesta>true</respuesta>`, sin pausa | OK |
+| Estado final CORE/record | 14:25 | CORE: 43704880 acción 2 **`FINALIZADA NEGATIVA`** (fecFin 14:23:47), nueva gestión 43704883 acción 5 `INCOMPLETA` (14:23:58, mecanización), `codEstSolic=2`, `fecResolucion=null`; `SCA2_consultarDocumentos` → `idDocumento 0900ab4481a04d74`, tipo 6. Record `PDTE_MECANIZAR`/`CONTRA_ANULAR`/`MECANIZAR` (v7), sin fila `SCA2 Error` PENDIENTE | = SCA 15787696 (CA `FINALIZADA NEGATIVA`, acción 4/5 de mecanización, `codEstSolic=2`, carta tipo 6) — semántica NEGATIVO de S2 §8.5 verificada aquí por primera vez |
+
+Conclusión: el ciclo cierra como SCA **a través del relanzamiento**, que es exactamente el diseño de errores relanzables de SCA2 (§9.2). El fallo puntual de `SCA2_altaDocumento` en el mismo segundo de la consolidación del fichero no se ha reproducido en el relanzamiento (13 s después); queda en §9.8 como pendiente de observación. No se pulsó ANULAR PÓLIZA ni se ejecutó POSITIVO.
+
+### 9.7 Objetos SCA2 modificados en la fase 6
+
+| Objeto | UUID | Versión antes → después | Cambio |
+|---|---|---|---|
+| `SCA2 CMD CompletarAccion` | `0000f06f-1307-8000-65b1-7f0000014e7a` | v20 → v29 (varias sesiones; LCP no expone `versionId` del PM: versiones leídas en las instancias) | PV `relanzado`, `fsSuccess`, `fsErr`, `fsBody`; nodos 4/13 con `relanzado`; 199 con `payload` JSON (+ `respuestaFinalizarSolicitud`/`errorFinalizarSolicitud`); 312 `wrErrMsg` con `property()`; 301 CDT `finalizarContraAnulPca`; 7 sin cierre anticipado; 200 → 340/341/342 `Write FINALIZADA_POSITIVO`; 330 clave `-R`; 320 → 350/351/352/353 `Finalizar Solicitud`. 31 → 44 nodos |
+| `SCA2 CMD MarcarErrorRelanzado` | `0000f073-49f2-8000-d0e7-7f0000014e7a` | v1 → v3 | Carga `SCA2_parametrosRelanzarCompletarAccion` y arranca `CompletarAccion` con `resultado`/`idTarea`/`relanzado=true` |
+| `SCA2_parametrosRelanzarCompletarAccion` (nueva) | `_a-0001f076-8f0a-8000-9d26-011c48011c48_5483721` | — → v3 | Reconstrucción tipada del `resultado` desde `payload` |
+| `SCA2_documentoAccesible` | `_a-0001f076-8f0a-8000-9d26-011c48011c48_5483484` | v2 (sin cambios en esta fase) | — |
+| `SCA2_subirDocumentosGD` | `_a-0001f076-8f0a-8000-9d26-011c48011c48_5481351` | v3 (sin cambios) | — |
+| `SCA2_ContraAnulacionOpciones` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056435` | v26 viva (S2; leída, no modificada aquí) | Confirmadas 4 llamadas `a!submitUploadedFiles` antes de los `a!startProcess`, marcas `mcaVentanaVisualizarDoc`, `SCA2_VisualizarDocumentoContraanularEstrategicas`, payload `finalizarCAPca` |
+
+Backups antes/después de cada PUT en `~/sca2work/backup/` (fuera del repo).
+
+### 9.8 Limitaciones y pendientes de la fase 6
+
+1. El nodo 351 `finalizarSolicitud` está verificado por test de integración con el payload exacto (15787719/15787722 → `codEstSolic=3`) pero no desde un ciclo POSITIVO completo de UI con la versión viva: hace falta una póliza nueva autorizada para NSE POSITIVO.
+2. Payload de `finalizarSolicitud`: se ha replicado el que SCA envía por la red (`codCiaUsuario=""`, sin `datosAnulacion`); si el analista prefiere enviar `datosAnulacion`/`codCiaUsuario=41` (contenido de la PV de SCA que SCA no llega a mapear), es un cambio de una línea en el nodo 351 — decisión funcional pendiente.
+3. Fallo puntual de `SCA2_altaDocumento` (Documentum) sin cuerpo de error en 15787724 a las 12:10:07Z, el mismo segundo de la consolidación del fichero; el relanzamiento lo subió. Conviene observar si se repite (posible carrera consolidación → lectura del documento) y, en su caso, añadir un reintento corto en `SCA2_subirDocumentosGD`.
+4. La bandeja `/errores` sigue sin permiso para JJGONZ2 (§8.10); el relanzamiento se ha ejercitado con `SCA2 CMD MarcarErrorRelanzado` por LCP (mismo comando que pulsa la bandeja).
+5. `SCA2_FLD_CONTRA_ANULACION` («SCA2 Contra Anulacion»): un intento de carga falló por privilegios y el siguiente funcionó; no se ha tocado la seguridad de la carpeta. Revisar quién la modificó a las 14:09.
+6. El buscador de SCA2 sigue mostrando la fecha/observación del record (S1 lo está corrigiendo); no tocado.
+
+### 9.9 Verificación UI posterior al relanzamiento de 15787724 (agente de pruebas, solo lectura, 14:30 CEST)
+
+| Pantalla | SCA | SCA2 | Veredicto |
+|---|---|---|---|
+| Buscador (fila 15787724) | «Pendiente», naranja, alta 14:03:57, resolución «-», obs. «Prueba S5 ciclo final Devin» | «Pendiente», naranja, mismos datos | = (coherente con `codEstSolic=2`: la solicitud sigue viva para la mecanización) |
+| Filtro «Finalizado negativo con contraanulación» | — | «No hay resultados» | coherente con `codEstSolic=2` (igual que SCA 15787696, también `codEstSolic=2`) |
+| Tarjeta Contra Anulación | **Finalizada Negativa** (rojo), inicio 14:04:15, fin 14:23:47, argumento «INCREMENTO PRIMA SINIESTROS — Negativo», carta `0900ab4481a04d74` (30/09/2026), observaciones «-» | Idéntica: **Finalizada Negativa** (rojo), 14:04:15 → 14:23:47, mismo argumento, carta `0900ab4481a04d74`, observaciones «-» | = |
+| Documento | referencia CORE `0900ab4481a04d74` (idDocumento de `consultarDocumentos`) | misma referencia (el `idReferencia` `b8ca31a0f2455022` del `docsResult` es el `r_object_id` devuelto por Documentum; CORE registra su propio `idDocumento`) | = |
+| Tarjeta de mecanización | «Mecanizacion — Incompleta», inicio 14:23:58, usuario JJGONZ2, perfil «RED MAPFRE», grupo «OFICINA», botón TRAZAR ANULACIÓN deshabilitado | «Mecanizar — Incompleta», inicio 14:24:00, usuario/perfil mostrados como correo, grupo `CE_RM`, botón RETOMAR habilitado | divergencia menor de presentación (etiquetas de perfil/grupo y botones de la tarjeta de mecanización) — **no corregida**, dominio S3/S4 (mecanización); anotada para el analista |
+| Botones CA | sin FINALIZAR/ANULAR PÓLIZA | sin FINALIZAR/ANULAR PÓLIZA; no hubo redirección automática a anulación al entrar en el detalle | = (la redirección «Se va a redirigir a la anulación» ocurre en la propia acción FINALIZAR; en este ciclo la acción terminó en error controlado y el cierre llegó por relanzamiento, por lo que no se mostró) |
+| `/errores` | — | «La página no existe o no tiene permiso para verla» (JJGONZ2) | limitación conocida (§8.10) |
+
+### 9.10 Evidencias de la fase 6 (fuera del repo, máquina de la sesión)
+
+- Grabaciones: `~/screencasts/sca-sca2-s5-final/sca-sca2-s5-final-edited.mp4` (ciclo 15787724 hasta el error controlado + cancelación de 16282979/16282981) y `~/screencasts/sca-sca2-s5-post-relaunch/sca-sca2-s5-post-relaunch-edited.mp4` (verificación tras el relanzamiento).
+- Capturas: `~/sca2work/shots/s5f_01…18` (alta, argumentos, carta —error de permisos y entrega—, FINALIZAR, error, buscador/filtro/detalle SCA2 y SCA), `s5f_b01…b10` (cancelación de instancias), `s5p_01…10` (post-relanzamiento: buscador, filtro, CA SCA2/SCA, documentos, mecanización, `/errores`).
+- Scripts LCP: `~/sca2work/edits/edit_relanzar.py`, `edit_consulta301.py`, `edit_positivo.py`, `edit_idem330.py`, `edit_finsol.py`, `relanzar_positivos.py`, `relanzar_uno.py`, `verificar_ciclo.py`; backups en `~/sca2work/backup/`.
+
+## 10. Fase 7 (30/09/2026, 14:40–15:00 CEST) — causa raíz del `DOC_GD_FAIL` a la primera, reintentos acotados como SCA y ciclo POSITIVO de UI con la póliza `2002000065541`
+
+Decisiones del analista recogidas: (1) el payload de `finalizarSolicitud` (nodo 351) se mantiene **exactamente como SCA lo envía por la red** (`idSolicitud` + `infoUsuario` con `codCiaUsuario=""`, sin `datosAnulacion`): SCA TEST es la referencia, no la intención del nodo; (2) `/errores` para JJGONZ2 y la tarjeta «Mecanizar» quedan fuera del alcance de S5.
+
+### 10.1 Causa raíz del `DOC_GD_FAIL` de 15787724 (fila `SCA2 Error` 42)
+
+Evidencia revisada:
+
+- Fila 42: `wrNodo="Subir documentos GD"`, `wrCodigo="DOC_GD_FAIL"`, `wrErrMsg="Error subiendo documentos: "`; payload `docsResult.resultados[0] = {idDoc: 555817, tipoDocumento: "6", success: false, mensaje: null}`. El documento **era accesible** (guard `SCA2_documentoAccesible` → `accesible=true`, ya consolidado por `a!submitUploadedFiles` de la interfaz v23+), es decir, no es la carrera de §8.5 (fichero temporal).
+- Cronología: fichero creado 12:10:07Z, actualizado (consolidación) 12:10:08Z; el PM arrancó a las 12:10:07.590Z y llamó a `SCA2_altaDocumento` en ese mismo segundo. La integración `SCA2_altaDocumentoIntegracion` (uuid `e53724d0-920b-4a43-ad1b-5886c2fc7f54`, v2; POST multipart `documents-web/api/sgd/1.0/documents`, partes `file` + `body`, `Host: webservices.pre.mapfre.net`, timeout 20 s) devolvió `success=false` **sin `result.body`**; `SCA2_altaDocumento` v1 sólo devolvía `error: local!body`, por lo que el motivo real (`result.error.message`, `statusCode`) se perdía y el mensaje quedaba vacío.
+- Permisos de carpeta: descartados como causa de la fila 42 — el fallo de permisos observado (14:09) fue en la carga desde la UI (`SCA2_FLD_CONTRA_ANULACION`), anterior e independiente, ya corregido por S3 (Editor en las carpetas documentales SCA2).
+- Con `file=null` la integración devuelve HTTP 500 con cuerpo `{"code":"UNKNOWN_ERROR","message":"Required request part 'file' is not present",…}`: cuando el servicio responde, siempre hay cuerpo. Un `success=false` sin cuerpo corresponde a un fallo de transporte/servicio SGD (timeout, conexión) y no a una validación.
+
+Conclusión (inferencia con la evidencia disponible, no reproducible a demanda): **fallo transitorio de la integración SGD/Documentum sin cuerpo de respuesta**, coincidente en el tiempo con la consolidación del fichero; no una carrera con `a!submitUploadedFiles` (el guard confirma el documento accesible) ni permisos. SCA no muestra este problema al usuario porque su PM `SCA_Subir_Docs_Documentum_BBDD` **reintenta**: nodo 44 `Success?` vuelve a «Llamada a altaDocumento rest» mientras `contadorErrores3 < 3`, y nodo 57 hace lo mismo con «SCA_modificarCrearDocumentos» (`contadorErrores4 < 3`); sólo tras 3 fallos llega a `InterfazErrorDocumentacion`. SCA2 hacía un único intento (hallazgo confirmado por S3, §8 de su informe).
+
+### 10.2 Corrección determinista: reintento acotado (3+3) portado a `SCA2_subirDocumentosGD` (≠→OK)
+
+Procedimiento por objeto: GET vivo → backup local → edición mínima → PUT completo → re-GET (expresión idéntica) → `/test`.
+
+| Objeto | uuid | Versión | Cambio |
+|---|---|---|---|
+| `SCA2_altaDocumento` | `_a-0001f076-8f0a-8000-9d26-011c48011c48_5481374` | v1 → **v2** | En la rama de fallo devuelve `error: a!defaultValue(local!body, index(index(local!respose,"error",null),"message",null))`, `statusCode: index(local!respose,"result","statusCode",null)` y `transitorio: and(a!isNullOrEmpty(local!body), a!isNotNullOrEmpty(ri!file))` (fallo sin cuerpo con fichero informado). Test `file=null` → `{success:false, error:"Documento no informado", transitorio:false, template:"DOCS_SCA_SOAN_0001"}`. |
+| `SCA2_subirDocumentosGD` | `_a-0001f076-8f0a-8000-9d26-011c48011c48_5481351` | v3 → v4 → **v5** | Por documento: hasta **3 intentos** de `SCA2_altaDocumento` (`local!gd1/gd2/gd3`, el siguiente sólo si el anterior `success=false`) y, si GD OK, hasta **3 intentos** del registro en BBDD CORE (`local!bbdd1/2/3`), mismo criterio y tope que los nodos 44/57 de SCA (v4 reintentaba sólo `transitorio=true`; v5 iguala a SCA: cualquier `success=false`). El resultado incluye `intentos`, `intentosBbdd` y mensajes `Error alta documento SGD (HTTP <status>) tras <n> intento(s): …` / `Error registrando documento en BBDD CORE tras <n> intento(s): …`. Tests: `999999999_6` → `success=false, omitido=true` (no accesible, sin reintentar y sin pausar); lista vacía → `success=true, numDocumentos=0`. |
+
+Fragmento (v5):
+
+```
+local!gd1: rule!SCA2_altaDocumento(...),
+local!gd2: if(not(a!defaultValue(index(local!gd1,"success",false),false)), rule!SCA2_altaDocumento(...), null),
+local!gd3: if(and(a!isNotNullOrEmpty(local!gd2), not(a!defaultValue(index(local!gd2,"success",false),false))), rule!SCA2_altaDocumento(...), null),
+local!gd: if(a!isNotNullOrEmpty(local!gd3), local!gd3, if(a!isNotNullOrEmpty(local!gd2), local!gd2, local!gd1)),
+/* idem local!bbdd1/2/3 sobre el registro CORE cuando local!gdOk */
+```
+
+Coordinación: `SCA2_ContraAnulacionOpciones` (v27 viva) y `SCA2 CMD CompletarAccion` (GET vivo: 46 nodos, instancias v30, con 303-305 de S4, rama docs AccAdm de S3, 330/200 de S2 y 312/340/350-353 de S5) **no se han modificado** en esta fase; el encadenado `a!submitUploadedFiles(onSuccess: a!startProcess(...))` de S2 está presente en las tres ramas (positivo, negativo, finalizar) y es correcto: el PM arranca sólo tras la consolidación.
+
+### 10.3 Ciclo POSITIVO de UI con la póliza `2002000065541` → solicitud SCA2 **15787728** (agente de pruebas, una sola pulsación por acción)
+
+| Paso | SCA2 (UI) | Backend (LCP) | Veredicto |
+|---|---|---|---|
+| Alta (motivo → Contra Anular) | 14:40:09, redirección al detalle | CORE gestión 43704895 acción 8 `FINALIZADA`; obs. «Prueba S5 ciclo positivo Devin» | = SCA (S1) |
+| Contra Anular → argumento + carta (tipo 6) por fila | PDF subido una vez, «Carta entregada» | doc Appian 555851 (`555851_6_15787728`) | = |
+| **POSITIVO → ACEPTAR (una vez)** | sin mensaje de error, **retorno directo al buscador** | CMD `11037241` v30 **COMPLETED** 12:43:07.4Z→12:43:21.5Z, `wrErr=false`; `docsResult.success=true`, **`intentos=1`**, `bbdd.success=true`; `caBody` `<respuesta>true</respuesta>`; `fsBody` `<respuesta>true</respuesta>` (nodos 350-353) | = SCA: **a la primera, sin `SCA2 Error`** |
+| CORE | — | gestión 43704898 acción 2 **`FINALIZADA POSITIVA`** 14:40:27 → 14:43:17; `consultarSolicitudes.codEstSolic` **2→3**, `fecResolucion` 14:43:18; `consultarDocumentos` → `0900ab4481a047e8` tipo 6 | = SCA |
+| Record `SCA2 Solicitud` | — | `FINALIZADA_POSITIVO`, `interfazActiva=FIN`, `procesoActivo=null`, versión 5; `SCA2 Tarea` 41 `CONTRAANULAR` **COMPLETADA**; sin `SCA2 Error` pendiente | OK |
+| Buscador SCA2 | «Finalizada positivo», verde, resolución 14:43:20 | — | = SCA («Finalizado positivamente», verde) salvo la hora de resolución (ver 10.4) |
+| Detalle SCA2 (lectura inmediata, ~14:44) | tarjeta CA «**Incompleta**», naranja, sin fecha fin | CORE ya `FINALIZADA POSITIVA` a 14:43:17 según la lectura posterior | **no reproducido**: ver 10.4 |
+| Detalle SCA2 tras F5 (14:49:17) vs SCA (14:50:59) | CA **Finalizada Positiva**, verde, 14:40:27 → 14:43:17, argumento «INCREMENTO PRIMA SINIESTROS — Positivo», carta `0900ab4481a047e8` (30/09/2026), observaciones «-»; estado «FINALIZADA POSITIVAMENTE» | SCA idéntico campo a campo | = |
+
+### 10.4 Observaciones y pendientes de la fase 7
+
+1. **Tarjeta CA «Incompleta» justo tras el cierre**: la primera lectura del detalle (≈1 min después del ACEPTAR) mostró la gestión CA `INCOMPLETA`; en la relectura (14:49) SCA y SCA2 mostraban `FINALIZADA POSITIVA` con fin 14:43:17. La tarjeta SCA2 lee la gestión de CORE (`SCA2_consultaGestion`, §12.4 doc 12), el CMD ya había terminado con `respuesta=true` en las dos integraciones, y S1 §10.3 documenta que también en SCA el buscador muestra «Pendiente» ~2 min tras la CA positiva mientras CORE procesa `finalizarSolicitud`. Inferencia: latencia de actualización en CORE, común a SCA y SCA2; no se ha podido reproducir (una sola pulsación por decisión de prueba) y **no se corrige en SCA2**. Si se quiere una prueba determinista habría que consultar `SCA2_consultaGestion` cada pocos segundos tras un cierre nuevo.
+2. Hora de resolución en el buscador: SCA 14:43:18 (CORE `fecResolucion`) vs SCA2 14:43:20 (`modifiedAt` del record): misma divergencia record vs CORE que S1 está corrigiendo en el buscador (no tocada).
+3. Campo `estadoTarea` del record `SCA2 Solicitud` queda `PENDIENTE` en los cierres `FINALIZADA_POSITIVO` (nodo 340; también 15787723 de S1 y 15787719/15787722), mientras `SCA2 CMD Finalizar` lo pone `COMPLETADA`. Ninguna interfaz ni regla del volcado lee ese campo (la UI usa `SCA2 Tarea.estado`, que sí queda `COMPLETADA`), por lo que no hay efecto visible; se deja anotado y no se ha hecho PUT del PM por ello. Si el analista quiere homogeneizarlo: añadir `estadoTarea: "COMPLETADA"` al `a!writeRecords` del nodo 340.
+4. Los reintentos de v5 no se han ejercitado en un fallo real (en 15787728 `intentos=1`); quedan cubiertos por la lógica idéntica a los nodos 44/57 de SCA y los tests de la regla.
+
+### 10.5 Evidencias de la fase 7 (fuera del repo, máquina de la sesión)
+
+- Grabaciones: `~/screencasts/s5-ciclo-positivo/s5-ciclo-positivo-edited.mp4` (alta → CA → POSITIVO + carta → ACEPTAR → buscador/detalle) y `~/screencasts/s5-positivo-relectura/s5-positivo-relectura-edited.mp4` (relectura SCA2 con F5 y comparación con SCA).
+- Capturas: `~/sca2work/shots/s5pos_01…15` (ciclo) y `s5pr_01…06` (relectura SCA2/SCA: buscador, tarjeta CA, documentos).
+- Backups/scripts LCP: `~/sca2work/backup/SCA2_altaDocumento.live_*.json`, `SCA2_subirDocumentosGD.live_*.json`/`.new_*.txt`, `SCA2_altaDocumentoIntegracion.integ.live.json`, `SCA2_CMD_CompletarAccion.live_*.json`, `proc_11037241.json`; `~/sca2work/edits/edit_docs_retry.py`, `edit_docs_retry2.py`, `verificar_ciclo.py`.
+
+### 10.6 Nodo 340 «Write FINALIZADA_POSITIVO»: `estadoTarea = COMPLETADA` (decisión del analista, ≠→OK)
+
+Homogeneiza el record `SCA2 Solicitud` con `SCA2 Tarea` y con `SCA2 CMD Finalizar` (nodo 8), que ya escribía `estadoTarea: "COMPLETADA"`.
+
+- `SCA2 CMD CompletarAccion` (uuid `0000f06f-1307-8000-65b1-7f0000014e7a`): GET vivo (46 nodos) → backup → PUT completo (HTTP 200) → re-GET: 46 nodos, mismos ids y PVs, **única diferencia el nodo 340**; conservados 303-305/`AUT_GUARDAR_FAIL` (S4), rama docs AccAdm (S3), 330 con clave `-R` y 200 `contains()` (S2), 301 CDT / 312 `property()` / 350-353 (S5). Instancias posteriores en **v31**.
+- Cambio en el `a!writeRecords` del nodo 340 (una línea):
+
+```
+'recordType!{…}SCA2 Solicitud.fields.{b32247b9-…}interfazActiva': "FIN",
+'recordType!{…}SCA2 Solicitud.fields.{aeee7621-…}estadoTarea': "COMPLETADA",   /* nuevo */
+'recordType!{…}SCA2 Solicitud.fields.{074b8e94-…}procesoActivo': null()
+```
+
+- `/test` del PM con la solicitud ya cerrada 15787728 (`idTarea=41`, `resultado` CA positivo): instancia 537393824 **COMPLETED** en 0,7 s por la rama `¿Ya ejecutado?` (transición OK `SCA2 CMD CompletarAccion|15787728|41` existente), sin llamadas a CORE ni escritura (`caSuccess`/`docsResult` nulos; record sin cambios: `FINALIZADA_POSITIVO`, versión 5). Los records ya cerrados (15787728, 15787723, 15787719, 15787722) conservan `estadoTarea=PENDIENTE`: no se han retocado a mano (sin efecto visible; `SCA2 Tarea` COMPLETADA).
+- Script y backups: `~/sca2work/edits/edit_340_tarea.py`, `~/sca2work/backup/SCA2_CMD_CompletarAccion.live_*.json` / `.after_*.json`.
+
+Con esto S5 queda cerrada; a partir de aquí el PM pasa a S4 (persistencia de `observaciones`), sin más PUT desde S5.

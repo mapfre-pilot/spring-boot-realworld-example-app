@@ -1,0 +1,155 @@
+{
+ "nodo16_nuevo": {
+  "id": 16,
+  "type": "appian.system.smart-services.start-process-5",
+  "name": {
+   "en_US": "",
+   "es": "Start Alta"
+  },
+  "coordinates": [
+   700,
+   780
+  ],
+  "uuid": "d04b97b6-1f4f-434a-aff6-d2a94fa5874b",
+  "typeName": "Start Process",
+  "connections": [
+   {
+    "targetNodeId": 2,
+    "activityChained": false,
+    "overridesAssignment": false,
+    "synchronizeData": false
+   }
+  ],
+  "data": {
+   "inputs": [
+    {
+     "name": "ProcessModel",
+     "type": "Process Model",
+     "required": true,
+     "expression": "=cons!SCA2_PM_CMD_ALTA",
+     "saveInto": ""
+    },
+    {
+     "name": "ProcessParameters",
+     "type": "Any Type",
+     "required": false,
+     "expression": "=pv!params",
+     "saveInto": ""
+    },
+    {
+     "name": "IsSynchronous",
+     "type": "Boolean",
+     "required": true,
+     "expression": "",
+     "value": 0,
+     "saveInto": ""
+    }
+   ],
+   "customInputs": [],
+   "outputs": [
+    {
+     "name": "ProcessInfo",
+     "type": "ProcessInfo"
+    },
+    {
+     "name": "Timeout",
+     "type": "Boolean"
+    }
+   ],
+   "customOutputs": []
+  },
+  "assignment": {
+   "attended": false,
+   "runAs": "DESIGNER",
+   "overrideLane": false
+  }
+ },
+ "nodo4_antes": {
+  "conditions": [
+   {
+    "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD Decidir\"",
+    "targetNodeId": 10,
+    "label": "Decidir"
+   },
+   {
+    "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD CrearAccion\"",
+    "targetNodeId": 11,
+    "label": "CrearAccion"
+   },
+   {
+    "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD CompletarAccion\"",
+    "targetNodeId": 12,
+    "label": "CompletarAccion"
+   },
+   {
+    "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD Finalizar\"",
+    "targetNodeId": 13,
+    "label": "Finalizar"
+   },
+   {
+    "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD Mecanizar\"",
+    "targetNodeId": 14,
+    "label": "Mecanizar"
+   },
+   {
+    "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD Caducar\"",
+    "targetNodeId": 15,
+    "label": "Caducar"
+   }
+  ],
+  "defaultPath": 2
+ },
+ "nodo4_despues": {
+  "conditions": [
+   {
+    "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD Decidir\"",
+    "targetNodeId": 10,
+    "label": "Decidir"
+   },
+   {
+    "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD CrearAccion\"",
+    "targetNodeId": 11,
+    "label": "CrearAccion"
+   },
+   {
+    "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD CompletarAccion\"",
+    "targetNodeId": 12,
+    "label": "CompletarAccion"
+   },
+   {
+    "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD Finalizar\"",
+    "targetNodeId": 13,
+    "label": "Finalizar"
+   },
+   {
+    "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD Mecanizar\"",
+    "targetNodeId": 14,
+    "label": "Mecanizar"
+   },
+   {
+    "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD Caducar\"",
+    "targetNodeId": 15,
+    "label": "Caducar"
+   },
+   {
+    "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD Alta\"",
+    "targetNodeId": 16,
+    "label": "Alta"
+   }
+  ],
+  "defaultPath": 2
+ },
+ "nodo20_params_antes": "if(index(split(a!defaultValue(pv!comando, \"\"), \" - \"), 1, \"\") = \"SCA2 CMD CompletarAccion\", rule!SCA2_parametrosRelanzarCompletarAccion(idError: pv!idError, idSolicitud: pv!idSolicitud), null)",
+ "nodo20_params_despues": "a!match(value: index(split(a!defaultValue(pv!comando, \"\"), \" - \"), 1, \"\"), equals: \"SCA2 CMD CompletarAccion\", then: rule!SCA2_parametrosRelanzarCompletarAccion(idError: pv!idError, idSolicitud: pv!idSolicitud), equals: \"SCA2 CMD Alta\", then: rule!SCA2_parametrosRelanzarAlta(error: a!queryRecordByIdentifier(recordType: 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error', identifier: pv!idError, fields: {'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{e5dc602a-1e18-44df-bbde-5d580de8ad21}id', 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{263ccc68-f8c2-4913-b78d-8fce31e7ed9a}idSolicitud', 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{f4cbb383-4659-42ed-a22b-d5fa91a09a5f}payload'})), default: null)",
+ "nodos_sin_cambios": [
+  1,
+  2,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  3
+ ]
+}
