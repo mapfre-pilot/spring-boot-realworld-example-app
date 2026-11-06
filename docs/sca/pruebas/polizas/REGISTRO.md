@@ -14,6 +14,7 @@ Fuente: `polizasDevin-2026-10-30.txt.gz` (970.823 p贸lizas: 554.707 Hogar `073鈥
 | 2801-3200 | `bloque-R45-C.txt` | R45-C (Si24: avisos, Verti/inducci贸n, Finalizar CA) | asignado 06/11 |
 | 3201-3600 | `bloque-R45-D.txt` | R45-D (etiquetas de estado de la lista de solicitudes) | asignado 06/11 |
 | 3601-3640 | `bloque-R45-A2.txt` | R45-A (A3: ACEPTAR tras el alta, con Autos/Hogar) | asignado 06/11 |
+| 3641-4040 | `bloque-R45-B2.txt` | R45-B fase 3 (B2b: controles 05/06 / nivel 4-5, wAutemis < 18 meses) | asignado 06/11 |
 | Vida (analista 06/11) | `bloque-R45-A-vida.txt` | R45-A (Vida: clave de producci贸n, sin estructura comercial, alta) | asignado 06/11 |
 
 Reglas: empezar por la primera p贸liza libre del bloque; no usar p贸lizas de otro bloque ni las de rondas anteriores (`polizas-ronda9.md`, `polizas-ronda10.md`); una p贸liza con solicitud abierta queda 芦ocupada禄 hasta que se finalice; anotar tambi茅n las que no sirven (error de alta, sin tarea, etc.).
