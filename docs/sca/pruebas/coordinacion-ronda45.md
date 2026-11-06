@@ -60,6 +60,7 @@ Si un objeto no está en tu lista y otra sesión lo tiene reservado: no tocarlo.
 | Constantes nuevas `SCA2_TXT_ETQ_ESTADO_*` y `SCA2_TXT_COD_EST_MECANIZACION_*` | R45-D | liberado (15 nuevas, v1) |
 | ER `SCA2_construirSolicitudAnulacionAnlTraducida` (fecAnulacion → `fechaSuplemento` ANL, B2) | R45-B | liberado (1 guardado en Designer, versión anterior +1) |
 | ER `SCA2_actualizarMecanizacionAnulacionNse` v3→v4 + PM `SCA2 CMD Finalizar` v14→v15 (B4: NO en anulación → mecanización 4 en CORE) | R45-B | liberado |
+| ER `SCA2_actualizarMecanizacionAnulacionNse` + PM `SCA2 CMD Finalizar` (B4 fase 2: NO en anulación → solicitud 14 vía `SCA2_finalizarContraAnulPca` 9, mecanización 4) | R45-B | en edición |
 | IF `SCA2_DetalleSolicitud` (tarjetas de estado) | R45-D | liberado (sin cambios: el estado lo muestra `SCA2_SolicitudAnulacion` v3→v5) |
 | IF `SCA2_TablaOtrasSolAnulacion` (columna Estado) | R45-D | liberado (v2→v3) |
 | IF `SCA2_BuscadorTabla`, IF `SCA2_Buscador` (mecanización precargada), ER `SCA2_calcularEstadoSolicitud`, constante `SCA2_TXT_COD_EST_MECANIZACION_SIN` | R45-D | liberado (v4→v5; constante nueva v1) |
