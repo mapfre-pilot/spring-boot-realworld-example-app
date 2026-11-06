@@ -52,6 +52,7 @@ Si un objeto no está en tu lista y otra sesión lo tiene reservado: no tocarlo.
 | ER `SCA2_consultarEstructuraComercial` + integración `SCA2_consultaEstructuraComercialVida` | R45-A | en edición |
 | ER `SCA2_getCodAgenteVida`, `SCA2_PreGenerarStudAnul` | R45-A | reservado (lectura; solo si hace falta) |
 | Constantes/reglas nuevas `SCA2_*` de clave de producción Vida | R45-A | en edición |
+| IF `SCA2_ContraAnulacionOpciones` (aviso SI24, FINALIZAR) | R45-C | en edición |
 
 ## Dudas abiertas para el usuario/analista
 - D1: ¿la parte izquierda es `producerCode`‖`salesOfficeCode` = 184720372, o 18420372 como escribe el analista?
