@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<contentHaul xmlns:a="http://www.appian.com/ae/types/2009">
+    <versionUuid>_a-0000f099-f136-8000-9d3c-011c48011c48_5624288</versionUuid>
+    <bodyVersionUuid>UtxRKnoe</bodyVersionUuid>
+    <rule>
+        <name>SCA2_calcularEstadoSolicitud</name>
+        <uuid>_a-0000f069-4f37-8000-9cc8-011c48011c48_20052795</uuid>
+        <description>[SCA2] copia de SCA_calcularEstadoSolicitud (batchB)</description>
+        <parentUuid>_a-0000f069-4f37-8000-9cc8-011c48011c48_20050135</parentUuid>
+        <visibility>
+            <advertise>false</advertise>
+            <hierarchy>true</hierarchy>
+            <indexable>true</indexable>
+            <quota>false</quota>
+            <searchable>true</searchable>
+            <system>false</system>
+            <unlogged>false</unlogged>
+        </visibility>
+        <definition>/* HU3980 (listado por NUUMA): etiqueta a partir del estado CORE de la solicitud (cod_tip_est_solic) y del estado de la gestión 5 (mecanización) / última gestión */
+a!localVariables(
+  local!gestiones: a!defaultValue(index(ri!datosGestiones, "MSSConsultaGestion", {}), {}),
+  local!acciones: touniformstring(#"SYSTEM_SYSRULES_forEach"(local!gestiones, tostring(a!defaultValue(index(fv!item, "accionRealizada", ""), "")))),
+  local!mecanizaciones: index(local!gestiones, wherecontains(touniformstring("5"), local!acciones), {}),
+  local!estadoMecanizacion: upper(tostring(if(a!isNullOrEmpty(local!mecanizaciones), "", a!defaultValue(index(local!mecanizaciones, length(local!mecanizaciones), "codEstGestion", ""), "")))),
+  local!pospuestas: index(local!gestiones, wherecontains(touniformstring({"2", "3", "7"}), local!acciones), {}),
+  local!estadoUltimaPosponible: upper(tostring(if(a!isNullOrEmpty(local!pospuestas), "", a!defaultValue(index(local!pospuestas, length(local!pospuestas), "codEstGestion", ""), "")))),
+  local!gestionPospuesta: local!estadoUltimaPosponible = "INCOMPLETA",
+  local!autorizacionRechazada: and(a!isNotNullOrEmpty(local!estadoUltimaPosponible), find("RECHAZADA", local!estadoUltimaPosponible) &gt; 0, index(local!acciones, length(local!acciones), "") = "7"),
+  local!ultimaAccion: if(a!isNullOrEmpty(local!acciones), "", index(local!acciones, length(local!acciones), "")),
+  local!sol: tostring(ri!estadoSolicitud),
+  local!finalCore: or(local!sol = "4", local!sol = "5"),
+  local!mecVacia: or(a!isNullOrEmpty(local!estadoMecanizacion), local!estadoMecanizacion = "INCOMPLETA"),
+  local!mecRealizada: local!estadoMecanizacion = "ANULACION REALIZADA",
+  local!mecPendienteAutorizar: local!estadoMecanizacion = "ANULACION PENDIENTE DE AUTORIZAR",
+  local!mecIncompleta: local!estadoMecanizacion = "MECANIZACION INCOMPLETA",
+  local!mecCerrada: or(local!estadoMecanizacion = "CERRADA SIN MECANIZAR", find("CERRADA SIN MECANIZAR POR", local!estadoMecanizacion) &gt; 0),
+  local!mecEnviada: or(local!estadoMecanizacion = "MECANIZACIÓN ENVIADA", local!estadoMecanizacion = "MECANIZACION ENVIADA"),
+  local!mecCaducada: or(local!estadoMecanizacion = #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624046", local!estadoMecanizacion = "FINALIZADA CADUCADA"),
+  if(local!sol = "14", "Cancelada",
+  if(local!sol = "3", "Finalizado Contra Anulación Positiva",
+  if(or(local!sol = "6", local!sol = "12"), "Solicitud Caducada",
+  if(or(local!sol = "11", local!sol = "20"), "Anulada Caducada",
+  if(and(local!sol = "2", local!mecRealizada), "Póliza Anulada. Solicitud Pendiente Nivel 2",
+  if(and(local!sol = "2", local!mecIncompleta), "Solicitud Finalizada sin anular",
+  if(and(or(local!sol = "2", local!finalCore), local!mecEnviada), "Mecanización Enviada",
+  if(and(or(local!sol = "2", local!finalCore), local!mecPendienteAutorizar), "Pendiente de Autorización",
+  if(or(local!sol = "1", local!sol = "2"), "Solicitud Pendiente",
+  if(and(local!finalCore, local!mecRealizada), "Finalizada. Anulación realizada",
+  if(and(local!finalCore, or(local!mecCerrada, local!autorizacionRechazada)), "Solicitud Finalizada. Rechazada anulación",
+  if(and(local!finalCore, local!mecCaducada), "Solicitud Caducada",
+  if(and(local!finalCore, local!estadoMecanizacion = "INCOMPLETA"), "Pendiente de Autorización",
+  if(and(local!finalCore, local!mecVacia, or(local!gestionPospuesta, local!ultimaAccion = "8")), "Solicitud Pendiente",
+  if(and(local!finalCore, or(local!mecVacia, local!mecIncompleta)), "Solicitud Finalizada sin anular",
+  #"5aa6904a-415c-40a6-9697-8e6cc6465f45"(estado: ri!estadoSolicitud)
+  )))))))))))))))
+)</definition>
+        <namedTypedValue>
+            <name>estadoSolicitud</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>datosGestiones</name>
+            <type>
+                <name>Map</name>
+                <namespace>http://www.appian.com/ae/types/2009</namespace>
+            </type>
+        </namedTypedValue>
+        <preferredEditor>legacy</preferredEditor>
+        <offlineEnabled>false</offlineEnabled>
+    </rule>
+    <roleMap public="true">
+        <role inherit="true" allowForAll="false" name="readers">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="authors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="administrators">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyReaders">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAuthors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAdministrators">
+            <users/>
+            <groups/>
+        </role>
+    </roleMap>
+    <typedValue>
+        <type>
+            <name>RuleTestConfig?list</name>
+            <namespace>http://www.appian.com/ae/types/2009</namespace>
+        </type>
+        <value>
+            <el>
+                <a:name>smoke: inputs nulos no error</a:name>
+                <a:description/>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">null</a:value>
+                    <a:nameRef>estadoSolicitud</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">null</a:value>
+                    <a:nameRef>datosGestiones</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:assertions>
+                    <a:expectedOutput xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                    <a:resultAssertions>true()</a:resultAssertions>
+                </a:assertions>
+                <a:isDefault>false</a:isDefault>
+            </el>
+        </value>
+    </typedValue>
+    <mcpEnabled>false</mcpEnabled>
+    <history>
+        <historyInfo versionUuid="_a-0000f069-4f37-8000-9cc8-011c48011c48_20064433"/>
+        <historyInfo versionUuid="_a-0000f069-4f37-8000-9cc8-011c48011c48_20072776"/>
+        <historyInfo versionUuid="_a-0000f099-f136-8000-9d3c-011c48011c48_5624288"/>
+    </history>
+</contentHaul>

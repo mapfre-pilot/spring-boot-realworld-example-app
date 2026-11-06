@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<contentHaul xmlns:a="http://www.appian.com/ae/types/2009">
+    <versionUuid>_a-0000f099-f136-8000-9d3c-011c48011c48_5624668</versionUuid>
+    <bodyVersionUuid>1VEvflIC</bodyVersionUuid>
+    <rule>
+        <name>SCA2_colorEstadoSolicitud</name>
+        <uuid>_a-0000f069-4f37-8000-9cc8-011c48011c48_20063676</uuid>
+        <description>[SCA2] paridad SCA estados</description>
+        <parentUuid>_a-0000f069-4f37-8000-9cc8-011c48011c48_20050135</parentUuid>
+        <visibility>
+            <advertise>false</advertise>
+            <hierarchy>true</hierarchy>
+            <indexable>true</indexable>
+            <quota>false</quota>
+            <searchable>true</searchable>
+            <system>false</system>
+            <unlogged>false</unlogged>
+        </visibility>
+        <definition>/* Colores de etiqueta según HU3980: naranja pendientes, gris canceladas/caducadas, rojo finalizadas sin anular, verde CA positiva, azul anulación realizada */
+a!match(
+  value: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20063670"(estado: ri!estado),
+  equals: "Solicitud Pendiente", then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624208",
+  equals: "Pendiente", then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624208",
+  equals: "Póliza Anulada. Solicitud Pendiente Nivel 2", then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624208",
+  equals: "Mecanización Enviada", then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624208",
+  equals: "Pendiente de Autorización", then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624208",
+  equals: "Pendiente de Autorizar", then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624208",
+  equals: "Solicitud pendiente de autorización", then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624208",
+  equals: "Solicitud Pendiente de autorización de anulación", then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624208",
+  equals: "Cancelada", then: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833",
+  equals: "Solicitud Caducada", then: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833",
+  equals: "Caducada", then: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833",
+  equals: "Anulada Caducada", then: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833",
+  equals: "Caducada negativa", then: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833",
+  equals: "Caducada (poliza anulada)", then: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833",
+  equals: "Solicitud Finalizada sin anular", then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624214",
+  equals: "Solicitud finalizada sin anular", then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624214",
+  equals: "Solicitud Finalizada. Rechazada anulación", then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624214",
+  equals: "Finalizada. Rechazada anulación", then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624214",
+  equals: "Finalizado negativo con contraanulación", then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624214",
+  equals: "Finalizada no requerida contraanulación", then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624214",
+  equals: "Finalizado Contra Anulación Positiva", then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624247",
+  equals: "Finalizada positivo", then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624247",
+  equals: "Finalizada positivamente", then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624247",
+  equals: "Finalizada. Anulación realizada", then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624220",
+  default: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833"
+)</definition>
+        <namedTypedValue>
+            <name>estado</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <preferredEditor>legacy</preferredEditor>
+        <offlineEnabled>false</offlineEnabled>
+    </rule>
+    <roleMap public="true">
+        <role inherit="true" allowForAll="false" name="readers">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="authors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="administrators">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyReaders">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAuthors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAdministrators">
+            <users/>
+            <groups/>
+        </role>
+    </roleMap>
+    <typedValue>
+        <type>
+            <name>RuleTestConfig?list</name>
+            <namespace>http://www.appian.com/ae/types/2009</namespace>
+        </type>
+        <value>
+            <el>
+                <a:name>smoke: inputs nulos no error</a:name>
+                <a:description/>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">null</a:value>
+                    <a:nameRef>estado</a:nameRef>
+                    <a:id>1</a:id>
+                </a:ruleInputTestConfigs>
+                <a:assertions>
+                    <a:expectedOutput xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                    <a:resultAssertions>true()</a:resultAssertions>
+                </a:assertions>
+                <a:isDefault>false</a:isDefault>
+            </el>
+        </value>
+    </typedValue>
+    <mcpEnabled>false</mcpEnabled>
+    <history>
+        <historyInfo versionUuid="_a-0000f069-4f37-8000-9cc8-011c48011c48_20064542"/>
+        <historyInfo versionUuid="_a-0000f069-4f37-8000-9cc8-011c48011c48_20072822"/>
+        <historyInfo versionUuid="_a-0000f099-f136-8000-9d3c-011c48011c48_5624668"/>
+    </history>
+</contentHaul>
