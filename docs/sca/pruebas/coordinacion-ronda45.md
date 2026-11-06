@@ -28,7 +28,7 @@ D1. (tabla) Etiquetas y colores de la lista de solicitudes según `cod_tip_est_s
 
 ## Reparto y objetos propios (reservar en la tabla antes de editar; liberar con vN→vM)
 - **R45-A Vida y alta** — TERMINADA (informe `r45-a-vida-clave-produccion.md`): A1 OK, A2 OK (duda D1), alta Vida KO por CORE 4004 (también con `codCiaUsuario` 3, revertido). Fase 2: A3 en Hogar/Autos sin duplicados, pero ACEPTAR no se ve deshabilitado tras el clic (SCA igual); 15788717 analizada en solo lectura. A1, A2, A3. `SCA2_getCodAgenteVida`, `SCA2_consultaClaveVida`, `SCA2_consultarClavevida`, `SCA2_consultaClave*`, `SCA2_obtenerEstructuraComercial`, `SCA2_consultarEstructuraComercial`, `SCA2_obtenerDatosCabeceraLive` (solo la parte Vida), `SCA2_construirContextoAlta`, `SCA2_PreGenerarStudAnul`, `SCA2_AltaSolicitudPage`, integraciones/constantes SCA2 nuevas de estructuras comerciales.
-- **R45-B ANL / mecanización**: B1-B4. `SCA2_AccionesAdministrativas*`, `SCA2_MecanizacionPrincipal`, PMs `SCA2 CMD Mecanizar`, `…MecanizarNSE`, `…CompletarAccion`, `…Decidir`, `…CrearAccion`, `…Finalizar`, reglas de llamada a ANL (`SCA2_obtenerAnulacion`, constructores de la petición ANL).
+- **R45-B ANL / mecanización** — PARCIAL (B2a OK NSE-Autos, B1 OK en CORE, B4 mecanización 4 OK pero solicitud 5 en vez de 14 → duda analista, B2b y B2a wAutemis sin probar, B3 analizado; informe `r45-b-anl-pendiente-autorizar.md`): B1-B4. `SCA2_AccionesAdministrativas*`, `SCA2_MecanizacionPrincipal`, PMs `SCA2 CMD Mecanizar`, `…MecanizarNSE`, `…CompletarAccion`, `…Decidir`, `…CrearAccion`, `…Finalizar`, reglas de llamada a ANL (`SCA2_obtenerAnulacion`, constructores de la petición ANL).
 - **R45-C Si24** — TERMINADA, fases 2 y 3 incluidas (P1, P2, riesgo VERTI, D2; fase 3: D5 paridad de asignación, RETOMAR difiere (pendiente en `SCA2_DetalleSolicitud`, de R45-D), D6 = solicitud caducada; informe `r45-c-si24.md`): C1-C4. Interfaces y reglas de contra anulación (`SCA2_ContraAnulacion*`, condición de FINALIZAR), aviso Si24 de la cabecera/detalle, condición y enlace de Verti/Vencimiento → inducción (si hay que tocar un PM de R45-B, pedirlo en la tabla y esperar a que esté libre).
 - **R45-D Lista de solicitudes** — TERMINADA (informe `r45-d-estados-lista.md`): D1. Reglas de etiqueta/color de estado (`SCA2_textoEstadoSolicitud` y las del buscador/lista y tarjetas del detalle), constantes nuevas.
 Si un objeto no está en tu lista y otra sesión lo tiene reservado: no tocarlo.
@@ -58,8 +58,8 @@ Si un objeto no está en tu lista y otra sesión lo tiene reservado: no tocarlo.
 | IF `SCA2_BuscadorTabla` (columna Estado) | R45-D | liberado (v3→v4) |
 | IF `SCA2_Buscador` (solo columna Estado de «Otras solicitudes») | R45-D | liberado (v3→v4) |
 | Constantes nuevas `SCA2_TXT_ETQ_ESTADO_*` y `SCA2_TXT_COD_EST_MECANIZACION_*` | R45-D | liberado (15 nuevas, v1) |
-| ER `SCA2_construirSolicitudAnulacionAnlTraducida` (fecAnulacion → `fechaSuplemento` ANL, B2) | R45-B | en edición |
-| ER `SCA2_actualizarMecanizacionAnulacionNse` + PM `SCA2 CMD Finalizar` (B4: NO en anulación → mecanización 4 en CORE) | R45-B | en edición |
+| ER `SCA2_construirSolicitudAnulacionAnlTraducida` (fecAnulacion → `fechaSuplemento` ANL, B2) | R45-B | liberado (1 guardado en Designer, versión anterior +1) |
+| ER `SCA2_actualizarMecanizacionAnulacionNse` v3→v4 + PM `SCA2 CMD Finalizar` v14→v15 (B4: NO en anulación → mecanización 4 en CORE) | R45-B | liberado |
 | IF `SCA2_DetalleSolicitud` (tarjetas de estado) | R45-D | liberado (sin cambios: el estado lo muestra `SCA2_SolicitudAnulacion` v3→v5) |
 | IF `SCA2_TablaOtrasSolAnulacion` (columna Estado) | R45-D | liberado (v2→v3) |
 | IF `SCA2_BuscadorTabla`, IF `SCA2_Buscador` (mecanización precargada), ER `SCA2_calcularEstadoSolicitud`, constante `SCA2_TXT_COD_EST_MECANIZACION_SIN` | R45-D | liberado (v4→v5; constante nueva v1) |
