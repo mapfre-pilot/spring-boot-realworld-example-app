@@ -60,9 +60,9 @@ Si un objeto no está en tu lista y otra sesión lo tiene reservado: no tocarlo.
 | Constantes nuevas `SCA2_TXT_ETQ_ESTADO_*` y `SCA2_TXT_COD_EST_MECANIZACION_*` | R45-D | liberado (15 nuevas, v1) |
 | ER `SCA2_construirSolicitudAnulacionAnlTraducida` (fecAnulacion → `fechaSuplemento` ANL, B2) | R45-B | en edición |
 | ER `SCA2_actualizarMecanizacionAnulacionNse` + PM `SCA2 CMD Finalizar` (B4: NO en anulación → mecanización 4 en CORE) | R45-B | en edición |
-| IF `SCA2_DetalleSolicitud` (tarjetas de estado) | R45-D | en edición (fase 2) |
-| IF `SCA2_TablaOtrasSolAnulacion` (columna Estado) | R45-D | en edición (fase 2) |
-| IF `SCA2_BuscadorTabla`, IF `SCA2_Buscador` (mecanización en lote) | R45-D | en edición (fase 2) |
+| IF `SCA2_DetalleSolicitud` (tarjetas de estado) | R45-D | liberado (sin cambios: el estado lo muestra `SCA2_SolicitudAnulacion` v3→v5) |
+| IF `SCA2_TablaOtrasSolAnulacion` (columna Estado) | R45-D | liberado (v2→v3) |
+| IF `SCA2_BuscadorTabla`, IF `SCA2_Buscador` (mecanización precargada), ER `SCA2_calcularEstadoSolicitud`, constante `SCA2_TXT_COD_EST_MECANIZACION_SIN` | R45-D | liberado (v4→v5; constante nueva v1) |
 | IF `SCA2_DetalleTareas` (enlace CA → Verti/Vencimiento; fase 2: restringir VERTI de otro usuario) | R45-C | libre (v3→v4→v5) |
 
 ## Dudas abiertas para el usuario/analista

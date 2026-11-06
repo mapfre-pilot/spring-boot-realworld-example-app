@@ -126,6 +126,56 @@ Otras: regla de prueba `../img/r45-d-regla-prueba-designer.png`; casos `../img/r
 ## 7. Pendientes
 
 - Probar con solicitud nueva real 4/5 + mecanización 7 (enviada) y 4/5 + 2 (autorización): la póliza 2002200407025 acabó en nivel 2. Hace falta una póliza cuya simulación/NSE devuelva esa respuesta.
-- Aplicar la tabla en las tarjetas del detalle (`SCA2_DetalleSolicitud`) y `SCA2_TablaOtrasSolAnulacion` si el analista lo confirma (no reservados en esta ronda).
+- ~~Aplicar la tabla en el detalle y en «Otras solicitudes»~~: hecho en la fase 2 (sección 8).
 - La lista no se refresca sola al volver de finalizar (hace falta recargar); preexistente.
 - Cancelada por la rama NO de Anulación/Suscripción (14/4) depende de R45-B; aquí se probó la cancelación desde contra-anulación.
+
+## 8. Fase 2 (06/11): rendimiento y coherencia lista / detalle / «Otras solicitudes»
+
+### Cambio
+
+- **Mecanización precargada:** `SCA2_BuscadorTabla`, `SCA2_Buscador` («Otras solicitudes») y `SCA2_TablaOtrasSolAnulacion` calculan una sola vez, a nivel de interfaz, la mecanización de los `idSolicitud` del resultado con estado CORE 2/4/5. Lo pasan a `SCA2_calcularEstadoSolicitud` por `codEstMecaniza`. La consulta por fila queda solo como fallback cuando no viene. CORE no ofrece una consulta de mecanización para varias solicitudes (`consultarOptimizadoProceso` es por solicitud), así que la precarga hace una llamada por solicitud elegible, fuera de la expresión de cada celda.
+- **Sin mecanización:** la constante nueva `SCA2_TXT_COD_EST_MECANIZACION_SIN` (`-`) indica «consultado y sin mecanización», para no repetir la consulta.
+- **Misma regla en todas las vistas:** `SCA2_TablaOtrasSolAnulacion` (columna Estado) y `SCA2_SolicitudAnulacion` (dato «Estado solicitud anulación» del detalle) usan la misma regla y los mismos colores que la lista. El detalle toma `codEstSolic` de `SCA2_consultarSolicitudes`, porque la cabecera trae otro dominio de códigos (p. ej. 10 en F1). Si no hay código, se conserva la presentación anterior.
+- **Sin cambios en `SCA2_DetalleSolicitud`:** el estado de la solicitud lo muestra la interfaz hija `SCA2_SolicitudAnulacion`. Las tarjetas de acciones (`local!estadoCard`) muestran el estado de cada gestión, no el de la solicitud, y no se tocan.
+- **Fuera de alcance:** Q1/Q2/Q3 no se implementan (están con el usuario). Los casos reales 4/5+7 y 4/5+2 quedan para cuando R45-B tenga pólizas con controles 05/06.
+
+### Objetos y versiones (fase 2)
+
+| Objeto | Versión | Backup |
+|---|---|---|
+| ER `SCA2_calcularEstadoSolicitud` | v4→v5 | `backups-r45/r45-d2-SCA2_calcularEstadoSolicitud-original.xml` |
+| IF `SCA2_BuscadorTabla` | v4→v5 | `backups-r45/r45-d2-SCA2_BuscadorTabla-original.xml` |
+| IF `SCA2_Buscador` | v4→v5 | `backups-r45/r45-d2-SCA2_Buscador-original.xml` |
+| IF `SCA2_TablaOtrasSolAnulacion` | v2→v3 | `backups-r45/r45-d2-SCA2_TablaOtrasSolAnulacion-original.xml` |
+| IF `SCA2_SolicitudAnulacion` | v3→v4→v5 (2 imports) | `backups-r45/r45-d2-SCA2_SolicitudAnulacion-original.xml` |
+| Constante `SCA2_TXT_COD_EST_MECANIZACION_SIN` (`74a8297c-6023-440a-b13b-bf354c66716d`) | nueva (v1), añadida a SCA2 en Designer | — |
+
+Despliegues (Deployment API v2):
+- Import 1: inspección `3247019d-92bb-469b-bcab-c149530149b5` (0 errores, 0 avisos, 0 omitidos); importación `1bb87e02-b6eb-433b-9a03-1469dfb1d8dd` (6 importados, 0 fallos).
+- Import 2 (`SCA2_SolicitudAnulacion`): inspección `5a8a346a-94c9-4760-8658-9db244990861`; importación `05d78fc8-9304-46f8-a4da-84b76c96ad6b` (1 importado, 0 fallos).
+- Reexport final `e466582e-943a-4956-89e5-251fc6c42122`: definiciones iguales a las importadas y constante dentro de la aplicación.
+
+### Tiempos de carga (JJGONZ2, misma lista, segundos)
+
+| Vista | Antes 1 / 2 / 3 | Después 1 / 2 / 3 | Media antes → después |
+|---|---|---|---|
+| Lista «Últimas solicitudes gestionadas» | 3,7 / 3,7 / 3,7 | 3,3 / 3,2 / 3,7 | 3,70 → 3,40 |
+| Buscador: póliza 2002100303453 → detalle con «Estado solicitud anulación» | 4,1 / 4,6 / 4,6 | 4,6 / 4,6 / 4,1 | 4,43 → 4,43 |
+
+En esta muestra no hay mejora apreciable en el buscador y la mejora en la lista es pequeña. El número de llamadas a CORE por solicitud elegible es el mismo, porque CORE no tiene consulta en lote; lo que se gana es que no se repiten al reevaluar las celdas.
+
+### Coherencia lista / detalle / «Otras solicitudes»
+
+| ID | Caso | Esperado | Real | OK/KO | Solicitud | Instancia | Pasos realizados | Posible causa/solución |
+|---|---|---|---|---|---|---|---|---|
+| C1 | F1 pendiente en las 3 vistas | Solicitud Pendiente, naranja | Lista, detalle y «Otras sol.»: Solicitud Pendiente, naranja | OK | 15788799 | No visible en el site | Lista → abrir solicitud → pestaña Solicitud Anulación → tabla «Otras sol. Anulación» | Primera versión del detalle: «Pendiente», porque la cabecera trae el código 10. Corregido tomando `codEstSolic` de `consultarSolicitudes` (v4→v5). |
+| C2 | F3 anulación realizada en las 3 vistas | Finalizada. Anulación realizada, azul | Igual en las 3 vistas | OK | 15788803 | No visible en el site | Igual que C1 | — |
+| C3 | F4 contra anulación positiva en las 3 vistas | Finalizado Contra Anulación Positiva, verde | Igual en las 3 vistas | OK | 15788806 | No visible en el site | Igual que C1 | — |
+| C4 | F5 cancelada en las 3 vistas | Cancelada, gris | Igual en las 3 vistas | OK | 15788807 | No visible en el site | Igual que C1 | — |
+
+Capturas: `../img/r45-d2-F{1,3,4,5}-{lista,detalle,otras}.png`.
+
+| F3 lista | F3 detalle | F3 otras solicitudes |
+|---|---|---|
+| ![](../img/r45-d2-F3-lista.png) | ![](../img/r45-d2-F3-detalle.png) | ![](../img/r45-d2-F3-otras.png) |
