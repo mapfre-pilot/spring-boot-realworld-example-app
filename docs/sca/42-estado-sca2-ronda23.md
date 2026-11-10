@@ -269,3 +269,46 @@ Fuentes de detalle: `pruebas/coordinacion-ronda45.md`, `pruebas/r45-a-vida-clave
 - R45-C deja abiertas estas solicitudes de prueba: `15788816` (Verti nivel 2 de JJGONZ2), `15788817` (mecanización Incompleta/error ANL), `15788824` (Verti SISANS abierta) y `15788825` (CA1 JJGONZ2 abierta).
 - También quedan anotadas en R45-C `15788808` (mecanización Incompleta), `15788812` (Verti SISANS abierta) y las CA abiertas de `15788800` y `15788804`.
 - R45-D no obtuvo prueba real para 4/5 + 2 o 4/5 + 7; la solicitud `15788802` terminó en nivel 2.
+
+## Ronda 46 (10/11/2026): 10.º «Análisis SCA2»
+
+**Contexto.** El MCP de Appian TEST (`appian-dev-mcp-c90b`, plugin 26.9.15) ha vuelto a funcionar. Todos los cambios se han hecho en SCA2 y se han probado en TEST.
+
+El análisis tuvo dos entregas: R46-A con la primera y R46-B, R46-C y R46-D con la segunda.
+
+Fuentes de detalle:
+- `pruebas/coordinacion-ronda46.md`: objetos tocados y sus versiones.
+- `pruebas/r46-a-analisis-detalle-estados.md`
+- `pruebas/r46-b-anl-nse-new.md`
+- `pruebas/r46-c-alta-si24-detalle.md`
+- `pruebas/r46-d-argumentario-treboles.md`
+
+### Resultados por sesión
+
+| Sesión | Hecho y probado con solicitudes nuevas | Cambiado sin prueba E2E / bloqueado | Solicitudes abiertas |
+|---|---|---|---|
+| R46-A: detalle y etiquetas | «Nivel X» también en el nivel 1. Nivel real en la inducción. Se quita «Gestión Verti/Vencimiento» cuando la gestión ha terminado. Perfil, grupo y Nuuma CORE. 4/5 + mecanización 3/5 → «Solicitud Finalizada sin anular» (rojo). | Filtro «Estado» sin cambios (N1). Opción seleccionada en el componente: CMP no la registra (N2). | — |
+| R46-B: ANL, NSE y NEW | wAutemis 916 bloquea el alta con el mensaje de Autemis. Espera NSE/ANL de 10 × 30 s (5 min). Catalogación Más Móvil «A VENCIMIENTO TRIMESTRAL» según el servicio. Catalogación final NSE en CORE = 1 (`15788858`). | Solo revisados por código, por falta de un caso real: rechazo NSE → mecanización 4 (`SCA2 CMD Mecanizar`, nodo 304); `ANL_EXCESO_TIEMPO` en la bandeja de errores (`SCA2 CMD Finalizar`). | `15788858` |
+| R46-C: alta, Si24 y detalle | CONSULTAR SOLICITUD (`2002400441596`). Mensaje de fecha anterior a la de efecto (`2002400441598`). Enlace NSE con `n`/`o` (`15787950`). Verti de nivel 2 gestionable por el usuario del alta (N6). Solo GGE y Si24 experto/front finalizan sin carta, como en SCA. | Verti → inducción con Oficina: falta una póliza de acuerdo válida (`15788853` quedó con la mecanización incompleta). Perfiles Central, CCC, GGE y Si24 front sin probar: no hay usuarios de esos perfiles. | `15788857` |
+| R46-D: argumentario y tréboles | RECARGAR conserva el argumento marcado (`15788852`). Corregido el desplegable «SVA a aplicar» (`15788856`). | Importados sin probar: tréboles al ACEPTAR la enhorabuena, entrega parcial TTQ con error relanzable, truncado a 999, recarga de Aurora, observaciones SVA y reserva de prima. DDL de `POLIZA_FECHAULTIMOSINIESTRO` pendiente de un DBA (`sql/63-r46d-ampliar-poliza-fechaultimosiniestro.sql`). | `15788852`, `15788854`, `15788856` |
+
+### Incidencias de coordinación
+
+R46-D guardó `SCA2_ContraAnulacionOpciones` sobre la reserva de R46-C. Se restauró en la v73; la versión final es la v78 y un diff confirma que conserva los cambios de R46-B, R46-C y R46-D.
+
+### Necesario para cerrar
+
+- Una póliza con TU TE QUEDAS vigente y un cliente socio Club.
+- Una póliza de acuerdo con vencimiento a menos de 18 meses, para Verti → inducción con Oficina.
+- Usuarios de TEST con perfil administrador SCA2 (bandeja `/errores` y mantenimiento), Central, CCC, GGE y Si24 front.
+- Pólizas que lleguen a «Pendiente de Autorización» (4/5 + 2) o a «Mecanización Enviada» (4/5 + 7).
+- Un DBA que ejecute el DDL de la caché de cabecera.
+- Alta Vida: el 4004 de CORE sigue abierto (AM/CORE).
+
+### Dudas nuevas
+
+Están en la sección «Dudas nuevas» de cada informe. Entre ellas:
+- La fecha de Más Móvil: ¿02/01 o 01/01/2027?
+- El tipo de documento del enlace NSE, que hoy se deduce del formato del número.
+- El significado de «reserva de prima».
+- N3 y N4 de R46-A.
