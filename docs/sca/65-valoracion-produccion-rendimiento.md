@@ -29,14 +29,14 @@ Fuente: `listProcessInstances` de los 17 modelos de SCA2. Solo hay historial del
 | SCA2 CMD GenerarPdf | 2 | 8,5 s | — | 8,5 s |
 
 - Los máximos de ~9,5 min son **una sola cadena** Finalizar → Decidir → CrearAccion (14:21–14:30), con la espera a NSE/ANL (hasta 10 × 30 s) dentro. No es un cuelgue, pero el proceso queda ocupado ese tiempo. [Observado + Inferido]
-- **Dos `SCA2 CMD Mecanizar` siguen ACTIVE desde el 03/11** (9157659 y 11252029). Hay que ver en qué nodo están y cerrarlas o lanzar su error. [Observado]
+- **Dos `SCA2 CMD Mecanizar` siguen ACTIVE desde el 03/11** (9157659 y 11252029). R47-B ha visto que no están colgadas: esperan en el subproceso síncrono «Inducción Verti (CMP)» a que alguien complete la tarea de inducción. Hay además una `CompletarAccion` (11252095) parada en «Start decidir» y 3 tareas de inducción huérfanas (doc R47-B §4). [Observado]
 - Alta (11 s de mediana) y CompletarAccion (10 s) superan el objetivo inicial de CMD < 10 s del doc 10. [Observado]
 
 ## 3. Tiempos de pantalla e integraciones (documentados)
 
 | Punto | Tiempo | Fuente |
 |---|---|---|
-| Cabecera del alta (`SCA2_obtenerDatosCabecera`) | 3,9 s media, máx. 5 s, llamadas **en serie** | doc 11 |
+| Cabecera del alta (`SCA2_obtenerDatosCabecera`) | 3,9 s media, máx. 5 s (doc 11); R47-B: 1,4–4,8 s de mediana según póliza. Las llamadas independientes **ya van en paralelo** | doc 11, R47-B |
 | Formulario de alta | ~10 s (SCA ~40 s), 1 ejecución | doc 10 |
 | Pantalla de Contra Anulación | 7,5–9,0 s (antes 11,6 s) | doc 43-B |
 | `consultarListadoArgumentosREST` | 8,7 s media, **29 % de fallos**, 2 timeouts de 300 s | doc 59 |
@@ -70,12 +70,12 @@ En todos los casos el tiempo es del backend (PRE/CORE/CMP); la lógica de Appian
 
 | # | Qué | Ganancia esperada | Esfuerzo |
 |---|---|---|---|
-| 1 | Cabecera: lanzar las llamadas externas **en paralelo** (o leer siempre la caché de cabecera y refrescarla aparte) | 3,9 s → ~0,8–1 s (la llamada más lenta) [Inferido] | Medio, solo Appian |
+| 1 | Cabecera: ~~lanzar las llamadas en paralelo~~ (R47-B: ya lo están; las que van en serie necesitan el dato de otra). Queda solo leer siempre de la caché (doc 66 §1) | ~0,1–0,2 s con caché | Bajo, pero con cambio funcional |
 | 2 | Argumentario: aplicar doc 59 (catálogo en caché, lectura rápida, BRMS fuera de pantalla) y bajar el timeout de 300 s a ~30 s con reintento | 8,7 s → < 2 s; sin pantallas bloqueadas 5 min | Fase 1 Appian; fase 2 con backend |
 | 3 | Espera NSE/ANL **asíncrona**: que Decidir/CrearAccion terminen y la espera quede en un subproceso, con estado «En proceso» y refresco | El usuario no espera 5–9 min y el proceso no queda ocupado | Medio |
 | 4 | Decisión con salto a Si24: quitar el sondeo de 30 s y encadenar con activity chaining | 55–70 s → ~40 s, menos si se paraleliza CORE | Bajo–medio |
 | 5 | Alta y CompletarAccion: revisar nodos en serie hacia CORE y escrituras repetidas | Bajar de 10–11 s [Inferido] | Medio |
-| 6 | Archivado/borrado de instancias completadas y alarma de instancias ACTIVE > 1 h | Menos memoria del motor y detección de cuelgues | Bajo |
+| 6 | Aviso de procesos en espera más de 1 h (hecho en R47-B, cuadro de mando). El borrado de instancias terminadas ya existe (`AUTO_DELETE` a 1 día) | Detección de esperas largas | Hecho |
 
 ## 6. Criterio de salida propuesto
 
@@ -86,5 +86,5 @@ En todos los casos el tiempo es del backend (PRE/CORE/CMP); la lógica de Appian
 
 ## 7. Qué optimizaciones cambian la funcionalidad (10/11/2026)
 
-- **Sin cambio funcional, en curso en R47-B:** 5 (vigilancia de procesos activos y limpieza) y 1a (cabecera en paralelo, mismos datos y mismos errores).
+- **Sin cambio funcional (R47-B, `pruebas/r47-b-optimizaciones-sin-cambio-funcional.md`):** 5 aplicada (aviso de solo lectura en el cuadro de mando, `SCA2_CuadroMando` v25→v28); limpieza sin cambios porque ya existía. 1a sin cambios: las llamadas independientes de la cabecera ya iban en paralelo.
 - **Con cambio funcional:** 1b, 2, 3 y 4. Se plantean a analistas y negocio en el doc 66 y no se tocan sin su visto bueno.

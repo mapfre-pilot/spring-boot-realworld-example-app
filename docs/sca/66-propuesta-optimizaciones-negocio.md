@@ -2,14 +2,14 @@
 
 > Fecha: 10/11/2026. Entorno de medición: Appian TEST (que llama a los servicios de PRE).
 > Estas propuestas **no están aplicadas**. Cada una necesita una decisión de negocio, porque cambia lo que ve o lo que hace el usuario.
-> Las optimizaciones que no cambian el funcionamiento (llamadas de la cabecera en paralelo y vigilancia de procesos) se están aplicando aparte (R47-B).
+> Las que no cambian el funcionamiento se han revisado aparte en R47-B: la cabecera ya hacía en paralelo las llamadas independientes, así que no se ha cambiado; el aviso de procesos en espera ya está en el cuadro de mando.
 > Contexto y mediciones: doc 65.
 
 ## Resumen
 
 | # | Propuesta | Tiempo hoy | Ganancia estimada | Qué cambia para el usuario | Decisión que se pide |
 |---|---|---|---|---|---|
-| 1 | Usar la caché de cabecera también en el alta | ~3,9 s de cabecera en el alta | ~3 s menos por alta (estimado) | Los datos de cabecera pueden tener hasta un día de antigüedad | ¿Se acepta? ¿Con qué caducidad? |
+| 1 | Usar la caché de cabecera también en el alta | 1,4–4,8 s de cabecera en el alta (mediana según póliza, R47-B) | Bajar a ~0,1–0,2 s (estimado) | Los datos de cabecera pueden tener hasta un día de antigüedad | ¿Se acepta? ¿Con qué caducidad? |
 | 2 | Argumentario más rápido | 8,7 s de media, 29 % de fallos, hasta 300 s bloqueado | < 1–2 s (estimado) | Error con «Reintentar» a los 30 s; los cambios de mantenimiento pueden tardar en verse; argumentario «en preparación» | Tiempo máximo de espera; refresco del catálogo; generación fuera de pantalla |
 | 3 | Espera a NSE/ANL en segundo plano | Hasta 5 min de espera (una cadena llegó a 9,5 min) | El usuario no espera | El usuario sale con un estado «En proceso» y el resultado aparece después | ¿Se acepta? ¿Qué estado y qué aviso? |
 | 4 | Decisión con salto a Si24 | 55–70 s (SCA: 25–45 s) | Acercarse a SCA (estimado) | Ninguno visible si sale bien; riesgo de leer un estado sin actualizar | ¿Se acepta probarlo? |
@@ -20,7 +20,7 @@ Las ganancias son estimaciones a partir de las mediciones de TEST; se medirían 
 
 **Hoy.**
 - Con una solicitud abierta, la cabecera ya se lee de una caché que caduca a las 05:00 del día siguiente. El botón «Actualizar datos» fuerza el refresco (doc 43-D, R38-A).
-- En el **alta** no hay solicitud todavía. Por eso la cabecera se pide siempre en vivo a reserva de prima, siniestros, cliente, contactos, etc., y tarda unos 3,9 s.
+- En el **alta** no hay solicitud todavía. Por eso la cabecera se pide siempre en vivo a reserva de prima, siniestros, cliente, contactos, etc., y tarda entre 1,4 y 4,8 s de mediana según la póliza (R47-B). Las llamadas que no dependen de otra ya van en paralelo, así que **esta es la única mejora grande que queda en la cabecera**.
 
 **Propuesta.** Guardar la caché también por póliza y usarla en el alta si es del mismo día.
 
@@ -92,6 +92,22 @@ Es la duda 63-24 / doc 64 A.6, que sigue abierta.
 **Preguntas**
 1. ¿Se acepta tocar este flujo, sabiendo que es el de asignación a Si24?
 2. ¿Hay algún paso de la doble vuelta que negocio necesite ver, por ejemplo una traza o una observación intermedia?
+
+## 5. Procesos que se quedan esperando (R47-B)
+
+**Hoy.**
+- Cuando una mecanización abre la inducción Verti en CMP, el proceso `SCA2 CMD Mecanizar` se queda esperando hasta que alguien completa esa tarea, aunque sean días.
+- En TEST hay ahora 5 solicitudes así, de entre 7 y 18 días. Se ven en el aviso nuevo del cuadro de mando:
+  - 15788699 y 15788703 tienen el proceso todavía activo.
+  - 15788323, 15788326 y 15788540 tienen la tarea pendiente, pero el proceso ya no existe.
+- Además, en la 15788703 hay una `CompletarAccion` parada en «Start decidir».
+
+**Preguntas**
+1. ¿Quién tiene que completar la tarea de inducción en CMP? ¿Hay un plazo máximo?
+2. ¿Se cierran las 3 tareas huérfanas o se dejan?
+3. ¿Se acepta que la mecanización no espere a la inducción (hacerla asíncrona)? Cambia cuándo se cierra la tarea `INDUCCION` y cuándo sigue la solicitud.
+4. ¿Basta con el aviso del cuadro de mando, o hay que mandar un correo diario? Si es correo, ¿a quién?
+5. Las instancias terminadas se borran al día siguiente. ¿Hay que guardarlas más tiempo (por ejemplo, 7 días) para poder investigar incidencias? Ocupa más memoria del motor.
 
 ## Lo que pedimos
 
