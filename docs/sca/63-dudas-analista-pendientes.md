@@ -31,12 +31,12 @@ Parte A: dudas de la ronda 45, que salen de las pruebas de esta ronda. Parte B: 
 14. **Casos de prueba:** ¿tenéis alguna póliza que llegue a «Pendiente de Autorización» (4/5 + 2) o a «Mecanización Enviada» (4/5 + 7)? No he conseguido ninguna: las wAutemis no dan nivel a vencimiento y las NSE dan el error 4021 en la simulación.
 
 ### Si24, Verti e inducción
-15. **Aviso Si24:** se ha quitado para el gestor Si24, GGE y nivel > 1. ¿Se quita también para central y CCC?
-16. **FINALIZAR sin carta ni DNI:** se permite a todos los perfiles menos Red Mapfre. ¿Hay algún otro perfil que deba seguir exigiéndolos?
-17. **Inducción:** CMP da «error al consultar los datos del agente» (0002729325300, acuerdo VW PLURI). ¿Es normal en TEST para pólizas de acuerdo o concesionario? SCA2 da la inducción por finalizada.
+15. **Aviso Si24:** se ha quitado para el gestor Si24, GGE y nivel > 1. ¿Se quita también para central y CCC? → **Respondida (R46-C, `pruebas/r46-c-alta-si24-detalle.md`):** Sí. Quitado también para central y CCC (`SCA2_ContraAnulacionOpciones` v71).
+16. **FINALIZAR sin carta ni DNI:** se permite a todos los perfiles menos Red Mapfre. ¿Hay algún otro perfil que deba seguir exigiéndolos? → **Respondida (R46-C, `pruebas/r46-c-alta-si24-detalle.md`):** «No sólo Red Mapfre». Como SCA: solo GGE, Si24 experto y Si24 front finalizan sin carta; SCA no exige DNI (comprobación comentada). Aplicado en v71.
+17. **Inducción:** CMP da «error al consultar los datos del agente» (0002729325300, acuerdo VW PLURI). ¿Es normal en TEST para pólizas de acuerdo o concesionario? SCA2 da la inducción por finalizada. → **Respondida (R46-C, `pruebas/r46-c-alta-si24-detalle.md`):** Normal en TEST; el componente devuelve el error y SCA2 da la inducción por finalizada. Sin cambios en la tarjeta (N5 cerrada).
 18. **ANL en «Gestionar Error Integración»** (0002729325306, GO INSURANCE PLURIANUAL): la causa era el límite de 18 meses de NEW (punto 8). ¿Hay algo más que revisar?
-19. **Verti de nivel 2:** se asigna al usuario que hizo el alta, igual que en SCA. ¿Se deja así o debe ir al usuario o grupo Si24?
-20. **Contra anulación de nivel 1 de otro grupo o nivel:** SCA2 no muestra ningún botón, tampoco REASIGNAR; SCA sí muestra REASIGNAR. ¿Hay que mostrarlo?
+19. **Verti de nivel 2:** se asigna al usuario que hizo el alta, igual que en SCA. ¿Se deja así o debe ir al usuario o grupo Si24? → **Respondida (R46-C, `pruebas/r46-c-alta-si24-detalle.md`):** Se asigna al usuario del alta. Corregido N6: el usuario del alta gestiona su Verti (`SCA2_puedeGestionarTarea` v7, `SCA2_DetalleSolicitud` v76).
+20. **Contra anulación de nivel 1 de otro grupo o nivel:** SCA2 no muestra ningún botón, tampoco REASIGNAR; SCA sí muestra REASIGNAR. ¿Hay que mostrarlo? → **Respondida (R46-C, `pruebas/r46-c-alta-si24-detalle.md`):** No se muestra REASIGNAR. Se deja así.
 
 ### Etiquetas de estado
 21. ¿Qué etiqueta lleva una solicitud 4/5 con mecanización 3 (incompleta) o 5? Ejemplo: 15788455.
@@ -52,18 +52,18 @@ Parte A: dudas de la ronda 45, que salen de las pruebas de esta ronda. Parte B: 
 
 ### Vida (ronda 43)
 25. **Detalle en Vida:** con el motivo DECISIÓN DE CLIENTE se quita el segundo detalle por posición. En Autos y Hogar es IMPAGO DEL SEGURO, pero en Vida es MALA GESTIÓN. ¿Debe verse MALA GESTIÓN en Vida, o se deja como en SCA?
-26. SCA TEST rechaza las pólizas Vida («La póliza no es una póliza válida…»). ¿Por dónde hacéis la consulta de Vida para comparar?
+26. SCA TEST rechaza las pólizas Vida («La póliza no es una póliza válida…»). ¿Por dónde hacéis la consulta de Vida para comparar? → **Respondida (R46-C, `pruebas/r46-c-alta-si24-detalle.md`):** Explicación paso a paso SCA/SCA2 (lógica idéntica, sin cambios) en el informe R46-C §3.6; queda una duda nueva sobre los 10 dígitos.
 
 ### Tiempos y espera (ronda 42)
 27. El alta tarda 15–20 s. Es el tiempo del propio proceso (servicios de Alta, Decidir y CrearAccion). ¿Hay que revisar esos servicios?
-28. COMPROBAR AHORA solo aparece cuando se pasa a la espera de respaldo. ¿Debe verse también durante la espera síncrona?
+28. COMPROBAR AHORA solo aparece cuando se pasa a la espera de respaldo. ¿Debe verse también durante la espera síncrona? → **Respondida (R46-C, `pruebas/r46-c-alta-si24-detalle.md`):** Contexto dado al analista en el informe R46-C §3.7 (no puede verse en la espera síncrona).
 29. La contra anulación positiva deja ahora la tarjeta en «Finalizada Positiva» (antes quedaba «Incompleta»). ¿Es correcto?
-30. La espera de respaldo dura como máximo 90 s, y después se habilita ACEPTAR. ¿Es un valor adecuado?
+30. La espera de respaldo dura como máximo 90 s, y después se habilita ACEPTAR. ¿Es un valor adecuado? → **Respondida (R46-C, `pruebas/r46-c-alta-si24-detalle.md`):** Funcionamiento explicado en el informe R46-C §3.7; se recomienda mantener 90 s.
 31. ¿Tenéis pólizas o casos que generen acciones administrativas o anulación fuera de norma, para medir sus tiempos?
 
 ### Argumentario y tréboles (rondas 34–35)
 32. Al RECARGAR, SCA2 desmarca el argumento; SCA lo deja marcado con los datos antiguos. ¿Os parece bien? **→ RESPONDIDA (R46-D):** se deja marcado como en SCA; hecho y probado (`pruebas/r46-d-argumentario-treboles.md`).
-33. Tras entregar tréboles: ¿qué hace CANCELAR en la enhorabuena? ¿Y la entrega parcial (Club OK + TTQ KO)? ¿Y las observaciones de más de 999 caracteres? ¿Hace falta el aviso «cerca del vencimiento»? Si falla SVA, ¿el argumento se queda abierto? ¿Tenéis una póliza NO CLUB para probar el fallo de tréboles? **→ RESPONDIDA en parte (R46-D):** tréboles en Club+TTQ al ACEPTAR la enhorabuena y CANCELAR sin aplicar; entrega parcial → error relanzable en `/errores`; >999 se truncan; hecho. Fallo SVA: pendiente de negocio (hoy el argumento queda pendiente). Aviso «cerca del vencimiento»: lo explica R46-C. Póliza NO CLUB: pendiente de que la paséis.
+33. Tras entregar tréboles: ¿qué hace CANCELAR en la enhorabuena? ¿Y la entrega parcial (Club OK + TTQ KO)? ¿Y las observaciones de más de 999 caracteres? ¿Hace falta el aviso «cerca del vencimiento»? Si falla SVA, ¿el argumento se queda abierto? ¿Tenéis una póliza NO CLUB para probar el fallo de tréboles? **→ RESPONDIDA en parte (R46-D):** tréboles en Club+TTQ al ACEPTAR la enhorabuena y CANCELAR sin aplicar; entrega parcial → error relanzable en `/errores`; >999 se truncan; hecho. Fallo SVA: pendiente de negocio (hoy el argumento queda pendiente). Aviso «cerca del vencimiento»: lo explica R46-C. Póliza NO CLUB: pendiente de que la paséis. → **Aviso «cerca del vencimiento» (R46-C):** contexto dado en `pruebas/r46-c-alta-si24-detalle.md` §3.8; el resto lo cubre R46-D.
 34. Después de mantener argumentos, el catálogo Aurora de contra anulación no se actualiza hasta pulsar «Recargar desde CORE». ¿Vale así, se hace una recarga programada o todo lee de CORE? **→ RESPONDIDA (R46-D):** recarga automática tras alta/modificación/baja de argumento; hecho.
 35. ¿Podéis volver a dar de alta BAJAPRIM? Tampoco he podido comparar con SCA, porque su mantenimiento da 403 a todos los usuarios de prueba.
 36. Observación «Se han aplicado Y tréboles»: ¿va separada de las observaciones del gestor? ¿Es solo para TTQ? ¿Tenéis pólizas con TTQ, Retos o SVA vigentes para probarla en pantalla? **→ RESPONDIDA (R46-D):** extendida a SVA (con el SVA aplicado) y a reserva de prima; hecho, pendiente de prueba en pantalla.
@@ -76,4 +76,4 @@ Parte A: dudas de la ronda 45, que salen de las pruebas de esta ronda. Parte B: 
 41. **Inducciones de tipo A** (iniciador APP-SCAN) que aparecen junto a la de tipo I y que SCA2 no lanza: ¿es normal que el cliente reciba las dos?
 42. **ANL CONCLUIDA en PRE:** ANL no marca CONCLUIDA en las solicitudes SCA2. ¿Quién la marca? ¿El rechazo se da por concluido con ESTADO=2?
 43. **Catalogación final NSE en CORE** (SCA pone 1 y SCA2 pone 2): la corrección en `SCA2_ContraAnulacionOpciones` está preparada a falta de vuestro OK.
-44. **Retorno al formulario tras el alta** (doc 44): la propuesta está pendiente de vuestro OK. Puede que ya esté cubierta por las rondas 35 y 42.
+44. **Retorno al formulario tras el alta** (doc 44): la propuesta está pendiente de vuestro OK. Puede que ya esté cubierta por las rondas 35 y 42. → **Respondida (R46-C, `pruebas/r46-c-alta-si24-detalle.md`):** OK. Cubierta por R35 + R42; sin cambios adicionales (informe R46-C §3.9).
