@@ -7,6 +7,7 @@ Origen: documento de los analistas «Analisis SCA2.docx» (respuestas a `../63-d
 |---|---|---|
 | R46-B | ANL, NSE, NEW y mecanización: «Cancelada» (explicación), wAutemis 916 en pantalla, excepción de exceso de tiempo, nivel NEW (confirmación), espera NSE 5 min/30 s, catalogación MAS MOVIL, notación 4/5 + 2/7, rechazo NSE → mecanización 4, catalogación final NSE. Informe `r46-b-anl-nse-new.md` | EN CURSO |
 | R46-A | Detalle (nivel, bloque Inducción Verti/vencimiento), etiquetas de estado, filtro Estado, combinaciones fuera de tabla, ACEPTAR Vida, clave Vida | EN CURSO |
+| R46-D | Argumentario (RECARGAR), enhorabuena/tréboles, entrega parcial Club/TTQ, observaciones >999, catálogo Aurora tras mantener argumentos, observaciones SVA/reserva de prima, columna `POLIZA_FECHAULTIMOSINIESTRO` | EN CURSO |
 
 ## Objetos en edición
 | Objeto | Sesión | Estado | Versión |
