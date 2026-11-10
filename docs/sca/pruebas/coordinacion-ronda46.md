@@ -7,6 +7,7 @@ Origen: documento de los analistas «Analisis SCA2.docx» (respuestas a `../63-d
 |---|---|---|
 | R46-B | ANL, NSE, NEW y mecanización: «Cancelada» (explicación), wAutemis 916 en pantalla, excepción de exceso de tiempo, nivel NEW (confirmación), espera NSE 5 min/30 s, catalogación MAS MOVIL, notación 4/5 + 2/7, rechazo NSE → mecanización 4, catalogación final NSE. Informe `r46-b-anl-nse-new.md` | EN CURSO |
 | R46-A | Detalle (nivel, bloque Inducción Verti/vencimiento), etiquetas de estado, filtro Estado, combinaciones fuera de tabla, ACEPTAR Vida, clave Vida | EN CURSO |
+| R46-C | Alta, Si24/Verti, detalle y mensajes: aviso Si24 central/CCC, FINALIZAR sin carta (perfiles SCA), N5 error CMP agente, N6 Verti nivel 2, CONSULTAR SOLICITUD, mensaje fecha anterior a efecto, enlace NSE &n=&o=, lógica Vida (explicación), COMPROBAR AHORA/respaldo/cerca del vencimiento, retorno al formulario (doc 44). Informe `r46-c-alta-si24-detalle.md` | EN CURSO |
 | R46-D | Argumentario (RECARGAR), enhorabuena/tréboles, entrega parcial Club/TTQ, observaciones >999, catálogo Aurora tras mantener argumentos, observaciones SVA/reserva de prima, columna `POLIZA_FECHAULTIMOSINIESTRO` | EN CURSO |
 
 ## Objetos en edición
@@ -15,6 +16,11 @@ Origen: documento de los analistas «Analisis SCA2.docx» (respuestas a `../63-d
 | IF `SCA2_DetalleSolicitud` | R46-A | LIBERADO | v73 → v74 |
 | ER `SCA2_calcularEstadoSolicitud` | R46-A | LIBERADO | v6 → v7 |
 | IF `SCA2_BuscadorTabla` (filtro Estado) | R46-A | LIBERADO sin cambios | v18 (sin cambios) |
+| IF `SCA2_ContraAnulacionOpciones` (aviso Si24, FINALIZAR sin carta) | R46-C | RESERVADO | v70 → ? |
+| IF `SCA2_AltaSolicitudAnulacionPopUp` (CONSULTAR SOLICITUD) | R46-C | RESERVADO | v11 → ? |
+| ER `SCA2_erroresGuardarSolicitud` (mensaje fecha anterior a efecto) | R46-C | RESERVADO | v2 → ? |
+| IF `SCA2_DetalleSolicitud` (enlace NSE, Verti nivel 2) | R46-C | RESERVADO | v74 → ? |
+| ER `SCA2_puedeGestionarTarea` (Verti nivel 2) | R46-C | RESERVADO | v6 → ? |
 
 ## Reglas
 - Solo objetos SCA2. Nunca PRO. No tocar solicitudes/instancias históricas. No desactivar/activar la aplicación (variable CORE compartida con SCA).
