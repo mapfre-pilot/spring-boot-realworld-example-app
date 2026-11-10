@@ -1,4 +1,6 @@
-# Dudas pendientes para el analista (06/11/2026)
+# Dudas pendientes para el analista (06/11/2026; respuestas del 10/11/2026 incorporadas)
+
+> **Ronda 46 (10/11/2026, «Analisis SCA2.docx»):** el analista responde los puntos 1, 2–6 y 21–24. Cada punto lleva su estado: **RESPONDIDA** (cerrada), **RESPONDIDA → cambio en SCA2** (aplicado en R46-A) o **ABIERTA** (sigue pendiente o depende de terceros). Detalle y pruebas en `pruebas/r46-a-analisis-detalle-estados.md`. Los puntos sin marca siguen sin respuesta.
 
 Parte A: dudas de la ronda 45, que salen de las pruebas de esta ronda. Parte B: dudas de rondas anteriores de las que no tengo respuesta registrada; si ya están contestadas, indicadlo y las cierro. Mientras no haya respuesta, SCA2 sigue funcionando como se describe en cada punto.
 
@@ -6,11 +8,17 @@ Parte A: dudas de la ronda 45, que salen de las pruebas de esta ronda. Parte B: 
 
 ### Vida
 1. **Clave de producción:** 18472 + 0372 da `184720372 / 0035099` (es lo implementado), pero el documento pone `18420372 / 0035099`. ¿Cuál es la correcta? Si es la segunda, ¿qué regla quita el 7?
+   - **RESPONDIDA:** la correcta es `184720372 / 0035099` (lo implementado); el documento tenía una errata. No se cambia nada. [Observado]
 2. **Alta Vida en CORE (error 4004 «Datos insuficientes» en `generarStudAnul`):** se envían la clave, la estructura comercial y la prima, y sigue fallando. ¿Qué dato pide CORE para Vida? ¿Es `numApli`, y con qué valor? ¿Puede CORE pasar el log de las altas PDTE-13377305 o PDTE-269184469?
+   - **ABIERTA (AM/CORE):** el analista no lo sabe; pide acceso al servicio de alta para probarlo él (pregunta a José Enrique Peñarrubia). [Pendiente]
 3. **Solicitud Vida 15788717** (JJGONZ2, 03/11 13:34): no está ni en SCA ni en SCA2. ¿Por qué aplicación se dio de alta? La única diferencia que he encontrado es la compañía del usuario: 3 en esa solicitud y 41 en las de SCA/SCA2. He probado con 3 y CORE sigue dando 4004.
+   - **ABIERTA (AM):** hay que preguntar al AM cómo dan de alta Vida; en teoría no debería haber diferencia con otros ramos. [Pendiente]
 4. **`fecValidez`** del servicio de estructuras comerciales: ¿hay que enviarla, y con qué fecha (hoy, efecto o anulación)? Ahora el servicio responde bien sin ella.
+   - **ABIERTA:** la respuesta está incompleta («Hay que ver qué»). SCA2 sigue sin enviarla. [Pendiente]
 5. **Estructura comercial y prima en el alta Vida:** SCA2 las envía y SCA las manda vacías. ¿Las mantenemos?
+   - **ABIERTA:** «Tiene que funcionar como Autos y Hogar», pero el analista necesita el servicio para comprobarlo. Se mantiene el envío actual. [Pendiente]
 6. **ACEPTAR tras el alta:** no se duplican solicitudes ni en SCA2 ni en SCA, pero el botón no se ve deshabilitado al momento. ¿Basta con que no haya duplicados? Que se vea deshabilitado al instante obliga a añadir un paso más.
+   - **RESPONDIDA:** «Debe hacer lo mismo que con Autos y Hogar». Por código, el ACEPTAR de `SCA2_AltaSolicitudPage` es único para todos los ramos (`local!aceptarPulsado`), así que Vida ya se comporta igual. La prueba funcional en Vida sigue bloqueada por el 4004 del punto 2. [Observado]
 
 ### ANL, CORE, NEW y NSE
 7. **«Cancelada» al decir NO en Anulación/Suscripción:** la tabla pide solicitud 14 + mecanización 4. SCA2 deja 5 + 4 («Rechazada anulación»). El servicio que pone 14 en la contra anulación no sirve si no hay una contra anulación abierta. ¿Qué servicio de CORE hay que llamar? ¿O aceptamos 5 + 4?
@@ -32,9 +40,13 @@ Parte A: dudas de la ronda 45, que salen de las pruebas de esta ronda. Parte B: 
 
 ### Etiquetas de estado
 21. ¿Qué etiqueta lleva una solicitud 4/5 con mecanización 3 (incompleta) o 5? Ejemplo: 15788455.
+   - **RESPONDIDA → cambio en SCA2:** «Solicitud Finalizada sin anular», en rojo. Aplicado en `SCA2_calcularEstadoSolicitud` (v6→v7). [Observado]
 22. El filtro «Estado» filtra por el estado interno y no por la etiqueta nueva. Por eso, al elegir «Cancelada» salen filas con otras etiquetas. ¿Debe filtrar por la etiqueta?
+   - **RESPONDIDA (interpretación en R46-A):** «Son los estados los que indican la etiqueta». Se interpreta que la etiqueta se obtiene siempre de los estados (solicitud + mecanización + gestión), según la tabla. El filtro no se ha cambiado; ver la decisión y la duda nueva en el informe R46-A. [Inferido]
 23. ¿Qué etiqueta llevan las combinaciones que no están en la tabla? Son 2 + mecanización 1 sin gestión 5; 2 + mecanización 2/4/7; 14 con mecanización distinta de vacía o 4; 3 con mecanización; y los estados 7–10, 13 y 15–19. Hoy se aplica la lógica anterior.
+   - **RESPONDIDA:** «En teoría esos estados no pueden darse; si tienes algún ejemplo, exponlo». En TEST sí hay ejemplos: 2 + mecanización 2, 2 + mecanización 4 y 3 + mecanización 1. Están listados en el informe R46-A. [Observado]
 24. Durante 1–2 minutos, mientras NSE/ANL termina, se ve un estado provisional («Incompleta» o «Pendiente Nivel 2»). ¿Se deja así, se pone un estado explícito tipo «En proceso» o se refresca la pantalla sola?
+   - **ABIERTA (negocio):** hay que decidirlo con negocio. [Pendiente]
 
 ## B. Rondas anteriores sin respuesta registrada
 

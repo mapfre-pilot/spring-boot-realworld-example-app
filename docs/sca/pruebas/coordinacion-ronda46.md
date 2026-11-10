@@ -10,9 +10,9 @@ Origen: documento de los analistas «Analisis SCA2.docx» (respuestas a `../63-d
 ## Objetos en edición
 | Objeto | Sesión | Estado | Versión |
 |---|---|---|---|
-| IF `SCA2_DetalleSolicitud` | R46-A | RESERVADO | v73 → ? |
-| ER `SCA2_calcularEstadoSolicitud` | R46-A | RESERVADO | v6 → ? |
-| IF `SCA2_BuscadorTabla` (filtro Estado) | R46-A | RESERVADO | ? |
+| IF `SCA2_DetalleSolicitud` | R46-A | LIBERADO | v73 → v74 |
+| ER `SCA2_calcularEstadoSolicitud` | R46-A | LIBERADO | v6 → v7 |
+| IF `SCA2_BuscadorTabla` (filtro Estado) | R46-A | LIBERADO sin cambios | v18 (sin cambios) |
 
 ## Reglas
 - Solo objetos SCA2. Nunca PRO. No tocar solicitudes/instancias históricas. No desactivar/activar la aplicación (variable CORE compartida con SCA).
