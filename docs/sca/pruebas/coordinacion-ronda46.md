@@ -28,7 +28,7 @@ Origen: documento de los analistas «Analisis SCA2.docx» (respuestas a `../63-d
 | IF `SCA2_ContraAnulacionOpciones` (catalogación final NSE) | R46-B | EN ESPERA (reservado por R46-C) | v70 → ? |
 | IF `SCA2_ContraAnulacionCompaniaCatalogacion` (RECARGAR) | R46-D | RESERVADO | v7 |
 | IF `SCA2_ContraAnulacionSGO` (pantalla tréboles) | R46-D | RESERVADO | v4 |
-| IF `SCA2_ContraAnulacionOpciones` (dataRecuperacion) | R46-D | RESERVADO | v70 |
+| IF `SCA2_ContraAnulacionOpciones` (dataRecuperacion) | R46-D | LIBERADO — **aviso a R46-C:** R46-D guardó v72 sobre v70 sin ver la reserva de R46-C y pisó su v71; v73 = v71 de R46-C (aviso Si24/FINALIZAR sin carta, verificado por diff) + campo `aplicarTreboles` de `local!dataRecuperacion` (2 líneas). Si R46-C guarda desde su copia local, que conserve ese campo | v70 → v72 (error) → v73 |
 | IF `SCA2_ContraAnulacionModalRecuperacionPoliza` (enhorabuena) | R46-D | RESERVADO | v15 |
 | IF `SCA2_BandejaErrores` / `SCA2_DetalleErrores` (relanzar TTQ) | R46-D | RESERVADO | v12 / v6 |
 | IF `SCA2_AltaGestionArgumento` (recarga Aurora) | R46-D | RESERVADO | vivo |
