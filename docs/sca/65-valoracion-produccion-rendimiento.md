@@ -55,7 +55,7 @@ En todos los casos el tiempo es del backend (PRE/CORE/CMP); la lógica de Appian
 
 ### Despliegue y operación
 5. DDL de `POLIZA_FECHAULTIMOSINIESTRO` sin ejecutar (sql/63). Sin él se sigue recortando el enlace GESVIDA. [Observado]
-6. Temporizadores: `RefrescarCacheCabecera` sin timer configurado/visible por API y sin instancias hoy; `BarridoCaducidad` sin timer → las solicitudes SCA2 **no caducan**. `Batch Mecanizacion NSE` sin ejecuciones. Hay que decidirlo y revisarlo en Designer. [Observado + Pendiente]
+6. Temporizadores: `RefrescarCacheCabecera` sin timer **por decisión funcional** (R38-A: la caché la renueva el usuario al abrir la cabecera; no es un fallo). `BarridoCaducidad` sin timer → las solicitudes SCA2 **no caducan**. `Batch Mecanizacion NSE` sin ejecuciones. Hay que decidir y revisar en Designer los dos últimos. [Observado + Pendiente]
 7. Reglas `[SCA2]` fuera de la aplicación: tienen que entrar en el paquete (doc 58). [Observado]
 8. Índices, secuencias y nulabilidad de BD: el DBA tiene que compararlos con TEST antes de PRO (doc 58). [Pendiente]
 9. Callbacks de autorización para solicitudes SCA2 y equivalente de reserva de prima/batch NSE (doc 58). [Pendiente]
@@ -64,7 +64,7 @@ En todos los casos el tiempo es del backend (PRE/CORE/CMP); la lógica de Appian
 ### Rendimiento
 11. No hay prueba con concurrencia. TEST apunta a servicios PRE, así que los tiempos de PRO pueden ser distintos. [Pendiente]
 12. Procesos síncronos que esperan hasta 5 min a NSE/ANL: con muchos usuarios ocupan el motor de procesos. [Inferido]
-13. Riesgo ya documentado: un alta de más de 30 s devuelve la pantalla y crea la solicitud por detrás (doc 56). [Observado]
+13. Un alta de más de 30 s volvía al formulario y creaba la solicitud por detrás (doc 56). Está corregido desde R35/R37 (espera con aviso y COMPROBAR AHORA); con varios usuarios a la vez hay que volver a medirlo. [Observado]
 
 ## 5. Optimizaciones (por impacto)
 
@@ -83,3 +83,8 @@ En todos los casos el tiempo es del backend (PRE/CORE/CMP); la lógica de Appian
 2. Ejecutar el DDL y configurar/decidir los temporizadores.
 3. Prueba de rendimiento en TEST con 10–20 usuarios simultáneos: buscador, detalle, alta, contra anulación y decisión, con p50/p90/p95 y tasa de errores.
 4. Desplegar en PRO apagada (fase 1 doc 58), smoke test y abrir por oleadas desde Decisora.
+
+## 7. Qué optimizaciones cambian la funcionalidad (10/11/2026)
+
+- **Sin cambio funcional, en curso en R47-B:** 5 (vigilancia de procesos activos y limpieza) y 1a (cabecera en paralelo, mismos datos y mismos errores).
+- **Con cambio funcional:** 1b, 2, 3 y 4. Se plantean a analistas y negocio en el doc 66 y no se tocan sin su visto bueno.
