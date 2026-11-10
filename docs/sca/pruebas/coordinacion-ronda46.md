@@ -21,10 +21,11 @@ Origen: documento de los analistas «Analisis SCA2.docx» (respuestas a `../63-d
 | ER `SCA2_erroresGuardarSolicitud` (mensaje fecha anterior a efecto) | R46-C | RESERVADO | v2 → ? |
 | IF `SCA2_DetalleSolicitud` (enlace NSE, Verti nivel 2) | R46-C | RESERVADO | v74 → ? |
 | ER `SCA2_puedeGestionarTarea` (Verti nivel 2) | R46-C | RESERVADO | v6 → ? |
-| ER `SCA2_simularAnulacion` (wAutemis 916 bloquea el alta) | R46-B | RESERVADO | v17 → ? |
+| ER `SCA2_simularAnulacion` (wAutemis 916 bloquea el alta) | R46-B | LIBERADO | v17 → v18 |
 | PM `SCA2 CMD Finalizar` (espera 30 s y error de exceso de tiempo) | R46-B | RESERVADO | — |
-| CONST `SCA2_VAL_ESPERA_NSE_FINALIZAR_MAX_INTENTOS` (10 × 30 s) | R46-B | RESERVADO | v1 → ? |
-| IF `SCA2_AltaSolicitudPage` (catalogación propuesta por el servicio) | R46-B | RESERVADO | v51 → ? |
+| CONST `SCA2_VAL_ESPERA_NSE_FINALIZAR_MAX_INTENTOS` (10 × 30 s) | R46-B | LIBERADO sin cambios (10 consultas × 30 s = 5 min) | v1 (sin cambios) |
+| IF `SCA2_AltaSolicitudPage` (catalogación propuesta por el servicio) | R46-B | LIBERADO | v51 → v52 |
+| PM `SCA2 CMD Mecanizar` (rechazo ANL → mecanización 4) | R46-B | RESERVADO | — |
 | IF `SCA2_ContraAnulacionOpciones` (catalogación final NSE) | R46-B | EN ESPERA (reservado por R46-C) | v70 → ? |
 | IF `SCA2_ContraAnulacionCompaniaCatalogacion` (RECARGAR) | R46-D | RESERVADO | v7 |
 | IF `SCA2_ContraAnulacionSGO` (pantalla tréboles) | R46-D | RESERVADO | v4 |
