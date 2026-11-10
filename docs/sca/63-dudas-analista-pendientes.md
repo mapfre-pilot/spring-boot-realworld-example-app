@@ -62,15 +62,15 @@ Parte A: dudas de la ronda 45, que salen de las pruebas de esta ronda. Parte B: 
 31. ¿Tenéis pólizas o casos que generen acciones administrativas o anulación fuera de norma, para medir sus tiempos?
 
 ### Argumentario y tréboles (rondas 34–35)
-32. Al RECARGAR, SCA2 desmarca el argumento; SCA lo deja marcado con los datos antiguos. ¿Os parece bien?
-33. Tras entregar tréboles: ¿qué hace CANCELAR en la enhorabuena? ¿Y la entrega parcial (Club OK + TTQ KO)? ¿Y las observaciones de más de 999 caracteres? ¿Hace falta el aviso «cerca del vencimiento»? Si falla SVA, ¿el argumento se queda abierto? ¿Tenéis una póliza NO CLUB para probar el fallo de tréboles?
-34. Después de mantener argumentos, el catálogo Aurora de contra anulación no se actualiza hasta pulsar «Recargar desde CORE». ¿Vale así, se hace una recarga programada o todo lee de CORE?
+32. Al RECARGAR, SCA2 desmarca el argumento; SCA lo deja marcado con los datos antiguos. ¿Os parece bien? **→ RESPONDIDA (R46-D):** se deja marcado como en SCA; hecho y probado (`pruebas/r46-d-argumentario-treboles.md`).
+33. Tras entregar tréboles: ¿qué hace CANCELAR en la enhorabuena? ¿Y la entrega parcial (Club OK + TTQ KO)? ¿Y las observaciones de más de 999 caracteres? ¿Hace falta el aviso «cerca del vencimiento»? Si falla SVA, ¿el argumento se queda abierto? ¿Tenéis una póliza NO CLUB para probar el fallo de tréboles? **→ RESPONDIDA en parte (R46-D):** tréboles en Club+TTQ al ACEPTAR la enhorabuena y CANCELAR sin aplicar; entrega parcial → error relanzable en `/errores`; >999 se truncan; hecho. Fallo SVA: pendiente de negocio (hoy el argumento queda pendiente). Aviso «cerca del vencimiento»: lo explica R46-C. Póliza NO CLUB: pendiente de que la paséis.
+34. Después de mantener argumentos, el catálogo Aurora de contra anulación no se actualiza hasta pulsar «Recargar desde CORE». ¿Vale así, se hace una recarga programada o todo lee de CORE? **→ RESPONDIDA (R46-D):** recarga automática tras alta/modificación/baja de argumento; hecho.
 35. ¿Podéis volver a dar de alta BAJAPRIM? Tampoco he podido comparar con SCA, porque su mantenimiento da 403 a todos los usuarios de prueba.
-36. Observación «Se han aplicado Y tréboles»: ¿va separada de las observaciones del gestor? ¿Es solo para TTQ? ¿Tenéis pólizas con TTQ, Retos o SVA vigentes para probarla en pantalla?
+36. Observación «Se han aplicado Y tréboles»: ¿va separada de las observaciones del gestor? ¿Es solo para TTQ? ¿Tenéis pólizas con TTQ, Retos o SVA vigentes para probarla en pantalla? **→ RESPONDIDA (R46-D):** extendida a SVA (con el SVA aplicado) y a reserva de prima; hecho, pendiente de prueba en pantalla.
 
 ### Otros
 37. **Objetos SCA2 sin uso** (ronda 33, `pruebas/r33-objetos-sin-uso-verificados.md`): hay 20 que se pueden borrar sin riesgo. ¿Los borro? Por ahora no he borrado nada.
-38. **Caché de cabecera** (ronda 38): para no tener que recortar el enlace GESVIDA, la solución definitiva es ampliar la columna `POLIZA_FECHAULTIMOSINIESTRO`, lo que necesita un cambio en la base de datos (DDL). ¿Se hace?
+38. **Caché de cabecera** (ronda 38): para no tener que recortar el enlace GESVIDA, la solución definitiva es ampliar la columna `POLIZA_FECHAULTIMOSINIESTRO`, lo que necesita un cambio en la base de datos (DDL). ¿Se hace? **→ RESPONDIDA (R46-D):** sí; tabla exclusiva de SCA2, DDL bloqueado en TEST (tabla no gestionada por Appian); script en `sql/63-r46d-ampliar-poliza-fechaultimosiniestro.sql`.
 39. **Entrada desde FDC/Decisora:** ¿hay que mantenerla? Para ello necesito ejemplos de las llamadas.
 40. **Switch Verti:** se usa el FLAG global `vertiSuscripcionInteligente`, porque `SCA2_flagVerti` por nuuma da false con los usuarios de prueba. ¿Es ese el switch?
 41. **Inducciones de tipo A** (iniciador APP-SCAN) que aparecen junto a la de tipo I y que SCA2 no lanza: ¿es normal que el cliente reciba las dos?
