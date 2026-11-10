@@ -1,0 +1,17 @@
+# Coordinación ronda 47 — 11.º «Análisis SCA2» (10/11/2026)
+
+Origen: respuestas del analista a `../63-dudas-analista-pendientes.md` (rectificación duda 25 y pólizas TTQ NO CLUB). Herramienta: MCP de Appian TEST (`appian-dev-mcp-c90b`, plugin 26.9.15); alternativa Deployment API v2.
+
+## Sesiones
+| Sesión | Alcance | Estado |
+|---|---|---|
+| R47-A | Vida «MALA GESTIÓN» en el desplegable de detalle del alta (duda 25, rectificada) y tréboles TTQ con clientes NO CLUB (pólizas 0732400122931 y 0731700076776). Informe `r47-a-vida-mala-gestion-ttq.md` | EN CURSO |
+
+## Objetos en edición
+| Objeto | Sesión | Estado | Versión |
+|---|---|---|---|
+| IF `SCA2_AltaSolicitudPage` (detalle MALA GESTIÓN en Vida) | R47-A | RESERVADO | — |
+
+## Reglas
+- Solo objetos SCA2. Nunca PRO. No tocar solicitudes/instancias históricas. No desactivar/activar la aplicación (variable CORE compartida con SCA).
+- Protocolo: `git pull` → reservar aquí (commit+push) → leer vivo → backup → cambio mínimo → importar → reexportar y comparar → liberar con vN→vM.
