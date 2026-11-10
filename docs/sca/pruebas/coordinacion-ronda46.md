@@ -26,7 +26,7 @@ Origen: documento de los analistas «Analisis SCA2.docx» (respuestas a `../63-d
 | CONST `SCA2_VAL_ESPERA_NSE_FINALIZAR_MAX_INTENTOS` (10 × 30 s) | R46-B | LIBERADO sin cambios (10 consultas × 30 s = 5 min) | v1 (sin cambios) |
 | IF `SCA2_AltaSolicitudPage` (catalogación propuesta por el servicio) | R46-B | LIBERADO | v51 → v52 |
 | PM `SCA2 CMD Mecanizar` (rechazo ANL → mecanización 4) | R46-B | LIBERADO (solo nodo 304; validación 0 errores / 0 avisos; reexport = preparado) | sin `versionId` en la API de diseño (publicado 10/11/2026) |
-| IF `SCA2_ContraAnulacionOpciones` (catalogación final NSE) | R46-B | LIBERADO (2 cambios sobre la v74 viva, que ya contenía R46-C y R46-D; reexport = preparado) | v74 → v75 |
+| IF `SCA2_ContraAnulacionOpciones` (catalogación final NSE) | R46-B | RESERVADO de nuevo: acotar el cambio de v75 a las llamadas que escriben en CORE (no a la consulta de argumentos) | v74 → v75 → ? |
 | IF `SCA2_ContraAnulacionCompaniaCatalogacion` (RECARGAR) | R46-D | LIBERADO | v7 → v8 |
 | IF `SCA2_ContraAnulacionSGO` (pantalla tréboles) | R46-D | LIBERADO | v4 → v5 |
 | IF `SCA2_ContraAnulacionOpciones` (dataRecuperacion) | R46-D | LIBERADO — **aviso a R46-C:** R46-D guardó v72 sobre v70 sin ver la reserva de R46-C y pisó su v71; v73 = v71 de R46-C (aviso Si24/FINALIZAR sin carta, verificado por diff) + campo `aplicarTreboles` de `local!dataRecuperacion` (2 líneas). Si R46-C guarda desde su copia local, que conserve ese campo | v70 → v72 (error) → v73; v73 → v74 (R46-D: `local!SVADisponibles` sin el `index(…, "sva")` duplicado, el desplegable SVA fallaba; 1 bloque, sobre v73 vivo). R46-C/R46-B: partid de v74 |
