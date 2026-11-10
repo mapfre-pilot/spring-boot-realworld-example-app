@@ -5,6 +5,7 @@ Origen: documento de los analistas «Analisis SCA2.docx» (respuestas a `../63-d
 ## Sesiones
 | Sesión | Alcance | Estado |
 |---|---|---|
+| R46-B | ANL, NSE, NEW y mecanización: «Cancelada» (explicación), wAutemis 916 en pantalla, excepción de exceso de tiempo, nivel NEW (confirmación), espera NSE 5 min/30 s, catalogación MAS MOVIL, notación 4/5 + 2/7, rechazo NSE → mecanización 4, catalogación final NSE. Informe `r46-b-anl-nse-new.md` | EN CURSO |
 | R46-A | Detalle (nivel, bloque Inducción Verti/vencimiento), etiquetas de estado, filtro Estado, combinaciones fuera de tabla, ACEPTAR Vida, clave Vida | EN CURSO |
 
 ## Objetos en edición
