@@ -111,6 +111,46 @@ a!localVariables(
       padding: "STANDARD",
       marginBelow: "STANDARD"
     ),
+    /* Aviso de operación (R47-B): tareas de inducción (componente CMP) pendientes más de 1 h.
+       Mientras siguen pendientes, la instancia de SCA2 CMD Mecanizar queda ACTIVE esperando el subproceso. Solo lectura. */
+    a!localVariables(
+      local!qEspera: a!queryRecordType(
+        recordType: 'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea',
+        fields: {'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{82a6a3b4-5afe-4dd3-a7f3-46f806490910}id', 'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{32e5a534-ad1a-4f96-b824-41690f0aba43}idSolicitud', 'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{dcf12abd-ff89-48aa-955b-9d099c4ff24a}numPoliza', 'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{b563186d-85c1-43ca-b9ec-74548e606e12}fechaCreacion'},
+        filters: a!queryLogicalExpression(operator: "AND", filters: {
+          a!queryFilter(field: 'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{1a10cef3-4704-407c-8c2d-5ff372a15121}tipo', operator: "=", value: "INDUCCION"),
+          a!queryFilter(field: 'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{e7be363c-399e-48a5-9242-3b2a65680f0f}estado', operator: "=", value: cons!SCA2_TXT_ESTADO_TAREA_PENDIENTE),
+          a!queryFilter(field: 'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{b563186d-85c1-43ca-b9ec-74548e606e12}fechaCreacion', operator: "<", value: now() - intervalds(1, 0, 0))
+        }),
+        pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 100, sort: a!sortInfo(field: 'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{b563186d-85c1-43ca-b9ec-74548e606e12}fechaCreacion', ascending: true))
+      ).data,
+      a!sectionLayout(
+        label: "Aviso de operación: procesos en espera más de 1 hora (" & length(local!qEspera) & ")",
+        labelColor: "NEGATIVE",
+        showWhen: a!isNotNullOrEmpty(local!qEspera),
+        contents: {
+          a!richTextDisplayField(
+            labelPosition: "COLLAPSED",
+            value: a!richTextItem(
+              text: "Solicitudes con la tarea de inducción Verti/Vencimiento (componente CMP) pendiente desde hace más de 1 hora. Mientras esa tarea no se complete, el proceso SCA2 CMD Mecanizar de la solicitud (si sigue activo) queda esperando. Revisar en el componente de inducción; no cancelar procesos desde aquí.",
+              color: "SECONDARY"
+            )
+          ),
+          a!gridField(
+            labelPosition: "COLLAPSED",
+            data: local!qEspera,
+            columns: {
+              a!gridColumn(label: "Solicitud", value: fv!row['recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{32e5a534-ad1a-4f96-b824-41690f0aba43}idSolicitud']),
+              a!gridColumn(label: "Póliza", value: fv!row['recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{dcf12abd-ff89-48aa-955b-9d099c4ff24a}numPoliza']),
+              a!gridColumn(label: "Pendiente desde", value: fv!row['recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{b563186d-85c1-43ca-b9ec-74548e606e12}fechaCreacion']),
+              a!gridColumn(label: "Días en espera", value: tointeger(todate(now()) - todate(fv!row['recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{b563186d-85c1-43ca-b9ec-74548e606e12}fechaCreacion'])), align: "END")
+            },
+            pageSize: 10
+          )
+        },
+        marginBelow: "STANDARD"
+      )
+    ),
     /* Pestañas */
     a!columnsLayout(
       columns: a!forEach(

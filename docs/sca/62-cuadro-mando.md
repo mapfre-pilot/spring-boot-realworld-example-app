@@ -27,13 +27,15 @@ Público: negocio y administradores de la aplicación (la página sigue limitada
 
 Capturas: `img/62-cuadro-mando-*.png`.
 
+**Aviso de operación (R47-B, v28).** Encima de las pestañas, y solo cuando hay casos, se muestra «Aviso de operación: procesos en espera más de 1 hora (N)»: tareas `SCA2 Tarea` de tipo `INDUCCION` en estado `PENDIENTE` creadas hace más de 1 hora (no depende de los filtros). Columnas: Solicitud, Póliza, Pendiente desde y Días en espera. Mientras esa tarea del componente de inducción (CMP) no se completa, la instancia de `SCA2 CMD Mecanizar` sigue ACTIVE esperando el subproceso «Inducción Verti (CMP) [SUB encadenado]». Es de solo lectura y no cancela nada. Detalle: `pruebas/r47-b-optimizaciones-sin-cambio-funcional.md`.
+
 ## 4. Datos que usa
 Records existentes: `SCA2 Solicitud`, `SCA2 Datos Solicitud`, `SCA2 Transicion`, `SCA2 Tarea`, `SCA2 Llamada Servicio`, `SCA2 Error`, `SCA2 Trazabilidad Cliente` y catálogos `SCA2 Cat Motivo` / `SCA2 Cat Detalle`. Las etiquetas de canal, línea de negocio y catalogación salen de las constantes SCA2 existentes. No se ha creado ninguna tabla ni record nuevo.
 
 ## 5. Objetos Appian
 | Objeto | Cambio |
 |---|---|
-| `SCA2_CuadroMando` (interfaz nueva, carpeta de reglas SCA2) | Cuadro de mando completo. Copia: `sail/62-cuadro-mando/SCA2_CuadroMando.sail` |
+| `SCA2_CuadroMando` (interfaz nueva, carpeta de reglas SCA2; v28 tras R47-B) | Cuadro de mando completo y aviso de operación (R47-B). Copia: `sail/62-cuadro-mando/SCA2_CuadroMando.sail` |
 | `SCA2_GestionMantenimientoMenu` (v5 → v6) | Opción «Cuadro de mando» como primera del menú y seleccionada al entrar; las siete opciones anteriores no cambian. Copia: `sail/62-cuadro-mando/SCA2_GestionMantenimientoMenu.sail` |
 
 Vuelta atrás: restaurar la versión 5 de `SCA2_GestionMantenimientoMenu` (deja el cuadro de mando sin enlazar).

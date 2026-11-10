@@ -1,0 +1,721 @@
+=if(a!isNullOrEmpty(ri!numPoliza), null,
+a!localVariables(
+  /*------------------- TIPO Y PÓLIZA --------------------*/
+  local!tipoPoliza: rule!SCA2_obtenerTipoPoliza(numPoliza: ri!numPoliza),
+  local!esAutemis: local!tipoPoliza = cons!SCA2_TXT_WAUTEMIS,
+  local!polizaVida: local!tipoPoliza = cons!SCA2_TXT_VIDA_RIESGO,
+  /* Locales paralelas sin dependencias entre sí (solo ri!numPoliza / usuario):
+     Appian las evalúa en paralelo con local!poliza y la cadena API Clients */
+  local!infoUsuario: rule!SCA2_obtenerInformacionUsuario(),
+  local!nuuma: rule!CMP_obtenerNuuma(user(a!defaultValue(ri!usuario, loggedInUser()), "email")),
+  local!poliza: if(
+    local!esAutemis,
+    rule!SCA2_consultarPolizas(P_NUM_POLIZA: ri!numPoliza),
+    local!polizaVida,
+    rule!SCA2_consultarPolizaVidaRiesgo(numPoliza: ri!numPoliza,responseDetailLevel: ""),
+    rule!SCA2_pObtenerPolizaFecha({
+      pcodcia: 41,
+      pnumpoliza: ri!numPoliza,
+      pnumapli: 0,
+      pnumsptoapli: 0,
+      pmcaconsultaglobal: "S",
+      pmcalk: "S"
+    })
+  ),
+  local!consultaClave: if(
+    local!polizaVida,
+    rule!SCA2_consultarClavevida(
+    codCia: 3,
+    codOficina: reduce(index(_,_,null), local!poliza, {"producersData", 1, "salesOfficeCode"}),
+    codAgente:rule!SCA2_getCodAgenteVida(producersData: index(local!poliza,"producersData",""))
+    ),
+    ""
+  ),
+  local!codAgenteVida:rule!SCA2_getCodAgenteVida(producersData: index(local!poliza,"producersData","")),
+  local!estructuraVida: if(
+      local!polizaVida,
+      rule!SCA2_consultarEstructuraComercial(
+        codCompania: 3,
+        codOficinaDirecta: reduce(index(_,_,null), local!poliza, {"producersData", 1, "salesOfficeCode"}),
+        codAgenteVida:local!codAgenteVida
+      ),
+      ""
+  ),
+  local!tomadorVida:index(local!poliza,"participantFigures",1,"figurePersonalData",1,""),
+  /*------------------- ESPECÍFICOS PÓLIZA -------------------*/
+  local!datosPersonales: if(
+    local!polizaVida,
+    index(local!poliza, "participantFigures", wherecontains("TO", index(local!poliza, "participantFigures", "participantFigureTypeCode", null)), 1, null),
+    if(
+      local!esAutemis,
+      index(local!poliza, "MSSConsultarPolizas", "DATOS_PCA", "DATOS_TO", null),
+      index(local!poliza, "MSSPObtenerPolizaFecha", "poconpolizat", "array", "datospersonales", 1, "array", 1, null)
+    )
+  ),
+  local!datosPoliza: if(
+    local!esAutemis,
+    index(local!poliza, "MSSConsultarPolizas", "DATOS_PCA", "DATOS_POLIZA", null),
+    index(local!poliza, "MSSPObtenerPolizaFecha", "poconpolizat", "array", "datosgeneralespol", 1, "array", 1, null)
+  ),
+  local!datosAgente: if(
+    local!esAutemis,
+    index(local!poliza, "MSSConsultarPolizas", "DATOS_PCA", "DATOS_STR_COMER", null),
+    index(local!poliza, "MSSPObtenerPolizaFecha", "poconpolizat", "array", "agente", 1, "array", 1, null)
+  ),
+  local!datosCaracteristicas: if(
+    local!esAutemis,
+    null,
+    index(local!poliza, "MSSPObtenerPolizaFecha", "poconpolizat", "array", "riesgos", 1, "array", 1, "caracteristicas", "array", null)
+  ),
+  local!datosPto: if(
+    local!esAutemis,
+    null,
+    index(local!poliza, "MSSPObtenerPolizaFecha", "poconpolizat", "array", "datosgeneralesspto", 1, "array", 1, null)
+  ),
+
+  /*------------------- SÓLO NSE -------------------*/
+  local!figurasParticipantes: index(local!poliza, "MSSPObtenerPolizaFecha", "poconpolizat", "array", "figurasparticipantes", 1, "array", "figuraparticipante", null),
+  local!tomador: if(
+    local!esAutemis, 
+    null,
+    index(local!figurasParticipantes, wherecontains("S", index(local!figurasParticipantes, "mcaprincipal", null)), 1, null)),
+  local!tomadorNombre:
+  if(
+    local!tipoPoliza = "wAutemis",
+    index(local!datosPersonales,"NOMBRE",""),
+  if(
+    and(index(local!tomador, "mcafisico", null) = "S", a!isNotNullOrEmpty(local!tomador)),
+    reduce(
+      index(_, _, null),
+      local!tomador,
+      {
+        "datospersonales",
+        "array",
+        1,
+        "personafisica",
+        "nomtercero"
+      }
+    ),
+    reduce(
+      index(_, _, null),
+      local!tomador,
+      {
+        "datospersonales",
+        "array",
+        1,
+        "personajuridica",
+        "razonsocial"
+      }
+    )
+  )
+  ),
+  
+  local!tomadorApe1:if(
+    local!tipoPoliza = "wAutemis",
+    index(local!datosPersonales,"APE1",""),
+    if(
+      and(index(local!tomador, "mcafisico", null) = "S", a!isNotNullOrEmpty(local!tomador)),
+      reduce(
+        index(_, _, null),
+        local!tomador,
+        {
+          "datospersonales",
+          "array",
+          1,
+          "personafisica",
+          "ape1tercero"
+        }
+      ),
+      null
+      )
+    ),
+    local!tomadorApe2: if(
+      local!tipoPoliza = "wAutemis",
+      index(local!datosPersonales,"APE2",""),
+      if(
+      and(index(local!tomador, "mcafisico", null) = "S", a!isNotNullOrEmpty(local!tomador)),
+      reduce(
+        index(_, _, null),
+        local!tomador,
+        {
+          "datospersonales",
+          "array",
+          1,
+          "personafisica",
+          "ape2tercero"
+        }
+      ),
+     null
+    )
+    ),
+    
+    local!tomadorNif: if(
+      local!tipoPoliza = "wAutemis",
+      index(local!datosPersonales,"NUM_DOCUM",""),
+      index(local!tomador, "coddocum", null)
+    ),
+  local!bonireca: index(local!poliza, "MSSPObtenerPolizaFecha", "poconpolizat", "array", 1, "bonireca", "array", 1, "caracteristicas", "array", null),
+
+  local!dueDateVida: a!defaultValue(
+    reduce(index(_,_,null), local!poliza, {"contractData", 1, "duedate"}),
+    null
+  ),
+  
+  /*------------------- PLAN PAGO -------------------*/
+  local!planPago: rule!SCA2_consultarPlanPagoPorPoliza(pnumpoliza: ri!numPoliza),
+  local!planPagoNSE: index(local!poliza, "MSSPObtenerPolizaFecha", "poconpolizat", "array", "planespago", 1, "array", 1, null),
+
+  local!formaDePago: if(
+    local!esAutemis,
+    index(local!datosPoliza, "NOM_FORMA_PAGO", null),
+    index(local!planPagoNSE, "nomplanpago", null)
+  ),
+  local!nomProducto: if(
+    local!esAutemis, 
+    index(local!datosPoliza, "NOM_PRODUCTO", null),
+    index(local!datosPto, "nomprodcomercial", null)
+    ),
+  local!fechaVencimiento: concat(year(now()) - year(todate(left(a!defaultValue(index(local!datosPoliza, if(local!esAutemis, "FEC_EFECT_INI", "fecefecini"), null), today()), 10))), " años"),
+  
+  local!primaActual:  index(local!poliza, "premiumData", 1, "periodicContribution", 1, "contributionFrequencyCode", null),
+  local!primaValor: index(local!poliza, "premiumData", 1, "periodicContribution", 1, "premiumAmn", null),
+  
+  /*local!dtoVinculacion: index(local!poliza, "discountData", 1, "discountLink", null),*/
+  /*local!dtoCampaniaEmpleado: index(local!poliza, "discountData", 1, "commercialCampaign", 1, null),*/
+  /*local!dtoTecnico: index(local!poliza, "discountData", 1, "autonomy", 1, "discountTranches", null),*/
+
+  /*------------------- DATOS VEHÍCULO -------------------*/
+  local!listadoCaracteristicasVehiculo: {"COD_CATEGORIA", "COD_MARCA", "COD_MODELO", "COD_TIPO_VEHIC", "FEC_PRIM_MATRIC", "NUM_MATRICULA", "COD_VEHIC_MAPFRE"},
+  local!caracteristicasVehiculo: index(local!datosCaracteristicas, wherecontains(
+    local!listadoCaracteristicasVehiculo,
+    index(local!datosCaracteristicas, "codcampo", null)
+  ), null),
+  local!datosVehiculo: if(
+    local!esAutemis,
+    index(local!poliza, "MSSConsultarPolizas", "DATOS_PCA", "DATOS_VEHIC", null),
+    'type!{http://EMISION_AUTOS_POLIZAS_SMED/consultarPolizas/v3_0_0}DATOS_VEHIC'(
+      TIP_VEHICULO: index(local!caracteristicasVehiculo, 4, "valcampo", null),
+      CAT_VEHIC: index(local!caracteristicasVehiculo, 1, "valcampo", null),
+      COD_MARCA: index(local!caracteristicasVehiculo, 2, "valcampo", null),
+      NOM_MARCA: index(local!caracteristicasVehiculo, 2, "txtcampo", null),
+      COD_MODELO: index(local!caracteristicasVehiculo, 3, "valcampo", null),
+      NOM_MODELO: index(local!caracteristicasVehiculo, 3, "txtcampo", null),
+      NUM_NIVEL_REPARABILIDAD: null,
+      ANTIGUEDAD_VEHIC: elapseddays(a!defaultValue(todatetime(index(local!caracteristicasVehiculo, 6, "valcampo", null)), now()), now())/(365.25),
+      DESC_CAT_VEHIC: index(local!caracteristicasVehiculo, 4, "txtcampo", null),
+      VALOR_TARIFA: null,
+      MATRICULA: index(local!caracteristicasVehiculo, 7, "valcampo", null),
+      COD_TIP_LOCALIZADOR: null,
+      DESC_TIP_LOCALIZADOR: null,
+      COD_TIP_CONTR_LOCALIZADOR: null,
+      DESC_TIP_CONTR_LOCALIZADOR: null,
+    )
+  ),
+
+  /*------------------- API CLIENTS -------------------*/
+  local!searchAPI: rule!SCA2_searchAPIClients(request: {
+     "policyNumber": ri!numPoliza, 
+     "policyRolesFilter": "policyRolesFilter":{
+       "startDate": datetext(today(),"yyyy-MM-dd"),
+       "policyRoleIds":{"12"},
+     },
+     "searchDetail": { 
+       "potencialInd": true, 
+       "notVisible": true }
+  }),
+  local!benefitsAPI: rule!SCA2_benefitsAPIClients(clientId: index(local!searchAPI, "clientId", null)),
+  local!profileAPI: rule!SCA2_perfilAPIClients(clientId: index(local!searchAPI, "clientId", null)),
+  local!integralityAPI: rule!SCA2_integralityDiscountPercentAPIClients(identityDocumentTypeCode: index(local!searchAPI, "identityDocumentTypeCode", null), identityDocumentNumber: index(local!searchAPI, "identityDocumentNumber", null), companyId: if(local!polizaVida,"3",index(local!datosPoliza, if(local!esAutemis, "COD_CIA", "codcia"), null)), applicationId: index(local!datosPoliza, if(local!esAutemis, "NUM_APLI", "numapli"), null)),
+  local!contactMethodAPI: rule!SCA2_contactMethodAPIClients(idCliente: index(local!searchAPI, "clientId", null)),
+  /*local!clientInformationAPI: rule!SCA2_clientInformationAPIClients(clientId: index(local!searchAPI, "clientId", null), accept_language: index(local!datosPersonales, "codidioma", "es-ES")),*/
+
+  /*------------------- VARIABLES SEGÚN TIPO -------------------*/
+  local!consultaSiniestrosPoliza: if(local!tipoPoliza = "NSE-Autos", rule!SCA2_consultarSiniestroPoliza(numPoliza: ri!numPoliza, matricula: index(local!datosVehiculo, "MATRICULA", null), idUsuario: if(a!isNullOrEmpty(ri!usuario), reduce(index(_,_,null), local!infoUsuario, {"infoUsuarioDTO", "nuuma"}), index(split(user(ri!usuario, "username"), "@"), 1, "")), indConsultaHistorico: "S"), null), /*--- SI NSE AUTOS ---*/
+  local!consultaFecUltimoSiniestro: if(local!tipoPoliza = "NSE-Hogar", rule!SCA2_consultarFechaUltimoSiniestro(numPoliza: ri!numPoliza, matricula: index(local!datosVehiculo, "MATRICULA", null), idUsuario: if(a!isNullOrEmpty(ri!usuario), reduce(index(_,_,null), local!infoUsuario, {"infoUsuarioDTO", "nuuma"}), index(split(user(ri!usuario, "username"), "@"), 1, "")), indConsultaHistorico: "S"), null), /*--- SI NSE HOGAR ---*/
+  local!siniestrosUltimoAnyo: if(
+    a!isNullOrEmpty(index(local!consultaSiniestrosPoliza, "siniestros", null)),
+    0,
+    length(wherecontains(tostring(year(today())), right(index(local!consultaSiniestrosPoliza, "siniestros", "fechaSiniestro", null), 4))) 
+  ),
+  /*local!consultaPolizaPrerenovada: if(local!esAutemis, null, rule!SCA2_obtenerPolizaPrerenovada(*/
+    /*'type!{http://ejb.cfsa.emklnconsultapolizaprerenovacion.app.mapfre.com/}mSEPObtenerPolizaPrerenovadaDTO'(*/
+      /*pcodcia: tointeger(index(local!datosPoliza, "codcia", 0)),*/
+      /*pnumpoliza: ri!numPoliza,*/
+      /*pnumapli: 0,*/
+      /*pmcasptotmp: "N",*/
+      /*pmcaconsultaglobal: "S",*/
+      /*pmcalk: "S",*/
+    /*)*/
+  /*)),*/
+  /*local!obtenerEstructuraComercial: if(local!esAutemis, null, rule!SCA2_obtenerEstructuraComercial(cod_tercero_agt: index(local!datosAgente, "codterceroagt", null))),*/
+
+
+  /*-------------------- TE CUIDAMOS -------------------*/
+  local!teCuidamos: index(
+    local!benefitsAPI,
+    wherecontains(
+      "teCuidamos",
+      touniformstring(index(local!benefitsAPI, "benefitName", null))
+    ), 1, null),
+
+    
+    
+  /*------------------- TIPO PRODUCTOR -------------------*/
+    local!codClaseAgt: rule!SCA2_ObtenerCodClaseAGT(
+      codAgt: index(local!datosAgente, if(local!esAutemis, "CLAVE_PRODUCCION", "codterceroagt"), null),
+    ),
+    
+    local!tipoProductor: index(
+      rule!SCA2_obtenerDatosProductor(
+        pidclaseclaveprod: local!codClaseAgt
+      ),
+      "MSSObtenerDatosProductor",
+      "plistadatosprod",
+      1,
+      null
+    ),
+
+  /* Reserva prima y addressAPI elevadas a local top-level para que corran
+     en paralelo con cabecera/otrasSolicitudes (dependen solo de datos ya calculados) */
+  local!consultaReservaPrima: rule!SCA2_consultarReservaPrima(poliza: ri!numPoliza, numDocumento: index(local!datosPersonales, if(local!esAutemis, "NUM_DOCUM", "coddocum"), null)),
+  local!addresAPI: rule!SCA2_addressAPIClients(clientId: index(local!searchAPI, "clientId", null), addressId: reduce(index(_,_,null), local!searchAPI, {"address", "addressId", 1})),
+
+  /*------------------- CABECERA Y OTRAS SOLICITUDES -------------------*/
+  local!otrasSolicitudes: if(
+    local!polizaVida,
+    index(rule!SCA2_consultarSolicitudes(numPoliza: ri!numPoliza, codInt: "", tpBusqueda: "0"), "MSSConsultarSolicitudes", null),
+    index(rule!SCA2_consultarSolicitudes(numPoliza: ri!numPoliza, codInt: index(local!datosPersonales, if(local!esAutemis, "COD_INT", "codint"), null), tpBusqueda: "1"), "MSSConsultarSolicitudes", null)
+  ),
+  /*local!id: index(wherecontains(ri!numPoliza, index(local!otrasSolicitudes, "numPoliza", null)), 1, null),*/
+  local!idSolic: index(wherecontains(ri!idSolicitud, index(local!otrasSolicitudes, "idSolicitud", null)), 1, null),
+
+  local!cabecera: rule!SCA2_consultarCabecera(
+    body: {
+      invocarCarterizacion:"true",
+      invocarEstruage:"true",
+      invocarSolicitud: "false",
+      numDocumento: index(local!datosPersonales, if(local!esAutemis, "NUM_DOCUM", "coddocum"), null),
+      claveProduccion: index(local!datosAgente, if(local!esAutemis, "CLAVE_PRODUCCION", "codterceroagt"), null),
+      numPoliza: ri!numPoliza,
+      nuuma: local!nuuma,
+      codCiaPoliza:"41",
+      codSolicitud: null
+    }
+  ),
+
+    /***************************** CONSULTA TRÉBOLES *******************************
+  * Sigue adelante si se cumplen estas dos condiciones:                          *
+  *   - La línea de negocio es 1 o 2                                             *
+  *   - El cliente es de tipo teCuidamos                                         *
+  *******************************************************************************/
+    /*local!consultaTreboles: if(*/
+      /*a!isNullOrEmpty(local!datosPoliza),*/
+      /*null,*/
+      /*if(*/
+        /*and(*/
+          /*or(*/
+            /*index(local!datosPoliza, if(local!esAutemis, "LINEA_NEGOCIO", "codsubsector"), 0) = 1,*/
+            /*index(local!datosPoliza, if(local!esAutemis, "LINEA_NEGOCIO", "codsubsector"), 0) = 2*/
+          /*),*/
+          /*toboolean(index(local!teCuidamos, "benefitCode", false))*/
+        /*),*/
+        /*rule!SCA_execute(numDoc: index(local!datosPersonales, if(local!esAutemis, "NUM_DOCUM", "coddocum"), null)),*/
+        /*null*/
+      /*)*/
+    /*),*/
+
+    /*----------------------------- RESERVA DE PRIMA -----------------------------*/
+    local!correoDef: a!defaultValue(
+      if(
+        local!polizaVida,
+        a!localVariables(
+          local!contactMethod: index(local!datosPersonales, "figurePersonalData", 1, "contactMethods", null),
+          local!correo: index(local!contactMethod, wherecontains("Email" ,index(local!contactMethod, "contactMethodTypeDesc", null)), null),
+          index(local!correo, "contactMethodValue", null)
+        ),
+        index(local!contactMethodAPI, wherecontains("EMAIL",  touniformstring(index(local!contactMethodAPI, "contactMethodTypeDesc", null))), "contactMethodValue", 1, null)
+      ),
+      if(
+        local!esAutemis,
+        index(local!datosPersonales, "DIR_EMAIL", null),
+        index(local!tomador, "datoscontacto", "array", 1, "diremail", null)
+      )
+    ),
+    local!movilDef: a!defaultValue(
+      if(
+        local!polizaVida,
+        a!localVariables(
+          local!contactMethod: index(local!datosPersonales, "figurePersonalData", 1, "contactMethods", null),
+          local!correo: index(local!contactMethod, wherecontains("Telefono Movil" ,index(local!contactMethod, "contactMethodTypeDesc", null)), null),
+          index(local!correo, "contactMethodValue", null)
+        ),
+        index(local!contactMethodAPI, wherecontains("TELEFONO MOVIL", touniformstring(index(local!contactMethodAPI, "contactMethodTypeDesc", null))), "contactMethodValue", 1, null)),
+      if(
+        local!esAutemis,
+        index(local!datosPersonales, "LISTA_TELEFONOS", wherecontains("MOVIL",  index(local!datosPersonales, "LISTA_TELEFONOS", "NOM_COD_TIP_USO_CONTACTO", null)), "TLF_NUM", null),
+        index(local!tomador, "datoscontacto", "array", 1, "tlfmovil", null)
+      )
+    ),
+    local!fijoDef: a!defaultValue(
+      if(
+        local!polizaVida,
+        a!localVariables(
+          local!contactMethod: index(local!datosPersonales, "figurePersonalData", 1, "contactMethods", null),
+          local!correo: index(local!contactMethod, wherecontains("Telefono Fijo" ,index(local!contactMethod, "contactMethodTypeDesc", null)), null),
+          index(local!correo, "contactMethodValue", null)
+        ),
+        index(index(index(local!contactMethodAPI, wherecontains("TELEFONO FIJO", touniformstring(index(local!contactMethodAPI, "contactMethodTypeDesc", null)))), "contactMethodValue", null), 1, null)
+      ),
+      if(
+        local!esAutemis,
+        index(
+          index(
+            index(local!datosPersonales, "LISTA_TELEFONOS", null), 
+            wherecontains(
+              "FIJO", 
+              index(index(local!datosPersonales, "LISTA_TELEFONOS", null), "NOM_COD_TIP_USO_CONTACTO", null)
+            ),
+            null
+          ),
+          "TLF_NUM",
+          null
+        ),
+        reduce(index(_,_,null), local!tomador, {"datoscontacto", "array", 1, "numtlf"})
+      )
+    ),
+
+    /*----------------------------- DATOS CABECERA -----------------------------*/
+
+    /*----------- DATOS CLIENTE -----------*/
+    local!datosClienteCabecera: 'type!{urn:com:appian:types:SCAC}SCAC_DS_datosCliente'(
+      nombre: if(
+        a!isNotNullOrEmpty(local!searchAPI),
+        reduce(index(_,_,null), local!searchAPI, {"personName", "name"}),
+        local!tomadorNombre
+      ),
+      apellidos: if(
+        a!isNotNullOrEmpty(local!searchAPI),
+        concat(reduce(index(_,_,null), local!searchAPI, {"personName", "firstSurname"}), " " , reduce(index(_,_,null), local!searchAPI, {"personName", "secondSurname"})),
+        local!tomadorApe1 & " " &  local!tomadorApe2
+        ),
+      nif:
+      if(
+        a!isNotNullOrEmpty(local!searchAPI),
+        index(local!searchAPI, "identityDocumentNumber", null),
+        local!tomadorNif
+        ),
+      apoderado:
+         a!match(
+        value: local!tipoPoliza,
+        equals: "NSE-Hogar", then: null,
+        equals: "NSE-Autos", then: if(
+          reduce(index(_,_,null), local!tomador, {"datospersonales", "array", 1, "personajuridica"}) = "S",
+          concat(reduce(index(_,_,null), local!tomador, {"datospersonales", "array", 1, "personafisica", "nomtercero"}), " ", reduce(index(_,_,null), local!tomador, {"datospersonales", "array", 1, "personafisica", "ape1tercero"}), " ", reduce(index(_,_,null), local!tomador, {"datospersonales", "array", 1, "personafisica", "ape2tercero"})),
+          null
+        ),
+        equals: "wAutemis", then: concat(reduce(index(_,_,null), local!datosPersonales, {"DATOS_APODERADO", "NOMBRE"}), " ", reduce(index(_,_,null), local!datosPersonales, {"DATOS_APODERADO", "APE1"}), " ", reduce(index(_,_,null), local!datosPersonales, {"DATOS_APODERADO", "APE2"})), default: null),
+          carterizado: if(reduce(index(_,_,0), local!cabecera, {"respuestaCarterizacion", "respuestaCarterizacion", "pcodretorno"}) = 1, "No", "Sí"),
+        nuumaPropietario: reduce(index(_,_,null), local!cabecera, {"respuestaCarterizacion", "respuestaCarterizacion", "pnuuma"}),
+        rsvPrima: if(
+          local!polizaVida,
+          "",
+          reduce(index(_,_,null), local!consultaReservaPrima, {"reservaPrimaCovid", "impRpr"}), /**/
+        ),
+        dtoIntegralidadNuevaProduccion: index(local!integralityAPI, "integralityPercent", null),
+        treboles: a!defaultValue(if(index(local!teCuidamos, "benefitCode", "") = "1", if(index(local!teCuidamos, "pointsAvailableNum", "") = "0", "0,00", index(local!teCuidamos, "pointsAvailableNum", null)), null), "0,00"), /**/
+        activoClubMapfre: if(index(local!teCuidamos, "benefitCode", "") = "0", "No", "Sí"), /**/
+        perfilClubMapfre: index(local!teCuidamos, "modality", ""),
+        tipoClienteValor: rule!SCA2_obtenerIconoClienteValor(
+          desc: reduce(index(_,_,null), local!profileAPI, {"actualTypology", "typologyDesc"}),
+          value: reduce(index(_,_,null), local!profileAPI, {"actualTypology", "integralitySegment"}),
+          category: reduce(index(_,_,null), local!profileAPI, {"actualTypology", "clientCategory"}),
+        ),
+        tipoClienteDesc: reduce(index(_,_,null), local!profileAPI, {"actualTypology", "typologyDesc"}),
+        idCliente: index(local!searchAPI, "clientId", null)
+
+    ),
+    /*----------- DATOS PÓLIZA -----------*/
+    local!acuerdo: index(local!datosPoliza, if(local!esAutemis, "NOM_ACUERDO", if(index(local!datosPoliza, "codacuerdo", "")="3", index(local!datosPoliza, "nomacuerdo", null), null)), ""),
+    /* Llamada a la regla que obtiene el nombre del distribuidor */
+    local!distribuidor: rule!SCA2_nombreDistribuidor(consultaPoliza: local!poliza),
+    /* Concatenamos ambas variables para que se muestre en un solo campo*/
+    local!acuerdoYDistribuidor: concat(
+      if(isnull(local!acuerdo), "", local!acuerdo),
+      " - ",
+      if(isnull(local!distribuidor), "", local!distribuidor)
+    ),
+    
+    local!datosPolizaCabecera: 'type!{urn:com:appian:types:SCAC}SCAC_DS_datosPoliza'(
+      numeroPoliza: ri!numPoliza,
+      nombreProducto: 
+        if(
+          local!polizaVida,
+          concat(reduce(index(_,_,null), local!poliza, {"contractData", 1, "commercialProductCode"}),
+          " - ",
+          reduce(index(_,_,null), local!poliza, {"contractData", 1, "commercialProductName"})),
+          local!nomProducto
+        ),
+      vehiculo: if(
+        local!esAutemis,
+        concat(index(local!datosVehiculo, "DESC_CAT_VEHIC"), " / ", index(local!datosVehiculo, "NOM_MARCA"), " ", index(local!datosVehiculo, "NOM_MODELO"), " / ", index(local!datosVehiculo, "ANTIGUEDAD_VEHIC", null)),
+        if(
+          local!tipoPoliza = "NSE-Hogar",
+          "-",
+          concat(index(local!datosVehiculo, "DESC_CAT_VEHIC"), " / ", index(index(local!caracteristicasVehiculo, 5, null), "txtcampo", null), " / ", a!defaultValue(left(index(local!datosVehiculo, "ANTIGUEDAD_VEHIC", "0"), 1), "0"), " años") 
+        )
+      ),
+      ramo: if(
+        local!polizaVida,
+        reduce(index(_,_,null), local!poliza, {"contractData", 1,"accountingFieldCode"}),
+        ""
+      ),
+      lineaNegocio: if(
+        local!polizaVida,
+        cons!SCA2_TXT_VIDA_RIESGO,
+        index(local!datosPoliza, if(local!esAutemis, "NOM_LINEA_NEGOCIO", "nomsubsector"), null),
+      ),  
+      formaPago: if(
+        local!polizaVida,
+        reduce(index(_, _, null), local!poliza, {"premiumData", 1, "periodicContribution", 1, "contributionFrequencyDesc"}),
+        local!formaDePago
+      ),
+      fechaEfecto: if(
+        local!polizaVida,
+        if(
+          a!isNotNullOrEmpty(local!dueDateVida),
+          date(
+            year(local!dueDateVida) - 1,
+            month(local!dueDateVida),
+            day(local!dueDateVida)
+          ),
+          null
+        ),
+        left(
+          a!defaultValue(
+            if(
+              local!esAutemis,
+              index(local!datosPoliza, "FEC_EFEC_PER", null),
+              index(local!datosPto, "fecefecspto", null)
+            ),
+            ""
+          ),
+          10
+        )
+      ),
+      fechaVencimiento: if(
+        local!polizaVida,
+        local!dueDateVida,
+        left(
+          a!defaultValue(
+            if(
+              local!esAutemis,
+              index(local!datosPoliza, "FEC_VCTO_PER", null),
+              index(local!datosPto, "fecvctopoliza", today())
+            ),
+            ""
+          ),
+          10
+        )
+      ),
+      antiguedad: if(
+        local!polizaVida,
+        if(
+          a!isNotNullOrEmpty(reduce(index(_,_,null), local!poliza, {"contractData", 1, "effectiveDate"})),
+          concat(
+            year(today()) - year(todate(reduce(index(_,_,null), local!poliza, {"contractData", 1, "effectiveDate"}))),
+            " años"
+          ),
+          ""
+        ),
+        local!fechaVencimiento
+      ),
+      planPago: 
+        reduce(index(_,_,null), local!planPago, {"MSSConsultarPlanPagoPorPoliza", "pobusquedaplanpagos", "gscactplanpagois", "gscactplanpagos", "idnplanpago"}),
+      primaActualRenovacion:
+      if(
+        local!polizaVida,
+        if(
+          or(
+            a!isNullOrEmpty(local!primaValor),
+            a!isNullOrEmpty(local!primaActual)
+          ),
+          "-",
+          /*concat(local!primaValor * local!primaActual, "€")*/
+          concat(
+            a!match(
+              value: tointeger(local!primaActual),
+              equals: 1,
+              then: local!primaValor * 1,
+              equals: 2,
+              then: local!primaValor * 2,
+              equals: 3,
+              then: local!primaValor * 4,
+              equals: 4,
+              then: local!primaValor * 12,
+              default: local!primaValor
+            ),
+            "€"
+          )
+        ),
+        concat(
+          if(
+            local!esAutemis,
+            if(
+              a!isNullOrEmpty(index(local!datosPoliza, "IMP_PRIMA", null)),
+              "NO DISPONIBLE",
+              concat(index(local!datosPoliza, "IMP_PRIMA"), "€")
+            ),
+            if(
+              a!isNullOrEmpty(index(local!planPagoNSE, "impprimatotalperiodo", null)),
+              "NO DISPONIBLE",
+              concat(index(local!planPagoNSE, "impprimatotalperiodo"), "€")
+            )
+          ),
+          " / ",
+          if(
+            a!isNullOrEmpty(reduce(index(_, _, null), local!cabecera, {"respuestaImportes", "respuestaImportes", "dtrenovacion", "importe"})),
+            "NO DISPONIBLE",
+            concat(reduce(index(_, _, null), local!cabecera, {"respuestaImportes", "respuestaImportes", "dtrenovacion", "importe"}), "€")
+          )
+        )
+      ),
+      acuerdo: local!acuerdoYDistribuidor,
+      cesionDeDerechos: if(
+        local!polizaVida,
+        if(
+          a!isNotNullOrEmpty(reduce(index(_,_,null), local!poliza, {"rightsAssignment"})),
+          "SI",
+          "NO"
+        ),
+        "-"
+      ),
+      claveProduccion: if( 
+        local!polizaVida,
+        /* R45-A (A2): parte izquierda = producerCode (sin "1") & salesOfficeCode; parte derecha = codAgente de estructurasComerciales */
+        concat(if(a!isNullOrEmpty(local!codAgenteVida), "", local!codAgenteVida & reduce(index(_,_,null), local!poliza, {"producersData", 1, "salesOfficeCode"}))," / ",reduce(index(_,_,null), local!estructuraVida, {"codAgente"})),
+        index(local!datosAgente, if(local!esAutemis, "CLAVE_PRODUCCION", "codterceroagt"), null),
+      ),
+      
+      
+      tipoProductor: if(
+        local!polizaVida,
+        index(local!consultaClave,"tipProductor",""),
+        concat(
+          index(local!tipoProductor, "desccanal", null),
+          if(index(local!tipoProductor, "essi24", "") = "S", " / Expertos", " / No Expertos"),
+          if(index(local!tipoProductor, "estele", "") = "S", " / Telemática", " / No Telemática")
+        ),
+      ),
+      siniestrosAnoActual: if(
+        local!esAutemis,
+        reduce(index(_,_,null), local!poliza, {"MSSConsultarPolizas", "DATOS_PCA", "CONS_ANUALIDAD_SINI", "NUM_TOT_SINI"}),
+        local!siniestrosUltimoAnyo
+      ),
+      revalorizacion: if(
+        local!polizaVida,
+        reduce(index(_,_,null), local!poliza, {"coveragesData", 1, "sumInsuredRevaluation", 1, "revaluationTypeDesc"}),
+        ""
+      ),
+      fechaUltimoSiniestro: if(
+        local!polizaVida,
+        a!localVariables(
+          local!participantes: index(local!poliza, "participantFigures", null),
+          local!tomador: index(local!participantes, wherecontains("TO", index(local!participantes, "participantFigureTypeCode", null)), null),
+          /*local!beneficiario: index(local!participantes, wherecontains("BE", index(local!participantes, "participantFigureTypeCode", null)), null),*/
+          local!asegurado: index(local!participantes, wherecontains("AS", index(local!participantes, "participantFigureTypeCode", null)), null),
+
+          local!aseguradoFinal: if(
+            a!isNotNullOrEmpty(local!asegurado),
+            local!asegurado,
+            local!tomador
+          ),
+          concat(
+            cons!SCA2_TXT_LINK_GESVIDA_CABECERA,
+            index(local!poliza, "contractData", 1, "policyId", null),
+            "&stGNombreTomador=" & index(local!tomadorVida,"naturalPerson", 1, "personName", 1, "name", null), /*TOMADOR*/
+            "&stGApellido1Tomador=" & index(local!tomadorVida,"naturalPerson", 1, "personName", 1, "firstSurname", null),
+            "&stGApellido2Tomador=" & index(local!tomadorVida,"naturalPerson", 1, "personName", 1, "secondSurname", null),
+            "&stGNombreAseg=" & index(local!aseguradoFinal,1,"figurePersonalData",1,"naturalPerson", 1, "personName", 1, "name", null), /*ASEGURADO*/
+            "&stGApellido1Aseg=" & index(local!aseguradoFinal,1, "figurePersonalData", 1, "naturalPerson", 1, "personName", 1, "firstSurname", null),
+            "&stGApellido2Aseg=" & index(local!aseguradoFinal,1, "figurePersonalData", 1, "naturalPerson", 1, "personName", 1, "secondSurname", null),
+            "&stFxNacimAseg=" & index(local!aseguradoFinal,1, "figurePersonalData", 1, "naturalPerson", 1,"birthdate", null),
+            "&stNifAseg=" & index(local!aseguradoFinal,1, "figurePersonalData", 1, "identificationMethods", 1, "identityDocumentNumber", null),
+            "&stKResPol=0000001&stFxEfeInicial=" & index(local!poliza, "contractData", 1, "effectiveDate", null)
+          ) 
+        ),
+        local!consultaFecUltimoSiniestro
+      ),
+      dtoIntegralidadPoliza: if(
+        local!esAutemis,
+        index(local!datosPoliza, "PORC_INTEGRALIDAD", null),      
+        local!polizaVida,
+        rule!SCA2_obtenerDescuentoTotalVida(descuentos:index(local!poliza, "discountData","")),
+        index(index(local!bonireca, wherecontains("PCT_ACTUAL_INTEGRALIDAD", touniformstring(index(local!bonireca, "codcampo", null)))), "valcampo", null)
+      )
+    ),
+    /*----------- DATOS CONTACTO -----------*/
+    local!datosContactoCabecera: 'type!{urn:com:appian:types:SCAC}SCAC_DS_datosContacto'(
+      via: if(
+        local!polizaVida,
+        index(local!datosPersonales, "figurePersonalData", 1, "addresses", 1, "addressRoadTypeDesc", null),
+        reduce(index(_,_,null), local!searchAPI, {"address", "addressTypeDesc", 1})
+      ),
+      domicilio: if(
+        local!polizaVida,
+        index(local!datosPersonales, "figurePersonalData", 1, "addresses", 1, "addressName", null),
+        reduce(index(_,_,null), local!searchAPI, {"address", "addressName", 1})
+      ),
+      numero: if(
+        local!polizaVida,
+        index(local!datosPersonales, "figurePersonalData", 1, "addresses", 1, "addressNum", null),
+        reduce(index(_,_,null), local!searchAPI, {"address", "addressNum", 1})
+      ),
+      provincia: if(
+        local!polizaVida,
+        index(local!datosPersonales, "figurePersonalData", 1, "addresses", 1, "provinceDesc", null),
+        reduce(index(_,_,null), local!searchAPI, {"address", "provinceDesc", 1})
+      ),
+      pais: if(
+        local!polizaVida,
+        index(local!datosPersonales, "figurePersonalData", 1, "addresses", 1, "countryDesc", null),
+        ""
+      ),
+      localidad: if(
+        local!polizaVida,
+        index(local!datosPersonales, "figurePersonalData", 1, "addresses", 1, "townDesc", null),
+        reduce(index(_,_,null), local!searchAPI, {"address", "municipalityDesc", 1})
+      ),
+      codPostal: if(
+        local!polizaVida,
+        index(local!datosPersonales, "figurePersonalData", 1, "addresses", 1, "zipCode", null),
+        reduce(index(_,_,null), local!searchAPI, {"address", "zipCode", 1})
+      ),
+      telMovil: local!movilDef,
+      telFijo: local!fijoDef,
+      correo: local!correoDef,
+      piso: if(
+        local!polizaVida,
+        index(local!datosPersonales, "figurePersonalData", 1, "addresses", 1, "addressAdditionalInfo", null),
+        index(local!addresAPI, "floorNum", null)
+      ),
+      puerta: index(local!addresAPI, "doorNum", null),
+      escalera: index(local!addresAPI, "stairNum", null)
+    ),
+    /*----------- ESTRUCTURA FINAL -----------*/
+    local!estructuraCabecera: 'type!{urn:com:appian:types:SCAC}SCAC_DS_datosCabecera'(
+      datosCliente: local!datosClienteCabecera,
+      datosPoliza: local!datosPolizaCabecera,
+      otrasSolicitudesCabecera: if(
+        a!isNullOrEmpty(local!otrasSolicitudes),
+        local!otrasSolicitudes,
+        if(
+          a!isNotNullOrEmpty(local!idSolic),
+          remove(local!otrasSolicitudes, local!idSolic),
+          local!otrasSolicitudes
+        ),
+      ),
+      datosContacto: local!datosContactoCabecera
+    ),
+
+    local!estructuraCabecera
+))
