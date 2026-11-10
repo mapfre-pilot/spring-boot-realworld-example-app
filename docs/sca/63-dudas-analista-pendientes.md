@@ -22,13 +22,21 @@ Parte A: dudas de la ronda 45, que salen de las pruebas de esta ronda. Parte B: 
 
 ### ANL, CORE, NEW y NSE
 7. **«Cancelada» al decir NO en Anulación/Suscripción:** la tabla pide solicitud 14 + mecanización 4. SCA2 deja 5 + 4 («Rechazada anulación»). El servicio que pone 14 en la contra anulación no sirve si no hay una contra anulación abierta. ¿Qué servicio de CORE hay que llamar? ¿O aceptamos 5 + 4?
+   - **ABIERTA (respuesta en R46-B):** el analista pide más detalle. Explicado con 15788815 (póliza 2002400195593): «NO» en la pantalla Anulación/Suscripción → `finalizarSolicitud` deja CORE 5 y la mecanización 4 «cerrada sin mecanizar»; `finalizarContraAnulPca` con `mcaEstadoFinal=9` no actúa porque no hay contra anulación abierta. Sin cambios hasta que diga si vale 5 + 4 o qué servicio pone 14 [Observado]/[Pendiente]. Detalle en `pruebas/r46-b-anl-nse-new.md`, 4.1.
 8. **wAutemis a más de 18 meses:** NEW rechaza la anulación a vencimiento con el error 916 («La Fecha de Efecto no puede ser mayor o menor en 18 meses…»). ¿Qué fecha de suplemento hay que enviar? ¿O SCA2 debe impedir la anulación y avisar?
+   - **RESPONDIDA → cambio en SCA2 (R46-B):** el 916 de NEW se muestra en el alta con el mensaje de Autemis, solo con VOLVER, y no se crea la solicitud (`SCA2_simularAnulacion` v17→v18). Probado con 0002729389242 [Observado]. Detalle en `pruebas/r46-b-anl-nse-new.md`, 4.2.
 9. **ANL acepta pero no lanza NSE ni NEW** (15788754: REDIRIGIR_NEW sin TIPO_FLUJO): SCA2 espera 10 minutos y cierra la mecanización como Incompleta. ¿Hay que avisar, reintentar o dejarla pendiente?
+   - **RESPONDIDA → cambio en SCA2 (R46-B):** la mecanización sigue Incompleta y, si al agotar la espera sigue `INCOMPLETA`, se registra el error `ANL_EXCESO_TIEMPO` en `SCA2 Error` (bandeja de errores) desde `SCA2 CMD Finalizar` [Observado código]. Sin prueba real: no se ha reproducido un ANL que no lance NSE/NEW [Pendiente]. Detalle en `pruebas/r46-b-anl-nse-new.md`, 4.3.
 10. **Fecha para consultar el nivel de NEW en una anulación a vencimiento:** SCA2 usa la fecha de anulación (igual que SCA según el código). Con esa fecha NEW no devuelve nivel 5; con una fecha cercana a hoy, sí. ¿Qué fecha hay que usar?
+   - **RESPONDIDA (R46-B):** confirmado sin cambios: SCA2 simula (NEW/NSE), mapea simulación y solicitud en la llamada a ANL y ANL decide el flujo [Observado código]. Detalle en `pruebas/r46-b-anl-nse-new.md`, 4.4.
 11. **Nivel 00000004 en wAutemis** (15788830): ahora solo se va a pendiente de autorizar con 00000005/06. ¿El nivel 4 también debe ir?
+   - **RESPONDIDA (R46-B):** lo decide ANL; SCA2 no filtra por nivel al lanzar ANL [Observado código]. Detalle en `pruebas/r46-b-anl-nse-new.md`, 4.4.
 12. **Espera a NSE/ANL antes de finalizar:** hoy son hasta 10 minutos, consultando cada minuto. ¿Se puede bajar a 3–5 minutos o consultar cada 30 segundos?
+   - **RESPONDIDA → cambio en SCA2 (R46-B):** máximo 10 consultas cada 30 s (5 min): `SCA2 CMD Finalizar` nodo 16 = 30 s, `SCA2_VAL_ESPERA_NSE_FINALIZAR_MAX_INTENTOS` = 10. Observado en la instancia 10242969 [Observado]. Detalle en `pruebas/r46-b-anl-nse-new.md`, 4.5.
 13. **«Tipo catalogación» en el alta wAutemis:** el servicio propone un valor que no está en el desplegable (solo hay «A FECHA») y salta un error. Opciones: a) poner «A FECHA» por defecto; b) añadir el valor que propone el servicio; c) limpiar el valor al cargar; d) que wAutemis vaya siempre a «A FECHA».
+   - **RESPONDIDA → cambio en SCA2 (R46-B):** el servicio propone «A VENCIMIENTO TRIMESTRAL» en Más Móvil (0732500054802), con fecha 02/01/2027, igual que SCA. El desplegable muestra siempre el valor del servicio (`SCA2_AltaSolicitudPage` v51→v52) [Observado]. Duda nueva sobre la fecha (02/01 o 01/01) [Pendiente]. Detalle en `pruebas/r46-b-anl-nse-new.md`, 4.6.
 14. **Casos de prueba:** ¿tenéis alguna póliza que llegue a «Pendiente de Autorización» (4/5 + 2) o a «Mecanización Enviada» (4/5 + 7)? No he conseguido ninguna: las wAutemis no dan nivel a vencimiento y las NSE dan el error 4021 en la simulación.
+   - **RESPONDIDA (explicación, R46-B):** notación = estado de la solicitud en CORE + estado de la mecanización; ejemplos y datos en Detalle en `pruebas/r46-b-anl-nse-new.md`, 4.7. Sigue sin póliza de TEST que llegue a 4/5 + 2 o 4/5 + 7 [Pendiente].
 
 ### Si24, Verti e inducción
 15. **Aviso Si24:** se ha quitado para el gestor Si24, GGE y nivel > 1. ¿Se quita también para central y CCC? → **Respondida (R46-C, `pruebas/r46-c-alta-si24-detalle.md`):** Sí. Quitado también para central y CCC (`SCA2_ContraAnulacionOpciones` v71).
@@ -60,6 +68,7 @@ Parte A: dudas de la ronda 45, que salen de las pruebas de esta ronda. Parte B: 
 29. La contra anulación positiva deja ahora la tarjeta en «Finalizada Positiva» (antes quedaba «Incompleta»). ¿Es correcto?
 30. La espera de respaldo dura como máximo 90 s, y después se habilita ACEPTAR. ¿Es un valor adecuado? → **Respondida (R46-C, `pruebas/r46-c-alta-si24-detalle.md`):** Funcionamiento explicado en el informe R46-C §3.7; se recomienda mantener 90 s.
 31. ¿Tenéis pólizas o casos que generen acciones administrativas o anulación fuera de norma, para medir sus tiempos?
+   - **RESPONDIDA (R46-B):** probado DECISIÓN DE LA ENTIDAD / DECISIÓN DE LA ENTIDAD / ANULACIÓN FUERA DE NORMA con la solicitud nueva 15788855 (NSE-Autos 2002500248962): autorización fuera de norma, mecanización y «Finalizada. Anulación realizada» [Observado]. Detalle en `pruebas/r46-b-anl-nse-new.md`, 4.7.
 
 ### Argumentario y tréboles (rondas 34–35)
 32. Al RECARGAR, SCA2 desmarca el argumento; SCA lo deja marcado con los datos antiguos. ¿Os parece bien? **→ RESPONDIDA (R46-D):** se deja marcado como en SCA; hecho y probado (`pruebas/r46-d-argumentario-treboles.md`).
@@ -75,5 +84,7 @@ Parte A: dudas de la ronda 45, que salen de las pruebas de esta ronda. Parte B: 
 40. **Switch Verti:** se usa el FLAG global `vertiSuscripcionInteligente`, porque `SCA2_flagVerti` por nuuma da false con los usuarios de prueba. ¿Es ese el switch?
 41. **Inducciones de tipo A** (iniciador APP-SCAN) que aparecen junto a la de tipo I y que SCA2 no lanza: ¿es normal que el cliente reciba las dos?
 42. **ANL CONCLUIDA en PRE:** ANL no marca CONCLUIDA en las solicitudes SCA2. ¿Quién la marca? ¿El rechazo se da por concluido con ESTADO=2?
+   - **RESPONDIDA → cambio en SCA2 (R46-B):** un rechazo de ANL (`ESTADO` informado y distinto de 1) ya no espera a CONCLUIDA y la gestión de mecanización queda en 4 «cerrada sin mecanizar» (`SCA2 CMD Mecanizar`, nodo 304) [Observado código]. Sin prueba real [Pendiente]. Detalle en `pruebas/r46-b-anl-nse-new.md`, 4.8.
 43. **Catalogación final NSE en CORE** (SCA pone 1 y SCA2 pone 2): la corrección en `SCA2_ContraAnulacionOpciones` está preparada a falta de vuestro OK.
+   - **RESPONDIDA → cambio en SCA2 (R46-B):** `SCA2_ContraAnulacionOpciones` v74→v78 graba en CORE la catalogación normalizada como SCA (NSE renovada 2/3 → 1). Probado con la solicitud nueva 15788858: CORE 2 → 1 al POSPONER [Observado]. FINALIZAR revisado por código [Pendiente E2E]. Detalle en `pruebas/r46-b-anl-nse-new.md`, 4.9.
 44. **Retorno al formulario tras el alta** (doc 44): la propuesta está pendiente de vuestro OK. Puede que ya esté cubierta por las rondas 35 y 42. → **Respondida (R46-C, `pruebas/r46-c-alta-si24-detalle.md`):** OK. Cubierta por R35 + R42; sin cambios adicionales (informe R46-C §3.9).
