@@ -95,3 +95,21 @@ Correcciones respecto a R32-A: los 14 objetos que no se pudieron borrar **sí se
 ## 7. Procedimiento si se aprueba un lote
 
 Backup JSON de cada objeto → `GET /objects/dependents` justo antes → DELETE sólo de lo aprobado → `GET` 404 → regresión con **solicitud nueva** (alta → CA → detalle → bandeja de errores) → informe. Ficheros de trabajo: `~/sca2work/r31/` (`dependents_all.json`, `alcance_sca2.json`, `reglas_externas_sca2.json`, `shots/act_*.png`, `designer_act*.log`).
+
+## Ejecución del borrado (R47, 10/11/2026)
+
+Autorización de Álvaro: «Puedes borrar los objetos de SCA2 sin uso» y, tras ver la revisión, «si, lo que no se use lo puedes borrar».
+
+Antes de borrar se volvió a comprobar en TEST, con el MCP `appian-dev-mcp-c90b` (`listObjects` por nombre exacto y `getObjectDependents`), cada uno de los 20 objetos de la lista segura:
+
+| Objeto | Estado en TEST | Acción |
+|---|---|---|
+| 18 objetos de la lista (todas las constantes salvo `SCA2_FLD_DOCUMENTOS`, las reglas `SCA2_DatosPolizaDinamico`, `SCA2_clientInformationAPIClients`, `SCA2_obtenerPolizaPrerenovada` y `SCA2_tareasInduccionVerti`, las dos integraciones y las dos interfaces) | [Observado] Ya no existen. `listObjects` devuelve 0 resultados con el nombre exacto. No hay constancia en el repo de quién ni cuándo los borró. | Ninguna |
+| `SCA2_FLD_DOCUMENTOS` (constante, `_a-0000f09f-42ed-8000-9d42-011c48011c48_5654156`) | [Observado] **Tiene dependientes nuevos:** `SCA2 CMD GenerarPdf` (condiciones de los nodos «PDF From DOCX», «Solicitud Jurídica» y «Solicitud Física») y `SCA2_consultaDocumentoIntegracion` («Guardar documentos en»). | **No se borra**, porque está en uso |
+| `SCA2_consultarErroresSolicitud` (regla de expresión, `_a-0000f07f-6ec5-8000-9d2c-011c48011c48_5505939`, v1, fuera de la aplicación SCA2) | [Observado] 0 dependientes justo antes del borrado | **Borrada**. `deleteExpressionRule` devolvió «Deleted successfully» y `getExpressionRule` devuelve después HTTP 404 |
+
+Copia de seguridad de la regla borrada: `docs/sca/pruebas/backups-r47/SCA2_consultarErroresSolicitud.json` (metadatos) y `.expr` (cuerpo).
+
+Regresión [Inferido]: la regla no tenía ningún dependiente y no formaba parte de la aplicación, así que el borrado no puede afectar a ningún flujo. No se hizo una regresión E2E con una solicitud nueva; la sesión R47-A crea solicitudes nuevas en paralelo sobre el alta y la contra anulación.
+
+Los demás objetos de este documento (CambiarNivel, Decisora/FDC, BarridoCaducidad, RefrescarCacheCabecera, batch NSE, Web APIs y R32-A) siguen sin borrar. No están marcados como «sin uso seguro»: tienen dependientes, temporizador o una función pendiente de decidir.
