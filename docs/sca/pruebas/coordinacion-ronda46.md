@@ -26,6 +26,14 @@ Origen: documento de los analistas «Analisis SCA2.docx» (respuestas a `../63-d
 | CONST `SCA2_VAL_ESPERA_NSE_FINALIZAR_MAX_INTENTOS` (10 × 30 s) | R46-B | RESERVADO | v1 → ? |
 | IF `SCA2_AltaSolicitudPage` (catalogación propuesta por el servicio) | R46-B | RESERVADO | v51 → ? |
 | IF `SCA2_ContraAnulacionOpciones` (catalogación final NSE) | R46-B | EN ESPERA (reservado por R46-C) | v70 → ? |
+| IF `SCA2_ContraAnulacionCompaniaCatalogacion` (RECARGAR) | R46-D | RESERVADO | v7 |
+| IF `SCA2_ContraAnulacionSGO` (pantalla tréboles) | R46-D | RESERVADO | v4 |
+| IF `SCA2_ContraAnulacionOpciones` (dataRecuperacion) | R46-D | RESERVADO | v70 |
+| IF `SCA2_ContraAnulacionModalRecuperacionPoliza` (enhorabuena) | R46-D | RESERVADO | v15 |
+| IF `SCA2_BandejaErrores` / `SCA2_DetalleErrores` (relanzar TTQ) | R46-D | RESERVADO | v12 / v6 |
+| IF `SCA2_AltaGestionArgumento` (recarga Aurora) | R46-D | RESERVADO | vivo |
+| RT `SCA2 Datos Cabecera` (`POLIZA_FECHAULTIMOSINIESTRO`) | R46-D | RESERVADO | vivo |
+| CONS `SCA2_TXT_OBS_RESERVA_PRIMA_APLICADA` (nueva) | R46-D | RESERVADO | — |
 
 ## Reglas
 - Solo objetos SCA2. Nunca PRO. No tocar solicitudes/instancias históricas. No desactivar/activar la aplicación (variable CORE compartida con SCA).
