@@ -21,6 +21,11 @@ Origen: documento de los analistas «Analisis SCA2.docx» (respuestas a `../63-d
 | ER `SCA2_erroresGuardarSolicitud` (mensaje fecha anterior a efecto) | R46-C | RESERVADO | v2 → ? |
 | IF `SCA2_DetalleSolicitud` (enlace NSE, Verti nivel 2) | R46-C | RESERVADO | v74 → ? |
 | ER `SCA2_puedeGestionarTarea` (Verti nivel 2) | R46-C | RESERVADO | v6 → ? |
+| ER `SCA2_simularAnulacion` (wAutemis 916 bloquea el alta) | R46-B | RESERVADO | v17 → ? |
+| PM `SCA2 CMD Finalizar` (espera 30 s y error de exceso de tiempo) | R46-B | RESERVADO | — |
+| CONST `SCA2_VAL_ESPERA_NSE_FINALIZAR_MAX_INTENTOS` (10 × 30 s) | R46-B | RESERVADO | v1 → ? |
+| IF `SCA2_AltaSolicitudPage` (catalogación propuesta por el servicio) | R46-B | RESERVADO | v51 → ? |
+| IF `SCA2_ContraAnulacionOpciones` (catalogación final NSE) | R46-B | EN ESPERA (reservado por R46-C) | v70 → ? |
 
 ## Reglas
 - Solo objetos SCA2. Nunca PRO. No tocar solicitudes/instancias históricas. No desactivar/activar la aplicación (variable CORE compartida con SCA).
