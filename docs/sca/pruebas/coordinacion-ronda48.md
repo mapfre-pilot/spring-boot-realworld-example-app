@@ -1,0 +1,10 @@
+# Coordinación ronda 48 (SCA2, Appian TEST)
+
+Protocolo (igual que R47): `git pull` → reservar aquí → leer versión viva → backup en `backups-r48/` → cambio mínimo → importar → reexportar y comparar → liberar con versión antes→después.
+
+| Objeto | UUID | Sesión | Estado | Versión antes→después | Nota |
+|---|---|---|---|---|---|
+| SCA2_AltaSolicitudPage | _a-0000f069-4f37-8000-9cc8-011c48011c48_20055716 | R48-A | RESERVADO | 53→ | Espera tras GUARDAR (tope y salida) y un solo aviso |
+| SCA2_DetalleTareas | _a-0000f069-4f37-8000-9cc8-011c48011c48_20055554 | R48-A | RESERVADO | 43→ | Espera «Procesando la decisión…»: mensaje de tope |
+| SCA2_TXT_ESPERA_DECISION_ADICIONAL | _a-0000f09f-42ed-8000-9d42-011c48011c48_5648821 | R48-A | RESERVADO | 1→ | Texto «el sistema está tardando» |
+| SCA2_TXT_ESPERA_AGOTADA (nueva) | — | R48-A | RESERVADO | —→1 | Texto de salida al agotar la espera |
