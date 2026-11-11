@@ -7,18 +7,18 @@ Origen: respuestas del analista a `../63-dudas-analista-pendientes.md` (rectific
 |---|---|---|
 | R47-A | Vida «MALA GESTIÓN» en el desplegable de detalle del alta (duda 25, rectificada) y tréboles TTQ con clientes NO CLUB (pólizas 0732400122931 y 0731700076776). Informe `r47-a-vida-mala-gestion-ttq.md` | TERMINADA (`SCA2_AltaSolicitudPage` v52→v53; TTQ sin cambios) |
 | R47-B | Optimizaciones sin cambio funcional: paralelismo de la cabecera y vigilancia de procesos ACTIVE >1 h / archivado PM. Informe `r47-b-optimizaciones-sin-cambio-funcional.md` | TERMINADA (`SCA2_CuadroMando` v25→v28; cabecera sin cambios) |
-| R47-C | RECARGAR ARGUMENTO no refresca el argumento TTQ CLUB / NO CLUB tras dar de alta al cliente en Club; pruebas pendientes de R46-D/R47-A con las pólizas TTQ del analista. Informe `r47-c-ttq-recargar-argumento.md` | EN CURSO |
+| R47-C | RECARGAR ARGUMENTO no refresca el argumento TTQ CLUB / NO CLUB tras dar de alta al cliente en Club; pruebas pendientes de R46-D/R47-A con las pólizas TTQ del analista. Informe `r47-c-ttq-recargar-argumento.md` | TERMINADA (INT v3→v4, ER v1→v2, IF CompaniaCatalogacion v8→v9, IF Opciones v78→v79, PM CompletarAccion nodo «Write Tarea») |
 
 ## Objetos en edición
 | Objeto | Sesión | Estado | Versión |
 |---|---|---|---|
 | IF `SCA2_AltaSolicitudPage` (detalle MALA GESTIÓN en Vida) | R47-A | LIBERADO | v52→v53 |
 | IF `SCA2_CuadroMando` (aviso de procesos/tareas en espera >1 h) | R47-B | LIBERADO | v25→v28 |
-| INT `SCA2_consultarListadoArgumentosREST` (input `random` para no reutilizar la respuesta, como SCAC) | R47-C | EN PRUEBAS | v3→v4 |
-| ER `SCA2_consultarListadoArgumentos` (input `rand`, como SCA) | R47-C | EN PRUEBAS | v1→v2 |
-| IF `SCA2_ContraAnulacionCompaniaCatalogacion` (RECARGAR con `rand()`) | R47-C | EN PRUEBAS | v8→v9 |
-| IF `SCA2_ContraAnulacionOpciones` (apertura con `rand()` dentro del refreshVariable, como SCA) | R47-C | EN PRUEBAS | v78→v79 |
-| PM `SCA2 CMD CompletarAccion` (nodo «Write Tarea»: observación a `SCA2 Datos Solicitud.fecimpresion` recortada a 255) | R47-C | EN PRUEBAS | nodo 5 actualizado (backup antes/después) |
+| INT `SCA2_consultarListadoArgumentosREST` (input `random` para no reutilizar la respuesta, como SCAC) | R47-C | LIBERADO | v3→v4 |
+| ER `SCA2_consultarListadoArgumentos` (input `rand`, como SCA) | R47-C | LIBERADO | v1→v2 |
+| IF `SCA2_ContraAnulacionCompaniaCatalogacion` (RECARGAR con `rand()`) | R47-C | LIBERADO | v8→v9 |
+| IF `SCA2_ContraAnulacionOpciones` (apertura con `rand()` dentro del refreshVariable, como SCA) | R47-C | LIBERADO | v78→v79 |
+| PM `SCA2 CMD CompletarAccion` (nodo «Write Tarea»: observación a `SCA2 Datos Solicitud.fecimpresion` recortada a 255) | R47-C | LIBERADO | nodo 5 actualizado (backup antes/después) |
 
 ## Reglas
 - Solo objetos SCA2. Nunca PRO. No tocar solicitudes/instancias históricas. No desactivar/activar la aplicación (variable CORE compartida con SCA).
