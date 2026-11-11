@@ -1,0 +1,92 @@
+{
+ "id": 5,
+ "type": "internal3.write_records_to_source_23r3",
+ "name": {
+  "es": "Write Tarea"
+ },
+ "coordinates": [
+  650,
+  120
+ ],
+ "uuid": "44421c80-a999-4fa2-8909-03794dd9d866",
+ "typeName": "Write Records and Related Records",
+ "description": {
+  "en_US": "",
+  "es": ""
+ },
+ "connections": [
+  {
+   "targetNodeId": 206,
+   "activityChained": true,
+   "overridesAssignment": false,
+   "synchronizeData": false
+  }
+ ],
+ "data": {
+  "inputs": [
+   {
+    "name": "Records",
+    "type": "Any Type",
+    "required": true,
+    "expression": "={'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea'('recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{82a6a3b4-5afe-4dd3-a7f3-46f806490910}id': pv!idTarea, 'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{e7be363c-399e-48a5-9242-3b2a65680f0f}estado': \"COMPLETADA\", 'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{ba1b2a33-3e00-4e18-96bf-d3cfd74f342b}fechaCierre': now()), /* [S4] Paridad buscador: la ultima observacion se persiste en SCA2 Datos Solicitud.fecimpresion (columna Observaciones de SCA2_BuscadorTabla, S1); generico CA/ACCADM/AUT; R47-C: recortada a 255 (VARCHAR(255)); en CORE se graba completa hasta 999 */ if(or(a!isNullOrEmpty(index(pv!resultado,\"observaciones\",null)), a!isNullOrEmpty(index(index(pv!sol,\"datos\",null),\"id\",null))), {}, 'recordType!{9a9209c7-aab4-4078-9bef-280de47fdd6e}SCA2 Datos Solicitud'('recordType!{9a9209c7-aab4-4078-9bef-280de47fdd6e}SCA2 Datos Solicitud.fields.{2d7b6a31-0f04-449a-b030-61dc1c3dc8b5}id': index(index(pv!sol,\"datos\",null),\"id\",null), 'recordType!{9a9209c7-aab4-4078-9bef-280de47fdd6e}SCA2 Datos Solicitud.fields.{ef1b0aa7-41ee-4590-83b2-52f89c8be7f5}fecimpresion': left(tostring(index(pv!resultado,\"observaciones\",null)), 255)))}",
+    "saveInto": ""
+   },
+   {
+    "name": "PauseOnError",
+    "type": "Boolean",
+    "required": false,
+    "expression": "=false()",
+    "value": 0,
+    "saveInto": ""
+   },
+   {
+    "name": "RecordType",
+    "type": "RecordType2",
+    "required": false,
+    "expression": "",
+    "value": "",
+    "saveInto": ""
+   },
+   {
+    "name": "CaptureEvents",
+    "type": "Boolean",
+    "required": true,
+    "expression": "",
+    "value": 0,
+    "saveInto": ""
+   }
+  ],
+  "customInputs": [],
+  "outputs": [
+   {
+    "name": "RecordsUpdated",
+    "type": "Any Type"
+   },
+   {
+    "name": "ErrorOccurred",
+    "type": "Boolean",
+    "saveInto": "wrErr"
+   },
+   {
+    "name": "Error",
+    "type": "Text",
+    "saveInto": "wrErrMsg"
+   }
+  ],
+  "customOutputs": [
+   {
+    "expression": "=if(a!defaultValue(ac!ErrorOccurred, false), \"Write Tarea\", pv!wrNodo)",
+    "saveInto": "wrNodo"
+   },
+   {
+    "expression": "=if(a!defaultValue(ac!ErrorOccurred, false), \"WRITE_FAIL\", pv!wrCodigo)",
+    "saveInto": "wrCodigo"
+   }
+  ]
+ },
+ "assignment": {
+  "attended": false,
+  "runAs": "DESIGNER",
+  "overrideLane": false
+ }
+}

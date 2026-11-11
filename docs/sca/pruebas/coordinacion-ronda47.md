@@ -18,7 +18,7 @@ Origen: respuestas del analista a `../63-dudas-analista-pendientes.md` (rectific
 | ER `SCA2_consultarListadoArgumentos` (input `rand`, como SCA) | R47-C | EN PRUEBAS | v1→v2 |
 | IF `SCA2_ContraAnulacionCompaniaCatalogacion` (RECARGAR con `rand()`) | R47-C | EN PRUEBAS | v8→v9 |
 | IF `SCA2_ContraAnulacionOpciones` (apertura con `rand()` dentro del refreshVariable, como SCA) | R47-C | EN PRUEBAS | v78→v79 |
-| PM `SCA2 CMD CompletarAccion` (nodo «Write Tarea»: observación a `SCA2 Datos Solicitud.fecimpresion` recortada a 255) | R47-C | RESERVADO | vivo |
+| PM `SCA2 CMD CompletarAccion` (nodo «Write Tarea»: observación a `SCA2 Datos Solicitud.fecimpresion` recortada a 255) | R47-C | EN PRUEBAS | nodo 5 actualizado (backup antes/después) |
 
 ## Reglas
 - Solo objetos SCA2. Nunca PRO. No tocar solicitudes/instancias históricas. No desactivar/activar la aplicación (variable CORE compartida con SCA).
