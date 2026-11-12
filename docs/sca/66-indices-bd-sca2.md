@@ -170,7 +170,7 @@ No se han detectado funciones aplicadas a columnas en los filtros (las funciones
 1. **Bloque A** completo (solo lectura). Guardar la salida: A3–A5 resuelven los [Pendiente] de índices y restricciones; A8–A11 confirman duplicados, huérfanos, nulos y longitudes; A13 es la línea base.
 2. **Bloque B** (índices, `CONCURRENTLY`, en autocommit) y `ANALYZE` (B9). D2 sin índices inválidos.
 3. **C2, C3, C4, C5, C6** (no dependen de cambios en Appian).
-4. **C1** solo después de (a) borrar las 4 filas sobrantes de A8.1 desde Appian (`SCA2_obtenerFilasDuplicadasCacheCabecera` + `a!deleteRecords`) y (b) aplicar y probar el cambio 5.3.1. Si se borran en la BD, lanzar la sincronización completa de `SCA2 Datos Cabecera`.
+4. **C1** (desactivado en el script; quitar los comentarios) solo después de (a) borrar las 4 filas sobrantes de A8.1 desde Appian (`SCA2_obtenerFilasDuplicadasCacheCabecera` + `a!deleteRecords`) y (b) aplicar y probar el cambio 5.3.1. Si se borran en la BD, lanzar la sincronización completa de `SCA2 Datos Cabecera`.
 5. **Bloque D**: D1/D2 y repetir A13 (D3). Probar en la UI: alta, buscador, detalle, una acción completa, bandeja de errores y cuadro de mando.
 6. C7 y C8 solo tras decisión del analista y prueba en TEST. Después, repetir en PRO en ventana de baja carga (nunca sin pasar por TEST).
 

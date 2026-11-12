@@ -301,19 +301,22 @@ ANALYZE sca2_anulaciones.sca2_datos_cabecera;
 --     siguen 4 en TEST). Requisitos previos: (1) borrar sobrantes de A8.1 desde Appian,
 --     (2) que el refresco reutilice el ID de la fila existente (ver informe §5.1),
 --     porque con el índice un segundo INSERT concurrente fallará con unique_violation.
-DO $$
-BEGIN
-  IF to_regclass('sca2_anulaciones.ux_sca2_datos_cabecera_id_solicitud') IS NOT NULL THEN
-    RAISE NOTICE 'C1: ux_sca2_datos_cabecera_id_solicitud ya existe';
-  ELSIF EXISTS (SELECT 1 FROM sca2_anulaciones.sca2_datos_cabecera
-                 GROUP BY "ID_SOLICITUD" HAVING count(*) > 1) THEN
-    RAISE WARNING 'C1: hay ID_SOLICITUD duplicados en sca2_datos_cabecera (ver A8.1); no se crea el UNIQUE';
-  ELSE
-    CREATE UNIQUE INDEX ux_sca2_datos_cabecera_id_solicitud
-        ON sca2_anulaciones.sca2_datos_cabecera ("ID_SOLICITUD");
-    RAISE NOTICE 'C1: creado ux_sca2_datos_cabecera_id_solicitud';
-  END IF;
-END $$;
+-- DESACTIVADO: no ejecutar hasta que el refresco de la caché de cabecera en Appian
+-- reutilice la fila existente (informe §5.3.1). Si se crea antes, un refresco concurrente
+-- fallará con unique_violation. Para activarlo, quitar los «-- » del bloque.
+-- DO $$
+-- BEGIN
+--   IF to_regclass('sca2_anulaciones.ux_sca2_datos_cabecera_id_solicitud') IS NOT NULL THEN
+--     RAISE NOTICE 'C1: ux_sca2_datos_cabecera_id_solicitud ya existe';
+--   ELSIF EXISTS (SELECT 1 FROM sca2_anulaciones.sca2_datos_cabecera
+--                  GROUP BY "ID_SOLICITUD" HAVING count(*) > 1) THEN
+--     RAISE WARNING 'C1: hay ID_SOLICITUD duplicados en sca2_datos_cabecera (ver A8.1); no se crea el UNIQUE';
+--   ELSE
+--     CREATE UNIQUE INDEX ux_sca2_datos_cabecera_id_solicitud
+--         ON sca2_anulaciones.sca2_datos_cabecera ("ID_SOLICITUD");
+--     RAISE NOTICE 'C1: creado ux_sca2_datos_cabecera_id_solicitud';
+--   END IF;
+-- END $$;
 -- Rollback C1: DROP INDEX IF EXISTS sca2_anulaciones.ux_sca2_datos_cabecera_id_solicitud;
 
 -- C2. [ALTA] Transición: CLAVE_IDEMPOTENCIA (comando|idSolicitud|versión) única y
