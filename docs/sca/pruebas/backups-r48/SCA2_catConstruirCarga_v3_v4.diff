@@ -1,0 +1,64 @@
+--- SCA2_catConstruirCarga_v3_antes.sail	2026-11-13 09:54:06.308999135 +0000
++++ SCA2_catConstruirCarga_v4_despues.sail	2026-11-13 10:07:37.552739872 +0000
+@@ -1,6 +1,6 @@
+ =/* [SCA2] Construye las filas a escribir (upsert) en el record SCA2 Cat <catálogo> a partir de CORE (reglas SCA2_consultar*Core).
+    ri!catalogo: MOTIVO | DETALLE | CAUSA | TIPO_ARGUMENTO | CONCEPTO | VALOR_CONCEPTO (CAUSA se construye a partir de los detalles ya cargados en Aurora: cargar antes DETALLE).
+-   Reglas: clave natural CORE → insert o update; filas con origen MANUAL no se tocan; filas CORE que CORE ya no devuelve → activo=false (solo si CORE ha respondido).
++   Reglas: clave natural CORE → insert o update; filas con origen MANUAL no se tocan; filas CORE que CORE ya no devuelve → activo=false (solo si CORE ha respondido). Si hay varias filas con la misma clave se casa con la activa (ux_sca2_cat_tipo_argumento_activo).
+    No escribe nada: devuelve a!map(catalogo, filasCore, existentesAntes, manualesRespetadas, bajas, registros). Escribe SCA2_catCargarDesdeCore. */
+ a!localVariables(
+   local!p: rule!SCA2_catParametrosCarga(),
+@@ -40,7 +40,7 @@
+         items: local!core,
+         expression: a!localVariables(
+           local!pos: wherecontains(index(local!clavesCore, fv!index, ""), local!clavesExistentes),
+-          local!ex: if(a!isNullOrEmpty(local!pos), null, index(local!existentes, index(local!pos, 1, 1), null)),
++          local!ex: if(a!isNullOrEmpty(local!pos), null, index(local!existentes, index(append(index(local!pos, where(a!forEach(items: local!pos, expression: a!defaultValue(local!existentes[fv!item]['recordType!{40727673-e6c7-46f4-b647-7c98ac09163a}SCA2 Cat Motivo.fields.{5d23d245-e05a-4e66-abb8-5838e0d739b8}activo'], false))), {}), local!pos), 1, 1), null)),
+           if(
+             and(a!isNotNullOrEmpty(local!ex), local!ex['recordType!{40727673-e6c7-46f4-b647-7c98ac09163a}SCA2 Cat Motivo.fields.{300c04da-0af1-45db-9f10-9fdc5e7d9af1}origen'] = "MANUAL"),
+             null,
+@@ -125,7 +125,7 @@
+         items: local!core,
+         expression: a!localVariables(
+           local!pos: wherecontains(index(local!clavesCore, fv!index, ""), local!clavesExistentes),
+-          local!ex: if(a!isNullOrEmpty(local!pos), null, index(local!existentes, index(local!pos, 1, 1), null)),
++          local!ex: if(a!isNullOrEmpty(local!pos), null, index(local!existentes, index(append(index(local!pos, where(a!forEach(items: local!pos, expression: a!defaultValue(local!existentes[fv!item]['recordType!{433c6bd0-8a5b-461f-9056-ddd37ffbf00b}SCA2 Cat Detalle.fields.{4415dc04-e0e4-4f48-8a75-43f862d37122}activo'], false))), {}), local!pos), 1, 1), null)),
+           if(
+             and(a!isNotNullOrEmpty(local!ex), local!ex['recordType!{433c6bd0-8a5b-461f-9056-ddd37ffbf00b}SCA2 Cat Detalle.fields.{538a3e95-301f-429e-90c8-332e2e298160}origen'] = "MANUAL"),
+             null,
+@@ -219,7 +219,7 @@
+         items: local!core,
+         expression: a!localVariables(
+           local!pos: wherecontains(index(local!clavesCore, fv!index, ""), local!clavesExistentes),
+-          local!ex: if(a!isNullOrEmpty(local!pos), null, index(local!existentes, index(local!pos, 1, 1), null)),
++          local!ex: if(a!isNullOrEmpty(local!pos), null, index(local!existentes, index(append(index(local!pos, where(a!forEach(items: local!pos, expression: a!defaultValue(local!existentes[fv!item]['recordType!{a055e578-6ddb-4397-bad1-1ae361a38e56}SCA2 Cat Causa.fields.{8e81dca0-038f-4920-85b9-1b88ef86499b}activo'], false))), {}), local!pos), 1, 1), null)),
+           if(
+             and(a!isNotNullOrEmpty(local!ex), local!ex['recordType!{a055e578-6ddb-4397-bad1-1ae361a38e56}SCA2 Cat Causa.fields.{a2cc8d76-d7f9-486e-88f2-45fbef81daeb}origen'] = "MANUAL"),
+             null,
+@@ -292,7 +292,7 @@
+         items: local!core,
+         expression: a!localVariables(
+           local!pos: wherecontains(index(local!clavesCore, fv!index, ""), local!clavesExistentes),
+-          local!ex: if(a!isNullOrEmpty(local!pos), null, index(local!existentes, index(local!pos, 1, 1), null)),
++          local!ex: if(a!isNullOrEmpty(local!pos), null, index(local!existentes, index(append(index(local!pos, where(a!forEach(items: local!pos, expression: a!defaultValue(local!existentes[fv!item]['recordType!{dc54d386-8cd9-4369-818a-13a5dc54d0ea}SCA2 Cat Tipo Argumento.fields.{bffabdb9-dfc2-4b44-ba5d-f2bc81139496}activo'], false))), {}), local!pos), 1, 1), null)),
+           if(
+             and(a!isNotNullOrEmpty(local!ex), local!ex['recordType!{dc54d386-8cd9-4369-818a-13a5dc54d0ea}SCA2 Cat Tipo Argumento.fields.{13c67d10-26e3-4aad-b830-a83d66869256}origen'] = "MANUAL"),
+             null,
+@@ -390,7 +390,7 @@
+         items: local!core,
+         expression: a!localVariables(
+           local!pos: wherecontains(index(local!clavesCore, fv!index, ""), local!clavesExistentes),
+-          local!ex: if(a!isNullOrEmpty(local!pos), null, index(local!existentes, index(local!pos, 1, 1), null)),
++          local!ex: if(a!isNullOrEmpty(local!pos), null, index(local!existentes, index(append(index(local!pos, where(a!forEach(items: local!pos, expression: a!defaultValue(local!existentes[fv!item]['recordType!{ff259e4f-7a2a-4690-b4bf-011b68ce4dc7}SCA2 Cat Concepto.fields.{f1a406bc-0de4-431f-9784-29def178db39}activo'], false))), {}), local!pos), 1, 1), null)),
+           if(
+             and(a!isNotNullOrEmpty(local!ex), local!ex['recordType!{ff259e4f-7a2a-4690-b4bf-011b68ce4dc7}SCA2 Cat Concepto.fields.{1a5c9ce7-9968-4036-834b-1a2bcccfbe23}origen'] = "MANUAL"),
+             null,
+@@ -469,7 +469,7 @@
+         items: local!core,
+         expression: a!localVariables(
+           local!pos: wherecontains(index(local!clavesCore, fv!index, ""), local!clavesExistentes),
+-          local!ex: if(a!isNullOrEmpty(local!pos), null, index(local!existentes, index(local!pos, 1, 1), null)),
++          local!ex: if(a!isNullOrEmpty(local!pos), null, index(local!existentes, index(append(index(local!pos, where(a!forEach(items: local!pos, expression: a!defaultValue(local!existentes[fv!item]['recordType!{774549b5-8a4a-4a4b-aeb8-f2960360ff18}SCA2 Cat Valor Concepto.fields.{b453422f-1344-46e9-b354-9feb8850f743}activo'], false))), {}), local!pos), 1, 1), null)),
+           if(
+             and(a!isNotNullOrEmpty(local!ex), local!ex['recordType!{774549b5-8a4a-4a4b-aeb8-f2960360ff18}SCA2 Cat Valor Concepto.fields.{d3eaef14-da1c-4f63-9813-ad066c563081}origen'] = "MANUAL"),
+             null,

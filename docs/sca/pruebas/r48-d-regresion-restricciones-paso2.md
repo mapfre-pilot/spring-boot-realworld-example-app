@@ -7,7 +7,9 @@ Cambio validado: `docs/sca/sql/66-paso2-test-restricciones.sql`, que el usuario 
 - **C3:** `NOT NULL` en `sca2_solicitud` (`ID_SOLICITUD`, `NUM_POLIZA`, `CREATED_AT`), `sca2_transicion.ID_SOLICITUD`, `sca2_tarea` (`ID_SOLICITUD`, `ESTADO`), `sca2_llamada_servicio.ID_SOLICITUD` y `sca2_datos_cabecera.ID_SOLICITUD`.
 - **C4:** `UNIQUE` `ux_sca2_cat_motivo`, `ux_sca2_cat_detalle`, `ux_sca2_cat_causa`, `ux_sca2_cat_concepto`, `ux_sca2_cat_valor_concepto` y el parcial `ux_sca2_cat_tipo_argumento_activo` (`COD_TP_ARG WHERE ACTIVO`).
 
-**Qué no se ha hecho:** no se ha cambiado ningún objeto Appian, no se ha ejecutado DDL, DML ni rollback, no se ha lanzado ninguna sincronización de record types, no se ha tocado SCA, SCAC, CORE, CMP, PRE, NSE ni ANL, y no se han modificado solicitudes antiguas.
+**Actualización (§10):** tras la decisión del usuario se han cambiado en TEST `SCA2_CatMantenimiento` (v8→v9) y `SCA2_catConstruirCarga` (v3→v4) para cerrar el riesgo del código 999.
+
+**Qué no se ha hecho (regresión, §1–§9):** no se ha cambiado ningún objeto Appian, no se ha ejecutado DDL, DML ni rollback, no se ha lanzado ninguna sincronización de record types, no se ha tocado SCA, SCAC, CORE, CMP, PRE, NSE ni ANL, y no se han modificado solicitudes antiguas.
 
 ## 1. Resumen
 
@@ -131,11 +133,11 @@ No se puede escribir en ni eliminar del origen debido a una violación de integr
 
 Es un problema de longitud de un texto de la tarea. Lo dejamos anotado como pendiente aparte, igual que `FECIMPRESION` en [R48-C §5.2](r48-c-regresion-indices-paso1.md).
 
-## 7. Propuestas (sin aplicar)
+## 7. Propuestas (las de tipo de argumento se aplican en §10)
 
 No hay ninguna regresión, así que **no se propone rollback**. Si alguna vez falla una escritura por estas restricciones, el rollback de cada bloque está comentado en `sql/66-paso2-test-restricciones.sql`: `DROP NOT NULL` por columna en C3 y `DROP INDEX ux_sca2_cat_tipo_argumento_activo` en C4.
 
-Propuestas preventivas en Appian, para decidir y sin aplicar:
+Propuestas preventivas en Appian (las dos primeras de 1 ya se han aplicado y probado: ver §10):
 1. **Tipo de argumento (§5):**
    - En `SCA2_catConstruirCarga`, buscar la fila existente dando prioridad a la activa (ordenar por `activo` descendente e `id`, o filtrar `activo=true` primero).
    - En «Reactivar» de `SCA2_CatMantenimiento`, comprobar si hay otra fila activa con el mismo `COD_TP_ARG` y avisar en lugar de escribir.
@@ -153,7 +155,7 @@ Propuestas preventivas en Appian, para decidir y sin aplicar:
 5. No se ha repetido en SCA porque no ha salido ninguna diferencia.
 
 **Dudas:**
-1. ¿Se corrige ya en Appian el riesgo de tipo de argumento (§7.1), o se limpia la fila de prueba 345? Mientras tanto, conviene que nadie reactive el 999 «Prueba».
+1. ~~¿Se corrige ya en Appian el riesgo de tipo de argumento (§7.1)?~~ Resuelto: el usuario eligió corregir «Reactivar» en Appian (§10).
 2. El usuario de las transiciones encadenadas (Decidir y CrearAccion que lanza el propio proceso) es la cuenta técnica de Appian que ejecuta los modelos y no `JJGONZ2`. Ya era así antes (1.696 transiciones históricas) y no es del paso 2. ¿Se quiere que se registre el usuario de la gestión?
 3. El error `varchar(255)` de «Write Tarea» del 11/11 (`id=215`): ¿se analiza en una tarea aparte junto con `FECIMPRESION`?
 
@@ -163,3 +165,102 @@ Propuestas preventivas en Appian, para decidir y sin aplicar:
 - Instancias: Alta 9203426, 9203452, 269214952; Decidir 16542859, 779343, 14454071, 15522349, 15522356; CrearAccion 779304, 10257242, 537648184, 9203466, 15522357; CompletarAccion 14454062, 17581444, 12346965; Posponer 14454045; GenerarPdf 779336.
 - Filas nuevas: transiciones 3151–3166; tareas 867–871; llamadas a servicio 346–351; datos de cabecera 749, 751, 753; datos de solicitud 482–484.
 - Las capturas y exportaciones CSV/JSON de la prueba se han guardado en la máquina de la sesión y no se suben al repositorio.
+
+
+## 10. Corrección de «Reactivar» y de la recarga desde CORE (código 999)
+
+Decisión del usuario (literal): «Que Devin cambie «Reactivar» para que avise de que ya hay una fila activa con ese código, como hace GUARDAR, y lo pruebe en TEST». Mismas reglas: skill `appian`, solo TEST, sin DDL ni DML. Fecha: 13/11/2026, de 09:50 a 10:10 UTC (10:50–11:10 CET). Coordinación: reserva y liberación en `coordinacion-ronda48.md`.
+
+### 10.1 Objetos cambiados
+
+| Objeto | UUID | Versión | Copia antes | Export después | Diff |
+|---|---|---|---|---|---|
+| `SCA2_CatMantenimiento` (interfaz) | `_a-0000f093-2064-8000-9d36-011c48011c48_5604449` | 8 → **9** (guardada 09:55:47 UTC) | `backups-r48/SCA2_CatMantenimiento_v8_antes.sail` | `backups-r48/SCA2_CatMantenimiento_v9_despues.sail` | `backups-r48/SCA2_CatMantenimiento_v8_v9.diff` |
+| `SCA2_catConstruirCarga` (regla) | `_a-0000f093-2064-8000-9d36-011c48011c48_5604038` | 3 → **4** (guardada 09:57:15 UTC) | `backups-r48/SCA2_catConstruirCarga_v3_antes.sail` | `backups-r48/SCA2_catConstruirCarga_v4_despues.sail` | `backups-r48/SCA2_catConstruirCarga_v3_v4.diff` |
+
+Antes de guardar se volvió a comprobar que la versión viva seguía siendo la 8 y la 3. No se ha tocado ningún otro objeto, ni record types, ni sincronizaciones.
+
+### 10.2 Cambio en `SCA2_CatMantenimiento` (v9)
+
+Solo cambia el `saveInto` del botón «Dar de baja / Reactivar» (líneas 746–858 del export v9). El resto del objeto es idéntico a la v8.
+
+- Antes del `a!writeRecords` se calcula `local!duplicados`:
+  - Si la fila seleccionada está **activa** (se va a dar de baja): `0`, sin consulta. **Dar de baja queda igual que antes.**
+  - Si está **inactiva** (se va a reactivar): una consulta `a!queryRecordType` (`batchSize: 1`, `fetchTotalCount: true`) al record del catálogo con la misma clave natural que usa GUARDAR, más `activo = true` y `id <> id seleccionado`. Los valores se toman de la fila seleccionada (`local!sel`), no del formulario, porque «Reactivar» escribe sobre la fila guardada y no sobre lo que se haya tecleado.
+- Si `local!duplicados > 0`: **no se ejecuta el `a!writeRecords`** y se muestra el aviso NEGATIVE: «**Ya existe una fila activa con esa misma clave en este catálogo: no se reactiva.**» (mismo estilo y misma variable `local!mensaje` que el de GUARDAR, «Ya existe una fila con esa misma clave en este catálogo: no se guarda.»).
+- Si no: el mismo `a!writeRecords` de la v8, sin cambios (mismos campos, `onSuccess` y `onError`).
+
+Claves comprobadas en los seis catálogos (las mismas que GUARDAR y que los `ux_sca2_cat_*`):
+
+| Catálogo | Clave natural |
+|---|---|
+| Motivo | `codLineaNegocio`, `codPerfil`, `codSubPerfil`, `codMotivo` |
+| Detalle | `codLineaNegocio`, `codMotivo`, `codDetalle` |
+| Causa | `codLineaNegocio`, `codMotivo`, `codDetalle`, `codPerfil`, `codCausa` |
+| Tipo de argumento | `codTpArg` |
+| Concepto PCA | `idnConceptoPca` |
+| Valor de concepto | `idnConceptoPca`, `idnPca` |
+
+En los catálogos con UNIQUE completa (todos menos tipo de argumento) la BD ya impide dos filas con la misma clave, así que la comprobación siempre dará 0; se deja por coherencia y por si alguna vez se cambia el índice.
+
+### 10.3 Cambio en `SCA2_catConstruirCarga` (v4)
+
+**¿Podía dejar dos filas activas con el mismo código?** Sí, en tipo de argumento. Para cada fila de CORE la regla cogía la primera existente con esa clave (`index(local!pos, 1, 1)`) y la consulta de existentes no tiene orden. Si salía primero la 345 (inactiva), la regla generaba un update `activo=true` sobre la 345 con la 344 activa; la UNIQUE parcial lo rechazaría y fallaría el lote entero de la recarga (antes de la UNIQUE habría dejado dos filas activas con el 999).
+
+**Corrección (mínima, una línea por rama en las 6 ramas, más una frase en el comentario de cabecera):**
+
+```
+local!ex: if(a!isNullOrEmpty(local!pos), null, index(local!existentes,
+  index(append(index(local!pos, where(a!forEach(items: local!pos,
+    expression: a!defaultValue(local!existentes[fv!item][<campo activo>], false))), {}), local!pos), 1, 1), null)),
+```
+
+Entre las filas existentes con la misma clave elige la primera **activa**; si no hay ninguna activa, la primera, como antes. Cuando solo hay una coincidencia (todos los casos menos el 999) el resultado es exactamente el mismo. No cambia la consulta, ni las reglas de MANUAL, ni las bajas.
+
+**Pruebas (sin escribir nada):**
+1. Lógica de selección con `validateExpression` y datos simulados (si el resultado no es el esperado se fuerza un error de índice):
+   - existentes [345 inactiva, 344 activa] → elige 344 ✔
+   - [344 activa, 345 inactiva] → 344 ✔
+   - [345 inactiva, 346 inactiva] → 345 (la primera, como antes) ✔
+   - sin coincidencia → `null` (insert) ✔; coincidencia única → esa fila ✔
+   - control negativo: esperar 345 en el primer caso → da el error forzado, como debe.
+2. `testRule` de la regla real para los 6 catálogos, antes (v3) y después (v4). Los resultados son **idénticos salvo `fechaAlta`/`fechaModificacion`**, que la regla rellena con `now()`:
+
+| Catálogo | filasCore | existentesAntes | bajas | registros | Inserts | `id` repetidos |
+|---|---|---|---|---|---|---|
+| MOTIVO | 14 | 14 | 0 | 14 | 0 | no |
+| DETALLE | 22 | 22 | 0 | 22 | 0 | no |
+| CAUSA | 146 | 146 | 0 | 146 | 0 | no |
+| TIPO_ARGUMENTO | 346 | 346 | 0 | 346 | 1 (`370` «Bajada de Prima», nuevo en CORE) | no; para el 999 elige la 344 (activa) |
+| CONCEPTO | 18 | 17 | 0 | 18 | 1 (`BAJAPRIM` «Bajada de prima», nuevo en CORE) | no |
+| VALOR_CONCEPTO | 100 | 101 | 0 | 100 | 0 | no |
+
+No se ha lanzado «Recargar desde CORE» (escribiría en los seis catálogos y daría de alta 370 y BAJAPRIM): no lo pedía la tarea.
+
+**Riesgo que queda (no se corrige, no es mínimo):** si CORE devolviera dos veces el mismo código en una misma respuesta y no existiera en Aurora, la regla generaría dos inserts activos y la UNIQUE rechazaría el lote. Hoy no pasa (ninguna clave de CORE repetida en los 6 catálogos). Sigue pendiente también el `onError` del `a!writeRecords` de `SCA2_AltaGestionArgumento` (§7.1).
+
+### 10.4 Pruebas en pantalla
+
+**Usuario:** `JJGONZ2` sigue sin acceso a `/page/gestiones-mantenimiento`. La prueba se ha hecho **en la pantalla real del site** (`/suite/sites/sca2/page/gestiones-mantenimiento` → «Catálogos CORE (Aurora)») con el usuario de Designer `devin`, que sí ve los botones de administrador (NUEVO, RECARGAR DESDE CORE, GUARDAR, Dar de baja/Reactivar). Consecuencia: las filas tocadas quedan con `usuarioModificacion = devin`, que es el mismo valor que ya tenían **todas** las filas de los catálogos (cargadas por esa cuenta el 21–27/10), así que no se añade un rastro distinto del que había. No se ha creado ninguna fila.
+
+**Base de datos:** los record types `SCA2 Cat *` son de origen `DATABASE` sin sincronización (tabla `sca2_cat_tipo_argumento`, etc.), así que `listRecordData` y la propia pantalla leen la tabla en directo. No hay acceso SQL desde la sesión; la comprobación «en BD» es esa lectura directa.
+
+| # | Hora UTC | Paso | Resultado |
+|---|---|---|---|
+| 1 | 10:02:50 | Tipo de argumento, búsqueda «999», sin «Solo activos». Seleccionar la fila **345** (999 «Prueba», Orden 344, Activo **No**) → REACTIVAR → «La fila volverá a devolverse a las pantallas. ¿Continuar?» → SÍ | Aviso: «**Ya existe una fila activa con esa misma clave en este catálogo: no se reactiva.**». La rejilla sigue: 345 No (27/10/2026 11:33 CET) y 344 Sí. ✔ |
+| 1b | 10:03 | `listRecordData` de las filas 344 y 345 antes y después del paso 1 | **Idénticas byte a byte** (345: `activo=false`, `fechaModificacion=2026-10-27 10:33:45`, `usuarioModificacion=devin`). No se ha escrito nada. ✔ |
+| 2 | 10:05:31 | Valores de concepto, búsqueda «10014717». Seleccionar `id=1` (concepto 3, valor 0, activa, sin ninguna otra fila con esa clave) → DAR DE BAJA → SÍ | «Fila dada de baja.»; rejilla y BD: `activo=false`, `fechaModificacion=2026-11-13 10:05:31`. ✔ Dar de baja igual que antes. |
+| 3 | 10:06:19 | Misma fila `id=1` → REACTIVAR → SÍ (ejecuta la consulta nueva de VALOR_CONCEPTO, que da 0) | «Fila reactivada.»; BD: `activo=true`, `fechaModificacion=2026-11-13 10:06:19`. ✔ |
+| 4 | 10:07:03 | Tipo de argumento, fila **344** (999, activa) → DAR DE BAJA → SÍ | «Fila dada de baja.»; quedan 344 y 345 inactivas. ✔ |
+| 5 | 10:07:15 | Fila **344** → REACTIVAR → SÍ (la única otra fila con el 999 es la 345, inactiva, así que la comprobación da 0) | «Fila reactivada.»; BD: 344 `activo=true`, `fechaModificacion=2026-11-13 10:07:15`; 345 sin cambios. ✔ |
+
+Estado final igual que el inicial en lo funcional: 344 activa, 345 inactiva y valor de concepto 1 activo. Lo único que cambia es `fechaModificacion` de 344 y de valor concepto 1. Estas filas han estado inactivas 48 s (valor concepto 1) y 12 s (344) en TEST.
+
+**No probado en pantalla:** la rama de la comprobación en Motivo, Detalle, Causa y Concepto PCA (no hay ninguna fila inactiva con duplicado activo que se pueda probar, porque la UNIQUE completa lo impide, y no se han dado de baja filas reales de esos catálogos). Esas cuatro consultas son las mismas que usa GUARDAR con dos filtros más, y Appian las ha validado al guardar la v9. La prueba con `JJGONZ2` sigue sin poder hacerse por permisos.
+
+### 10.5 Comparación de exportaciones
+
+- `*_antes.sail` = export vivo leído antes del cambio (comparado byte a byte).
+- `*_despues.sail` = export de la versión nueva leída después de guardar = lo que se envió (comparado byte a byte).
+- `SCA2_CatMantenimiento` v8→v9: 771 → 864 líneas; el diff toca solo dos bloques del botón (746 → 746–837 y 765 → 856–858). 
+- `SCA2_catConstruirCarga` v3→v4: 526 → 526 líneas; el diff toca la línea 3 (comentario) y las líneas `local!ex` 43, 128, 222, 295, 393 y 472.
