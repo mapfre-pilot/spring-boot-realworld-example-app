@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<contentHaul xmlns:a="http://www.appian.com/ae/types/2009">
+    <versionUuid>935cd4b4-4491-4647-9426-07638f13d66b</versionUuid>
+    <bodyVersionUuid>LTMcNDXs</bodyVersionUuid>
+    <rule>
+        <name>SCA2_actualizarMecanizacionAnulacionNse</name>
+        <uuid>_a-0000f0a4-c27c-8000-9d46-011c48011c48_5667046</uuid>
+        <description>[SCA2] R44-A: tras una anulación NSE (Autos/Hogar) con respuesta OK de NSE (número de suplemento), marca en CORE la mecanización como ANULACIÓN REALIZADA si la gestión sigue INCOMPLETA. Devuelve aplica/success.</description>
+        <parentUuid>_a-0000f069-4f37-8000-9cc8-011c48011c48_20050135</parentUuid>
+        <visibility>
+            <advertise>false</advertise>
+            <hierarchy>true</hierarchy>
+            <indexable>true</indexable>
+            <quota>false</quota>
+            <searchable>true</searchable>
+            <system>false</system>
+            <unlogged>false</unlogged>
+        </visibility>
+        <definition>/* R44-A: anulación NSE (Autos/Hogar, no wAutemis) lanzada en directo (también a vencimiento): si NSE ha respondido OK (ANL con número de suplemento) y la gestión de mecanización de CORE sigue sin cerrar, se marca la mecanización como ANULACIÓN REALIZADA antes de finalizar la solicitud. Con autorización requerida CORE la deja en ANULACIÓN PENDIENTE DE AUTORIZAR y esta regla no actúa. */
+/* R45-B: con estadoFinal CANCELADA (el usuario dice NO en la pantalla de anulación) y la mecanización de CORE INCOMPLETA, se cierra la mecanización con codEstMecanizacion 4, como SCA_Finalizar_Mecanización con cancel; CORE deja la solicitud cancelada. */
+a!localVariables(
+  local!estado: index(ri!sol, "estado", null),
+  local!cancelar: tostring(a!defaultValue(ri!estadoFinal, "")) = #"_a-0000f09f-42ed-8000-9d42-011c48011c48_5649111",
+  local!dp: index(ri!sol, "datosPerfilesPca", null),
+  local!esNse: contains(
+    touniformstring({ #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050719", #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050725" }),
+    tostring(a!defaultValue(index(local!estado, "origenPoliza", null), ""))
+  ),
+  local!anl: if(local!esNse, #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051356"(idSolicitud: ri!idSolicitud), null),
+  local!suplemento: index(local!anl, #"urn:appian:record-field:v1:5d975d44-07f7-435f-9ffc-947cfdff459d/762eab69-4178-4b70-9c37-1afdc6cd5edc", null),
+  local!gestiones: if(
+    and(a!isNullOrEmpty(local!suplemento), not(local!cancelar)),
+    {},
+    a!defaultValue(index(#"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051122"(codSolicitud: ri!idSolicitud), "MSSConsultaGestion", {}), {})
+  ),
+  local!mecanizaciones: if(
+    a!isNullOrEmpty(local!gestiones),
+    {},
+    index(
+      local!gestiones,
+      wherecontains(
+        tostring(#"_a-0000f0a4-c27c-8000-9d46-011c48011c48_5667040"),
+        touniformstring(#"SYSTEM_SYSRULES_forEach"(local!gestiones, tostring(index(fv!item, "accionRealizada", ""))))
+      ),
+      {}
+    )
+  ),
+  local!estadoMecanizacion: upper(tostring(if(
+    a!isNullOrEmpty(local!mecanizaciones),
+    "",
+    index(index(local!mecanizaciones, length(local!mecanizaciones), null), "codEstGestion", "")
+  ))),
+  /* NSE responde de forma asíncrona: si la ANL existe, sin suplemento y sin concluir, el PM espera y reintenta antes de finalizar en CORE */
+  local!esperar: and(
+    not(local!cancelar),
+    local!esNse,
+    a!isNotNullOrEmpty(local!anl),
+    a!isNullOrEmpty(local!suplemento),
+    not(a!defaultValue(index(local!anl, #"urn:appian:record-field:v1:5d975d44-07f7-435f-9ffc-947cfdff459d/3fc15295-65a7-49a8-8e1d-fd2c0db1b533", null), false))
+  ),
+  local!aplica: or(
+    and(
+      local!esNse,
+      a!isNotNullOrEmpty(local!suplemento),
+      local!estadoMecanizacion = #"_a-0000f0a4-c27c-8000-9d46-011c48011c48_5667034"
+    ),
+    and(local!cancelar, local!estadoMecanizacion = #"_a-0000f0a4-c27c-8000-9d46-011c48011c48_5667034")
+  ),
+  if(
+    not(local!aplica),
+    a!map(aplica: false, esperar: local!esperar, success: null, estadoMecanizacion: local!estadoMecanizacion, suplemento: local!suplemento),
+    a!localVariables(
+      local!polizaVigente: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20053011"(numPoliza: index(local!estado, "numPoliza", null)),
+      local!resultado: #"8e4d4641-0604-4d23-95d6-41cec62fc1f1"(
+        endpoint: #"_a-0000ebf6-689c-8000-9c69-011c48011c48_13295626",
+        consulta: 'type!{http://ejb.cfsa.pca.mapfami.dgtp.mapfre.com/}actualizarMecanizacion'(
+          MSEActualizarMecanizacion: 'type!{http://ejb.cfsa.pca.mapfami.dgtp.mapfre.com/}mSEActualizarMecanizacionDTO'(
+            idSolicitud: ri!idSolicitud,
+            codEstMecanizacion: if(local!cancelar, #"0ed2389e-3c59-4b08-a341-1d2dde3fabb2", #"_a-0000f0a4-c27c-8000-9d46-011c48011c48_5667028"),
+            numSituacion: local!suplemento,
+            centroEmisor: index(index(#"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050996"(codNuuma: index(local!dp, "nuuma", null)), "MSSConsultarEquipos", null), "centro_emisor", null),
+            fechaAnulacion: index(local!anl, #"urn:appian:record-field:v1:5d975d44-07f7-435f-9ffc-947cfdff459d/8d806178-c18c-423b-9438-d77be8fb4154", null),
+            codEstPoliza: if(local!polizaVigente = "A", "A", "V"),
+            infoUsuario: 'type!{http://ejb.cfsa.pca.mapfami.dgtp.mapfre.com/}infoUsuarioDTO'(
+              nuuma: index(local!dp, "nuuma", null),
+              codPerfil: index(local!dp, "codperfil", null),
+              codSubPerfil: index(local!dp, "codsubperfil", null),
+              codCiaUsuario: index(local!dp, "codcompania", null)
+            )
+          )
+        )
+      ),
+      a!map(
+        aplica: true,
+        esperar: false,
+        success: a!defaultValue(index(local!resultado, "success", null), false),
+        estadoMecanizacion: local!estadoMecanizacion,
+        suplemento: local!suplemento,
+        body: left(tostring(index(index(local!resultado, "result", null), "body", null)), 500)
+      )
+    )
+  )
+)
+</definition>
+        <namedTypedValue>
+            <name>idSolicitud</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>sol</name>
+            <type>
+                <name>Map</name>
+                <namespace>http://www.appian.com/ae/types/2009</namespace>
+            </type>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>estadoFinal</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <preferredEditor>legacy</preferredEditor>
+        <offlineEnabled>false</offlineEnabled>
+    </rule>
+    <roleMap public="true">
+        <role inherit="true" allowForAll="false" name="readers">
+            <users/>
+            <groups>
+                <groupUuid>_e-0000f069-4e92-8000-9c18-01075c01075c_8071</groupUuid>
+            </groups>
+        </role>
+        <role inherit="true" allowForAll="false" name="authors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="administrators">
+            <users/>
+            <groups>
+                <groupUuid>_e-0000f069-4e92-8000-9c18-01075c01075c_8069</groupUuid>
+            </groups>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyReaders">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAuthors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAdministrators">
+            <users/>
+            <groups/>
+        </role>
+    </roleMap>
+    <mcpEnabled>false</mcpEnabled>
+    <history>
+        <historyInfo versionUuid="_a-0000f0a4-c27c-8000-9d46-011c48011c48_5667192"/>
+        <historyInfo versionUuid="935cd4b4-4491-4647-9426-07638f13d66b"/>
+    </history>
+</contentHaul>

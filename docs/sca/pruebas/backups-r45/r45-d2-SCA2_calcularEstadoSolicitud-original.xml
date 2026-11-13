@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<contentHaul xmlns:a="http://www.appian.com/ae/types/2009">
+    <versionUuid>db85ee0c-a7f5-40ce-9f7d-9754c99ae693</versionUuid>
+    <bodyVersionUuid>iAdNjOTx</bodyVersionUuid>
+    <rule>
+        <name>SCA2_calcularEstadoSolicitud</name>
+        <uuid>_a-0000f069-4f37-8000-9cc8-011c48011c48_20052795</uuid>
+        <description>[SCA2] copia de SCA_calcularEstadoSolicitud (batchB). R45-D: tabla de etiquetas por cod_tip_est_solic + cod_tip_est_mecaniza (idSolicitud/codEstMecaniza opcionales)</description>
+        <parentUuid>_a-0000f069-4f37-8000-9cc8-011c48011c48_20050135</parentUuid>
+        <visibility>
+            <advertise>false</advertise>
+            <hierarchy>true</hierarchy>
+            <indexable>true</indexable>
+            <quota>false</quota>
+            <searchable>true</searchable>
+            <system>false</system>
+            <unlogged>false</unlogged>
+        </visibility>
+        <definition>/* HU3980 (listado por NUUMA): etiqueta a partir del estado CORE de la solicitud (cod_tip_est_solic) y del estado de la gestión 5 (mecanización) / última gestión */
+/* R45-D: tabla de etiquetas del analista por cod_tip_est_solic + cod_tip_est_mecaniza (BBDD SCA, resultado de la simulación/mecanización). Combinaciones fuera de la tabla: lógica anterior por literal de la gestión 5 */
+a!localVariables(
+  local!gestiones: a!defaultValue(index(ri!datosGestiones, "MSSConsultaGestion", {}), {}),
+  local!acciones: touniformstring(#"SYSTEM_SYSRULES_forEach"(local!gestiones, tostring(a!defaultValue(index(fv!item, "accionRealizada", ""), "")))),
+  local!mecanizaciones: index(local!gestiones, wherecontains(touniformstring("5"), local!acciones), {}),
+  local!estadoMecanizacion: upper(tostring(if(a!isNullOrEmpty(local!mecanizaciones), "", a!defaultValue(index(local!mecanizaciones, length(local!mecanizaciones), "codEstGestion", ""), "")))),
+  local!pospuestas: index(local!gestiones, wherecontains(touniformstring({"2", "3", "7"}), local!acciones), {}),
+  local!estadoUltimaPosponible: upper(tostring(if(a!isNullOrEmpty(local!pospuestas), "", a!defaultValue(index(local!pospuestas, length(local!pospuestas), "codEstGestion", ""), "")))),
+  local!gestionPospuesta: local!estadoUltimaPosponible = "INCOMPLETA",
+  local!autorizacionRechazada: and(a!isNotNullOrEmpty(local!estadoUltimaPosponible), find("RECHAZADA", local!estadoUltimaPosponible) &gt; 0, index(local!acciones, length(local!acciones), "") = "7"),
+  local!ultimaAccion: if(a!isNullOrEmpty(local!acciones), "", index(local!acciones, length(local!acciones), "")),
+  local!sol: tostring(ri!estadoSolicitud),
+  local!finalCore: or(local!sol = "4", local!sol = "5"),
+  local!mecTexto: if(
+    a!isNotNullOrEmpty(ri!codEstMecaniza),
+    "",
+    if(
+      or(a!isNullOrEmpty(ri!idSolicitud), not(or(local!sol = "2", local!finalCore))),
+      "",
+      tostring(index(#"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051242"(idSolicitud: ri!idSolicitud, devolverSolicitud: false, devolverObservaciones: false, devolverGestiones: false, devolverMecanizacion: true, devolverAcciones: false, devolverAutorizaciones: false, devolverNotificaciones: false, devolverSGO: false, devolverCTO: false), "mecanizacion", ""))
+    )
+  ),
+  local!codMec: trim(tostring(if(
+    a!isNotNullOrEmpty(ri!codEstMecaniza),
+    ri!codEstMecaniza,
+    if(
+      find("codTipEstMecaniza:", local!mecTexto) = 0,
+      "",
+      index(split(index(split(local!mecTexto, "codTipEstMecaniza:"), 2, ""), {",", "]"}), 1, "")
+    )
+  ))),
+  local!mecVacia: or(a!isNullOrEmpty(local!estadoMecanizacion), local!estadoMecanizacion = "INCOMPLETA"),
+  local!mecRealizada: local!estadoMecanizacion = "ANULACION REALIZADA",
+  local!mecPendienteAutorizar: local!estadoMecanizacion = "ANULACION PENDIENTE DE AUTORIZAR",
+  local!mecIncompleta: local!estadoMecanizacion = "MECANIZACION INCOMPLETA",
+  local!mecCerrada: or(local!estadoMecanizacion = "CERRADA SIN MECANIZAR", find("CERRADA SIN MECANIZAR POR", local!estadoMecanizacion) &gt; 0),
+  local!mecEnviada: or(local!estadoMecanizacion = "MECANIZACIÓN ENVIADA", local!estadoMecanizacion = "MECANIZACION ENVIADA"),
+  local!mecCaducada: or(local!estadoMecanizacion = #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624046", local!estadoMecanizacion = "FINALIZADA CADUCADA"),
+  if(local!sol = "14", #"f0d0f6db-bf20-4b02-b11b-d73866de8f61",
+  if(local!sol = "3", #"be4e8897-2785-4ada-ae82-2878e2a1e48c",
+  if(or(local!sol = "6", local!sol = "12"), #"72594060-571f-493d-8284-28444e084f4f",
+  if(or(local!sol = "11", local!sol = "20"), #"b2488513-2093-4597-99f1-ac2154bfc5db",
+  if(and(local!sol = "2", local!codMec = #"_a-0000f0a4-c27c-8000-9d46-011c48011c48_5667028"), #"bc35f4c8-fd5a-402d-879c-e6656fee9c2f",
+  if(and(local!sol = "2", local!codMec = #"d8ab8d88-d07f-4a68-bb93-bb34060d98ee"), #"3d4a8e87-4a23-43a8-82a9-30596957f0d8",
+  if(and(local!finalCore, local!codMec = #"7c782af2-1da4-4bda-b3d8-a6708c1a5a80"), #"9c9b8547-bcc0-4a90-a431-766a52353d0a",
+  if(and(local!finalCore, local!codMec = #"30735627-5222-48f6-ac05-321824d447de"), #"93348d3a-1889-48f6-8c7b-b4aed6a4badd",
+  if(and(local!finalCore, local!codMec = #"_a-0000f0a4-c27c-8000-9d46-011c48011c48_5667028"), #"f8cd6dc1-08fa-4689-9d5e-a8c995f74897",
+  if(and(local!finalCore, local!codMec = #"0ed2389e-3c59-4b08-a341-1d2dde3fabb2"), #"2fb6df5b-c10c-445b-91ff-9b68396c0161",
+  if(and(local!sol = "2", local!mecRealizada), #"bc35f4c8-fd5a-402d-879c-e6656fee9c2f",
+  if(and(local!sol = "2", local!mecIncompleta), #"3d4a8e87-4a23-43a8-82a9-30596957f0d8",
+  if(and(or(local!sol = "2", local!finalCore), local!mecEnviada), #"9c9b8547-bcc0-4a90-a431-766a52353d0a",
+  if(and(or(local!sol = "2", local!finalCore), local!mecPendienteAutorizar), #"93348d3a-1889-48f6-8c7b-b4aed6a4badd",
+  if(or(local!sol = "1", local!sol = "2"), #"f29ab83a-49fa-4159-a959-dab874ff02bc",
+  if(and(local!finalCore, local!mecRealizada), #"f8cd6dc1-08fa-4689-9d5e-a8c995f74897",
+  if(and(local!finalCore, or(local!mecCerrada, local!autorizacionRechazada)), #"2fb6df5b-c10c-445b-91ff-9b68396c0161",
+  if(and(local!finalCore, local!mecCaducada), #"72594060-571f-493d-8284-28444e084f4f",
+  if(and(local!finalCore, local!estadoMecanizacion = "INCOMPLETA"), #"93348d3a-1889-48f6-8c7b-b4aed6a4badd",
+  if(and(local!finalCore, local!mecVacia, or(local!gestionPospuesta, local!ultimaAccion = "8")), #"f29ab83a-49fa-4159-a959-dab874ff02bc",
+  if(and(local!finalCore, or(local!mecVacia, local!mecIncompleta)), #"3d4a8e87-4a23-43a8-82a9-30596957f0d8",
+  #"5aa6904a-415c-40a6-9697-8e6cc6465f45"(estado: ri!estadoSolicitud)
+  )))))))))))))))))))))
+)
+</definition>
+        <namedTypedValue>
+            <name>estadoSolicitud</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>datosGestiones</name>
+            <type>
+                <name>Map</name>
+                <namespace>http://www.appian.com/ae/types/2009</namespace>
+            </type>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>idSolicitud</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>codEstMecaniza</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <preferredEditor>legacy</preferredEditor>
+        <offlineEnabled>false</offlineEnabled>
+    </rule>
+    <roleMap public="true">
+        <role inherit="true" allowForAll="false" name="readers">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="authors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="administrators">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyReaders">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAuthors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAdministrators">
+            <users/>
+            <groups/>
+        </role>
+    </roleMap>
+    <typedValue>
+        <type>
+            <name>RuleTestConfig?list</name>
+            <namespace>http://www.appian.com/ae/types/2009</namespace>
+        </type>
+        <value>
+            <el>
+                <a:name>smoke: inputs nulos no error</a:name>
+                <a:description/>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">null</a:value>
+                    <a:nameRef>estadoSolicitud</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">null</a:value>
+                    <a:nameRef>datosGestiones</a:nameRef>
+                    <a:id/>
+                </a:ruleInputTestConfigs>
+                <a:assertions>
+                    <a:expectedOutput xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                    <a:resultAssertions>true()</a:resultAssertions>
+                </a:assertions>
+                <a:isDefault>false</a:isDefault>
+            </el>
+        </value>
+    </typedValue>
+    <mcpEnabled>false</mcpEnabled>
+    <history>
+        <historyInfo versionUuid="_a-0000f069-4f37-8000-9cc8-011c48011c48_20064433"/>
+        <historyInfo versionUuid="_a-0000f069-4f37-8000-9cc8-011c48011c48_20072776"/>
+        <historyInfo versionUuid="_a-0000f099-f136-8000-9d3c-011c48011c48_5624288"/>
+        <historyInfo versionUuid="db85ee0c-a7f5-40ce-9f7d-9754c99ae693"/>
+    </history>
+</contentHaul>

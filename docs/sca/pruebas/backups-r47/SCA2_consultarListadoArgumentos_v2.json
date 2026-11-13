@@ -1,0 +1,19 @@
+{
+  "uuid": "_a-0000f069-4f37-8000-9cc8-011c48011c48_20053262",
+  "name": "SCA2_consultarListadoArgumentos",
+  "description": "[SCA2] copia de SCA_consultarListadoArgumentos (batchB)",
+  "expression": "/**********************************************************************************\n\n  LANZAMIENTO INTEGRACION\n  https://webservices.pre.mapfre.net:26004/es_pca_gestionartareas_bbe-web/esp/api/1.0/consultarListadoArgumentos\n  NOS QUEDAMOS CON EL BODY DE LA RESPUESTA\n  Autor: NTT Data\n  Parámetro:\n    Entrada: \n      - body: Información con varios cambpos apra la integración\n      - rand: número aleatorio (rand()) para que Appian no reutilice la respuesta de una llamada anterior con el mismo body (paridad SCA_consultarListadoArgumentos)\n\n***********************************************************************************/\na!localVariables(\n  local!resultado: rule!SCA2_consultarListadoArgumentosREST(\n    body: ri!body,\n    random: ri!rand\n  ),\n  local!success: index(local!resultado, \"success\", false),  \n  if(\n    toboolean(local!success),\n    a!fromJson(index(local!resultado, \"result\",\"body\", null)),\n    null\n  )\n)\n",
+  "inputs": [
+    {
+      "name": "body",
+      "type": "Map",
+      "multiple": false
+    },
+    {
+      "name": "rand",
+      "type": "Number (Decimal)",
+      "multiple": false
+    }
+  ],
+  "versionId": "2"
+}

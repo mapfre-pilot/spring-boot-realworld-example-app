@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" font-family="Arial, Helvetica, sans-serif">
+  <defs><marker id="ar" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker></defs>
+  <rect width="1600" height="900" fill="#fff"/>
+  <text x="800" y="36" text-anchor="middle" font-size="26" font-weight="bold" fill="#222">Plan — qué lógica de los servicios legacy se lleva a Appian (SCA2) y qué se mantiene como integración</text>
+  <text x="800" y="60" text-anchor="middle" font-size="14" fill="#666">Criterio: lógica sencilla, sin acceso a datos propietarios de otros sistemas y sin transaccionalidad distribuida → regla/decisión Appian. Lo demás, integración.</text>
+
+  <!-- Columna A: Mantener como integración -->
+  <rect x="30" y="85" width="500" height="520" rx="10" fill="#fdf3e7" stroke="#d68910" stroke-width="2"/>
+  <text x="280" y="112" text-anchor="middle" font-size="17" font-weight="bold" fill="#9a5d00">A. SE MANTIENE COMO INTEGRACIÓN</text>
+  <text x="280" y="132" text-anchor="middle" font-size="12" fill="#555">(dueño del dato o de la transacción fuera de Appian)</text>
+  <g font-size="12">
+    <rect x="45" y="145" width="470" height="70" rx="6" fill="#fff" stroke="#d68910"/>
+    <text x="55" y="163" font-weight="bold">Core7 PCA_CORECFSA (Oracle MES) — 9 servicios EJB</text>
+    <text x="55" y="180">Solicitud, gestiones, contra anulación, acc. administrativas, autorizaciones,</text>
+    <text x="55" y="196">argumentos, conceptos, mecanización. SCA y SCA2 comparten BD → no duplicar.</text>
+    <rect x="45" y="225" width="470" height="70" rx="6" fill="#fff" stroke="#d68910"/>
+    <text x="55" y="243" font-weight="bold">Central NEW / GAIA — anulación real de la póliza</text>
+    <text x="55" y="260">consultarAnulacionPoliza, bloquear/desbloquear, registrarOpeAnulPolizaEnCentral,</text>
+    <text x="55" y="276">simularAnulacion (SOAP y REST evt21). Transacción en el sistema emisor.</text>
+    <rect x="45" y="305" width="470" height="70" rx="6" fill="#fff" stroke="#d68910"/>
+    <text x="55" y="323" font-weight="bold">Consultas maestras externas</text>
+    <text x="55" y="340">TRON/NSE/Vida/Gescom (pólizas), Estruage (estructura comercial), productor, BDEC,</text>
+    <text x="55" y="356">API Clients, terceros, carterización, siniestros, planes de pago, prerrenovación.</text>
+    <rect x="45" y="385" width="470" height="70" rx="6" fill="#fff" stroke="#d68910"/>
+    <text x="55" y="403" font-weight="bold">Gestión documental y canales</text>
+    <text x="55" y="420">SGD REST, Documentum BS*, SCGD, SGC cargaGestionPCA / cargaGcOnLine,</text>
+    <text x="55" y="436">SGO (Web API Appian), STCAT actualizarResPCA, Verti (WSSISNet), mail, Club MAPFRE.</text>
+    <rect x="45" y="465" width="470" height="60" rx="6" fill="#fff" stroke="#d68910"/>
+    <text x="55" y="483" font-weight="bold">Motor de decisión de negocio (hoy REST sca_servicios/…/reglas)</text>
+    <text x="55" y="500">Sustituye a ILOG DecidirAccion N1/N2/N3. Mantener hasta estabilizar; revisar a medio</text>
+    <text x="55" y="516">plazo si las reglas son tabulares → objeto Decision de Appian.</text>
+    <text x="55" y="555" font-size="12" fill="#555">Mejora transversal: 57 integraciones SCAC sin consumidor en SCA/SCA2 y</text>
+    <text x="55" y="571" font-size="12" fill="#555">5 en SCA2 → inventariar, marcar obsoletas y retirar (ver anexo).</text>
+  </g>
+
+  <!-- Columna B: Llevar a Appian -->
+  <rect x="550" y="85" width="500" height="520" rx="10" fill="#eafaf1" stroke="#1e8449" stroke-width="2"/>
+  <text x="800" y="112" text-anchor="middle" font-size="17" font-weight="bold" fill="#145a32">B. LÓGICA QUE SE HACE EN APPIAN</text>
+  <text x="800" y="132" text-anchor="middle" font-size="12" fill="#555">(sencilla, determinista, datos ya disponibles en SCA2)</text>
+  <g font-size="12">
+    <rect x="565" y="145" width="470" height="70" rx="6" fill="#fff" stroke="#1e8449"/>
+    <text x="575" y="163" font-weight="bold">B1. determinarCaducidad → regla SCA2_calcularCaducidadTarea</text>
+    <text x="575" y="180">hoy + N días (propietario / no propietario) desde constantes; si cambia de nivel</text>
+    <text x="575" y="196">se recalcula, si no se conserva. Alimenta "CMD Caducar" y "Batch Caducidad".</text>
+    <rect x="565" y="225" width="470" height="70" rx="6" fill="#fff" stroke="#1e8449"/>
+    <text x="575" y="243" font-weight="bold">B2. esPropietario (cPropietarioYNivel) → regla SCA2_nuumaEsPropietario</text>
+    <text x="575" y="260">propietario = carterización "0" ó Estruage MCA_PROPIEDAD_CLAVE/POLIZA = "S";</text>
+    <text x="575" y="276">N3: resultado "ENVIAR A NIVEL 2" + subgrupo CE_RM. Sustituye a comprobarPropietario.</text>
+    <rect x="565" y="305" width="470" height="70" rx="6" fill="#fff" stroke="#1e8449"/>
+    <text x="575" y="323" font-weight="bold">B3. Validaciones de acceso (comprobarAcceso) → reglas SCA2 (ya en marcha)</text>
+    <text x="575" y="340">cía. Catalunya Caixa y acuerdos BBVA/directivos no gestionables para Red MAPFRE,</text>
+    <text x="575" y="356">fecha de anulación a futuro, solicitud abierta (accesoStudPorModo). Constantes Appian.</text>
+    <rect x="565" y="385" width="470" height="70" rx="6" fill="#fff" stroke="#1e8449"/>
+    <text x="575" y="403" font-weight="bold">B4. Composición de cabecera (cargarCabecera) → SCA2_obtenerDatosCabecera</text>
+    <text x="575" y="420">Las 16 consultas se lanzan desde Appian en paralelo (a!integration en reglas)</text>
+    <text x="575" y="436">y se cachean por solicitud; retirar consultarCabeceraRest cuando iguale.</text>
+    <rect x="565" y="465" width="470" height="70" rx="6" fill="#fff" stroke="#1e8449"/>
+    <text x="575" y="483" font-weight="bold">B5. Preparación de datos para decidir (cPrepararDatosSD)</text>
+    <text x="575" y="500">Normalizar fechas, flags S/N, carterización y Estruage en una regla única;</text>
+    <text x="575" y="516">hoy repartida entre SCA2_mapearDatosDecidirAccion y el PM "CMD Decidir".</text>
+    <text x="575" y="555" fill="#555">B6. Alta automática (API SCA /altaAutomatica): su secuencia de validaciones es</text>
+    <text x="575" y="571" fill="#555">la misma que "CMD Alta" → exponerla como Web API de SCA2 y retirar el Spring.</text>
+  </g>
+
+  <!-- Columna C: Simplificar / retirar -->
+  <rect x="1070" y="85" width="500" height="520" rx="10" fill="#f4ecf7" stroke="#7d3c98" stroke-width="2"/>
+  <text x="1320" y="112" text-anchor="middle" font-size="17" font-weight="bold" fill="#4a235a">C. SIMPLIFICAR / RETIRAR</text>
+  <text x="1320" y="132" text-anchor="middle" font-size="12" fill="#555">(mediaciones y proceso legacy ya reimplementados)</text>
+  <g font-size="12">
+    <rect x="1085" y="145" width="470" height="80" rx="6" fill="#fff" stroke="#7d3c98"/>
+    <text x="1095" y="163" font-weight="bold">Mediaciones WESB PCA_GestionarTareas_SMED/SMED2</text>
+    <text x="1095" y="180">IGestionarProcesoSCA, IGestionarPCA, IFinalizarAnulacionPCA, IGestionarSGC,</text>
+    <text x="1095" y="196">IGestionarContactosSCA: 0 consumidores Appian. Las usan wAutemis/webMethods</text>
+    <text x="1095" y="212">→ confirmar con wAutemis y planificar baja tras apagar SCA legacy.</text>
+    <rect x="1085" y="235" width="470" height="70" rx="6" fill="#fff" stroke="#7d3c98"/>
+    <text x="1095" y="253" font-weight="bold">BPM webMethods GPC55 + IGestionarAutorizacionProcesoSCA</text>
+    <text x="1095" y="270">Sustituido por los PM de SCA / CMD de SCA2 y la página de pendientes de autorizar.</text>
+    <text x="1095" y="286">Quedan 2 integraciones a wmbig (aceptarPolizaParaAnular, modificarEstadoAutoriz.).</text>
+    <rect x="1085" y="315" width="470" height="70" rx="6" fill="#fff" stroke="#7d3c98"/>
+    <text x="1095" y="333" font-weight="bold">Capa SOAP Core7 → futuro REST</text>
+    <text x="1095" y="350">70 integraciones SOAP XML en SCA2 con host/endpoint por parámetro. Unificar en un</text>
+    <text x="1095" y="366">connected system por sistema y plantillas de cuerpo compartidas; candidatos a REST.</text>
+    <rect x="1085" y="395" width="470" height="70" rx="6" fill="#fff" stroke="#7d3c98"/>
+    <text x="1095" y="413" font-weight="bold">Duplicidad SCA2_* ↔ SCAC_*</text>
+    <text x="1095" y="430">SCA2 copió 104 integraciones de SCAC y además usa 8 SCAC. Decidir una sola capa</text>
+    <text x="1095" y="446">(SCAC compartida o SCA2 propia) antes de ir a PRO para no mantener dos.</text>
+    <rect x="1085" y="475" width="470" height="60" rx="6" fill="#fff" stroke="#7d3c98"/>
+    <text x="1095" y="493" font-weight="bold">PCA_DOCUMENTUM_SMED / CHEQUE / CSAT / ITramitarSgoPCA</text>
+    <text x="1095" y="510">Sin consumidor Appian (SGD REST, SGO Web API y catálogo cubren el caso). Baja.</text>
+    <text x="1095" y="555" fill="#555">Riesgo a vigilar: SCA legacy y SCA2 escriben la misma BD CORE; cualquier</text>
+    <text x="1095" y="571" fill="#555">lógica que se mueva a Appian debe seguir dejando en CORE el estado final.</text>
+  </g>
+
+  <!-- Fases -->
+  <text x="800" y="650" text-anchor="middle" font-size="18" font-weight="bold" fill="#222">Fases propuestas</text>
+  <g font-size="12">
+    <rect x="30" y="670" width="360" height="200" rx="8" fill="#e8f1fb" stroke="#2e6db4" stroke-width="2"/>
+    <text x="210" y="695" text-anchor="middle" font-size="14" font-weight="bold" fill="#1f4e86">Fase 0 · Inventario y limpieza (TEST)</text>
+    <text x="45" y="720">· Validar este inventario con OT y wAutemis</text>
+    <text x="45" y="738">· Marcar obsoletas las 57+5 integraciones sin uso</text>
+    <text x="45" y="756">· Decidir capa única SCA2_* vs SCAC_*</text>
+    <text x="45" y="774">· Baseline de pruebas: casos de las rondas 1-21</text>
+    <text x="45" y="792">· Entregable: anexo matriz actualizado</text>
+    <text x="45" y="830" fill="#555">Sin cambios funcionales. Solo documentación y</text>
+    <text x="45" y="846" fill="#555">retirada de objetos no usados.</text>
+    <line x1="390" y1="770" x2="420" y2="770" stroke="#555" stroke-width="2" marker-end="url(#ar)"/>
+    <rect x="420" y="670" width="360" height="200" rx="8" fill="#eafaf1" stroke="#1e8449" stroke-width="2"/>
+    <text x="600" y="695" text-anchor="middle" font-size="14" font-weight="bold" fill="#145a32">Fase 1 · Reglas sencillas en Appian</text>
+    <text x="435" y="720">· B1 caducidad (regla + constantes N días)</text>
+    <text x="435" y="738">· B2 propietario (regla única)</text>
+    <text x="435" y="756">· B3 validaciones de acceso completas</text>
+    <text x="435" y="774">· B5 preparación de datos para decidir</text>
+    <text x="435" y="792">· Pruebas comparadas SCA vs SCA2 con datos nuevos</text>
+    <text x="435" y="830" fill="#555">Cada regla con casos de prueba (a!test) y la</text>
+    <text x="435" y="846" fill="#555">equivalencia con el Java de la mediación documentada.</text>
+    <line x1="780" y1="770" x2="810" y2="770" stroke="#555" stroke-width="2" marker-end="url(#ar)"/>
+    <rect x="810" y="670" width="360" height="200" rx="8" fill="#fdf3e7" stroke="#d68910" stroke-width="2"/>
+    <text x="990" y="695" text-anchor="middle" font-size="14" font-weight="bold" fill="#9a5d00">Fase 2 · Composición y entradas</text>
+    <text x="825" y="720">· B4 cabecera compuesta en Appian (sin REST cargaCabecera)</text>
+    <text x="825" y="738">· B6 Web API de alta automática (sustituye API SCA)</text>
+    <text x="825" y="756">· Web API de autorización (sustituye GestionarTareaAutoriz.)</text>
+    <text x="825" y="774">· Cuerpos SOAP compartidos / connected systems unificados</text>
+    <text x="825" y="792">· Monitorización en bandeja de errores de SCA2</text>
+    <text x="825" y="830" fill="#555">Requiere acuerdo con NEW/GAIA y wAutemis para</text>
+    <text x="825" y="846" fill="#555">redirigir sus llamadas a Appian.</text>
+    <line x1="1170" y1="770" x2="1200" y2="770" stroke="#555" stroke-width="2" marker-end="url(#ar)"/>
+    <rect x="1200" y="670" width="370" height="200" rx="8" fill="#f4ecf7" stroke="#7d3c98" stroke-width="2"/>
+    <text x="1385" y="695" text-anchor="middle" font-size="14" font-weight="bold" fill="#4a235a">Fase 3 · Retirada legacy</text>
+    <text x="1215" y="720">· Baja de mediaciones SMED/SMED2, SGO, DOCUMENTUM</text>
+    <text x="1215" y="738">· Baja del BPM webMethods GPC55 y FRONT JSF</text>
+    <text x="1215" y="756">· Evaluar Core7 SOAP → REST (es_pca_gestionartareas)</text>
+    <text x="1215" y="774">· Revisar motor de reglas REST → Decision Appian si tabular</text>
+    <text x="1215" y="792">· Actualizar docs/sca 03 (integraciones) y este anexo</text>
+    <text x="1215" y="830" fill="#555">Solo cuando SCA legacy esté apagado en PRO y</text>
+    <text x="1215" y="846" fill="#555">SCA2 lleve un ciclo completo sin divergencias.</text>
+  </g>
+</svg>

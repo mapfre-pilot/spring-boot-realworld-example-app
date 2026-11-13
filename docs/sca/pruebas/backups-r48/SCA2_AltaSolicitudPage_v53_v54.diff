@@ -1,0 +1,66 @@
+468a469,478
+>   /* R48-A: tope de la espera de respaldo; al agotarse se ofrece salida (consultar la solicitud / volver al buscador) en vez de esperar sin fin */
+>   local!esperaAgotada: if(
+>     or(
+>       not(a!defaultValue(local!procesoLanzado, false)),
+>       local!decisionLista,
+>       left(tostring(local!idSolEfectiva), 5) = "PDTE-",
+>       a!isNullOrEmpty(local!fechaLanzamiento)
+>     ),
+>     false,
+>     local!instanteEspera >= a!addDateTime(startDateTime: local!fechaLanzamiento, seconds: cons!SCA2_VAL_ESPERA_AGOTADA_SEGUNDOS)),
+585a596
+>               if(local!esperaAgotada, cons!SCA2_TXT_ESPERA_AGOTADA & if(a!isNullOrEmpty(local!idSolEfectiva), "", " Solicitud: " & local!idSolEfectiva & "."),
+589c600
+<                   cons!SCA2_TXT_ESPERA_DECISION_ADICIONAL, cons!SCA2_TXT_ESPERA_DECISION_INICIAL)))))),
+---
+>                   cons!SCA2_TXT_ESPERA_DECISION_ADICIONAL, cons!SCA2_TXT_ESPERA_DECISION_INICIAL))))))),
+596c607,608
+<           label: cons!SCA2_TXT_ACEPTAR_CONSULTA_SOLICITUD, style: "SOLID",
+---
+>           label: if(local!esperaAgotada, "CONSULTAR SOLICITUD", cons!SCA2_TXT_ACEPTAR_CONSULTA_SOLICITUD), style: "SOLID",
+>           showWhen: or(not(local!esperaAgotada), a!isNotNullOrEmpty(local!idSolEfectiva)),
+599c611
+<             or(local!decisionLista, left(tostring(local!idSolEfectiva), 5) = "PDTE-")))),
+---
+>             or(local!decisionLista, local!esperaAgotada, left(tostring(local!idSolEfectiva), 5) = "PDTE-")))),
+603c615,620
+<             a!save(ri!vista, "DETALLE")})})
+---
+>             a!save(ri!vista, "DETALLE")}),
+>           a!buttonWidget(
+>             label: "VOLVER AL BUSCADOR", style: "OUTLINE",
+>             showWhen: local!esperaAgotada,
+>             saveInto: {a!save(local!procesoLanzado, null), a!save(local!idSolGenerada, null),
+>               a!save(local!fechaLanzamiento, null), a!save(ri!numPoliza, null), a!save(ri!vista, "BUSQUEDA")})})
+1124c1141,1168
+<                               a!save(local!idSolGenerada, index(index(fv!processInfo, "pv", {}), "idSolicitud", null))
+---
+>                               a!save(local!idSolGenerada, index(index(fv!processInfo, "pv", {}), "idSolicitud", null)),
+>                               /* R48-A: un solo aviso. Si al volver el alta síncrona ya existe la gestión pendiente se abre directamente, sin el segundo ACEPTAR */
+>                               a!localVariables(
+>                                 local!idSolOk: tostring(index(index(fv!processInfo, "pv", {}), "idSolicitud", null)),
+>                                 local!tareaOk: if(
+>                                   or(a!isNullOrEmpty(local!idSolOk), left(local!idSolOk, 5) = "PDTE-"),
+>                                   null,
+>                                   index(index(a!queryRecordType(
+>                                     recordType: 'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea',
+>                                     filters: a!queryLogicalExpression(operator: "AND", filters: {
+>                                       a!queryFilter(field: 'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{32e5a534-ad1a-4f96-b824-41690f0aba43}idSolicitud', operator: "=", value: local!idSolOk),
+>                                       a!queryFilter(field: 'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{e7be363c-399e-48a5-9242-3b2a65680f0f}estado', operator: "=", value: cons!SCA2_TXT_ESTADO_TAREA_PENDIENTE)}),
+>                                     fields: {'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{82a6a3b4-5afe-4dd3-a7f3-46f806490910}id', 'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{1a10cef3-4704-407c-8c2d-5ff372a15121}tipo'},
+>                                     pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1, sort: a!sortInfo(field: 'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{82a6a3b4-5afe-4dd3-a7f3-46f806490910}id', ascending: false)),
+>                                     fetchTotalCount: false), "data", {}), 1, null)
+>                                 ),
+>                                 if(
+>                                   a!isNullOrEmpty(local!tareaOk),
+>                                   {},
+>                                   {
+>                                     a!save(local!aceptarPulsado, true),
+>                                     a!save(ri!idSolicitudSel, local!idSolOk),
+>                                     a!save(ri!tipoAccion, index(local!tareaOk, 'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{1a10cef3-4704-407c-8c2d-5ff372a15121}tipo', null)),
+>                                     a!save(ri!idTarea, index(local!tareaOk, 'recordType!{696285d3-cb21-4f27-adce-66354ebf2b89}SCA2 Tarea.fields.{82a6a3b4-5afe-4dd3-a7f3-46f806490910}id', null)),
+>                                     a!save(ri!vista, "DETALLE")
+>                                   }
+>                                 )
+>                               )
