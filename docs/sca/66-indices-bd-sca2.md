@@ -222,3 +222,14 @@ Ejecutado por el usuario en DBeaver con `sql/66-bloque-A-resultado-unico.sql` (u
 - **Paso 2** (después de probar en TEST con solicitudes nuevas): C2, C3 (NOT NULL) y C4 (UNIQUE de catálogos). Hoy ningún dato los incumple, pero si una escritura de Appian manda un nulo o un código de argumento activo repetido, la escritura pasaría a fallar en lugar de guardarse. Hay que probar alta, contra anulación y mantenimiento de argumentos después de aplicarlos.
 - **Paso 3** (con un cambio previo en Appian): C1, C7 y C8.
 - **Pendiente:** `sca2_datos_solicitud.FECIMPRESION` (VARCHAR(255)) tiene valores de 255 caracteres, así que probablemente ya se están recortando o están fallando las escrituras. Hay que revisar qué guarda Appian ahí antes de proponer la ampliación.
+
+## 10. Paso 1 ejecutado en TEST (13/11/2026)
+
+El usuario lanzó `sql/66-paso1-test-indices.sql` en DBeaver y después `sql/66-paso1-verificacion-resultado-unico.sql`.
+
+- **Índices:** antes había 24 y ahora hay 48. Se han creado los 24 índices previstos: B0 (14), B1–B8 (10). D2 no muestra ningún índice inválido.
+- **Longitudes:** `POLIZA_FECHAULTIMOSINIESTRO` tiene ahora 1000 caracteres y `CLAVE_IDEMPOTENCIA`, 200. Con C5 queda cubierto también el script `63-r46d-*` que estaba pendiente.
+- **ANALYZE:** se ha ejecutado en las 7 tablas de B9.
+- **Restricciones:** siguen siendo las mismas 24, porque en el paso 1 no se crea ninguna.
+- **Comprobación de dueño:** la conexión es `appianmapfredbpre` y las tablas son de `user_sca2_anulaciones`. `puede_crear_indices` salió `false` y aun así los índices se crearon. Lo más probable es que el usuario tenga un rol de administración de RDS. La comprobación es solo informativa: un índice siempre pertenece al dueño de su tabla.
+- **Siguiente paso:** la prueba de regresión en Appian TEST con solicitudes nuevas (R48-C). Hasta que salga bien no se lanza el paso 2.
