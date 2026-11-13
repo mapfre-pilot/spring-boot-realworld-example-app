@@ -233,3 +233,10 @@ El usuario lanzó `sql/66-paso1-test-indices.sql` en DBeaver y después `sql/66-
 - **Restricciones:** siguen siendo las mismas 24, porque en el paso 1 no se crea ninguna.
 - **Comprobación de dueño:** la conexión es `appianmapfredbpre` y las tablas son de `user_sca2_anulaciones`. `puede_crear_indices` salió `false` y aun así los índices se crearon. Lo más probable es que el usuario tenga un rol de administración de RDS. La comprobación es solo informativa: un índice siempre pertenece al dueño de su tabla.
 - **Siguiente paso:** la prueba de regresión en Appian TEST con solicitudes nuevas (R48-C). Hasta que salga bien no se lanza el paso 2.
+
+## 11. Regresión del paso 1 y paso 2 ejecutado en TEST (13/11/2026)
+
+- **Regresión del paso 1 (R48-C, `pruebas/r48-c-regresion-indices-paso1.md`):** no hay ninguna regresión. Se probó con las solicitudes nuevas 15788998, 15788999 y 15789000. Los record types siguen sincronizados y no hay avisos de esquema.
+- **Paso 2 (`sql/66-paso2-test-restricciones.sql`):** C2 y C3 aplicaron NOT NULL en las 9 columnas. C4 creó las 6 UNIQUE de catálogos; la de tipo de argumento es parcial y solo cuenta las filas con `ACTIVO`. Después hay 54 índices y ninguno inválido.
+- **Mensajes C5 y C6:** también aparecieron en la salida que pasó el usuario, aunque el paso 2 no los incluye. Seguramente son líneas que quedaban en el panel de salida de DBeaver del paso 1. La verificación confirma 1000 y 200.
+- **Pendiente:** la regresión del paso 2, centrada en las escrituras (R48-D). Si falla una escritura por NOT NULL o UNIQUE, se deshace con el rollback de C3 o C4 de `66-indices-sca2.sql`.
