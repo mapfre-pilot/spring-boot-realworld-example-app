@@ -195,3 +195,30 @@ No se han detectado funciones aplicadas a columnas en los filtros (las funciones
 - **[Pendiente]** Volúmenes de PRO: no consultado (regla «nunca PRO»).
 - Los conteos y duplicados son de TEST del 12/11/2026 (`listRecordData`); pueden cambiar.
 - El script se ha probado en un PostgreSQL 16 local vacío creado con el DDL 56 (dos ejecuciones seguidas sin error, idempotente; con duplicados simulados C1 emite el WARNING y no crea el índice). No se ha ejecutado contra TEST.
+
+## 9. Resultado del bloque A en TEST (13/11/2026)
+
+Ejecutado por el usuario en DBeaver con `sql/66-bloque-A-resultado-unico.sql` (usuario `appianmapfredbpre`, base `appianmapfredb`, PostgreSQL 14.20, collation `en_US.UTF-8`).
+
+| Comprobación | Resultado en TEST | Consecuencia |
+|---|---|---|
+| A3/A4 índices | Solo 24: las 22 PK y 2 UNIQUE (`sca2_solicitud.ID_SOLICITUD` y `sca2_transicion.CLAVE_IDEMPOTENCIA`). Todos válidos. | **No existe ningún índice secundario**, ni siquiera los de `ID_SOLICITUD` del DDL 56. Hay que crear todo B0–B8. |
+| A5 restricciones | Las mismas 22 PK y 2 UNIQUE. No hay FK, CHECK ni UNIQUE de catálogos. | C4 (UNIQUE de catálogos) crearía los 6 índices. |
+| A7 vistas | 0 | C5/C6 (`ALTER COLUMN TYPE`) no los bloquea ninguna vista. |
+| A8.1 caché de cabecera | 4 duplicados (15788810, 15788865, 15788867, 15788876), todos `CACHE`. | C1 sigue desactivado (§5.3.1). |
+| A8.2/A8.3 transición y solicitud | 0 duplicados. | Correcto. |
+| A8.4 clave de idempotencia | Longitud máxima de 53 (columna de 120). | C6 es preventivo. |
+| A8.6 tablas 1:1 | Solo la 15787528 está duplicada en 5 tablas (dato antiguo de pruebas). | No afecta a la propuesta, porque no hay UNIQUE en ellas. |
+| A8.5 tareas PENDIENTE repetidas | 4 casos: 15788025 MECANIZAR (2), 15788607 CONTRAANULAR (2), 15788673 CONTRA ANULAR NIVEL 2 (2) y 15788677 CONTRA ANULAR NIVEL 2 (3; dos de ellas con 3 s de diferencia). | C7 sigue pendiente de decisión. |
+| A8.6 catálogos | Solo `COD_TP_ARG = 999` (2 filas). | C4 crearía el UNIQUE parcial sobre filas activas. |
+| A9 huérfanos | error 1, datos_solicitud 2, niveles 2, otras_solicitudes 2, cabecera 13; tarea, transición y llamada 0. | C8 solo sería viable en tarea, transición y llamada. |
+| A10 nulos | 0 en las 9 columnas candidatas. | C2 y C3 se podrían aplicar (ver riesgo abajo). |
+| A11 longitudes | `POLIZA_FECHAULTIMOSINIESTRO` 241 de 255; `FECIMPRESION` 255 de 255. | C5 es necesaria. `FECIMPRESION` está al límite: revisar. |
+| A12 volúmenes | 496 solicitudes (21 `PDTE-`), 859 tareas y 143 errores (110 PENDIENTE). | Con este volumen PostgreSQL seguirá eligiendo `Seq Scan`; los índices son para PRO. |
+
+### Decisión de ejecución
+
+- **Paso 1** (`sql/66-paso1-test-indices.sql`): B0–B9, C5 y C6. Solo crea índices y amplía dos `VARCHAR`, así que no cambia lo que hace la aplicación. Probado dos veces en un PostgreSQL 16 local con las 24 restricciones de TEST: crea 24 índices, no deja ninguno inválido y la segunda ejecución no hace nada. Verificación: `sql/66-paso1-verificacion-resultado-unico.sql`.
+- **Paso 2** (después de probar en TEST con solicitudes nuevas): C2, C3 (NOT NULL) y C4 (UNIQUE de catálogos). Hoy ningún dato los incumple, pero si una escritura de Appian manda un nulo o un código de argumento activo repetido, la escritura pasaría a fallar en lugar de guardarse. Hay que probar alta, contra anulación y mantenimiento de argumentos después de aplicarlos.
+- **Paso 3** (con un cambio previo en Appian): C1, C7 y C8.
+- **Pendiente:** `sca2_datos_solicitud.FECIMPRESION` (VARCHAR(255)) tiene valores de 255 caracteres, así que probablemente ya se están recortando o están fallando las escrituras. Hay que revisar qué guarda Appian ahí antes de proponer la ampliación.
