@@ -21,14 +21,14 @@ Protocolo (igual que R49): `git pull` → reservar aquí (commit + push) → lee
 | PM `SCA2 CMD Alta` (nodo «Write Datos») | `0000f06f-28fc-8000-6693-7f0000014e7a` | R50-A | **liberado** | 43.0→44.0 | nodo 8: las dos filas de `SCA2 Datos Cabecera` llevan `id: rule!SCA2_obtenerIdFilaCacheCabecera(idSolicitud: pv!idSolicitud)` (UPDATE si ya existe). Resto del nodo idéntico. R50-B puede seguir sobre 44.0 |
 | RT `SCA2 Datos Cabecera` | `04f597de-5acd-45b2-9ab3-277713cd00a6` | R50-A | reservado | v12→? | tamaños / sincronización |
 | RT `SCA2 Transicion` | `0b46024c-58b4-48be-a2a4-20d54bc40815` | R50-A | reservado | ? | tamaños / sincronización |
-| PM `SCA2 CMD CrearAccion` (nodos 7, 9, 31, 8) | `0000f06f-0eaa-8000-6594-7f0000014e7a` | R50-B | reservado | v27→? | tarea PENDIENTE del mismo tipo: reutilizar id; Write Error sin duplicar |
-| PM `SCA2 CMD Mecanizar` (nodos 7, 332, 12) | `0000f06f-4cfc-8000-66d3-7f0000014e7a` | R50-B | reservado | v46→? | tareas VERTI/INDUCCION sin duplicar; Write Error sin duplicar |
-| PM `SCA2 CMD Posponer` (nodos 5, 199) | `0000f06f-8a47-8000-6751-7f0000014e7a` | R50-B | reservado | ? | recorte FECIMPRESION a 255; Write Error sin duplicar |
-| PM `SCA2 CMD Decidir` (nodos 7, 8) | `0000f06f-0eab-8000-6595-7f0000014e7a` | R50-B | reservado | v17→? | Write Error sin duplicar |
-| PM `SCA2 CMD ObtenerDocumentoGD` (nodo 200) | `0000f06f-c12b-8000-67ae-7f0000014e7a` | R50-B | reservado | ? | Write Error sin duplicar |
-| PM `SCA2 CMD CompletarAccion` (nodo 199) | `0000f06f-1307-8000-65b1-7f0000014e7a` | R50-B | reservado | v50→? | Write Error sin duplicar (solo nodo 199) |
-| PM `SCA2 CMD Alta` (nodos 8 «Write Datos» y 6) | `0000f06f-28fc-8000-6693-7f0000014e7a` | R50-B | reservado | ? | recorte FECIMPRESION a 255 y Write Error. **Espera a que R50-A libere** y se hace sobre su versión |
-| ER nuevas `SCA2_obtenerIdTareaPendiente` / `SCA2_obtenerErrorPendiente` | `—` | R50-B | reservado | —→v1 | lectura de la PENDIENTE existente |
+| PM `SCA2 CMD CrearAccion` (nodos 7, 9, 31, 8) | `0000f06f-0eaa-8000-6594-7f0000014e7a` | R50-B | **liberado** | 27.0→31.0 | tarea PENDIENTE del mismo tipo: reutilizar id; Write Error sin duplicar |
+| PM `SCA2 CMD Mecanizar` (nodos 7, 332, 12) | `0000f06f-4cfc-8000-66d3-7f0000014e7a` | R50-B | **liberado** | 46.0→49.0 | tareas VERTI/INDUCCION sin duplicar; Write Error sin duplicar |
+| PM `SCA2 CMD Posponer` (nodos 5, 199) | `0000f06f-8a47-8000-6751-7f0000014e7a` | R50-B | **liberado** | 17.0→19.0 | recorte FECIMPRESION a 255; Write Error sin duplicar |
+| PM `SCA2 CMD Decidir` (nodos 7, 8) | `0000f06f-0eab-8000-6595-7f0000014e7a` | R50-B | **liberado** | 17.0→18.0 | Write Error sin duplicar |
+| PM `SCA2 CMD ObtenerDocumentoGD` (nodo 200) | `0000f06f-c12b-8000-67ae-7f0000014e7a` | R50-B | **liberado** | 5.0→6.0 | Write Error sin duplicar |
+| PM `SCA2 CMD CompletarAccion` (nodo 199) | `0000f06f-1307-8000-65b1-7f0000014e7a` | R50-B | **liberado** | 50.0→51.0 | Write Error sin duplicar (solo nodo 199) |
+| PM `SCA2 CMD Alta` (nodos 8 «Write Datos» y 6) | `0000f06f-28fc-8000-6693-7f0000014e7a` | R50-B | **liberado** | 44.0→46.0 | recorte FECIMPRESION a 255 y Write Error. **Espera a que R50-A libere** y se hace sobre su versión |
+| ER nuevas `SCA2_obtenerIdTareaPendiente` / `SCA2_obtenerErrorPendiente` | `—` | R50-B | **liberado** | — → v1 (`_a-0000f0b4-5b71-8000-9d56-011c48011c48_5746459` / `_5746465`) | lectura de la PENDIENTE existente |
 | PM `SCA2 CMD CambiarNivel` | `0000f06f-8a54-8000-6759-7f0000014e7a` | R50-C | **liberado** (borrado 16/11) | 7.0 (borrador vivo) → borrado | Sin uso |
 | PM `SCA2 CMD RegistrarDesincronizacion` | `0000f095-791c-8000-d602-7f0000014e7a` | R50-C | **liberado** (borrado 16/11) | → borrado | Sin uso |
 | IF `SCA2_RegistrarDesincronizacionForm` | `_a-0000f093-2064-8000-9d36-011c48011c48_5605245` | R50-C | **liberado** (borrado 16/11) | v1 → borrado | Sólo lo usa el PM anterior |
@@ -45,7 +45,7 @@ Protocolo (igual que R49): `git pull` → reservar aquí (commit + push) → lee
 | ER `SCA2_construirSolicitudAnulacionAnlTraducida` | `_a-0000f07a-9a6a-8000-9d2b-011c48011c48_5501155` | R50-C | **liberado** | v2 | Añadida a la app y a `SCA2 Rules and Constants`; versión sin cambio, expresión idéntica |
 | ER `SCA2_construirConsultaActualizarMecanizacion` | `_a-0000f07a-9a6a-8000-9d2b-011c48011c48_5493616` | R50-C | **liberado** | v1 | Añadida a la app y a `SCA2 Rules and Constants`; versión sin cambio, expresión idéntica |
 | Aplicación `SCA2 Sistema Comercial de Anulaciones` (contenido) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20050128` | R50-C | **liberado** | — | Sólo añadir las 6 reglas (no se desactiva la app) |
-| PM `SCA2 CMD Caducar` (nodo 9) | `0000f06f-4f07-8000-670d-7f0000014e7a` | R50-B | reservado | ? | Write Error sin duplicar (intentos + 1) |
+| PM `SCA2 CMD Caducar` (nodo 9) | `0000f06f-4f07-8000-670d-7f0000014e7a` | R50-B | **liberado** | 8.0→9.0 | Write Error sin duplicar (intentos + 1) |
 | PM `SCA2 CMD CambiarNivel` (nodo 199) | `0000f06f-8a54-8000-6759-7f0000014e7a` | R50-B | **cancelado** | sin cambios | lo borra R50-C (sin uso); R50-B no lo toca |
-| PM `SCA2 CMD Finalizar` (nodos 9, 17) | `0000f06f-1309-8000-65b3-7f0000014e7a` | R50-B | reservado | ? | Write Error sin duplicar (intentos + 1) |
-| PM `SCA2 CMD MecanizarNSE` (nodo 99) | `0000f095-7c8e-8000-d60a-7f0000014e7a` | R50-B | reservado | ? | Write Error sin duplicar (intentos + 1) |
+| PM `SCA2 CMD Finalizar` (nodos 9, 17) | `0000f06f-1309-8000-65b3-7f0000014e7a` | R50-B | **liberado** | 21.0→23.0 | Write Error sin duplicar (intentos + 1) |
+| PM `SCA2 CMD MecanizarNSE` (nodo 99) | `0000f095-7c8e-8000-d60a-7f0000014e7a` | R50-B | **liberado** | 7.0→8.0 | Write Error sin duplicar (intentos + 1) |
