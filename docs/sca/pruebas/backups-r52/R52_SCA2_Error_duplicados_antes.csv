@@ -1,0 +1,103 @@
+id,idSolicitud,comando,nodo,codigo,mensaje,payload,intentos,proximoIntento,estado,fechaCreacion,resueltoPor,fechaResolucion
+83,15788053,SCA2 CMD Decidir,Consultar reglas,DECISION_ERROR,"{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}","{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}",1,2026-10-15 18:32:12,PENDIENTE,2026-10-15 18:02:12,,
+84,15788053,SCA2 CMD Decidir,Consultar reglas,DECISION_ERROR,"{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}","{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}",1,2026-10-15 18:32:27,PENDIENTE,2026-10-15 18:02:27,,
+88,15788098,SCA2 CMD ObtenerDocumentoGD,consultaDocumento,GD_ERROR,"[title=Connection failed, message=Could not authenticate with the connected system or connect to the external system at the specified URL, detail=HTTP/1.1 404 Not Found]",,1,2026-10-19 14:15:46,PENDIENTE,2026-10-19 13:45:46,,
+89,15788098,SCA2 CMD ObtenerDocumentoGD,consultaDocumento,GD_ERROR,"[title=Connection failed, message=Could not authenticate with the connected system or connect to the external system at the specified URL, detail=HTTP/1.1 404 Not Found]",,1,2026-10-19 14:16:01,PENDIENTE,2026-10-19 13:46:01,,
+90,15788098,SCA2 CMD ObtenerDocumentoGD,consultaDocumento,GD_ERROR,"[title=Connection failed, message=Could not authenticate with the connected system or connect to the external system at the specified URL, detail=HTTP/1.1 404 Not Found]",,1,2026-10-19 14:16:41,PENDIENTE,2026-10-19 13:46:41,,
+91,15788098,SCA2 CMD ObtenerDocumentoGD,consultaDocumento,GD_ERROR,"[title=Connection failed, message=Could not authenticate with the connected system or connect to the external system at the specified URL, detail=HTTP/1.1 404 Not Found]",,1,2026-10-19 14:16:54,PENDIENTE,2026-10-19 13:46:54,,
+92,15788099,SCA2 CMD ObtenerDocumentoGD,consultaDocumento,GD_ERROR,"[title=Connection failed, message=Could not authenticate with the connected system or connect to the external system at the specified URL, detail=HTTP/1.1 404 Not Found]",,1,2026-10-19 14:24:22,PENDIENTE,2026-10-19 13:54:22,,
+93,15788099,SCA2 CMD ObtenerDocumentoGD,consultaDocumento,GD_ERROR,"[title=Connection failed, message=Could not authenticate with the connected system or connect to the external system at the specified URL, detail=HTTP/1.1 404 Not Found]",,1,2026-10-19 14:24:47,PENDIENTE,2026-10-19 13:54:47,,
+106,15788161,SCA2 CMD Decidir,Consultar reglas,DECISION_ERROR,"{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}","{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}",1,2026-10-20 18:20:22,PENDIENTE,2026-10-20 17:50:22,,
+107,15788161,SCA2 CMD Decidir,Consultar reglas,DECISION_ERROR,"{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}","{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}",1,2026-10-20 18:20:29,PENDIENTE,2026-10-20 17:50:29,,
+108,15788164,SCA2 CMD Decidir,Consultar reglas,DECISION_ERROR,"{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}","{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}",1,2026-10-20 18:33:27,PENDIENTE,2026-10-20 18:03:27,,
+109,15788164,SCA2 CMD Decidir,Consultar reglas,DECISION_ERROR,"{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}","{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}",1,2026-10-20 18:33:34,PENDIENTE,2026-10-20 18:03:34,,
+116,15788200,SCA2 CMD Decidir,Consultar reglas,DECISION_ERROR,"{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}","{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}",1,2026-10-21 12:14:02,PENDIENTE,2026-10-21 11:44:02,,
+117,15788200,SCA2 CMD Decidir,Consultar reglas,DECISION_ERROR,"{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}","{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}",1,2026-10-21 12:14:07,PENDIENTE,2026-10-21 11:44:07,,
+128,15788225,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017111; idFilaCache=248,1,,PENDIENTE,2026-10-22 05:05:13,,
+132,15788205,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017118; idFilaCache=231,1,,PENDIENTE,2026-10-23 05:05:18,,
+133,15788208,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0005726685618; idFilaCache=233,1,,PENDIENTE,2026-10-23 05:05:24,,
+134,15788209,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0005726683648; idFilaCache=234,1,,PENDIENTE,2026-10-23 05:05:30,,
+135,15788210,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017113; idFilaCache=235,1,,PENDIENTE,2026-10-23 05:05:35,,
+136,15788218,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017101; idFilaCache=242,1,,PENDIENTE,2026-10-23 05:05:58,,
+137,15787668,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0000006610576; idFilaCache=250,1,,PENDIENTE,2026-10-23 05:06:12,,
+140,15788208,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0005726685618; idFilaCache=233,1,,PENDIENTE,2026-10-26 06:05:07,,
+141,15788209,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0005726683648; idFilaCache=234,1,,PENDIENTE,2026-10-26 06:05:14,,
+142,15788210,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017113; idFilaCache=235,1,,PENDIENTE,2026-10-26 06:05:19,,
+143,15788218,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017101; idFilaCache=242,1,,PENDIENTE,2026-10-26 06:05:24,,
+144,15788225,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017111; idFilaCache=248,1,,PENDIENTE,2026-10-26 06:05:33,,
+145,15787668,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0000006610576; idFilaCache=250,1,,PENDIENTE,2026-10-26 06:05:38,,
+147,15788369,SCA2 CMD Decidir,Consultar reglas,DECISION_ERROR,"{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}","{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}",1,2026-10-26 12:47:59,PENDIENTE,2026-10-26 12:17:59,,
+148,15788369,SCA2 CMD Decidir,Consultar reglas,DECISION_ERROR,"{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}","{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}",1,2026-10-26 12:48:04,PENDIENTE,2026-10-26 12:18:04,,
+150,15788372,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0002729342993; idFilaCache=379,1,,PENDIENTE,2026-10-27 06:05:12,,
+151,15788372,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0002729342993; idFilaCache=380,1,,PENDIENTE,2026-10-27 06:05:20,,
+152,15788372,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0002729342993; idFilaCache=379,1,,PENDIENTE,2026-10-28 06:05:07,,
+153,15788205,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017118; idFilaCache=231,1,,PENDIENTE,2026-10-28 06:05:16,,
+154,15788208,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0005726685618; idFilaCache=233,1,,PENDIENTE,2026-10-28 06:05:21,,
+155,15788209,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0005726683648; idFilaCache=234,1,,PENDIENTE,2026-10-28 06:05:26,,
+156,15788210,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017113; idFilaCache=235,1,,PENDIENTE,2026-10-28 06:05:31,,
+157,15788218,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017101; idFilaCache=242,1,,PENDIENTE,2026-10-28 06:05:54,,
+158,15788225,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017111; idFilaCache=248,1,,PENDIENTE,2026-10-28 06:06:06,,
+159,15787668,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0000006610576; idFilaCache=250,1,,PENDIENTE,2026-10-28 06:06:15,,
+160,15788255,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017138; idFilaCache=257,1,,PENDIENTE,2026-10-28 06:06:31,,
+161,15788255,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017138; idFilaCache=258,1,,PENDIENTE,2026-10-28 06:06:36,,
+162,15788256,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017139; idFilaCache=259,1,,PENDIENTE,2026-10-28 06:06:41,,
+163,15788256,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017139; idFilaCache=260,1,,PENDIENTE,2026-10-28 06:06:48,,
+164,15788260,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017152; idFilaCache=267,1,,PENDIENTE,2026-10-28 06:07:01,,
+165,15788260,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017152; idFilaCache=268,1,,PENDIENTE,2026-10-28 06:07:05,,
+166,15788271,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0002729338770; idFilaCache=279,1,,PENDIENTE,2026-10-28 06:07:10,,
+167,15788271,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0002729338770; idFilaCache=280,1,,PENDIENTE,2026-10-28 06:07:15,,
+168,15788391,SCA2 CMD Decidir,Consultar reglas,DECISION_ERROR,"{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}","{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}",1,2026-10-28 07:51:59,PENDIENTE,2026-10-28 07:21:59,,
+169,15788391,SCA2 CMD Decidir,Consultar reglas,DECISION_ERROR,"{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}","{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}",1,2026-10-28 07:52:13,PENDIENTE,2026-10-28 07:22:13,,
+172,15788372,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0002729342993; idFilaCache=379,1,,PENDIENTE,2026-10-29 06:05:09,,
+173,15788205,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017118; idFilaCache=231,1,,PENDIENTE,2026-10-29 06:05:16,,
+174,15788208,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0005726685618; idFilaCache=233,1,,PENDIENTE,2026-10-29 06:05:21,,
+175,15788209,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0005726683648; idFilaCache=234,1,,PENDIENTE,2026-10-29 06:05:26,,
+176,15788210,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017113; idFilaCache=235,1,,PENDIENTE,2026-10-29 06:05:30,,
+177,15788218,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017101; idFilaCache=242,1,,PENDIENTE,2026-10-29 06:05:34,,
+178,15788225,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_ERROR,"No se puede escribir en ni eliminar del origen debido a una violación de integridad de datos.
+Detalles del error: ERROR: value too long for type character varying(255)",numPoliza=0001047017111; idFilaCache=248,1,,PENDIENTE,2026-10-29 06:05:37,,
+184,15788436,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_RECORTE,Campos recortados al límite de su columna: polizaFechaultimosiniestro 287/255,numPoliza=0000063001441; idFilaCache=402,1,,PENDIENTE,2026-10-30 06:05:08,,
+185,15788436,SCA2 CMD RefrescarCacheCabecera,Actualizar fila caché,REFRESCO_CACHE_RECORTE,Campos recortados al límite de su columna: polizaFechaultimosiniestro 287/255,numPoliza=0000063001441; idFilaCache=403,1,,PENDIENTE,2026-10-30 06:05:15,,
+216,15788918,SCA2 CMD Decidir,Consultar reglas,DECISION_ERROR,"{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}","{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}",1,2026-11-12 11:17:16,PENDIENTE,2026-11-12 10:47:16,,
+217,15788918,SCA2 CMD Decidir,Consultar reglas,DECISION_ERROR,"{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}","{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}",1,2026-11-12 11:17:21,PENDIENTE,2026-11-12 10:47:21,,
+221,15789139,SCA2 CMD Decidir,Consultar reglas,DECISION_ERROR,"{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}","{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}",1,2026-11-16 13:09:07,PENDIENTE,2026-11-16 12:39:07,,
+222,15789139,SCA2 CMD Decidir,Consultar reglas,DECISION_ERROR,"{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}","{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}",1,2026-11-16 13:09:11,PENDIENTE,2026-11-16 12:39:11,,
+224,15789144,SCA2 CMD Decidir,Consultar reglas,DECISION_ERROR,"{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}","{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}",1,2026-11-16 13:16:11,PENDIENTE,2026-11-16 12:46:11,,
+225,15789144,SCA2 CMD Decidir,Consultar reglas,DECISION_ERROR,"{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}","{""error"":"""",""accion"":""ERROR"",""grupo"":""ERROR"",""subgrupo"":""ERROR""}",1,2026-11-16 13:16:17,PENDIENTE,2026-11-16 12:46:17,,
