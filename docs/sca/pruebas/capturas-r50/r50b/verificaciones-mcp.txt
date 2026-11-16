@@ -1,0 +1,24 @@
+MCP TEST appian-dev-mcp-c90b, listRecordData. Horas de los registros en UTC.
+Selección de la ejecución: idSolicitud=15789172, numPoliza=0732300314838.
+
+BASELINE: Tarea 909 filas, id último 909. Error 149 filas, id último 226.
+La solicitud 15789172 no existía en el baseline.
+
+TRAS ALTA:
+910,15789172,0732300314838,CONTRAANULAR,CONTRAANULAR,PENDIENTE,SCA2 CMD CrearAccion,SISANS@mapfrenopro.onmicrosoft.com,SISANS@mapfrenopro.onmicrosoft.com,CE_MF_SI24,,2026-11-16 15:44:45,2026-11-17 15:44:45,,,,TK-12360482-20261116164445
+Error offset149 limit100: solo cabecera, 0 filas.
+
+TRAS POSPONER:
+910,15789172,0732300314838,CONTRAANULAR,CONTRAANULAR,PENDIENTE,SCA2 CMD CrearAccion,SISANS@mapfrenopro.onmicrosoft.com,,CE_MF_SI24,,2026-11-16 15:44:45,2026-11-23 00:00:00,,,,TK-12360482-20261116164445
+Error offset149 limit100: solo cabecera, 0 filas.
+
+TRAS RETOMAR:
+910,15789172,0732300314838,CONTRAANULAR,CONTRAANULAR,PENDIENTE,SCA2 CMD CrearAccion,SISANS@mapfrenopro.onmicrosoft.com,SISANS@mapfrenopro.onmicrosoft.com,CE_MF_SI24,,2026-11-16 15:44:45,2026-11-23 00:00:00,2026-11-16 15:47:01,,,TK-12360482-20261116164445
+Error offset149 limit100: solo cabecera, 0 filas.
+
+TRAS POSITIVO Y AL TERMINAR:
+910,15789172,0732300314838,CONTRAANULAR,CONTRAANULAR,COMPLETADA,SCA2 CMD CrearAccion,SISANS@mapfrenopro.onmicrosoft.com,SISANS@mapfrenopro.onmicrosoft.com,CE_MF_SI24,,2026-11-16 15:44:45,2026-11-23 00:00:00,2026-11-16 15:47:01,2026-11-16 15:47:49,,TK-12360482-20261116164445
+Error offset149 limit100: solo cabecera, 0 filas.
+
+No se ejecutó queryRecordType: no figura como herramienta independiente en el catálogo disponible.
+listRecordData no tiene parámetros de filtro; se consultaron baseline y filas posteriores y se seleccionó la solicitud propia.
