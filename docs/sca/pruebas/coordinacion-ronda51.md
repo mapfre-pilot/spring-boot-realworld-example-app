@@ -1,7 +1,5 @@
 # Coordinación ronda 51 (SCA2, Appian TEST)
 
-Origen: el usuario pide aplicar las decisiones técnicas que no cambian el flujo funcional de SCA2 y probarlo todo (dudas técnicas de `../67-dudas-pendientes-consolidado.md`).
-
 Origen: respuestas de negocio a los mensajes MEJ-01 a MEJ-06 del informe R49 (16/11/2026).
 
 | Sesión | Alcance |
