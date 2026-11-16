@@ -110,7 +110,7 @@ Las duplicadas se han unido en una sola duda, con todos sus orígenes.
 77. [U] **Usuarios de TEST:** administrador SCA2 para `/errores` y el mantenimiento, y perfiles Central, CCC, GGE y Si24 front. (64-27)
 
 ### 3.5 Para Álvaro
-78. [U] **20 objetos SCA2 sin uso:** ¿se borran? (64-28)
+78. [U] **Objetos SCA2 sin uso:** de los 20 de la lista segura, 18 ya no existían y en R47 se borró uno; `SCA2_FLD_DOCUMENTOS` se usa. Quedan los candidatos de r33 §3.2–3.4. (64-28)
 
 ## Cerradas desde el doc 64
 - 64-23 (DDL de la caché de cabecera): se ejecutó en TEST dentro del paso 1 (doc 66).
