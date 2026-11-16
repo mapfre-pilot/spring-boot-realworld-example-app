@@ -9,8 +9,9 @@
 -- Cómo ejecutarlo (DBeaver, TEST, Auto-commit ACTIVADO, Alt+X = ejecutar script):
 --   1) Bloque 1 (comprobación previa, solo lectura).
 --   2) Bloque 2 (CREATE INDEX CONCURRENTLY). No puede ir dentro de un DO ni de una transacción:
---      por eso va suelto y con Auto-commit. Si el bloque 1 avisó de duplicados, NO ejecutar el 2.
---      El \gset/\if de psql no existe en DBeaver; la protección es el bloque 1 + el bloque 3.
+--      por eso va suelto y con Auto-commit. Si hay duplicados, el bloque 1 lanza un ERROR y DBeaver
+--      (Alt+X) / psql -v ON_ERROR_STOP=1 detienen el script antes del bloque 2. Si aun así se ejecutara
+--      el 2, falla sin crear nada útil y el bloque 3 borra el índice INVALID.
 --   3) Bloque 3 (comprueba que el índice es válido; si quedó INVALID lo borra para reintentar).
 --   4) Verificación (un único JSON) al final.
 -- Idempotente: con el índice ya creado y válido, el bloque 2 no hace nada (IF NOT EXISTS).
@@ -30,7 +31,7 @@ BEGIN
     JOIN pg_namespace n ON n.oid = c.relnamespace
    WHERE n.nspname = 'sca2_anulaciones' AND c.relname = 'ux_sca2_datos_cabecera_id_solicitud';
   IF v_dup > 0 THEN
-    RAISE WARNING 'C1: hay % ID_SOLICITUD duplicados en sca2_datos_cabecera: NO ejecutar el bloque 2 (avisar a SCA2 para borrarlos desde Appian)', v_dup;
+    RAISE EXCEPTION 'C1: hay % ID_SOLICITUD duplicados en sca2_datos_cabecera: script detenido, el índice NO se crea (avisar a SCA2 para borrarlos desde Appian)', v_dup;
   ELSIF v_idx = 'VALIDO' THEN
     RAISE NOTICE 'C1: ux_sca2_datos_cabecera_id_solicitud ya existe y es válido: el bloque 2 no hará nada';
   ELSIF v_idx = 'INVALIDO' THEN

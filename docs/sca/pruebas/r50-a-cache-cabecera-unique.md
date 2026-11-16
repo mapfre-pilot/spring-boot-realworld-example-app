@@ -56,7 +56,7 @@ La 15789144 no estaba en la lista: es un duplicado nuevo del mismo origen y, si 
 
 Script: `docs/sca/sql/70-r50a-c1-unique-cache-cabecera.sql`. Se ejecuta en TEST con DBeaver, con **Auto-commit activado** y **Alt+X** (ejecutar script). Ejecútalo **después** de que el alta 44.0 esté publicada, que ya lo está.
 
-1. **Bloque 1** (solo lectura): cuenta los duplicados y el estado del índice, y avisa con `RAISE NOTICE`/`WARNING`.
+1. **Bloque 1** (solo lectura): cuenta los duplicados y el estado del índice. Si hay duplicados, lanza un `ERROR` y DBeaver (Alt+X) o `psql -v ON_ERROR_STOP=1` paran el script **sin crear el índice**. Si no, avisa con `RAISE NOTICE`.
 2. **Bloque 2**: `CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS ux_sca2_datos_cabecera_id_solicitud`. Va suelto porque `CONCURRENTLY` no admite ni `DO` ni transacción, y no bloquea las escrituras. Si hay duplicados, falla y no crea nada útil.
 3. **Bloque 3**: si el índice ha quedado `INVALID` (creación fallida), lo borra y avisa.
 4. **Verificación**: un único JSON con filas, solicitudes, duplicados, estado del índice, longitud de la columna y su uso máximo, e índices de la tabla. Es lo que hay que devolver.
@@ -67,7 +67,7 @@ Prueba en PostgreSQL 14 local (misma tabla y columnas clave):
 
 | Caso | Resultado |
 |---|---|
-| Con un duplicado | Bloque 1 `WARNING`; bloque 2 `ERROR could not create unique index`; bloque 3 borra el índice `INVALID`; JSON con el duplicado e `indice_c1: null` |
+| Con un duplicado | Bloque 1 `ERROR C1: hay 1 ID_SOLICITUD duplicados… script detenido`; el script para y el índice no existe. En la versión anterior, con `WARNING`, el bloque 2 llegaba a ejecutarse y fallaba; el bloque 3 borraba el `INVALID` |
 | Sin duplicados | `NOTICE … creado y VALIDO`; JSON con `valido: true, unico: true` |
 | Repetir | `NOTICE … ya existe`, `already exists, skipping` |
 | INSERT de un `ID_SOLICITUD` repetido | `duplicate key value violates unique constraint "ux_sca2_datos_cabecera_id_solicitud"` (el `unique_violation` que tolera la Web API) |
