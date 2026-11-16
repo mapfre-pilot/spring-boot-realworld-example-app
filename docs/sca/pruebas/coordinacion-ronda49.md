@@ -15,4 +15,4 @@ Protocolo (igual que R48): `git pull` → reservar aquí (commit + push) → lee
 
 | Objeto | UUID | Sesión | Estado | Versión antes→después | Nota |
 |---|---|---|---|---|---|
-| IF `SCA2_Buscador` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055660` | R49-B | En edición | v36→? | Normalizar nº de póliza (trim + ceros a la izquierda) como SCA |
+| IF `SCA2_Buscador` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055660` | R49-B | Liberado | v36→v37 | Normalizar nº de póliza (trim + ceros a la izquierda) como SCA |
