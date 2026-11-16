@@ -169,3 +169,12 @@ R50-A (bloque 8541-8580):
 |---|---|---|---|---|
 | 0732300117491 | R50-A caché cabecera, antes de UNIQUE | 16/11 | 15789174 | Primera libre del bloque R50-A; sin solicitudes en buscador antes del alta JJGONZ2. Hogar; alta y CA abierta sin ejecutar argumentos. Caché única id 810 inmediatamente tras alta, detalle, cuatro Actualizar datos y dos pestañas. Pendiente/ocupada. |
 | 2002500069552 | R50-A caché cabecera, antes de UNIQUE | 16/11 | 15789178 | Primera Autos libre del bloque R50-A; sin solicitudes en buscador antes del alta JJGONZ2. Alta y CA abierta sin ejecutar argumentos. Caché única id 812 inmediatamente tras alta, detalle, cuatro Actualizar datos, dos pestañas y otro clic tras más de 60 s. Cabecera comparada con SCA. Clics sucesivos reutilizan respuesta y no siempre cambia fechaCache. Pendiente/ocupada. |
+
+## R51-A — MEJ-01/02 tréboles antes de la enhorabuena (16/11/2026)
+
+Excepción a la regla de bloques: solo las pólizas de campaña TTQ de `polizas-ronda10.md` (R10-C) ofrecen «TU TE QUEDAS» en TEST. Se usan solo las que no tienen ninguna solicitud abierta (`SCA2_consultarSolicitudes`: sin solicitudes, o todas con `codEstSolic` distinto de 1/2).
+
+| Póliza | Sesión | Fecha | Solicitud(es) | Uso / estado final |
+|---|---|---|---|---|
+| 2002300300497 | R51-A NO CLUB | 16/11 | (pendiente) | TTQ NO CLUB (R10-C). Solicitudes anteriores 15788003 y 15788040 cerradas (codEstSolic 4) |
+| 0732400120983, 0730380324165, 0731380454474, 0731380454486, 0731700187136 | R51-A Club (candidatas) | 16/11 | (pendiente) | Sin ninguna solicitud en CORE. Se usan por orden hasta encontrar TTQ con cliente Club |
