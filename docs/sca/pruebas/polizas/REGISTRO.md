@@ -177,8 +177,12 @@ Excepción a la regla de bloques: solo las pólizas de campaña TTQ de `polizas-
 
 | Póliza | Sesión | Fecha | Solicitud(es) | Uso / estado final |
 |---|---|---|---|---|
-| 2002300300497 | R51-A NO CLUB | 16/11 | (pendiente) | TTQ NO CLUB (R10-C). Solicitudes anteriores 15788003 y 15788040 cerradas (codEstSolic 4) |
-| 0732400120983, 0730380324165, 0731380454474, 0731380454486, 0731700187136 | R51-A Club (candidatas) | 16/11 | (pendiente) | Sin ninguna solicitud en CORE. Se usan por orden hasta encontrar TTQ con cliente Club |
+| 2002300300497 | R51-A NO CLUB | 16/11 | — | Alta bloqueada «Existe una solicitud en curso»: SCA2 ve 15788003/15788040 en curso aunque en CORE están cerradas (codEstSolic 4). No usada |
+| 0732400120983 | R51-A | 16/11 | 15789194 | Sin TTQ. Obligatorio negativo; CA Incompleta (FINALIZAR pide carta). Ocupada |
+| 0730380324165 | R51-A | 16/11 | 15789195 | Sin TTQ. Al RETOMAR, argumentario vacío. CA Incompleta. Ocupada |
+| 0731380454474 | R51-A | 16/11 | 15789196 | Sin TTQ. CA Incompleta, sin ejecutar. Ocupada |
+| 0731380454486 | R51-A | 16/11 | 15789198 | Sin TTQ. CA Incompleta, sin ejecutar. Ocupada |
+| 0731700187136 | R51-A | 16/11 | 15789199 | «No hay argumentos disponibles». CA Incompleta. Ocupada |
 
 ## R51-B — textos MEJ-03/04/05/06 (16/11/2026)
 
