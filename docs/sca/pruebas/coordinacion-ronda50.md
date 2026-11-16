@@ -21,3 +21,11 @@ Protocolo (igual que R49): `git pull` → reservar aquí (commit + push) → lee
 | PM `SCA2 CMD Alta` (nodo «Write Datos») | `0000f06f-28fc-8000-6693-7f0000014e7a` | R50-A | reservado | ? | la fila de cabecera del alta reutiliza el id |
 | RT `SCA2 Datos Cabecera` | `04f597de-5acd-45b2-9ab3-277713cd00a6` | R50-A | reservado | v12→? | tamaños / sincronización |
 | RT `SCA2 Transicion` | `0b46024c-58b4-48be-a2a4-20d54bc40815` | R50-A | reservado | ? | tamaños / sincronización |
+| PM `SCA2 CMD CrearAccion` (nodos 7, 9, 31, 8) | `0000f06f-0eaa-8000-6594-7f0000014e7a` | R50-B | reservado | v27→? | tarea PENDIENTE del mismo tipo: reutilizar id; Write Error sin duplicar |
+| PM `SCA2 CMD Mecanizar` (nodos 7, 332, 12) | `0000f06f-4cfc-8000-66d3-7f0000014e7a` | R50-B | reservado | v46→? | tareas VERTI/INDUCCION sin duplicar; Write Error sin duplicar |
+| PM `SCA2 CMD Posponer` (nodos 5, 199) | `0000f06f-8a47-8000-6751-7f0000014e7a` | R50-B | reservado | ? | recorte FECIMPRESION a 255; Write Error sin duplicar |
+| PM `SCA2 CMD Decidir` (nodos 7, 8) | `0000f06f-0eab-8000-6595-7f0000014e7a` | R50-B | reservado | v17→? | Write Error sin duplicar |
+| PM `SCA2 CMD ObtenerDocumentoGD` (nodo 200) | `0000f06f-c12b-8000-67ae-7f0000014e7a` | R50-B | reservado | ? | Write Error sin duplicar |
+| PM `SCA2 CMD CompletarAccion` (nodo 199) | `0000f06f-1307-8000-65b1-7f0000014e7a` | R50-B | reservado | v50→? | Write Error sin duplicar (solo nodo 199) |
+| PM `SCA2 CMD Alta` (nodos 8 «Write Datos» y 6) | `0000f06f-28fc-8000-6693-7f0000014e7a` | R50-B | reservado | ? | recorte FECIMPRESION a 255 y Write Error. **Espera a que R50-A libere** y se hace sobre su versión |
+| ER nuevas `SCA2_obtenerIdTareaPendiente` / `SCA2_obtenerErrorPendiente` | `—` | R50-B | reservado | —→v1 | lectura de la PENDIENTE existente |
