@@ -14,11 +14,11 @@ Protocolo (igual que R49): `git pull` → reservar aquí (commit + push) → lee
 
 | Objeto | UUID | Sesión | Estado | Versión antes→después | Nota |
 |---|---|---|---|---|---|
-| `SCA2_limitesFilaCacheCabecera` | `_a-0000f09f-42ed-8000-9d42-011c48011c48_5649216` | R50-A | reservado | v1→? | límite fecha último siniestro 255→1000 |
+| `SCA2_limitesFilaCacheCabecera` | `_a-0000f09f-42ed-8000-9d42-011c48011c48_5649216` | R50-A | **liberado** | v1→v2 | `polizaFechaultimosiniestro` 255→1000 |
 | Web API `SCA2_refrescarCacheCabecera` | `324a1ee4-2312-4565-aa36-a383db17b36f` | R50-A | reservado | v9→? | tolerar unique_violation / sin segunda fila |
 | `SCA2_renovarCacheCabecera` | `_a-0000f093-2064-8000-9d36-011c48011c48_5607622` | R50-A | reservado | v4→? | releer id justo antes de escribir |
 | PM `SCA2 CMD RefrescarCacheCabecera` | `0000f095-81a8-8000-d613-7f0000014e7a` | R50-A | reservado | ? | solo si hace falta |
-| PM `SCA2 CMD Alta` (nodo «Write Datos») | `0000f06f-28fc-8000-6693-7f0000014e7a` | R50-A | reservado | ? | la fila de cabecera del alta reutiliza el id |
+| PM `SCA2 CMD Alta` (nodo «Write Datos») | `0000f06f-28fc-8000-6693-7f0000014e7a` | R50-A | **liberado** | 43.0→44.0 | nodo 8: las dos filas de `SCA2 Datos Cabecera` llevan `id: rule!SCA2_obtenerIdFilaCacheCabecera(idSolicitud: pv!idSolicitud)` (UPDATE si ya existe). Resto del nodo idéntico. R50-B puede seguir sobre 44.0 |
 | RT `SCA2 Datos Cabecera` | `04f597de-5acd-45b2-9ab3-277713cd00a6` | R50-A | reservado | v12→? | tamaños / sincronización |
 | RT `SCA2 Transicion` | `0b46024c-58b4-48be-a2a4-20d54bc40815` | R50-A | reservado | ? | tamaños / sincronización |
 | PM `SCA2 CMD CrearAccion` (nodos 7, 9, 31, 8) | `0000f06f-0eaa-8000-6594-7f0000014e7a` | R50-B | reservado | v27→? | tarea PENDIENTE del mismo tipo: reutilizar id; Write Error sin duplicar |
