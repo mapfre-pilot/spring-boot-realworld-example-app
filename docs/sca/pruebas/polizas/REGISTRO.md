@@ -183,7 +183,7 @@ Excepción a la regla de bloques: solo las pólizas de campaña TTQ de `polizas-
 | 0730380324165 | R51-A | 16/11 | 15789195 | Sin TTQ. Al RETOMAR, argumentario vacío. CA Incompleta. Ocupada |
 | 0731380454474 | R51-A | 16/11 | 15789196 | Sin TTQ. CA Incompleta, sin ejecutar. Ocupada |
 | 0731380454486 | R51-A | 16/11 | 15789198 | Sin TTQ. CA Incompleta, sin ejecutar. Ocupada |
-| 0731700187136 | R51-A | 16/11 | 15789199 | «No hay argumentos disponibles». CA Incompleta. Ocupada |
+| 0731700187136 | R51-A | 16/11 | 15789199 | Alta sin argumentos; al RETOMAR, 8 con TTQ HOGAR 20 (cliente Club Oro). R51-A T2–T4: CANCELAR tréboles, ACEPTAR 1 trébol → enhorabuena → Finalizada Positiva. Libre |
 
 ## R51-B — textos MEJ-03/04/05/06 (16/11/2026)
 

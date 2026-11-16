@@ -81,3 +81,31 @@ SCA (`SCA_ContraAnulacionModalRecuperacionPolizaEstrategicas`) llama a Club MAPF
 5. **SVA con cliente no Club.** El aviso de SVA «No se han podido asignar tréboles al cliente porque no está dado de alta en Club Mapfre. Utilice el enlace a te cuidamos existente en el argumento de SVA…» no se ha cambiado ni lleva enlace, porque negocio solo ha pedido el mensaje 02 de tréboles. ¿Se le pone también el enlace?
 6. **Código que ya no se usa.** El bloque de tréboles de `SCA2_ContraAnulacionModalRecuperacionPoliza` (v16), con el literal antiguo de «te cuidamos», ya no se ejecuta. No se ha borrado para no tocar más objetos en esta ronda. Se puede limpiar en una ronda técnica.
 7. **Datos de prueba TTQ.** Hacen falta pólizas TEST que ofrezcan «TU TE QUEDAS…», una con cliente Club y otra NO Club, sin solicitud en curso. Las de R10-C ya no los ofrecen. ¿Nos podéis pasar algunas? También: la 2002300300497 está cerrada en CORE pero SCA2 la ve en curso (15788003/15788040). ¿Se cierran en SCA2?
+
+
+## 8. Segunda ronda de pruebas (16/11/2026, decisiones del usuario)
+
+Horas en UTC (Madrid = UTC+1). Usuario JJGONZ2. Vídeo del caso Club: `r51a-club-15789199-edited.mp4` (no se sube al repositorio). El vídeo termina antes de que el detalle se actualice; la captura final lo acredita.
+
+| ID | Caso | Esperado | Real | OK/KO | Solicitud | Pasos / evidencia |
+|---|---|---|---|---|---|---|
+| T1 | Cliente Club con TTQ (la 15789199 se volvió a cargar con 8 argumentos, entre ellos «TU TE QUEDAS HOGAR 20 TREBOLES DISPONIBLES»). Datos cliente: Activo Club Mapfre Sí, Oro | — | Confirmado | OK | 15789199 (0731700187136) | `../img/r51-a-club-datos-cliente.png` |
+| T2 | CANCELAR de la pantalla de tréboles | Vuelve con el TTQ en Pendiente sin aplicar nada | TTQ Pendiente | OK | 15789199 | POSITIVO → 1 → CANCELAR. `../img/r51-a-club-cancelar-pendiente.png` |
+| T3 | ACEPTAR de la pantalla de tréboles (cliente Club) | Se aplican los tréboles y **después** sale la enhorabuena | ACEPTAR a las 19:18:06.532. Respuesta de Appian en 0,693 s. Después sale «¡Enhorabuena en la retención de la póliza! Se van a finalizar las acciones de contra anulación en SCA. ¿Desea continuar?» (visible a los 2,2 s) | OK | 15789199 | `../img/r51-a-club-enhorabuena-tras-treboles.png` |
+| T4 | ACEPTAR de la enhorabuena | CA Finalizada Positiva; TTQ Positivo con «Se han aplicado 1 tréboles…»; sin errores | 19:18:45. TTQ **Positivo**, «Se han aplicado 1 tréboles al cliente - Se ha aplicado la reserva de prima…». `SCA2 Solicitud` FINALIZADA_POSITIVO / COMPLETADA (19:18:51). CORE codEstSolic 3 (resolución 20:18:47 Madrid). Sin filas en `SCA2 Error`. El detalle mostró «Incompleta» hasta que se recargó una vez (retraso ya conocido, R10-C y R49-D). El buscador de SCA también la muestra «Finalizada positivamente» | OK | 15789199 | `../img/r51-a-club-ttq-positivo.png`, `r51-a-club-estado-desactualizado.png`, `r51-a-club-finalizada-positiva.png`, `r51-a-sca-solicitud-finalizada.png` |
+| T5 | NO Club en 15788888 (autorizada por el usuario) | Mensaje 02 con enlace, TTQ Pendiente, FINALIZAR no positiva | **No se puede abrir**: el buscador da «La póliza no es una póliza válida o no se encuentra disponible…» para 2002100424269 y «No hay resultados» por NIF del tomador. El site no tiene enlace directo al detalle | BLOQUEADO | 15788888 | `../img/r51-a-bloqueo-no-club-poliza.png`, `r51-a-bloqueo-no-club-nif.png` |
+| B1 | 15789195: RECARGAR con la compañía vacía | Argumentos | Vacío; 3,90 s (19:12:29) | KO (servicio) | 15789195 | `../img/r51-a-recarga-15789195-sin-compania.png` |
+| B2 | 15789195: RECARGAR con ALLIANZ 1109 | Argumentos | Vacío; 3,90 s (19:13:44) | KO (servicio) | 15789195 | `../img/r51-a-recarga-15789195-allianz.png` |
+| B3 | 15789199: RETOMAR sin RECARGAR (antes «No hay argumentos») | — | 8 argumentos, TTQ incluido (19:15) | OK | 15789199 | — |
+
+**Conclusión de «No hay argumentos disponibles»**: no es una regresión de SCA2.
+- `SCA2_ContraAnulacionSGO` v6 no interviene en la carga del argumentario: solo se usa al pulsar POSITIVO.
+- Opciones v80→v81 (R51-B) solo cambia el literal del aviso SI24 (diff de una línea). La carga (`SCA2_consultarListadoArgumentos` con `rand`) es la misma desde R47-C.
+- La misma solicitud, la 15789199, salió vacía en el alta y con 8 argumentos al RETOMAR un cuarto de hora después, sin ningún cambio en Appian.
+- Con la 15789195, el servicio responde rápido (3,9 s, sin el tiempo de espera de 63 s de R47-C D1) y sin argumentos, con compañía y sin ella.
+
+Por todo ello, lo que devuelve la lista vacía es el servicio `consultarListadoArgumentos` de CORE en TEST. No se ha comparado con un alta nueva en SCA (no se ha creado ninguna solicitud en SCA). No se ha cambiado nada.
+
+**Actualización de §6 (lo no probado)**: queda sin probar en pantalla el caso NO Club: el mensaje 02, el href del enlace, la vuelta a Pendiente y FINALIZAR no positivo. Tampoco se ha visto el «otro error». El caso Club y el CANCELAR de la pantalla de tréboles sí están probados (T2–T4).
+
+**Duda nueva 8**: la 15788888 (2002100424269) no se encuentra en el buscador de SCA2 ni por póliza («no es una póliza válida o no se encuentra disponible») ni por NIF. ¿Ha cambiado la póliza en TEST? Para el caso NO Club hace falta una póliza NO Club con TTQ que se pueda buscar.
