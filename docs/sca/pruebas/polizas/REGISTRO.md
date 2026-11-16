@@ -190,3 +190,12 @@ Excepción a la regla de bloques: solo las pólizas de campaña TTQ de `polizas-
 | Póliza | Sesión | Fecha | Solicitud(es) | Uso / estado final |
 |---|---|---|---|---|
 | 0002729325307 | R51-B MEJ-05/06/03 | 16/11 | 15789193 | wAutemis VW CARTERA (acuerdo Si24). JJGONZ2 alta + CA1 negativa → CA2 GGE; SISANS CA2 negativa → Verti asignada a JJGONZ2 |
+| 2002300088767 | R51-B MEJ-04a | 16/11 | 15789197 | JJGONZ2. AA sin documentación → FINALIZAR → NSE a vencimiento (sin ANULAR). Mecanización pendiente |
+| 2001900034165 | R51-B MEJ-04b | 16/11 | 15789200 | JJGONZ2. AA DNI + gestoría sin tipo 9 → FINALIZAR → NSE a vencimiento (sin ANULAR). Mecanización pendiente |
+| 2002200338520 | R51-B MEJ-04c | 16/11 | 15789201 | JJGONZ2. AA DNI + tipo 9, confirmación cancelada y POSPUESTA. Solicitud pendiente |
+| 2002300370339 | R51-B | 16/11 | — | Alta rechazada: póliza renovada (suplemento). Sin solicitud |
+| 2002100356079, 2002500321947, 2002300317215, 2002500306020, 2002500002762, 2002500445380, 2002500068309, 2002400352011, 2002200410259, 2002300362099, 2002500302054, 2002400007498 | R51-B | 16/11 | — | «La póliza no es válida o no se encuentra disponible» durante una caída temporal del servicio; sin solicitud. Se pueden reintentar |
+| 2002200349694 | R51-B regresión | 16/11 | — | Error NSE ITarifaNseExport1 al GUARDAR (2 veces); sin solicitud |
+| 0002729325314, 0002729325317 | R51-B (consulta) | 16/11 | — | Solo consulta: la 314 tenía solicitud abierta y la 317 no era del acuerdo Si24. Sin alta |
+| 2002400121550 (bloque R45-C) | R51-B (por error) | 16/11 | — | Solo se tecleó en el alta: «Existe una solicitud en curso». No se consultó ni se guardó nada |
+
