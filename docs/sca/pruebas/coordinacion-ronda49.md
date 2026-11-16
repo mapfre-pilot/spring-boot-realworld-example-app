@@ -18,3 +18,4 @@ Protocolo (igual que R48): `git pull` → reservar aquí (commit + push) → lee
 |---|---|---|---|---|---|
 | IF `SCA2_Buscador` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055660` | R49-B | Liberado | v36→v37 | Normalizar nº de póliza (trim + ceros a la izquierda) como SCA |
 | ER `SCA2_obtenerTipoPoliza` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052969` | R49-E | Liberado | v2→v3 | `repeat(tointeger(max(0, 13 - len(...))))`: no falla con 14+ caracteres; hasta 13 igual. No toca `SCA2_Buscador` |
+| ER `SCA2_construirContextoAlta` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056014` | R49-D | En edición | v18→ | INC-04: `codProducto` NSE (Verti/Hogar) como `SCA_AltaSolicitudAnulacionEstrategicas`; sin cambios de textos |
