@@ -1,0 +1,15 @@
+--- /home/ubuntu/r49c/live/SCA2_AltaSolicitudPage_reserva.sail	2026-11-16 12:46:24.276798047 +0000
++++ /home/ubuntu/r49c/live/SCA2_AltaSolicitudPage_v56.sail	2026-11-16 12:50:10.327273181 +0000
+@@ -930,7 +930,11 @@
+                     {
+                       a!save(local!isPolizaPRRA, local!prra),
+                       a!save(local!erroresGuardar, local!err),
+-                      if(a!isNotNullOrEmpty(index(local!err, "erroresGuardar", null)),
++                      /* R49-C INC-03 (paridad SCA_SimularAnulacionPopupEstrategicas): con errores de guardado se abre igualmente la simulación si esta permite avanzar */
++                      if(and(a!isNotNullOrEmpty(index(local!err, "erroresGuardar", null)),
++                          not(and(
++                            a!defaultValue(tostring(index(index(local!err, "erroresSimular", null), "errorSimularAlta", null)), "") = "true",
++                            a!defaultValue(toboolean(index(index(local!err, "erroresSimular", null), "avanzarAltaSolicitud", null)), false)))),
+                         {
+                           a!save(local!esError, true),
+                           a!save(local!mensaje, "Se han detectado los siguientes errores: " & joinarray(index(local!err, "erroresGuardar", null), " "))
