@@ -199,3 +199,9 @@ Excepción a la regla de bloques: solo las pólizas de campaña TTQ de `polizas-
 | 0002729325314, 0002729325317 | R51-B (consulta) | 16/11 | — | Solo consulta: la 314 tenía solicitud abierta y la 317 no era del acuerdo Si24. Sin alta |
 | 2002400121550 (bloque R45-C) | R51-B (por error) | 16/11 | — | Solo se tecleó en el alta: «Existe una solicitud en curso». No se consultó ni se guardó nada |
 
+
+## R52 — tareas/errores repetidos y usuario real (16/11/2026)
+
+| Póliza | Sesión | Fecha | Solicitud(es) | Uso / estado final |
+|---|---|---|---|---|
+| — | R52 | 16/11 | — | Sin pólizas usadas: el site SCA2 no carga para JJGONZ2 ni SISANS (servicio de roles de CORE sin respuesta, `SCA2_obtenerRolPerfilSubperfil`). Pruebas pendientes; ver `r52-tareas-repetidas-usuario-real.md` §7 |
