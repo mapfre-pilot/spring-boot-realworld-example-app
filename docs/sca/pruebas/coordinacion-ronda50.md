@@ -45,3 +45,7 @@ Protocolo (igual que R49): `git pull` → reservar aquí (commit + push) → lee
 | ER `SCA2_construirSolicitudAnulacionAnlTraducida` | `_a-0000f07a-9a6a-8000-9d2b-011c48011c48_5501155` | R50-C | Reservado | v2 | Ídem |
 | ER `SCA2_construirConsultaActualizarMecanizacion` | `_a-0000f07a-9a6a-8000-9d2b-011c48011c48_5493616` | R50-C | Reservado | v1 | Ídem |
 | Aplicación `SCA2 Sistema Comercial de Anulaciones` (contenido) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20050128` | R50-C | Reservado | — | Sólo añadir las 6 reglas (no se desactiva la app) |
+| PM `SCA2 CMD Caducar` (nodo 9) | `0000f06f-4f07-8000-670d-7f0000014e7a` | R50-B | reservado | ? | Write Error sin duplicar (intentos + 1) |
+| PM `SCA2 CMD CambiarNivel` (nodo 199) | `0000f06f-8a54-8000-6759-7f0000014e7a` | R50-B | reservado | ? | Write Error sin duplicar (intentos + 1) |
+| PM `SCA2 CMD Finalizar` (nodos 9, 17) | `0000f06f-1309-8000-65b3-7f0000014e7a` | R50-B | reservado | ? | Write Error sin duplicar (intentos + 1) |
+| PM `SCA2 CMD MecanizarNSE` (nodo 99) | `0000f095-7c8e-8000-d60a-7f0000014e7a` | R50-B | reservado | ? | Write Error sin duplicar (intentos + 1) |
