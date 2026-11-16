@@ -24,3 +24,4 @@ Protocolo (igual que R48): `git pull` → reservar aquí (commit + push) → lee
 | SCA2_AltaSolicitudPage | _a-0000f069-4f37-8000-9cc8-011c48011c48_20055716 | R49-A | Liberado | v54→v55 | INC-06: aviso de error del servicio de decisión (ERROR_DECISION) en vez de «generada correctamente» |
 | SCA2_TXT_ERROR_SERVICIO_DECISION (nueva) | _a-0000f0b4-5b71-8000-9d56-011c48011c48_5744796 | R49-A | Liberado | —→v1 | Texto SCA [8] |
 | SCA2_AltaSolicitudPage | _a-0000f069-4f37-8000-9cc8-011c48011c48_20055716 | R49-C | Liberado | v55→v56 | INC-03: con errores de guardado (renovada) abrir el popup de simulación si la simulación permite avanzar, como SCA |
+| IF `SCA2_ContraAnulacionOpciones` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056435` | R49-D | En edición | v79→ | INC-07: `local!estadoContraAnul` derivado de `estadoArgumentos` como SCA (`mcaEjecutarPositivo`): tras CANCELAR la enhorabuena o tréboles KO no finaliza la CA como positiva; sin cambios de textos |
