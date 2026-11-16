@@ -163,3 +163,9 @@ Actualización R46-C tras v76, solicitud 15788853: CA2 abre con SISANS sin error
 
 Nota: por error se abrió (sin guardar) el formulario de alta de 2002500069552, del bloque R50-A; no se creó solicitud desde R50-C.
 
+R50-A (bloque 8541-8580):
+
+| Póliza | Sesión | Fecha | Solicitud(es) | Uso / estado final |
+|---|---|---|---|---|
+| 0732300117491 | R50-A caché cabecera, antes de UNIQUE | 16/11 | 15789174 | Primera libre del bloque R50-A; sin solicitudes en buscador antes del alta JJGONZ2. Hogar; alta y CA abierta sin ejecutar argumentos. Caché única id 810 inmediatamente tras alta, detalle, cuatro Actualizar datos y dos pestañas. Pendiente/ocupada. |
+| 2002500069552 | R50-A caché cabecera, antes de UNIQUE | 16/11 | 15789178 | Primera Autos libre del bloque R50-A; sin solicitudes en buscador antes del alta JJGONZ2. Alta y CA abierta sin ejecutar argumentos. Caché única id 812 inmediatamente tras alta, detalle, cuatro Actualizar datos, dos pestañas y otro clic tras más de 60 s. Cabecera comparada con SCA. Clics sucesivos reutilizan respuesta y no siempre cambia fechaCache. Pendiente/ocupada. |
