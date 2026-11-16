@@ -137,3 +137,15 @@ Cribado R45-B fase 5 (`bloque-R45-B3-wautemis.txt`, PROBAR REGLA, sin altas salv
 
 Actualización R46-C tras v76, solicitud 15788853: CA2 abre con SISANS sin error wherecontains. Sin aviso Si24, argumento negativo y FINALIZAR sin carta → Verti asignada a JJGONZ2; Oficina ve RETOMAR sin aviso SI24, retoma y completa opciones → ANULAR PÓLIZA. Resultado Mecanización Incompleta / wAutemis / MECANIZACIÓN INCOMPLETA, sin inducción visible ni situación Autemis. Listado: Solicitud Finalizada sin anular. No se afirma inducción completada. La fila original conserva el diagnóstico v75; este párrafo describe el estado posterior.
 | 2002200150804 | R49-E QA UI | 16/11 | 15789149 | Bloque R49-E (línea 8405). Libre en buscador SCA2 antes del alta (sin Tipo Póliza). Alta JJGONZ2 13:59:26; CA con 3 RECARGAR ARGUMENTO sin error (SCA2_Buscador v39); búsqueda por póliza (13 dígitos y con espacio final) la devuelve. Sin argumentos ni mecanización. Pendiente/ocupada. |
+
+## R49-D — pruebas UI TEST (16/11/2026), bloque 8001-8400
+
+| Póliza | Sesión | Fecha | Solicitud(es) | Uso / estado final |
+|---|---|---|---|---|
+| 2002500316012 | R49-D T1 | 16/11 | 15789145 | Verti, codproducto AU01 (v19). CA1 negativa → Verti + Vencimiento → ANULAR; CMP Grabado Vencimiento V2 OK; inducción completada. Queda una CA2 de nivel 2 RED MAPFRE pendiente |
+| 0730286021042 | R49-D T3 (descartada) | 16/11 | 15789151 | CA1 negativa → Verti en nivel 1 (no escala). Verti Incompleta |
+| 2002500346247 | R49-D T2 | 16/11 | 15789153 | Sin argumento de tréboles. Club POSITIVO → CANCELAR → negativo → FINALIZAR: quedó Positiva por error (antes de Opciones v80) |
+| 0731980054928 | R49-D T2 | 16/11 | 15789154 | Sin argumento de tréboles. Negativo → FINALIZAR: quedó Positiva por error (antes de v80) |
+| 2001900003064 | R49-D T3/T4 | 16/11 | 15789155 | SISANS. v80: Club POSITIVO → CANCELAR → FINALIZAR → CA1 Negativa → CA2 nivel 2 SI24 (pendiente, sin ejecutar argumentos) |
+| 0732400097946 | R49-D T4 regresión | 16/11 | 15789156 | SISANS. Club ORO POSITIVO → ACEPTAR → Finalizada Positiva |
+| 2002400000428 | R49-D T2 | 16/11 | 15789157 | Sin argumento de tréboles. Negativo → FINALIZAR → aviso de corredor → Finalizada sin anular |
