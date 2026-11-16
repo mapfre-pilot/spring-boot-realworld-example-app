@@ -22,3 +22,4 @@ Protocolo (igual que R48): `git pull` → reservar aquí (commit + push) → lee
 | ER `SCA2_construirContextoAlta` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056014` | R49-D | Liberado | v18→v19 | INC-04: `codProducto` NSE (Verti/Hogar) como `SCA_AltaSolicitudAnulacionEstrategicas`; sin cambios de textos |
 | SCA2_AltaSolicitudPage | _a-0000f069-4f37-8000-9cc8-011c48011c48_20055716 | R49-A | Liberado | v54→v55 | INC-06: aviso de error del servicio de decisión (ERROR_DECISION) en vez de «generada correctamente» |
 | SCA2_TXT_ERROR_SERVICIO_DECISION (nueva) | _a-0000f0b4-5b71-8000-9d56-011c48011c48_5744796 | R49-A | Liberado | —→v1 | Texto SCA [8] |
+| SCA2_AltaSolicitudPage | _a-0000f069-4f37-8000-9cc8-011c48011c48_20055716 | R49-C | EN EDICIÓN | 55→? | INC-03: con errores de guardado (renovada) abrir el popup de simulación si la simulación permite avanzar, como SCA |
