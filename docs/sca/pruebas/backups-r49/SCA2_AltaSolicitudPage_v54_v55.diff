@@ -1,0 +1,20 @@
+469a470,471
+>   /* R49-A (INC-06): el servicio de reglas ha fallado (ERROR_DECISION): aviso de error como SCA ([8]) y ACEPTAR vuelve al buscador, en vez de «generada correctamente» y un Detalle sin gestión */
+>   local!errorDecision: a!defaultValue(tostring(local!estadoSolNueva), "") = "ERROR_DECISION",
+594a597
+>             if(local!errorDecision, cons!SCA2_TXT_ERROR_SERVICIO_DECISION & if(a!isNullOrEmpty(local!idSolEfectiva), "", " Solicitud: " & local!idSolEfectiva & "."),
+600c603
+<                   cons!SCA2_TXT_ESPERA_DECISION_ADICIONAL, cons!SCA2_TXT_ESPERA_DECISION_INICIAL))))))),
+---
+>                   cons!SCA2_TXT_ESPERA_DECISION_ADICIONAL, cons!SCA2_TXT_ESPERA_DECISION_INICIAL)))))))),
+608c611
+<           showWhen: or(not(local!esperaAgotada), a!isNotNullOrEmpty(local!idSolEfectiva)),
+---
+>           showWhen: and(not(local!errorDecision), or(not(local!esperaAgotada), a!isNotNullOrEmpty(local!idSolEfectiva))),
+615a619,624
+>           /* R49-A: con ERROR_DECISION, ACEPTAR vuelve al buscador (como el OK de SCA_GenerarSolicitudPopupEstrategicas) */
+>           a!buttonWidget(
+>             label: cons!SCA2_TXT_ACEPTAR_CONSULTA_SOLICITUD, style: "SOLID",
+>             showWhen: local!errorDecision,
+>             saveInto: {a!save(local!procesoLanzado, null), a!save(local!idSolGenerada, null),
+>               a!save(local!fechaLanzamiento, null), a!save(ri!numPoliza, null), a!save(ri!vista, "BUSQUEDA")}),
