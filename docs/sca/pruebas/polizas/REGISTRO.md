@@ -152,3 +152,14 @@ Actualización R46-C tras v76, solicitud 15788853: CA2 abre con SISANS sin error
 | 2001900003064 | R49-D T3/T4 | 16/11 | 15789155 | SISANS. v80: Club POSITIVO → CANCELAR → FINALIZAR → CA1 Negativa → CA2 nivel 2 SI24 (pendiente, sin ejecutar argumentos) |
 | 0732400097946 | R49-D T4 regresión | 16/11 | 15789156 | SISANS. Club ORO POSITIVO → ACEPTAR → Finalizada Positiva |
 | 2002400000428 | R49-D T2 | 16/11 | 15789157 | Sin argumento de tréboles. Negativo → FINALIZAR → aviso de corredor → Finalizada sin anular |
+
+## R50-C — regresión tras borrado de objetos sin uso (16/11/2026), bloque 8581-8620
+
+| Póliza | Prueba | Fecha | Solicitud | Notas |
+|---|---|---|---|---|
+| 2002400409136 | R50-C A | 16/11 | 15789173 | JJGONZ2. Alta → POSPONER → buscador/detalle → RETOMAR → NEGATIVO → carta → FINALIZAR. Queda Verti/vencimiento pendiente (no se anula) |
+| 0732000041110 | R50-C B | 16/11 | 15789177 | JJGONZ2. Hogar, POSITIVO → Finalizada Positiva |
+| 2002500238410 | R50-C C | 16/11 | 15789180 | JJGONZ2. Acción Administrativa sin documentación → PDTE_MECANIZAR (no se anula) |
+
+Nota: por error se abrió (sin guardar) el formulario de alta de 2002500069552, del bloque R50-A; no se creó solicitud desde R50-C.
+
