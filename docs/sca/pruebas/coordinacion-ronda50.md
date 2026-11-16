@@ -29,3 +29,19 @@ Protocolo (igual que R49): `git pull` → reservar aquí (commit + push) → lee
 | PM `SCA2 CMD CompletarAccion` (nodo 199) | `0000f06f-1307-8000-65b1-7f0000014e7a` | R50-B | reservado | v50→? | Write Error sin duplicar (solo nodo 199) |
 | PM `SCA2 CMD Alta` (nodos 8 «Write Datos» y 6) | `0000f06f-28fc-8000-6693-7f0000014e7a` | R50-B | reservado | ? | recorte FECIMPRESION a 255 y Write Error. **Espera a que R50-A libere** y se hace sobre su versión |
 | ER nuevas `SCA2_obtenerIdTareaPendiente` / `SCA2_obtenerErrorPendiente` | `—` | R50-B | reservado | —→v1 | lectura de la PENDIENTE existente |
+| PM `SCA2 CMD CambiarNivel` | `0000f06f-8a54-8000-6759-7f0000014e7a` | R50-C | Reservado | 7.0 (borrador vivo) → borrado | Sin uso |
+| PM `SCA2 CMD RegistrarDesincronizacion` | `0000f095-791c-8000-d602-7f0000014e7a` | R50-C | Reservado | → borrado | Sin uso |
+| IF `SCA2_RegistrarDesincronizacionForm` | `_a-0000f093-2064-8000-9d36-011c48011c48_5605245` | R50-C | Reservado | v1 → borrado | Sólo lo usa el PM anterior |
+| ER `SCA2_tmpMedicionArgumentario` | `_a-0000f09c-d8f4-8000-9d41-011c48011c48_5643715` | R50-C | Reservado | v4 → borrado | Temporal, sin uso |
+| ER `SCA2_tmpSolanulDateFmt_1791282137` | `_a-0000f07f-6ec5-8000-9d2c-011c48011c48_5516094` | R50-C | Reservado | v1 → borrado | Temporal, fuera de la app, sin uso |
+| CONS `SCA2_TXT_URL_AUTEMISDIST` | `_a-0000f09f-42ed-8000-9d42-011c48011c48_5650543` | R50-C | Reservado | v2 → borrado | Sin uso (se usa `SCA2_TXT_WAUTEMIS`) |
+| CONS `SCA2_VAL_ESPERA_DECISION_INCREMENTO_SEGUNDOS` | `_a-0000f09f-42ed-8000-9d42-011c48011c48_5648803` | R50-C | Reservado | v1 → borrado | Sin uso (R35-A: reservada, no conectada) |
+| CONS `SCA2_TXT_COD_ESTADO_SOL_CANCELADA` | `225d3e42-00bf-4753-98df-dfe6a04cff34` | R50-C | Reservado | v1 → borrado | Sin uso (R45-B revertido), fuera de la app |
+| CONS `SCA2_TXT_MCA_ESTADO_FINAL_CANCELADA` | `2bde13a5-2a36-4561-ab18-9718d57a4ee6` | R50-C | Reservado | v1 → borrado | Sin uso (R45-B revertido), fuera de la app |
+| ER `SCA2_notificarNivel` | `_a-0000f07f-6ec5-8000-9d2c-011c48011c48_5505875` | R50-C | Reservado | v5 | Añadir a la app SCA2 y a `SCA2 Rules and Constants` (sin cambiar contenido) |
+| ER `SCA2_finalizarGestionSGC` | `_a-0000f07f-6ec5-8000-9d2c-011c48011c48_5505931` | R50-C | Reservado | v2 | Ídem |
+| ER `SCA2_construirSolicitudAnulacionAnl` | `_a-0000f07a-9a6a-8000-9d2b-011c48011c48_5493600` | R50-C | Reservado | v1 | Ídem |
+| ER `SCA2_construirContextoSolicitudAnl` | `_a-0000f07a-9a6a-8000-9d2b-011c48011c48_5493604` | R50-C | Reservado | v2 | Ídem |
+| ER `SCA2_construirSolicitudAnulacionAnlTraducida` | `_a-0000f07a-9a6a-8000-9d2b-011c48011c48_5501155` | R50-C | Reservado | v2 | Ídem |
+| ER `SCA2_construirConsultaActualizarMecanizacion` | `_a-0000f07a-9a6a-8000-9d2b-011c48011c48_5493616` | R50-C | Reservado | v1 | Ídem |
+| Aplicación `SCA2 Sistema Comercial de Anulaciones` (contenido) | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20050128` | R50-C | Reservado | — | Sólo añadir las 6 reglas (no se desactiva la app) |
