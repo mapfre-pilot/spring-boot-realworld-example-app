@@ -11,11 +11,11 @@ Origen: respuestas de negocio a los mensajes MEJ-01 a MEJ-06 del informe R49 (16
 
 | Objeto | UUID | Sesión | Estado | Versión antes→después | Nota |
 |---|---|---|---|---|---|
-| SCA2_DetalleTareas | _a-0000f069-4f37-8000-9cc8-011c48011c48_20055554 | R51-B | RESERVADO | v44→ | MEJ-03 textos tras completar acción |
-| SCA2_AccionesAdministrativasPrincipal | _a-0000f069-4f37-8000-9cc8-011c48011c48_20056429 | R51-B | RESERVADO | v25→ | MEJ-04 confirmMessage FINALIZAR |
-| SCA2_AltaSolicitudPage | _a-0000f069-4f37-8000-9cc8-011c48011c48_20055716 | R51-B | RESERVADO | v56→ | MEJ-05 texto validaciones |
-| SCA2_ContraAnulacionOpciones | _a-0000f069-4f37-8000-9cc8-011c48011c48_20056435 | R51-B | RESERVADO (solo línea del aviso SI24 Red Mapfre, ~1607) | v80→ | MEJ-06; R51-A: si lo necesitas, avísame aquí y guardo primero (cambio de 1 línea) |
-| Constantes nuevas SCA2_TXT_MSG_MEJ* | (nuevas) | R51-B | RESERVADO | nuevas | textos MEJ-03/04/05/06 |
+| SCA2_DetalleTareas | _a-0000f069-4f37-8000-9cc8-011c48011c48_20055554 | R51-B | LIBERADO | v44→v45 | MEJ-03 textos tras completar acción |
+| SCA2_AccionesAdministrativasPrincipal | _a-0000f069-4f37-8000-9cc8-011c48011c48_20056429 | R51-B | LIBERADO | v25→v26 | MEJ-04 confirmMessage FINALIZAR |
+| SCA2_AltaSolicitudPage | _a-0000f069-4f37-8000-9cc8-011c48011c48_20055716 | R51-B | LIBERADO | v56→v57 | MEJ-05 texto validaciones |
+| SCA2_ContraAnulacionOpciones | _a-0000f069-4f37-8000-9cc8-011c48011c48_20056435 | R51-B | LIBERADO | v80→v81 | MEJ-06; R51-A: si lo necesitas, avísame aquí y guardo primero (cambio de 1 línea) |
+| Constantes nuevas SCA2_TXT_MSG_ALTA_VALIDACIONES_OK, SCA2_TXT_MSG_ACUERDO_ESPECIAL_SI24, SCA2_TXT_MSG_GUARDADO_CA_NIVEL2, SCA2_TXT_MSG_GUARDADO_SIN_SIGUIENTE, SCA2_TXT_MSG_ACCADM_SIN_DOCUMENTACION, SCA2_TXT_MSG_ACCADM_SIN_COMPRAVENTA | (nuevas) | R51-B | LIBERADO | nuevas v1 | textos MEJ-03/04/05/06 |
 | SCA2_ContraAnulacionSGO | _a-0000f069-4f37-8000-9cc8-011c48011c48_20060093 | R51-A | RESERVADO | v5→ | MEJ-01/02: tréboles (Club+TTQ) al ACEPTAR la pantalla de tréboles; mensaje NO Club con enlace |
 | Constantes nuevas SCA2_TXT_TREBOLES_NO_CLUB_MAPFRE, SCA2_TXT_ENLACE_CLUB_MAPFRE, SCA2_TXT_CONCEPTO_URL_ALTA_CLUB_MAPFRE | (nuevas) | R51-A | RESERVADO | nuevas | MEJ-02 |
 
