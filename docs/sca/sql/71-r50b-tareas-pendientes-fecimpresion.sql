@@ -1,7 +1,8 @@
 -- =====================================================================================
 -- R50-B · SCA2 TEST · esquema sca2_anulaciones (PostgreSQL 14 / Aurora)
 -- Ejecutar en DBeaver (conexión appianmapfredbpre), Auto-commit activado, Alt+X.
--- Orden: 0 (lectura) → 1 (FECIMPRESION a 1000) → 2 (C7, solo si no hay duplicados) → 0 otra vez.
+-- Orden: 0 (lectura inicial) → 1 (FECIMPRESION a 1000) → 2 (C7, solo si no hay duplicados) → 3 (lectura final).
+-- Alt+X abre un resultado por SELECT: el JSON que vale es el ÚLTIMO (bloque 3).
 -- Rollback al final (bloques R1 y R2). Doc: docs/sca/pruebas/r50-b-tareas-errores-sin-duplicados.md
 -- =====================================================================================
 
@@ -63,6 +64,24 @@ BEGIN
   EXECUTE 'CREATE UNIQUE INDEX ux_sca2_tarea_pendiente_solicitud_tipo ON sca2_anulaciones.sca2_tarea ("ID_SOLICITUD", "TIPO") WHERE "ESTADO" = ''PENDIENTE''';
   RAISE NOTICE '[2] Creado ux_sca2_tarea_pendiente_solicitud_tipo';
 END $$;
+
+-- 3. LECTURA FINAL (el mismo JSON que el bloque 0, ya con los cambios; es el que hay que pasar. Devuelve un único JSON; exportar con «Exportar desde consulta»)
+SELECT json_build_object(
+  'fecimpresion', (SELECT json_build_object('tipo', data_type, 'longitud', character_maximum_length)
+                     FROM information_schema.columns
+                    WHERE table_schema = 'sca2_anulaciones' AND table_name = 'sca2_datos_solicitud'
+                      AND column_name = 'FECIMPRESION'),
+  'fecimpresion_max_usada', (SELECT max(length("FECIMPRESION")) FROM sca2_anulaciones.sca2_datos_solicitud),
+  'indice_c7', (SELECT indexdef FROM pg_indexes
+                 WHERE schemaname = 'sca2_anulaciones' AND indexname = 'ux_sca2_tarea_pendiente_solicitud_tipo'),
+  'tareas_pendientes_duplicadas', (SELECT coalesce(json_agg(d ORDER BY d."ID_SOLICITUD", d."TIPO"), '[]'::json) FROM (
+      SELECT "ID_SOLICITUD", "TIPO", count(*) AS filas, array_agg("ID" ORDER BY "ID") AS ids
+        FROM sca2_anulaciones.sca2_tarea WHERE "ESTADO" = 'PENDIENTE'
+       GROUP BY "ID_SOLICITUD", "TIPO" HAVING count(*) > 1) d),
+  'errores_pendientes_duplicados', (SELECT count(*) FROM (
+      SELECT 1 FROM sca2_anulaciones.sca2_error WHERE "ESTADO" = 'PENDIENTE'
+       GROUP BY "ID_SOLICITUD", "COMANDO", "NODO", "CODIGO" HAVING count(*) > 1) e)
+) AS resultado;
 
 -- =====================================================================================
 -- ROLLBACK (solo si hiciera falta deshacer)
