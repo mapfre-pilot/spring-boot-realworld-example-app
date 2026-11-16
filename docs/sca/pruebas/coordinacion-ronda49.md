@@ -18,6 +18,7 @@ Protocolo (igual que R48): `git pull` → reservar aquí (commit + push) → lee
 |---|---|---|---|---|---|
 | IF `SCA2_Buscador` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055660` | R49-B | Liberado | v36→v37 | Normalizar nº de póliza (trim + ceros a la izquierda) como SCA |
 | ER `SCA2_obtenerTipoPoliza` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052969` | R49-E | Liberado | v2→v3 | `repeat(tointeger(max(0, 13 - len(...))))`: no falla con 14+ caracteres; hasta 13 igual. No toca `SCA2_Buscador` |
+| IF `SCA2_Buscador` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055660` | R49-E | Reservado | v37→ | Tipo Póliza sin seleccionar: `and(local!eleccionPoliza = 1, …)` falla con nulo (Null vs Integer). Cambio mínimo en `local!fPolizaNorm`: `a!defaultValue(local!eleccionPoliza, 1)` (como SCA, que arranca en NO VIDA). Backup: `SCA2_Buscador_v37.sail` (igual a la viva) |
 | ER `SCA2_construirContextoAlta` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20056014` | R49-D | Liberado | v18→v19 | INC-04: `codProducto` NSE (Verti/Hogar) como `SCA_AltaSolicitudAnulacionEstrategicas`; sin cambios de textos |
 | SCA2_AltaSolicitudPage | _a-0000f069-4f37-8000-9cc8-011c48011c48_20055716 | R49-A | EN EDICIÓN | 54→? | INC-06: aviso de error del servicio de decisión (ERROR_DECISION) en vez de «generada correctamente» |
 | SCA2_TXT_ERROR_SERVICIO_DECISION (nueva) | — | R49-A | EN EDICIÓN | —→1 | Texto SCA [8] |
