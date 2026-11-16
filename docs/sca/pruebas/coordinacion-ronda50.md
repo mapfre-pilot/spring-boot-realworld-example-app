@@ -19,8 +19,8 @@ Protocolo (igual que R49): `git pull` → reservar aquí (commit + push) → lee
 | `SCA2_renovarCacheCabecera` | `_a-0000f093-2064-8000-9d36-011c48011c48_5607622` | R50-A | **liberado** | v4→v4 (sin cambios) | ya relee el id tras la carga en vivo |
 | PM `SCA2 CMD RefrescarCacheCabecera` | `0000f095-81a8-8000-d613-7f0000014e7a` | R50-A | **liberado** | 7.0→7.0 (sin cambios) | actualiza por id, no inserta |
 | PM `SCA2 CMD Alta` (nodo «Write Datos») | `0000f06f-28fc-8000-6693-7f0000014e7a` | R50-A | **liberado** | 43.0→44.0 | nodo 8: las dos filas de `SCA2 Datos Cabecera` llevan `id: rule!SCA2_obtenerIdFilaCacheCabecera(idSolicitud: pv!idSolicitud)` (UPDATE si ya existe). Resto del nodo idéntico. R50-B puede seguir sobre 44.0 |
-| RT `SCA2 Datos Cabecera` | `04f597de-5acd-45b2-9ab3-277713cd00a6` | R50-A | reservado | v12→? | tamaños / sincronización |
-| RT `SCA2 Transicion` | `0b46024c-58b4-48be-a2a4-20d54bc40815` | R50-A | reservado | ? | tamaños / sincronización |
+| RT `SCA2 Datos Cabecera` | `04f597de-5acd-45b2-9ab3-277713cd00a6` | R50-A | **liberado** | v12→v12 | sincronización completa 16/11 16:37 (519 filas, sin avisos) |
+| RT `SCA2 Transicion` | `0b46024c-58b4-48be-a2a4-20d54bc40815` | R50-A | **liberado** | v1→v1 | sincronización completa 16/11 16:38 (3.251 filas, sin avisos) |
 | PM `SCA2 CMD CrearAccion` (nodos 7, 9, 31, 8) | `0000f06f-0eaa-8000-6594-7f0000014e7a` | R50-B | **liberado** | 27.0→31.0 | tarea PENDIENTE del mismo tipo: reutilizar id; Write Error sin duplicar |
 | PM `SCA2 CMD Mecanizar` (nodos 7, 332, 12) | `0000f06f-4cfc-8000-66d3-7f0000014e7a` | R50-B | **liberado** | 46.0→49.0 | tareas VERTI/INDUCCION sin duplicar; Write Error sin duplicar |
 | PM `SCA2 CMD Posponer` (nodos 5, 199) | `0000f06f-8a47-8000-6751-7f0000014e7a` | R50-B | **liberado** | 17.0→19.0 | recorte FECIMPRESION a 255; Write Error sin duplicar |

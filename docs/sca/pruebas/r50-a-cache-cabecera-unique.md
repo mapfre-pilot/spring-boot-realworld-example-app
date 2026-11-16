@@ -77,17 +77,41 @@ Después de C1 no hace falta sincronizar `SCA2 Datos Cabecera`: un índice no ca
 
 ## 6. Pruebas con solicitudes nuevas
 
-PENDIENTE_PRUEBAS
+Ronda 1, antes de C1. Usuario funcional JJGONZ2 en el site SCA2 de TEST, 16/11 15:45–16:01 UTC. Pólizas del bloque `polizas/bloque-R50-A.txt`, libres en el buscador antes del alta. Filas contadas por LCP (solo lectura) en cada paso.
+
+| Paso | Hogar 0732300117491 → **15789174** | Autos 2002500069552 → **15789178** |
+|---|---|---|
+| Justo después del alta (sin abrir el detalle) | 1 fila (810) | 1 fila (812) |
+| Primera apertura del detalle | 1 fila (810) | 1 fila (812) |
+| «Actualizar datos» 4 veces seguidas | 1 fila (810) tras cada una | 1 fila (812) tras cada una |
+| Dos pestañas con «Actualizar datos» casi a la vez | 1 fila (810) | 1 fila (812); las peticiones se solaparon |
+| Comprobación final (16:01) | 1 fila (810) | 1 fila (812) |
+| Errores `SCA2 Error` | ninguno de estas solicitudes | ninguno |
+
+Antes del cambio, la misma prueba dejaba 2 filas tras el alta (r38-a §14, solicitud 15788604). La pantalla queda estable y sin errores en todas las recargas. La CA se abrió sin ejecutar argumentos y las dos solicitudes quedan pendientes.
+
+Tiempos aproximados (petición principal): primera apertura del detalle de Autos ≈0,68 s, ya que no hace la carga en vivo de limpieza que hacía v8; primer «Actualizar datos» ≈2,2–2,7 s; recarga en una pestaña nueva ≈4 s. A partir del segundo clic, ≈0,08 s sin cambiar `fechaCache` (ver duda 3).
+
+Capturas: `../img/r50a-hogar-antes.png`, `../img/r50a-hogar-despues.png`, `../img/r50a-autos-antes.png`, `../img/r50a-autos-despues.png`.
+
+Ronda 2, después de C1: pendiente de que el usuario ejecute el SQL (§5).
 
 ## 7. Comparación con SCA
 
-PENDIENTE_SCA
+Con JJGONZ2 en `/suite/sites/sca-site` y la misma póliza, los datos de cliente y póliza de la cabecera coinciden en Hogar y Autos: prima, vencimiento, productor, vehículo y siniestros (en las dos, «fecha último siniestro» vale «-»). Capturas: `../img/r50a-hogar-sca.png`, `../img/r50a-autos-sca.png`.
+
+Incidencia de SCA, ajena a R50-A y no tocada (ya figura en la duda 24 de doc 67): la flecha «Volver» de la cabecera de SCA da HTTP 500 (`sca_datoscabecera`, `a!submitLink` línea 23, «save target must be a local variable», evaluación `8e9a8:22611`). Captura: `../img/r50a-sca-error-volver.png`.
 
 ## 8. No probado
 
-PENDIENTE_NOPROBADO
+- **Ronda 2 con C1 creado**: espera al JSON del usuario. Habrá que repetir el alta, «Actualizar datos» y las dos pestañas, y comprobar que no salen errores (`unique_violation` tolerado).
+- **Enlace GESVIDA de más de 255 caracteres en pantalla**: ninguna póliza de prueba tiene siniestros con enlace. La regla se ha probado con el test runner (§3).
+- **Simultaneidad exacta**: dos pestañas con clics casi a la vez, no al mismo milisegundo.
 
 ## 9. Dudas
 
 1. **Usuario `devin` como diseñador del alta.** Al guardar `SCA2 CMD Alta` por MCP, la 44.0 queda publicada por `devin`. Su nodo 12 «Start Decidir» se ejecuta «como diseñador», y `SCA2 CMD Decidir` graba `pp!initiator` en `SCA2 Transicion.usuario` y `SCA2 Solicitud.modifiedBy`. Las altas nuevas grabarán `devin` donde antes grababan GGALV10, que tampoco era el usuario real. **Propuesta:** cuando R50-B termine con Alta y Decidir, el usuario los abre en Designer y pulsa «Guardar y publicar» sin cambios. Alternativa, si se quiere el usuario real: nodo 12 «ejecutar como iniciador», como en R28. Esa alternativa cambia la traza y no se ha aplicado.
 2. **Metadatos de longitud del record type.** Designer/MCP siguen mostrando `VARCHAR(255)` en `POLIZA_FECHAULTIMOSINIESTRO` tras la sincronización completa. No afecta a la escritura: la BD admite 1000, y el límite real es el de la regla. Para refrescar el metadato habría que usar «Modificar campos de origen» y guardar el record type, lo que crea una versión nueva del RT de cabecera. No se ha hecho porque no aporta nada funcional.
+3. **«Actualizar datos» repetido no siempre refresca. No se aplica: SCA no tiene equivalente.** El primer clic tarda ≈2,5 s y cambia `fechaCache`. Los siguientes responden en ≈0,08 s con la misma `fechaCache`, incluso pasados más de 60 s. La causa probable es que la integración QUERY `SCA2_refrescarCacheCabeceraIntegracion` (v9) recibe siempre las mismas entradas (`idSolicitud`, `numPoliza`, `usuario`, `forzar=true`) y Appian reutiliza la respuesta. El primer clic sí consulta porque `forzar` pasa de `false` (apertura) a `true`. Ya pasaba antes de R50-A.
+   - **Comparación con SCA (TEST, solo lectura, 16/11):** SCA no tiene botón «Actualizar datos» ni caché de cabecera. `SCA_DatosCabecera_Estrategicas` v3 calcula la cabecera al abrir con `rule!SCA_obtenerDatosCabecera(numPoliza, idSolicitud)` (v7). Esa regla llama a unas 30 reglas de servicios sin `rand()` y no tiene forma de forzar una nueva consulta en la misma pantalla. El enlace solo existe en SCA2, como parte de la caché (doc 43-D). Siguiendo la indicación de la coordinación («si SCA tampoco refresca, no lo apliques»), se deja como duda.
+   - **Propuesta:** añadir a la integración una entrada `random` que no se envíe al servicio y que `SCA2_obtenerDatosCabecera` le pase `rand()` solo cuando `forzarRefresco` es verdadero. Así, cada clic hace una carga en vivo (≈2,5 s y una escritura de la fila de caché por clic). Con C1 creado, dos clics solapados no pueden duplicar la fila. Necesita el OK del usuario, porque cambia lo que ocurre al pulsar el botón.
