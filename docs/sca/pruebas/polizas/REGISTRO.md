@@ -22,6 +22,7 @@ Fuente: `polizasDevin-2026-10-30.txt.gz` (970.823 pólizas: 554.707 Hogar `073�
 | 8441-8540 | `bloque-R50-B.txt` | R50-B (tareas/errores sin duplicados, FECIMPRESION) | asignado 16/11 |
 | 8541-8580 | `bloque-R50-A.txt` | R50-A (caché de cabecera sin duplicados, UNIQUE C1) | asignado 16/11 |
 | 8581-8620 | `bloque-R50-C.txt` | R50-C (regresión tras borrado de objetos sin uso y relanzamiento del error 215) | asignado 16/11 |
+| 8621-9020 | `bloque-R51-B.txt` | R51-B (textos MEJ-03/04/05/06) | asignado 16/11 |
 
 Reglas: empezar por la primera póliza libre del bloque; no usar pólizas de otro bloque ni las de rondas anteriores (`polizas-ronda9.md`, `polizas-ronda10.md`); una póliza con solicitud abierta queda «ocupada» hasta que se finalice; anotar también las que no sirven (error de alta, sin tarea, etc.).
 
@@ -178,3 +179,9 @@ Excepción a la regla de bloques: solo las pólizas de campaña TTQ de `polizas-
 |---|---|---|---|---|
 | 2002300300497 | R51-A NO CLUB | 16/11 | (pendiente) | TTQ NO CLUB (R10-C). Solicitudes anteriores 15788003 y 15788040 cerradas (codEstSolic 4) |
 | 0732400120983, 0730380324165, 0731380454474, 0731380454486, 0731700187136 | R51-A Club (candidatas) | 16/11 | (pendiente) | Sin ninguna solicitud en CORE. Se usan por orden hasta encontrar TTQ con cliente Club |
+
+## R51-B — textos MEJ-03/04/05/06 (16/11/2026)
+
+| Póliza | Sesión | Fecha | Solicitud(es) | Uso / estado final |
+|---|---|---|---|---|
+| 0002729325307 | R51-B MEJ-05/06/03 | 16/11 | 15789193 | wAutemis VW CARTERA (acuerdo Si24). JJGONZ2 alta + CA1 negativa → CA2 GGE; SISANS CA2 negativa → Verti asignada a JJGONZ2 |
