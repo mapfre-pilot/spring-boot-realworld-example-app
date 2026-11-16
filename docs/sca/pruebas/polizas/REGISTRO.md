@@ -20,6 +20,7 @@ Fuente: `polizasDevin-2026-10-30.txt.gz` (970.823 pólizas: 554.707 Hogar `073�
 | 8001-8400 | `bloque-R49-D.txt` | R49-D (INC-04 Verti/vencimiento, INC-07 Te Cuidamos, OBS-02 nivel 2 Si24) | asignado 16/11 |
 | 8401-8440 | `bloque-R49-E.txt` | R49-E (buscador por póliza: Tipo Póliza vacío / `repeat` -1) | asignado 16/11 |
 | 8441-8540 | `bloque-R50-B.txt` | R50-B (tareas/errores sin duplicados, FECIMPRESION) | asignado 16/11 |
+| 8541-8580 | `bloque-R50-A.txt` | R50-A (caché de cabecera sin duplicados, UNIQUE C1) | asignado 16/11 |
 
 Reglas: empezar por la primera póliza libre del bloque; no usar pólizas de otro bloque ni las de rondas anteriores (`polizas-ronda9.md`, `polizas-ronda10.md`); una póliza con solicitud abierta queda «ocupada» hasta que se finalice; anotar también las que no sirven (error de alta, sin tarea, etc.).
 
