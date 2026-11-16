@@ -10,9 +10,11 @@ Protocolo (igual que R48): `git pull` → reservar aquí (commit + push) → lee
 | R49-B | INC-05: búsqueda e histórico incoherentes (2001900000562, 0002729391736) |
 | R49-C | Validaciones del alta frente a SCA: INC-01, INC-02, INC-03, OBS-01, OBS-03 |
 | R49-D | Gestión frente a SCA: INC-04, INC-07, OBS-02 |
+| R49-E | Error `repeat` -1 en `SCA2_obtenerTipoPoliza` al buscar por póliza (2002600074085) |
 
 ## Objetos en edición
 
 | Objeto | UUID | Sesión | Estado | Versión antes→después | Nota |
 |---|---|---|---|---|---|
 | IF `SCA2_Buscador` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055660` | R49-B | Liberado | v36→v37 | Normalizar nº de póliza (trim + ceros a la izquierda) como SCA |
+| ER `SCA2_obtenerTipoPoliza` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20052969` | R49-E | En edición | v2→ | `repeat(max(0, 13 - len(...)))` para no fallar con 14+ caracteres; no toca `SCA2_Buscador` |
