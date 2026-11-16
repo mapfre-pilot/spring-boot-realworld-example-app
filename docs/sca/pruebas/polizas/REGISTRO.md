@@ -204,4 +204,4 @@ Excepción a la regla de bloques: solo las pólizas de campaña TTQ de `polizas-
 
 | Póliza | Sesión | Fecha | Solicitud(es) | Uso / estado final |
 |---|---|---|---|---|
-| — | R52 | 16/11 | — | Sin pólizas usadas: el site SCA2 no carga para JJGONZ2 ni SISANS (servicio de roles de CORE sin respuesta, `SCA2_obtenerRolPerfilSubperfil`). Pruebas pendientes; ver `r52-tareas-repetidas-usuario-real.md` §7 |
+| — | R52 | 16/11 | — | Sin pólizas usadas: el site SCA2 no carga para JJGONZ2 ni SISANS (servicio de roles de CORE sin respuesta, `SCA2_obtenerRolPerfilSubperfil`). Reintentos cada 17 min de 21:17 a 00:15 (17/11), todos caídos. Pruebas pendientes; ver `r52-tareas-repetidas-usuario-real.md` §7.1 |

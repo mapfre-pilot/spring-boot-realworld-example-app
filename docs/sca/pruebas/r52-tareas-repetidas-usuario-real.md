@@ -143,6 +143,28 @@ Causa del bloqueo: la integración de CORE `CMP_APIUsuarios_ObtenerRoles` (ESB `
 
 Bandeja `/errores`: por defecto filtra `estado = PENDIENTE` y lista una fila por registro de `SCA2 Error`; con 0 grupos PENDIENTE repetidos, cada grupo aparece una sola vez. Las 40 filas `DESCARTADO` solo salen con el filtro «Descartado», igual que los descartes hechos desde la propia bandeja. Comprobación visual pendiente (requiere administrador).
 
+### 7.1 Reintentos del servicio de roles (16–17/11/2026)
+
+Instrucción: reintentar cada 15–20 minutos durante 3 horas como máximo, sin cambiar Appian. Se ha usado `testRule` de `SCA2_obtenerRolPerfilSubperfil` (NUUMA JJGONZ2; uno con SISANS).
+
+| Hora (CET) | Resultado |
+|---|---|
+| 21:17:50 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+| 21:34:51 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+| 21:51:53 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+| 22:08:54 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+| 22:25:58 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+| 22:43:01 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+| 23:00:03 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+| 23:17:05 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+| 23:34:07 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+| 23:51:09 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+| 00:08:12 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+| 00:08:26 CET (SISANS) | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+| 00:15:15 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+
+**Último intento: 17/11/2026 00:15:15 CET, sigue caído.** Las 3 horas terminan a las 00:17 sin que el servicio haya respondido. No se ha creado ninguna solicitud, no se ha leído el Detalle de 15788025, 15788607, 15788673 y 15788677 en el site y no ha hecho falta volver ningún nodo a «diseñador».
+
 **Pendiente de repetir cuando vuelva el servicio de roles:** alta, POSPONER, RETOMAR, CA positiva y negativa y Acción Administrativa con JJGONZ2/SISANS, comprobando en el histórico, `SCA2 Transicion.usuario` y `SCA2 Solicitud.modifiedBy` el usuario del site y nunca `devin`.
 
 ## 8. Dudas y limitaciones
