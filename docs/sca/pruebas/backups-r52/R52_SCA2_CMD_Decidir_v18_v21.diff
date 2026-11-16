@@ -1,0 +1,182 @@
+--- v18
++++ v21
+@@ -645,5 +645,5 @@
+     "attended": false,
+     "overrideLane": false,
+-    "runAs": "DESIGNER"
++    "runAs": "INITIATOR"
+    },
+    "connections": [
+@@ -726,4 +726,82 @@
+    "typeName": "Start Process",
+    "uuid": "db784d80-f709-47c6-80a2-fe8399261f60"
++  },
++  {
++   "assignment": {
++    "attended": false,
++    "overrideLane": false,
++    "runAs": "INITIATOR"
++   },
++   "connections": [
++    {
++     "activityChained": true,
++     "overridesAssignment": false,
++     "synchronizeData": false,
++     "targetNodeId": 2
++    }
++   ],
++   "coordinates": [
++    1410,
++    120
++   ],
++   "data": {
++    "customInputs": [
++     {
++      "expression": "=pv!idSolicitud",
++      "name": "idSolicitud",
++      "required": true,
++      "saveInto": "",
++      "type": "Text",
++      "value": ""
++     }
++    ],
++    "customOutputs": [],
++    "inputs": [
++     {
++      "expression": "=cons!SCA2_PM_CMD_CREAR_ACCION",
++      "name": "ProcessModel",
++      "required": true,
++      "saveInto": "",
++      "type": "Process Model"
++     },
++     {
++      "expression": "",
++      "name": "ProcessParameters",
++      "required": false,
++      "saveInto": "",
++      "type": "Any Type"
++     },
++     {
++      "expression": "",
++      "name": "IsSynchronous",
++      "required": true,
++      "saveInto": "",
++      "type": "Boolean",
++      "value": 1
++     }
++    ],
++    "outputs": [
++     {
++      "name": "ProcessInfo",
++      "type": "ProcessInfo"
++     },
++     {
++      "name": "Timeout",
++      "type": "Boolean"
++     }
++    ]
++   },
++   "description": {
++    "en_US": "",
++    "es": ""
++   },
++   "id": 12,
++   "name": {
++    "en_US": "",
++    "es": "Start CrearAccion"
++   },
++   "type": "appian.system.smart-services.start-process-5",
++   "typeName": "Start Process",
++   "uuid": "e6226410-f153-4b9c-bded-c6c4829ea1f2"
+   },
+   {
+@@ -738,82 +816,4 @@
+      "overridesAssignment": false,
+      "synchronizeData": false,
+-     "targetNodeId": 2
+-    }
+-   ],
+-   "coordinates": [
+-    1410,
+-    120
+-   ],
+-   "data": {
+-    "customInputs": [
+-     {
+-      "expression": "=pv!idSolicitud",
+-      "name": "idSolicitud",
+-      "required": true,
+-      "saveInto": "",
+-      "type": "Text",
+-      "value": ""
+-     }
+-    ],
+-    "customOutputs": [],
+-    "inputs": [
+-     {
+-      "expression": "=cons!SCA2_PM_CMD_CREAR_ACCION",
+-      "name": "ProcessModel",
+-      "required": true,
+-      "saveInto": "",
+-      "type": "Process Model"
+-     },
+-     {
+-      "expression": "",
+-      "name": "ProcessParameters",
+-      "required": false,
+-      "saveInto": "",
+-      "type": "Any Type"
+-     },
+-     {
+-      "expression": "",
+-      "name": "IsSynchronous",
+-      "required": true,
+-      "saveInto": "",
+-      "type": "Boolean",
+-      "value": 1
+-     }
+-    ],
+-    "outputs": [
+-     {
+-      "name": "ProcessInfo",
+-      "type": "ProcessInfo"
+-     },
+-     {
+-      "name": "Timeout",
+-      "type": "Boolean"
+-     }
+-    ]
+-   },
+-   "description": {
+-    "en_US": "",
+-    "es": ""
+-   },
+-   "id": 12,
+-   "name": {
+-    "en_US": "",
+-    "es": "Start CrearAccion"
+-   },
+-   "type": "appian.system.smart-services.start-process-5",
+-   "typeName": "Start Process",
+-   "uuid": "e6226410-f153-4b9c-bded-c6c4829ea1f2"
+-  },
+-  {
+-   "assignment": {
+-    "attended": false,
+-    "overrideLane": false,
+-    "runAs": "DESIGNER"
+-   },
+-   "connections": [
+-    {
+-     "activityChained": true,
+-     "overridesAssignment": false,
+-     "synchronizeData": false,
+      "targetNodeId": 204
+     }
+@@ -951,5 +951,5 @@
+     "attended": false,
+     "overrideLane": false,
+-    "runAs": "DESIGNER"
++    "runAs": "INITIATOR"
+    },
+    "connections": [
