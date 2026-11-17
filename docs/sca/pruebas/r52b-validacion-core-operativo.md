@@ -39,3 +39,14 @@ Transición **3381** y `modifiedBy` como **JJGONZ2**. Ambas altas (15789202 y 15
 - Pendiente: **POSPONER/RETOMAR, CA, Acción Administrativa y RECARGAR**.
 - Las altas con pólizas libres acaban en `DECISION_ERROR` (firma de [R49-A](r49-a-bloqueo-tras-espera-alta.md), causa sin confirmar) y no generan tarea.
 - Descartadas: **0005726681221** y **0005726682856** (solicitud en curso), **2002600060544** (`SfConsultaCtrlTecnicos`). No usar las reservadas por R53: **0000253500305/338** y **0732100072097**.
+
+## Comparación de la decisión SCA vs SCA2
+
+Comparación en lectura con `testRule` sobre las reglas y las integraciones `accion` (tipo `QUERY`) de SCA y SCA2, sin UI y sin guardar nada.
+
+| Póliza (solicitud) | SCA | SCA2 | DTO |
+|---|---|---|---|
+| 0005726681370 (15789202) | HTTP 500 / 1107 / ERROR | HTTP 500 / 1107 / ERROR | idéntico |
+| 0002729355511 (15789203) | HTTP 500 / 1107 / ERROR | HTTP 500 / 1107 / ERROR | idéntico |
+
+En las cuatro respuestas aparecen `CODE005` (identificador del canal del agente nulo) y `CODE011` (identificador del subcanal de la clase productora nulo). Es un problema de datos o del servicio de reglas de TEST, no una regresión de SCA2. Para probar el ciclo de tarea hace falta una póliza cuyo agente tenga canal y subcanal en TEST.
