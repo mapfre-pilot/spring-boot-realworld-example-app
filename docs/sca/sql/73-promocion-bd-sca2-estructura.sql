@@ -12,7 +12,10 @@
 --        sca2_datos_solicitud.FECIMPRESION               VARCHAR(1000)  (script 71)
 --        sca2_transicion.CLAVE_IDEMPOTENCIA              VARCHAR(200)   (script 66-C6)
 --      y el UNIQUE de tipo de argumento parcial sobre filas activas (66-paso2 C4).
---      Los 15 índices por ESTADO/NUM_POLIZA del DDL 56 que TEST no tiene van comentados.
+--      Los 15 índices por ESTADO/NUM_POLIZA del DDL 56 que TEST no tiene van comentados
+--      y, si existen de una ejecución anterior del 56, se borran (4b), igual que el
+--      UNIQUE total ux_sca2_cat_tipo_argumento. Solo índices: nunca borra tablas,
+--      columnas ni datos.
 --   2. Índices de rendimiento B1–B8 (script 66-paso1).
 --   3. NOT NULL de claves C2/C3 (script 66-paso2).
 --   4. UNIQUE de integridad: C1 caché de cabecera (70), C7 tarea pendiente (71),
@@ -28,7 +31,7 @@
 --     DBeaver: Alt+X (ejecutar script). Los NOTICE/WARNING salen en «Salida» (Ctrl+Shift+O).
 --   * Todo va en UNA transacción: si algo falla, no se aplica nada.
 --   * Idempotente: se puede relanzar; en un esquema ya existente sólo crea/añade/amplía
---     lo que falte y nunca borra tablas, columnas ni datos ni reduce tipos.
+--     lo que falte, nunca borra tablas, columnas ni datos ni reduce tipos.
 --   * Los índices se crean sin CONCURRENTLY (tablas vacías en el destino). Si el esquema
 --     destino ya tuviera muchos datos, lanzarlo en ventana de baja carga.
 --   * Después: 74-promocion-bd-sca2-catalogos.sql (datos de catálogos).
@@ -2952,6 +2955,29 @@ BEGIN
     END IF;
   END LOOP;
 END $$;
+
+-- =====================================================================================
+-- 4b. Índices de versiones anteriores del DDL 56 que TEST no tiene: se borran para que
+--     quede igual que TEST (solo índices; no se toca ningún dato).
+--     ux_sca2_cat_tipo_argumento (único total) impediría cargar COD_TP_ARG 999 activo e
+--     inactivo: lo sustituye ux_sca2_cat_tipo_argumento_activo.
+-- =====================================================================================
+DROP INDEX IF EXISTS sca2_anulaciones.ux_sca2_cat_tipo_argumento;
+DROP INDEX IF EXISTS sca2_anulaciones.ix_sca2_cat_tipo_argumento_cod_estado;
+DROP INDEX IF EXISTS sca2_anulaciones.ix_sca2_datos_poliza_autos_estado;
+DROP INDEX IF EXISTS sca2_anulaciones.ix_sca2_datos_poliza_autos_estadopoliza;
+DROP INDEX IF EXISTS sca2_anulaciones.ix_sca2_datos_poliza_hogar_estado;
+DROP INDEX IF EXISTS sca2_anulaciones.ix_sca2_datos_poliza_hogar_estadopoliza;
+DROP INDEX IF EXISTS sca2_anulaciones.ix_sca2_datos_poliza_vida_estadopoliza;
+DROP INDEX IF EXISTS sca2_anulaciones.ix_sca2_datos_solicitud_estadosolicitud;
+DROP INDEX IF EXISTS sca2_anulaciones.ix_sca2_error_estado;
+DROP INDEX IF EXISTS sca2_anulaciones.ix_sca2_solicitud_estado_solicitud;
+DROP INDEX IF EXISTS sca2_anulaciones.ix_sca2_solicitud_estado_tarea;
+DROP INDEX IF EXISTS sca2_anulaciones.ix_sca2_solicitud_num_poliza;
+DROP INDEX IF EXISTS sca2_anulaciones.ix_sca2_tarea_estado;
+DROP INDEX IF EXISTS sca2_anulaciones.ix_sca2_tarea_num_poliza;
+DROP INDEX IF EXISTS sca2_anulaciones.ix_sca2_transicion_estado_destino;
+DROP INDEX IF EXISTS sca2_anulaciones.ix_sca2_transicion_estado_origen;
 
 -- =====================================================================================
 -- Owner: user_sca2_anulaciones en el esquema, tablas, vistas y secuencias (56-owner-sca2.sql).
