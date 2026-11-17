@@ -52,7 +52,17 @@ BEGIN
   END IF;
 END $$;
 
-CREATE SCHEMA IF NOT EXISTS sca2_anulaciones;
+-- Solo se crea si no existe (CREATE SCHEMA IF NOT EXISTS pide CREATE sobre la base de datos
+-- aunque el esquema ya exista).
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'sca2_anulaciones') THEN
+    IF NOT has_database_privilege(current_database(), 'CREATE') THEN
+      RAISE EXCEPTION 'No existe el esquema sca2_anulaciones y % no tiene CREATE sobre la base de datos %: crearlo antes (CREATE SCHEMA sca2_anulaciones AUTHORIZATION user_sca2_anulaciones) o dar ese permiso', current_user, current_database();
+    END IF;
+    CREATE SCHEMA sca2_anulaciones AUTHORIZATION user_sca2_anulaciones;
+  END IF;
+END $$;
 SET search_path TO sca2_anulaciones;
 
 -- ---------------------------------------------------------------
@@ -2947,10 +2957,13 @@ END $$;
 -- Owner: user_sca2_anulaciones en el esquema, tablas, vistas y secuencias (56-owner-sca2.sql).
 -- Los índices y las secuencias SERIAL siguen al owner de su tabla.
 -- =====================================================================================
-ALTER SCHEMA sca2_anulaciones OWNER TO user_sca2_anulaciones;
 DO $$
 DECLARE r record;
 BEGIN
+  -- Cambiar el owner del esquema pide CREATE sobre la base de datos: solo si hace falta.
+  IF (SELECT pg_get_userbyid(nspowner) FROM pg_namespace WHERE nspname = 'sca2_anulaciones') <> 'user_sca2_anulaciones' THEN
+    EXECUTE 'ALTER SCHEMA sca2_anulaciones OWNER TO user_sca2_anulaciones';
+  END IF;
   FOR r IN SELECT c.relname, c.relkind FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
             WHERE n.nspname = 'sca2_anulaciones' AND c.relkind IN ('r','v','m','p')
               AND pg_get_userbyid(c.relowner) <> 'user_sca2_anulaciones'
