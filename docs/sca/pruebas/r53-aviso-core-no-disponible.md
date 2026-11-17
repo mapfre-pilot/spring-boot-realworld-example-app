@@ -1,6 +1,6 @@
 # R53 — SCA2: aviso claro cuando CORE no responde (Appian TEST)
 
-Fecha: 17/11/2026. Entorno: Appian TEST (`mapfrespain-test`). Solo objetos SCA2. Sin SQL. Sin cambios en PM ni en integraciones.
+Fecha: 17/11/2026. Entorno: Appian TEST (`mapfrespain-test`). Solo objetos SCA2. Sin SQL. Sin cambios en integraciones; en dos PM, un solo campo cada uno (ver «Procesos»).
 
 ## Causa
 Con CORE7 (`core7.pre.mapfre.net:26007`) caído, las integraciones devuelven `success:false` y `result.body = null`. Las reglas que hacen `xpathsnippet(body, ...)` revientan con `contextNode is null` y el site muestra «Error al evaluar la expresión de interfaz de usuario». La primera que falla es `SCA2_obtenerRolPerfilSubperfil` (roles), así que el site no cargaba para nadie.
@@ -29,6 +29,8 @@ Con CORE7 (`core7.pre.mapfre.net:26007`) caído, las integraciones devuelven `su
 | SCA2_AltaSolicitudAnulacionPopUp | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20064994` | v12 → v14 | Aviso + CANCELAR si roles o solicitudes de la póliza = centinela |
 | SCA2_DetalleSolicitud | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055572` | v76 → v77 | Aviso si roles o cabecera = centinela |
 | SCA2_Buscador | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055660` | v39 (sin cambios) | No hizo falta |
+| SCA2 CMD Alta (PM) | `0000f06f-28fc-8000-6693-7f0000014e7a` | v47 → v48 | Nodo 8, `fecsolicitudanul`: falla como antes si CORE no responde (ver «Procesos») |
+| SCA2 CMD Mecanizar (PM) | `0000f06f-4cfc-8000-66d3-7f0000014e7a` | v50 → v51 | Nodo 301, `fechaAnulacion`: falla como antes si CORE no responde (ver «Procesos») |
 
 Copias previas: `backups-r53/*.sail`. Diffs (`diff -u -w`): `backups-r53/diffs/`. Objetos nuevos: `backups-r53/nuevos/`. Coordinación: `coordinacion-ronda53.md` (todo liberado).
 
@@ -49,12 +51,20 @@ El Detalle no se puede abrir desde el site con CORE caído (la tabla de solicitu
 - En las interfaces, si no hay centinela se evalúa la interfaz original sin cambios. Coste añadido: el popup de alta y el Detalle hacen una llamada extra de detección (roles + `consultarSolicitudes`/`consultarCabeceraSolicitud`) cuando hay póliza/solicitud. No cambia validaciones, textos, estados ni navegación.
 - **Pendiente** comparar con `testRule` antes/después con las mismas entradas cuando CORE vuelva. Referencia «antes»: las reglas SCA originales de las que se copiaron las SCA2 tienen la misma lógica sin la guarda (`SCA_obtenerRolPerfilSubperfil` `_a-0000eb9b-717e-8000-9c54-011c48011c48_12084835`, misma integración CMP; `SCA_consultarSolicitudes` `_a-0000eb9b-717e-8000-9c54-011c48011c48_12076283` y `SCA_consultarCabeceraSolicitud` `_a-0000eba7-4ece-8000-9c59-011c48011c48_12389367`, que usan la integración SCAC equivalente). Solo se ejecutan con `testRule` (lectura, sin modificarlas). Script preparado: `backups-r53/compare-antes-despues.py` (compara resultado y error de SCA_* frente a SCA2_* con las mismas entradas). Para las interfaces, la comparación es visual en el site con solicitudes nuevas.
 
-## Procesos (decisión a revisar)
-No se ha tocado ningún PM. Dos PM usan reglas protegidas en expresiones de nodo que ya tenían respaldo:
-- `SCA2 CMD Alta` (`0000f06f-28fc-8000-6693-7f0000014e7a`): `fecsolicitudanul` usa `consultarSolicitudes` con respaldo `now()`.
-- `SCA2 CMD Mecanizar` (`0000f06f-4cfc-8000-66d3-7f0000014e7a`): `fechaAnulacion` usa `consultarCabeceraSolicitud` con respaldo al dato de BBDD.
+## Procesos
+Decisión del usuario (17/11, 11:55 CET): en los PM, «decir que no funciona» es lo de antes (SCA2 Error y reintento). Los campos no deben usar el respaldo cuando CORE no responde, porque grabarían `now()` o el dato de BBDD sin avisar.
 
-Antes, con body nulo, esas expresiones lanzaban excepción de nodo; ahora usan su respaldo y el proceso sigue. El resto de pasos que llaman a CORE en esos PM conservan su gestión actual (SCA2 Error / reintento). Si se prefiere que esos dos campos sigan provocando el error, hay que añadir en el PM la comprobación `rule!SCA2_esCoreNoDisponible(...)` (no se ha hecho: los PM están fuera de alcance).
+| PM | Nodo / campo | Versión | Cambio |
+|---|---|---|---|
+| SCA2 CMD Alta (`0000f06f-28fc-8000-6693-7f0000014e7a`) | 8 «Write Datos» / `fecsolicitudanul` | v47 → v48 | Si `SCA2_consultarSolicitudes` devuelve el centinela, se evalúa `xpathsnippet(null, "/*/soapenv:Body/*")`: el nodo falla con el mismo error de `xpathsnippet` que antes de R53. Si no, la expresión es la misma (respaldo `now()` solo cuando CORE responde sin la solicitud, como antes). |
+| SCA2 CMD Mecanizar (`0000f06f-4cfc-8000-66d3-7f0000014e7a`) | 301 «ANL Alta» / `fechaAnulacion` | v50 → v51 | Lo mismo con `SCA2_consultarCabeceraSolicitud`. Si CORE responde, la lógica es la de antes (respaldo a BBDD si `fecAnulacion` viene vacía). |
+
+- La regla se sigue llamando una sola vez (se guarda en un local). No se ha cambiado nada más: `diff` de los nodos en `backups-r53/diffs/pm_ALTA_nodo8.diff` y `pm_MEC_nodo301.diff`; solo cambia esa expresión. Los `assignment` de los nodos no cambian (8 y 301 siguen `DESIGNER`) y «Start Decidir» (nodo 12 de Alta) sigue en `runAs = INITIATOR` (R52). Copias previas: `backups-r53/pm/`.
+- Comprobado sin crear solicitudes con `validateExpression`, usando las mismas expresiones con literales en lugar de `pv!`:
+  - CORE caído (llamada real a `consultarSolicitudes` con la póliza 0730080003210 y a `consultarCabeceraSolicitud` con la solicitud 15788677): error `at function 'xpathsnippet'`, igual que antes de R53.
+  - Respuesta válida simulada (`fecAnulacion = 2026-11-17T00:00:00`): devuelve `2026-11-17`, como la expresión original.
+- No se ha usado `testProcessModel`, porque arrancaría Alta o Mecanizar de verdad (escrituras en BBDD y CORE).
+- Los PM se han guardado por MCP, así que quedan publicados por `devin`: los nodos que se ejecutan como diseñador (8 y 301 entre ellos, ya pasaba con R52) se ejecutan como `devin`. Conviene hacer «Guardar y publicar» de los dos PM en Designer con el usuario habitual.
 
 ## Pruebas con CORE caído (17/11/2026, desde 10:20 CET)
 Usuarios funcionales JJGONZ2 y SISANS (SSO NO PRO). No se ha creado ni modificado ninguna solicitud.
