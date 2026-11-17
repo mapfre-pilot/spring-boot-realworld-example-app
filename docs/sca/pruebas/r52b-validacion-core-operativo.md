@@ -12,7 +12,7 @@ Observación: 15788025 muestra dos tarjetas «Mecanización Incompleta»; todav�
 
 El bug de `SCA2 CMD Decidir` ya estaba en v18 y v21: `pv!intentos` se calculaba con `SCA2_contarErroresPendientes + 1`, pero «Write Error» hace upsert de una sola fila. El gateway veía siempre 2 y reintentaba sin fin.
 
-La solicitud 15789202 (póliza 0005726681370) llegó a 99 intentos en el Error 227. Appian cortó la cadena por el límite de profundidad de subproceso 100: instancia **14473993**, v21, inicio 17/11/2026 22:19:34.690 UTC. Sigue `ACTIVE` con error; necesita un administrador para cancelarla. El contador quedó en 99 antes y después de publicar; este cese no demuestra por sí solo la corrección.
+La solicitud 15789202 (póliza 0005726681370) llegó a 99 intentos en el Error 227. Appian cortó la cadena por el límite de profundidad de subproceso 100: instancia **14473993**, v21, inicio 17/11/2026 22:19:34.690 UTC. Quedó `ACTIVE` con error hasta que un administrador de TEST la canceló el 17/11/2026 (comprobado después: getProcessInstance devuelve 404 y SCA2 CMD Decidir no tiene instancias RUNNING). El contador quedó en 99 antes y después de publicar; este cese no demuestra por sí solo la corrección.
 
 Único cambio: nodo **5 «Consultar reglas»**, salida a `pv!intentos`. Expresiones literales del diff entre `R52b_SCA2_CMD_Decidir_v21_antes.json` y `R52b_SCA2_CMD_Decidir_v22_despues.json`:
 
