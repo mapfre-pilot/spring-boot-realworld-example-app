@@ -46,7 +46,7 @@ Las duplicadas se han unido en una sola duda, con todos sus orígenes.
 25. [NEG] **Tipo de póliza al entrar:** ¿SCA2 tiene que entrar con NO VIDA ya seleccionado, como SCA?
 
 ## 2. Base de datos (rondas 48 y 66)
-26. [U] **Paso 3:** ¿se preparan los cambios de Appian y se prueban en TEST? Son la UNIQUE de la caché de cabecera, una sola tarea pendiente por solicitud y tipo, y las claves foráneas. ¿O primero el bloque A y el plan para PRO?
+26. [U] **Paso 3:** ¿se preparan los cambios de Appian y se prueban en TEST? Son la UNIQUE de la caché de cabecera, una sola tarea pendiente por solicitud y tipo, y las claves foráneas. ¿O primero el bloque A y el plan para PRO? **Resuelta 17/11:** en TEST ya existen las UNIQUE de la caché (script 70), de las tareas pendientes (71) y de los errores pendientes (72), sin duplicados. Las claves foráneas se descartan (R50-B). PRO queda en espera hasta que lo indique el usuario.
 27. [U/NEG] **`FECIMPRESION` (observaciones):** ¿se amplía a 1000 y se iguala el recorte en el alta, POSPONER y completar acción? Está relacionado con el error `varchar(255)` de «Write Tarea» (id 215) del 11/11 (`pruebas/r48-d`, duda 3).
 28. [U/NEG] **Fecha del último siniestro:** la base de datos ya admite 1000 caracteres. ¿Se sube también el límite de 255 en `SCA2_limitesFilaCacheCabecera`?
 29. [U] **Metadatos de los record types:** ¿se guardan o se sincronizan SCA2 Datos Cabecera y SCA2 Transicion para que reflejen los nuevos tamaños? No hace falta para que funcionen (`pruebas/r48-c`).
