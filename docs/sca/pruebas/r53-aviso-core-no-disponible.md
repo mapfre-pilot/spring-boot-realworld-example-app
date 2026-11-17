@@ -76,5 +76,12 @@ Ver tabla al final (cada 20 min, máx. 3 h).
 ## Pendientes
 - Regresión con CORE disponible (alta, buscador, Detalle/cabecera, POSPONER, RETOMAR, contra anulación positiva y negativa, Acción Administrativa) con solicitudes nuevas, y comparación `testRule` antes/después.
 - Revisar SCA2 Error y procesos fallidos tras la regresión.
-- Otras reglas SCA2 con el mismo patrón (`SCA2_consultaGestion`, `SCA2_consultarDetalleSolicitud`, `SCA2_consultarPolizaVidaRiesgo`, `SCA2_consultaraccesostudpormodo`, …) no se han tocado: con CORE caído quedan detrás del aviso de roles/cabecera. Inventario en `backups-r53/` (59 reglas con `xpathsnippet`).
+- Otras reglas SCA2 con el mismo patrón (`SCA2_consultaGestion`, `SCA2_consultarDetalleSolicitud`, `SCA2_consultarPolizaVidaRiesgo`, `SCA2_consultaraccesostudpormodo`, …) no se han tocado: con CORE caído quedan detrás del aviso de roles/cabecera. Inventario en `backups-r53/inventario-xpathsnippet-dependientes.txt` (59 reglas con `xpathsnippet` y sus dependientes).
 - Si los roles responden pero CORE7 no, el site carga y el buscador no avisa (solo el popup de alta y el Detalle tienen detección propia).
+
+### Tabla de reintentos (hora UTC; sonda `testRule` de roles y `consultarSolicitudes`)
+
+| Hora UTC | Roles | consultarSolicitudes |
+|---|---|---|
+| 09:30 | CAÍDO | CAÍDO |
+| 09:48 | CAÍDO | CAÍDO |
