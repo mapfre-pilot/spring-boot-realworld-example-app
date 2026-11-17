@@ -19,5 +19,6 @@ Origen: R53 — avisar con un mensaje claro cuando CORE no responde (SOAP CORE7 
 | SCA2_consultarSolicitudes | _a-0000f069-4f37-8000-9cc8-011c48011c48_20050936 | R53 | RESERVADO | v1→ | Guarda body nulo (buscador, alta) |
 | SCA2_Buscador | _a-0000f069-4f37-8000-9cc8-011c48011c48_20055660 | R53 | RESERVADO | v39→ | Aviso al buscar si CORE no responde |
 | SCA2_AltaSolicitudAnulacionPopUp | _a-0000f069-4f37-8000-9cc8-011c48011c48_20064994 | R53 | RESERVADO | v12→ | Aviso en el popup de alta si roles = centinela |
+| SCA2_DetalleSolicitud | _a-0000f069-4f37-8000-9cc8-011c48011c48_20055572 | R53 | RESERVADO | v76→ | Aviso en el Detalle si roles = centinela |
 
 Copias previas en `backups-r53/`. Solo lectura: integraciones SCA2 (compartidas), SCA, SCAC, CMP, CORE, PGM y todos los PM.
