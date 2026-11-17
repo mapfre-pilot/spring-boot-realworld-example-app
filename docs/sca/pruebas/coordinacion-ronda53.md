@@ -23,6 +23,7 @@ Origen: R53 — avisar con un mensaje claro cuando CORE no responde (SOAP CORE7 
 | SCA2_consultarCabeceraSolicitud | _a-0000f069-4f37-8000-9cc8-011c48011c48_20051080 | R53 | LIBERADO | v1→v2 | Guarda body nulo (Detalle, cabecera) |
 | SCA2 CMD Alta (PM), nodo 8 «Write Datos» | 0000f06f-28fc-8000-6693-7f0000014e7a | R53 | LIBERADO | v47→v48 | `fecsolicitudanul`: fallar como antes si `consultarSolicitudes` = centinela (decisión del usuario) |
 | SCA2 CMD Mecanizar (PM), nodo 301 «ANL Alta» | 0000f06f-4cfc-8000-66d3-7f0000014e7a | R53 | LIBERADO | v50→v51 | `fechaAnulacion`: fallar como antes si `consultarCabeceraSolicitud` = centinela (decisión del usuario) |
+| SCA2 CMD Mecanizar (PM), nodo 301 «ANL Alta» `runAs` | 0000f06f-4cfc-8000-66d3-7f0000014e7a | R53 | RESERVADO | v51→ | `runAs` DESIGNER → INITIATOR: que ANL grabe como `creador` al usuario que mecaniza (opción B aprobada) |
 
 Copias previas en `backups-r53/`. Solo lectura: integraciones SCA2 (compartidas), SCA, SCAC, CMP, CORE, PGM y el resto de PM.
 
