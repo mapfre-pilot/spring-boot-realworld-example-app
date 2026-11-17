@@ -5,7 +5,8 @@
 -- 17/11/2026, incluidas las altas y cambios manuales hechos desde «Gestiones de
 -- mantenimiento». Se conservan los ID de TEST.
 --
--- Cómo ejecutarlo: después de 73-promocion-bd-sca2-estructura.sql, mismo usuario.
+-- Cómo ejecutarlo: después de 73-promocion-bd-sca2-estructura.sql, mismo usuario
+-- (user_sca2_anulaciones o miembro de ese rol). No cambia owners: los deja el 73.
 --   psql -v ON_ERROR_STOP=1 -f 74-promocion-bd-sca2-catalogos.sql   |   DBeaver: Alt+X
 -- Una sola transacción. Idempotente: las filas cuyo ID ya existe no se tocan
 -- (ON CONFLICT DO NOTHING); si un código ya existe con otro ID, el UNIQUE del catálogo
@@ -693,9 +694,13 @@ DO $$ BEGIN PERFORM setval(pg_get_serial_sequence('sca2_anulaciones.sca2_cat_val
 
 COMMIT;
 
--- Verificación (un único JSON): «ok» debe salir true (recuentos iguales a TEST).
+-- Verificación (un único JSON): «ok» debe salir true (recuentos iguales a TEST) y
+-- «owner_distinto» vacío (todo con owner user_sca2_anulaciones).
 SELECT json_build_object(
   'fecha', now(),
+  'owner_distinto', (SELECT coalesce(json_agg(c.relname), '[]'::json) FROM pg_class c
+                       JOIN pg_namespace n ON n.oid = c.relnamespace
+                      WHERE n.nspname = 'sca2_anulaciones' AND pg_get_userbyid(c.relowner) <> 'user_sca2_anulaciones'),
   'catalogos', (SELECT json_agg(json_build_object('tabla', e.tabla, 'esperado', e.n, 'real', r.n, 'ok', e.n = r.n))
                   FROM (VALUES
     ('sca2_cat_motivo', 14),

@@ -20,7 +20,10 @@
 -- Sustituye, para un entorno nuevo, a 56, 63, 66-paso1, 66-paso2, 70, 71 y 72.
 --
 -- Cómo ejecutarlo:
---   * Con el usuario dueño del esquema (o uno que pueda crear el esquema y las tablas).
+--   * OWNER: todo (esquema, tablas, secuencias, índices) queda con owner user_sca2_anulaciones.
+--     Ejecutar como user_sca2_anulaciones o como un usuario miembro de ese rol (p. ej. el
+--     master de Aurora con GRANT user_sca2_anulaciones TO <master>). El rol debe existir;
+--     si no, el script se para al principio sin cambiar nada.
 --   * psql:    psql -v ON_ERROR_STOP=1 -f 73-promocion-bd-sca2-estructura.sql
 --     DBeaver: Alt+X (ejecutar script). Los NOTICE/WARNING salen en «Salida» (Ctrl+Shift+O).
 --   * Todo va en UNA transacción: si algo falla, no se aplica nada.
@@ -30,10 +33,25 @@
 --     destino ya tuviera muchos datos, lanzarlo en ventana de baja carga.
 --   * Después: 74-promocion-bd-sca2-catalogos.sql (datos de catálogos).
 --   * La última consulta devuelve un único JSON de verificación (esperado al final).
--- Fuera de este script (igual que en TEST): claves ajenas (C8), owner y GRANTs (bloque
--- comentado al final; owner completo en 56-owner-sca2.sql).
+--   5. Owner user_sca2_anulaciones de todo el esquema (56-owner-sca2.sql).
+-- Fuera de este script (igual que en TEST): claves ajenas (C8) y GRANTs a otros usuarios
+-- (bloque comentado al final).
 -- =====================================================================================
 BEGIN;
+
+-- El owner de todo el esquema debe ser user_sca2_anulaciones: si el rol no existe o el
+-- usuario que ejecuta no puede asignárselo, se para aquí sin cambiar nada.
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'user_sca2_anulaciones') THEN
+    RAISE EXCEPTION 'No existe el rol user_sca2_anulaciones: crearlo antes de ejecutar este script';
+  END IF;
+  IF NOT pg_has_role(current_user, 'user_sca2_anulaciones', 'USAGE')
+     AND NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user) THEN
+    RAISE EXCEPTION 'El usuario % no puede asignar el owner user_sca2_anulaciones: ejecutar como user_sca2_anulaciones o como un miembro de ese rol', current_user;
+  END IF;
+END $$;
+
 CREATE SCHEMA IF NOT EXISTS sca2_anulaciones;
 SET search_path TO sca2_anulaciones;
 
@@ -2925,6 +2943,29 @@ BEGIN
   END LOOP;
 END $$;
 
+-- =====================================================================================
+-- Owner: user_sca2_anulaciones en el esquema, tablas, vistas y secuencias (56-owner-sca2.sql).
+-- Los índices y las secuencias SERIAL siguen al owner de su tabla.
+-- =====================================================================================
+ALTER SCHEMA sca2_anulaciones OWNER TO user_sca2_anulaciones;
+DO $$
+DECLARE r record;
+BEGIN
+  FOR r IN SELECT c.relname, c.relkind FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+            WHERE n.nspname = 'sca2_anulaciones' AND c.relkind IN ('r','v','m','p')
+              AND pg_get_userbyid(c.relowner) <> 'user_sca2_anulaciones'
+  LOOP
+    EXECUTE format('ALTER %s sca2_anulaciones.%I OWNER TO user_sca2_anulaciones',
+                   CASE r.relkind WHEN 'v' THEN 'VIEW' WHEN 'm' THEN 'MATERIALIZED VIEW' ELSE 'TABLE' END, r.relname);
+  END LOOP;
+  FOR r IN SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+            WHERE n.nspname = 'sca2_anulaciones' AND c.relkind = 'S'
+              AND pg_get_userbyid(c.relowner) <> 'user_sca2_anulaciones'
+  LOOP
+    EXECUTE format('ALTER SEQUENCE sca2_anulaciones.%I OWNER TO user_sca2_anulaciones', r.relname);
+  END LOOP;
+END $$;
+
 ANALYZE sca2_anulaciones.sca2_solicitud;
 ANALYZE sca2_anulaciones.sca2_tarea;
 ANALYZE sca2_anulaciones.sca2_transicion;
@@ -2937,13 +2978,17 @@ COMMIT;
 
 -- =====================================================================================
 -- 5. Verificación (solo lectura, un único JSON). Esperado, igual que TEST el 17/11/2026:
---    tablas 22 · columnas 588 · indices 57 (22 PK + 2 UNIQUE + 24 B0–B8 + 6 catálogos + 3 integridad) · invalidos [] ·
+--    owner_esquema user_sca2_anulaciones · owner_distinto [] · tablas 22 · columnas 588 · indices 57 (22 PK + 2 UNIQUE + 24 B0–B8 + 6 catálogos + 3 integridad) · invalidos [] ·
 --    longitudes {POLIZA_FECHAULTIMOSINIESTRO 1000, FECIMPRESION 1000, CLAVE_IDEMPOTENCIA 200} ·
 --    not_null_claves 9 · faltan [] (índices de este script que no existen).
 -- =====================================================================================
 SELECT json_build_object(
   'fecha', now(),
   'usuario', current_user,
+  'owner_esquema', (SELECT pg_get_userbyid(nspowner) FROM pg_namespace WHERE nspname = 'sca2_anulaciones'),
+  'owner_distinto', (SELECT coalesce(json_agg(c.relname), '[]'::json) FROM pg_class c
+                       JOIN pg_namespace n ON n.oid = c.relnamespace
+                      WHERE n.nspname = 'sca2_anulaciones' AND pg_get_userbyid(c.relowner) <> 'user_sca2_anulaciones'),
   'tablas', (SELECT count(*) FROM pg_tables WHERE schemaname = 'sca2_anulaciones' AND tablename LIKE 'sca2\_%'),
   'columnas', (SELECT count(*) FROM information_schema.columns
                 WHERE table_schema = 'sca2_anulaciones' AND table_name LIKE 'sca2\_%'),
@@ -2972,8 +3017,8 @@ SELECT json_build_object(
 ) AS verificacion_estructura;
 
 -- =====================================================================================
--- Owner y permisos (opcional, igual que DDL 56; descomentar con los usuarios del entorno).
--- El cambio de owner completo de tablas y secuencias está en 56-owner-sca2.sql.
+-- Permisos para OTROS usuarios (solo si Appian conecta con un usuario distinto del owner
+-- user_sca2_anulaciones; descomentar con el usuario del entorno).
 -- GRANT USAGE ON SCHEMA sca2_anulaciones TO "<usuario_appian>";
 -- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA sca2_anulaciones TO "<usuario_appian>";
 -- GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA sca2_anulaciones TO "<usuario_appian>";
