@@ -1,6 +1,6 @@
 # R52 — Tareas y errores repetidos, y usuario real en el histórico (SCA2, Appian TEST)
 
-Fecha: 16/11/2026. Entorno: Appian TEST (`mapfrespain-test`), site `/suite/sites/sca2`. PRO no se ha tocado; DEV no se ha usado. Desde Devin no se ha ejecutado SQL.
+Fecha: 16/11/2026 (reintentos hasta el 17/11/2026 10:27). Entorno: Appian TEST (`mapfrespain-test`), site `/suite/sites/sca2`. PRO no se ha tocado; DEV no se ha usado. Desde Devin no se ha ejecutado SQL.
 Coordinación y copias: [`coordinacion-ronda52.md`](coordinacion-ronda52.md), [`backups-r52/`](backups-r52/).
 
 ## 1. Resumen
@@ -165,7 +165,32 @@ Instrucción: reintentar cada 15–20 minutos durante 3 horas como máximo, sin 
 
 **Último intento: 17/11/2026 00:15:15 CET, sigue caído.** Las 3 horas terminan a las 00:17 sin que el servicio haya respondido. No se ha creado ninguna solicitud, no se ha leído el Detalle de 15788025, 15788607, 15788673 y 15788677 en el site y no ha hecho falta volver ningún nodo a «diseñador».
 
-**Pendiente de repetir cuando vuelva el servicio de roles:** alta, POSPONER, RETOMAR, CA positiva y negativa y Acción Administrativa con JJGONZ2/SISANS, comprobando en el histórico, `SCA2 Transicion.usuario` y `SCA2 Solicitud.modifiedBy` el usuario del site y nunca `devin`.
+### 7.2 Reintentos tras crear las UNIQUE (17/11/2026)
+
+El 17/11 a las 08:27 el usuario ejecutó en TEST los scripts 71 y 72: ya existen `ux_sca2_tarea_pendiente_solicitud_tipo` y `ux_sca2_error_pendiente_clave`, no queda ningún duplicado y FECIMPRESION está en 1000.
+
+Instrucción: comprobar el servicio de roles y, si sigue caído, reintentar cada 20 minutos durante 2 horas como máximo, sin cambiar Appian. Se ha usado `testRule` de `SCA2_obtenerRolPerfilSubperfil` (NUUMA JJGONZ2).
+
+| Hora (CET) | Resultado |
+|---|---|
+| 08:28:34 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+| 08:48:40 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+| 09:08:41 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+| 09:28:45 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+| 09:48:47 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+| 10:08:49 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+| 10:27:30 CET | Caído: `xpathsnippet` línea 17, «contextNode is null» |
+
+**Último intento: 17/11/2026 10:27:30 CET, sigue caído.** Las 2 horas terminan a las 10:28 sin que el servicio haya respondido. La regla seguía en su versión original (R53 avisó a las 10:18 de que la va a cambiar para mostrar un aviso cuando CORE no responde; R52 no la ha tocado).
+
+Por tanto, con las dos UNIQUE ya creadas **no se ha podido comprobar en el site**:
+- POSPONER/RETOMAR reutilizando la tarea PENDIENTE;
+- RECARGAR / «Actualizar datos»;
+- la reutilización de la fila de error ante un error provocado.
+
+No se ha creado ninguna solicitud, no se ha cambiado nada en Appian y no ha hecho falta volver ningún nodo a «diseñador».
+
+**Pendiente de repetir cuando vuelva el servicio de roles:** alta, POSPONER, RETOMAR, CA positiva y negativa y Acción Administrativa con JJGONZ2/SISANS, comprobando en el histórico, `SCA2 Transicion.usuario` y `SCA2 Solicitud.modifiedBy` el usuario del site y nunca `devin`; y, con las UNIQUE de 71/72, POSPONER/RETOMAR, RECARGAR / «Actualizar datos» y la reutilización de la fila de error.
 
 ## 8. Dudas y limitaciones
 
