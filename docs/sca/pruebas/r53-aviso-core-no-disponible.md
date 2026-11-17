@@ -64,7 +64,28 @@ Decisión del usuario (17/11, 11:55 CET): en los PM, «decir que no funciona» e
   - CORE caído (llamada real a `consultarSolicitudes` con la póliza 0730080003210 y a `consultarCabeceraSolicitud` con la solicitud 15788677): error `at function 'xpathsnippet'`, igual que antes de R53.
   - Respuesta válida simulada (`fecAnulacion = 2026-11-17T00:00:00`): devuelve `2026-11-17`, como la expresión original.
 - No se ha usado `testProcessModel`, porque arrancaría Alta o Mecanizar de verdad (escrituras en BBDD y CORE).
-- Los PM se han guardado por MCP, así que quedan publicados por `devin`: los nodos que se ejecutan como diseñador (8 y 301 entre ellos, ya pasaba con R52) se ejecutan como `devin`. Conviene hacer «Guardar y publicar» de los dos PM en Designer con el usuario habitual.
+- Los PM se han guardado por MCP, así que quedan publicados por `devin`.
+
+### Efecto de `runAs = DESIGNER` y nodo 301 (17/11, 12:00 CET)
+Revisado sin cambiar nada (Alta v48, Mecanizar v51):
+- Ningún nodo DESIGNER usa `loggedInUser()`. Los campos de usuario (`usuario`, `modifiedBy`, `createdBy`) se graban con `pp!initiator` o con datos de la solicitud (`nuuma`, `pv!usuario`). `pp!initiator` es quien arrancó el proceso (el usuario del site con `a!startProcessLink`, o `SCA2 CMD MarcarErrorRelanzado` con Start Process en INITIATOR), así que no graban `devin`.
+- Excepción: el Sub-Process 301 «ANL Alta» de Mecanizar (DESIGNER). El subproceso ANL Alta (`0002ea90-3244-8000-afaa-7f0000014e7a`, aplicación ANL) graba `creador: pp!initiator` en su nodo 8 «Write Event». Su iniciador es quien ejecuta el nodo 301, es decir, el último que publicó Mecanizar (`devin`). Es una deducción de la configuración, no se ha comprobado ejecutándolo.
+
+Seguridad de ANL Alta, comprobada con `getObjectSecurity` (no se ha cambiado):
+
+| Rol | Grupo |
+|---|---|
+| administrator | ANL Administradores |
+| viewer (puede iniciar) | ANL‎ Usuarios |
+
+- `ANL‎ Usuarios` incluye, con herencia, a `JJGONZ2@mapfrenopro.onmicrosoft.com` y a `SISANS@mapfrenopro.onmicrosoft.com`.
+- También incluye a todos los miembros de `SCA2 Users` (21), `SCA2 Administrators` y `SCA2 Piloto` (1: JJGONZ2). No falta ningún grupo.
+
+Cambio aplicado (opción B, aprobada por el usuario): `SCA2 CMD Mecanizar` (`0000f06f-4cfc-8000-66d3-7f0000014e7a`) nodo 301 «ANL Alta», `runAs` DESIGNER → INITIATOR, v51 → v52.
+- El nodo solo cambia en `assignment`. Diff: `backups-r53/diffs/pm_MEC_nodo301_runAs.diff`; copias: `backups-r53/pm/SCA2_CMD_Mecanizar_nodo301_v51.json` y `_v52.json`.
+- `fechaAnulacion` (R53) y el resto de R52 siguen igual.
+- No se ha tocado `SCA2 Batch Mecanizacion NSE` (nodo 6 en DESIGNER): es un proceso programado y no tiene usuario del site.
+- Pendiente para la regresión con CORE: comprobar en una mecanización real que ANL graba como `creador` al usuario que mecaniza y que el nodo 301 no falla por permisos.
 
 ## Pruebas con CORE caído (17/11/2026, desde 10:20 CET)
 Usuarios funcionales JJGONZ2 y SISANS (SSO NO PRO). No se ha creado ni modificado ninguna solicitud.
