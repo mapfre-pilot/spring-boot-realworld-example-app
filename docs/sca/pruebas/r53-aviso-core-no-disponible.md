@@ -47,7 +47,7 @@ El Detalle no se puede abrir desde el site con CORE caído (la tabla de solicitu
 ## Camino normal (CORE responde)
 - En las reglas, la lógica original queda íntegra en la rama `else` (ver diffs: solo se añade el `if` exterior). Con body no vacío el resultado es el mismo expresión a expresión.
 - En las interfaces, si no hay centinela se evalúa la interfaz original sin cambios. Coste añadido: el popup de alta y el Detalle hacen una llamada extra de detección (roles + `consultarSolicitudes`/`consultarCabeceraSolicitud`) cuando hay póliza/solicitud. No cambia validaciones, textos, estados ni navegación.
-- **Pendiente** comparar con `testRule` antes/después con las mismas entradas cuando CORE vuelva (ver «Reintentos»).
+- **Pendiente** comparar con `testRule` antes/después con las mismas entradas cuando CORE vuelva. Referencia «antes»: las reglas SCA originales de las que se copiaron las SCA2 tienen la misma lógica sin la guarda (`SCA_obtenerRolPerfilSubperfil` `_a-0000eb9b-717e-8000-9c54-011c48011c48_12084835`, misma integración CMP; `SCA_consultarSolicitudes` `_a-0000eb9b-717e-8000-9c54-011c48011c48_12076283` y `SCA_consultarCabeceraSolicitud` `_a-0000eba7-4ece-8000-9c59-011c48011c48_12389367`, que usan la integración SCAC equivalente). Solo se ejecutan con `testRule` (lectura, sin modificarlas). Script preparado: `backups-r53/compare-antes-despues.py` (compara resultado y error de SCA_* frente a SCA2_* con las mismas entradas). Para las interfaces, la comparación es visual en el site con solicitudes nuevas.
 
 ## Procesos (decisión a revisar)
 No se ha tocado ningún PM. Dos PM usan reglas protegidas en expresiones de nodo que ya tenían respaldo:
@@ -71,9 +71,10 @@ Usuarios funcionales JJGONZ2 y SISANS (SSO NO PRO). No se ha creado ni modificad
 | testInterface Detalle (15788677), popup alta, Buscador, BuscadorTabla | `error: null` | — |
 
 ## Reintentos de CORE
-Ver tabla al final (cada 20 min, máx. 3 h).
+Sonda cada 20 min (tabla al final). CORE caído en todos los intentos. A las 10:54 UTC (11:54 CET) el usuario pidió parar los reintentos: avisará cuando CORE vuelva y entonces se hará la regresión.
 
-## Pendientes
+## Pendientes (cuando el usuario avise de que CORE funciona)
+- Ejecutar `compare-antes-despues.py` (roles JJGONZ2/SISANS, solicitudes de la póliza 0730080003210, cabecera de una solicitud nueva) y documentar IGUAL/DISTINTO.
 - Regresión con CORE disponible (alta, buscador, Detalle/cabecera, POSPONER, RETOMAR, contra anulación positiva y negativa, Acción Administrativa) con solicitudes nuevas, y comparación `testRule` antes/después.
 - Revisar SCA2 Error y procesos fallidos tras la regresión.
 - Otras reglas SCA2 con el mismo patrón (`SCA2_consultaGestion`, `SCA2_consultarDetalleSolicitud`, `SCA2_consultarPolizaVidaRiesgo`, `SCA2_consultaraccesostudpormodo`, …) no se han tocado: con CORE caído quedan detrás del aviso de roles/cabecera. Inventario en `backups-r53/inventario-xpathsnippet-dependientes.txt` (59 reglas con `xpathsnippet` y sus dependientes).
@@ -85,3 +86,8 @@ Ver tabla al final (cada 20 min, máx. 3 h).
 |---|---|---|
 | 09:30 | CAÍDO | CAÍDO |
 | 09:48 | CAÍDO | CAÍDO |
+| 10:08 | CAÍDO | CAÍDO |
+| 10:28 | CAÍDO | CAÍDO |
+| 10:48 | CAÍDO | CAÍDO |
+
+Reintentos detenidos a las 10:54 UTC por indicación del usuario.
