@@ -50,3 +50,27 @@ Comparación en lectura con `testRule` sobre las reglas y las integraciones `acc
 | 0002729355511 (15789203) | HTTP 500 / 1107 / ERROR | HTTP 500 / 1107 / ERROR | idéntico |
 
 En las cuatro respuestas aparecen `CODE005` (identificador del canal del agente nulo) y `CODE011` (identificador del subcanal de la clase productora nulo). Es un problema de datos o del servicio de reglas de TEST, no una regresión de SCA2. Para probar el ciclo de tarea hace falta una póliza cuyo agente tenga canal y subcanal en TEST.
+
+## Búsqueda de pólizas válidas
+
+Se cribaron en lectura 15 pólizas sin solicitud SCA2 en curso y con canal/subcanal informados en `SCA2 Datos Productor`, usando el mapeador de SCA2 y la integración `accion`. Todas devolvieron HTTP 500 / 1107 con CODE005/CODE011. La traza de ejemplo es `57223e2cb7624c8c84492aed1e8de8ff` (póliza 0731700187136).
+
+| Póliza | Solicitud histórica | Canal / subcanal |
+|---|---|---|
+| 0731700187136 | 15789199 | 1 / 2 |
+| 0732000041110 | 15789177 | 1 / 2 |
+| 2002500346247 | 15789153 | 4 / 11 |
+| 0732300314838 | 15789172 | 1 / 2 |
+| 0005726693313 | 15788934 | 10 / 81 |
+| 0732400097946 | 15789156 | 1 / 2 |
+| 0731980054928 | 15789154 | 4 / 11 |
+| 2002600052339 | 15789122 | 8 / 8 |
+| 0732600004219 | 15789121 | 1 / 2 |
+| 2002600073945 | 15789120 | 8 / 8 |
+| 0732200187237 | 15789115 | 1 / 2 |
+| 2002600073939 | 15789114 | 8 / 8 |
+| 0732200155595 | 15789110 | 1 / 2 |
+| 2002200295382 | 15789112 | 1 / 4 |
+| 2002600017649 | 15789118 | 2 / 1 |
+
+R53 descartó además 0002729230967, 0002729296759 y 0002729392059 por el mismo error. POSPONER/RETOMAR, CA, Acción Administrativa y RECARGAR siguen bloqueados hasta que haya datos de prueba válidos o se corrija el servicio de reglas de TEST.
