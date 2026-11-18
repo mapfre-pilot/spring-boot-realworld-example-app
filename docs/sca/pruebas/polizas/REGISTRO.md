@@ -32,6 +32,8 @@ Reglas: empezar por la primera póliza libre del bloque; no usar pólizas de otr
 
 | Póliza | Sesión | Fecha | Solicitud(es) | Uso / estado final |
 |---|---|---|---|---|
+| 0732400035057 | R55 | 18/11/2026 11:44 UTC | 15789213 | Libre por consulta previa y cabecera. Alta sin observaciones con JJGONZ2 en TEST: instancia 11318015, `SCA2 CMD Alta` v49.0 `COMPLETED`, transición 3385 `OK`. Histórico: JJGONZ2 y observaciones vacías. La espera adicional mostró el texto nuevo; terminó en error del servicio de decisión y ACEPTAR volvió al buscador. Sin gestión posterior; póliza ocupada. |
+| 0732100072097 | R55 | 18/11/2026 11:48 UTC | 15789214 | Libre por consulta previa y cabecera. Alta con JJGONZ2 en TEST y 240 caracteres íntegros en el histórico y `fecimpresion`; la UI no permite >255. Instancia 537670098, `SCA2 CMD Alta` v49.0 `COMPLETED`, transición 3386 `OK`. Histórico: JJGONZ2. Error del servicio de decisión; ACEPTAR volvió al buscador. Sin gestión posterior; póliza ocupada. |
 | 0732400126663 | analista | 28/10 | — | Hogar, caso del punto 1 de la ronda 35 (no usar) |
 | 2002600052346 | R35-A QA UI | 29/10 11:28 UTC | 15788534 (ajena, no abierta) | Ocupada en UI: Solicitud Pendiente, creación 29/10 12:21:33 UI. Excluida sin abrir/modificar. |
 | 2002600074045 | R35-A QA UI | 29/10 11:28–11:34 UTC | 15788537 | Libre en búsqueda UI antes de alta. Creada 12:30:44 UI; aviso adicional y ACEPTAR→CA. Popup detecta en curso, consulta sin acción y RETOMAR→CA propia. Pendiente, no se ejecutan argumentos. |
