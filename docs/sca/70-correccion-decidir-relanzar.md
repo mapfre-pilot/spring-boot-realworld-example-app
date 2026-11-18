@@ -52,7 +52,14 @@ El motor volvió a devolver `ERROR`: se generaron los errores **235 PENDIENTE** 
 
 ### 4.3 Prueba en el site
 
-(pendiente de completar)
+Revisión en solo lectura en la Bandeja de errores y en la sección «Errores» del Detalle (site SCA2 de TEST), sin pulsar «Relanzar» ni «Descartar»:
+
+| Caso | Error | Solicitud (estado) | Resultado |
+|---|---|---|---|
+| Decidir PENDIENTE con la solicitud en ERROR_DECISION | 235 | 15789144 (ERROR_DECISION) | «Relanzar» visible en las dos pantallas |
+| Decidir PENDIENTE con la solicitud ya fuera de ERROR_DECISION | 227 | 15789202 (ALTA) | «Relanzar» oculto, «Descartar» visible |
+| Decidir DESCARTADO | 232 | 15789203 (EN_ACCION) | sin «Relanzar» |
+| Regresión: Alta / Finalizar PENDIENTE | — | — | «Relanzar» visible; pantallas sin errores |
 
 ## 5. Sin probar
 
