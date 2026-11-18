@@ -30,6 +30,9 @@ Consumidores de `SCA2_SolicitudAnulacion`: `SCA2_DetalleSolicitud` y `SCA2_Miles
 | # | Prueba | Resultado |
 |---|---|---|
 | 4 | 15789203 (póliza 0002729355511), detalle de la solicitud (`SCA2_DetalleSolicitud`) → Solicitud Anulación | OK: «17/11/2026» es enlace; abre el histórico con 2 filas (Alta Solicitud 17/11/2026 23:26:47 / Contra Anulación 18/11/2026 11:01:13 sin fecha fin, JJGONZ2); ACEPTAR vuelve a la tarjeta y el enlace sigue |
+| 4b | Camino del usuario: buscador de pólizas → 0002729355511 → cabecera de `SCA2_DetalleSolicitud` (port de `SCA_DatosCabecera_Estrategicas`) → «Más Datos» (contraer/expandir) → pestaña Solicitud Anulación | OK: «17/11/2026» es enlace; el histórico muestra 2 filas; ACEPTAR vuelve a la cabecera expandida con el enlace |
 | 5 | PDTE-17579836 (0006000495) y PDTE-537645161 (0006000283), por Errores → Ver solicitud | OK: «12/11/2026» (fecha local de SCA2) sin enlace; clic sin efecto; sin errores de expresión |
+
+Nota: la búsqueda de póliza abre `SCA2_DetalleSolicitud`, que lleva su propia cabecera; la tarjeta que abre «Más Datos» son las pestañas, y la de Solicitud Anulación pinta `SCA2_SolicitudAnulacion`. `SCA2_DatosCabecera_Estrategicas` (→ `SCA2_MilestoneMasDatosAltaSolicitud_Estrategicas`) solo sale en las tareas (Contra, Acciones Administrativas, Fuera de Norma, Verti); no se ha probado en el site porque haría falta abrir una tarea. Usa la misma `SCA2_SolicitudAnulacion`.
 
 Nota: sin enlace, la fecha sigue en rojo subrayado, como en SCA (allí el valor siempre lleva estilo de enlace). El buscador de pólizas no admite las pólizas de las PDTE; se llega a ellas por la bandeja de Errores.
