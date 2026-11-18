@@ -1,0 +1,404 @@
+{
+ "uuid": "0001f0ba-bbae-8000-da82-7f0000014e7a",
+ "processVariables": [
+  {
+   "name": "ids",
+   "type": "Number (Integer)",
+   "isParameter": true,
+   "multiple": true
+  },
+  {
+   "name": "solicitudes",
+   "type": "Text",
+   "isParameter": true,
+   "multiple": true
+  },
+  {
+   "name": "comandos",
+   "type": "Text",
+   "isParameter": true,
+   "multiple": true
+  },
+  {
+   "name": "accion",
+   "type": "Text",
+   "isParameter": true
+  },
+  {
+   "name": "idLote",
+   "type": "Text",
+   "isParameter": true
+  },
+  {
+   "name": "procesados",
+   "type": "Number (Integer)",
+   "isParameter": true
+  },
+  {
+   "name": "omitidos",
+   "type": "Number (Integer)",
+   "isParameter": true
+  },
+  {
+   "name": "estadoActual",
+   "type": "Text"
+  }
+ ],
+ "nodes": [
+  {
+   "id": 1,
+   "type": "core.0",
+   "name": "Start",
+   "coordinates": [
+    60,
+    200
+   ],
+   "connections": [
+    {
+     "targetNodeId": 32,
+     "activityChained": false
+    }
+   ]
+  },
+  {
+   "id": 32,
+   "type": "internal.16",
+   "name": "Leer estado del primer error",
+   "coordinates": [
+    200,
+    200
+   ],
+   "connections": [
+    {
+     "targetNodeId": 33,
+     "activityChained": false
+    }
+   ],
+   "data": {
+    "inputs": [],
+    "customOutputs": [
+     {
+      "expression": "if(length(pv!ids) = 0, \"\", a!defaultValue(tostring(index(a!queryRecordByIdentifier(recordType: 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error', identifier: index(pv!ids, 1, null), fields: {'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{f891dbfa-4fcb-42e9-9d7d-b5799ddf7d02}estado'}), 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{f891dbfa-4fcb-42e9-9d7d-b5799ddf7d02}estado', null)), \"\"))",
+      "saveInto": "estadoActual"
+     }
+    ]
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER"
+   }
+  },
+  {
+   "id": 33,
+   "type": "core.4",
+   "name": "¿Qué hacer?",
+   "coordinates": [
+    360,
+    200
+   ],
+   "connections": [
+    {
+     "targetNodeId": 40,
+     "activityChained": false,
+     "label": "Lote terminado"
+    },
+    {
+     "targetNodeId": 42,
+     "activityChained": false,
+     "label": "No pendiente"
+    },
+    {
+     "targetNodeId": 34,
+     "activityChained": false,
+     "label": "Relanzar"
+    },
+    {
+     "targetNodeId": 35,
+     "activityChained": false,
+     "label": "Descartar"
+    }
+   ],
+   "decision": {
+    "conditions": [
+     {
+      "expression": "length(pv!ids) = 0",
+      "targetNodeId": 40,
+      "label": "Lote terminado"
+     },
+     {
+      "expression": "not(pv!estadoActual = cons!SCA2_TXT_ESTADO_TAREA_PENDIENTE)",
+      "targetNodeId": 42,
+      "label": "No pendiente"
+     },
+     {
+      "expression": "pv!accion = \"RELANZAR\"",
+      "targetNodeId": 34,
+      "label": "Relanzar"
+     },
+     {
+      "expression": "pv!accion = \"DESCARTAR\"",
+      "targetNodeId": 35,
+      "label": "Descartar"
+     }
+    ],
+    "defaultPath": 42
+   }
+  },
+  {
+   "id": 34,
+   "type": "internal.38",
+   "name": "Relanzar error",
+   "coordinates": [
+    520,
+    100
+   ],
+   "connections": [
+    {
+     "targetNodeId": 37,
+     "activityChained": false
+    }
+   ],
+   "data": {
+    "inputs": [
+     {
+      "name": "pmID",
+      "expression": "=cons!SCA2_PM_CMD_MARCAR_ERROR_RELANZADO"
+     },
+     {
+      "name": "pmUUID",
+      "value": "0000f073-49f2-8000-d0e7-7f0000014e7a"
+     },
+     {
+      "name": "isAsynchronous",
+      "value": false
+     },
+     {
+      "name": "isTransparent",
+      "value": false
+     },
+     {
+      "name": "inheritSecurity",
+      "value": false
+     },
+     {
+      "name": "chainsInto",
+      "value": false
+     },
+     {
+      "name": "idError",
+      "expression": "=index(pv!ids, 1, null)"
+     },
+     {
+      "name": "idSolicitud",
+      "expression": "=tostring(index(pv!solicitudes, 1, null))"
+     },
+     {
+      "name": "comando",
+      "expression": "=tostring(index(pv!comandos, 1, null))"
+     }
+    ]
+   },
+   "assignment": {
+    "attended": false
+   }
+  },
+  {
+   "id": 35,
+   "type": "internal3.write_records_to_source_23r3",
+   "name": "Descartar error",
+   "coordinates": [
+    520,
+    300
+   ],
+   "connections": [
+    {
+     "targetNodeId": 37,
+     "activityChained": false
+    }
+   ],
+   "data": {
+    "inputs": [
+     {
+      "name": "Records",
+      "expression": "='recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error'('recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{e5dc602a-1e18-44df-bbde-5d580de8ad21}id': index(pv!ids, 1, null), 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{f891dbfa-4fcb-42e9-9d7d-b5799ddf7d02}estado': \"DESCARTADO\", 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{a447ab30-a57c-45b1-a57f-5784bd6897a1}resueltoPor': pp!initiator, 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{6222f0af-bc41-4207-aad2-e756495f3d81}fechaResolucion': now())"
+     }
+    ]
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER"
+   }
+  },
+  {
+   "id": 37,
+   "type": "internal3.write_records_to_source_23r3",
+   "name": "Registrar en histórico",
+   "coordinates": [
+    680,
+    200
+   ],
+   "connections": [
+    {
+     "targetNodeId": 39,
+     "activityChained": false
+    }
+   ],
+   "data": {
+    "inputs": [
+     {
+      "name": "Records",
+      "expression": "='recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion'('recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{b2f33c59-6234-472c-b7ec-5065bbdc20fd}idSolicitud': tostring(index(pv!solicitudes, 1, null)), 'recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{cb874e4d-61fb-4bd1-8062-e138a364eb82}comando': \"SCA2 Lote Errores\", 'recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{da4a8a6f-4328-4c24-a224-11e161e714fd}estadoOrigen': cons!SCA2_TXT_ESTADO_TAREA_PENDIENTE, 'recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{d90be983-e71a-4e50-9d1c-47ef9409f016}estadoDestino': if(pv!accion = \"RELANZAR\", \"RELANZADO\", \"DESCARTADO\"), 'recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{7d88ecb4-e44a-4769-9406-e6f929dde5e1}claveIdempotencia': pv!idLote & \"-\" & index(pv!ids, 1, null), 'recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{afb1bd95-e12a-4919-a15d-9a414a6857cd}resultado': \"OK\", 'recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{c5a7d996-9a79-4c92-afa2-7930f4d967c1}detalle': left(\"Lote \" & pv!idLote & \": \" & if(pv!accion = \"RELANZAR\", \"relanzado\", \"descartado\") & \" el error \" & index(pv!ids, 1, null) & \" (\" & tostring(index(pv!comandos, 1, null)) & \") por \" & pp!initiator, 255), 'recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{70b2d971-7693-40aa-b447-d8b7898f2c3e}processId': pp!id, 'recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{0b577c50-0666-4463-9ef5-2685e450e1f4}usuario': pp!initiator, 'recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{430f97d9-9430-4dab-86e6-4ac327b05db1}fecha': now())"
+     }
+    ]
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER"
+   }
+  },
+  {
+   "id": 39,
+   "type": "event.timer",
+   "name": "Esperar 10 s",
+   "coordinates": [
+    840,
+    200
+   ],
+   "connections": [
+    {
+     "targetNodeId": 42,
+     "activityChained": false
+    }
+   ],
+   "data": {
+    "inputs": [
+     {
+      "name": "delayUntil",
+      "expression": "=now() + intervalds(0, 0, 10)"
+     }
+    ]
+   }
+  },
+  {
+   "id": 42,
+   "type": "internal.38",
+   "name": "Siguiente error (nueva instancia)",
+   "coordinates": [
+    1000,
+    200
+   ],
+   "connections": [
+    {
+     "targetNodeId": 2,
+     "activityChained": false
+    }
+   ],
+   "data": {
+    "inputs": [
+     {
+      "name": "pmID",
+      "expression": "=cons!SCA2_PM_CMD_PROCESAR_LOTE_ERRORES"
+     },
+     {
+      "name": "pmUUID",
+      "value": "0001f0ba-bbae-8000-da82-7f0000014e7a"
+     },
+     {
+      "name": "isAsynchronous",
+      "value": true
+     },
+     {
+      "name": "isTransparent",
+      "value": false
+     },
+     {
+      "name": "inheritSecurity",
+      "value": false
+     },
+     {
+      "name": "chainsInto",
+      "value": false
+     },
+     {
+      "name": "ids",
+      "expression": "=ldrop(pv!ids, 1)"
+     },
+     {
+      "name": "solicitudes",
+      "expression": "=ldrop(pv!solicitudes, 1)"
+     },
+     {
+      "name": "comandos",
+      "expression": "=ldrop(pv!comandos, 1)"
+     },
+     {
+      "name": "accion",
+      "expression": "=pv!accion"
+     },
+     {
+      "name": "idLote",
+      "expression": "=pv!idLote"
+     },
+     {
+      "name": "procesados",
+      "expression": "=a!defaultValue(pv!procesados, 0) + if(pv!estadoActual = cons!SCA2_TXT_ESTADO_TAREA_PENDIENTE, 1, 0)"
+     },
+     {
+      "name": "omitidos",
+      "expression": "=a!defaultValue(pv!omitidos, 0) + if(pv!estadoActual = cons!SCA2_TXT_ESTADO_TAREA_PENDIENTE, 0, 1)"
+     }
+    ]
+   },
+   "assignment": {
+    "attended": false
+   }
+  },
+  {
+   "id": 40,
+   "type": "internal3.write_records_to_source_23r3",
+   "name": "Registrar fin de lote",
+   "coordinates": [
+    360,
+    360
+   ],
+   "connections": [
+    {
+     "targetNodeId": 41,
+     "activityChained": false
+    }
+   ],
+   "data": {
+    "inputs": [
+     {
+      "name": "Records",
+      "expression": "='recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion'('recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{b2f33c59-6234-472c-b7ec-5065bbdc20fd}idSolicitud': \"LOTE\", 'recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{cb874e4d-61fb-4bd1-8062-e138a364eb82}comando': \"SCA2 Lote Errores\", 'recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{da4a8a6f-4328-4c24-a224-11e161e714fd}estadoOrigen': pv!accion, 'recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{d90be983-e71a-4e50-9d1c-47ef9409f016}estadoDestino': \"FIN\", 'recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{7d88ecb4-e44a-4769-9406-e6f929dde5e1}claveIdempotencia': pv!idLote & \"-FIN\", 'recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{afb1bd95-e12a-4919-a15d-9a414a6857cd}resultado': \"FIN\", 'recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{c5a7d996-9a79-4c92-afa2-7930f4d967c1}detalle': left(\"Lote \" & pv!idLote & \" terminado: \" & a!defaultValue(pv!procesados, 0) & \" tratados, \" & a!defaultValue(pv!omitidos, 0) & \" omitidos por no estar PENDIENTE\", 255), 'recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{70b2d971-7693-40aa-b447-d8b7898f2c3e}processId': pp!id, 'recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{0b577c50-0666-4463-9ef5-2685e450e1f4}usuario': pp!initiator, 'recordType!{0b46024c-58b4-48be-a2a4-20d54bc40815}SCA2 Transicion.fields.{430f97d9-9430-4dab-86e6-4ac327b05db1}fecha': now())"
+     }
+    ]
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER"
+   }
+  },
+  {
+   "id": 41,
+   "type": "core.1",
+   "name": "Fin de lote",
+   "coordinates": [
+    360,
+    500
+   ],
+   "connections": []
+  },
+  {
+   "id": 2,
+   "type": "core.1",
+   "name": "End",
+   "coordinates": [
+    1160,
+    200
+   ],
+   "connections": []
+  }
+ ]
+}
