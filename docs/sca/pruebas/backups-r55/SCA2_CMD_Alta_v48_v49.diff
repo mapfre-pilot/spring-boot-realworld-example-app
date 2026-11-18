@@ -1,0 +1,13 @@
+--- SCA2_CMD_Alta_v48_antes.json
++++ SCA2_CMD_Alta_v49_despues.json
+@@ -444,3 +444,3 @@
+-'recordType!{9a9209c7-aab4-4078-9bef-280de47fdd6e}SCA2 Datos Solicitud.fields.{ef1b0aa7-41ee-4590-83b2-52f89c8be7f5}fecimpresion': left(if(a!isNullOrEmpty(index(pv!datosContexto,\"datosOtros\",\"observaciones\",null)),
+-null, tostring(index(pv!datosContexto,\"datosOtros\",\"observaciones\",null))),
+-255),
++'recordType!{9a9209c7-aab4-4078-9bef-280de47fdd6e}SCA2 Datos Solicitud.fields.{ef1b0aa7-41ee-4590-83b2-52f89c8be7f5}fecimpresion': if(a!isNullOrEmpty(index(pv!datosContexto,\"datosOtros\",\"observaciones\",null)),
++null, left(tostring(index(pv!datosContexto,\"datosOtros\",\"observaciones\",null)),
++255)),
+@@ -804,0 +805 @@
++      "saveInto": "wrErr",
+@@ -808,0 +810 @@
++      "saveInto": "wrErrMsg",

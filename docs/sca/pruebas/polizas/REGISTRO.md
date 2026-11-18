@@ -24,6 +24,7 @@ Fuente: `polizasDevin-2026-10-30.txt.gz` (970.823 pólizas: 554.707 Hogar `073�
 | 8581-8620 | `bloque-R50-C.txt` | R50-C (regresión tras borrado de objetos sin uso y relanzamiento del error 215) | asignado 16/11 |
 | 8621-9020 | `bloque-R51-B.txt` | R51-B (textos MEJ-03/04/05/06) | asignado 16/11 |
 | 9021-9060 | `bloque-R51-A.txt` | R51-A (comparación SCA del argumentario vacío) | asignado 16/11 |
+| 9061-9100 | `bloque-R55.txt` | R55 (alta sin observaciones / observaciones > 255, Write Datos) | asignado 18/11 |
 
 Reglas: empezar por la primera póliza libre del bloque; no usar pólizas de otro bloque ni las de rondas anteriores (`polizas-ronda9.md`, `polizas-ronda10.md`); una póliza con solicitud abierta queda «ocupada» hasta que se finalice; anotar también las que no sirven (error de alta, sin tarea, etc.).
 
