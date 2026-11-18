@@ -1,0 +1,169 @@
+# 21. Ronda 7: JJGONZ2 + SISANS (SI24), pólizas wAutemis normales y RCI, y dudas funcionales resueltas
+
+Fuente: instrucciones de los analistas (nuevo usuario SISANS, pólizas wAutemis y RCI con salto de nivel) y el Excel
+`SCA2_pendientes_dudas_seguimiento_SOLO FUNCIONALES.xlsx` con la resolución de parte de las 32 dudas de
+[20-pendientes-y-dudas-funcionales.md](20-pendientes-y-dudas-funcionales.md). Informe UI del testing agent:
+[pruebas/13-ronda7-informe-testing-agent.md](pruebas/13-ronda7-informe-testing-agent.md).
+
+Todos los cambios siguen el procedimiento de la skill `appian` (lectura completa → backup → validación → PUT mínimo →
+relectura → prueba). Backups y relecturas en `~/sca2work/r11/*_live.json` / `*_after.json` (fuera del repo).
+
+## 1. Pruebas SCA vs SCA2 (JJGONZ2 y SISANS)
+
+| Póliza | Usuario | App | Solicitud | Flujo | Resultado |
+|---|---|---|---|---|---|
+| 0000253500328 | SISANS | SCA2 | 15787863 | Alta → POSPONER → RETOMAR → CA positiva → FINALIZAR | OK, finalizada. Canal vacío al entrar y Medio deshabilitado tras elegir SI24, igual que SCA |
+| 0000253500329 | SISANS | SCA | 15787864 | Alta | **Bloqueado por SCA**: modal «403 Acceso denegado» tras el alta (propio de SCA, no se modifica) |
+| 0000253500286 | SISANS | SCA2 | 15787865 | Acción Administrativa nivel 2 | **ERROR técnico CORE** en `Alta gestion CORE` («Ocurrio un error en el acceso a la base de datos») con `codperfil=CE_RM` + `codsubperfil=CE_MF_SI24_EXPERTO` + nivel 2. Pendiente de confirmar la combinación perfil/subperfil que espera CORE |
+| 0000253500332 | SISANS | SCA | 15787866 | Alta | Se quedó en Alta; la flecha «volver» da error `sca_datoscabecera/a!submitLink` (propio de SCA) |
+| 0005726678405 (RCI) | JJGONZ2 | SCA2 | 15787867 | Alta → CA1 negativa + impresión → CA2 nivel 2 | OK. La tarea de nivel 2 se crea **sin asignadoA y con grupo `CE_MF_BK`** (corrección de `CMD CrearAccion`, antes quedaba asignada al usuario) |
+| 0005726674052 (RCI) | JJGONZ2 | SCA | 15787862 | Alta | Se quedó en Alta (latencia de SCA en TEST) |
+
+Sin ejecutar: cierre de la CA de nivel 2 con SISANS (su grupo es `CE_MF_SI24`, la tarea va a `CE_MF_BK`: ni
+JJGONZ2 ni SISANS ven RETOMAR/REASIGNAR, que es lo que dicta la regla de permisos actual). No se pulsó ANULAR
+PÓLIZA ni se repitieron altas durante el cierre de la ronda.
+
+## 2. Correcciones aplicadas en SCA2 TEST
+
+| # | Objeto | Cambio | Origen |
+|---|---|---|---|
+| 1 | `SCA2 CMD CrearAccion` (asignación) | Tarea de nivel ≠ 1 para perfil SI24/GGE o no CE_RM → `asignadoA = null` (al grupo), como el nodo CONTRA ANULACIÓN de SCA | Prueba 15787861 |
+| 2 | `SCA2 CMD CrearAccion` nodo `Write Error` | Persiste el error técnico real (`pv!wrErrMsg`) en vez de «Accion no reconocida: …» | Diagnóstico 15787865 |
+| 3 | `SCA2_AltaSolicitudAnulacionPopUp` | Solicitud abierta en CORE sólo con `codEstSolic` 1 y 2 (antes 1,2,7,8,9,10,16,17) | Excel 12b/12c |
+| 4 | `SCA2_textoEstadoSolicitud` | Estado interno `ERROR` → «Pendiente» (CORE sigue en 2; el error técnico se ve en Detalle y bandeja) | 15787865 |
+| 5 | `SCA2_Buscador` | Si la búsqueda devuelve un único resultado se abre directamente el Detalle (como SCA) | Excel 14 |
+| 6 | `SCA2 CMD Posponer` nodo `Alta gestión SGC` | POSPONER de Autorización también da de alta la gestión SGC (`tipoAccion AUT`, payload `mSEGuardarAutorizacionDTO` probado) | Excel 18 |
+| 7 | `SCA2_AltaSolicitudPage` GUARDAR | Validaciones de fecha de SCA (`SCA2_erroresGuardarSolicitud`: anterior a efecto, posterior a vencimiento, > 18 meses, anterior al último siniestro, aviso impago): si hay errores no se lanza el alta y se muestran en rojo | Excel 20 |
+| 8 | `SCA2_AltaSolicitudPage` GUARDAR | Detección PRRA con `SCA2_simularAnulacionAltaNse` (código 4022) → motivo 3 / detalle 8 / causa 19 e `isPolizaPRRA` en el proceso, como SCA; motivo/detalle/causa reales se conservan en `motivoReal/detalleReal/causaReal` | Excel 22 |
+
+Verificación: PUT 200 + relectura idéntica en todos; `SCA2_erroresGuardarSolicitud` probado por LCP (fecha
+01/01/2024 → «no puede ser más antigua de los 18 meses»); `SCA2_posponerGestionSGC` con `tipoAccion AUT` probado en
+modo `soloPayload`. Los puntos 6, 7 y 8 **no están probados en pantalla** todavía (ver pendientes).
+
+## 3. Decisiones del Excel pendientes de implementar
+
+| Duda | Decisión | Estado / necesidad |
+|---|---|---|
+| 13 Buscador: solicitudes históricas y creadas en SCA | «Todas» | Pendiente. SCA2 busca en su record; hay que añadir la consulta CORE (como SCA) y un Detalle de sólo lectura para solicitudes sin record SCA2. Cambio grande, propuesto para la siguiente ronda |
+| 12c Oficina al RETOMAR | «Sería lo deseable» | Pendiente: no existe campo persistente (ni en Tarea, Solicitud ni Datos Básicos). Requiere un campo nuevo (p. ej. `SCA2 Tarea.codOficina`) y su columna en BBDD → necesita aprobación |
+| 21 Simulación previa / Expertos en retención | «Sí» | Pendiente: popup de simulación de SCA (`showPopupSimular`) y paso a Expertos; depende de que `SCA2_simularAnulacion` devuelva datos (hoy NEW responde error de simulación en TEST) |
+| 23 Vida | Crea solicitud y pasa por CA | Pendiente de diseño: el formulario SCA2 no trata Vida |
+| 16/17 Grupo de nivel 2 y perfil/subperfil de Acción Administrativa nivel 2 | Sin cerrar | La tarea va a `CE_MF_BK` (motor de reglas); SISANS está en `CE_MF_SI24`. Hace falta un usuario del grupo destino o confirmar el grupo |
+| Resto (DUE, reintentos, caducidad ANL, limpieza de las 75 solicitudes CORE) | Sin respuesta | Siguen en [20-pendientes-y-dudas-funcionales.md](20-pendientes-y-dudas-funcionales.md) |
+
+## 4. Divergencias propias de SCA (no modificadas)
+
+- Modal «403 Acceso denegado» tras el alta con SISANS (15787864).
+- Flecha «volver» del Detalle: `sca_datoscabecera/a!submitLink línea 23` («The save target must be a local variable… 0000253500332»).
+- Altas de SCA que se quedan en estado Alta por latencia del entorno TEST (15787862, 15787866).
+
+## Ronda 7b — validaciones de fecha al GUARDAR, PRRA y alta válida (JJGONZ2, 0001047017036)
+
+Informe UI completo: `pruebas/13-ronda7-informe-testing-agent.md` (sección «Ronda 7b»).
+
+| Paso | SCA | SCA2 | Resultado |
+|---|---|---|---|
+| Fecha 01/01/2024 (A FECHA) | Popup de simulación NEW; tras VOLVER, error «…más antigua de los 18 meses…» | Error rojo con el mismo texto, sin alta | Igual (texto); SCA muestra antes el popup de simulación |
+| Fecha 03/03/2027 (vencimiento 02/03/2027) | No probado | Error «…superior a la fecha de vencimiento…», sin alta | Validación SCA2 correcta |
+| Alta válida (fecha propuesta 09/10/2026), 1.er intento | — | **403 Acceso denegado**; sin solicitud ni error en bandeja | Fallo SCA2 |
+| Alta válida, 2.º intento (PRRA desactivado) | — | **ALTA_ERROR CORE 4005** `generarStudAnul` «Los datos pasados como parametro no son los esperados» (PDTE-14230000) | Fallo SCA2 |
+| Alta válida, 3.er intento (fecImpagoPCA null) | — | Solicitud **15787868** creada; navega a Acciones Administrativas; cabecera «Origen IMPAGO» | Alta OK |
+
+### Correcciones aplicadas en SCA2 TEST
+
+1. **`SCA2_AltaSolicitudPage` — validaciones al GUARDAR.** GUARDAR evalúa `rule!SCA2_erroresGuardarSolicitud` con los mismos datos que SCA (fechas anulación/efecto/vencimiento/último siniestro, catalogación, perfil, códigos) y, si hay errores, los muestra en la zona de mensaje y **no lanza** `SCA2_PM_CMD_ALTA`. Probado en UI (18 meses y vencimiento).
+2. **`SCA2_AltaSolicitudPage` — PRRA desactivado (pendiente).** La primera versión detectaba PRRA llamando a `rule!SCA2_simularAnulacionAltaNse` desde la interfaz (código 4022 → motivo 3 / detalle 8 / causa 19 e `isPolizaPRRA`, como SCA). Con JJGONZ2 el GUARDAR devolvió **403 Acceso denegado** sin llegar al proceso (sin solicitud ni error). Tras quitar esa llamada el 403 no reapareció. Hipótesis (no confirmada): privilegios del usuario final sobre la cadena `SCA2_simularAnulacionPoliza → SCA2_simularAnulacionPolizaIntegracion` (connected system `…11566210`) / `SCA2_obtenerUserPassSimularPoliza → rule!SCA_rolesUsuarioSimular`. El proceso sigue recibiendo `isPolizaPRRA` y los códigos reales, así que la detección puede hacerse en el PM (credenciales de diseño) o tras revisar la seguridad de esos objetos. El 403 de SCA con SISANS (15787864) es el mismo síntoma en la misma fase.
+3. **`SCA2_construirContextoAlta` — `fecImpagoPCA: null`.** SCA2 enviaba a CORE la fecha del recibo cruda (`"02-03-2026"`) y CORE respondía 4005. SCA envía siempre `null` (`SCA_AltaSolicitudAnulacion` l.1890, «mapeo en AltaProcesoSolicitudCmd.java»). Solo afectaba a pólizas con recibo en `ESTADO_RECIBOS`; por eso las altas anteriores no fallaban.
+
+### Observaciones / dudas nuevas
+
+- **Destino Acciones Administrativas** con DECISION CLIENTE / VENTA VEHICULO / NO VOY A COMPRARME OTRO COCHE: lo decide CORE (`Decidir Acción`), igual que en SCA; no se ha hecho el alta espejo en SCA para confirmarlo (no repetir altas en esta ronda).
+- **Cabecera «Origen IMPAGO»** en 15787868 con fecha de recibo «-»: proviene de CORE/estado de recibos de la póliza; confirmar con el analista si es el origen esperado para esa póliza.
+- **SCA muestra el popup de simulación antes del error de fecha** (su `showPopupSimular` evalúa `erroresGuardar` sin refrescar). SCA2 muestra el error directamente. Se considera comportamiento más correcto en SCA2; confirmar.
+- 15787868 queda en Acciones Administrativas **Incompleta**, disponible para la prueba de RETOMAR/AA con SISANS.
+
+## Ronda 7c — RETOMAR, CA y Acción Administrativa con SISANS (SI24 Experto)
+
+- **CA propia en SCA2** (0001047017037 → 15787869): POSPONER → RETOMAR → FINALIZAR POSITIVO conservando observación, modalidad A VENCIMIENTO y fecha 02/03/2027; buscador «Finalizada positivamente», CA «Finalizada Positiva». Igual que SCA.
+- **Retomar tareas ajenas**: SISANS no puede retomar la AA 15787868 (asignada a JJGONZ2) ni la CA2 15787867 (tarea del grupo CE_MF_BK, no SI24). Es la regla de permisos acordada (asignado, o sin asignar y mismo grupo/nivel 1); SCA se comporta igual. **Duda**: ¿debe SI24 Experto poder retomar CA2 de otro grupo tras un salto de nivel? Si sí, hay que confirmar el grupo destino del salto RCI (hoy CE_MF_BK).
+- **SCA equivalente** (0001047017038 → 15787870): quedó «Aún procesando» > 90 s (latencia TEST); comparación paso a paso no completada.
+- **Oficina al retomar**: no se pudo comprobar porque el NUUMA de SISANS tiene una sola oficina (el selector sólo aparece con más de una). Ver pendiente abajo.
+
+## Ronda 7d — buscador SCA2 con solicitudes históricas y creadas en SCA (decisión Excel)
+
+- **Cambio** en `SCA2_Buscador` (backup `r11/buscador_live.json`, readback idéntico, UUID conservado): además de la tabla de solicitudes SCA2, se consulta CORE (`SCA2_consultarSolicitudes`, `tpBusqueda` 0 por póliza; por cliente se reutiliza la consulta ya existente) y se muestra una segunda tabla «Otras solicitudes de la póliza / cliente (SCA e históricas en CORE, sin gestión en SCA2)» con las solicitudes que no existen como record SCA2, con las mismas columnas que `SCA_BuscadorTabla` y el estado traducido con la misma tabla que `SCA_D_EstadosSolicitud` (1,2,7–10,13 Pendiente; 3 positiva; 4/15 negativa con CA; 5 no requerida; 6/11/12 caducada; 14 cancelada; 16/17 pendiente de autorizar; 18/19 finalizada con/sin anular).
+- **Probado en UI (JJGONZ2)**: 0000253500329 (solicitud SCA 15787864) → principal vacía y 15787864 Pendiente en la tabla CORE, igual que SCA; 0001047017036 → sólo 15787868 en la principal, sin duplicado; búsqueda por documento del cliente → 15787864 en la tabla CORE. Tras la prueba se alinearon fecha completa (con hora), causa en mayúsculas y texto blanco del tag como SCA.
+- **Límite**: las filas sólo-CORE no abren Detalle (no hay record SCA2 ni tareas). **Duda**: ¿debe abrirse un Detalle de sólo lectura con los datos de CORE (cabecera + gestiones) para esas solicitudes, como hace SCA?
+- No probado: paginación de la tabla CORE, otros estados CORE y filtros Estado/Línea sobre ella (los filtros sólo aplican a la tabla SCA2).
+
+## Pendiente: conservar la Oficina al RETOMAR una CA (decisión Excel)
+
+`SCA2_ContraAnulacionOpciones` ya pasa `detalleOficina` al CMD Posponer, pero ningún record la guarda: `SCA2 Datos Solicitud` no tiene campo de oficina (sólo `idcompania`, `catalogacion`, `fecanulacion`…) y `SCA2 Tarea` tampoco. Para implementarlo hace falta una **columna nueva** (`oficinadirecta`, Text) en la tabla de `SCA2 Datos Solicitud` (cambio de BBDD/Data Design, no realizable desde la API de diseño), escribirla en el nodo «Write Posponer» del CMD y restaurarla en la interfaz (`local!detalleOficina` por `OFICINA_DIRECTA`). SCA hoy tampoco la conserva. Pendiente de que se cree la columna.
+
+## Ronda 7e — 403 de SISANS al GUARDAR el alta (póliza NSE-Autos 2002500167489)
+
+**Síntoma reportado:** modal «403 Acceso denegado – No tiene permiso para ver esta página» al pulsar GUARDAR en el alta de SCA2 con SISANS. No se creaba record ni error en la bandeja.
+
+**Diagnóstico (no es de permisos):**
+- SISANS y JJGONZ2 tienen los mismos grupos de aplicación (`SCA2 Users`, `SCA Usuarios`, `SCAC Usuarios`); la seguridad de la cadena del alta (PM `SCA2 CMD Alta`, reglas, integraciones y sistemas conectados) incluye a esos grupos. Según la documentación de Appian, la seguridad de reglas/integraciones sólo afecta a diseñadores.
+- La póliza es **NSE-Autos**, por lo que al GUARDAR `SCA2_erroresGuardarSolicitud` → `SCA2_simularAnulacion` → `SCA2_simularAnulacionAltaNse` → **`SCA2_posibilidadReservaPrima`**, y esta regla **se llamaba a sí misma** (recursión infinita: al copiarla de SCA se renombró también la llamada interna a `SCAC_posibilidadReservaPrima`). Appian aborta la evaluación y el site lo muestra como el modal 403. Las pólizas wAutemis no pasan por esta rama, por eso las altas anteriores (JJGONZ2 y SISANS) funcionaban; el 403 de la ronda 7b con JJGONZ2 (detección PRRA, que usa la misma regla) tenía la misma causa.
+
+**Corrección (TEST, PUT + relectura, backups en `sca2work/r12`):**
+- `SCA2_posibilidadReservaPrima` v3: expresión idéntica a `SCA_posibilidadReservaPrima` (llama a la integración `SCAC_posibilidadReservaPrima` con el body `infoGeneral`).
+- Barrido de todas las reglas de SCA2 con el mismo defecto de copia (auto-llamada): corregidas también **`SCA2_borrarDocumentoSCA`** (→ `SCAC_borrarDocumentoSCA`), **`SCA2_obtenerOficinas`** (→ `SCAC_obtenerOficinas`, host `CMP_VAL_HOST_SOA7`) y **`SCA2_modificarMarcaEconomica`** (→ `SCAC_modificarMarcaEconomica`), todas v3 con la expresión de su equivalente SCA. Afectan a borrar documento en Acción Administrativa, al selector de oficinas y a la marca económica de argumentos.
+- Pruebas de diseño: `SCA2_simularAnulacionAltaNse` sobre 2002500167489 ya responde del servicio NSE (fault de negocio 4030 con credenciales vacías del diseñador); `SCA2_obtenerOficinas("JJGONZ2")` devuelve su estructura comercial (SISANS no tiene estructura en CARGAGESTION: lista vacía).
+
+**Prueba UI (testing agent, SISANS, grabación `sca-sisans-nse-reserva-prima`):** alta de 2002500167489 con los mismos datos de la captura → sin 403, abre Contra Anulación; argumento INCREMENTO PRIMA SINIESTROS → POSITIVO → ACEPTAR → **solicitud CORE 15787872 Finalizada positivamente**. Observación: el primer Detalle tras finalizar mostraba la CA «Incompleta» hasta recargar (refresco del record, sin inconsistencia persistente).
+
+**Pendiente derivado:** la simulación previa ya se ejecuta sin error, pero el alta sigue sin mostrar sus avisos/errores (`erroresSimular`, PRRA) ni el paso a Expertos en retención; se abordará con la decisión funcional «simulación obligatoria».
+
+## Ronda 7f — SI24 retoma cualquier CA nivel 2 (decisión funcional) y bloqueo tras POSPONER
+
+**Decisión del analista:** «el SI24 debe poder retomar cualquier gestión CA2 independientemente de si es para su grupo o no».
+
+**Cambio 1 — `SCA2_puedeGestionarTarea` v4** (backup/readback en `sca2work/r12`, UUID conservado): además de administrador, asignado explícito y «sin asignar + nivel 1 o perfil = grupo de la tarea», se permite **usuario con subperfil SI24** sobre cualquier tarea **sin asignar** de tipo `CONTRA ANULAR NIVEL 2`, sin comparar el grupo. El resto de perfiles sigue igual (JJGONZ2/CE_RM no ve RETOMAR en una CA2 de CE_MF_BK).
+
+**Prueba UI (SISANS, grabación `sca-sisans-ca2-retomar-v4`):**
+- 15787867 (CA2 grupo CE_MF_BK, sin asignar): **RETOMAR visible** y abre la Contra Anulación nivel 2 sin 403. Control negativo 15787844 (CA2 asignada a otro usuario): sin RETOMAR ni REASIGNAR. Correcto.
+- **Fallo detectado al POSPONER**: tras «Los datos se han guardado correctamente» la pantalla quedaba en «Procesando la decisión de la solicitud…» con ACEPTAR deshabilitado hasta agotar la espera (90 s) y después mostraba «No se ha podido abrir la pantalla de anulación». Causa: `SCA2_DetalleTareas` decidía «CA negativa → esperar la decisión/MECANIZAR» mirando en CORE si **alguna** gestión CA estaba FINALIZADA NEGATIVA; en una solicitud con salto de nivel la CA de nivel 1 lo está siempre, así que cualquier POSPONER/CANCELAR de nivel 2 entraba en la espera. Además el campo `contadorPosponer` del record no se incrementa (el CMD Posponer suma 1 sobre un valor que no carga → siempre 1), por lo que no sirve para detectar la posposición.
+
+**Cambio 2 — `SCA2_DetalleTareas` v23** (backups `r12/det22_before.sail`, `r12/det23_before.sail`; readback idéntico):
+- Sondea el **estado real de la tarea gestionada** (`SCA2 Tarea.estado`) y la **última transición** de la solicitud (`SCA2 Transicion`).
+- `COMPLETADA` → decisión en curso: se mantiene la lógica anterior (CA negativa → esperar MECANIZAR / nivel / fin).
+- Última transición «SCA2 CMD Posponer» posterior al clic → **pospuesta**: ACEPTAR habilitado de inmediato y vuelve al buscador (como SCA). `CANCELADA` → sin espera.
+- Mientras la tarea sigue PENDIENTE y no hay transición de posponer (CompletarAccion ejecutándose) ACEPTAR queda deshabilitado con «Procesando…», con el mismo tope de 90 s.
+
+**Observación (no corregida):** en 15787867 la tarjeta CA2 Incompleta muestra Grupo OFICINA / RED MAPFRE / PCARAGE y fecha fin 13/10/2026 (datos de la gestión que devuelve CORE) y la cabecera «FINALIZADO NEGATIVO CON CONTRAANULACIÓN» mientras el buscador dice Pendiente; es el mismo origen de datos que SCA (CORE), pendiente de confirmar con el analista si en SCA se ve igual tras un salto de nivel.
+
+**Pendiente derivado:** `contadorPosponer` siempre 1 (cargar el valor actual en el CMD Posponer); conservar la Oficina al retomar sigue a la espera de contexto del analista.
+
+## Ronda 7g — Detalle de sólo consulta para solicitudes de SCA / históricas (decisión Excel: «como SCA»)
+
+**Decisión del analista:** la lista del buscador debe funcionar como SCA; en SCA una fila histórica abre su Detalle (`SCA_BuscadorTabla` → `SCA_PM_REDIRIGIRDETALLE` con el DTO de CORE) y se muestra en sólo consulta con datos de CORE.
+
+**Cambio 1 — `SCA2_Buscador` v23** (backup `sca2work/r13/busc23_before.sail`, readback idéntico, UUID conservado): en la tabla «Otras solicitudes de la póliza / cliente (SCA e históricas en CORE, sin gestión en SCA2)» el número de solicitud pasa a ser un enlace que guarda `ri!idSolicitud` y `ri!numPoliza` (la cabecera CORE no devuelve la póliza) y abre el Detalle. La tabla de solicitudes SCA2 no cambia.
+
+**Cambio 2 — `SCA2_DetalleSolicitud` v48/v49** (backups `r13/det48_before.sail`, `r13/det49_before.sail`; readback idéntico; input nuevo opcional `numPoliza` Text):
+- `soloCore` = la solicitud no existe como record SCA2 (`SCA2_cargarSolicitud` sin `estado`). En ese caso:
+  - aviso azul «Solicitud gestionada en SCA o histórica: datos de CORE, sólo consulta»;
+  - póliza: `ri!numPoliza` del buscador y, si falta (acceso por URL), se extrae de `SCAC_consultaBBDDSCA.solicitud` (llega como texto `[numSolicitudPca:…, numPoliza:…]`); el tipo de póliza (wAutemis/NSE/Vida) se resuelve con `SCA2_obtenerTipoPoliza` en vez de `origenPoliza` del record;
+  - tarjetas de «Gestiones realizadas» construidas desde `SCA2_consultaGestion` (2 Contra Anulacion, 3 Acciones Administrativas, 4 Impresion, 5 Mecanizacion, 7 Autorizacion, en el orden de CORE) con estado, fechas, nivel, perfil/grupo/NUUMA de CORE; sin `idTarea`, por lo que **no hay RETOMAR ni REASIGNAR**; la lógica de impresiones/autorización derivadas de tareas SCA2 se desactiva para no duplicar;
+  - pestaña «Solicitud Anulación» alimentada con un mapa equivalente construido desde `SCA2_consultarCabeceraSolicitud` (fecha solicitud, origen, causa, canal, fecha estado, fecha anulación, catalogación, impresión, impago, compañía; estado traducido con la misma tabla `codEstSolic` → estado SCA2 que el buscador);
+  - la solicitud se trata como cerrada (`tipoAccion` por URL no abre ninguna tarea), sin sondeos de refresco (record/tareas) y sin «Trazabilidad técnica».
+- Las solicitudes SCA2 siguen el camino anterior sin cambios (`testInterface` 15787867: sin aviso, tarjetas y trazabilidad como antes).
+
+**Cambio 3 — `SCA2_SolicitudAnulacion` v9** (backup `r13/solanul9_before.sail`): «Reserva prima» comparaba `rsvPrima = 1` sin tolerar null (error «Cannot compare incompatible operands of type Null and type Number» al abrir la pestaña en una solicitud sólo-CORE); ahora `tointeger(a!defaultValue(…, 0)) = 1`.
+
+**Pruebas `testInterface` (sin error de evaluación):** 15787864 (SCA, sólo alta directa) con y sin `numPoliza`; 15787531 (alta + CA negativa + impresión); 15787832 (CA nivel 1 y nivel 2 incompletas + impresión, póliza recuperada de BBDD SCA); 15787040 (CA incompleta + Acciones Administrativas); `SCA2_Buscador` con y sin solicitud seleccionada.
+
+**Prueba UI (JJGONZ2):** ver `docs/sca/pruebas/13-ronda7-informe-testing-agent.md` (ronda 7g).
+
+**Límites / pendiente:** la pestaña «Otras sol. Anulación» (`SCA2_TablaOtrasSolAnulacion`) sigue listando sólo solicitudes SCA2 de la póliza, no las de CORE como SCA; «Datos contacto» y «Notificaciones» sólo tienen datos para solicitudes SCA2; el campo Reserva prima no está en la cabecera CORE (se muestra «NO SOLICITADA»).
+
+#### 7g.1 — Estado de las filas CORE en el buscador: texto descriptivo (hallazgo de la prueba UI)
+
+- **Síntoma:** la tabla «Otras solicitudes de la póliza / cliente» de SCA2 mostraba el código interno `FINALIZADA_NEG_CONTRA` como etiqueta de estado (p. ej. 15787531), mientras SCA muestra «Finalizado negativo con contraanulación». En la prueba de 7d solo se había verificado el estado Pendiente (codEstSolic 2).
+- **Causa:** el mapeo codEstSolic → estado SCA2 del Buscador (7d) y del Detalle sólo-CORE (7g) usa los alias `FINALIZADA_NEG_CONTRA` (4/15) y `FINALIZADA_NO_REQ` (5), que `SCA2_textoEstadoSolicitud` no conocía (solo `RECHAZADA` / `FINALIZADA_SIN_ANULAR`), por lo que caía en el `default` y devolvía el código tal cual.
+- **Corrección:** `SCA2_textoEstadoSolicitud` v13 añade los dos alias con los mismos textos de `SCA_D_EstadosSolicitud`; `SCA2_colorEstadoSolicitud` (v6, sin cambios) ya asigna `#BE0F0F` a esos textos, igual que `SCA_BuscadorTabla`.
+- **Pruebas:** `testRule` texto/color para `FINALIZADA_NEG_CONTRA`, `FINALIZADA_NO_REQ`, `PENDIENTE`, `RECHAZADA`; `testInterface` de `SCA2_Buscador` v23 y `SCA2_DetalleSolicitud` v49 (15787531) sin errores. Backups en `sca2work/r13/txtest_before.sail` / `txtest_after.sail`.
+- **Pendiente de confirmar con el analista:** para 15787531 SCA muestra Causa anulación / Fecha resolución «-» en el buscador y SCA2 muestra «COMPROMISOS / 25/09/2026 11:45:42» (datos que devuelve CORE). Hay que decidir si SCA2 debe ocultarlos como SCA o mostrar el dato de CORE.

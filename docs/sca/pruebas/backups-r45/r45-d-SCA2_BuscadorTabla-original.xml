@@ -1,0 +1,640 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<contentHaul xmlns:a="http://www.appian.com/ae/types/2009">
+    <versionUuid>_a-0000f09f-42ed-8000-9d42-011c48011c48_5644061</versionUuid>
+    <bodyVersionUuid>fN9kk0qH</bodyVersionUuid>
+    <interface>
+        <name>SCA2_BuscadorTabla</name>
+        <uuid>_a-0000f069-4f37-8000-9cc8-011c48011c48_20056379</uuid>
+        <description>[SCA2] SCA2_BuscadorTabla</description>
+        <parentUuid>_a-0000f069-4f37-8000-9cc8-011c48011c48_20050135</parentUuid>
+        <visibility>
+            <advertise>false</advertise>
+            <hierarchy>true</hierarchy>
+            <indexable>true</indexable>
+            <quota>false</quota>
+            <searchable>true</searchable>
+            <system>false</system>
+            <unlogged>false</unlogged>
+        </visibility>
+        <definition>a!localVariables(
+  /* [S4 ronda 5] Misma fuente que SCA_BuscadorTabla para Observaciones: consultarUltimaGestion(nuuma) una vez por carga de la tabla */
+  local!usuario: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051686"(),
+  local!ultimas: a!defaultValue(
+    #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051308"(
+      nuuma: reduce(
+        index(_, _, null),
+        local!usuario,
+        { "infoUsuarioDTO", "nuuma" }
+      )
+    ),
+    {}
+  ),
+  local!ultimasIds: #"SYSTEM_SYSRULES_forEach"(
+    items: local!ultimas,
+    expression: tostring(index(fv!item, "numSolicitud", null))
+  ),
+  local!gestionesPrecargadasIds: #"SYSTEM_SYSRULES_forEach"(
+    items: ri!data,
+    expression: tostring(
+      index(
+        fv!item,
+        #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9",
+        null
+      )
+    )
+  ),
+  local!gestionesPrecargadas: if(
+    #"_a-0000f09f-42ed-8000-9d42-011c48011c48_5644032",
+    #"SYSTEM_SYSRULES_forEach"(
+      items: ri!data,
+      expression: a!localVariables(
+        local!idSolicitud: tostring(
+          index(
+            fv!item,
+            #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9",
+            null
+          )
+        ),
+        local!posCorePrecarga: if(
+          a!isNullOrEmpty(local!ultimasIds),
+          {},
+          wherecontains(local!idSolicitud, touniformstring(local!ultimasIds))
+        ),
+        local!coreRowPrecarga: if(
+          length(local!posCorePrecarga) &gt; 0,
+          index(local!ultimas, index(local!posCorePrecarga, 1, 0), null),
+          null
+        ),
+        local!estCorePrecarga: tostring(
+          a!defaultValue(index(local!coreRowPrecarga, "estSolicitud", null), "")
+        ),
+        a!map(
+          g: if(
+            a!isNotNullOrEmpty(local!estCorePrecarga),
+            #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051122"(codSolicitud: local!idSolicitud),
+            null
+          )
+        )
+      )
+    ),
+    {}
+  ),
+  #"SYSTEM_SYSRULES_gridField_v4"(
+    labelPosition: "ABOVE",
+    label: "",
+    emptyGridMessage: "No hay resultados para dicha búsqueda",
+    /* Con totalCount informado (Buscador) se construye un DataSubset para que el grid pagine en servidor como SCA */
+    data: if(
+      or(
+        a!isNullOrEmpty(ri!totalCount),
+        a!isNullOrEmpty(ri!data)
+      ),
+      ri!data,
+      'type!{http://www.appian.com/ae/types/2009}DataSubset'(
+        startIndex: a!defaultValue(index(ri!pagingInfo, "startIndex", 1), 1),
+        batchSize: a!defaultValue(index(ri!pagingInfo, "batchSize", 10), 10),
+        sort: index(ri!pagingInfo, "sort", null),
+        totalCount: ri!totalCount,
+        data: ri!data,
+        identifiers: enumerate(count(ri!data)) + a!defaultValue(index(ri!pagingInfo, "startIndex", 1), 1)
+      )
+    ),
+    columns: {
+      #"SYSTEM_SYSRULES_gridColumn"(
+        label: "Número solicitud",
+        value: #"SYSTEM_SYSRULES_linkField"(
+          links: {
+            #"SYSTEM_SYSRULES_dynamicLink"(
+              label: tostring(
+                index(
+                  fv!row,
+                  #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9",
+                  null
+                )
+              ),
+              saveInto: {
+                a!save(
+                  ri!idSel,
+                  index(
+                    fv!row,
+                    #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9",
+                    null
+                  )
+                )
+              }
+            )
+          }
+        ),
+        sortField: #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9"
+      ),
+      #"SYSTEM_SYSRULES_gridColumn"(
+        label: "Estado",
+        value: a!localVariables(
+          /* HU3980 / paridad SCA_BuscadorTabla: etiqueta desde el estado CORE de la fila (consultarUltimaGestion) + consultaGestion; el estado del record SCA2 es respaldo */
+          local!posCore: if(
+            a!isNullOrEmpty(local!ultimasIds),
+            {},
+            wherecontains(
+              tostring(
+                index(
+                  fv!row,
+                  #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9",
+                  null
+                )
+              ),
+              local!ultimasIds
+            )
+          ),
+          local!coreRow: if(
+            length(local!posCore) &gt; 0,
+            index(
+              local!ultimas,
+              index(local!posCore, 1, 0),
+              null
+            ),
+            null
+          ),
+          local!estCore: tostring(
+            a!defaultValue(
+              index(local!coreRow, "estSolicitud", null),
+              ""
+            )
+          ),
+          local!posGestionPrecargada: if(
+            a!isNullOrEmpty(local!gestionesPrecargadasIds),
+            {},
+            wherecontains(
+              tostring(
+                index(
+                  fv!row,
+                  #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9",
+                  null
+                )
+              ),
+              touniformstring(local!gestionesPrecargadasIds)
+            )
+          ),
+          local!datosGestionesPrecargados: if(
+            length(local!posGestionPrecargada) &gt; 0,
+            index(
+              index(
+                local!gestionesPrecargadas,
+                index(local!posGestionPrecargada, 1, 0),
+                null
+              ),
+              "g",
+              null
+            ),
+            null
+          ),
+          local!estadoTxt: if(
+            a!isNotNullOrEmpty(local!estCore),
+            #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20052795"(
+              estadoSolicitud: local!estCore,
+              datosGestiones: if(
+                #"_a-0000f09f-42ed-8000-9d42-011c48011c48_5644032",
+                local!datosGestionesPrecargados,
+                #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051122"(
+                codSolicitud: tostring(
+                  index(
+                    fv!row,
+                    #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9",
+                    null
+                  )
+                )
+              )
+              )
+            ),
+            #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20063670"(
+              estado: index(
+                fv!row,
+                #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/65f4378b-cf90-4761-b1d0-16ace177a82c",
+                null
+              )
+            )
+          ),
+          #"SYSTEM_SYSRULES_tagField"(
+            tags: #"SYSTEM_SYSRULES_tagItem"(
+              text: local!estadoTxt,
+              backgroundColor: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20063676"(estado: local!estadoTxt),
+              textColor: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624184"
+            ),
+            align: "CENTER"
+          )
+        ),
+        sortField: #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/65f4378b-cf90-4761-b1d0-16ace177a82c"
+      ),
+      #"SYSTEM_SYSRULES_gridColumn"(
+        label: "Fecha solicitud",
+        value: a!localVariables(
+          /* Paridad SCA_BuscadorTabla: la fila de CORE (consultarUltimaGestion) manda; el record SCA2 es respaldo */
+          local!posCore: if(
+            a!isNullOrEmpty(local!ultimasIds),
+            {},
+            wherecontains(
+              tostring(
+                index(
+                  fv!row,
+                  #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9",
+                  null
+                )
+              ),
+              touniformstring(local!ultimasIds)
+            )
+          ),
+          local!coreRow: if(
+            length(local!posCore) &gt; 0,
+            index(
+              local!ultimas,
+              index(local!posCore, 1, 0),
+              null
+            ),
+            null
+          ),
+          local!fecSolCore: index(local!coreRow, "fecSolicitud", null),
+          /* Paridad SCA: fecSolicitud de Core7 persistida en el Alta (SCA2 Datos Solicitud.fecsolicitudanul); createdAt como respaldo */
+          local!fecCore: index(
+            index(
+              index(
+                fv!row,
+                #"urn:appian:record-relationship:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/63161335-1bdd-4c7a-82eb-3560786a41d5",
+                {}
+              ),
+              1,
+              null
+            ),
+            #"urn:appian:record-field:v1:9a9209c7-aab4-4078-9bef-280de47fdd6e/78fc061f-12bd-441e-aa55-dcff066af9fe",
+            null
+          ),
+          if(
+            a!isNotNullOrEmpty(local!fecSolCore),
+            tostring(local!fecSolCore),
+            if(
+              a!isNotNullOrEmpty(local!fecCore),
+              tostring(local!fecCore),
+              if(
+                a!isNullOrEmpty(
+                  index(
+                    fv!row,
+                    #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/331a1fda-174e-4caf-976e-0e259856800f",
+                    null
+                  )
+                ),
+                "-",
+                text(
+                  index(
+                    fv!row,
+                    #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/331a1fda-174e-4caf-976e-0e259856800f",
+                    null
+                  ),
+                  "dd/MM/yyyy HH:mm:ss"
+                )
+              )
+            )
+          )
+        ),
+        sortField: #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/331a1fda-174e-4caf-976e-0e259856800f"
+      ),
+      #"SYSTEM_SYSRULES_gridColumn"(
+        label: "Número póliza",
+        value: index(
+          fv!row,
+          #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/ea9a37fd-f033-4f83-ad3d-55d6d4a8ae7b",
+          null
+        ),
+        sortField: #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/ea9a37fd-f033-4f83-ad3d-55d6d4a8ae7b"
+      ),
+      #"SYSTEM_SYSRULES_gridColumn"(
+        label: "Línea negocio",
+        value: if(
+          a!isNullOrEmpty(
+            index(
+              fv!row,
+              #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/2242a3b0-3166-45d7-91fc-3082f21a1a34",
+              null
+            )
+          ),
+          "-",
+          index(
+            #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050695",
+            tointeger(
+              index(
+                fv!row,
+                #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/2242a3b0-3166-45d7-91fc-3082f21a1a34",
+                null
+              )
+            ),
+            "-"
+          )
+        ),
+        sortField: #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/2242a3b0-3166-45d7-91fc-3082f21a1a34"
+      ),
+      #"SYSTEM_SYSRULES_gridColumn"(
+        label: "Causa anulación",
+        value: a!localVariables(
+          /* Paridad SCA_BuscadorTabla: la fila de CORE (consultarUltimaGestion) manda; el record SCA2 es respaldo */
+          local!posCore: if(
+            a!isNullOrEmpty(local!ultimasIds),
+            {},
+            wherecontains(
+              tostring(
+                index(
+                  fv!row,
+                  #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9",
+                  null
+                )
+              ),
+              touniformstring(local!ultimasIds)
+            )
+          ),
+          local!coreRow: if(
+            length(local!posCore) &gt; 0,
+            index(
+              local!ultimas,
+              index(local!posCore, 1, 0),
+              null
+            ),
+            null
+          ),
+          local!codCausaCore: index(local!coreRow, "codCausaPca", null),
+          local!codCausa: index(
+            index(
+              index(
+                fv!row,
+                #"urn:appian:record-relationship:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/63161335-1bdd-4c7a-82eb-3560786a41d5",
+                {}
+              ),
+              1,
+              null
+            ),
+            #"urn:appian:record-field:v1:9a9209c7-aab4-4078-9bef-280de47fdd6e/d3ea438a-426e-4524-b46c-052fb101097d",
+            null
+          ),
+          if(
+            a!isNotNullOrEmpty(local!codCausaCore),
+            proper(
+              a!defaultValue(
+                index(
+                  #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050611",
+                  tointeger(local!codCausaCore),
+                  null
+                ),
+                "-"
+              )
+            ),
+            proper(
+              if(
+                a!isNullOrEmpty(local!codCausa),
+                a!defaultValue(
+                  index(
+                    index(
+                      index(
+                        fv!row,
+                        #"urn:appian:record-relationship:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/63161335-1bdd-4c7a-82eb-3560786a41d5",
+                        {}
+                      ),
+                      1,
+                      null
+                    ),
+                    #"urn:appian:record-field:v1:9a9209c7-aab4-4078-9bef-280de47fdd6e/b3b05401-6420-4d28-8c0a-d55c0665a687",
+                    null
+                  ),
+                  "-"
+                ),
+                a!defaultValue(
+                  index(
+                    #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050611",
+                    tointeger(local!codCausa),
+                    null
+                  ),
+                  index(
+                    index(
+                      index(
+                        fv!row,
+                        #"urn:appian:record-relationship:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/63161335-1bdd-4c7a-82eb-3560786a41d5",
+                        {}
+                      ),
+                      1,
+                      null
+                    ),
+                    #"urn:appian:record-field:v1:9a9209c7-aab4-4078-9bef-280de47fdd6e/b3b05401-6420-4d28-8c0a-d55c0665a687",
+                    null
+                  ),
+                  "-"
+                )
+              )
+            )
+          )
+        )
+      ),
+      #"SYSTEM_SYSRULES_gridColumn"(
+        label: "Fecha resolución",
+        value: a!localVariables(
+          /* Paridad SCA_BuscadorTabla: la fila de CORE (consultarUltimaGestion) manda; el record SCA2 es respaldo */
+          local!posCore: if(
+            a!isNullOrEmpty(local!ultimasIds),
+            {},
+            wherecontains(
+              tostring(
+                index(
+                  fv!row,
+                  #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9",
+                  null
+                )
+              ),
+              touniformstring(local!ultimasIds)
+            )
+          ),
+          local!coreRow: if(
+            length(local!posCore) &gt; 0,
+            index(
+              local!ultimas,
+              index(local!posCore, 1, 0),
+              null
+            ),
+            null
+          ),
+          if(
+            a!isNotNullOrEmpty(local!coreRow),
+            a!defaultValue(
+              index(local!coreRow, "fechaResolucion", "-"),
+              "-"
+            ),
+            if(
+              or(
+                a!isNullOrEmpty(
+                  index(
+                    fv!row,
+                    #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/022e0915-97a9-4742-b07f-1361765eee72",
+                    null
+                  )
+                ),
+                not(
+                  contains(
+                    {
+                      #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624016",
+                      #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624028",
+                      #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624022",
+                      "RECHAZADA",
+                      "CANCELADA",
+                      #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624046",
+                      #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624052",
+                      "ERROR"
+                    },
+                    tostring(
+                      index(
+                        fv!row,
+                        #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/65f4378b-cf90-4761-b1d0-16ace177a82c",
+                        null
+                      )
+                    )
+                  )
+                )
+              ),
+              "-",
+              text(
+                index(
+                  fv!row,
+                  #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/022e0915-97a9-4742-b07f-1361765eee72",
+                  null
+                ),
+                "dd/MM/yyyy HH:mm:ss"
+              )
+            )
+          )
+        ),
+        sortField: #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/022e0915-97a9-4742-b07f-1361765eee72"
+      ),
+      #"SYSTEM_SYSRULES_gridColumn"(
+        label: "Observaciones",
+        /* [S4 ronda 5] Paridad SCA_BuscadorTabla: SCA muestra fv!row.txtObs de consultarUltimaGestion(nuuma) = ultima observacion registrada en CORE
+           (max codObs, incluida la traza tecnica que CORE escribe al crear la gestion de mecanizacion). Una sola llamada por carga (local!ultimas),
+           join por numSolicitud; respaldo: observacion persistida por los CMD en SCA2 Datos Solicitud.fecimpresion. */
+        value: a!localVariables(
+          local!pos: if(
+            a!isNullOrEmpty(local!ultimasIds),
+            {},
+            wherecontains(
+              tostring(
+                index(
+                  fv!row,
+                  #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9",
+                  null
+                )
+              ),
+              touniformstring(local!ultimasIds)
+            )
+          ),
+          local!txtObs: if(
+            length(local!pos) &gt; 0,
+            index(
+              index(
+                local!ultimas,
+                index(local!pos, 1, 0),
+                null
+              ),
+              "txtObs",
+              null
+            ),
+            null
+          ),
+          if(
+            a!isNotNullOrEmpty(local!txtObs),
+            tostring(local!txtObs),
+            a!defaultValue(
+              index(
+                index(
+                  index(
+                    fv!row,
+                    #"urn:appian:record-relationship:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/63161335-1bdd-4c7a-82eb-3560786a41d5",
+                    {}
+                  ),
+                  1,
+                  null
+                ),
+                #"urn:appian:record-field:v1:9a9209c7-aab4-4078-9bef-280de47fdd6e/ef1b0aa7-41ee-4590-83b2-52f89c8be7f5",
+                null
+              ),
+              "-"
+            )
+          )
+        )
+      )
+    },
+    pagingSaveInto: ri!pagingInfo,
+    initialSorts: if(
+      a!isNullOrEmpty(ri!totalCount),
+      {
+        #"SYSTEM_SYSRULES_sortInfo"(
+          field: #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/331a1fda-174e-4caf-976e-0e259856800f"
+        )
+      },
+      null
+    ),
+    validations: {}
+  )
+)</definition>
+        <namedTypedValue>
+            <name>data</name>
+            <type>
+                <name>Variant</name>
+                <namespace>http://www.appian.com/ae/types/2009</namespace>
+            </type>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>pagingInfo</name>
+            <type>
+                <name>Variant</name>
+                <namespace>http://www.appian.com/ae/types/2009</namespace>
+            </type>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>idSel</name>
+            <type>
+                <name>Variant</name>
+                <namespace>http://www.appian.com/ae/types/2009</namespace>
+            </type>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>totalCount</name>
+            <type>
+                <name>int</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+        </namedTypedValue>
+        <preferredEditor>interface</preferredEditor>
+        <offlineEnabled>false</offlineEnabled>
+        <isCustom>false</isCustom>
+    </interface>
+    <roleMap public="true">
+        <role inherit="true" allowForAll="false" name="readers">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="authors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="administrators">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyReaders">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAuthors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAdministrators">
+            <users/>
+            <groups/>
+        </role>
+    </roleMap>
+    <history>
+        <historyInfo versionUuid="_a-0000f069-4f37-8000-9cc8-011c48011c48_20068561"/>
+        <historyInfo versionUuid="_a-0000f099-f136-8000-9d3c-011c48011c48_5624304"/>
+        <historyInfo versionUuid="_a-0000f09f-42ed-8000-9d42-011c48011c48_5644061"/>
+    </history>
+</contentHaul>

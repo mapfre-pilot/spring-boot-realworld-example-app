@@ -1,0 +1,1769 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<contentHaul xmlns:a="http://www.appian.com/ae/types/2009">
+    <versionUuid>_a-0000f0a4-c27c-8000-9d46-011c48011c48_5665185</versionUuid>
+    <bodyVersionUuid>wob0AQ7w</bodyVersionUuid>
+    <interface>
+        <name>SCA2_DetalleTareas</name>
+        <uuid>_a-0000f069-4f37-8000-9cc8-011c48011c48_20055554</uuid>
+        <description>[SCA2] SCA2_DetalleTareas — R9-B: Completar sólo si puedeGestionarTarea y solicitud no finalizada</description>
+        <parentUuid>_a-0000f069-4f37-8000-9cc8-011c48011c48_20050135</parentUuid>
+        <visibility>
+            <advertise>false</advertise>
+            <hierarchy>true</hierarchy>
+            <indexable>true</indexable>
+            <quota>false</quota>
+            <searchable>true</searchable>
+            <system>false</system>
+            <unlogged>false</unlogged>
+        </visibility>
+        <definition>a!localVariables(
+  local!pagingInfo: #"SYSTEM_SYSRULES_pagingInfo"(
+    startIndex: 1,
+    batchSize: 10,
+    sort: {
+      #"SYSTEM_SYSRULES_sortInfo"(
+        field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+        ascending: false
+      )
+    }
+  ),
+  local!q: #"SYSTEM_SYSRULES_queryRecordType_v4"(
+    recordType: #"urn:appian:record-type:v1:696285d3-cb21-4f27-adce-66354ebf2b89",
+    filters: #"SYSTEM_SYSRULES_queryLogicalExpression"(
+      operator: "AND",
+      filters: {
+        #"SYSTEM_SYSRULES_queryFilter"(
+          field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/32e5a534-ad1a-4f96-b824-41690f0aba43",
+          operator: "=",
+          value: if(
+            a!isNullOrEmpty(ri!idSolicitud),
+            "\u0001",
+            ri!idSolicitud
+          )
+        )
+      }
+    ),
+    fields: {
+      #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+      #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/32e5a534-ad1a-4f96-b824-41690f0aba43",
+      #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/892f047d-1737-4a64-9c7e-81e0ff00b563",
+      #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/1a10cef3-4704-407c-8c2d-5ff372a15121",
+      #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/e7be363c-399e-48a5-9242-3b2a65680f0f",
+      #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/ca504656-ecb9-4d9a-9930-639d875198fb",
+      #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/07a5e61d-e9af-47dd-8e7d-293ce1ff7a00",
+      #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/9630cc5f-a395-4247-9fa1-5eaf51984c08"
+    },
+    pagingInfo: local!pagingInfo,
+    fetchTotalCount: true
+  ),
+  local!hecho: false,
+  /* R42-A: COMPROBAR AHORA fuerza la relectura inmediata de las consultas de espera */
+  local!comprobarAhora: 0,
+  local!anularPulsado: false,
+  local!comprobandoInduccion: false,
+  /* Redirección tras ACEPTAR (paridad SCA: la mecanización se abre en la misma cadena): pantalla/tarea locales, sin depender de los parámetros de URL del site */
+  local!pantallaTras,
+  local!pantallaActual: a!match(
+    value: a!defaultValue(
+      local!pantallaTras,
+      tostring(ri!tipoAccion)
+    ),
+    equals: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624088",
+    then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624088",
+    equals: "AUTORIZACION NIVEL 2",
+    then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624088",
+    equals: "AUTORIZACION NIVEL 3",
+    then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624088",
+    equals: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624094",
+    then: "ACC ADM",
+    equals: "ACCIONES ADMINISTRATIVAS NIVEL 2",
+    then: "ACC ADM",
+    equals: "ACCIONES ADMINISTRATIVAS NIVEL 3",
+    then: "ACC ADM",
+    equals: "ACC ADM",
+    then: "ACC ADM",
+    equals: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624076",
+    then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624070",
+    equals: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624070",
+    then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624070",
+    equals: "CONTRA ANULAR NIVEL 2",
+    then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624070",
+    equals: "CONTRA ANULAR NIVEL 3",
+    then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624070",
+    equals: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624082",
+    then: "MECANIZACION",
+    equals: "MECANIZAR NIVEL 2",
+    then: "MECANIZACION",
+    equals: "MECANIZAR NIVEL 3",
+    then: "MECANIZACION",
+    equals: "MECANIZACION",
+    then: "MECANIZACION",
+    equals: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624172",
+    then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624172",
+    equals: "INDUCCION",
+    then: "INDUCCION",
+    default: ""
+  ),
+  local!idTareaTras,
+  /* [R9-B B5/B7-SI24] nivel, estado y subperfil (motor) de la solicitud para decidir si se puede Completar la tarea */
+  local!solR9B: index(
+    index(
+      #"SYSTEM_SYSRULES_queryRecordType_v4"(
+        recordType: #"urn:appian:record-type:v1:c531595c-c3b5-454c-a355-8145e7e27e9a",
+        filters: #"SYSTEM_SYSRULES_queryLogicalExpression"(
+          operator: "AND",
+          filters: {
+            #"SYSTEM_SYSRULES_queryFilter"(
+              field: #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9",
+              operator: "=",
+              value: a!defaultValue(ri!idSolicitud, "#")
+            )
+          }
+        ),
+        fields: {
+          #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/65f4378b-cf90-4761-b1d0-16ace177a82c",
+          #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/6da95481-fa80-4768-9b86-2fae6259874e"
+        },
+        pagingInfo: #"SYSTEM_SYSRULES_pagingInfo"(startIndex: 1, batchSize: 1),
+        fetchTotalCount: false
+      ),
+      "data",
+      {}
+    ),
+    1,
+    null
+  ),
+  local!nivelSol: tostring(
+    index(
+      local!solR9B,
+      #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/6da95481-fa80-4768-9b86-2fae6259874e",
+      null
+    )
+  ),
+  local!estadoSol: upper(
+    a!defaultValue(
+      tostring(
+        index(
+          local!solR9B,
+          #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/65f4378b-cf90-4761-b1d0-16ace177a82c",
+          null
+        )
+      ),
+      ""
+    )
+  ),
+  local!subPerfilSol: tostring(
+    index(
+      index(
+        index(
+          #"SYSTEM_SYSRULES_queryRecordType_v4"(
+            recordType: #"urn:appian:record-type:v1:284ca30d-11c7-49ea-9de0-15f2193e8f32",
+            filters: #"SYSTEM_SYSRULES_queryLogicalExpression"(
+              operator: "AND",
+              filters: {
+                #"SYSTEM_SYSRULES_queryFilter"(
+                  field: #"urn:appian:record-field:v1:284ca30d-11c7-49ea-9de0-15f2193e8f32/116b0806-8137-44e8-93a6-ae2a50704514",
+                  operator: "=",
+                  value: a!defaultValue(ri!idSolicitud, "#")
+                )
+              }
+            ),
+            fields: {
+              #"urn:appian:record-field:v1:284ca30d-11c7-49ea-9de0-15f2193e8f32/9e7da6f2-78d1-4f46-bfdf-ba8fe8a70e10"
+            },
+            pagingInfo: #"SYSTEM_SYSRULES_pagingInfo"(startIndex: 1, batchSize: 1),
+            fetchTotalCount: false
+          ),
+          "data",
+          {}
+        ),
+        1,
+        null
+      ),
+      #"urn:appian:record-field:v1:284ca30d-11c7-49ea-9de0-15f2193e8f32/9e7da6f2-78d1-4f46-bfdf-ba8fe8a70e10",
+      null
+    )
+  ),
+  local!procesoActivoSol: a!refreshVariable(
+    value: if(
+      a!isNullOrEmpty(ri!idSolicitud),
+      null,
+      tostring(
+        index(
+          index(
+            index(
+              #"SYSTEM_SYSRULES_queryRecordType_v4"(
+                recordType: #"urn:appian:record-type:v1:c531595c-c3b5-454c-a355-8145e7e27e9a",
+                filters: #"SYSTEM_SYSRULES_queryLogicalExpression"(
+                  operator: "AND",
+                  filters: {
+                    #"SYSTEM_SYSRULES_queryFilter"(
+                      field: #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9",
+                      operator: "=",
+                      value: ri!idSolicitud
+                    )
+                  }
+                ),
+                fields: {
+                  #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/074b8e94-466e-4e45-8fed-074610396bed"
+                },
+                pagingInfo: #"SYSTEM_SYSRULES_pagingInfo"(startIndex: 1, batchSize: 1),
+                fetchTotalCount: false
+              ),
+              "data",
+              {}
+            ),
+            1,
+            null
+          ),
+          #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/074b8e94-466e-4e45-8fed-074610396bed",
+          null
+        )
+      )
+    ),
+    refreshOnVarChange: { ri!idSolicitud, local!hecho, local!comprobarAhora },
+    refreshInterval: if(local!hecho, #"_a-0000f09f-42ed-8000-9d42-011c48011c48_5648809" / 60, null)
+  ),
+  local!anulacionEnviada: and(
+    local!pantallaActual = "MECANIZACION",
+    tostring(local!procesoActivoSol) = "ANL"
+  ),
+  /* Estado de la solicitud sondeado tras completar: la decisión posterior puede acabar sin tarea MECANIZAR (NO MECANIZAR → cambio de nivel / FIN PROCESO), paridad SCA_Particion */
+  local!estadoSolPoll: a!refreshVariable(
+    value: if(
+      or(
+        not(local!hecho),
+        a!isNullOrEmpty(ri!idSolicitud)
+      ),
+      null,
+      tostring(
+        index(
+          index(
+            index(
+              #"SYSTEM_SYSRULES_queryRecordType_v4"(
+                recordType: #"urn:appian:record-type:v1:c531595c-c3b5-454c-a355-8145e7e27e9a",
+                filters: #"SYSTEM_SYSRULES_queryLogicalExpression"(
+                  operator: "AND",
+                  filters: {
+                    #"SYSTEM_SYSRULES_queryFilter"(
+                      field: #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9",
+                      operator: "=",
+                      value: ri!idSolicitud
+                    )
+                  }
+                ),
+                fields: {
+                  #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/65f4378b-cf90-4761-b1d0-16ace177a82c"
+                },
+                pagingInfo: #"SYSTEM_SYSRULES_pagingInfo"(startIndex: 1, batchSize: 1),
+                fetchTotalCount: false
+              ),
+              "data",
+              {}
+            ),
+            1,
+            null
+          ),
+          #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/65f4378b-cf90-4761-b1d0-16ace177a82c",
+          null
+        )
+      )
+    ),
+    refreshOnVarChange: { ri!idSolicitud, local!hecho, local!comprobarAhora },
+    refreshInterval: if(local!hecho, #"_a-0000f09f-42ed-8000-9d42-011c48011c48_5648809" / 60, null)
+  ),
+  /* Otra tarea PENDIENTE (distinta de la recién completada): la decisión ha continuado por otra acción/nivel */
+  local!tareaPendiente: a!refreshVariable(
+    value: if(
+      or(
+        not(local!hecho),
+        a!isNullOrEmpty(ri!idSolicitud),
+        local!pantallaActual = "MECANIZACION"
+      ),
+      null,
+      index(
+        index(
+          #"SYSTEM_SYSRULES_queryRecordType_v4"(
+            recordType: #"urn:appian:record-type:v1:696285d3-cb21-4f27-adce-66354ebf2b89",
+            filters: #"SYSTEM_SYSRULES_queryLogicalExpression"(
+              operator: "AND",
+              filters: {
+                #"SYSTEM_SYSRULES_queryFilter"(
+                  field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/32e5a534-ad1a-4f96-b824-41690f0aba43",
+                  operator: "=",
+                  value: ri!idSolicitud
+                ),
+                #"SYSTEM_SYSRULES_queryFilter"(
+                  field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/e7be363c-399e-48a5-9242-3b2a65680f0f",
+                  operator: "=",
+                  value: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624058"
+                ),
+                #"SYSTEM_SYSRULES_queryFilter"(
+                  field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+                  operator: "&lt;&gt;",
+                  value: ri!idTareaAccion,
+                  applyWhen: a!isNotNullOrEmpty(ri!idTareaAccion)
+                ),
+                /* R29-A: tras un salto en la misma pantalla (pantallaTras) la tarea recién gestionada es local!idTareaTras; INDUCCION es interna */
+                #"SYSTEM_SYSRULES_queryFilter"(
+                  field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+                  operator: "&lt;&gt;",
+                  value: local!idTareaTras,
+                  applyWhen: a!isNotNullOrEmpty(local!idTareaTras)
+                ),
+                #"SYSTEM_SYSRULES_queryFilter"(
+                  field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/1a10cef3-4704-407c-8c2d-5ff372a15121",
+                  operator: "&lt;&gt;",
+                  value: "INDUCCION"
+                )
+              }
+            ),
+            fields: {
+              #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+              #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/892f047d-1737-4a64-9c7e-81e0ff00b563",
+              #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/1a10cef3-4704-407c-8c2d-5ff372a15121",
+              #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/e7be363c-399e-48a5-9242-3b2a65680f0f",
+              #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/ca504656-ecb9-4d9a-9930-639d875198fb",
+              #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/07a5e61d-e9af-47dd-8e7d-293ce1ff7a00"
+            },
+            pagingInfo: #"SYSTEM_SYSRULES_pagingInfo"(
+              startIndex: 1,
+              batchSize: 1,
+              sort: #"SYSTEM_SYSRULES_sortInfo"(
+                field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+                ascending: false
+              )
+            )
+          ),
+          "data",
+          {}
+        ),
+        1,
+        null
+      )
+    ),
+    refreshOnVarChange: { local!hecho, local!comprobarAhora },
+    refreshInterval: #"_a-0000f09f-42ed-8000-9d42-011c48011c48_5648809" / 60
+  ),
+  /* Estado de la tarea recién gestionada: COMPLETADA = decisión en curso; PENDIENTE + transición CMD Posponer posterior = pospuesta; CANCELADA = cancelada */
+  local!tareaAccionEstado: a!refreshVariable(
+    value: if(
+      or(
+        not(local!hecho),
+        a!isNullOrEmpty(
+          a!defaultValue(local!idTareaTras, ri!idTareaAccion)
+        )
+      ),
+      null,
+      tostring(
+        index(
+          index(
+            index(
+              #"SYSTEM_SYSRULES_queryRecordType_v4"(
+                recordType: #"urn:appian:record-type:v1:696285d3-cb21-4f27-adce-66354ebf2b89",
+                filters: #"SYSTEM_SYSRULES_queryFilter"(
+                  field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+                  operator: "=",
+                  value: a!defaultValue(local!idTareaTras, ri!idTareaAccion)
+                ),
+                fields: {
+                  #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/e7be363c-399e-48a5-9242-3b2a65680f0f"
+                },
+                pagingInfo: #"SYSTEM_SYSRULES_pagingInfo"(startIndex: 1, batchSize: 1),
+                fetchTotalCount: false
+              ),
+              "data",
+              {}
+            ),
+            1,
+            null
+          ),
+          #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/e7be363c-399e-48a5-9242-3b2a65680f0f",
+          null
+        )
+      )
+    ),
+    refreshOnVarChange: {
+      ri!idTareaAccion,
+      local!idTareaTras,
+      local!hecho,
+      local!comprobarAhora
+    },
+    refreshInterval: if(local!hecho, #"_a-0000f09f-42ed-8000-9d42-011c48011c48_5648809" / 60, null)
+  ),
+  /* Última transición registrada: tras POSPONER (CMD Posponer) no hay decisión posterior que esperar */
+  local!ultimaTransicion: a!refreshVariable(
+    value: if(
+      or(
+        not(local!hecho),
+        a!isNullOrEmpty(ri!idSolicitud)
+      ),
+      null,
+      index(
+        index(
+          #"SYSTEM_SYSRULES_queryRecordType_v4"(
+            recordType: #"urn:appian:record-type:v1:0b46024c-58b4-48be-a2a4-20d54bc40815",
+            filters: #"SYSTEM_SYSRULES_queryFilter"(
+              field: #"urn:appian:record-field:v1:0b46024c-58b4-48be-a2a4-20d54bc40815/b2f33c59-6234-472c-b7ec-5065bbdc20fd",
+              operator: "=",
+              value: ri!idSolicitud
+            ),
+            fields: {
+              #"urn:appian:record-field:v1:0b46024c-58b4-48be-a2a4-20d54bc40815/cb874e4d-61fb-4bd1-8062-e138a364eb82",
+              #"urn:appian:record-field:v1:0b46024c-58b4-48be-a2a4-20d54bc40815/430f97d9-9430-4dab-86e6-4ac327b05db1"
+            },
+            pagingInfo: #"SYSTEM_SYSRULES_pagingInfo"(
+              startIndex: 1,
+              batchSize: 1,
+              sort: #"SYSTEM_SYSRULES_sortInfo"(
+                field: #"urn:appian:record-field:v1:0b46024c-58b4-48be-a2a4-20d54bc40815/430f97d9-9430-4dab-86e6-4ac327b05db1",
+                ascending: false
+              )
+            ),
+            fetchTotalCount: false
+          ),
+          "data",
+          {}
+        ),
+        1,
+        null
+      )
+    ),
+    refreshOnVarChange: { ri!idSolicitud, local!hecho, local!comprobarAhora },
+    refreshInterval: if(local!hecho, #"_a-0000f09f-42ed-8000-9d42-011c48011c48_5648809" / 60, null)
+  ),
+  local!accionCerrada: a!defaultValue(local!tareaAccionEstado, "") = #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624064",
+  local!tsHecho: a!refreshVariable(
+    value: now(),
+    refreshOnVarChange: local!hecho
+  ),
+  local!accionPospuesta: and(
+    local!hecho,
+    a!isNotNullOrEmpty(local!ultimaTransicion),
+    left(
+      upper(
+        tostring(
+          index(
+            local!ultimaTransicion,
+            #"urn:appian:record-field:v1:0b46024c-58b4-48be-a2a4-20d54bc40815/cb874e4d-61fb-4bd1-8062-e138a364eb82",
+            ""
+          )
+        )
+      ),
+      17
+    ) = "SCA2 CMD POSPONER",
+    a!defaultValue(
+      index(
+        local!ultimaTransicion,
+        #"urn:appian:record-field:v1:0b46024c-58b4-48be-a2a4-20d54bc40815/430f97d9-9430-4dab-86e6-4ac327b05db1",
+        null
+      ),
+      local!tsHecho - intervalds(0, 0, 1)
+    ) &gt;= local!tsHecho - intervalds(0, 1, 0)
+  ),
+  local!ahora: a!refreshVariable(value: now(), refreshOnVarChange: local!comprobarAhora, refreshInterval: #"_a-0000f09f-42ed-8000-9d42-011c48011c48_5648809" / 60),
+  local!esperaAgotada: and(
+    local!hecho,
+    local!ahora &gt; a!addDateTime(startDateTime: local!tsHecho, seconds: #"_a-0000f0a4-c27c-8000-9d46-011c48011c48_5664605")
+  ),
+  local!accionEnCurso: and(
+    local!hecho,
+    local!pantallaActual &lt;&gt; "MECANIZACION",
+    not(local!accionCerrada),
+    not(local!accionPospuesta),
+    a!defaultValue(local!tareaAccionEstado, #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624058") = #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624058",
+    not(local!esperaAgotada)
+  ),
+  /* Paridad SCA (SCA_GenerarSolicitudPopup "Se va a redirigir a la anulación."): tras completar, si el motor ha creado una tarea MECANIZAR pendiente, ACEPTAR la abre */
+  local!tareaMecanizar: a!refreshVariable(
+    value: if(
+      or(
+        not(local!hecho),
+        a!isNullOrEmpty(ri!idSolicitud),
+        local!pantallaActual = "MECANIZACION"
+      ),
+      null,
+      index(
+        index(
+          #"SYSTEM_SYSRULES_queryRecordType_v4"(
+            recordType: #"urn:appian:record-type:v1:696285d3-cb21-4f27-adce-66354ebf2b89",
+            filters: #"SYSTEM_SYSRULES_queryLogicalExpression"(
+              operator: "AND",
+              filters: {
+                #"SYSTEM_SYSRULES_queryFilter"(
+                  field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/32e5a534-ad1a-4f96-b824-41690f0aba43",
+                  operator: "=",
+                  value: ri!idSolicitud
+                ),
+                #"SYSTEM_SYSRULES_queryFilter"(
+                  field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/e7be363c-399e-48a5-9242-3b2a65680f0f",
+                  operator: "=",
+                  value: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624058"
+                ),
+                #"SYSTEM_SYSRULES_queryFilter"(
+                  field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/1a10cef3-4704-407c-8c2d-5ff372a15121",
+                  operator: "starts with",
+                  value: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624082"
+                )
+              }
+            ),
+            pagingInfo: #"SYSTEM_SYSRULES_pagingInfo"(
+              startIndex: 1,
+              batchSize: 1,
+              sort: #"SYSTEM_SYSRULES_sortInfo"(
+                field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+                ascending: false
+              )
+            )
+          ),
+          "data",
+          {}
+        ),
+        1,
+        null
+      )
+    ),
+    refreshOnVarChange: { local!hecho, local!comprobarAhora },
+    refreshInterval: #"_a-0000f09f-42ed-8000-9d42-011c48011c48_5648809" / 60
+  ),
+  /* Paridad SCA_GenerarSolicitudPopup(mecanizar: true): la frase de redirección depende del resultado CORE (CA FINALIZADA NEGATIVA), no de que la tarea MECANIZAR ya exista */
+  local!caNegativa: a!refreshVariable(
+    value: if(
+      or(
+        not(local!hecho),
+        a!isNullOrEmpty(ri!idSolicitud),
+        not(local!accionCerrada)
+      ),
+      false,
+      a!isNotNullOrEmpty(
+        reject(
+          fn!isnull,
+          #"SYSTEM_SYSRULES_forEach"(
+            items: a!defaultValue(
+              index(
+                #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051122"(codSolicitud: ri!idSolicitud),
+                "MSSConsultaGestion",
+                {}
+              ),
+              {}
+            ),
+            expression: if(
+              and(
+                tostring(index(fv!item, "accionRealizada", "")) = "2",
+                upper(
+                  tostring(
+                    a!defaultValue(index(fv!item, "codEstGestion", null), "")
+                  )
+                ) = "FINALIZADA NEGATIVA"
+              ),
+              fv!item,
+              null
+            )
+          )
+        )
+      )
+    ),
+    refreshOnVarChange: { local!hecho, local!accionCerrada, local!comprobarAhora }
+  ),
+  /* CA negativa cuya decisión posterior NO crea tarea MECANIZAR (NO MECANIZAR → IR A NIVEL / FIN PROCESO / otra acción): ACEPTAR vuelve al buscador como en SCA */
+  local!decisionSinMecanizar: and(
+    local!hecho,
+    local!caNegativa,
+    a!isNullOrEmpty(local!tareaMecanizar),
+    or(
+      a!isNotNullOrEmpty(local!tareaPendiente),
+      contains(
+        {
+          "FIN",
+          #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624016",
+          "FINALIZADA_ANULADA",
+          "FINALIZADA_RECHAZADA_ANULACION",
+          #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624022",
+          "FINALIZADA_NEGATIVO",
+          "FINALIZADA_CANCELADA",
+          "RECHAZADA",
+          "CANCELADA",
+          #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624046",
+          #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624058",
+          "PDTE_REDIRECCION_VIDA",
+          "ERROR",
+          "ERROR_DECISION"
+        },
+        upper(tostring(local!estadoSolPoll))
+      ),
+      local!esperaAgotada
+    )
+  ),
+  /* R42-A: si la acción ya está cerrada pero la decisión aún no ha creado la siguiente tarea ni cerrado la solicitud (respaldo/sondeo), se sigue esperando: evita habilitar ACEPTAR antes de tiempo */
+  local!esperandoDecision: and(
+    local!hecho,
+    local!pantallaActual &lt;&gt; "MECANIZACION",
+    local!accionCerrada,
+    not(local!accionPospuesta),
+    not(local!caNegativa),
+    a!isNullOrEmpty(local!tareaPendiente),
+    a!isNullOrEmpty(local!tareaMecanizar),
+    a!isNotNullOrEmpty(local!estadoSolPoll),
+    not(
+      or(
+        left(upper(tostring(local!estadoSolPoll)), 9) = "FINALIZAD",
+        contains(
+          {
+            "FIN",
+            "RECHAZADA",
+            "CANCELADA",
+            upper(#"_a-0000f099-f136-8000-9d3c-011c48011c48_5624046"),
+            "PDTE_REDIRECCION_VIDA",
+            "ERROR",
+            "ERROR_DECISION"
+          },
+          upper(tostring(local!estadoSolPoll))
+        )
+      )
+    ),
+    not(local!esperaAgotada)
+  ),
+  /* R29-A (analista 23/10): siguiente tarea de la solicitud creada por el motor tras completar la acción.
+     ACEPTAR la abre aquí mismo (sin pasar por el buscador) si está asignada al usuario conectado; si no, va al Detalle.
+     Las tareas de nivel &gt; 1 (p. ej. CONTRA ANULAR NIVEL 2) se abren desde el Detalle con RETOMAR (registra la captura en CORE, R24 #12). */
+  local!sigTipo: upper(
+    a!defaultValue(
+      tostring(
+        index(
+          local!tareaPendiente,
+          #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/1a10cef3-4704-407c-8c2d-5ff372a15121",
+          null
+        )
+      ),
+      ""
+    )
+  ),
+  local!sigNombre: a!defaultValue(
+    tostring(
+      index(
+        local!tareaPendiente,
+        #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/892f047d-1737-4a64-9c7e-81e0ff00b563",
+        null
+      )
+    ),
+    ""
+  ),
+  local!sigPantalla: if(
+    search("NIVEL", local!sigTipo) &gt; 0,
+    "",
+    if(
+      left(local!sigTipo, 6) = "CONTRA",
+      #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624070",
+      if(
+        left(local!sigTipo, 9) = #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624082",
+        "MECANIZACION",
+        if(
+          local!sigTipo = #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624172",
+          #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624172",
+          if(
+            left(local!sigTipo, 3) = "ACC",
+            "ACC ADM",
+            if(
+              left(local!sigTipo, 12) = #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624088",
+              #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624088",
+              ""
+            )
+          )
+        )
+      )
+    )
+  ),
+  local!sigEsMia: and(
+    a!isNotNullOrEmpty(local!tareaPendiente),
+    upper(
+      a!defaultValue(
+        tostring(
+          index(
+            local!tareaPendiente,
+            #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/ca504656-ecb9-4d9a-9930-639d875198fb",
+            null
+          )
+        ),
+        ""
+      )
+    ) = upper(tostring(loggedInUser()))
+  ),
+  if(
+    ri!accionAbierta,
+    {
+      /* VOLVER AL DETALLE: navegación a la página del Detalle (recarga completa, como vuelve SCA por navegación) */
+      #"SYSTEM_SYSRULES_richTextDisplayField"(
+        labelPosition: "COLLAPSED",
+        value: #"SYSTEM_SYSRULES_richTextItem_v1"(
+          text: {
+            #"SYSTEM_SYSRULES_richTextIcon"(icon: "arrow-left"),
+            " VOLVER AL DETALLE"
+          },
+          link: #"SYSTEM_SYSRULES_safeLink"(
+            uri: a!urlForSite(
+              sitePage: #"urn:appian:site-page:v1:bb62c468-0f71-4985-980a-6db65a9dc1f5/ee42d0ad-aae1-442e-be8e-3e954e6a193d",
+              urlParameters: a!map(idSolicitud: ri!idSolicitud)
+            ),
+            openLinkIn: "SAME_TAB"
+          ),
+          linkStyle: "STANDALONE",
+          color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050839"
+        ),
+        align: "RIGHT"
+      ),
+      if(
+        local!hecho,
+        /* Popup paridad SCA_PopUpMensajeAutorizacion (CORRECTO) — ACEPTAR vuelve al buscador */
+        #"SYSTEM_SYSRULES_cardLayout"(
+          contents: {
+            #"SYSTEM_SYSRULES_richTextDisplayField"(
+              labelPosition: "COLLAPSED",
+              value: #"SYSTEM_SYSRULES_richTextIcon"(
+                icon: "check-circle",
+                color: "SECONDARY",
+                size: "EXTRA_LARGE"
+              ),
+              align: "CENTER"
+            ),
+            #"SYSTEM_SYSRULES_horizontalLine"(),
+            #"SYSTEM_SYSRULES_richTextDisplayField"(
+              labelPosition: "COLLAPSED",
+              value: #"SYSTEM_SYSRULES_richTextItem_v1"(
+                text: "CORRECTO",
+                style: "STRONG",
+                size: "MEDIUM_PLUS"
+              ),
+              align: "CENTER"
+            ),
+            #"SYSTEM_SYSRULES_richTextDisplayField"(
+              labelPosition: "COLLAPSED",
+              value: #"SYSTEM_SYSRULES_richTextItem_v1"(
+                text: "Los datos se han guardado correctamente",
+                style: "PLAIN",
+                size: "MEDIUM"
+              ),
+              align: "CENTER"
+            ),
+            #"SYSTEM_SYSRULES_richTextDisplayField"(
+              labelPosition: "COLLAPSED",
+              value: #"SYSTEM_SYSRULES_richTextItem_v1"(
+                text: if(
+                  local!pantallaActual = "MECANIZACION",
+                  "La anulación se ha lanzado al sistema de emisión.",
+                  "Se va a redirigir a la anulación."
+                ),
+                style: "PLAIN",
+                size: "MEDIUM"
+              ),
+              align: "CENTER",
+              showWhen: if(
+                local!pantallaActual = "MECANIZACION",
+                or(
+                  local!anularPulsado,
+                  local!anulacionEnviada
+                ),
+                a!isNotNullOrEmpty(local!tareaMecanizar)
+              )
+            ),
+            /* R28 (23/10): panel «Inducción Verti (componente Inducir Cliente)» (rule!SCA2_InduccionVertiPanel, R26) retirado:
+             el componente se ejecuta entero, síncrono y encadenado tras ANULAR PÓLIZA (a!startProcessLink + Sub-Process en CMD Mecanizar). */
+            #"SYSTEM_SYSRULES_richTextDisplayField"(
+              labelPosition: "COLLAPSED",
+              value: #"SYSTEM_SYSRULES_richTextItem_v1"(
+                text: "Comprobando si procede la inducción Verti/vencimiento… pulse ACEPTAR de nuevo en unos segundos.",
+                style: "PLAIN",
+                size: "MEDIUM"
+              ),
+              align: "CENTER",
+              showWhen: and(
+                local!comprobandoInduccion,
+                local!pantallaActual = "MECANIZACION",
+                local!hecho
+              )
+            ),
+            #"SYSTEM_SYSRULES_richTextDisplayField"(
+              labelPosition: "COLLAPSED",
+              value: #"SYSTEM_SYSRULES_richTextItem_v1"(
+                text: "Procesando la decisión de la solicitud…",
+                style: "PLAIN",
+                size: "MEDIUM"
+              ),
+              align: "CENTER",
+              showWhen: and(
+                local!pantallaActual &lt;&gt; "MECANIZACION",
+                or(
+                  local!accionEnCurso,
+                  local!esperandoDecision,
+                  and(
+                    local!caNegativa,
+                    a!isNullOrEmpty(local!tareaMecanizar),
+                    not(local!decisionSinMecanizar)
+                  )
+                )
+              )
+            ),
+            /* R42-A: la acción se lanza síncrona; si al volver aún no está la siguiente gestión se mantiene el sondeo con aviso y COMPROBAR AHORA */
+            #"SYSTEM_SYSRULES_richTextDisplayField"(
+              labelPosition: "COLLAPSED",
+              value: #"SYSTEM_SYSRULES_richTextItem_v1"(
+                text: #"_a-0000f09f-42ed-8000-9d42-011c48011c48_5648821",
+                style: "PLAIN",
+                size: "MEDIUM"
+              ),
+              align: "CENTER",
+              showWhen: and(
+                local!pantallaActual &lt;&gt; "MECANIZACION",
+                or(
+                  local!accionEnCurso,
+                  local!esperandoDecision,
+                  and(
+                    local!caNegativa,
+                    a!isNullOrEmpty(local!tareaMecanizar),
+                    not(local!decisionSinMecanizar)
+                  )
+                )
+              )
+            ),
+            #"SYSTEM_SYSRULES_ButtonArrayLayout"(
+              buttons: #"SYSTEM_SYSRULES_buttonWidget_v1"(
+                label: #"_a-0000f0a4-c27c-8000-9d46-011c48011c48_5664611",
+                style: "OUTLINE",
+                color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050839",
+                saveInto: a!save(local!comprobarAhora, local!comprobarAhora + 1)
+              ),
+              align: "CENTER",
+              showWhen: or(
+                and(
+                local!pantallaActual &lt;&gt; "MECANIZACION",
+                or(
+                  local!accionEnCurso,
+                  local!esperandoDecision,
+                  and(
+                    local!caNegativa,
+                    a!isNullOrEmpty(local!tareaMecanizar),
+                    not(local!decisionSinMecanizar)
+                  )
+                )
+              ),
+                and(
+                  local!comprobandoInduccion,
+                  local!pantallaActual = "MECANIZACION",
+                  local!hecho
+                )
+              )
+            ),
+            /* R29-A: aviso de la siguiente tarea (no MECANIZAR: esa ya tiene «Se va a redirigir a la anulación.») */
+            #"SYSTEM_SYSRULES_richTextDisplayField"(
+              labelPosition: "COLLAPSED",
+              value: #"SYSTEM_SYSRULES_richTextItem_v1"(
+                text: if(
+                  and(local!sigEsMia, local!sigPantalla &lt;&gt; ""),
+                  "Se va a redirigir a la siguiente tarea: " &amp; proper(local!sigNombre) &amp; ".",
+                  "La siguiente tarea (" &amp; proper(local!sigNombre) &amp; ") se gestiona desde el Detalle de la solicitud."
+                ),
+                style: "PLAIN",
+                size: "MEDIUM"
+              ),
+              align: "CENTER",
+              showWhen: and(
+                local!pantallaActual &lt;&gt; "MECANIZACION",
+                a!isNotNullOrEmpty(local!tareaPendiente),
+                a!isNullOrEmpty(local!tareaMecanizar),
+                not(local!accionEnCurso)
+              )
+            ),
+            #"SYSTEM_SYSRULES_richTextDisplayField"(
+              labelPosition: "COLLAPSED",
+              value: #"SYSTEM_SYSRULES_richTextItem_v1"(
+                text: "No se ha podido abrir la pantalla de anulación. Consulte el Detalle de la solicitud.",
+                style: "PLAIN",
+                size: "MEDIUM"
+              ),
+              align: "CENTER",
+              showWhen: and(
+                local!pantallaActual &lt;&gt; "MECANIZACION",
+                local!decisionSinMecanizar,
+                local!esperaAgotada,
+                a!isNullOrEmpty(local!tareaPendiente)
+              )
+            ),
+            #"SYSTEM_SYSRULES_ButtonLayout"(
+              primaryButtons: #"SYSTEM_SYSRULES_buttonWidget_v1"(
+                label: "ACEPTAR",
+                style: "SOLID",
+                color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050839",
+                disabled: or(
+                  local!accionEnCurso,
+                  local!esperandoDecision,
+                  and(
+                    local!pantallaActual &lt;&gt; "MECANIZACION",
+                    local!caNegativa,
+                    a!isNullOrEmpty(local!tareaMecanizar),
+                    not(local!decisionSinMecanizar)
+                  )
+                ),
+                saveInto: if(
+                  local!pantallaActual = "MECANIZACION",
+                  /* Tras ANULAR PÓLIZA: si el motor pidió inducción, CMD Mecanizar ha creado la tarea VERTI → se abre la pantalla de inducción en la misma cadena */
+                  a!localVariables(
+                    local!tareaVerti: index(
+                      index(
+                        #"SYSTEM_SYSRULES_queryRecordType_v4"(
+                          recordType: #"urn:appian:record-type:v1:696285d3-cb21-4f27-adce-66354ebf2b89",
+                          filters: #"SYSTEM_SYSRULES_queryLogicalExpression"(
+                            operator: "AND",
+                            filters: {
+                              #"SYSTEM_SYSRULES_queryFilter"(
+                                field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/32e5a534-ad1a-4f96-b824-41690f0aba43",
+                                operator: "=",
+                                value: ri!idSolicitud
+                              ),
+                              #"SYSTEM_SYSRULES_queryFilter"(
+                                field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/e7be363c-399e-48a5-9242-3b2a65680f0f",
+                                operator: "=",
+                                value: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624058"
+                              ),
+                              #"SYSTEM_SYSRULES_queryFilter"(
+                                field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/1a10cef3-4704-407c-8c2d-5ff372a15121",
+                                operator: "=",
+                                value: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624172"
+                              )
+                            }
+                          ),
+                          fields: {
+                            #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910"
+                          },
+                          pagingInfo: #"SYSTEM_SYSRULES_pagingInfo"(
+                            startIndex: 1,
+                            batchSize: 1,
+                            sort: #"SYSTEM_SYSRULES_sortInfo"(
+                              field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+                              ascending: false
+                            )
+                          ),
+                          fetchTotalCount: false
+                        ),
+                        "data",
+                        {}
+                      ),
+                      1,
+                      null
+                    ),
+                    /* Lectura fresca en el clic: CMD Mecanizar es asíncrono (tarea VERTI o MECANIZADA/ANL); mientras siga en MECANIZAR sin decidir, el popup se mantiene */
+                    local!solAhora: index(
+                      index(
+                        #"SYSTEM_SYSRULES_queryRecordType_v4"(
+                          recordType: #"urn:appian:record-type:v1:c531595c-c3b5-454c-a355-8145e7e27e9a",
+                          filters: #"SYSTEM_SYSRULES_queryLogicalExpression"(
+                            operator: "AND",
+                            filters: {
+                              #"SYSTEM_SYSRULES_queryFilter"(
+                                field: #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9",
+                                operator: "=",
+                                value: ri!idSolicitud
+                              )
+                            }
+                          ),
+                          fields: {
+                            #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/b32247b9-b752-4358-8764-f21df479a82a",
+                            #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/074b8e94-466e-4e45-8fed-074610396bed",
+                            #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/65f4378b-cf90-4761-b1d0-16ace177a82c"
+                          },
+                          pagingInfo: #"SYSTEM_SYSRULES_pagingInfo"(startIndex: 1, batchSize: 1),
+                          fetchTotalCount: false
+                        ),
+                        "data",
+                        {}
+                      ),
+                      1,
+                      null
+                    ),
+                    local!sinDecidir: and(
+                      a!isNullOrEmpty(local!tareaVerti),
+                      tostring(
+                        index(
+                          local!solAhora,
+                          #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/074b8e94-466e-4e45-8fed-074610396bed",
+                          null
+                        )
+                      ) = #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624082",
+                      tostring(
+                        index(
+                          local!solAhora,
+                          #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/65f4378b-cf90-4761-b1d0-16ace177a82c",
+                          null
+                        )
+                      ) = #"_a-0000f099-f136-8000-9d3c-011c48011c48_5623992",
+                      not(local!esperaAgotada)
+                    ),
+                    if(
+                      a!isNotNullOrEmpty(local!tareaVerti),
+                      {
+                        a!save(
+                          local!idTareaTras,
+                          index(
+                            local!tareaVerti,
+                            #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+                            null
+                          )
+                        ),
+                        a!save(local!pantallaTras, #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624172"),
+                        a!save(local!comprobandoInduccion, false),
+                        a!save(local!hecho, false),
+                        a!save(local!anularPulsado, false)
+                      },
+                      if(
+                        local!sinDecidir,
+                        a!save(local!comprobandoInduccion, true),
+                        {
+                          a!save(ri!accionAbierta, false),
+                          a!save(ri!tipoAccion, null),
+                          a!save(ri!idTareaAccion, null),
+                          a!save(local!hecho, false),
+                          a!save(local!anularPulsado, false),
+                          a!save(ri!idSolicitud, null),
+                          a!save(local!pantallaTras, null),
+                          a!save(local!idTareaTras, null)
+                        }
+                      )
+                    )
+                  ),
+                  a!localVariables(
+                    /* Consulta directa en el saveInto: local!tareaMecanizar se calculó antes del clic y el CMD (CompletarAccion → Decidir → CrearAccion) puede tardar unos segundos en crear la tarea MECANIZAR */
+                    local!tareaMec: a!defaultValue(
+                      local!tareaMecanizar,
+                      index(
+                        index(
+                          #"SYSTEM_SYSRULES_queryRecordType_v4"(
+                            recordType: #"urn:appian:record-type:v1:696285d3-cb21-4f27-adce-66354ebf2b89",
+                            filters: #"SYSTEM_SYSRULES_queryLogicalExpression"(
+                              operator: "AND",
+                              filters: {
+                                #"SYSTEM_SYSRULES_queryFilter"(
+                                  field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/32e5a534-ad1a-4f96-b824-41690f0aba43",
+                                  operator: "=",
+                                  value: ri!idSolicitud
+                                ),
+                                #"SYSTEM_SYSRULES_queryFilter"(
+                                  field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/e7be363c-399e-48a5-9242-3b2a65680f0f",
+                                  operator: "=",
+                                  value: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624058"
+                                ),
+                                #"SYSTEM_SYSRULES_queryFilter"(
+                                  field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/1a10cef3-4704-407c-8c2d-5ff372a15121",
+                                  operator: "starts with",
+                                  value: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624082"
+                                )
+                              }
+                            ),
+                            pagingInfo: #"SYSTEM_SYSRULES_pagingInfo"(
+                              startIndex: 1,
+                              batchSize: 1,
+                              sort: #"SYSTEM_SYSRULES_sortInfo"(
+                                field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+                                ascending: false
+                              )
+                            )
+                          ),
+                          "data",
+                          {}
+                        ),
+                        1,
+                        null
+                      )
+                    ),
+                    /* R29-A: lectura fresca de la siguiente tarea en el clic (local!tareaPendiente se sondea cada 30 s) */
+                    local!sigT: a!defaultValue(
+                      local!tareaPendiente,
+                      if(
+                        a!isNullOrEmpty(ri!idSolicitud),
+                        null,
+                        index(
+                          index(
+                            #"SYSTEM_SYSRULES_queryRecordType_v4"(
+                              recordType: #"urn:appian:record-type:v1:696285d3-cb21-4f27-adce-66354ebf2b89",
+                              filters: #"SYSTEM_SYSRULES_queryLogicalExpression"(
+                                operator: "AND",
+                                filters: {
+                                  #"SYSTEM_SYSRULES_queryFilter"(
+                                    field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/32e5a534-ad1a-4f96-b824-41690f0aba43",
+                                    operator: "=",
+                                    value: ri!idSolicitud
+                                  ),
+                                  #"SYSTEM_SYSRULES_queryFilter"(
+                                    field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/e7be363c-399e-48a5-9242-3b2a65680f0f",
+                                    operator: "=",
+                                    value: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624058"
+                                  ),
+                                  #"SYSTEM_SYSRULES_queryFilter"(
+                                    field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+                                    operator: "&lt;&gt;",
+                                    value: ri!idTareaAccion,
+                                    applyWhen: a!isNotNullOrEmpty(ri!idTareaAccion)
+                                  ),
+                                  #"SYSTEM_SYSRULES_queryFilter"(
+                                    field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+                                    operator: "&lt;&gt;",
+                                    value: local!idTareaTras,
+                                    applyWhen: a!isNotNullOrEmpty(local!idTareaTras)
+                                  ),
+                                  #"SYSTEM_SYSRULES_queryFilter"(
+                                    field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/1a10cef3-4704-407c-8c2d-5ff372a15121",
+                                    operator: "&lt;&gt;",
+                                    value: "INDUCCION"
+                                  )
+                                }
+                              ),
+                              fields: {
+                                #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+                                #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/892f047d-1737-4a64-9c7e-81e0ff00b563",
+                                #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/1a10cef3-4704-407c-8c2d-5ff372a15121",
+                                #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/e7be363c-399e-48a5-9242-3b2a65680f0f",
+                                #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/ca504656-ecb9-4d9a-9930-639d875198fb",
+                                #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/07a5e61d-e9af-47dd-8e7d-293ce1ff7a00"
+                              },
+                              pagingInfo: #"SYSTEM_SYSRULES_pagingInfo"(
+                                startIndex: 1,
+                                batchSize: 1,
+                                sort: #"SYSTEM_SYSRULES_sortInfo"(
+                                  field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+                                  ascending: false
+                                )
+                              )
+                            ),
+                            "data",
+                            {}
+                          ),
+                          1,
+                          null
+                        )
+                      )
+                    ),
+                    local!sigTTipo: upper(
+                      a!defaultValue(
+                        tostring(
+                          index(
+                            local!sigT,
+                            #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/1a10cef3-4704-407c-8c2d-5ff372a15121",
+                            null
+                          )
+                        ),
+                        ""
+                      )
+                    ),
+                    local!sigTPantalla: if(
+                      search("NIVEL", local!sigTTipo) &gt; 0,
+                      "",
+                      if(
+                        left(local!sigTTipo, 6) = "CONTRA",
+                        #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624070",
+                        if(
+                          left(local!sigTTipo, 9) = #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624082",
+                          "MECANIZACION",
+                          if(
+                            local!sigTTipo = #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624172",
+                            #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624172",
+                            if(
+                              left(local!sigTTipo, 3) = "ACC",
+                              "ACC ADM",
+                              if(
+                                left(local!sigTTipo, 12) = #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624088",
+                                #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624088",
+                                ""
+                              )
+                            )
+                          )
+                        )
+                      )
+                    ),
+                    local!sigTEsMia: upper(
+                      a!defaultValue(
+                        tostring(
+                          index(
+                            local!sigT,
+                            #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/ca504656-ecb9-4d9a-9930-639d875198fb",
+                            null
+                          )
+                        ),
+                        ""
+                      )
+                    ) = upper(tostring(loggedInUser())),
+                    if(
+                      a!isNotNullOrEmpty(local!tareaMec),
+                      {
+                        a!save(
+                          local!idTareaTras,
+                          index(
+                            local!tareaMec,
+                            #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+                            null
+                          )
+                        ),
+                        a!save(local!pantallaTras, "MECANIZACION"),
+                        a!save(local!hecho, false)
+                      },
+                      if(
+                        and(
+                          a!isNotNullOrEmpty(local!sigT),
+                          local!sigTEsMia,
+                          local!sigTPantalla &lt;&gt; ""
+                        ),
+                        /* siguiente tarea del usuario (p. ej. Gestión Verti/Vencimiento tras la CA negativa): se abre aquí, sin buscador */
+                        {
+                          a!save(
+                            local!idTareaTras,
+                            index(
+                              local!sigT,
+                              #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+                              null
+                            )
+                          ),
+                          a!save(local!pantallaTras, local!sigTPantalla),
+                          a!save(local!hecho, false)
+                        },
+                        if(
+                          a!isNotNullOrEmpty(local!sigT),
+                          /* siguiente tarea de otro usuario/grupo o de nivel &gt; 1: Detalle de la solicitud (no buscador) */
+                          {
+                            a!save(ri!accionAbierta, false),
+                            a!save(ri!tipoAccion, null),
+                            a!save(ri!idTareaAccion, null),
+                            a!save(local!hecho, false),
+                            a!save(local!pantallaTras, null),
+                            a!save(local!idTareaTras, null)
+                          },
+                          if(
+                            or(
+                              local!accionEnCurso,
+                              local!esperandoDecision,
+                              and(
+                                local!caNegativa,
+                                not(local!decisionSinMecanizar)
+                              )
+                            ),
+                            {},
+                            {
+                              a!save(ri!accionAbierta, false),
+                              a!save(ri!tipoAccion, null),
+                              a!save(ri!idTareaAccion, null),
+                              a!save(local!hecho, false),
+                              a!save(ri!idSolicitud, null)
+                            }
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              ),
+              /* En MECANIZACION el botón decide entre inducción Verti (misma cadena) y buscador */
+              showWhen: or(
+                local!pantallaActual = "MECANIZACION",
+                not(local!decisionSinMecanizar),
+                a!isNotNullOrEmpty(local!tareaPendiente)
+              )
+            ),
+            #"SYSTEM_SYSRULES_columnsLayout"(
+              columns: {
+                #"SYSTEM_SYSRULES_columnLayout"(),
+                #"SYSTEM_SYSRULES_columnLayout"(
+                  width: "NARROW",
+                  contents: {
+                    #"SYSTEM_SYSRULES_cardLayout"(
+                      contents: #"SYSTEM_SYSRULES_richTextDisplayField"(
+                        labelPosition: "COLLAPSED",
+                        value: #"SYSTEM_SYSRULES_richTextItem_v1"(
+                          text: "ACEPTAR",
+                          color: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624184",
+                          style: "STRONG"
+                        ),
+                        align: "CENTER"
+                      ),
+                      link: #"SYSTEM_SYSRULES_safeLink"(
+                        uri: a!urlForSite(
+                          sitePage: #"urn:appian:site-page:v1:bb62c468-0f71-4985-980a-6db65a9dc1f5/ee42d0ad-aae1-442e-be8e-3e954e6a193d"
+                        ),
+                        openLinkIn: "SAME_TAB"
+                      ),
+                      style: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050839",
+                      showBorder: false,
+                      padding: "STANDARD",
+                      accessibilityText: "Aceptar"
+                    )
+                  }
+                )
+              },
+              showWhen: and(
+                local!pantallaActual &lt;&gt; "MECANIZACION",
+                local!decisionSinMecanizar,
+                a!isNullOrEmpty(local!tareaPendiente)
+              )
+            )
+          },
+          style: "TRANSPARENT",
+          marginAbove: "EVEN_MORE"
+        ),
+        /* tipo escrito = procesoActivo (SCA_TXT_ACCIONES); normalizar a pantalla */
+        a!localVariables(
+          local!pantalla: local!pantallaActual,
+          a!match(
+            value: local!pantalla,
+            equals: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624088",
+            then: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20056423"(
+              idSolicitud: ri!idSolicitud,
+              idTarea: a!defaultValue(local!idTareaTras, ri!idTareaAccion),
+              onCompletar: local!hecho
+            ),
+            equals: "ACC ADM",
+            then: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20056429"(
+              idSolicitud: ri!idSolicitud,
+              idTarea: a!defaultValue(local!idTareaTras, ri!idTareaAccion),
+              onCompletar: local!hecho
+            ),
+            equals: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624070",
+            then: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20056441"(
+              idSolicitud: ri!idSolicitud,
+              idTarea: a!defaultValue(local!idTareaTras, ri!idTareaAccion),
+              onCompletar: local!hecho,
+              /* Paridad SCA: el cierre positivo vuelve directamente al buscador */
+              onVolver: {
+                a!save(ri!accionAbierta, false),
+                a!save(ri!tipoAccion, null),
+                a!save(ri!idTareaAccion, null),
+                a!save(local!hecho, false),
+                a!save(ri!idSolicitud, null)
+              }
+            ),
+            equals: "MECANIZACION",
+            then: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20060481"(
+              idSolicitud: ri!idSolicitud,
+              idTarea: a!defaultValue(local!idTareaTras, ri!idTareaAccion),
+              onCompletar: local!hecho
+            ),
+            equals: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624172",
+            then: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20063389"(
+              idSolicitud: ri!idSolicitud,
+              idTarea: a!defaultValue(local!idTareaTras, ri!idTareaAccion),
+              onCompletar: local!hecho
+            ),
+            /* Componente externo CMP Inducir Cliente Completo: sus formularios son tareas Appian asignadas al usuario que pulsó ANULAR PÓLIZA; se completan desde las tareas de Appian y la mecanización de SCA2 continúa al terminar */
+            equals: "INDUCCION",
+            then: a!localVariables(
+              local!refrescarCmp: 0,
+              /* La tarea SCA2 se relee cada 30 s (y con ACTUALIZAR) hasta que el nodo 333 de CMD Mecanizar la marca COMPLETADA al volver del componente */
+              local!tarea: a!refreshVariable(
+                value: index(
+                  index(
+                    #"SYSTEM_SYSRULES_queryRecordType_v4"(
+                      recordType: #"urn:appian:record-type:v1:696285d3-cb21-4f27-adce-66354ebf2b89",
+                      fields: {
+                        #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/e7be363c-399e-48a5-9242-3b2a65680f0f",
+                        #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/ba1b2a33-3e00-4e18-96bf-d3cfd74f342b",
+                        #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/ca504656-ecb9-4d9a-9930-639d875198fb",
+                        #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/b563186d-85c1-43ca-b9ec-74548e606e12"
+                      },
+                      filters: #"SYSTEM_SYSRULES_queryFilter"(
+                        field: #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+                        operator: "=",
+                        value: tointeger(ri!idTareaAccion)
+                      ),
+                      pagingInfo: #"SYSTEM_SYSRULES_pagingInfo"(startIndex: 1, batchSize: 1),
+                      fetchTotalCount: false
+                    ),
+                    "data",
+                    {}
+                  ),
+                  1,
+                  null
+                ),
+                refreshOnVarChange: local!refrescarCmp,
+                refreshInterval: #"_a-0000f09f-42ed-8000-9d42-011c48011c48_5648809" / 60
+              ),
+              local!completada: tostring(
+                index(
+                  local!tarea,
+                  #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/e7be363c-399e-48a5-9242-3b2a65680f0f",
+                  ""
+                )
+              ) = #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624064",
+              /* Tarea Appian activa del componente (CMP Fase 1/2) asignada al usuario; se abre dentro del site con a!processTaskLink */
+              local!tareaCmp: a!refreshVariable(
+                value: if(
+                  local!completada,
+                  null,
+                  #"_a-0000f093-2064-8000-9d36-011c48011c48_5609494"(
+                    usuario: user(loggedInUser(), "username"),
+                    fechaDesde: if(
+                      a!isNullOrEmpty(
+                        index(
+                          local!tarea,
+                          #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/b563186d-85c1-43ca-b9ec-74548e606e12",
+                          null
+                        )
+                      ),
+                      null,
+                      index(
+                        local!tarea,
+                        #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/b563186d-85c1-43ca-b9ec-74548e606e12",
+                        null
+                      ) - intervalds(3, 0, 0)
+                    ),
+                    idCliente: null
+                  )
+                ),
+                refreshOnVarChange: { local!refrescarCmp, local!completada },
+                refreshInterval: if(local!completada, null, #"_a-0000f09f-42ed-8000-9d42-011c48011c48_5648809" / 60)
+              ),
+              #"SYSTEM_SYSRULES_cardLayout"(
+                contents: {
+                  #"SYSTEM_SYSRULES_richTextDisplayField"(
+                    labelPosition: "COLLAPSED",
+                    value: {
+                      #"SYSTEM_SYSRULES_richTextItem_v1"(
+                        text: "Inducción Verti / Vencimiento (componente de inducción de cliente)",
+                        style: "STRONG"
+                      ),
+                      char(10),
+                      if(
+                        local!completada,
+                        #"SYSTEM_SYSRULES_richTextItem_v1"(
+                          text: "Componente completado el " &amp; text(
+                            index(
+                              local!tarea,
+                              #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/ba1b2a33-3e00-4e18-96bf-d3cfd74f342b",
+                              null
+                            ),
+                            "dd/MM/yyyy HH:mm"
+                          ) &amp; ". La mecanización de SCA2 ha continuado.",
+                          color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050845"
+                        ),
+                        #"SYSTEM_SYSRULES_richTextItem_v1"(
+                          text: "El componente está pendiente de completar por " &amp; a!defaultValue(
+                            tostring(
+                              index(
+                                local!tarea,
+                                #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/ca504656-ecb9-4d9a-9930-639d875198fb",
+                                null
+                              )
+                            ),
+                            "el usuario que mecanizó"
+                          ) &amp; ". Complete sus pantallas desde esta misma página; la mecanización de SCA2 continuará automáticamente al terminarlo.",
+                          color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050839"
+                        )
+                      )
+                    }
+                  ),
+                  if(
+                    local!completada,
+                    {},
+                    if(
+                      a!isNullOrEmpty(local!tareaCmp),
+                      #"SYSTEM_SYSRULES_richTextDisplayField"(
+                        labelPosition: "COLLAPSED",
+                        value: #"SYSTEM_SYSRULES_richTextItem_v1"(
+                          text: "No tiene en este momento ninguna pantalla del componente pendiente (puede estar generándose o asignada a otro usuario). Pulse ACTUALIZAR para volver a comprobarlo.",
+                          color: "SECONDARY"
+                        )
+                      ),
+                      #"SYSTEM_SYSRULES_linkField"(
+                        labelPosition: "COLLAPSED",
+                        links: #"SYSTEM_SYSRULES_processTaskLink"(
+                          label: "Completar el componente ahora: " &amp; a!defaultValue(index(local!tareaCmp, "nombre", ""), ""),
+                          task: index(local!tareaCmp, "taskId", null)
+                        )
+                      )
+                    )
+                  ),
+                  #"SYSTEM_SYSRULES_ButtonArrayLayout"(
+                    align: "START",
+                    buttons: {
+                      #"SYSTEM_SYSRULES_buttonWidget_v1"(
+                        label: "VOLVER",
+                        style: "OUTLINE",
+                        saveInto: {
+                          a!save(ri!accionAbierta, false),
+                          a!save(ri!tipoAccion, null)
+                        }
+                      ),
+                      #"SYSTEM_SYSRULES_buttonWidget_v1"(
+                        label: "ACTUALIZAR",
+                        style: "OUTLINE",
+                        showWhen: not(local!completada),
+                        saveInto: a!save(
+                          local!refrescarCmp,
+                          local!refrescarCmp + 1
+                        )
+                      )
+                    }
+                  )
+                }
+              )
+            ),
+            default: #"SYSTEM_SYSRULES_richTextDisplayField"(
+              labelPosition: "COLLAPSED",
+              value: #"SYSTEM_SYSRULES_richTextItem_v1"(
+                text: "Tipo de tarea sin pantalla asociada: " &amp; ri!tipoAccion,
+                color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050839"
+              )
+            )
+          )
+        )
+      )
+    },
+    if(
+      local!hecho,
+      #"SYSTEM_SYSRULES_richTextDisplayField"(
+        label: "Tareas",
+        value: #"SYSTEM_SYSRULES_richTextItem_v1"(
+          text: "Acción registrada. Vuelva a consultar la solicitud para ver el estado actualizado.",
+          color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050845"
+        )
+      ),
+      #"SYSTEM_SYSRULES_sectionLayout_v1"(
+        label: "Tareas",
+        contents: {
+          #"SYSTEM_SYSRULES_gridField_v4"(
+            labelPosition: "COLLAPSED",
+            label: "grid",
+            data: index(local!q, "data", {}),
+            columns: {
+              #"SYSTEM_SYSRULES_gridColumn"(
+                label: "Tarea",
+                value: index(
+                  fv!row,
+                  #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/892f047d-1737-4a64-9c7e-81e0ff00b563",
+                  null
+                )
+              ),
+              #"SYSTEM_SYSRULES_gridColumn"(
+                label: "Tipo",
+                value: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20056349"(
+                  index(
+                    fv!row,
+                    #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/1a10cef3-4704-407c-8c2d-5ff372a15121",
+                    null
+                  )
+                )
+              ),
+              #"SYSTEM_SYSRULES_gridColumn"(
+                label: "Estado",
+                value: #"SYSTEM_SYSRULES_tagField"(
+                  tags: #"SYSTEM_SYSRULES_tagItem"(
+                    text: index(
+                      fv!row,
+                      #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/e7be363c-399e-48a5-9242-3b2a65680f0f",
+                      null
+                    ),
+                    backgroundColor: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20056355"(
+                      index(
+                        fv!row,
+                        #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/e7be363c-399e-48a5-9242-3b2a65680f0f",
+                        null
+                      )
+                    ),
+                    textColor: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624184"
+                  ),
+                  align: "CENTER"
+                )
+              ),
+              #"SYSTEM_SYSRULES_gridColumn"(
+                label: "Asignado a",
+                value: index(
+                  fv!row,
+                  #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/ca504656-ecb9-4d9a-9930-639d875198fb",
+                  null
+                )
+              ),
+              #"SYSTEM_SYSRULES_gridColumn"(
+                label: "Grupo",
+                value: index(
+                  fv!row,
+                  #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/07a5e61d-e9af-47dd-8e7d-293ce1ff7a00",
+                  null
+                )
+              ),
+              #"SYSTEM_SYSRULES_gridColumn"(
+                label: "Caducidad",
+                value: index(
+                  fv!row,
+                  #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/9630cc5f-a395-4247-9fa1-5eaf51984c08",
+                  null
+                )
+              ),
+              #"SYSTEM_SYSRULES_gridColumn"(
+                label: "",
+                value: #"SYSTEM_SYSRULES_linkField"(
+                  links: {
+                    #"SYSTEM_SYSRULES_dynamicLink"(
+                      label: "Completar",
+                      saveInto: {
+                        a!save(
+                          ri!idTareaAccion,
+                          index(
+                            fv!row,
+                            #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/82a6a3b4-5afe-4dd3-a7f3-46f806490910",
+                            null
+                          )
+                        ),
+                        a!save(
+                          ri!tipoAccion,
+                          index(
+                            fv!row,
+                            #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/1a10cef3-4704-407c-8c2d-5ff372a15121",
+                            null
+                          )
+                        ),
+                        a!save(ri!accionAbierta, true)
+                      },
+                      showWhen: and(
+                        index(
+                          fv!row,
+                          #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/e7be363c-399e-48a5-9242-3b2a65680f0f",
+                          null
+                        ) = #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624058",
+                        /* [R9-B B5] sin Completar si la solicitud ya está finalizada/cancelada en SCA2 */
+                        not(
+                          or(
+                            left(local!estadoSol, 10) = #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624016",
+                            local!estadoSol = "FIN",
+                            local!estadoSol = "CANCELADA"
+                          )
+                        ),
+                        /* [R9-B B7-SI24 / B3] mismos permisos que RETOMAR en el Detalle */
+                        #"_a-0000f06b-141a-8000-9d23-011c48011c48_5454993"(
+                          tarea: fv!row,
+                          nivelIntervencion: local!nivelSol,
+                          codSubPerfil: local!subPerfilSol
+                        ),
+                        not(
+                          and(
+                            left(
+                              upper(
+                                tostring(
+                                  index(
+                                    fv!row,
+                                    #"urn:appian:record-field:v1:696285d3-cb21-4f27-adce-66354ebf2b89/1a10cef3-4704-407c-8c2d-5ff372a15121",
+                                    null
+                                  )
+                                )
+                              ),
+                              9
+                            ) = #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624082",
+                            tostring(local!procesoActivoSol) = "ANL"
+                          )
+                        )
+                      )
+                    )
+                  }
+                )
+              )
+            },
+            pagingSaveInto: local!pagingInfo,
+            validations: {}
+          )
+        }
+      )
+    )
+  )
+)
+</definition>
+        <namedTypedValue>
+            <name>idSolicitud</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>accionAbierta</name>
+            <type>
+                <name>boolean</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>tipoAccion</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>idTareaAccion</name>
+            <type>
+                <name>Variant</name>
+                <namespace>http://www.appian.com/ae/types/2009</namespace>
+            </type>
+        </namedTypedValue>
+        <preferredEditor>interface</preferredEditor>
+        <offlineEnabled>false</offlineEnabled>
+        <isCustom>false</isCustom>
+    </interface>
+    <roleMap public="true">
+        <role inherit="true" allowForAll="false" name="readers">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="authors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="administrators">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyReaders">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAuthors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAdministrators">
+            <users/>
+            <groups/>
+        </role>
+    </roleMap>
+    <typedValue>
+        <type>
+            <name>RuleTestConfig?list</name>
+            <namespace>http://www.appian.com/ae/types/2009</namespace>
+        </type>
+        <value>
+            <el>
+                <a:name>Test Case 1</a:name>
+                <a:description>Test input values</a:description>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">"TEST-UI-0"</a:value>
+                    <a:nameRef>idSolicitud</a:nameRef>
+                    <a:id>1</a:id>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true" xsi:type="xsd:boolean"/>
+                    <a:nameRef>accionAbierta</a:nameRef>
+                    <a:id>2</a:id>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xsd:string"/>
+                    <a:nameRef>tipoAccion</a:nameRef>
+                    <a:id>3</a:id>
+                </a:ruleInputTestConfigs>
+                <a:ruleInputTestConfigs>
+                    <a:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="a:Expression">null</a:value>
+                    <a:nameRef>idTareaAccion</a:nameRef>
+                    <a:id>4</a:id>
+                </a:ruleInputTestConfigs>
+                <a:assertions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                <a:isDefault>true</a:isDefault>
+            </el>
+        </value>
+    </typedValue>
+    <history>
+        <historyInfo versionUuid="_a-0000f069-4f37-8000-9cc8-011c48011c48_20064819"/>
+        <historyInfo versionUuid="_a-0000f099-f136-8000-9d3c-011c48011c48_5624610"/>
+        <historyInfo versionUuid="_a-0000f0a4-c27c-8000-9d46-011c48011c48_5665185"/>
+    </history>
+</contentHaul>

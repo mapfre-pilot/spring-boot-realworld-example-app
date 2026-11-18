@@ -1,0 +1,113 @@
+--- SCA2_CatMantenimiento_v8_antes.sail	2026-11-13 09:54:06.307999133 +0000
++++ SCA2_CatMantenimiento_v9_despues.sail	2026-11-13 10:07:37.594739962 +0000
+@@ -743,7 +743,98 @@
+             a!buttonWidget(label: if(a!defaultValue(local!form.activo, true), "Dar de baja", "Reactivar"), style: "OUTLINE", icon: if(a!defaultValue(local!form.activo, true), "ban", "check"),
+               showWhen: a!isNotNullOrEmpty(local!form.id),
+               confirmMessage: if(a!defaultValue(local!form.activo, true), "La fila dejará de devolverse a las pantallas (baja lógica, no se borra). ¿Continuar?", "La fila volverá a devolverse a las pantallas. ¿Continuar?"),
+-              saveInto: a!writeRecords(
++              saveInto: {
++                /* Reactivar: no si ya hay otra fila activa con la misma clave (ux_sca2_cat_* / ux_sca2_cat_tipo_argumento_activo) */
++                a!save(local!duplicados, if(a!defaultValue(local!form.activo, true), 0, a!match(
++          value: local!catalogo,
++          equals: "MOTIVO",
++          then: a!queryRecordType(
++                    recordType: 'recordType!{40727673-e6c7-46f4-b647-7c98ac09163a}SCA2 Cat Motivo',
++                    fields: {'recordType!{40727673-e6c7-46f4-b647-7c98ac09163a}SCA2 Cat Motivo.fields.{9a1c0090-aa42-48b4-8253-8be1643e2f6b}id'},
++                    filters: a!queryLogicalExpression(operator: "AND", filters: {
++                      a!queryFilter(field: 'recordType!{40727673-e6c7-46f4-b647-7c98ac09163a}SCA2 Cat Motivo.fields.{d921b067-668c-43bd-8bae-794e4aa500c8}codLineaNegocio', operator: "=", value: tointeger(local!sel['recordType!{40727673-e6c7-46f4-b647-7c98ac09163a}SCA2 Cat Motivo.fields.{d921b067-668c-43bd-8bae-794e4aa500c8}codLineaNegocio'])),
++                      a!queryFilter(field: 'recordType!{40727673-e6c7-46f4-b647-7c98ac09163a}SCA2 Cat Motivo.fields.{afb004b8-547d-46d1-b83e-fd7d31fbc799}codPerfil', operator: "=", value: trim(tostring(local!sel['recordType!{40727673-e6c7-46f4-b647-7c98ac09163a}SCA2 Cat Motivo.fields.{afb004b8-547d-46d1-b83e-fd7d31fbc799}codPerfil']))),
++                      a!queryFilter(field: 'recordType!{40727673-e6c7-46f4-b647-7c98ac09163a}SCA2 Cat Motivo.fields.{660d5d41-f7f3-4f36-abcd-12420c4ae4eb}codSubPerfil', operator: "=", value: trim(tostring(local!sel['recordType!{40727673-e6c7-46f4-b647-7c98ac09163a}SCA2 Cat Motivo.fields.{660d5d41-f7f3-4f36-abcd-12420c4ae4eb}codSubPerfil']))),
++                      a!queryFilter(field: 'recordType!{40727673-e6c7-46f4-b647-7c98ac09163a}SCA2 Cat Motivo.fields.{16dfb5b2-3427-424f-8c09-9113c31958b8}codMotivo', operator: "=", value: trim(tostring(local!sel['recordType!{40727673-e6c7-46f4-b647-7c98ac09163a}SCA2 Cat Motivo.fields.{16dfb5b2-3427-424f-8c09-9113c31958b8}codMotivo']))),
++                      a!queryFilter(field: 'recordType!{40727673-e6c7-46f4-b647-7c98ac09163a}SCA2 Cat Motivo.fields.{5d23d245-e05a-4e66-abb8-5838e0d739b8}activo', operator: "=", value: true),
++                      a!queryFilter(field: 'recordType!{40727673-e6c7-46f4-b647-7c98ac09163a}SCA2 Cat Motivo.fields.{9a1c0090-aa42-48b4-8253-8be1643e2f6b}id', operator: "<>", value: a!defaultValue(local!sel['recordType!{40727673-e6c7-46f4-b647-7c98ac09163a}SCA2 Cat Motivo.fields.{9a1c0090-aa42-48b4-8253-8be1643e2f6b}id'], -1))
++                    }),
++                    pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1),
++                    fetchTotalCount: true
++                  ).totalCount,
++          equals: "DETALLE",
++          then: a!queryRecordType(
++                    recordType: 'recordType!{433c6bd0-8a5b-461f-9056-ddd37ffbf00b}SCA2 Cat Detalle',
++                    fields: {'recordType!{433c6bd0-8a5b-461f-9056-ddd37ffbf00b}SCA2 Cat Detalle.fields.{cad7c6d2-6e3f-4cdc-a8e1-1f3989851db9}id'},
++                    filters: a!queryLogicalExpression(operator: "AND", filters: {
++                      a!queryFilter(field: 'recordType!{433c6bd0-8a5b-461f-9056-ddd37ffbf00b}SCA2 Cat Detalle.fields.{40991f2d-7729-4c57-8dc0-d8ac6bf9eda6}codLineaNegocio', operator: "=", value: tointeger(local!sel['recordType!{433c6bd0-8a5b-461f-9056-ddd37ffbf00b}SCA2 Cat Detalle.fields.{40991f2d-7729-4c57-8dc0-d8ac6bf9eda6}codLineaNegocio'])),
++                      a!queryFilter(field: 'recordType!{433c6bd0-8a5b-461f-9056-ddd37ffbf00b}SCA2 Cat Detalle.fields.{d0a6c364-be53-4499-ad61-8c5c80b8fb7b}codMotivo', operator: "=", value: trim(tostring(local!sel['recordType!{433c6bd0-8a5b-461f-9056-ddd37ffbf00b}SCA2 Cat Detalle.fields.{d0a6c364-be53-4499-ad61-8c5c80b8fb7b}codMotivo']))),
++                      a!queryFilter(field: 'recordType!{433c6bd0-8a5b-461f-9056-ddd37ffbf00b}SCA2 Cat Detalle.fields.{9acc8291-028e-43c2-b2d4-f743e9d276c0}codDetalle', operator: "=", value: trim(tostring(local!sel['recordType!{433c6bd0-8a5b-461f-9056-ddd37ffbf00b}SCA2 Cat Detalle.fields.{9acc8291-028e-43c2-b2d4-f743e9d276c0}codDetalle']))),
++                      a!queryFilter(field: 'recordType!{433c6bd0-8a5b-461f-9056-ddd37ffbf00b}SCA2 Cat Detalle.fields.{4415dc04-e0e4-4f48-8a75-43f862d37122}activo', operator: "=", value: true),
++                      a!queryFilter(field: 'recordType!{433c6bd0-8a5b-461f-9056-ddd37ffbf00b}SCA2 Cat Detalle.fields.{cad7c6d2-6e3f-4cdc-a8e1-1f3989851db9}id', operator: "<>", value: a!defaultValue(local!sel['recordType!{433c6bd0-8a5b-461f-9056-ddd37ffbf00b}SCA2 Cat Detalle.fields.{cad7c6d2-6e3f-4cdc-a8e1-1f3989851db9}id'], -1))
++                    }),
++                    pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1),
++                    fetchTotalCount: true
++                  ).totalCount,
++          equals: "CAUSA",
++          then: a!queryRecordType(
++                    recordType: 'recordType!{a055e578-6ddb-4397-bad1-1ae361a38e56}SCA2 Cat Causa',
++                    fields: {'recordType!{a055e578-6ddb-4397-bad1-1ae361a38e56}SCA2 Cat Causa.fields.{2d35a657-f164-4436-93dc-de680618f389}id'},
++                    filters: a!queryLogicalExpression(operator: "AND", filters: {
++                      a!queryFilter(field: 'recordType!{a055e578-6ddb-4397-bad1-1ae361a38e56}SCA2 Cat Causa.fields.{a12921e3-e72a-4041-a1b6-9db2a0599c3d}codLineaNegocio', operator: "=", value: tointeger(local!sel['recordType!{a055e578-6ddb-4397-bad1-1ae361a38e56}SCA2 Cat Causa.fields.{a12921e3-e72a-4041-a1b6-9db2a0599c3d}codLineaNegocio'])),
++                      a!queryFilter(field: 'recordType!{a055e578-6ddb-4397-bad1-1ae361a38e56}SCA2 Cat Causa.fields.{b0eacf17-e66c-4818-9ebe-3049fd08df40}codMotivo', operator: "=", value: trim(tostring(local!sel['recordType!{a055e578-6ddb-4397-bad1-1ae361a38e56}SCA2 Cat Causa.fields.{b0eacf17-e66c-4818-9ebe-3049fd08df40}codMotivo']))),
++                      a!queryFilter(field: 'recordType!{a055e578-6ddb-4397-bad1-1ae361a38e56}SCA2 Cat Causa.fields.{650c3bb4-f290-4fd2-9e4c-e7a906cdced9}codDetalle', operator: "=", value: trim(tostring(local!sel['recordType!{a055e578-6ddb-4397-bad1-1ae361a38e56}SCA2 Cat Causa.fields.{650c3bb4-f290-4fd2-9e4c-e7a906cdced9}codDetalle']))),
++                      a!queryFilter(field: 'recordType!{a055e578-6ddb-4397-bad1-1ae361a38e56}SCA2 Cat Causa.fields.{69a0bdd8-b9a8-4b9a-a796-cade679da3ce}codPerfil', operator: "=", value: trim(tostring(local!sel['recordType!{a055e578-6ddb-4397-bad1-1ae361a38e56}SCA2 Cat Causa.fields.{69a0bdd8-b9a8-4b9a-a796-cade679da3ce}codPerfil']))),
++                      a!queryFilter(field: 'recordType!{a055e578-6ddb-4397-bad1-1ae361a38e56}SCA2 Cat Causa.fields.{ddcd11d0-0177-4680-9ddc-78855ae9f53d}codCausa', operator: "=", value: trim(tostring(local!sel['recordType!{a055e578-6ddb-4397-bad1-1ae361a38e56}SCA2 Cat Causa.fields.{ddcd11d0-0177-4680-9ddc-78855ae9f53d}codCausa']))),
++                      a!queryFilter(field: 'recordType!{a055e578-6ddb-4397-bad1-1ae361a38e56}SCA2 Cat Causa.fields.{8e81dca0-038f-4920-85b9-1b88ef86499b}activo', operator: "=", value: true),
++                      a!queryFilter(field: 'recordType!{a055e578-6ddb-4397-bad1-1ae361a38e56}SCA2 Cat Causa.fields.{2d35a657-f164-4436-93dc-de680618f389}id', operator: "<>", value: a!defaultValue(local!sel['recordType!{a055e578-6ddb-4397-bad1-1ae361a38e56}SCA2 Cat Causa.fields.{2d35a657-f164-4436-93dc-de680618f389}id'], -1))
++                    }),
++                    pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1),
++                    fetchTotalCount: true
++                  ).totalCount,
++          equals: "TIPO_ARGUMENTO",
++          then: a!queryRecordType(
++                    recordType: 'recordType!{dc54d386-8cd9-4369-818a-13a5dc54d0ea}SCA2 Cat Tipo Argumento',
++                    fields: {'recordType!{dc54d386-8cd9-4369-818a-13a5dc54d0ea}SCA2 Cat Tipo Argumento.fields.{75b6e975-fe67-44df-a8db-aad456869775}id'},
++                    filters: a!queryLogicalExpression(operator: "AND", filters: {
++                      a!queryFilter(field: 'recordType!{dc54d386-8cd9-4369-818a-13a5dc54d0ea}SCA2 Cat Tipo Argumento.fields.{f64fe1b5-b44f-4f83-9ce4-ba41f3272a52}codTpArg', operator: "=", value: trim(tostring(local!sel['recordType!{dc54d386-8cd9-4369-818a-13a5dc54d0ea}SCA2 Cat Tipo Argumento.fields.{f64fe1b5-b44f-4f83-9ce4-ba41f3272a52}codTpArg']))),
++                      a!queryFilter(field: 'recordType!{dc54d386-8cd9-4369-818a-13a5dc54d0ea}SCA2 Cat Tipo Argumento.fields.{bffabdb9-dfc2-4b44-ba5d-f2bc81139496}activo', operator: "=", value: true),
++                      a!queryFilter(field: 'recordType!{dc54d386-8cd9-4369-818a-13a5dc54d0ea}SCA2 Cat Tipo Argumento.fields.{75b6e975-fe67-44df-a8db-aad456869775}id', operator: "<>", value: a!defaultValue(local!sel['recordType!{dc54d386-8cd9-4369-818a-13a5dc54d0ea}SCA2 Cat Tipo Argumento.fields.{75b6e975-fe67-44df-a8db-aad456869775}id'], -1))
++                    }),
++                    pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1),
++                    fetchTotalCount: true
++                  ).totalCount,
++          equals: "CONCEPTO",
++          then: a!queryRecordType(
++                    recordType: 'recordType!{ff259e4f-7a2a-4690-b4bf-011b68ce4dc7}SCA2 Cat Concepto',
++                    fields: {'recordType!{ff259e4f-7a2a-4690-b4bf-011b68ce4dc7}SCA2 Cat Concepto.fields.{fa8f99e9-b6cc-46bf-93f6-945136cb3ab8}id'},
++                    filters: a!queryLogicalExpression(operator: "AND", filters: {
++                      a!queryFilter(field: 'recordType!{ff259e4f-7a2a-4690-b4bf-011b68ce4dc7}SCA2 Cat Concepto.fields.{22f9819c-22e7-4caf-b5c1-a1551fcb0ad6}idnConceptoPca', operator: "=", value: trim(tostring(local!sel['recordType!{ff259e4f-7a2a-4690-b4bf-011b68ce4dc7}SCA2 Cat Concepto.fields.{22f9819c-22e7-4caf-b5c1-a1551fcb0ad6}idnConceptoPca']))),
++                      a!queryFilter(field: 'recordType!{ff259e4f-7a2a-4690-b4bf-011b68ce4dc7}SCA2 Cat Concepto.fields.{f1a406bc-0de4-431f-9784-29def178db39}activo', operator: "=", value: true),
++                      a!queryFilter(field: 'recordType!{ff259e4f-7a2a-4690-b4bf-011b68ce4dc7}SCA2 Cat Concepto.fields.{fa8f99e9-b6cc-46bf-93f6-945136cb3ab8}id', operator: "<>", value: a!defaultValue(local!sel['recordType!{ff259e4f-7a2a-4690-b4bf-011b68ce4dc7}SCA2 Cat Concepto.fields.{fa8f99e9-b6cc-46bf-93f6-945136cb3ab8}id'], -1))
++                    }),
++                    pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1),
++                    fetchTotalCount: true
++                  ).totalCount,
++          equals: "VALOR_CONCEPTO",
++          then: a!queryRecordType(
++                    recordType: 'recordType!{774549b5-8a4a-4a4b-aeb8-f2960360ff18}SCA2 Cat Valor Concepto',
++                    fields: {'recordType!{774549b5-8a4a-4a4b-aeb8-f2960360ff18}SCA2 Cat Valor Concepto.fields.{2459e0fa-8121-41ef-b485-7f317a6d79a5}id'},
++                    filters: a!queryLogicalExpression(operator: "AND", filters: {
++                      a!queryFilter(field: 'recordType!{774549b5-8a4a-4a4b-aeb8-f2960360ff18}SCA2 Cat Valor Concepto.fields.{11a05b6a-eb54-4dc0-8ace-3b5bf7e878e1}idnConceptoPca', operator: "=", value: trim(tostring(local!sel['recordType!{774549b5-8a4a-4a4b-aeb8-f2960360ff18}SCA2 Cat Valor Concepto.fields.{11a05b6a-eb54-4dc0-8ace-3b5bf7e878e1}idnConceptoPca']))),
++                      a!queryFilter(field: 'recordType!{774549b5-8a4a-4a4b-aeb8-f2960360ff18}SCA2 Cat Valor Concepto.fields.{1800cc74-5621-46f5-9a32-71e4a6c0a83a}idnPca', operator: "=", value: trim(tostring(local!sel['recordType!{774549b5-8a4a-4a4b-aeb8-f2960360ff18}SCA2 Cat Valor Concepto.fields.{1800cc74-5621-46f5-9a32-71e4a6c0a83a}idnPca']))),
++                      a!queryFilter(field: 'recordType!{774549b5-8a4a-4a4b-aeb8-f2960360ff18}SCA2 Cat Valor Concepto.fields.{b453422f-1344-46e9-b354-9feb8850f743}activo', operator: "=", value: true),
++                      a!queryFilter(field: 'recordType!{774549b5-8a4a-4a4b-aeb8-f2960360ff18}SCA2 Cat Valor Concepto.fields.{2459e0fa-8121-41ef-b485-7f317a6d79a5}id', operator: "<>", value: a!defaultValue(local!sel['recordType!{774549b5-8a4a-4a4b-aeb8-f2960360ff18}SCA2 Cat Valor Concepto.fields.{2459e0fa-8121-41ef-b485-7f317a6d79a5}id'], -1))
++                    }),
++                    pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1),
++                    fetchTotalCount: true
++                  ).totalCount,
++          default: {}
++        ))),
++                if(
++                  local!duplicados > 0,
++                  {a!save(local!tipoMensaje, "NEGATIVE"), a!save(local!mensaje, "Ya existe una fila activa con esa misma clave en este catálogo: no se reactiva.")},
++                  a!writeRecords(
+                 records: a!match(
+           value: local!catalogo,
+           equals: "MOTIVO",
+@@ -762,7 +853,9 @@
+         ),
+                 onSuccess: {a!save(local!tipoMensaje, "POSITIVE"), a!save(local!mensaje, if(a!defaultValue(local!form.activo, true), "Fila dada de baja.", "Fila reactivada.")), a!save(local!sel, null), a!save(local!form, null), a!save(local!refresco, local!refresco + 1)},
+                 onError: {a!save(local!tipoMensaje, "NEGATIVE"), a!save(local!mensaje, "No se ha podido actualizar: " & tostring(fv!error))}
+-              )),
++              )
++                )
++              }),
+             a!buttonWidget(label: "Cancelar", style: "LINK", saveInto: {a!save(local!sel, null), a!save(local!form, null), a!save(local!mensaje, null)})
+           }
+         )

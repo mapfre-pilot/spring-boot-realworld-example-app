@@ -1,0 +1,20 @@
+--- docs/sca/pruebas/backups-r52/R52_SCA2_ContraAnulacionSGO_v6_antes.sail	2026-11-16 20:05:12.188317054 +0000
++++ docs/sca/pruebas/backups-r52/R52_SCA2_ContraAnulacionSGO_v7_despues.sail	2026-11-16 20:10:41.637009553 +0000
+@@ -251,6 +251,8 @@
+                               ),
+                               a!writeRecords(
+                                 records: 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error'(
++                                  /* R52: reutiliza el error PENDIENTE equivalente (R50-B) */
++                                  'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{e5dc602a-1e18-44df-bbde-5d580de8ad21}id': index(rule!SCA2_obtenerErrorPendiente(idSolicitud: tostring(index(ri!dataServicio, "codSolicitud", null)), comando: "SCA2 TTQ GrabarTreboles", nodo: "Aplicar tréboles en TTQ (enhorabuena contra anulación)", codigo: "TTQ_KO"), "id", null),
+                                   'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{263ccc68-f8c2-4913-b78d-8fce31e7ed9a}idSolicitud': tostring(index(ri!dataServicio, "codSolicitud", null)),
+                                   'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{bf283c94-bf1e-49f4-840c-9a96ce858a37}comando': "SCA2 TTQ GrabarTreboles",
+                                   'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{4b654a26-b60f-478f-ad9c-31f5be706df2}nodo': "Aplicar tréboles en TTQ (enhorabuena contra anulación)",
+@@ -266,7 +268,7 @@
+                                       numBonAplic: index(ri!dataServicio, "numBonAplic", null)
+                                     )
+                                   ),
+-                                  'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{8c9c24c7-239a-4f72-b442-88508c7836ea}intentos': 0,
++                                  'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{8c9c24c7-239a-4f72-b442-88508c7836ea}intentos': a!defaultValue(index(rule!SCA2_obtenerErrorPendiente(idSolicitud: tostring(index(ri!dataServicio, "codSolicitud", null)), comando: "SCA2 TTQ GrabarTreboles", nodo: "Aplicar tréboles en TTQ (enhorabuena contra anulación)", codigo: "TTQ_KO"), "intentos", null) + 1, 0),
+                                   'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{f891dbfa-4fcb-42e9-9d7d-b5799ddf7d02}estado': cons!SCA2_TXT_ESTADO_TAREA_PENDIENTE,
+                                   'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{4cedd947-8bd9-4a5c-aa77-cf8e5c65308a}fechaCreacion': now()
+                                 ),

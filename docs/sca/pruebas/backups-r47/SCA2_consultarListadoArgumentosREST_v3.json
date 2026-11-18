@@ -1,0 +1,40 @@
+{
+  "uuid": "5db48f50-b77a-47db-9ed9-25264966228a",
+  "name": "SCA2_consultarListadoArgumentosREST",
+  "description": "Integración para llamar al servicio REST consultarListadoArgumentos [SCA2] copia de SCAC_consultarListadoArgumentosREST",
+  "connectedSystemUuid": "_a-0000eb73-e3da-8000-9c41-011c48011c48_11566210",
+  "operationId": "system.http",
+  "properties": {
+    "useConnectedSystem": true,
+    "inheritBaseUrl": true,
+    "relativePath": "es_pca_gestionartareas_bbe-web/esp/api/1.0/consultarListadoArgumentos",
+    "relativePathExpression": null,
+    "httpMethod": "POST",
+    "requestTimeout": 300,
+    "usage": "QUERY",
+    "queryParameters": null,
+    "ignoreEmptyQueryParameters": true,
+    "headers": [
+      {
+        "name": "Host",
+        "value": "cons!SCAC_VAL_HOST_WEBSERVICES"
+      }
+    ],
+    "ignoreEmptyHeaders": true,
+    "bodyType": "application/json",
+    "bodyContent": "a!toJson_17r1(ri!body)",
+    "autoConvertToJson": true,
+    "removeNullsFromJson": true,
+    "responseBodyParsing": "RETURN_RAW",
+    "errorHandling": null,
+    "enableRequestResponseLogging": false
+  },
+  "inputs": [
+    {
+      "name": "body",
+      "type": "Map",
+      "multiple": false
+    }
+  ],
+  "versionId": "3"
+}

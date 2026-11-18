@@ -1,0 +1,43 @@
+--- live/SCA2_AltaSolicitudAnulacionPopUp.sail	2026-11-17 09:20:28.730041730 +0000
++++ mod/SCA2_AltaSolicitudAnulacionPopUp.sail	2026-11-17 09:45:42.460223590 +0000
+@@ -2,6 +2,33 @@
+    (mismas validaciones y textos; records SCA2). Inputs:
+    poliza (Text), vista (Text: BUSQUEDA/POPUP/ALTA), polizaAlta (Text) */
+ a!localVariables(
++  /* R53: si CORE no responde (roles o solicitudes de la póliza), aviso en lugar del error al evaluar las validaciones previas */
++  local!coreNoDisponibleR53: if(
++    a!isNullOrEmpty(ri!poliza),
++    false,
++    or(
++      rule!SCA2_esCoreNoDisponible(index(rule!SCA2_obtenerInformacionUsuario(), "roles", null)),
++      rule!SCA2_esCoreNoDisponible(rule!SCA2_consultarSolicitudes(numPoliza: ri!poliza, codInt: "", tpBusqueda: "0"))
++    )
++  ),
++  if(
++    local!coreNoDisponibleR53,
++    {
++      rule!SCA2_AvisoCoreNoDisponible(mensaje: cons!SCA2_TXT_CORE_NO_DISPONIBLE),
++      a!buttonLayout(
++        secondaryButtons: a!buttonWidget(
++          label: "CANCELAR",
++          saveInto: {
++            a!save(ri!vista, "BUSQUEDA"),
++            a!save(ri!poliza, null),
++            a!save(ri!polizaAlta, null)
++          },
++          style: "LINK",
++          color: "NEGATIVE"
++        )
++      )
++    },
++    a!localVariables(
+   local!errorRolAltitude: false,
+   local!eleccionPoliza: 1,
+   local!tipoPoliza: if(
+@@ -598,3 +625,5 @@
+     }
+   )
+ )
+\ No newline at end of file
++  )
++)

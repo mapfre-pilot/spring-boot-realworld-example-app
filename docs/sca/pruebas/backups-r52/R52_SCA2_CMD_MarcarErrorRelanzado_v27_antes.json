@@ -1,0 +1,900 @@
+{
+ "creator": "devin",
+ "uuid": "0000f073-49f2-8000-d0e7-7f0000014e7a",
+ "name": {
+  "en_US": "",
+  "es": "SCA2 CMD MarcarErrorRelanzado"
+ },
+ "description": {
+  "en_US": "",
+  "es": "[SCA2] Relanzar desde BandejaErrores"
+ },
+ "parentFolderUuid": "_g-0000f069-4ee2-8000-64c6-7f0000014e7a_711",
+ "processVariables": [
+  {
+   "name": "idError",
+   "type": "Number (Integer)",
+   "isParameter": true,
+   "isRequired": false,
+   "multiple": false
+  },
+  {
+   "name": "idSolicitud",
+   "type": "Text",
+   "isParameter": true,
+   "isRequired": false,
+   "multiple": false
+  },
+  {
+   "name": "idTarea",
+   "type": "Text",
+   "isParameter": true,
+   "isRequired": false,
+   "multiple": false
+  },
+  {
+   "name": "comando",
+   "type": "Text",
+   "isParameter": true,
+   "isRequired": false,
+   "multiple": false
+  },
+  {
+   "name": "params",
+   "type": "Any Type",
+   "isParameter": false,
+   "isRequired": false,
+   "multiple": false
+  },
+  {
+   "name": "comandoBase",
+   "type": "Text",
+   "isParameter": false,
+   "isRequired": false,
+   "multiple": false
+  }
+ ],
+ "nodes": [
+  {
+   "id": 1,
+   "type": "core.0",
+   "name": {
+    "en_US": "",
+    "es": "Start"
+   },
+   "coordinates": [
+    80,
+    120
+   ],
+   "uuid": "dd17e4a7-bed5-4ec1-bb03-f77a1c81074c",
+   "typeName": "Start Node",
+   "description": {
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 3,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "type": "core.1",
+   "name": {
+    "en_US": "",
+    "es": "End"
+   },
+   "coordinates": [
+    1030,
+    120
+   ],
+   "uuid": "f54d2cc8-b0f8-489f-ae15-5b28dd51f64d",
+   "typeName": "End Node",
+   "description": {
+    "es": ""
+   },
+   "connections": []
+  },
+  {
+   "id": 10,
+   "type": "appian.system.smart-services.start-process-5",
+   "name": {
+    "en_US": "",
+    "es": "Start Decidir"
+   },
+   "coordinates": [
+    840,
+    120
+   ],
+   "uuid": "8ff1dcb4-4702-436a-921a-c90a74c483a7",
+   "typeName": "Start Process",
+   "description": {
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 2,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "data": {
+    "inputs": [
+     {
+      "name": "ProcessModel",
+      "type": "Process Model",
+      "required": true,
+      "expression": "=cons!SCA2_PM_CMD_DECIDIR",
+      "saveInto": ""
+     },
+     {
+      "name": "ProcessParameters",
+      "type": "Any Type",
+      "required": false,
+      "expression": "={idSolicitud: pv!idSolicitud, idTarea: pv!idTarea}",
+      "saveInto": ""
+     },
+     {
+      "name": "IsSynchronous",
+      "type": "Boolean",
+      "required": true,
+      "expression": "",
+      "value": 0,
+      "saveInto": ""
+     }
+    ],
+    "customInputs": [],
+    "outputs": [
+     {
+      "name": "ProcessInfo",
+      "type": "ProcessInfo"
+     },
+     {
+      "name": "Timeout",
+      "type": "Boolean"
+     }
+    ],
+    "customOutputs": []
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER",
+    "overrideLane": false
+   }
+  },
+  {
+   "id": 11,
+   "type": "appian.system.smart-services.start-process-5",
+   "name": {
+    "en_US": "",
+    "es": "Start CrearAccion"
+   },
+   "coordinates": [
+    840,
+    240
+   ],
+   "uuid": "3fb75143-7fd4-4504-9539-413b530dd656",
+   "typeName": "Start Process",
+   "description": {
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 2,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "data": {
+    "inputs": [
+     {
+      "name": "ProcessModel",
+      "type": "Process Model",
+      "required": true,
+      "expression": "=cons!SCA2_PM_CMD_CREAR_ACCION",
+      "saveInto": ""
+     },
+     {
+      "name": "ProcessParameters",
+      "type": "Any Type",
+      "required": false,
+      "expression": "={idSolicitud: pv!idSolicitud, idTarea: pv!idTarea}",
+      "saveInto": ""
+     },
+     {
+      "name": "IsSynchronous",
+      "type": "Boolean",
+      "required": true,
+      "expression": "",
+      "value": 0,
+      "saveInto": ""
+     }
+    ],
+    "customInputs": [],
+    "outputs": [
+     {
+      "name": "ProcessInfo",
+      "type": "ProcessInfo"
+     },
+     {
+      "name": "Timeout",
+      "type": "Boolean"
+     }
+    ],
+    "customOutputs": []
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER",
+    "overrideLane": false
+   }
+  },
+  {
+   "id": 12,
+   "type": "appian.system.smart-services.start-process-5",
+   "name": {
+    "en_US": "",
+    "es": "Start CompletarAccion"
+   },
+   "coordinates": [
+    840,
+    360
+   ],
+   "uuid": "59c1f03b-51e1-40a2-8244-4bc6b29e07aa",
+   "typeName": "Start Process",
+   "description": {
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 2,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "data": {
+    "inputs": [
+     {
+      "name": "ProcessModel",
+      "type": "Process Model",
+      "required": true,
+      "expression": "=cons!SCA2_PM_CMD_COMPLETAR_ACCION",
+      "saveInto": ""
+     },
+     {
+      "name": "ProcessParameters",
+      "type": "Any Type",
+      "required": false,
+      "expression": "={idSolicitud: a!defaultValue(tostring(index(pv!params, \"idSolicitud\", null)), pv!idSolicitud), idTarea: tointeger(a!defaultValue(index(pv!params, \"idTarea\", null), pv!idTarea)), resultado: index(pv!params, \"resultado\", null), relanzado: true}",
+      "saveInto": ""
+     },
+     {
+      "name": "IsSynchronous",
+      "type": "Boolean",
+      "required": true,
+      "expression": "",
+      "value": 0,
+      "saveInto": ""
+     }
+    ],
+    "customInputs": [],
+    "outputs": [
+     {
+      "name": "ProcessInfo",
+      "type": "ProcessInfo"
+     },
+     {
+      "name": "Timeout",
+      "type": "Boolean"
+     }
+    ],
+    "customOutputs": []
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER",
+    "overrideLane": false
+   }
+  },
+  {
+   "id": 13,
+   "type": "appian.system.smart-services.start-process-5",
+   "name": {
+    "en_US": "",
+    "es": "Start Finalizar"
+   },
+   "coordinates": [
+    840,
+    480
+   ],
+   "uuid": "0a71324e-6765-4a7d-9766-1e11874bcf96",
+   "typeName": "Start Process",
+   "description": {
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 2,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "data": {
+    "inputs": [
+     {
+      "name": "ProcessModel",
+      "type": "Process Model",
+      "required": true,
+      "expression": "=cons!SCA2_PM_CMD_FINALIZAR",
+      "saveInto": ""
+     },
+     {
+      "name": "ProcessParameters",
+      "type": "Any Type",
+      "required": false,
+      "expression": "={idSolicitud: pv!idSolicitud, idTarea: pv!idTarea}",
+      "saveInto": ""
+     },
+     {
+      "name": "IsSynchronous",
+      "type": "Boolean",
+      "required": true,
+      "expression": "",
+      "value": 0,
+      "saveInto": ""
+     }
+    ],
+    "customInputs": [],
+    "outputs": [
+     {
+      "name": "ProcessInfo",
+      "type": "ProcessInfo"
+     },
+     {
+      "name": "Timeout",
+      "type": "Boolean"
+     }
+    ],
+    "customOutputs": []
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER",
+    "overrideLane": false
+   }
+  },
+  {
+   "id": 14,
+   "type": "appian.system.smart-services.start-process-5",
+   "name": {
+    "en_US": "",
+    "es": "Start Mecanizar"
+   },
+   "coordinates": [
+    840,
+    600
+   ],
+   "uuid": "fb971d79-761b-4a25-aba0-d75c1deaa2cb",
+   "typeName": "Start Process",
+   "description": {
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 2,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "data": {
+    "inputs": [
+     {
+      "name": "ProcessModel",
+      "type": "Process Model",
+      "required": true,
+      "expression": "=cons!SCA2_PM_CMD_MECANIZAR",
+      "saveInto": ""
+     },
+     {
+      "name": "ProcessParameters",
+      "type": "Any Type",
+      "required": false,
+      "expression": "={idSolicitud: pv!idSolicitud, idTarea: pv!idTarea}",
+      "saveInto": ""
+     },
+     {
+      "name": "IsSynchronous",
+      "type": "Boolean",
+      "required": true,
+      "expression": "",
+      "value": 0,
+      "saveInto": ""
+     }
+    ],
+    "customInputs": [],
+    "outputs": [
+     {
+      "name": "ProcessInfo",
+      "type": "ProcessInfo"
+     },
+     {
+      "name": "Timeout",
+      "type": "Boolean"
+     }
+    ],
+    "customOutputs": []
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER",
+    "overrideLane": false
+   }
+  },
+  {
+   "id": 15,
+   "type": "appian.system.smart-services.start-process-5",
+   "name": {
+    "en_US": "",
+    "es": "Start Caducar"
+   },
+   "coordinates": [
+    840,
+    720
+   ],
+   "uuid": "9c9e221e-f533-4426-948d-054c8a984e45",
+   "typeName": "Start Process",
+   "description": {
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 2,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "data": {
+    "inputs": [
+     {
+      "name": "ProcessModel",
+      "type": "Process Model",
+      "required": true,
+      "expression": "=cons!SCA2_PM_CMD_CADUCAR",
+      "saveInto": ""
+     },
+     {
+      "name": "ProcessParameters",
+      "type": "Any Type",
+      "required": false,
+      "expression": "={idSolicitud: pv!idSolicitud, idTarea: pv!idTarea}",
+      "saveInto": ""
+     },
+     {
+      "name": "IsSynchronous",
+      "type": "Boolean",
+      "required": true,
+      "expression": "",
+      "value": 0,
+      "saveInto": ""
+     }
+    ],
+    "customInputs": [],
+    "outputs": [
+     {
+      "name": "ProcessInfo",
+      "type": "ProcessInfo"
+     },
+     {
+      "name": "Timeout",
+      "type": "Boolean"
+     }
+    ],
+    "customOutputs": []
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER",
+    "overrideLane": false
+   }
+  },
+  {
+   "id": 3,
+   "type": "internal3.write_records_to_source_23r3",
+   "name": {
+    "en_US": "",
+    "es": "Marcar error RELANZADO"
+   },
+   "coordinates": [
+    270,
+    120
+   ],
+   "uuid": "b5264766-5b43-4b68-b35f-e96cb72c15e0",
+   "typeName": "Write Records and Related Records",
+   "description": {
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 20,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "data": {
+    "inputs": [
+     {
+      "name": "Records",
+      "type": "Any Type",
+      "required": true,
+      "expression": "={if(a!isNullOrEmpty(pv!idError), {},'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error'('recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{e5dc602a-1e18-44df-bbde-5d580de8ad21}id': pv!idError, 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{f891dbfa-4fcb-42e9-9d7d-b5799ddf7d02}estado': \"RELANZADO\", 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{a447ab30-a57c-45b1-a57f-5784bd6897a1}resueltoPor': pp!initiator, 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{6222f0af-bc41-4207-aad2-e756495f3d81}fechaResolucion': now()))}",
+      "saveInto": ""
+     },
+     {
+      "name": "PauseOnError",
+      "type": "Boolean",
+      "required": false,
+      "expression": "",
+      "value": 1,
+      "saveInto": ""
+     },
+     {
+      "name": "RecordType",
+      "type": "RecordType2",
+      "required": false,
+      "expression": "",
+      "value": "",
+      "saveInto": ""
+     },
+     {
+      "name": "CaptureEvents",
+      "type": "Boolean",
+      "required": true,
+      "expression": "",
+      "value": 0,
+      "saveInto": ""
+     }
+    ],
+    "customInputs": [],
+    "outputs": [
+     {
+      "name": "RecordsUpdated",
+      "type": "Any Type"
+     },
+     {
+      "name": "ErrorOccurred",
+      "type": "Boolean"
+     },
+     {
+      "name": "Error",
+      "type": "Text"
+     }
+    ],
+    "customOutputs": []
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER",
+    "overrideLane": false
+   }
+  },
+  {
+   "id": 4,
+   "type": "core.4",
+   "name": {
+    "en_US": "",
+    "es": "Comando?"
+   },
+   "coordinates": [
+    650,
+    120
+   ],
+   "uuid": "4efbb0bc-f2ae-4d4e-83e8-2ca049487d08",
+   "typeName": "XOR",
+   "description": {
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 10,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    },
+    {
+     "targetNodeId": 11,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    },
+    {
+     "targetNodeId": 12,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    },
+    {
+     "targetNodeId": 13,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    },
+    {
+     "targetNodeId": 14,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    },
+    {
+     "targetNodeId": 15,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    },
+    {
+     "targetNodeId": 16,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    },
+    {
+     "targetNodeId": 2,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    },
+    {
+     "targetNodeId": 17,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "decision": {
+    "conditions": [
+     {
+      "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD Decidir\"",
+      "targetNodeId": 10,
+      "label": "Decidir"
+     },
+     {
+      "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD CrearAccion\"",
+      "targetNodeId": 11,
+      "label": "CrearAccion"
+     },
+     {
+      "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD CompletarAccion\"",
+      "targetNodeId": 12,
+      "label": "CompletarAccion"
+     },
+     {
+      "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD Finalizar\"",
+      "targetNodeId": 13,
+      "label": "Finalizar"
+     },
+     {
+      "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD Mecanizar\"",
+      "targetNodeId": 14,
+      "label": "Mecanizar"
+     },
+     {
+      "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD Caducar\"",
+      "targetNodeId": 15,
+      "label": "Caducar"
+     },
+     {
+      "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD Alta\"",
+      "targetNodeId": 16,
+      "label": "Alta"
+     },
+     {
+      "expression": "a!defaultValue(pv!comandoBase, pv!comando)=\"SCA2 CMD MecanizarNSE\"",
+      "targetNodeId": 17,
+      "label": "MecanizarNSE"
+     }
+    ],
+    "defaultPath": 2
+   }
+  },
+  {
+   "id": 20,
+   "type": "internal.16",
+   "name": {
+    "en_US": "Cargar parámetros relanzamiento",
+    "es": "Cargar parámetros relanzamiento"
+   },
+   "coordinates": [
+    460,
+    120
+   ],
+   "uuid": "d894437e-6844-495b-8f90-6342c21a6824",
+   "typeName": "Unattended Multiple Questions",
+   "description": {
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 4,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "data": {
+    "inputs": [],
+    "customInputs": [],
+    "outputs": [],
+    "customOutputs": [
+     {
+      "expression": "index(split(a!defaultValue(pv!comando, \"\"), \" - \"), 1, a!defaultValue(pv!comando, \"\"))",
+      "saveInto": "comandoBase"
+     },
+     {
+      "expression": "a!match(value: index(split(a!defaultValue(pv!comando, \"\"), \" - \"), 1, \"\"), equals: \"SCA2 CMD CompletarAccion\", then: rule!SCA2_parametrosRelanzarCompletarAccion(idError: pv!idError, idSolicitud: pv!idSolicitud), equals: \"SCA2 CMD Alta\", then: rule!SCA2_parametrosRelanzarAlta(error: a!queryRecordByIdentifier(recordType: 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error', identifier: pv!idError, fields: {'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{e5dc602a-1e18-44df-bbde-5d580de8ad21}id', 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{263ccc68-f8c2-4913-b78d-8fce31e7ed9a}idSolicitud', 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{f4cbb383-4659-42ed-a22b-d5fa91a09a5f}payload'})), default: null)",
+      "saveInto": "params"
+     }
+    ]
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER",
+    "overrideLane": false
+   }
+  },
+  {
+   "id": 16,
+   "type": "appian.system.smart-services.start-process-5",
+   "name": {
+    "en_US": "",
+    "es": "Start Alta"
+   },
+   "coordinates": [
+    840,
+    840
+   ],
+   "uuid": "d04b97b6-1f4f-434a-aff6-d2a94fa5874b",
+   "typeName": "Start Process",
+   "description": {
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 2,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "data": {
+    "inputs": [
+     {
+      "name": "ProcessModel",
+      "type": "Process Model",
+      "required": true,
+      "expression": "=cons!SCA2_PM_CMD_ALTA",
+      "saveInto": ""
+     },
+     {
+      "name": "ProcessParameters",
+      "type": "Any Type",
+      "required": false,
+      "expression": "=pv!params",
+      "saveInto": ""
+     },
+     {
+      "name": "IsSynchronous",
+      "type": "Boolean",
+      "required": true,
+      "expression": "",
+      "value": 0,
+      "saveInto": ""
+     }
+    ],
+    "customInputs": [],
+    "outputs": [
+     {
+      "name": "ProcessInfo",
+      "type": "ProcessInfo"
+     },
+     {
+      "name": "Timeout",
+      "type": "Boolean"
+     }
+    ],
+    "customOutputs": []
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER",
+    "overrideLane": false
+   }
+  },
+  {
+   "id": 17,
+   "type": "appian.system.smart-services.start-process-5",
+   "name": {
+    "en_US": "",
+    "es": "Start MecanizarNSE"
+   },
+   "coordinates": [
+    840,
+    960
+   ],
+   "uuid": "ce58ef71-6df4-4e0d-afbe-09f431ac3deb",
+   "typeName": "Start Process",
+   "description": {
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 2,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "data": {
+    "inputs": [
+     {
+      "name": "ProcessModel",
+      "type": "Process Model",
+      "required": true,
+      "expression": "=cons!SCA2_PM_CMD_MECANIZAR_NSE",
+      "saveInto": ""
+     },
+     {
+      "name": "ProcessParameters",
+      "type": "Any Type",
+      "required": false,
+      "expression": "={idSolicitud: pv!idSolicitud, relanzado: true}",
+      "saveInto": ""
+     },
+     {
+      "name": "IsSynchronous",
+      "type": "Boolean",
+      "required": true,
+      "expression": "",
+      "value": 0,
+      "saveInto": ""
+     }
+    ],
+    "customInputs": [],
+    "outputs": [
+     {
+      "name": "ProcessInfo",
+      "type": "ProcessInfo"
+     },
+     {
+      "name": "Timeout",
+      "type": "Boolean"
+     }
+    ],
+    "customOutputs": []
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER",
+    "overrideLane": false
+   }
+  }
+ ],
+ "lanes": [],
+ "versionId": "",
+ "processDisplayName": {
+  "es": "=\"SCA2 CMD MarcarErrorRelanzado - \" & pp!starttime"
+ },
+ "cleanupAction": "AUTO_DELETE",
+ "autoArchiveDelay": 7,
+ "autoDeleteDelay": 1,
+ "alertConfigured": true,
+ "alertUsesGroups": true
+}

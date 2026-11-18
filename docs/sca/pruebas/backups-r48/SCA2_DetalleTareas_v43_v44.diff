@@ -1,0 +1,29 @@
+857a858,885
+>             /* R48-A: espera de la decisión agotada sin siguiente gestión ni cierre: mensaje claro (ACEPTAR ya queda habilitado para salir) */
+>             a!richTextDisplayField(
+>               labelPosition: "COLLAPSED",
+>               value: a!richTextItem(
+>                 text: cons!SCA2_TXT_ESPERA_AGOTADA & if(a!isNullOrEmpty(ri!idSolicitud), "", " Solicitud: " & ri!idSolicitud & "."),
+>                 style: "PLAIN",
+>                 size: "MEDIUM"
+>               ),
+>               align: "CENTER",
+>               showWhen: and(
+>                 local!pantallaActual <> "MECANIZACION",
+>                 local!esperaAgotada,
+>                 local!accionCerrada,
+>                 not(local!accionPospuesta),
+>                 not(local!caNegativa),
+>                 a!isNullOrEmpty(local!tareaPendiente),
+>                 a!isNullOrEmpty(local!tareaMecanizar),
+>                 not(
+>                   or(
+>                     left(upper(tostring(local!estadoSolPoll)), 9) = "FINALIZAD",
+>                     contains(
+>                       {"FIN", "RECHAZADA", "CANCELADA", upper(cons!SCA2_TXT_ESTADO_SOL_CADUCADA), "PDTE_REDIRECCION_VIDA", "ERROR", "ERROR_DECISION"},
+>                       upper(tostring(local!estadoSolPoll))
+>                     )
+>                   )
+>                 )
+>               )
+>             ),

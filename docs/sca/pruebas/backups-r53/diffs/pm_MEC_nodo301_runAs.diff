@@ -1,0 +1,11 @@
+--- v51
++++ v52
+@@ -2,7 +2,7 @@
+  "assignment": {
+   "attended": false,
+   "overrideLane": false,
+-  "runAs": "DESIGNER"
++  "runAs": "INITIATOR"
+  },
+  "connections": [
+   {

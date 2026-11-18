@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<contentHaul xmlns:a="http://www.appian.com/ae/types/2009">
+    <versionUuid>_a-0000f099-f136-8000-9d3c-011c48011c48_5624643</versionUuid>
+    <bodyVersionUuid>4IGXmqTi</bodyVersionUuid>
+    <interface>
+        <name>SCA2_TablaOtrasSolAnulacion</name>
+        <uuid>_a-0000f069-4f37-8000-9cc8-011c48011c48_20065000</uuid>
+        <description></description>
+        <parentUuid>_a-0000f069-4f37-8000-9cc8-011c48011c48_20050135</parentUuid>
+        <visibility>
+            <advertise>false</advertise>
+            <hierarchy>true</hierarchy>
+            <indexable>true</indexable>
+            <quota>false</quota>
+            <searchable>true</searchable>
+            <system>false</system>
+            <unlogged>false</unlogged>
+        </visibility>
+        <definition>/* [SCA2] Otras solicitudes de anulación — port de SCA_TablaOtrasSolAnulaci_n_Estrategicas
+   sobre SCA2 Solicitud (numPoliza). Inputs: numPoliza (Text), idSolicitudSel (Text)
+   [R9-E F1/F3] Paridad SCA_TablaOtrasSolAnulaci_n: se añaden las filas de CORE (consultarSolicitudes) de la póliza
+   sin registro SCA2 (creadas en SCA / históricas) y la "Fecha resolución" sale de CORE ("-" mientras está pendiente). */
+a!localVariables(
+  local!q: if(
+    a!isNullOrEmpty(ri!numPoliza),
+    {},
+    #"SYSTEM_SYSRULES_queryRecordType_v4"(
+      recordType: #"urn:appian:record-type:v1:c531595c-c3b5-454c-a355-8145e7e27e9a",
+      filters: #"SYSTEM_SYSRULES_queryFilter"(
+        field: #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/ea9a37fd-f033-4f83-ad3d-55d6d4a8ae7b",
+        operator: "=",
+        value: ri!numPoliza
+      ),
+      fields: {
+        #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9",
+        #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/65f4378b-cf90-4761-b1d0-16ace177a82c",
+        #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/074b8e94-466e-4e45-8fed-074610396bed",
+        #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/331a1fda-174e-4caf-976e-0e259856800f",
+        #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/ea9a37fd-f033-4f83-ad3d-55d6d4a8ae7b",
+        #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/2242a3b0-3166-45d7-91fc-3082f21a1a34",
+        #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/022e0915-97a9-4742-b07f-1361765eee72",
+        #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/63161335-1bdd-4c7a-82eb-3560786a41d5/b3b05401-6420-4d28-8c0a-d55c0665a687"
+      },
+      pagingInfo: #"SYSTEM_SYSRULES_pagingInfo"(
+        startIndex: 1,
+        batchSize: 50,
+        sort: {
+          #"SYSTEM_SYSRULES_sortInfo"(
+            field: #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/331a1fda-174e-4caf-976e-0e259856800f",
+            ascending: false
+          )
+        }
+      )
+    )
+  ),
+  local!solsSca2: index(local!q, "data", {}),
+  local!idsSca2: touniformstring(
+    #"SYSTEM_SYSRULES_forEach"(
+      items: local!solsSca2,
+      expression: tostring(
+        a!defaultValue(
+          index(
+            fv!item,
+            #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9",
+            ""
+          ),
+          ""
+        )
+      )
+    )
+  ),
+  /* Filas de CORE para la póliza (mismo servicio que SCA: consultarSolicitudes tpBusqueda "0") */
+  local!solsCore: if(
+    a!isNullOrEmpty(ri!numPoliza),
+    {},
+    a!flatten(
+      index(
+        #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050936"(
+          numPoliza: ri!numPoliza,
+          codInt: "",
+          tpBusqueda: "0"
+        ),
+        "MSSConsultarSolicitudes",
+        {}
+      )
+    )
+  ),
+  local!idsCore: touniformstring(
+    #"SYSTEM_SYSRULES_forEach"(
+      items: local!solsCore,
+      expression: tostring(
+        a!defaultValue(index(fv!item, "idSolicitud", ""), "")
+      )
+    )
+  ),
+  local!estadosFinales: {
+    #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624016",
+    #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624028",
+    #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624022",
+    #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624034",
+    #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624040",
+    "RECHAZADA",
+    "CANCELADA",
+    #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624046",
+    #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624052",
+    "ERROR"
+  },
+  local!filas: a!flatten(
+    {
+      #"SYSTEM_SYSRULES_forEach"(
+        items: local!solsSca2,
+        expression: a!localVariables(
+          local!id: tostring(
+            a!defaultValue(
+              index(
+                fv!item,
+                #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/f2b6f90b-183b-493e-81c1-d1dd65a6cbd9",
+                ""
+              ),
+              ""
+            )
+          ),
+          local!estado: index(
+            fv!item,
+            #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/65f4378b-cf90-4761-b1d0-16ace177a82c",
+            null
+          ),
+          local!modif: index(
+            fv!item,
+            #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/022e0915-97a9-4742-b07f-1361765eee72",
+            null
+          ),
+          local!pos: if(
+            a!isNullOrEmpty(local!idsCore),
+            {},
+            wherecontains(local!id, local!idsCore)
+          ),
+          local!coreRow: if(
+            length(local!pos) &gt; 0,
+            index(
+              local!solsCore,
+              index(local!pos, 1, 0),
+              null
+            ),
+            null
+          ),
+          a!map(
+            idSolicitud: local!id,
+            estado: local!estado,
+            accion: index(
+              fv!item,
+              #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/074b8e94-466e-4e45-8fed-074610396bed",
+              null
+            ),
+            /* Paridad SCA: fecha de solicitud de CORE (fecSolicitud) si existe; respaldo createdAt del record SCA2 */
+            fecSolicitud: if(
+              a!isNotNullOrEmpty(
+                index(local!coreRow, "fecSolicitud", null)
+              ),
+              tostring(
+                index(local!coreRow, "fecSolicitud", null)
+              ),
+              if(
+                a!isNullOrEmpty(
+                  index(
+                    fv!item,
+                    #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/331a1fda-174e-4caf-976e-0e259856800f",
+                    null
+                  )
+                ),
+                "-",
+                text(
+                  index(
+                    fv!item,
+                    #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/331a1fda-174e-4caf-976e-0e259856800f",
+                    null
+                  ),
+                  "dd/MM/yyyy HH:mm:ss"
+                )
+              )
+            ),
+            numPoliza: index(
+              fv!item,
+              #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/ea9a37fd-f033-4f83-ad3d-55d6d4a8ae7b",
+              null
+            ),
+            lineaNegocio: index(
+              fv!item,
+              #"urn:appian:record-field:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/2242a3b0-3166-45d7-91fc-3082f21a1a34",
+              null
+            ),
+            causa: proper(
+              a!defaultValue(
+                index(
+                  index(
+                    index(
+                      fv!item,
+                      #"urn:appian:record-relationship:v1:c531595c-c3b5-454c-a355-8145e7e27e9a/63161335-1bdd-4c7a-82eb-3560786a41d5",
+                      {}
+                    ),
+                    1,
+                    null
+                  ),
+                  #"urn:appian:record-field:v1:9a9209c7-aab4-4078-9bef-280de47fdd6e/b3b05401-6420-4d28-8c0a-d55c0665a687",
+                  null
+                ),
+                "-"
+              )
+            ),
+            /* Fecha resolución: manda CORE (vacía mientras pendiente, como SCA); respaldo SCA2 sólo si el estado es final */
+            fecResolucion: if(
+              a!isNotNullOrEmpty(local!coreRow),
+              if(
+                not(
+                  contains(
+                    {
+                      "3",
+                      "4",
+                      "5",
+                      "6",
+                      "11",
+                      "12",
+                      "14",
+                      "15",
+                      "18",
+                      "19"
+                    },
+                    tostring(
+                      a!defaultValue(
+                        index(local!coreRow, "codEstSolic", ""),
+                        ""
+                      )
+                    )
+                  )
+                ),
+                "-",
+                tostring(
+                  a!defaultValue(
+                    index(local!coreRow, "fecResolucion", "-"),
+                    "-"
+                  )
+                )
+              ),
+              if(
+                or(
+                  a!isNullOrEmpty(local!modif),
+                  not(
+                    contains(
+                      local!estadosFinales,
+                      tostring(local!estado)
+                    )
+                  )
+                ),
+                "-",
+                text(local!modif, "dd/MM/yyyy HH:mm:ss")
+              )
+            ),
+            origen: "SCA2"
+          )
+        )
+      ),
+      #"SYSTEM_SYSRULES_forEach"(
+        items: local!solsCore,
+        expression: a!localVariables(
+          local!id: tostring(
+            a!defaultValue(index(fv!item, "idSolicitud", ""), "")
+          ),
+          if(
+            or(
+              a!isNullOrEmpty(local!id),
+              contains(local!idsSca2, local!id)
+            ),
+            {},
+            a!map(
+              idSolicitud: local!id,
+              /* codEstSolic CORE -&gt; estado SCA2 (misma tabla que SCA2_Buscador / SCA_D_EstadosSolicitud) */
+              estado: a!match(
+                value: tostring(
+                  a!defaultValue(index(fv!item, "codEstSolic", ""), "")
+                ),
+                equals: "3",
+                then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624022",
+                equals: "4",
+                then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624034",
+                equals: "15",
+                then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624034",
+                equals: "5",
+                then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624040",
+                equals: "6",
+                then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624046",
+                equals: "11",
+                then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624046",
+                equals: "12",
+                then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624046",
+                equals: "14",
+                then: "CANCELADA",
+                equals: "16",
+                then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624010",
+                equals: "17",
+                then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624010",
+                equals: "18",
+                then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624016",
+                equals: "19",
+                then: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624028",
+                default: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624058"
+              ),
+              accion: null,
+              fecSolicitud: tostring(
+                a!defaultValue(index(fv!item, "fecSolicitud", "-"), "-")
+              ),
+              numPoliza: index(fv!item, "numPoliza", null),
+              lineaNegocio: index(fv!item, "idLineaNegocio", null),
+              causa: proper(
+                tostring(
+                  a!defaultValue(index(fv!item, "causaAnul", "-"), "-")
+                )
+              ),
+              /* CORE rellena fecResolucion también en pendientes (= fecha solicitud): vacía salvo que codEstSolic sea un estado final (3/4/5/6/11/12/14/15/18/19), decisión analista R9 F3 */
+              fecResolucion: if(
+                not(
+                  contains(
+                    {
+                      "3",
+                      "4",
+                      "5",
+                      "6",
+                      "11",
+                      "12",
+                      "14",
+                      "15",
+                      "18",
+                      "19"
+                    },
+                    tostring(
+                      a!defaultValue(index(fv!item, "codEstSolic", ""), "")
+                    )
+                  )
+                ),
+                "-",
+                tostring(
+                  a!defaultValue(index(fv!item, "fecResolucion", "-"), "-")
+                )
+              ),
+              origen: "CORE"
+            )
+          )
+        )
+      )
+    }
+  ),
+  #"SYSTEM_SYSRULES_cardLayout"(
+    contents: {
+      #"SYSTEM_SYSRULES_gridField_v4"(
+        label: "",
+        labelPosition: "ABOVE",
+        emptyGridMessage: "No hay resultados para dicha búsqueda",
+        data: local!filas,
+        columns: {
+          #"SYSTEM_SYSRULES_gridColumn"(
+            label: "Número solicitud",
+            value: #"SYSTEM_SYSRULES_linkField"(
+              links: #"SYSTEM_SYSRULES_dynamicLink"(
+                label: tostring(index(fv!row, "idSolicitud", null)),
+                value: index(fv!row, "idSolicitud", null),
+                saveInto: ri!idSolicitudSel
+              )
+            )
+          ),
+          #"SYSTEM_SYSRULES_gridColumn"(
+            label: "Estado",
+            value: a!localVariables(
+              local!estadoTxt: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20063670"(estado: index(fv!row, "estado", null)),
+              #"SYSTEM_SYSRULES_tagField"(
+                tags: #"SYSTEM_SYSRULES_tagItem"(
+                  text: local!estadoTxt,
+                  backgroundColor: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20063676"(
+                    estado: index(fv!row, "estado", null)
+                  ),
+                  textColor: #"_a-0000f099-f136-8000-9d3c-011c48011c48_5624184"
+                ),
+                align: "CENTER"
+              )
+            )
+          ),
+          #"SYSTEM_SYSRULES_gridColumn"(
+            label: "Fecha solicitud",
+            value: tostring(
+              a!defaultValue(index(fv!row, "fecSolicitud", "-"), "-")
+            )
+          ),
+          #"SYSTEM_SYSRULES_gridColumn"(
+            label: "Número póliza",
+            value: tostring(
+              a!defaultValue(index(fv!row, "numPoliza", "-"), "-")
+            )
+          ),
+          #"SYSTEM_SYSRULES_gridColumn"(
+            label: "Línea negocio",
+            value: a!localVariables(
+              local!ln: tostring(
+                a!defaultValue(index(fv!row, "lineaNegocio", ""), "")
+              ),
+              if(
+                a!isNullOrEmpty(local!ln),
+                "-",
+                a!defaultValue(
+                  index(
+                    #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050695",
+                    tointeger(local!ln),
+                    "-"
+                  ),
+                  "-"
+                )
+              )
+            )
+          ),
+          #"SYSTEM_SYSRULES_gridColumn"(
+            label: "Causa anulación",
+            value: tostring(
+              a!defaultValue(index(fv!row, "causa", "-"), "-")
+            )
+          ),
+          #"SYSTEM_SYSRULES_gridColumn"(
+            label: "Fecha resolución",
+            value: tostring(
+              a!defaultValue(index(fv!row, "fecResolucion", "-"), "-")
+            )
+          ),
+          #"SYSTEM_SYSRULES_gridColumn"(label: "Observaciones", value: "-")
+        },
+        shadeAlternateRows: true
+      )
+    },
+    height: "AUTO",
+    style: "TRANSPARENT",
+    showBorder: false()
+  )
+)</definition>
+        <namedTypedValue>
+            <name>numPoliza</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>idSolicitudSel</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <preferredEditor>interface</preferredEditor>
+        <offlineEnabled>false</offlineEnabled>
+        <isCustom>false</isCustom>
+    </interface>
+    <roleMap public="true">
+        <role inherit="true" allowForAll="false" name="readers">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="authors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="administrators">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyReaders">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAuthors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAdministrators">
+            <users/>
+            <groups/>
+        </role>
+    </roleMap>
+    <history>
+        <historyInfo versionUuid="_a-0000f069-4f37-8000-9cc8-011c48011c48_20065030"/>
+        <historyInfo versionUuid="_a-0000f099-f136-8000-9d3c-011c48011c48_5624643"/>
+    </history>
+</contentHaul>

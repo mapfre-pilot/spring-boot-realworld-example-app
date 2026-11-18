@@ -1,0 +1,23 @@
+--- v51
++++ v54
+@@ -389,5 +389,5 @@
+     "attended": false,
+     "overrideLane": false,
+-    "runAs": "DESIGNER"
++    "runAs": "INITIATOR"
+    },
+    "connections": [
+@@ -566,5 +566,5 @@
+     "attended": false,
+     "overrideLane": false,
+-    "runAs": "DESIGNER"
++    "runAs": "INITIATOR"
+    },
+    "connections": [
+@@ -735,5 +735,5 @@
+     "attended": false,
+     "overrideLane": false,
+-    "runAs": "DESIGNER"
++    "runAs": "INITIATOR"
+    },
+    "connections": [
