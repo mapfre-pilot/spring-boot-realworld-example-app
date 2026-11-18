@@ -24,5 +24,12 @@ Consumidores de `SCA2_SolicitudAnulacion`: `SCA2_DetalleSolicitud` y `SCA2_Miles
 |---|---|---|
 | 1 | `testInterface` `SCA2_ModalFechaSolicitudAnulacion` (15789203) | OK: «Gestión de la solicitud de anulación Num. 15789203», 2 filas (Alta Solicitud / Contra Anulación) |
 | 2 | `testInterface` `SCA2_SolicitudAnulacion` v14 (15789203) | OK: «17/11/2026» con `link` (dynamicLink), sin errores |
+| 3 | `testInterface` `SCA2_SolicitudAnulacion` v14 (PDTE-17579836, CORE sin `fecSolicitudAnul`) | OK: sin `link`, sin errores |
 
-Pendiente: probar el clic en el site con un usuario funcional.
+## Pruebas en el site SCA2 (TEST, solo lectura)
+| # | Prueba | Resultado |
+|---|---|---|
+| 4 | 15789203 (póliza 0002729355511), detalle de la solicitud (`SCA2_DetalleSolicitud`) → Solicitud Anulación | OK: «17/11/2026» es enlace; abre el histórico con 2 filas (Alta Solicitud 17/11/2026 23:26:47 / Contra Anulación 18/11/2026 11:01:13 sin fecha fin, JJGONZ2); ACEPTAR vuelve a la tarjeta y el enlace sigue |
+| 5 | PDTE-17579836 (0006000495) y PDTE-537645161 (0006000283), por Errores → Ver solicitud | OK: «12/11/2026» (fecha local de SCA2) sin enlace; clic sin efecto; sin errores de expresión |
+
+Nota: sin enlace, la fecha sigue en rojo subrayado, como en SCA (allí el valor siempre lleva estilo de enlace). El buscador de pólizas no admite las pólizas de las PDTE; se llega a ellas por la bandeja de Errores.
