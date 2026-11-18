@@ -87,18 +87,22 @@ a!localVariables(
       pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 100)
     ).data
   ),
-  local!selPend: a!forEach(items: local!filasSel, expression: if(a!defaultValue(index(fv!item, 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{f891dbfa-4fcb-42e9-9d7d-b5799ddf7d02}estado', null), "") = cons!SCA2_TXT_ESTADO_TAREA_PENDIENTE, fv!item, {})),
-  local!selRelanzables: a!forEach(items: local!selPend, expression: a!localVariables(
-    local!base: index(split(a!defaultValue(index(fv!item, 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{bf283c94-bf1e-49f4-840c-9a96ce858a37}comando', null), ""), " - "), 1, ""),
-    if(
+  local!selPend: if(
+    a!isNullOrEmpty(local!filasSel),
+    {},
+    index(local!filasSel, wherecontains(cons!SCA2_TXT_ESTADO_TAREA_PENDIENTE, touniformstring(a!forEach(items: local!filasSel, expression: a!defaultValue(index(fv!item, 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{f891dbfa-4fcb-42e9-9d7d-b5799ddf7d02}estado', null), "")))), {})
+  ),
+  local!selRelanzables: if(
+    a!isNullOrEmpty(local!selPend),
+    {},
+    index(local!selPend, where(a!forEach(items: local!selPend, expression: a!localVariables(
+      local!base: index(split(a!defaultValue(index(fv!item, 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{bf283c94-bf1e-49f4-840c-9a96ce858a37}comando', null), ""), " - "), 1, ""),
       or(
         and(contains(local!cmdsRelanzables, local!base), local!base <> "SCA2 TTQ GrabarTreboles"),
         and(local!base = "SCA2 CMD Alta", a!isNotNullOrEmpty(index(fv!item, 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{f4cbb383-4659-42ed-a22b-d5fa91a09a5f}payload', null)))
-      ),
-      fv!item,
-      {}
-    )
-  )),
+      )
+    ))), {})
+  ),
   local!idSel,
   if(a!isNotNullOrEmpty(local!idSel),
     a!sectionLayout(label: "Detalle", contents: {

@@ -7,7 +7,7 @@ Aplica las respuestas a las dudas de [69-cuadro-mando-respuestas-dudas.md](69-cu
 | Objeto | Cambio |
 |---|---|
 | `SCA2_CuadroMando` (interfaz) | v28 → v33. SAIL en `sail/62-cuadro-mando/SCA2_CuadroMando.sail` |
-| `SCA2_BandejaErrores` (interfaz) | v14 → v16. SAIL en `sail/70-r54-respuestas/SCA2_BandejaErrores.sail` |
+| `SCA2_BandejaErrores` (interfaz) | v14 → v17. SAIL en `sail/70-r54-respuestas/SCA2_BandejaErrores.sail` |
 | `SCA2 CMD ProcesarLoteErrores` (modelo de proceso, nuevo) | Definición en `sail/70-r54-respuestas/SCA2_CMD_ProcesarLoteErrores.json` |
 | `SCA2_PM_CMD_PROCESAR_LOTE_ERRORES` (constante, nueva) | Apunta al modelo anterior |
 | `SCA2_FECHA_INICIO_DATOS` (constante, nueva) | Fecha 24/09/2026 en TEST; ajustar por entorno |
