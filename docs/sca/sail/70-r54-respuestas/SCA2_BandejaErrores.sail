@@ -83,7 +83,7 @@ a!localVariables(
     a!queryRecordType(
       recordType: 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error',
       fields: {'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{e5dc602a-1e18-44df-bbde-5d580de8ad21}id', 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{263ccc68-f8c2-4913-b78d-8fce31e7ed9a}idSolicitud', 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{bf283c94-bf1e-49f4-840c-9a96ce858a37}comando', 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{f891dbfa-4fcb-42e9-9d7d-b5799ddf7d02}estado', 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{f4cbb383-4659-42ed-a22b-d5fa91a09a5f}payload'},
-      filters: a!queryFilter(field: 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{e5dc602a-1e18-44df-bbde-5d580de8ad21}id', operator: "in", value: local!sel),
+      filters: a!queryFilter(field: 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{e5dc602a-1e18-44df-bbde-5d580de8ad21}id', operator: "in", value: tointeger(a!flatten(local!sel))),
       pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 100)
     ).data
   ),
@@ -246,7 +246,7 @@ a!localVariables(
         labelPosition: "COLLAPSED", label: "grid",
         selectable: true,
         selectionValue: local!sel,
-        selectionSaveInto: {local!sel, a!save(local!msgOk, null), a!save(local!msgError, null)},
+        selectionSaveInto: {a!save(local!sel, tointeger(a!flatten(save!value))), a!save(local!msgOk, null), a!save(local!msgError, null)},
         emptyGridMessage: "No hay errores con los filtros seleccionados.",
         data: a!dataSubset(
           startIndex: index(local!pagingInfo, "startIndex", 1),
