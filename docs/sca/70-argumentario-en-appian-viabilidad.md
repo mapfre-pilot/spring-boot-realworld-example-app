@@ -1,0 +1,71 @@
+# 70 · Llevar a Appian el servicio de argumentario (preparar request → reglas → argumentario): viabilidad
+
+> Alcance: análisis. **No se ha modificado ningún objeto Appian, servicio ni dato** (ni SCA, ni SCAC, ni CORE).
+> Fuentes: doc [59](59-optimizacion-consultarListadoArgumentos.md), sesión «Optimizar servicio SCA2_consultarListadoArgumentosREST» (27‑28/10/2026, código Plastic `ES_SSCC_SCA_BINT`, `ES_SSCC_SCA_SERVICIOS_BE_CODE`, `ES_SSCC_SCA_CORE_CODE`, `ES_SSCC_SCA_FRONT_CODE`) y medidas hechas entonces en Appian TEST.
+> Leyenda: **[Observado]** visto en código o medido · **[Inferido]** deducido, a confirmar.
+
+## 1. Respuesta corta
+
+- **Sí se puede hacer en Appian**, pero **solo se gana tiempo si se deja de llamar al servicio de reglas en cada apertura**. Mover a Appian los mismos pasos que hace hoy el servicio, en el mismo orden, tardaría lo mismo: casi todo el tiempo es de la llamada a reglas.
+- El servicio actual (`es_pca_gestionartareas_bbe-web`, `consultarListadoArgumentos`) **regenera el argumentario entero en cada llamada** (abrir la tarea, recargar, volver de un positivo/negativo). El SCA antiguo (frontal JSF) solo lo generaba la primera vez. **[Observado]**
+- Propuesta: Appian decide cuándo hace falta regenerar (primera entrada en la gestión/nivel) y el resto de veces **solo lee** el argumentario de CORE y usa catálogo y tréboles guardados en Appian. Reaperturas: de **~4,4 s** (3,2‑16,6 s) a **~1‑1,5 s** con la lectura SOAP de CORE, o **< 1 s** con un endpoint de solo lectura del BBE. **[Inferido, a medir]**
+- Necesita **una decisión funcional del analista**: hoy reglas vuelve a recomendar tras cada positivo/negativo y puede cambiar los pendientes; con la propuesta solo lo haría al cambiar de gestión o de nivel (como el SCA antiguo).
+
+## 2. Qué hace hoy el servicio por dentro [Observado]
+
+`GestionarArgumentosBLImp.consultarListadoArgumentos` (repo `ES_SSCC_SCA_BINT`, rama `/INTEGRATION`), en **cada** llamada:
+
+| # | Paso | Coste |
+|---|---|---|
+| 1 | Lee el argumentario de CORE con consulta directa a BD (`A2139006` × `D2139004` × `A2139003`), por nivel y orden | Rápido |
+| 2 | **Llama siempre al servicio de reglas** `sca_servicios/.../argumento` (prepara la request con los datos del body) | **3,4‑9 s**: dentro hace ~26 llamadas a otros servicios en 2 tandas paralelas + BRMS + log `SCA_AGR_LOGS` |
+| 3 | **Borra** todos los argumentos no ejecutados de la solicitud | BD |
+| 4 | **Inserta** los recomendados, salvo los ya ejecutados en ese nivel (NUUMA del usuario) | BD |
+| 5 | Vuelve a leer el argumentario | Rápido |
+| 6 | Cuenta ejecutados y añade tréboles al texto («N TREBOLES DISPONIBLES» / «TREBOLES RECOMENDADOS»); graba tréboles BigData (`insertarTrebolesBD`) | BD |
+| 7 | Vida: el argumento 356 toma el texto de una nota de la póliza | Llamada extra |
+
+- La rama `/INTEGRATION/PCA-4113 - Optimización del argumentario` **no** optimiza esto: misma lógica sin los pasos 6 y 7.
+- El paso 3 explica casos vistos en TEST (15788331, 15788336): con otro perfil reglas devolvió otra cosa, se borraron los pendientes y no se reinsertaron.
+- El frontal antiguo (`ContraAnularBC`, `ES_SSCC_SCA_FRONT_CODE`) hacía: leer CORE (`listarDetalleArgumentosCntrAnu`) → solo si error 4102 «no existen argumentos»: preparar solicitud, llamar a reglas, grabar con `generarCntrAnu`, releer.
+
+## 3. Tiempos medidos en TEST (oct‑2026) [Observado]
+
+| Pieza | Tiempo |
+|---|---|
+| Listado actual (REST BBE), 24 llamadas, misma solicitud y usuario | media **4,4 s**, rango 3,2‑16,6 s (8,7 s media histórica SCA2, 29 % fallos, timeouts de 300 s) |
+| Solo reglas `argumento` (`SCA2_scaServiciosReglas`) | 3,4‑3,7 s (5,8 y 8,9 s en frío) |
+| Lectura SOAP de CORE (`listarDetalleArgumentosCntrAnu`, integración ya existente) | 0,9‑1,2 s |
+| Catálogo de tipos de argumento en Appian (`sca2_cat_tipo_argumento`) | 18 ms |
+
+Conclusión: **reglas es ~80 % del tiempo** del listado. Preparar la request en Appian + reglas + leer en Appian ≈ el mismo tiempo que hoy.
+
+## 4. Qué se puede hacer en Appian
+
+| Pieza | ¿En Appian? | Cómo |
+|---|---|---|
+| Preparar la request | **Sí, ya está** | El body se monta en `SCA2_ContraAnulacionOpciones`; la request de reglas ya la arma `SCA2_scaServiciosReglas` |
+| Decidir si hay que regenerar | **Sí (nuevo)** | Regla: regenerar solo si CORE responde 4102 o cambia gestión/nivel respecto a lo guardado |
+| Llamar a reglas `argumento` | Sí, ya existe la integración | Solo cuando toca regenerar (idealmente en el proceso, fuera de la pantalla) |
+| Grabar el argumentario en CORE | Sí, por SOAP de CORE | `generarCntrAnu` / `IGestionarArgumentosPCA` (`guardarEjecuArg`, `modificarArgumento`). **Falta confirmar** una operación para borrar pendientes (paso 3) |
+| Leer el argumentario | Sí, con límites | SOAP CORE (0,9‑1,2 s). No da exactamente lo mismo: solo mira la gestión activa y valida perfil/préstamo; en gestiones cerradas da error donde el BBE devuelve listado. Paridad exacta → endpoint de solo lectura en el BBE (reutiliza su paso 1) |
+| Catálogo (descripción, instrucciones, URL, campañas) | **Sí** | `sca2_cat_tipo_argumento` (18 ms), refrescado desde el Mantenimiento |
+| Tréboles | **Sí** | Guardar los que devuelve reglas en una tabla SCA2 (solicitud, gestión, nivel) y reutilizarlos |
+| Tréboles BigData (`insertarTrebolesBD`) y nota Vida 356 | Con cuidado | BigData es inserción directa a BD en el BBE (Appian no tiene conexión a TRON_LD); habría que mantenerla en el BBE o por servicio |
+
+## 5. Opciones
+
+| Opción | Qué cambia | Reapertura | Paridad | Quién |
+|---|---|---|---|---|
+| **A. Solo mejoras Appian, sin cambio funcional** | Evitar llamadas repetidas, reintento ante `StaleConnectionException`/`TransactionException`, timeout 30‑60 s | Igual (~4,4 s) pero menos fallos y sin bloqueos de 5 min | Total | Appian |
+| **B. Orquestación en Appian con SOAP de CORE** | Appian hace: leer CORE → (si toca) reglas + grabar + releer; catálogo y tréboles en Appian | ~1‑1,5 s | Casi: difiere en gestiones cerradas; borrado de pendientes y BigData por confirmar | Appian + analista |
+| **C. Híbrida (recomendada)** | Como B, pero la lectura con un endpoint de solo lectura del BBE (paso 1 + recuento + tréboles) y el listado completo actual solo al regenerar | **< 1 s** | Exacta | Appian + equipo BBE (cambio pequeño) + analista |
+
+Todas irían detrás de una constante `SCA2_USAR_*` para volver atrás, sin tocar SCA ni el BBE compartido (salvo el endpoint nuevo de C), y se validarían comparando campo a campo con el listado actual en solicitudes nuevas de TEST.
+
+## 6. Pendiente de decidir / información necesaria
+
+1. **Analista:** ¿vale regenerar el argumentario solo la primera vez por gestión/nivel (no tras cada positivo/negativo ni al recargar)? Sin esto, B y C no ganan tiempo.
+2. **Equipo BBE** (`es_pca_gestionartareas_bbe-web`): ¿pueden exponer el endpoint de solo lectura (opción C)?
+3. **CORE:** operación SOAP para borrar argumentos pendientes, si se elige B.
+4. **Datos de prueba:** pólizas nuevas que deriven a contra anulación N1, para comparar con solicitudes nuevas.
