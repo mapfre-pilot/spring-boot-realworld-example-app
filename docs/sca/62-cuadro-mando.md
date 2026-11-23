@@ -46,9 +46,11 @@ Vuelta atrás: restaurar la versión 5 de `SCA2_GestionMantenimientoMenu` (deja 
 - Los valores vacíos (causa, grupo de tarea, perfil) no se pintan para evitar categorías sin nombre.
 - Tiempos en milisegundos en las gráficas; el KPI de tiempo medio en segundos.
 - Las cifras son de TEST (datos de pruebas), no representativas de producción.
+- v35: las nueve tarjetas del Resumen se pintan en filas de tres (antes, nueve columnas en una sola fila partían títulos y cifras letra a letra a 1024 px). En móvil se apilan. No cambian indicadores, cifras ni textos; se mantiene el indicador de finalizaciones fallidas de la pestaña Errores (v34).
 
 ## 7. Pruebas realizadas (TEST)
 - `testInterface` de las seis pestañas sin errores.
 - UI (usuario administrador): cada pestaña cambia y pinta sin errores; filtro Línea = Hogar → 31 solicitudes; Origen = wAutemis → 136; cuadros cuadran con los datos (p. ej. cerradas 122 = 55 + 47 + 18 + 2).
 - Las siete opciones anteriores del menú siguen abriendo sin errores.
 - Fallo encontrado y corregido en la prueba UI: la tabla de errores pendientes cargaba el campo `payload` (no permitido en rejillas); ahora consulta solo los campos mostrados.
+- v35 (UI, 1024×768 y 1920×1080): Resumen en 3 filas de 3 tarjetas legibles, mismas cifras que v34 (405, 215, 157, 67, 88, 2417, 210, 501, 33); Errores conserva el indicador de finalizaciones fallidas; Gestiones y resultados y Servicios cargan sin error.
