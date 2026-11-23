@@ -119,11 +119,7 @@ a!localVariables(
                       text: "Gestión de variables de la aplicación no disponible en SCA2 (pendiente).",
                       color: cons!SCA2_VAL_COLOR_GRIS_MEDIO)),
                   /* 5 - Batch */
-                  a!richTextDisplayField(
-                    labelPosition: "COLLAPSED",
-                    value: a!richTextItem(
-                      text: "Lanzamiento de batch no disponible en SCA2 (pendiente: SCA2 CMD BarridoCaducidad).",
-                      color: cons!SCA2_VAL_COLOR_GRIS_MEDIO)),
+                  rule!SCA2_ResumenBatch(),
                   rule!SCA2_MantenimientoPendientesAutorizar(),
                   /* 7 - Catálogos CORE cacheados en Aurora (fase 1, sesión C) */
                   rule!SCA2_CatMantenimiento()
