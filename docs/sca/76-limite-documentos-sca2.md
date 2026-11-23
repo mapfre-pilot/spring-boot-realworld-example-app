@@ -51,4 +51,17 @@ En Designer de TEST, `SCA2_TMP_PruebaLimite50MB` v1 reprodujo el patrón: campo 
 
 La prueba confirma que la llamada sin `documents:` puede consolidar un PDF sobredimensionado aun con el error visible. No se ejecutó una acción de Contra Anulación: en el padre, la llamada sigue condicionada a que ya haya adjuntos en `listaNombreDocs`. Se eliminaron la interfaz temporal, los dos PDF de la prueba y el PDF sintético usado anteriormente para habilitar MODIFICAR.
 
-**Propuesta, no aplicada:** acotar las cuatro llamadas del padre con `documents:` a los IDs de `listaNombreDocs`, que AÑADIR y MODIFICAR registran tras validar y consolidar. No invocar la variante sin documentos si no hay IDs admitidos; se mantienen los grupos y el flujo de negocio. Antes de aplicar el cambio, verificar en TEST aislado que la llamada con IDs explícitos admite los adjuntos ya consolidados y no cambia el recorrido de un PDF válido.
+### Verificación de la propuesta con IDs explícitos
+
+En una segunda interfaz temporal de TEST, `SCA2_TMP_PruebaIdsLimite50MB` v1, AÑADIR validaba el grupo `documento` y consolidaba el PDF pequeño antes de guardar su ID. El botón de continuación mantuvo `submit: true` sin grupo: con un ID admitido invocaba `a!submitUploadedFiles(documents: ...)`; sin IDs, solo guardaba el resultado en una variable local.
+
+| Caso con el PDF de 51 MiB pendiente | Resultado al pulsar Continuar |
+|---|---|
+| Sin IDs admitidos, sin llamar a `a!submitUploadedFiles` | Continuó y el PDF grande apareció en la carpeta de Appian. |
+| Con el ID del PDF de 608 bytes ya consolidado | Se ejecutó `onSuccess` y en la carpeta quedó un único PDF pequeño. También apareció otro PDF grande. |
+
+En ambos casos seguía visible el mensaje de tamaño. La consulta de la carpeta devolvió dos PDF nuevos de 53.477.944 bytes y uno de 608 bytes. **Acotar la llamada a los IDs admitidos no basta con el patrón de continuación probado**. El caso sin llamada demuestra que la consolidación del PDF grande no depende de invocar `a!submitUploadedFiles` sin `documents:`; la prueba no aisló el comportamiento de `submit: true` fuera de Designer.
+
+La revisión del SAIL v82 no identificó otro campo de subida en el padre ni en las interfaces SCA2 que usa, aparte de AÑADIR y MODIFICAR de Documentación. Ambos añaden a `listaNombreDocs` el ID como prefijo del nombre después de validar y consolidar el archivo. El padre conserva la v82: no se cambió ninguna de sus cuatro llamadas ni se repitió la prueba de pantalla con la solicitud, ya que la prueba aislada no cumplió el requisito de bloqueo. No hubo llamadas a CORE o GD en la prueba aislada.
+
+Se eliminaron la interfaz temporal y los tres PDF nuevos; la consulta por UUID devolvió HTTP 404 para los cuatro objetos.
