@@ -40,6 +40,10 @@ DECLARE
   conflicto boolean;
   ya_archivado boolean;
   filas integer;
+  claves_borradas jsonb;
+  claves_expediente jsonb;
+  claves_sync jsonb := '{}'::jsonb;
+  ids_archivados text[] := ARRAY[]::text[];
   filas_expediente integer;
   filas_total integer := 0;
   archivados integer := 0;
@@ -52,7 +56,7 @@ BEGIN
   END IF;
 
   IF jsonb_array_length(entrada) = 0 THEN
-    p_resumen := '{"solicitados":0,"archivados":0,"repetidos":0,"excluidos":0,"conflictos":0,"filas":0}';
+    p_resumen := '{"solicitados":0,"archivados":0,"repetidos":0,"excluidos":0,"conflictos":0,"filas":0,"idsArchivados":[],"clavesSync":{}}';
     RETURN;
   END IF;
 
@@ -140,6 +144,7 @@ BEGIN
 
     -- Subtransacción: una colisión revierte la unidad completa, nunca borra media solicitud.
     filas_expediente := 0;
+    claves_expediente := '{}'::jsonb;
     BEGIN
       FOREACH tabla IN ARRAY tablas LOOP
         hist := tabla || '_hist';
@@ -169,10 +174,21 @@ BEGIN
 
       FOR indice IN REVERSE cardinality(tablas)..1 LOOP
         tabla := tablas[indice];
-        EXECUTE format('DELETE FROM sca2_anulaciones.%I WHERE "ID_SOLICITUD" = $1', tabla) USING clave;
-        GET DIAGNOSTICS filas = ROW_COUNT;
+        EXECUTE format(
+          'WITH borradas AS (DELETE FROM sca2_anulaciones.%I WHERE "ID_SOLICITUD" = $1 RETURNING "ID")
+           SELECT count(*), COALESCE(jsonb_agg("ID" ORDER BY "ID"), ''[]''::jsonb) FROM borradas',
+          tabla
+        ) INTO filas, claves_borradas USING clave;
+        IF filas > 0 THEN
+          claves_expediente := claves_expediente || jsonb_build_object(tabla, claves_borradas);
+        END IF;
         filas_expediente := filas_expediente + filas;
       END LOOP;
+      FOR tabla, claves_borradas IN SELECT key, value FROM jsonb_each(claves_expediente) LOOP
+        claves_sync := jsonb_set(claves_sync, ARRAY[tabla],
+          COALESCE(claves_sync -> tabla, '[]'::jsonb) || claves_borradas);
+      END LOOP;
+      ids_archivados := array_append(ids_archivados, clave);
       archivados := archivados + 1;
       filas_total := filas_total + filas_expediente;
     EXCEPTION WHEN unique_violation THEN
@@ -182,7 +198,8 @@ BEGIN
 
   p_resumen := jsonb_build_object(
     'solicitados', cardinality(ids), 'archivados', archivados, 'repetidos', repetidos,
-    'excluidos', excluidos, 'conflictos', conflictos, 'filas', filas_total
+    'excluidos', excluidos, 'conflictos', conflictos, 'filas', filas_total,
+    'idsArchivados', ids_archivados, 'clavesSync', claves_sync
   )::text;
 END
 $archivo$;
