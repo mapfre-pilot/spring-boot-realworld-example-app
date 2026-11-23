@@ -280,10 +280,14 @@ a!localVariables(
           a!map(t: "Solicitudes en error", v: local!nError, d: "Con error / Error en el servicio de decisión", c: "#DF0027")
         },
         {
-          a!columnsLayout(
-            columns: a!forEach(
-              items: local!kpis,
-              expression: a!columnLayout(contents: a!cardLayout(
+          a!forEach(
+            items: enumerate(ceiling(length(local!kpis) / 3)),
+            expression: a!localVariables(
+              local!fila: fv!item,
+              a!columnsLayout(
+                columns: a!forEach(
+                  items: index(local!kpis, 3 * local!fila + enumerate(3) + 1, {}),
+                  expression: a!columnLayout(contents: a!cardLayout(
                 contents: a!richTextDisplayField(
                   labelPosition: "COLLAPSED",
                   value: {
@@ -300,8 +304,10 @@ a!localVariables(
                 decorativeBarColor: fv!item.c,
                 marginBelow: "STANDARD"
               ))
-            ),
-            stackWhen: {"PHONE", "TABLET_PORTRAIT", "TABLET_LANDSCAPE"}
+                ),
+                stackWhen: {"PHONE"}
+              )
+            )
           ),
           a!columnsLayout(
             columns: {
