@@ -61,6 +61,7 @@ exclusivamente con operaciones `get*`/`list*`. **No se ha modificado ningún obj
 ## Estado y previsión
 
 - [70 — Corrección de Decidir y relanzamiento de errores](70-correccion-decidir-relanzar.md) — diagnóstico, cambios en TEST, pruebas y pendientes.
+- [77 — Corrección de instancias paradas en Decidir](77-correccion-fallos-decidir.md) — incompatibilidad de tipos, cambio en TEST y cancelación pendiente.
 - [Estado de SCA2 tras la ronda 23: dudas funcionales abiertas, resumen de cambios, lógica por flujo y previsión](42-estado-sca2-ronda23.md)
 - [Ronda 24: respuestas del analista a las 17 dudas y plan de aplicación](43-ronda24-respuestas-analista.md)
 - [Propuesta de navegación tras GUARDAR en el alta (duda #9)](44-propuesta-retorno-alta-navegacion.md)
