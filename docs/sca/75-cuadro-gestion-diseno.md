@@ -32,7 +32,7 @@ SCA2 no tiene data store a TRON ni a Club MAPFRE (solo `SCA2 DataBase AWS`; la �
 
 | # | Decisión | Estado |
 |---|---|---|
-| 1 | Fuente de los indicadores: (a) tabla SCA2 nueva que guarda cada ejecución de argumento al cerrar en positivo o negativo (datos solo desde el despliegue; script DDL como los de `sql/`, ejecutado en el despliegue; una escritura más en el comando de cierre, sin cambio para el gestor) o (b) servicio CORE de agregados sobre TRON (histórico completo, depende de otro equipo). Recomendación: (a). | **Pendiente** del usuario |
+| 1 | Fuente de los indicadores: (a) tabla SCA2 nueva que guarda cada ejecución de argumento al cerrar en positivo o negativo (datos solo desde el despliegue; script DDL como los de `sql/`, ejecutado en el despliegue; una escritura más en el comando de cierre, sin cambio para el gestor) o (b) servicio CORE de agregados sobre TRON (histórico completo, depende de otro equipo). Recomendación: (a). | **Decidido** (usuario, 23/11): opción (a) |
 | 2 | «Regateable» | **Decidido** (usuario, 23/11): ver abajo |
 | 3 | Acciones que escriben (quitar tréboles, eliminar cierre positivo, dar tréboles fuera del flujo) | **Decidido** (Bot, 23/11): el Cuadro de Gestión empieza solo con consultas; las acciones se harán cuando haya servicio y permisos definidos |
 
@@ -44,3 +44,11 @@ Respuesta del usuario: «Regateables son argumentos de campañas de comerciales.
 - El marcador ya está en SCA2: campo `regateable` (S/N) del record `SCA2 Cat Tipo Argumento` (`sca2_cat_tipo_argumento`, columna `REGATEABLE`, clave `codTpArg`; ver [43-C](43-C-catalogos-aurora.md)). No hace falta llamar a CORE para saberlo.
 - En TEST (lectura del 23/11): 347 tipos, 187 con `S` y 160 con `N`. Son `S` los de campaña: Tú te quedas (TTQ, todas las variantes), premio de fidelización (PREMFIDE), servicio de valor añadido, regalo de permanencia, retos, Club MAPFRE y producto alternativo. Por tanto TTQ, premfide, SVA y retos se tratan igual: por su marcador. Hay 3 filas de prueba (`999`, `991`) que conviene limpiar antes de calcular indicadores.
 - Diseño: los indicadores «regateables / no regateables» cruzan el `codTpArg` de cada argumento ejecutado con `SCA2 Cat Tipo Argumento.regateable`. Lo que sigue faltando es saber qué argumentos se ejecutaron (`codTpArg` por solicitud): eso depende de la decisión 1.
+
+### Opción A: diseño (decisión 1)
+
+1. **Tabla** `sca2_ejecucion_argumento` con una fila por argumento cerrado en positivo o negativo. Script: [sql/77-ejecucion-argumento.sql](sql/77-ejecucion-argumento.sql), probado en PostgreSQL 14 (se puede relanzar). Lo ejecuta el usuario con DBeaver, primero en TEST; Devin no lanza DDL.
+2. **Record type** `SCA2 Ejecucion Argumento` sobre esa tabla, sin sincronizar (solo consulta). Se crea cuando exista la tabla.
+3. **Grabación:** un nodo *Write Records* nuevo en `SCA2 CMD CompletarAccion`, después del cierre (tras `Write PDTE_FINALIZAR`) y solo cuando `resultado.operacion = "CONTRAANULACION"` con un argumento seleccionado. Su fallo no lleva a `Write Error` ni para el proceso: se anota en `SCA2 Error` y el cierre sigue igual. Los datos que faltan en el `resultado` (código, descripción, campaña, económico, tréboles) se añaden como una clave nueva `ejecucionArgumento` en los `a!map` de `SCA2_ContraAnulacionOpciones` que lanzan CompletarAccion. El proceso ignora las claves que no conoce, así que el gestor no ve ningún cambio. `MCA_REGATEABLE` se copia de `SCA2 Cat Tipo Argumento` al cerrar.
+4. **Cuadro de Gestión:** pestaña de solo consulta sobre el record, con los filtros del Cuadro de Mando. Muestra positivos y negativos económicos, regateables y no regateables, tréboles por AUTOS, HOGAR y VIDA, barras por tipo y tartas.
+5. **Limitación:** solo hay datos desde el despliegue; el histórico anterior sigue en CORE.
