@@ -122,3 +122,21 @@ numArgEjecutados = count(lista2.MCA_EJEC_ARGUMENTO='S')
 | Tréboles BigData | **No** | Inserción directa en BD del BBE |
 
 Conclusión: para sustituir el servicio con paridad exacta, Appian necesita **una vía de escritura en `A2139006`** que haga el `DELETE` + `INSERT` del BBE: o `generarCntrAnu` lo hace (confirmar en `ES_SSCC_SCA_CORE_CODE`), o el BBE expone dos operaciones pequeñas (`guardarArgumentario` = delete + insert, y tréboles BigData). Con eso Appian orquesta: lectura → (si toca) reglas → grabar → lectura.
+
+## 9. ¿Puede CORE grabar el argumentario? (código `ES_SSCC_SCA_CORE_CODE`) [Observado]
+
+`IContraAnularPCA.generarCntrAnu` → `ContraAnularCON.guardarArgContraAnul` → `ContraAnularEAO.guardarArgumentos`:
+
+| Necesidad del BBE | CORE `generarCntrAnu` | Hueco |
+|---|---|---|
+| Borrar los pendientes (`MCA_EJEC_ARGUMENTO<>'S'`) | **No**. Hace upsert por PK (solicitud, gestión, tipo de argumento, línea): `persist` si no existe, `merge` si existe. Ningún EAO de CORE borra filas de `A2139006` | Los pendientes que reglas deje de recomendar se quedarían |
+| No tocar los ejecutados del nivel | Hace `merge` también sobre los ejecutados (orden, obligatorio, `COD_USR`, obs, cía contraria…); el estado solo se pone al insertar | Appian tendría que filtrarlos antes, como hace el BBE |
+| Grabar `TXT_FINAL_DESC_ARG` (descripción + tréboles) | **No**. El DTO no lo lleva y el EAO no lo escribe | Se perdería el texto de tréboles y de Vida 356 en BD |
+| Gestión | Exige una gestión de contra anulación abierta (tipo 2) | Igual que el BBE en la práctica |
+
+La lectura SOAP (`listarDetalleArgumentosCntrAnu` → `ContraAnularCON.consultarListadoArgumentos`) tampoco equivale al SQL del BBE:
+- devuelve solo los argumentos ejecutados o con `COD_USR_EJECUCION` = nuuma del usuario (`filtrarArgumentosNuuma`), y el BBE inserta los pendientes con `COD_USR_EJECUCION` vacío, por lo que **los pendientes no saldrían**;
+- filtra por fecha de vigencia del tipo, valida perfil (`isContraAnulCedida`), devuelve error si no hay argumentos del nivel y pasa a estado de nivel los negativos;
+- la descripción sale del catálogo (`NOM_TIPO_ARG`), no de `TXT_FINAL_DESC_ARG`.
+
+**Conclusión:** con CORE tal cual no se puede sustituir el servicio sin cambiar el comportamiento. La vía es que el BBE exponga la escritura («guardar argumentario»: borrar pendientes + insertar con `TXT_FINAL_DESC_ARG`, y los tréboles BigData) y una lectura igual a su SQL actual; Appian prepara la request, llama a reglas y compone las descripciones. La alternativa sería cambiar CORE (nueva operación de borrado y grabar `TXT_FINAL_DESC_ARG`), fuera del alcance de SCA2.
