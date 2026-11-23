@@ -4,13 +4,15 @@
 
 En TEST, **Errores** incluye el indicador de solicitudes que siguen en `ERROR` con nodo de relanzamiento `Finalizar PCA`, una fila por solicitud y con los mismos filtros de alta, línea y origen del cuadro. En la comprobación inicial había siete. El indicador no afirma que los cierres externos de esas solicitudes estén confirmados.
 
-La migración se validó en PostgreSQL 14 local. No está aplicada en TEST y los modelos de proceso no están conectados. El batch no se activará sin una decisión expresa.
+El responsable de BD aplicó la migración en TEST. Appian confirmó las tres tablas y `habilitado=false`. La constante `SCA2_REINTENTO_FIN_ACTIVO` está en `false`: no se captura ni se reserva en el flujo habitual, el batch no está programado y no se ejecuta trabajo automático. No activar sin una decisión expresa.
+
+Modelos publicados en TEST: [Finalizar 24.0](https://mapfrespain-test.appiancloud.com/suite/process/startdesigner.none?idToOpen=1173), [MarcarErrorRelanzado 38.0](https://mapfrespain-test.appiancloud.com/suite/process/startdesigner.none?idToOpen=1619) y [Batch Reintentar Finalizaciones 6.0](https://mapfrespain-test.appiancloud.com/suite/process/startdesigner.none?idToOpen=6132). Appian validó los tres sin errores. Un diagnóstico temporal pasó por JDBC con el interruptor SQL apagado y devolvió `[]`; la versión del batch que se dejó en TEST no contiene la vía de diagnóstico.
 
 ## Instalación en TEST (solo tras autorización)
 
 1. En el origen **SCA2 DataBase AWS** de TEST, ejecutar [el script SQL](../sql/sca2-reintento-finalizacion.sql) entero en DBeaver (Alt+X, parar ante error), con un usuario que pueda asumir `user_sca2_anulaciones`. La última consulta debe devolver `false` en una primera instalación. No ejecutar en producción.
 2. Verificar que el origen JDBC de Appian usa `escapeSyntaxCallMode=callIfNoReturn` (o `call`) y que su rol puede ejecutar las rutinas. El script revoca permisos a `PUBLIC`. Si el rol de ejecución difiere del propietario, el responsable de BD debe conceder solo los permisos necesarios sobre las tres rutinas JDBC, sus funciones y los objetos SCA2 que usan; no otorgar permisos masivos sobre el esquema. El rol de ejecución no necesita modificar la configuración.
-3. Validar los parámetros del nodo [Execute Stored Procedure](https://docs.appian.com/suite/help/26.6/Execute_Stored_Procedure_Smart_Service.html#postgresql) contra el origen real. Configurar llamadas con nombres de esquema y parámetros en minúsculas, autocommit y, si se desactiva la validación, parámetros de entrada y salida por orden (incluida `salida` como Text). No publicar los cambios en los flujos existentes hasta comprobar las llamadas en un modelo aislado.
+3. Validar los parámetros del nodo [Execute Stored Procedure](https://docs.appian.com/suite/help/26.6/Execute_Stored_Procedure_Smart_Service.html#postgresql) contra el origen real. Los modelos usan el sistema conectado `SCA2_CS_BD_AWS`, validación de parámetros activada y autocommit. La salida JDBC se lee como `ac!parameters.salida`.
 
 ## Cableado y criterios antes de habilitar
 
@@ -22,7 +24,7 @@ La migración se validó en PostgreSQL 14 local. No está aplicada en TEST y los
 
 La escritura directa en PostgreSQL no sincroniza los record types. Guardar los IDs de la salida del batch antes de sincronizar **Solicitud**, **Error**, **Transición** y **Datos Cabecera** (solo si hay filas de caché). Si una sincronización falla, reintentar con esos mismos IDs, no relanzar el cierre. No habilitar si Appian no puede reintentar la sincronización fallida conservando los IDs en la instancia.
 
-**Pruebas previas a activar:** en TEST, con datos de prueba y sin llamar a servicios reales, comprobar lote desactivado, captura exacta de un fallo local confirmado, omisión con evidencia incompleta y rama manual habitual sin reserva. Ensayar el cierre en un estado final no estándar, la sincronización visible en Errores y los dos órdenes de la carrera manual/batch solo en un entorno aislado habilitado. Antes de activar, inventariar todos los puntos de relanzamiento de Finalizar, habilitar la reserva en Appian antes que el batch y no habilitar con instancias manuales que no hayan pasado por ella.
+**Antes de activar:** probar en un entorno aislado, con datos sintéticos y sin invocar servicios reales, la captura del ID exacto, un estado final no estándar y la sincronización visible en Errores. Los dos órdenes de la carrera manual/batch ya se probaron en PostgreSQL local, no de extremo a extremo en Appian. Inventariar todos los puntos de relanzamiento de Finalizar, habilitar la reserva en Appian antes que el batch y no habilitar con instancias manuales que no hayan pasado por ella.
 
 **Desactivación:** detener el timer y dejar `habilitado=false`; drenar el lote en curso y completar cualquier sincronización pendiente. El ajuste SQL no deshace un cierre ya confirmado y persistido.
 
