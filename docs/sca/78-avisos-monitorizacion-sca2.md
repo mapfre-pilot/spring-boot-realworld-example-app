@@ -18,4 +18,29 @@ Los tres modelos revisados ya eliminaban las instancias completadas al cabo de u
 | SCA2 Batch Mecanizacion NSE | Puerta con múltiples flujos entrantes | La entrada inicial y el retorno del bucle confluyen en «¿Quedan solicitudes?». Appian recomienda un nodo de script que fusione ambas entradas antes de la puerta. Eso cambia la ejecución del bucle si se habilita el batch; no se aplicó ni se activó el batch. |
 | SCA2 Tarea Hist, Solicitud Hist, Transicion Hist, Llamada Servicio Hist, Error Hist, Niveles Cobertura Autos Hist, Datos Solicitud Hist y Otras Solicitudes Cabecera Hist | Ciertas propiedades no se utilizan | El aviso indica que el acceso directo no utiliza todas las propiedades de la conexión. Ese acceso es intencionado (véase [el diseño de históricos](71-diseno-tablas-vivas-historicas-sca2.md)); no se cambió la sincronización ni la conexión. |
 
-El sitio piloto, su grupo, las copias del piloto y el proceso Decidir quedaron fuera de esta intervención. El panel también mostró recomendaciones adicionales no visibles en la captura; no se modificaron esos objetos.
+El sitio piloto, su grupo, las copias del piloto y el proceso Decidir quedaron fuera de esta intervención.
+
+## Ampliación — Otros 16 objetos del panel
+
+En **SCA2_TablaGestionArgumentos** se retiró únicamente la declaración sin valor inicial de `local!documentum` (v3 → v4). Se conservaron el input `ri!documentum` y el guardado de documentos que lo utiliza. La validación no indicó errores ni advertencias estructurales; la evaluación con una lista vacía produjo el mismo árbol de componentes, sin contar los identificadores de renderizado y el valor serializado de guardado por sesión. No había casos guardados. El aviso desapareció del panel: el total pasó de 27 a 26 objetos.
+
+| Objeto | Aviso | Acción o propuesta |
+| --- | --- | --- |
+| SCA2_TablaGestionArgumentos | Variable local no utilizada | Corregido y verificado en TEST. |
+| SCA2 Datos Poliza Vida Hist | Ciertas propiedades no se utilizan | Mantener el acceso directo; la sincronización no se cambia para quitar el aviso. |
+| SCA2 Datos Poliza Hogar Hist | Ciertas propiedades no se utilizan | Mantener el acceso directo. |
+| SCA2 Datos Poliza Autos Hist | Ciertas propiedades no se utilizan | Mantener el acceso directo. |
+| SCA2 Datos Productor Hist | Ciertas propiedades no se utilizan | Mantener el acceso directo. |
+| SCA2 Datos Perfiles Pca Hist | Ciertas propiedades no se utilizan | Mantener el acceso directo. |
+| SCA2 Datos Basicos Solicitud Hist | Ciertas propiedades no se utilizan | Mantener el acceso directo. |
+| SCA2 Datos Cabecera Hist | Ciertas propiedades no se utilizan | Mantener el acceso directo. |
+| SCA2 CMD CompletarAccion | Demasiados nodos (46) | Evaluar extraer la subida documental y el cierre externo como un subproceso que devuelva éxito, error o continuación, manteniendo las escrituras de estado y el despacho posterior en el padre. Comprobar orden, errores y encadenamiento antes de publicar. |
+| SCA2 CMD CrearAccion | Demasiados nodos (40) | Evaluar extraer la carga, idempotencia y preparación VERTI (12 nodos) dejando la decisión de acción en el padre. Validar los retornos de fin, error y continuación y conservar el encadenamiento de VERTI; no cambiar Decidir. |
+| SCA2 CMD BarridoCaducidad | Convertir subprocesos en Iniciar proceso | Mantener «Caducar solicitud» síncrono y secuencial por elemento. Si se prioriza el aviso, evaluar solamente el autorrelanzamiento asíncrono «Procesar siguiente lote» y comprobar cursor, identidad y no duplicación. |
+| SCA2 CMD Procesar Reserva Prima | Variables de proceso no utilizadas | No eliminar las 11 variables que enumera Designer: las 11 tienen referencias en v4.0, incluida la entrada `reservaPrima`. Verificar la recomendación en una copia de diseño y escalar a Appian si se reproduce. Separar ese diagnóstico de `codAnulacion`, que no se enumera y cuyo valor de actividad alimenta la escritura de la anulación. |
+| SCA2 Batch Reserva Prima | Convertir subprocesos en Iniciar proceso | Mantener las operaciones de poner en cola y cerrar transacción en su orden síncrono; no convertirlas sin una prueba que demuestre que la cola, el cierre y la propagación de fallos conservan su comportamiento. |
+| SCA2 CMD ProcesarLoteErrores | Convertir subprocesos en Iniciar proceso | Conservar «Relanzar error» síncrono antes del histórico. Si se prioriza el aviso, evaluar solo el siguiente elemento asíncrono, verificando el intervalo, los contadores y la ausencia de duplicados. |
+| SCA2_ContraAnulacionCompaniaCatalogacion | Entradas de regla no utilizadas | `argumentoSeleccionado` e `indiceArgumentoSeleccionado` no se leen en la interfaz, pero su llamador los envía. Retirar ambos extremos en un despliegue coordinado y comprobar que la recarga preserva la selección; no retirar solo la declaración. |
+| SCA2_consultarListadoArgumentosREST | Entrada de regla no utilizada | Conservar `random`: el llamador lo envía intencionadamente para no reutilizar una respuesta con el mismo cuerpo. Solo plantear su retirada si se demuestra en TEST que la recarga sigue consultando el servicio en cada solicitud. |
+
+No se modificaron modelos de proceso, integraciones ni tipos de registro en esta ampliación. Mecanizar, MecanizarNSE y Batch Mecanizacion NSE siguen pendientes de decisión.
