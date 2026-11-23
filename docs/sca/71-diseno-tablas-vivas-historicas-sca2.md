@@ -1,4 +1,4 @@
-# 70 · SCA2 — Tablas vivas sincronizadas e histórico de solo consulta
+# 71 · SCA2 — Tablas vivas sincronizadas e histórico de solo consulta
 
 **Estado:** propuesta para revisión, 23/11/2026. Solo SCA2. Se consultó Appian TEST mediante el Dev MCP en modo de solo lectura. No se han creado tablas ni records, ejecutado migraciones, cambiado objetos ni alterado el comportamiento de la aplicación. No se requiere modificar SCA, SCAC ni CORE.
 
