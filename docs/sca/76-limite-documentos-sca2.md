@@ -114,8 +114,25 @@ Las relecturas de TEST coincidieron con las expresiones guardadas y los únicos 
 | Site aislado, PDF de 51 MiB | Mensaje visible y ambos botones deshabilitados. Plegar la sección mantuvo el bloqueo; la × volvió a habilitar el botón. La consulta antes y después de la cancelación simulada dio **0 → 0 documentos**. |
 | Vista previa de Contra Anulación, solicitud sintética | Después de seleccionar oficina, POSPONER estaba habilitado sin archivo. Con el PDF de 51 MiB en AÑADIR, se mostró el error y se deshabilitaron CANCELAR y POSPONER. La × reactivó ambos. El PDF de 608 B no produjo error ni los bloqueó; AÑADIR lo consolidó después de plegar la sección de catalogación, cuyos campos obligatorios no estaban completos en la prueba. |
 
-FINALIZAR ya estaba deshabilitado sin archivo por falta de argumentos ejecutados. REVISIÓN y las continuaciones no se ejercitaron en la vista previa; tampoco se volvió a probar MODIFICAR en pantalla con la v11. No se pulsó ningún botón de negocio ni se completó ninguna acción contra CORE.
+FINALIZAR ya estaba deshabilitado sin archivo por falta de argumentos ejecutados. En esa ronda no se ejercitaron REVISIÓN ni las continuaciones, ni se probó MODIFICAR con la v11. No se pulsó ningún botón de negocio ni se completó ninguna acción contra CORE.
 
 Capturas completas: `aislada-site-bloqueo-51MiB.png`, `contra-anulacion-bloqueo-sin-archivo.png`, `contra-anulacion-bloqueo-anadir-51MiB.png`, `contra-anulacion-bloqueo-anadir-608B.png` y `contra-anulacion-bloqueo-anadido-608B.png`, en `~/.devin-files/sca2-limite-50mb/`.
 
 Se eliminaron el site y la interfaz temporales y el PDF de 608 B consolidado en la vista previa; los tres devolvieron HTTP 404 por UUID. Ningún PDF de la prueba aislada llegó a consolidarse.
+
+### Verificación adicional de MODIFICAR y disponibilidad de botones
+
+Se usó la misma solicitud sintética de TEST en Designer. Para abrir MODIFICAR sin recuperar un documento de GD, se probó en una copia temporal de Opciones v83 que apuntaba al PDF sintético original mediante su ID numérico de Appian. La copia invocaba Documentación v11 y conservaba la propagación del indicador y las condiciones de los botones de Opciones v83.
+
+| Estado en MODIFICAR | Resultado observado |
+|---|---|
+| Sin archivo de reemplazo | CANCELAR y POSPONER habilitados. FINALIZAR ya aparecía deshabilitado por falta de argumentos ejecutados. |
+| PDF de 51 MiB | Mensaje «El archivo no puede superar los 50 MB.» visible; CANCELAR y POSPONER deshabilitados. |
+| Tras quitar el PDF grande con la × | Desapareció el aviso y se volvieron a habilitar CANCELAR y POSPONER. |
+| PDF de 608 B | Sin aviso de tamaño; MODIFICAR, CANCELAR y POSPONER habilitados. Se pulsó únicamente el CANCELAR del editor: se cerró sin guardar el reemplazo. |
+
+En la vista previa de **Opciones v83 sin adaptar**, REVISIÓN no se mostró con esa solicitud: no cumplía las condiciones de titularidad, renovación y fecha de efecto. Recuperación → ACEPTAR no se mostró y su recorrido requiere ejecutar un argumento positivo, que puede escribir en servicios de negocio antes de abrir el modal. Sí/No no se abrió: FINALIZAR ya estaba deshabilitado y su apertura ejecuta lógica de negocio. No se pulsó ninguno de esos botones; no se pudo observar su transición habilitado/deshabilitado con esta solicitud.
+
+Capturas completas en `~/.devin-files/sca2-limite-50mb/`: `contra-anulacion-solicitud-botones-disponibles.png` y `contra-anulacion-modificar-v11-{sin-archivo,51MiB,tras-quitar,608B}.png`.
+
+La copia temporal y el PDF original sintético se eliminaron y devolvieron HTTP 404 por UUID. Las búsquedas de los dos reemplazos, de 51 MiB y 608 B, devolvieron cero documentos consolidados. No se cambió ninguna interfaz permanente ni se ejecutó ningún botón de negocio.
