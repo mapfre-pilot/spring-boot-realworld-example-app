@@ -218,3 +218,6 @@ Excepción a la regla de bloques: solo las pólizas de campaña TTQ de `polizas-
 | 0732200362198 | INBOX-38 | 23/11/2026 | 15789334 | NSE-Hogar, causa 1. Alta nueva, tarea de Contra Anulación pendiente. Ocupada; no se avanzó. |
 | 0732500124161 | INBOX-38 | 23/11/2026 | 15789335 | NSE-Hogar, causa 32. FINALIZAR con dos adjuntos por v61.0. Ocupada; tarea de mecanización pendiente. |
 | 0731700096594 | INBOX-38 | 23/11/2026 | 15789336 | NSE-Hogar, causa 32. FINALIZAR con dos adjuntos por candidato v2.0. Ocupada; tarea de mecanización pendiente. |
+| 0732400254564 | INBOX-38 | 23/11/2026 | 15789337 | NSE-Hogar, causa 32, Cliente Alquimia. FINALIZAR con dos adjuntos por v61.0; tarea 991 completada. Ocupada; tarea de mecanización 994 pendiente. |
+| 0732400254570 | INBOX-38 | 23/11/2026 | 15789338 | NSE-Hogar, causa 32, Cliente Alquimia. Excluida por HTTP 500/1107 previo de Decidir. Ocupada; tarea 992 pendiente, no se avanzó. |
+| 0732400254572 | INBOX-38 | 23/11/2026 | 15789339 | NSE-Hogar, causa 32, Cliente Alquimia. FINALIZAR con dos adjuntos por candidato v2.0; tarea 993 completada. Ocupada; `ERROR_DECISION` tras dos HTTP 500/1108 de Decidir. |
