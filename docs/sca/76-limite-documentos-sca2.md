@@ -78,3 +78,18 @@ En otra previsualización aislada de TEST, `SCA2_TMP_PruebaRechazo50MB` v1 usó 
 Dejar vacío el valor visible no retira el temporal del conjunto que Appian puede consolidar. **No se cambió `SCA2_AccionesAdministrativasDocumentacion` (v10) ni se tocó el padre (v82)**; no se ejecutaron botones de negocio ni llamadas a CORE o GD.
 
 Se eliminaron la interfaz temporal y los cuatro PDF de prueba, incluida una repetición del caso de 51 MiB para comprobar la carpeta antes y después del clic. La consulta por UUID devolvió HTTP 404 para los cinco objetos.
+
+### Bloqueo de botones mientras haya un fichero sobredimensionado pendiente
+
+En Documentación v10, **CANCELAR** en AÑADIR copia el valor pendiente al input `documentosACargarN` correspondiente al tipo, oculta el editor y vacía el valor del campo. En MODIFICAR, CANCELAR oculta el editor sin vaciar su valor. Contra Anulación también permite plegar Documentación, lo que oculta el campo y su mensaje.
+
+En la interfaz aislada `SCA2_TMP_PruebaCancelar50MB` v1 de TEST se reprodujo el CANCELAR de AÑADIR y se comparó con quitar el archivo mediante la «×» del propio campo. En ambos casos se pulsó luego un botón de prueba con `submit: true`, sin grupo y con `a!submitUploadedFiles()` sin `documents:`:
+
+| Acción con un PDF de 51 MiB | Documentos en la carpeta antes y después de Continuar |
+|---|---|
+| CANCELAR: campo oculto y vacío | 0 → 1 |
+| Quitar con la «×» del campo | 0 → 0 |
+
+No se aplicó el bloqueo de los botones. Si se levanta al cancelar el editor, el archivo aún puede consolidarse; si el bloqueo se mantiene, el campo y el mensaje pueden quedar ocultos. Para aplicar la protección, primero hay que decidir cómo debe descartarse el temporal al cancelar. No se cambió Documentación v10 ni el padre v82, ni se ejecutaron acciones de negocio, CORE o GD.
+
+Se eliminaron la interfaz temporal y el único PDF consolidado; la consulta por UUID devolvió HTTP 404 para ambos.
