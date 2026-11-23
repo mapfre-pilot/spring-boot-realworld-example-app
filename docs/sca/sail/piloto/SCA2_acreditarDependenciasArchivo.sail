@@ -1,26 +1,10 @@
 a!localVariables(
-  local!ids: union(
-    touniformstring(a!defaultValue(ri!idsSolicitud, {})),
-    touniformstring(a!defaultValue(ri!idsSolicitud, {}))
-  ),
-  local!retenidas: touniformstring(a!defaultValue(ri!idsRetenidos, {})),
-  local!evaluados: touniformstring(a!defaultValue(index(ri!reintentos, "evaluados", {}), {})),
-  local!reintentosBloqueados: touniformstring(a!defaultValue(index(ri!reintentos, "bloqueados", {}), {})),
   if(
     or(
-      a!isNullOrEmpty(local!ids),
       a!isNullOrEmpty(ri!reporteProcesos),
-      a!isNullOrEmpty(ri!modelosProcesos),
-      count(local!retenidas) <> 34,
-      count(union(local!retenidas, local!retenidas)) <> 34,
-      contains(local!retenidas, ""),
-      a!isNullOrEmpty(index(ri!reintentos, "evaluados", null)),
-      not(contains(a!keys(ri!reintentos), "bloqueados")),
-      a!isNotNullOrEmpty(difference(local!ids, local!evaluados)),
-      a!isNotNullOrEmpty(difference(local!evaluados, local!ids)),
-      a!isNotNullOrEmpty(difference(local!reintentosBloqueados, local!evaluados))
+      a!isNullOrEmpty(ri!modelosProcesos)
     ),
-    {},
+    a!map(valido: false(), idsBloqueados: {}, filas: 0, abiertas: 0),
     a!localVariables(
       local!informe: a!queryProcessAnalytics(
         report: ri!reporteProcesos,
@@ -44,7 +28,7 @@ a!localVariables(
         items: local!filasActivas,
         expression: tostring(index(fv!item, local!campoId, ""))
       )),
-      if(
+      local!valido: not(
         or(
           a!isNotNullOrEmpty(index(local!informe, "errorMessage", null)),
           not(contains(touniformstring(local!campos), "c1")),
@@ -65,9 +49,13 @@ a!localVariables(
               tostring(index(fv!item, local!campoId, "")) <> trim(tostring(index(fv!item, local!campoId, "")))
             )
           ))
-        ),
-        {},
-        difference(local!ids, union(union(local!retenidas, local!reintentosBloqueados), local!procesosBloqueados))
+        )
+      ),
+      a!map(
+        valido: local!valido,
+        idsBloqueados: if(local!valido, union(local!procesosBloqueados, local!procesosBloqueados), {}),
+        filas: count(local!filas),
+        abiertas: count(local!filasActivas)
       )
     )
   )
