@@ -55,7 +55,7 @@ El caso predeterminado de Opciones conservó su configuración y pasó (`success
 
 ## INBOX-38 — Diseño y pruebas de equivalencia pendientes
 
-Se confirmó que terminaron los dos relanzamientos de Decidir. **No se aplicó ni se publicó ningún candidato:** falta un juego aislado que permita repetir las rutas con escrituras e integraciones desde un mismo estado. Los casos históricos de abajo sirven de referencia, no son datos reutilizables. La validación estática no demuestra la equivalencia en ejecución.
+Se confirmó que terminaron los dos relanzamientos de Decidir. El diseño inicial quedó sin aplicar hasta autorizar el aislamiento: candidatos sin llamadores activos y altas nuevas mediante el flujo ordinario de TEST. Los modelos activos siguen intactos; véanse los resultados de esa ronda al final de esta sección.
 
 ### Cortes propuestos
 
@@ -100,3 +100,20 @@ En `~/memory/appian_91b2ca/files/sca2-avisos-monitorizacion/` están las copias 
 Cotejar la versión publicada con la copia antes de aplicar; no sobrescribir cambios ajenos ni alterar seguridad o temporizadores. Guardar los JSON posteriores de padre e hijos. Ante una diferencia, detener nuevas pruebas, volver a publicar el diseño anterior del padre y verificar el grafo y las instancias activas antes de retirar un hijo sin dependientes. Restaurar el modelo no revierte llamadas ni filas ya escritas: acordar aislamiento y limpieza antes del ensayo.
 
 **SCA2 CMD BarridoCaducidad se queda en v9.0** con el temporizador, el 7 síncrono hacia Caducar y el 9 de autorrelanzamiento intactos. Pendiente de aislar al menos 100 vencidas para alcanzar el 9; comprobar cursor, orden y ausencia de duplicados entre páginas sin tocar vencidas reales. Véase [el diseño de caducidad](72-caducidad-por-accion-sca2.md). No se modificaron Reserva Prima, el XOR del batch NSE ni Decidir.
+
+### Primera ronda con candidatos aislados en TEST
+
+**ProcesarLoteErrores: no se promueve.** Se configuró `SCA2 CMD ProcesarLoteErrores Candidato INBOX38` (v2.0, `0001f0c1-84b7-8000-dc08-7f0000014e7a`) y una constante que apunta solo al candidato, para que su nodo 42 no arranque el modelo activo. La paleta actual admite `appian.system.smart-services.start-process-6`, no `-5`. La copia usa la versión admitida, con `IsSynchronous = false` y `ChainIntoChild = false`.
+
+Se probó la cadena de omisión completa con los mismos dos IDs sintéticos sin fila, `[-1,-2]`, y dos identificadores de lote separados. Las seis instancias terminaron `COMPLETED`. La base y el candidato conservaron el iniciador, el orden, las listas restantes y los contadores; cada uno escribió una sola transición `-FIN` con «0 tratados, 2 omitidos» (3534 y 3535). **Cambió la relación entre instancias:** la base v6.0 encadenó `9249567 → 9249568 → 9249569` con `parentId`; las continuaciones del candidato (`13455033` y `825056`, arrancadas desde `537693577`) no tienen `parentId`. El resultado de negocio en esa rama coincide, pero se pierde el árbol de procesos del lote en Monitor. No se publicó el cambio en el modelo activo ni se probaron después las ramas de descarte/relanzamiento de errores pendientes o el alertado de fallo. Se dejaron el candidato y su constante sin uso funcional para conservar la evidencia; aparte de pertenecer a la aplicación, el candidato solo está referenciado por su propia constante.
+
+**Cuatro troceados: bloqueados por la escritura del grafo en el MCP.** Se creó el hijo de autorización de MecanizarNSE (v2.0, `0004f0c1-850d-8000-dc0a-7f0000014e7a`), pero al guardar el grafo del padre aislado la API devolvió `HTTP 400: Unsupported node type: 'appian.system.smart-services.start-process-5'`. Se confirmó que el padre candidato (`0001f0c1-850d-8000-dc0a-7f0000014e7a`) quedó en v1.0 solo con inicio y fin; no está conectado al hijo ni tiene llamadores. Los dos objetos quedan sin uso. La paleta excluye ese mismo tipo en nodos que se deben conservar en **MecanizarNSE** (23, 30, 36), **CrearAccion** (14, 15, 36), **CompletarAccion** (8, 10, 12) y **Mecanizar** (322). No se sustituyeron esos nodos por la versión nueva, porque están fuera del troceado que se quiere comparar. Los otros tres candidatos no se crearon y ninguno de los cuatro troceados se ejecutó. Para continuar se necesita una copia/edición que conserve los nodos existentes, p. ej. probar «Guardar como» y editar los cortes en Designer en vez de recrear los grafos por el MCP.
+
+**Datos de prueba creados.** Se comprobaron vigencia y ausencia de solicitud SCA2 en curso antes de cada alta. Se construyó el contexto mediante `testRule` de `SCA2_construirContextoAlta` y se inició `SCA2 CMD Alta` con `testProcessModel`. No se hizo DDL/DML ni se tocaron solicitudes anteriores.
+
+| Póliza de TEST | Solicitud / instancia Alta | Estado de entrada observado y evidencias |
+| --- | --- | --- |
+| 2002400378555 | **15789327** / 17627215 | Alta `COMPLETED`, `generar.success=true`, `wrErr=false`; llamada 513 OK; transiciones 3537, 3540, 3541; tarea 981 PENDIENTE. Quedó `EN_ACCION` en Acciones Administrativas, nivel 1. Se registró además el error de decisión 327 antes del estado final; no se considera equivalente en histórico a la otra alta. |
+| 2002200057934 | **15789328** / 17627216 | Alta `COMPLETED`, `generar.success=true`, `wrErr=false`; llamada 514 OK; transiciones 3536, 3538, 3539; tarea 980 PENDIENTE. Mismo estado final; no se encontró fila de error para esta solicitud. |
+
+No se avanzaron estas dos tareas tras el alta. Las evidencias de ejecución y los extractos de registros se guardaron junto a los payloads en `files/sca2-avisos-monitorizacion/`. Se releyó el historial de versiones: Mecanizar 52.0, MecanizarNSE 10.0, CompletarAccion 61.0, CrearAccion 34.0, ProcesarLoteErrores 6.0 y BarridoCaducidad 9.0 siguen publicados sin cambios.
