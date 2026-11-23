@@ -1,6 +1,6 @@
 # 71 · SCA2 — Tablas vivas sincronizadas e histórico de solo consulta
 
-**Estado:** propuesta para revisión, 23/11/2026. Solo SCA2. Se consultó Appian TEST mediante el Dev MCP en modo de solo lectura. No se han creado tablas ni records, ejecutado migraciones, cambiado objetos ni alterado el comportamiento de la aplicación. No se requiere modificar SCA, SCAC ni CORE.
+**Estado (23/11/2026):** negocio aprobó las 14 opciones recomendadas. Los scripts de la fase 1 están listos para que el usuario los ejecute en DBeaver contra TEST. No se han ejecutado en TEST ni se han creado o modificado objetos Appian. No se ha movido ningún dato. El piloto de traspaso requiere aprobación separada.
 
 ## 1. Resumen
 
@@ -64,48 +64,14 @@ La columna «Asociadas» se cruza por `ID_SOLICITUD` contra las 36 antes de apli
 6. Dentro de la transacción, bloquear la raíz, volver a evaluar elegibilidad, capturar PK y copiar raíz e hijas con columnas explícitas. Mantener PK y valores originales y asignar una única fecha de archivo del lote. Ante una PK ya presente, comparar **todos** los valores originales, no sobrescribir ni borrar viva si difieren, y tratar colisiones de claves de negocio como incidencias. Verificar equivalencia por PK y por contenido antes de borrar las hijas y, al final, la raíz. Fallo en cualquier tabla implica rollback completo; un reintento tras commit no vuelve a mover el expediente. Guardar manifiesto de lotes/PK en acceso restringido y publicar solo recuentos y causas agregadas en la operación del batch.
 7. Un cambio directo en PostgreSQL no se refleja por sí solo en la caché de Appian. Tras el commit, conciliar los IDs eliminados de cada record vivo con el mecanismo soportado y ensayado en TEST. Si la sincronización incremental no retira los borrados, usar sincronización completa en ventana autorizada. Registrar por separado estado BD y estado Sync; ante fallo Sync, parar nuevos lotes, reintentar la reconciliación y no repetir el movimiento. Probar que ni las pantallas ni los CMD operan durante una incoherencia de caché; si no puede garantizarse, mantener el archivo desactivado.
 
-## 4. DDL de referencia — PostgreSQL, no desplegar tal cual
+## 4. Scripts de estructura para TEST — PostgreSQL
 
-El sufijo físico es `_hist` en minúsculas como el resto de tablas (`_HIST` como concepto). Este borrador cubre las 15 tablas de expedientes; no cambia las vivas y no incluye el posible histórico independiente de Trazabilidad. `LIKE` sin opciones copia tipos y NOT NULL sin heredar secuencias ni índices operativos. Son tablas nuevas; ejecutar con el rol de migración tras comprobar que no existen. Cualquier ajuste posterior de una viva exige revisar su par histórica. El [DDL 73](sql/73-promocion-bd-sca2-estructura.sql) no aplica FKs físicas; por diseño la integridad del expediente archivado se comprueba en el lote. Si después se proponen FKs históricas, no vincular jamás con tablas vivas.
+1. [Instalación `sca2-hist-ddl.sql`](sql/sca2-hist-ddl.sql): en DBeaver, confirmar conexión a TEST y capacidad para asumir el rol `user_sca2_anulaciones`. Ejecutar el script completo (Alt+X), con parada al primer error. Debe informar 15 tablas verificadas y 15 creadas la primera vez (0 creadas si ya se aplicó). Si falla, no continuar con Appian; enviar el error y confirmar que la transacción se revirtió.
+2. [Reversión `sca2-hist-rollback.sql`](sql/sca2-hist-rollback.sql): solo para deshacer la instalación inicial. Si ya existen consumidores Appian, retirarlos primero con autorización. La reversión solo elimina tablas de este script que estén vacías y sin dependencias en BD. No revierte un traslado de datos.
 
-```sql
-BEGIN;
-SET LOCAL search_path TO sca2_anulaciones, pg_catalog;
+Los scripts solo afectan a las 15 tablas nuevas `_hist` de `sca2_anulaciones`; no incluyen Trazabilidad ni conceden acceso de consulta. El DDL copia columnas y NOT NULL sin secuencias ni índices de operativa; añade PK, `FECHA_ARCHIVADO` e índices para el histórico. Cualquier ajuste posterior de una viva exige revisar su par histórica. El [DDL 73](sql/73-promocion-bd-sca2-estructura.sql) no aplica FKs físicas; si después se proponen FKs históricas, no vincular con tablas vivas.
 
-DO $archivo$
-DECLARE
-  viva text;
-  hist text;
-BEGIN
-  FOREACH viva IN ARRAY ARRAY[
-    'sca2_solicitud', 'sca2_transicion', 'sca2_tarea', 'sca2_error',
-    'sca2_llamada_servicio', 'sca2_datos_cabecera', 'sca2_datos_solicitud',
-    'sca2_datos_basicos_solicitud', 'sca2_datos_perfiles_pca', 'sca2_datos_productor',
-    'sca2_datos_poliza_autos', 'sca2_datos_poliza_hogar', 'sca2_datos_poliza_vida',
-    'sca2_niveles_cobertura_autos', 'sca2_otras_solicitudes_cabecera'
-  ]
-  LOOP
-    hist := viva || '_hist';
-    EXECUTE format(
-      'CREATE TABLE sca2_anulaciones.%I (LIKE sca2_anulaciones.%I,
-        "FECHA_ARCHIVADO" timestamptz NOT NULL, PRIMARY KEY ("ID"))',
-      hist, viva
-    );
-    IF viva IN ('sca2_solicitud', 'sca2_datos_cabecera') THEN
-      EXECUTE format('ALTER TABLE sca2_anulaciones.%I ADD UNIQUE ("ID_SOLICITUD")', hist);
-    ELSE
-      EXECUTE format('CREATE INDEX ON sca2_anulaciones.%I ("ID_SOLICITUD")', hist);
-    END IF;
-  END LOOP;
-END;
-$archivo$;
-
-ALTER TABLE sca2_anulaciones.sca2_transicion_hist ADD UNIQUE ("CLAVE_IDEMPOTENCIA");
-CREATE INDEX ON sca2_anulaciones.sca2_solicitud_hist ("CREATED_AT" DESC, "ID" DESC);
-CREATE INDEX ON sca2_anulaciones.sca2_solicitud_hist ("NUM_POLIZA", "CREATED_AT" DESC, "ID" DESC);
-CREATE INDEX ON sca2_anulaciones.sca2_transicion_hist ("ID_SOLICITUD", "FECHA" DESC, "ID" DESC);
-COMMIT;
-```
+Validado en PostgreSQL 14 **local**, sobre el DDL 73: instalación, segunda ejecución sin cambios, reversión y segunda reversión. Se comprobó también el rechazo de tablas con datos, dependencias y colisiones con tablas ajenas. No se ejecutó ningún script contra TEST.
 
 El índice único del histórico no impide reutilizar claves en la viva. Antes del movimiento, demostrar que ni `ID_SOLICITUD` ni las claves de idempotencia pueden reutilizarse o que reenvíos y altas con colisión conservan el resultado actual sin crear ni reintentar sobre un expediente archivado. Si no se demuestra, no mover Transicion ni su expediente; valorar un registro de claves persistente como prerrequisito separado.
 
@@ -118,19 +84,36 @@ Revisar con DBA el catálogo de restricciones y tipos en el entorno destino. Sep
 - **Cuadro de mando, trazas y bandeja:** saldrán de los KPIs filas aún dentro de la ventana de 90 días si solo se consulta la viva. Preservar ventanas por su fecha original, visibilidad, filtros, totales, ratios y promedios; para porcentajes y latencia combinar numeradores/denominadores o sumas/recuentos, no promediar agregados ya calculados. No trasladar alertas/worklists operativas al histórico; si hoy se puede consultar un error resuelto desde bandeja, mantenerlo disponible con los mismos filtros y sin cambiar reintentos.
 - **Operación y APIs:** no hacer fallback automáticamente en reglas de escritura como si el histórico fuese editable. Comparar en TEST el resultado actual para idempotencia, Alta, enlaces antiguos, REST y procesos que referencian IDs; si existen efectos vigentes sobre cerradas, el archivado queda bloqueado para ellas hasta acordar una solución. No deducir que consulta solo lectura implica que cualquier consumidor existente es solo lectura.
 
-## 6. Riesgos, fases y decisiones que requieren confirmación
+## 6. Decisiones de negocio aprobadas
 
-1. **Antes de construir:** confirmar Data Sync, origen/rol, permisos de fila con perfiles reales, catálogo físico y correspondencia de cierres; inventariar las referencias SCA2 directas y transitivas (incluidas Web APIs, nodos de escritura diferida, redirecciones y enlaces directos). Medir recuentos y razones de exclusión en una extracción coherente sin modificar datos. No usar los 31 como objetivo de migración.
-2. **Entrega aditiva en TEST, solo tras autorización:** DDL vacío, records de consulta no sincronizados, lectura conmutada bajo control y simulación sin borrado. Con datos de prueba, comparar mismos filtros/roles, detalle, documentos, cruces del cuadro de mando y bandeja con línea base. Ensayar corte exacto, cambios de mes, reintento del batch, fallo intermedio, carrera con reintento, reenvío con la misma clave y fallo de Sync tras commit.
-3. **Piloto en TEST, solo tras aprobar paridad:** lote reducido supervisado, antes/después por ID, cardinalidad e igualdad de valores por tabla, duración de Sync y de consultas, sin repetidos ni nuevas filas huérfanas. Convivencia de consulta y archivo hasta comprobar paridad. Para revertir, parar el batch, aislar escrituras, reinsertar desde el manifiesto con PK originales tras comprobar colisiones y secuencias, restaurar las relaciones, reconciliar Sync, y solo entonces retirar el fallback. Ensayar esa restauración antes del primer borrado.
-4. **Salida a producción:** aprobación separada, ventanas/capacidad y retención acordadas. Vigilar contención, reducción real de tamaño/tiempo de sincronización, latencia del buscador y calidad de métricas; no prometer mejora con los volúmenes observados en TEST.
-
-**Requiere confirmación antes de ejecutar o cambiar comportamiento:**
-
-| Decisión | Efecto que debe aprobarse o evitarse |
+| Respuesta | Decisión |
 |---|---|
-| Estados y evidencia de cierre, mes natural/zona y excepciones de tareas, errores, llamadas o reaperturas | Define qué deja de estar disponible como expediente vivo y cuándo. Confirmar también si algún cerrado debe seguir operativo o si existe reactivación. |
-| Presentación de históricos en buscador/detalle | Mantener la experiencia actual. Una pestaña, filtro, etiqueta, URL diferente, ocultación de acciones o cambio en los resultados/paginación requieren visto bueno. |
-| Visibilidad y acciones en bandeja, informes y cuadro de mando | No reducir ventanas ni recuentos ni quitar consultas/reintentos; confirmar cualquier diferencia o falta de paridad. |
-| Permisos, retención/purga y tratamiento de trazabilidad no asociable | Acordar quién sigue viendo los datos archivados, por cuánto tiempo, y si Trazabilidad se separa. Este diseño no purga datos ni amplía su acceso. |
-| Primera ejecución con borrado, ventana de batch y sincronización | Autorizar el traslado real y cualquier mantenimiento visible, pausa de escritura o cambio de contrato necesario para hacerlo sin incoherencias. |
+| 1A | Incluir `FINALIZADA`, `FINALIZADA_POSITIVO`, `CANCELADA` y `CADUCADA`. No añadir otras variantes sin verificar que son definitivas. |
+| 2A | Usar el último paso correcto al estado final actual. Si no es verificable, mantener en viva. |
+| 3A | Más de un mes natural, en horario de España peninsular (`Europe/Madrid`); excluir el instante exacto del corte. |
+| 4A | Mantener en viva los expedientes completos si hay trabajo pendiente, cierre no acreditado o reapertura permitida. |
+| 5A | Mantener un único buscador con filtros, orden, páginas, resultados y acceso directo actuales. |
+| 6A | Mantener detalle, enlaces, documentos y presentación. Si una acción vigente no se puede conservar, mantener el expediente en viva. |
+| 7A | Mantener la consulta, filtros y acciones de la bandeja. Los errores con actuación o reintento pendiente siguen en viva. |
+| 8A | Mantener los indicadores e informes con sus fechas, filtros y cálculos, contando expedientes archivados cuando corresponda. |
+| 9A | Conservar el acceso por perfil y expediente, sin dar acceso adicional. |
+| 10A | Sin borrado definitivo automático en fase 1. Aprobar la conservación y eliminación por separado antes de producción. |
+| 11A | No archivar Trazabilidad Cliente en fase 1. |
+| 12A | Primero simulación sin retirar datos. El piloto nocturno en TEST y producción se aprueban por separado. |
+| 13A | No activar el traslado si necesita una pausa visible o no se puede garantizar una lectura coherente. |
+| 14A | Mantener en viva todo expediente aún usado por servicios o procesos hasta demostrar paridad. |
+
+## 7. Fase 1 — preparación para Appian TEST
+
+**Situación actual:** pendiente de confirmación del DDL en TEST. No existen UUID ni versiones nuevas de Appian que reportar. Los 31 de §2 pertenecen al inventario de diseño, **no** a una ejecución del batch aprobado.
+
+1. **Copias y verificación previa.** Antes de modificar TEST, recoger en `~/memory/appian_91b2ca/files/sca2-tablas-historicas/` metadatos, versión, permisos y configuración de Data Sync de los 15 records vivos; comprobar por catálogo que existen las 15 tablas nuevas y que están vacías. No sincronizar estas copias con un destino externo. Si un paso requiere modificar objetos Appian existentes, detenerse y pedir autorización.
+2. **Nuevos records (nombres previstos).** Usar cada nombre vivo de §2 más ` Hist`, por ejemplo `SCA2 Solicitud Hist`, contra su tabla `_hist`. Fuente SQL sobre el mismo esquema, mapeo de las columnas y tipos del vivo más `FECHA_ARCHIVADO` como fecha y hora, e `ID` como identificador. Verificar primero acceso SELECT con credenciales de consulta, sin escritura. El Dev MCP instalado no ofrece un parámetro Data Sync al crear records ni lo devuelve al leerlos. No asumir un valor por defecto. Crear en Designer con Data Sync desactivado de forma explícita, o solo usar un método que pueda garantizarlo al crear. Comprobar seguridad de objeto y por expediente, incluidos perfiles sin acceso. No exponer el record si no se puede garantizar paridad. No añadir vistas o acciones de escritura.
+3. **Nuevo PM previsto: `SCA2 CMD SimularArchivoHistorico`.** Inicio manual, sin timer activo, sin nodos de escritura ni integraciones externas. Fijar un corte compartido (mes natural en `Europe/Madrid`, convertido al reloj del origen una vez comprobado), paginar por PK, excluir casos no elegibles según 1A–4A y 14A, y no leer Trazabilidad para decidir candidatos (11A). Si no puede comprobarse que servicios, procesos o reintentos han terminado, excluir como «dependencia no acreditada». Aplicar en orden un motivo principal por expediente: estado no elegible o provisional, cierre no verificable, cierre reciente, tarea pendiente, error/reintento pendiente, llamada sin terminar, reapertura permitida o dependencia no acreditada. Devolver corte, total evaluado, candidatos y recuento por motivo como variables agregadas del PM, sin identificadores de expedientes. No modificar Gestiones mantenimiento para mostrar el resultado en esta fase; antes, comprobar si existe un canal de informes reutilizable que no requiera modificar objetos.
+4. **Prueba manual.** Tras confirmar las tablas y auditar que el PM nuevo no contiene escrituras ni subprocesos que las hagan, ejecutar con `testProcessModel` (inicia una instancia real), comprobar que termina y que candidatos más excluidos suman el total. Verificar antes y después que el proceso no modifica datos de negocio y que el histórico sigue vacío. Registrar nombre, UUID y versión de cada objeto nuevo, identificador del ensayo y resumen agregado, y mantener el timer desactivado.
+
+## 8. Piloto y producción — fuera de la fase 1
+
+- **Antes del piloto:** aprobar por separado la primera retirada de datos de las tablas vivas. Demostrar la paridad de 5A–9A y 14A en buscador, detalle, aplicaciones/servicios, bandeja, cuadro de mando y permisos. Ensayar bordes de fecha, colisiones de PK, reintentos, fallos de Sync y restauración.
+- **Piloto:** lote reducido supervisado, comparar por ID la cardinalidad y el contenido, conciliación con Sync, tiempos y ausencia de duplicados. Si hay que restaurar, parar el batch, aislar escrituras, reinsertar desde el manifiesto con PK originales, comprobar secuencias y conciliar Sync; no usar la reversión del DDL para este caso.
+- **Producción:** aprobación separada, retención y ventana de ejecución acordadas. Medir reducción de tamaño y tiempo de Sync, latencia de consulta y paridad de métricas antes de concluir que mejora el rendimiento.
