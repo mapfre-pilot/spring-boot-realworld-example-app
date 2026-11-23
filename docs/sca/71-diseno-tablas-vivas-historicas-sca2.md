@@ -156,7 +156,7 @@ Los 34 que superaron los filtros anteriores **no son candidatos**: con las compr
 
 ## 8. Paquete del piloto para aprobación
 
-**Estado: preparación parcial, no apta para autorizar el primer traspaso.** Se añadieron relaciones a los records históricos y copias aisladas del buscador, detalle y bandeja. Los objetos operativos y sus referencias siguen intactos. No se ejecutó el PM de traspaso, no se lanzó ningún script contra TEST y no se movieron datos. Las copias de Appian y el cotejo de expedientes quedan en evidencia restringida, no en Git.
+**Estado: preparación parcial, no apta para autorizar el primer traspaso.** Se añadieron relaciones a los records históricos y copias aisladas del buscador, detalle, bandeja y cuadro de mando. Los objetos operativos y sus referencias siguen intactos. No se ejecutó el PM de traspaso, no se lanzó ningún script contra TEST y no se movieron datos. Los renders y el cotejo de expedientes quedan en evidencia restringida, no en Git.
 
 ### Relaciones de los records históricos
 
@@ -193,7 +193,7 @@ Las sondas `validateExpression` sobre `SCA2 Solicitud Hist` no devolvieron error
 | `SCA2_Buscador` 40, `SCA2_BuscadorTabla` 20 | La copia `SCA2_Buscador_HistPiloto` aplica el filtro original a Hist. Sin coincidencias usa la consulta viva original; con coincidencias pide a cada fuente un prefijo de tamaño `startIndex + batchSize - 1`, adapta las filas Hist, ordena, corta la página y suma los dos totales. Conserva la rama CORE y para SCA2 invoca el detalle piloto. Quedan por probar los filtros interactivos, empates, páginas profundas, proyecciones con filas históricas y transición tras Sync. El total sumado presupone que los conjuntos no se solapan. |
 | `SCA2_DetalleSolicitud` 77, `SCA2_cargarSolicitud` 10 | El detalle distingue ausencia SCA2 de una solicitud solo CORE y obtiene documentos con `SCA2_PM_OBTENER_DOCUMENTO_GD`. Resolver el origen antes de esa distinción, conservar el enlace e ID y cargar las hijas del mismo origen. Comparar cabecera, tarjetas, tareas, transiciones, errores y descarga; demostrar que ninguna acción que escriba sigue disponible para un expediente elegible. Si alguna sigue disponible, mantener el expediente en viva hasta acordar cómo conservarla. |
 | `SCA2_BandejaErrores` 17 | Conservar filtro inicial, estados seleccionables, paginación y enlace al detalle bajo la misma restricción de administrador. Probar errores consultables del histórico y que las selecciones y acciones de relanzar/descartar sigan aplicándose solo a errores pendientes en viva. |
-| `SCA2_CuadroMando` 36 | Comparar filtros por fecha, línea y origen, agrupaciones, ventanas y ratios. Unir conteos y sumas antes de calcular ratios/medias y aplicar los límites después de agrupar; comprobar que cada expediente cuenta una sola vez mientras se concilia Sync. Trazabilidad no se mueve. |
+| `SCA2_CuadroMando` 38 | La copia agrega ambos orígenes con los filtros existentes y aplica los límites de presentación al resultado combinado. Queda por comprobar que cada expediente cuenta una sola vez durante la conciliación de Sync, y probar los filtros y gráficos de forma interactiva. Trazabilidad no se mueve. |
 
 Con Hist vacío, `testInterface` comparó el árbol renderizado del buscador original y de la copia con cuatro entradas: inicial, un ID inexistente y dos solicitudes reales. No hubo diagnósticos de ejecución; se comparó estructura y valores renderizados, no los IDs internos ni los tokens opacos de `saveInto`. No se ejecutaron interacciones, descargas ni acciones desde el render.
 
@@ -213,6 +213,11 @@ La regla aislada `SCA2_PruebaPaginacion_HistPiloto` (`_a-0000f0bf-3e32-8000-9d57
 | `SCA2_DetalleSolicitud_HistPiloto` | `_a-0000f0bf-3e32-8000-9d57-011c48011c48_5789444` | 1 |
 | `SCA2_BandejaErrores_HistPiloto` (enlace al detalle piloto) | `_a-0000f0bf-3e32-8000-9d57-011c48011c48_5789420` | 2 |
 | `SCA2_PruebaBandeja_HistPiloto` (solo datos sintéticos en memoria) | `_a-0000f0bf-3e32-8000-9d57-011c48011c48_5789458` | 1 |
+| [`SCA2_CuadroMando_HistPiloto`](sail/62-cuadro-mando/SCA2_CuadroMando_HistPiloto.sail) | `_a-0000f0bf-3e32-8000-9d57-011c48011c48_5789527` | 2 |
+| `SCA2_IndicadorFinalizacionesFallidas_HistPiloto` | `_a-0000f0bf-3e32-8000-9d57-011c48011c48_5789521` | 1 |
+| `SCA2_CombinarGrupos_HistPiloto` | `_a-0000f0bf-3e32-8000-9d57-011c48011c48_5789489` | 1 |
+| `SCA2_ConsultarGrupos_HistPiloto` | `_a-0000f0bf-3e32-8000-9d57-011c48011c48_5789509` | 1 |
+| `SCA2_PruebaCuadroMando_HistPiloto` (solo datos sintéticos en memoria) | `_a-0000f0bf-3e32-8000-9d57-011c48011c48_5789513` | 1 |
 
 El detalle decide el origen por ID, da prioridad a viva y pasa el origen a las hijas. En la rama histórica, adapta campos al tipo que consumen las interfaces y bloquea las llamadas directas de escritura/proceso del piloto, salvo la obtención de documentos. No se probó la descarga, la visibilidad de todos los controles ni el camino con filas históricas. La bandeja combina los prefijos de Error vivo e Hist con el mismo filtro y total; las opciones de filtro y la lógica operativa del lote se siguen calculando en viva. Falta probar interacciones y paridad de opciones con datos históricos antes de conectar la bandeja.
 
@@ -220,17 +225,23 @@ Con Hist vacío, los renders del detalle y del buscador enlazado coincidieron en
 
 La prueba de bandeja reutilizó la proyección, orden y paginación de la copia, sustituyendo las consultas por cuatro filas tipadas en memoria: total 4, página desde 2 con IDs 4 (histórico, `RESUELTO`) y 3 (vivo, `PENDIENTE`), sin errores. No cubre filtros interactivos ni acciones.
 
-No se publicó una copia del cuadro de mando: sus series usan `a!recordData` con un solo origen, y sumar agrupaciones ya limitadas o promedios de ambos orígenes no garantiza las métricas. Falta combinar las agrupaciones de ambos orígenes antes de limitar y reconstruir las series manteniendo sus filtros, intervalos y formato. No hay prueba de métricas contando Hist.
+**Cuadro de mando.** Con Solicitud Hist vacío, la copia conserva las consultas y series originales; el render inicial contra el original v38 coincidió al excluir `_cId` y `saveInto`. Las otras cuatro pestañas del piloto renderizaron sin errores, truncamiento ni timeout. Una validación sin guardar forzó la rama combinada de las cinco pestañas, también sin errores. No se hicieron clics ni se inspeccionó visualmente el render.
+
+Con Hist, las consultas de cada origen agregan con los mismos filtros, intervalos y claves y leen las agrupaciones por páginas, sin aplicar un top-N por origen. La copia suma conteos y sumas por clave, recalcula medias con el conteo de duraciones no nulas, conserva el máximo y genera las series y los top-N a partir de los resultados combinados. La prueba en memoria obtuvo **26 filas** en total y el grupo **X** en primer lugar con **8** (3 vivas y 5 históricas), cuando no era primero en ninguno de los dos orígenes; para X se obtuvo una media de **33,3333** (100/3), no un promedio de medias, y un máximo de **90**. La prueba no inserta filas ni acredita volúmenes altos o permisos con datos Hist.
+
+El indicador piloto de finalizaciones fallidas conserva su lectura de solicitudes vivas en error: estos expedientes no son elegibles para archivar. La quinta pestaña, «Cuadro de Gestión», conserva las consultas de `SCA2 Ejecucion Argumento`, que no pertenece a las 15 tablas del piloto.
 
 #### Cómo conectar las copias (no ejecutado)
 
 1. Validar acceso permitido y denegado por expediente, enlace directo y documentos con perfiles no administradores. Probar las acciones y opciones de la bandeja con casos archivados sintéticos antes de usar TEST con filas.
-2. Terminar el cuadro de mando y repetir los renders y comprobaciones de métricas con los mismos filtros. Si Sync permite que viva e Hist devuelvan temporalmente la misma PK, no habilitar hasta ensayar cómo evitar duplicados sin cambiar el comportamiento.
-3. Después de la aprobación, cambiar las referencias de las páginas SCA2 de Buscador y Errores a `SCA2_Buscador_HistPiloto` y `SCA2_BandejaErrores_HistPiloto`, y la referencia del cuadro de mando de Gestiones mantenimiento a su copia cuando esté validada; mantener las condiciones de página y permisos. Revisar los demás puntos de entrada SCA2 al detalle antes de reemplazarlos y conservar los originales para revertir cada referencia. No tocar SCA, SCAC ni CORE.
+2. Comprobar filtros, gráficos y latencia con un volumen representativo, incluido el paso de vivo a Hist tras Sync. Si Sync permite que viva e Hist devuelvan temporalmente la misma PK, no habilitar hasta ensayar cómo evitar duplicados sin cambiar el comportamiento.
+3. Después de la aprobación, cambiar las referencias de las páginas SCA2 de Buscador y Errores a `SCA2_Buscador_HistPiloto` y `SCA2_BandejaErrores_HistPiloto`, y la invocación de `SCA2_CuadroMando` en `SCA2_GestionMantenimientoMenu` a `SCA2_CuadroMando_HistPiloto`; mantener las condiciones de página y permisos. Revisar los demás puntos de entrada SCA2 al detalle antes de reemplazarlos y conservar los originales para revertir cada referencia. No tocar SCA, SCAC ni CORE.
 
-#### Rutina transaccional propuesta
+#### Fichero de instalación de la rutina (DBeaver, TEST)
 
-El [SQL de traspaso](sql/sca2-hist-traspaso.sql) y su [prueba local](pruebas/sca2-hist-traspaso-local.sql) residen en Git, no en TEST. La rutina admite hasta diez IDs explícitos por lote (deduplicados) y solo admite archivar un expediente si también consta en la lista independiente de dependencias acreditadas; una lista de permisos vacía retorna un resumen a cero sin consultar ni bloquear las tablas. Revalida en BD estado, cierre, corte de un mes natural, pendientes y reaperturas. Copia las quince tablas preservando las PK antes de borrar de viva; una colisión incompatible revierte la unidad correspondiente y una reejecución no vuelve a mover un expediente ya archivado. PostgreSQL confirmó estos escenarios sobre datos sintéticos locales; los bloqueos `NOWAIT` a nivel de tabla requieren acordar una ventana y ensayar contención antes de usar la rutina con IDs.
+**Fichero:** [`docs/sca/sql/sca2-hist-traspaso.sql`](sql/sca2-hist-traspaso.sql). Con autorización de BD, abrir este fichero en DBeaver contra PostgreSQL TEST y ejecutar el script completo (Alt+X) con parada ante error, con un usuario habilitado para asumir `user_sca2_anulaciones`. Requiere la estructura viva, las quince tablas Hist y la tabla de reintentos. Instala el procedimiento `sca2_anulaciones.sca2_pm_traspasar_historico` en una transacción y no ejecuta ningún lote. No ejecutar `CALL` ni iniciar el PM durante la instalación. El script de [prueba local](pruebas/sca2-hist-traspaso-local.sql) es solo para PostgreSQL desechable, no para TEST.
+
+La rutina aún no se ha instalado en TEST. Admite hasta diez IDs explícitos por lote (deduplicados) y solo admite archivar un expediente si también consta en la lista independiente de dependencias acreditadas; una lista de permisos vacía retorna un resumen a cero sin consultar ni bloquear las tablas. Revalida en BD estado, cierre, corte de un mes natural, pendientes y reaperturas. Copia las quince tablas preservando las PK antes de borrar de viva; una colisión incompatible revierte la unidad correspondiente y una reejecución no vuelve a mover un expediente ya archivado. PostgreSQL confirmó estos escenarios sobre datos sintéticos locales; los bloqueos `NOWAIT` a nivel de tabla requieren acordar una ventana y ensayar contención antes de usar la rutina con IDs.
 
 ### Runbook para el primer lote (solo tras aprobación)
 
