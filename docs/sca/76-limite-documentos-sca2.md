@@ -29,7 +29,7 @@ Se usaron PDF sintéticos de 53.477.944 bytes y 608 bytes. No se guardó ningún
 
 En Designer de TEST, con una solicitud de prueba, el campo de documentación de `SCA2_ContraAnulacionOpciones` mostró el error para el PDF de 51 MiB y permitió seleccionar el pequeño. No aparecieron los botones REVISIÓN, POSPONER ni FINALIZAR en esa previsualización. Se retiraron los archivos temporales y se canceló el adjunto; no se completó ni pospuso ninguna acción contra CORE.
 
-La versión vigente del padre (v82) tiene cuatro llamadas a `a!submitUploadedFiles` sin `documents:`. Las cuatro requieren que `listaNombreDocs` no esté vacía; POSPONER requiere además que no esté marcada la no entrega de documentos. Seleccionar un archivo temporal en el campo, por sí solo, no lo añade a esa lista.
+La v82 del padre tenía cuatro llamadas a `a!submitUploadedFiles` sin `documents:`. Las cuatro requerían que `listaNombreDocs` no estuviera vacía; POSPONER requería además que no estuviera marcada la no entrega de documentos. Seleccionar un archivo temporal en el campo, por sí solo, no lo añade a esa lista.
 
 | Recorrido en el SAIL | Validación del botón | Efecto al confirmar |
 |---|---|---|
@@ -78,3 +78,61 @@ En otra previsualización aislada de TEST, `SCA2_TMP_PruebaRechazo50MB` v1 usó 
 Dejar vacío el valor visible no retira el temporal del conjunto que Appian puede consolidar. **No se cambió `SCA2_AccionesAdministrativasDocumentacion` (v10) ni se tocó el padre (v82)**; no se ejecutaron botones de negocio ni llamadas a CORE o GD.
 
 Se eliminaron la interfaz temporal y los cuatro PDF de prueba, incluida una repetición del caso de 51 MiB para comprobar la carpeta antes y después del clic. La consulta por UUID devolvió HTTP 404 para los cinco objetos.
+
+### Bloqueo de botones mientras haya un fichero sobredimensionado pendiente
+
+En Documentación v10, **CANCELAR** en AÑADIR copia el valor pendiente al input `documentosACargarN` correspondiente al tipo, oculta el editor y vacía el valor del campo. En MODIFICAR, CANCELAR oculta el editor sin vaciar su valor. Contra Anulación también permite plegar Documentación, lo que oculta el campo y su mensaje.
+
+En la interfaz aislada `SCA2_TMP_PruebaCancelar50MB` v1 de TEST se reprodujo el CANCELAR de AÑADIR y se comparó con quitar el archivo mediante la «×» del propio campo. En ambos casos se pulsó luego un botón de prueba con `submit: true`, sin grupo y con `a!submitUploadedFiles()` sin `documents:`:
+
+| Acción con un PDF de 51 MiB | Documentos en la carpeta antes y después de Continuar |
+|---|---|
+| CANCELAR: campo oculto y vacío | 0 → 1 |
+| Quitar con la «×» del campo | 0 → 0 |
+
+No se aplicó el bloqueo de los botones. Si se levanta al cancelar el editor, el archivo aún puede consolidarse; si el bloqueo se mantiene, el campo y el mensaje pueden quedar ocultos. Para aplicar la protección, primero hay que decidir cómo debe descartarse el temporal al cancelar. No se cambió Documentación v10 ni el padre v82, ni se ejecutaron acciones de negocio, CORE o GD.
+
+Se eliminaron la interfaz temporal y el único PDF consolidado; la consulta por UUID devolvió HTTP 404 para ambos.
+
+### Bloqueo aplicado en TEST
+
+Se mantiene la validación del campo y su mensaje. Appian recibe el archivo temporal; para abandonar el editor cuando supera el límite, primero hay que retirarlo con la **×** del campo. El padre mantiene el bloqueo mientras esté pendiente, aunque se pliegue la sección Documentación.
+
+| Interfaz | Versión | Diff |
+|---|---|---|
+| `SCA2_AccionesAdministrativasDocumentacion` | v10 → v11 | Local e input booleano opcional `archivoGrandePendiente`. Los dos campos conservan su guardado y calculan el indicador con `document(tointeger(index(save!value, 1, null)), "size") > 50 * 1024 * 1024` (falso al retirar el archivo); se comunica al padre si pasó el input. Ambos CANCELAR se deshabilitan con el indicador activo. |
+| `SCA2_ContraAnulacionOpciones` | v82 → v83 | Local booleano inicializado a falso, pasado a Documentación y a las dos continuaciones. REVISIÓN, POSPONER y FINALIZAR conservan su condición de deshabilitación y añaden el indicador como alternativa. |
+| `SCA2_ContraAnulacionModalSiNo` | v7 → v8 | Input opcional. Bloquea Sí/OK y bloquea No solo en las ramas que finalizan. |
+| `SCA2_ContraAnulacionRehabilitacion` | v6 → v7 | Input opcional que transmite el indicador a Recuperación de póliza. |
+| `SCA2_ContraAnulacionModalRecuperacionPoliza` | v16 → v17 | Input opcional y bloqueo de ACEPTAR, tanto en el modal principal como en el aviso de continuación. |
+
+Las relecturas de TEST coincidieron con las expresiones guardadas y los únicos cambios de inputs fueron los cuatro booleanos opcionales de la tabla. No cambiaron grupos, extensiones, mensajes de validación de tamaño ni llamadas de consolidación. Las copias SAIL y JSON de cada versión están en `files/sca2-limite-50mb/` de la memoria de trabajo.
+
+| Prueba | Resultado |
+|---|---|
+| Site aislado, sin archivo y con PDF de 608 B | CANCELAR del editor y el botón de consolidación habilitados. |
+| Site aislado, PDF de 51 MiB | Mensaje visible y ambos botones deshabilitados. Plegar la sección mantuvo el bloqueo; la × volvió a habilitar el botón. La consulta antes y después de la cancelación simulada dio **0 → 0 documentos**. |
+| Vista previa de Contra Anulación, solicitud sintética | Después de seleccionar oficina, POSPONER estaba habilitado sin archivo. Con el PDF de 51 MiB en AÑADIR, se mostró el error y se deshabilitaron CANCELAR y POSPONER. La × reactivó ambos. El PDF de 608 B no produjo error ni los bloqueó; AÑADIR lo consolidó después de plegar la sección de catalogación, cuyos campos obligatorios no estaban completos en la prueba. |
+
+FINALIZAR ya estaba deshabilitado sin archivo por falta de argumentos ejecutados. En esa ronda no se ejercitaron REVISIÓN ni las continuaciones, ni se probó MODIFICAR con la v11. No se pulsó ningún botón de negocio ni se completó ninguna acción contra CORE.
+
+Capturas completas: `aislada-site-bloqueo-51MiB.png`, `contra-anulacion-bloqueo-sin-archivo.png`, `contra-anulacion-bloqueo-anadir-51MiB.png`, `contra-anulacion-bloqueo-anadir-608B.png` y `contra-anulacion-bloqueo-anadido-608B.png`, en `~/.devin-files/sca2-limite-50mb/`.
+
+Se eliminaron el site y la interfaz temporales y el PDF de 608 B consolidado en la vista previa; los tres devolvieron HTTP 404 por UUID. Ningún PDF de la prueba aislada llegó a consolidarse.
+
+### Verificación adicional de MODIFICAR y disponibilidad de botones
+
+Se usó la misma solicitud sintética de TEST en Designer. Para abrir MODIFICAR sin recuperar un documento de GD, se probó en una copia temporal de Opciones v83 que apuntaba al PDF sintético original mediante su ID numérico de Appian. La copia invocaba Documentación v11 y conservaba la propagación del indicador y las condiciones de los botones de Opciones v83.
+
+| Estado en MODIFICAR | Resultado observado |
+|---|---|
+| Sin archivo de reemplazo | CANCELAR y POSPONER habilitados. FINALIZAR ya aparecía deshabilitado por falta de argumentos ejecutados. |
+| PDF de 51 MiB | Mensaje «El archivo no puede superar los 50 MB.» visible; CANCELAR y POSPONER deshabilitados. |
+| Tras quitar el PDF grande con la × | Desapareció el aviso y se volvieron a habilitar CANCELAR y POSPONER. |
+| PDF de 608 B | Sin aviso de tamaño; MODIFICAR, CANCELAR y POSPONER habilitados. Se pulsó únicamente el CANCELAR del editor: se cerró sin guardar el reemplazo. |
+
+En la vista previa de **Opciones v83 sin adaptar**, REVISIÓN no se mostró con esa solicitud: no cumplía las condiciones de titularidad, renovación y fecha de efecto. Recuperación → ACEPTAR no se mostró y su recorrido requiere ejecutar un argumento positivo, que puede escribir en servicios de negocio antes de abrir el modal. Sí/No no se abrió: FINALIZAR ya estaba deshabilitado y su apertura ejecuta lógica de negocio. No se pulsó ninguno de esos botones; no se pudo observar su transición habilitado/deshabilitado con esta solicitud.
+
+Capturas completas en `~/.devin-files/sca2-limite-50mb/`: `contra-anulacion-solicitud-botones-disponibles.png` y `contra-anulacion-modificar-v11-{sin-archivo,51MiB,tras-quitar,608B}.png`.
+
+La copia temporal y el PDF original sintético se eliminaron y devolvieron HTTP 404 por UUID. Las búsquedas de los dos reemplazos, de 51 MiB y 608 B, devolvieron cero documentos consolidados. No se cambió ninguna interfaz permanente ni se ejecutó ningún botón de negocio.
