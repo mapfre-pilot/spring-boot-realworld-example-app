@@ -787,6 +787,12 @@ a!localVariables(
           pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 20, sort: a!sortInfo(field: "n", ascending: false))
         ).data,
         {
+          rule!SCA2_IndicadorFinalizacionesFallidas(
+            desde: local!ini,
+            hasta: local!fin,
+            lineaNegocio: local!fLinea,
+            origenPoliza: local!fOrigen
+          ),
           a!columnsLayout(
             columns: a!forEach(
               items: a!flatten({a!map(g: "registrados", n: sum(tointeger(index(local!qErrEst, "n", {})))), local!qErrEst}),
