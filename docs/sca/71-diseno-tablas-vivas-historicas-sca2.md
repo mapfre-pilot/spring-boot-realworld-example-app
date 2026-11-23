@@ -131,13 +131,15 @@ El MCP creó los records sobre las tablas existentes con el acceso sincronizado 
 
 La prueba no acredita autorización por expediente, visibilidad con perfiles de negocio ni que las credenciales del origen estén limitadas a SELECT. Deben comprobarse antes de exponer o poblar los históricos, incluidos los campos sensibles del record de errores.
 
-### Simulación manual
+### Simulación manual y programada en TEST
 
-`SCA2 CMD SimularArchivoHistorico` — UUID `0001f0c0-fab0-8000-dbb7-7f0000014e7a`, versión numerada **2.0**. Appian muestra también un borrador; los nodos y variables coinciden con la versión 2.0. Se auditó el modelo: inicio manual, sin timer, cuatro tareas de script de solo consulta y cálculo, una bifurcación y fin. No hay escrituras, subprocesos, integraciones ni referencias a Trazabilidad. No se tocó el reporte de Gestiones mantenimiento.
+`SCA2 CMD SimularArchivoHistorico` — UUID `0001f0c0-fab0-8000-dbb7-7f0000014e7a`. La versión **2.0** era de inicio manual y no tenía temporizador. La versión **3.0**, publicada en TEST, añade un disparador de inicio diario a las **04:30 Europe/Madrid**, después de la caducidad (01:00) y el reintento (03:00). Designer muestra la recurrencia diaria a las 04:30 con la zona del modelo, `Europe/Madrid`. Se conservan las cuatro tareas de script de solo consulta y cálculo, la bifurcación, las variables y los recuentos del resumen de la instancia. No hay escrituras en BD, subprocesos, integraciones ni referencias a Trazabilidad. No se tocó el reporte de Gestiones mantenimiento, el sitio operativo ni el PM de traspaso real.
+
+La prueba manual de la versión 3.0 devolvió `COMPLETED processId=10302389 total=413 candidatos=0`. El PM de traspaso real registró 0 instancias. Queda por comprobar la primera ejecución nocturna; esta programación solo simula y no archiva expedientes. El respaldo de la versión 2.0 y la evidencia de publicación y configuración quedaron fuera de Git en `files/sca2-tablas-historicas/piloto/timer-simulacion/`. Para detener la programación, publicar el PM de simulación sin el disparador recurrente.
 
 El PM fija un corte único de un mes natural en `Europe/Madrid` y pagina por PK. Usa las fechas de transición tipadas en Appian: las escrituras analizadas usan `now()` (véase [43-G](43-G-invalidacion-cache.md)) o UTC explícito (véase [SQL de reintento](sql/sca2-reintento-finalizacion.sql)). El resultado no contiene identificadores de solicitudes. Si no se acredita que no hay dependencias de servicios, procesos o reintentos, el expediente sigue en viva.
 
-`testProcessModel`: instancia `17625407`, estado `COMPLETED`, duración `15325 ms`, corte Appian `2026-10-23 10:41:26` UTC.
+Prueba inicial de la versión 2.0 con `testProcessModel`: instancia `17625407`, estado `COMPLETED`, duración `15325 ms`, corte Appian `2026-10-23 10:41:26` UTC.
 
 | Resultado por expediente (un motivo principal) | Total |
 | --- | ---: |
