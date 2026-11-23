@@ -24,12 +24,12 @@ No se ejecutó un proceso completo ni se forzó un fallo en servicios externos: 
 
 Las instancias v25.0 **10301760** y **269259101** quedaron paradas en «Consultar reglas» con `rank (Data Outputs)`; la instancia **823135**, también v25.0, esperaba en «Start CrearAccion». Tras la intervención del administrador, las tres devolvieron HTTP 404 en el MCP y ninguna apareció activa en el listado de Decidir. El borrado automático no actúa mientras una instancia siga activa.
 
-En la última lectura de recuperación, **15789310** estaba en `EN_DECISION` y **15789318** en `ALTA`, sin filas de `SCA2 Error` para relanzar. La decisión sobre cómo recuperarlas queda pendiente (INBOX-37); no se relanzó ni se modificó ninguna.
+En esa lectura, **15789310** estaba en `EN_DECISION` y **15789318** en `ALTA`, sin filas de `SCA2 Error` para relanzar. La recuperación posterior se describe abajo.
 
 ## Auditoría de seguimiento en TEST
 
 - Se consultó sin filtro el runtime de los **22 modelos** de la aplicación SCA2: **48 instancias**, de las cuales **47 completadas y una activa**. Los procesos **269258736**, **537691815** y **14499183**, que esperaban desde CrearAccion, CompletarAccion y Alta, devolvieron HTTP 404. No hubo instancias con estado de pausa o excepción en el listado.
-- Queda activa **11252095**, de `SCA2 CMD CompletarAccion` v49.0: el último inicio de nodo es «Start decidir» (03/11/2026), sin finalización en el historial consultado. Ese nodo inicia Decidir de forma síncrona con `regla="mecanizar"`. No se pudo identificar su hija ni atribuirle el mismo fallo de tipos; requiere revisión en Appian Monitoring.
+- En esa auditoría seguía activa **11252095**, de `SCA2 CMD CompletarAccion` v49.0: el último inicio de nodo era «Start decidir» (03/11/2026), sin finalización en el historial consultado. Ese nodo inicia Decidir de forma síncrona con `regla="mecanizar"`. No se pudo identificar su hija ni atribuirle el mismo fallo de tipos. Tras la intervención del administrador, el MCP devolvió HTTP 404 para esta instancia.
 - Se revisaron las salidas tipadas de las versiones publicadas de los 22 modelos y las ramas de error de sus reglas relevantes. Decidir es el único modelo con llamada directa a `SCA2_consultarServiciosReglas`. No se identificó otra asignación confirmada de un `error` de texto a Map o a un tipo incompatible. Por ejemplo, Mecanizar guarda el **objeto** `a!map(success:false, error:tostring(ac!Error))`, no su campo `error`; `error` en el lote de reintentos de Finalizar es un ID numérico según el adaptador versionado, no el texto de un servicio.
 - La v32 por sí sola no protegía el análisis JSON de la regla: una evaluación sintética con HTML dio «El parámetro jsonText no era JSON válido». No se observó esa respuesta en ejecución; el tratamiento de Decidir se describe abajo. En Mecanizar, `SCA2_determinarContacto` devuelve nulo si falla la integración en vivo, pero analiza JSON en éxito; no se confirmó una respuesta de texto que llegue al Map `contacto`, y no se cambió esa regla.
 - Tampoco se cambiaron las esperas síncronas de Decidir ni su tratamiento de escrituras o avisos: convertir fallos técnicos en reintentos, o quitar una espera, cambia el flujo. Se verificó que Decidir sigue publicado en v32.0 con `AUTO_DELETE` a un día y alertas de grupo habilitadas. La auditoría no modificó ni publicó objetos Appian.
@@ -46,4 +46,23 @@ La regla comprueba el cuerpo con `isvalidjson` antes de llamar a `a!fromJson` si
 | `validateExpression`, HTML, JSON truncado, cuerpo ausente y HTML de más de 4.000 caracteres con HTTP exitoso | Error de texto acotado, normalizado por la salida del nodo 5; se cumplen las condiciones publicadas de las ramas de error con uno y tres intentos, respectivamente. |
 | `testRule` de la regla publicada con la consulta normal de referencia | `CONTRAANULAR`, con error, grupo y subgrupo nulos, igual que antes. |
 
-No se forzó un fallo de servicio ni se ejecutó el proceso completo. No se modificó el modelo de Decidir, que conserva la v32.0, el borrado automático a un día y el destinatario **SCA2 Alertas**. La recuperación de las dos solicitudes sigue pendiente de INBOX-37.
+En esa validación no se forzó un fallo de servicio ni se ejecutó el proceso completo. No se modificó el modelo de Decidir, que conserva la v32.0, el borrado automático a un día y el destinatario **SCA2 Alertas**.
+
+## Relanzamiento directo en TEST
+
+Antes de ejecutar, el listado sin filtro de los 22 modelos SCA2 devolvió 47 instancias completadas y ninguna activa o en pausa. No había ningún error pendiente de las dos solicitudes. Se guardaron copias privadas de Solicitud, Tarea y Error, limitadas a ambas.
+
+Se lanzó `SCA2 CMD Decidir` v32.0 una vez por solicitud, en secuencia, con `idSolicitud` como único parámetro: el modelo usa `accion` cuando no se informa la regla y carga el nivel vigente de Solicitud. Se verificaron las instancias iniciales y sus reintentos.
+
+| Solicitud y nivel | Instancia inicial | Resultado |
+|---|---|---|
+| 15789310 · 2 | 269260558 · `COMPLETED` | El servicio de reglas devolvió HTTP 500 en los tres intentos. Decidir los tramitó como `DECISION_ERROR`: la solicitud quedó en `ERROR_DECISION`, con un error `PENDIENTE` y otro `BLOQUEADO`. La tarea anterior siguió completada; no se creó otra. |
+| 15789318 · 1 | 16585003 · `COMPLETED` | HTTP 500 al inicio y en el primer reintento. El último reintento obtuvo `CONTRAANULAR`: la solicitud pasó a `EN_ACCION` con una nueva tarea `PENDIENTE` y el error quedó `RELANZADO`. |
+
+Todos los reintentos de Decidir y el proceso de creación de la nueva tarea finalizaron. No aparecieron nuevas filas de `SCA2 Llamada Servicio` para estas solicitudes; la respuesta de reglas se comprobó en las variables de ejecución. No se hizo otra ejecución manual ni se modificaron directamente los records. No se verificó la Bandeja visualmente.
+
+## Comprobación de regresión
+
+La comparación del diseño publicado de Decidir v25.0 y v32.0 identificó una sola diferencia en las expresiones (la conversión de `errorDecision` de texto a mapa), seis cambios de etiquetas y el identificador de versión. Se conservaron conexiones, variables y ajustes del modelo. El diseño de la regla v3 conserva las entradas y la llamada al servicio de la v2; solo evita el análisis de cuerpos ausentes o no válidos. Para JSON válido se conservan las salidas funcionales y para fallo HTTP se conserva el diagnóstico anterior.
+
+En solo lectura se consultó el servicio y la regla publicada con `testRule`. Como el MCP no permite invocar una versión anterior con `testRule`, se evaluó con `validateExpression` el tratamiento de las versiones v2 y v3 sobre la misma respuesta real y se contrastó con la salida publicada. Coincidieron `accion`, `grupo`, `subgrupo` y `error` en Autos nivel 1 (`ACCIONES ADMINISTRATIVAS`), Hogar nivel 2 (`CONTRA ANULAR NIVEL 2`) y Vida nivel 1 (`CONTRAANULAR`). No se pudo completar el contraste con una respuesta correcta comparable para Autos nivel 2, Hogar nivel 1 ni Vida nivel 2.
