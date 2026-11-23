@@ -82,3 +82,43 @@ Todas irían detrás de una constante `SCA2_USAR_*` para volver atrás, sin toca
 | Borrar pendientes (paso 3) | **No hay operación SOAP localizada** | A confirmar con el código BBE/CORE |
 
 Con el mismo comportamiento que hoy (reglas en cada llamada) la versión Appian haría reglas + lectura + generación + lectura: **no ganaría tiempo**. La ganancia depende de la decisión del punto 6.1.
+
+## 8. Lógica exacta del BBE (código `ES_SSCC_SCA_BINT`, subido a Appian el 23/11/2026) [Observado]
+
+`GestionarArgumentosBLImp.consultarListadoArgumentos` + `GestionarArgumentosDLImp`:
+
+```text
+valida numSolicitud, nivel, infoUsuario
+lista1 = SELECT A2139006 × D2139004 × A2139003            -- DL.consultarListadoArgumentos
+         WHERE NUM_SOLICITUD_PCA=? AND COD_TIP_GESTION_PCA='2'
+           AND (NIVEL=? OR (NIVEL<? AND MCA_EJEC_ARGUMENTO='S'))
+           AND D2139004.MCA_INH='N'  ORDER BY nivel, num_orden
+reglas = POST sca_servicios/api/1.0/compania/{cia}/poliza/{poliza}/argumento   -- siempre
+         (numApli, canal, perfil/subperfil, línea, clave producción, catalogación, motivo, causa,
+          nivel, fecAnul, detalle, codigoSCA, descSCA, ciaContraria, estadoUltimaGestion,
+          anulaTecnico/Experto, nuuma, subgrupo, mecanizada, motivoContacto, modoAcceso)
+DELETE A2139006 WHERE NUM_SOLICITUD_PCA=? AND COD_TIP_LINEA_NEGOCIO=? AND MCA_EJEC_ARGUMENTO<>'S'
+descripción de cada recomendado = D2139004.NOM_TIPO_ARG
+  + " N TREBOLES DISPONIBLES" | ". TREBOLES RECOMENDADOS: N"   (por codTrebol = codigo)
+  + Vida (póliza < 11 dígitos, arg 356): nota 888071-888074 de apisbcpolizas_int-web/life
+for cada recomendado no ejecutado ya en ese nivel (según lista1):
+  INSERT A2139006 (solicitud, codGestion, cod, línea, tipEjec, estado '0', SYSDATE, orden=prioridad,
+                   ciaContraria, numSpto, obligatorio, COD_USR=nuuma, centroEmisor, campaña,
+                   bono, TXT_FINAL_DESC_ARG=descripción)
+lista2 = SELECT (igual que lista1)
+treboles = reglas.treboles;  insertarTrebolesBD(codTrebol, codigoSCA, trebolesBigData)
+numArgEjecutados = count(lista2.MCA_EJEC_ARGUMENTO='S')
+```
+
+### Qué cubre Appian y qué no
+
+| Paso | En Appian hoy | Hueco |
+|---|---|---|
+| Preparar request de reglas | Sí (`SCA2_scaServiciosReglas`) | — |
+| Descripción + texto de tréboles + nota Vida 356 | Sí (catálogo Appian + regla; integración de póliza Vida a crear) | — |
+| Lectura (`lista1`/`lista2`) | `SCAC_listarDetalleArgumentosCntrAnuIntegracion` | El SOAP filtra por gestión activa y valida perfil/préstamo; el SQL del BBE filtra por solicitud + nivel. Paridad a comprobar |
+| `DELETE` de pendientes | **No** | Sin operación SOAP ni conexión a `TRON_LD` |
+| `INSERT` con `TXT_FINAL_DESC_ARG` | Parcial (`SCAC_generarCntrAnuIntegracion`) | Hay que confirmar en CORE que `generarCntrAnu` borra los pendientes, respeta los ejecutados del nivel y graba `TXT_FINAL_DESC_ARG` |
+| Tréboles BigData | **No** | Inserción directa en BD del BBE |
+
+Conclusión: para sustituir el servicio con paridad exacta, Appian necesita **una vía de escritura en `A2139006`** que haga el `DELETE` + `INSERT` del BBE: o `generarCntrAnu` lo hace (confirmar en `ES_SSCC_SCA_CORE_CODE`), o el BBE expone dos operaciones pequeñas (`guardarArgumentario` = delete + insert, y tréboles BigData). Con eso Appian orquesta: lectura → (si toca) reglas → grabar → lectura.
