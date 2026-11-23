@@ -1,70 +1,33 @@
 # SCA2 — Corrección de Decidir y relanzamiento de errores
 
-Incidencia de la solicitud **15789203**, póliza **0002729355511**, y corrección en Appian TEST (`mapfrespain-test`), 18/11/2026.
+Incidencia y corrección en Appian TEST, 18/11/2026. Este informe recoge los resultados de la intervención; no se repitieron las pruebas para redactarlo.
 
-Este documento recoge el diagnóstico, los cambios y los resultados facilitados para su documentación. En esta tarea solo se ha actualizado el repositorio: **no se ha accedido a Appian ni se han repetido las pruebas**.
+## 1. Diagnóstico
 
-## 1. Problema
+Un alta acabó en `ERROR_DECISION`. Al relanzar, un reintento obtuvo `CONTRAANULAR`: CrearAccion dejó la solicitud en `EN_ACCION`, con la Contra Anulación abierta, pero no se resolvió el error pendiente. Otro relanzamiento volvió a llamar al motor de reglas. Tras tres fallos, «Write Error bloqueado» sobrescribió el estado bueno con `ERROR_DECISION`.
 
-- **17/11, 23:26:** el alta de JJGONZ2 acabó en `DECISION_ERROR`: el motor de reglas devolvió `ERROR`, con el error **228 PENDIENTE** y el **229 BLOQUEADO**.
-- **18/11, 11:00:** MASCARP relanzó el 228 desde la Bandeja y se creó el error **230**. El reintento automático (**Decidir 17603837**) sí obtuvo `CONTRAANULAR` y CrearAccion dejó la solicitud en `EN_ACCION`, con la tarea **935** y la gestión CORE **43709217 INCOMPLETA**. Pero el error 230 siguió `PENDIENTE`.
-- MASCARP relanzó después los errores **230 y 231** sobre la solicitud ya en `EN_ACCION`. Decidir volvió a consultar el motor, que falló, y tras tres intentos el nodo **8 «Write Error bloqueado»** escribió `ERROR_DECISION` encima de `EN_ACCION`, con la Contra Anulación abierta.
-
-### Causa
-
-1. La guarda **«¿Ya ejecutado?» (nodo 4)** solo compara la clave de idempotencia de la versión actual.
-2. Los nodos **«Write Decidida»** no cerraban los errores pendientes.
-3. La Bandeja dejaba relanzar sin mirar el estado de la solicitud.
+La guarda «¿Ya ejecutado?» solo comparaba la clave de idempotencia de la versión actual. Los nodos «Write Decidida» no cerraban los errores pendientes y la Bandeja permitía relanzar sin comprobar el estado de la solicitud.
 
 ## 2. Cambios en Appian TEST
 
 | Objeto | Versión | Cambio |
 |---|---|---|
-| `SCA2 CMD MarcarErrorRelanzado` | **v37** | El nodo 3 marca `DESCARTADO`, en vez de `RELANZADO`, cuando el comando es Decidir y la solicitud ya no está en `ERROR_DECISION`. El nodo 4 (`Comando?`) solo lanza Decidir si la solicitud sigue en `ERROR_DECISION`. |
-| `SCA2 CMD Decidir` | **v25** | Los nodos 10 (`Write Decidida DETALLE`), 9 (`Write Decidida POPUP_SGO`) y 13 (`Write Destino Mecanizar`) marcan como `RELANZADO`, con `resueltoPor` y `fechaResolucion`, los `DECISION_ERROR` `PENDIENTE` o `BLOQUEADO` de la solicitud. |
-| `SCA2_BandejaErrores` | **versionId 14** | `local!relanzable` oculta Relanzar en los errores `PENDIENTE` de Decidir cuya solicitud no está en `ERROR_DECISION`. |
-| `SCA2_DetalleErrores` | **versionId 8** | Misma condición de `local!relanzable` para ocultar Relanzar. |
+| `SCA2 CMD MarcarErrorRelanzado` | v37 | El nodo 3 marca `DESCARTADO` si el comando es Decidir y la solicitud ya salió de `ERROR_DECISION`. El nodo 4 no lanza Decidir en ese caso. |
+| `SCA2 CMD Decidir` | v25 | Los nodos 10, 9 y 13 («Write Decidida DETALLE», «Write Decidida POPUP_SGO» y «Write Destino Mecanizar») resuelven los `DECISION_ERROR` en `PENDIENTE` o `BLOQUEADO` como `RELANZADO`, con `resueltoPor` y `fechaResolucion`. |
+| `SCA2_BandejaErrores` / `SCA2_DetalleErrores` | v14 / v8 | `local!relanzable` oculta Relanzar para errores pendientes de Decidir cuando la solicitud ya salió de `ERROR_DECISION`. |
 
-## 3. Corrección de datos de 15789203
+## 3. Corrección de datos
 
-Corrección realizada mediante **`updateRecordData` / `insertRecordData`, sin DML**:
+Se restauró `EN_ACCION` con la Contra Anulación pendiente, se marcaron cuatro errores como `DESCARTADO` y se registró la transición «SCA2 Correccion manual». Se utilizaron operaciones sobre records de Appian, sin DML directo.
 
-| Registro | Antes | Después |
-|---|---|---|
-| Solicitud **572** | `ERROR_DECISION`, **v5** | `EN_ACCION`, **v6**; `interfazActiva=CONTRA_ANULAR`, `procesoActivo=CONTRAANULAR`, `estadoTarea=PENDIENTE`. |
-| Errores **229, 232, 233 y 234** | 232 `PENDIENTE`; 229, 233 y 234 `BLOQUEADO` | `DESCARTADO` por `devin`. |
+## 4. Pruebas registradas
 
-Se insertó la transición **3384**, comando **«SCA2 Correccion manual»**, de `ERROR_DECISION` a `EN_ACCION`.
+| Caso | Resultado |
+|---|---|
+| Relanzar Decidir con la solicitud fuera de `ERROR_DECISION` | El error quedó `DESCARTADO`; Decidir no arrancó y la solicitud conservó `EN_ACCION`. |
+| Relanzar Decidir con la solicitud en `ERROR_DECISION` | Arrancó Decidir v25. El motor volvió a fallar y la solicitud siguió en `ERROR_DECISION`. |
+| Bandeja y Detalle, solo lectura | Relanzar visible para Decidir pendiente en `ERROR_DECISION`; oculto fuera de ese estado y para errores descartados. Alta y Finalizar pendientes conservaron Relanzar. |
 
-La copia previa de los procesos, las interfaces y las filas está en la memoria del bot, **`files/sca2-fix-decidir-relanzar/`**, fuera del repositorio.
+**Sin probar:** el cierre automático de los errores pendientes cuando Decidir acierta; el motor no devolvió una acción válida durante la prueba.
 
-## 4. Pruebas
-
-### 4.1 Relanzamiento de un error de una solicitud que ya avanzó
-
-Relanzar el error **232** de **15789203** mediante **MarcarErrorRelanzado 10277703** no lanzó Decidir: el error quedó `DESCARTADO` y la solicitud siguió en `EN_ACCION`.
-
-### 4.2 Regresión: solicitud en ERROR_DECISION
-
-Relanzar el error **224** de **15789144**, que sí está en `ERROR_DECISION` (instancia **537670046**), lanzó **Decidir v25**, instancias **13431001 y 10277738**.
-
-El motor volvió a devolver `ERROR`: se generaron los errores **235 PENDIENTE** y **236 BLOQUEADO**, y la solicitud siguió en `ERROR_DECISION`.
-
-### 4.3 Prueba en el site
-
-Revisión en solo lectura en la Bandeja de errores y en la sección «Errores» del Detalle (site SCA2 de TEST), sin pulsar «Relanzar» ni «Descartar»:
-
-| Caso | Error | Solicitud (estado) | Resultado |
-|---|---|---|---|
-| Decidir PENDIENTE con la solicitud en ERROR_DECISION | 235 | 15789144 (ERROR_DECISION) | «Relanzar» visible en las dos pantallas |
-| Decidir PENDIENTE con la solicitud ya fuera de ERROR_DECISION | 227 | 15789202 (ALTA) | «Relanzar» oculto, «Descartar» visible |
-| Decidir DESCARTADO | 232 | 15789203 (EN_ACCION) | sin «Relanzar» |
-| Regresión: Alta / Finalizar PENDIENTE | — | — | «Relanzar» visible; pantallas sin errores |
-
-## 5. Sin probar
-
-**El cierre automático de errores pendientes cuando Decidir acierta no se ha probado**, porque el motor no devolvió una acción válida en ninguna solicitud de prueba.
-
-## 6. Comparación con SCA
-
-**Deducción, no verificada en los objetos de SCA:** SCA trata el error de decisión dentro de la misma instancia larga y no tiene una Bandeja que relance otra decisión aparte.
+**Comparación con SCA:** se dedujo, sin verificarlo en sus objetos, que SCA trata el error dentro de la instancia larga y no lanza una decisión aparte desde una Bandeja.
