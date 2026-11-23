@@ -1,0 +1,11 @@
+a!localVariables(
+                         local!vivas:{a!map(g:"A",n:5,s:100,durCount:2,max:75),a!map(g:"B",n:4,s:20,durCount:1,max:20),
+                                      a!map(g:"X",n:3,s:90,durCount:1,max:90),a!map(g:null,n:1)},
+                         local!hist:{a!map(g:"C",n:6,s:1200,durCount:3,max:500),a!map(g:"X",n:5,s:10,durCount:2,max:8),
+                                      a!map(g:null,n:2)},
+                         local!mezcla:rule!SCA2_CombinarGrupos_HistPiloto(vivas:local!vivas,historicas:local!hist,agrupadores:{"g"}),
+                         local!top:todatasubset(local!mezcla,a!pagingInfo(startIndex:1,batchSize:1,sort:a!sortInfo(field:"n",ascending:false))).data,
+                         local!x:index(local!top,1,a!map()),
+                         a!map(top:local!x.g,n:local!x.n,avg:round(local!x.avg,4),max:local!x.max,
+                               filas:sum(tointeger(index(local!mezcla,"n",{}))),nulos:index(index(local!mezcla,where(a!forEach(items:local!mezcla,expression:a!isNullOrEmpty(fv!item.g))),{}),"n",{}))
+                        )
