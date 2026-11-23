@@ -41,6 +41,7 @@ exclusivamente con operaciones `get*`/`list*`. **No se ha modificado ningún obj
 25. [Coordinación de la fase 1](42-coordinacion-fase1.md) — reparto de objetos Appian por sesión (A–E), reglas comunes, interruptores y [reservas de datos de prueba](pruebas/coordinacion-fase1.md).
 26. Implementación fase 1 por sesión: [43-A caducidad por nivel](43-A-caducidad-por-nivel.md) · [43-B propietario y carterización](43-B-propietario-carterizacion.md) · [43-C catálogos en Aurora](43-C-catalogos-aurora.md) · [43-D caché de cabecera](43-D-cache-cabecera.md) · [43-E entrada al motor de reglas](43-E-entrada-reglas.md) · [43-F PM de refresco de caché](43-F-pm-refresco-cache.md) · [43-G invalidación de caché](43-G-invalidacion-cache.md) — objetos, versiones, pruebas y pendientes de cada pieza.
 27. [Resumen de cierre de la fase 1](44-resumen-fase1.md) — estado de interruptores en TEST, objetos y versiones, pruebas, hallazgos y pendientes.
+28. [70 — Diseño de tablas vivas e históricas de SCA2](70-diseno-tablas-vivas-historicas-sca2.md) — inventario de TEST, archivado nocturno propuesto y condiciones para conservar el comportamiento.
 
 ## Alcance y limitaciones
 
