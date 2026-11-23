@@ -303,7 +303,7 @@ R46-D guardó `SCA2_ContraAnulacionOpciones` sobre la reserva de R46-C. Se resta
 - Usuarios de TEST con perfil administrador SCA2 (bandeja `/errores` y mantenimiento), Central, CCC, GGE y Si24 front.
 - Pólizas que lleguen a «Pendiente de Autorización» (4/5 + 2) o a «Mecanización Enviada» (4/5 + 7).
 - Un DBA que ejecute el DDL de la caché de cabecera.
-- Alta Vida: actualización del 23/11/2026 en [Vida: alta, Decidir, buscador y relanzamiento](pruebas/vida-alta-decidir-buscador-2026-11-23.md): `numApli=0`, entrada a reglas Vida, diagnóstico HTTP y solicitud 15789299 recuperada a CONTRAANULAR; prueba en pantalla del buscador pendiente.
+- Alta Vida: actualización del 23/11/2026 en [Vida: alta, Decidir, buscador y relanzamiento](pruebas/vida-alta-decidir-buscador-2026-11-23.md): `numApli=0`, entrada a reglas Vida, diagnóstico HTTP y solicitud 15789299 recuperada a CONTRAANULAR; buscador probado en pantalla.
 
 ### Dudas nuevas
 

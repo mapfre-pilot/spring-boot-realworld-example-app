@@ -6,7 +6,7 @@ Entorno: Appian TEST, aplicación SCA2. Fecha: 23/11/2026. Herramientas: MCP App
 
 | Objeto | Antes → después | Resultado |
 |---|---|---|
-| `SCA2_construirContextoAlta` | v19 → v20 | Antecedente comunicado para esta consolidación: `numApli=0` en Vida; alta póliza `0006000495` → CORE `15789249`. No se repitió el alta en esta tarea |
+| `SCA2_construirContextoAlta` | v19 → v20 | `numApli=0` en Vida; alta real de la póliza `0006000495` (18/11) → CORE `15789249` sin el 4004 |
 | `SCA2_construirEntradaReglas` | v4 → v5 | Añadida Vida a orígenes soportados y selección de `datosPolizaVida`; DTO completo y fecha ISO |
 | `SCA2_Buscador` | v39 → v40 | Resolver tipo antes de consultar detalles; Vida consulta su servicio y valida `contractData.policyId`; Autos/Hogar conservan su consulta y criterios |
 | `SCA2_consultarServiciosReglas` | v1 → v2 | Si falla integración, `error` conserva statusCode, body crudo y title/message/detail de conexión; accion/grupo/subgrupo siguen ERROR. Rama de éxito intacta |
