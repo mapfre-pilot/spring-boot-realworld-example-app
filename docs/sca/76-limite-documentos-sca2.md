@@ -65,3 +65,16 @@ En ambos casos seguía visible el mensaje de tamaño. La consulta de la carpeta 
 La revisión del SAIL v82 no identificó otro campo de subida en el padre ni en las interfaces SCA2 que usa, aparte de AÑADIR y MODIFICAR de Documentación. Ambos añaden a `listaNombreDocs` el ID como prefijo del nombre después de validar y consolidar el archivo. El padre conserva la v82: no se cambió ninguna de sus cuatro llamadas ni se repitió la prueba de pantalla con la solicitud, ya que la prueba aislada no cumplió el requisito de bloqueo. No hubo llamadas a CORE o GD en la prueba aislada.
 
 Se eliminaron la interfaz temporal y los tres PDF nuevos; la consulta por UUID devolvió HTTP 404 para los cuatro objetos.
+
+### Rechazo al seleccionar el archivo en la interfaz hija
+
+En otra previsualización aislada de TEST, `SCA2_TMP_PruebaRechazo50MB` v1 usó la misma variante de campo que Documentación (`a!fileUploadField_26r7`). En `saveInto`, `document(tointeger(index(save!value, 1, null)), "size")` leyó el tamaño del temporal en bytes. Si superaba el límite, el campo quedaba vacío y un local mantenía visible «El archivo no puede superar los 50 MB.». Se conservó la validación basada en `fv!files.size`.
+
+| Prueba | Resultado |
+|---|---|
+| PDF de 51 MiB (53.477.944 bytes) | Campo vacío, mensaje visible. La carpeta no tenía el documento al terminar la selección, pero pasó de cero a un documento al pulsar el botón aislado con `submit: true`, sin grupo y con `a!submitUploadedFiles()` sin `documents:`. El campo siguió vacío. |
+| Dos PDF de 608 bytes | Cada uno quedó seleccionado sin aviso. Los botones aislados de AÑADIR y MODIFICAR devolvieron éxito y cada fichero apareció en la carpeta. |
+
+Dejar vacío el valor visible no retira el temporal del conjunto que Appian puede consolidar. **No se cambió `SCA2_AccionesAdministrativasDocumentacion` (v10) ni se tocó el padre (v82)**; no se ejecutaron botones de negocio ni llamadas a CORE o GD.
+
+Se eliminaron la interfaz temporal y los cuatro PDF de prueba, incluida una repetición del caso de 51 MiB para comprobar la carpeta antes y después del clic. La consulta por UUID devolvió HTTP 404 para los cinco objetos.
