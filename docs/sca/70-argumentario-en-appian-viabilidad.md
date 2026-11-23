@@ -69,3 +69,16 @@ Todas irían detrás de una constante `SCA2_USAR_*` para volver atrás, sin toca
 2. **Equipo BBE** (`es_pca_gestionartareas_bbe-web`): ¿pueden exponer el endpoint de solo lectura (opción C)?
 3. **CORE:** operación SOAP para borrar argumentos pendientes, si se elige B.
 4. **Datos de prueba:** pólizas nuevas que deriven a contra anulación N1, para comparar con solicitudes nuevas.
+
+## 7. Piezas que ya existen en Appian TEST para sustituir el servicio [Observado]
+
+| Paso del BBE | Pieza Appian existente | Contrato |
+|---|---|---|
+| Leer argumentario (paso 1/5) | `SCAC_listarDetalleArgumentosCntrAnuIntegracion` (SOAP `IContraAnularPCA.listarDetalleArgumentosCntrAnu`) | Entrada `codSolicitud`, `infoUsuario`. Salida `numArgEjecutados` + `listaCompletaArgContrAnuDTO[]`: orden, descTipoArgumento, mcaEstado, mcaObligatorio, usuario, fecEjecutado, observaciones, codTipoArgumento, codDocumEstatico, txtLanzarAplicacion, txtInstrucciones, urlAplicacion, txtUrlArg, infoCiaContraria, atributosLanzarAplicacionDTO, codIdCampana, codTipBon, numTipBon, mcaEconomico |
+| Llamar a reglas (paso 2) | `SCA2_scaServiciosReglas` (`sca_servicios/.../argumento`) | Ya en uso en SCA2 |
+| Grabar recomendación (paso 4) | `SCAC_generarCntrAnuIntegracion` (SOAP `IContraAnularPCA.generarCntrAnu`) | Entrada `codSolicitud`, `codTipoNegocio`, `infoUsuario`, `listadoContraAnulDTO[]` (descTipoArgumento, txtApliArgumento, orden, mcaObligatorio, codTipoArgumento, codTpEjecArgumento, textObservacionEjec, impCIAContraria, numSpto, centroEmisor, codCiaContraria, codIdCampana, codTipBon, numTipBon). Salida `codGestion` |
+| Ejecutar / modificar argumento | `SCA2_guardarEjecuArgIntegracion`, `SCA2_modificarArgumentoIntegracion` | Ya en uso |
+| Catálogo | `SCA2 Cat Tipo Argumento` / `SCA2_catTiposArgAurora` | Ya en uso |
+| Borrar pendientes (paso 3) | **No hay operación SOAP localizada** | A confirmar con el código BBE/CORE |
+
+Con el mismo comportamiento que hoy (reglas en cada llamada) la versión Appian haría reglas + lectura + generación + lectura: **no ganaría tiempo**. La ganancia depende de la decisión del punto 6.1.
