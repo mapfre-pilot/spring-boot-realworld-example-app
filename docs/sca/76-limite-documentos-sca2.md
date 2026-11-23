@@ -23,6 +23,58 @@ Se usaron PDF sintéticos de 53.477.944 bytes y 608 bytes. No se guardó ningún
 |---|---|
 | Mantenimiento → Argumentos de Contra Anulación (site) | El PDF grande mostró el mensaje. Al pulsar GUARDAR con los datos obligatorios sin rellenar, el formulario siguió abierto y el archivo quedó pendiente; esto no aísla el error de tamaño como causa del bloqueo. El PDF pequeño se pudo seleccionar sin error; se canceló sin guardar. |
 | Documentación → AÑADIR (Designer) | El PDF grande mostró el mensaje y quedó pendiente al pulsar AÑADIR. El PDF pequeño se pudo seleccionar sin error; se retiró y se canceló sin añadirlo. |
-| Documentación → MODIFICAR | Se verificó la validación en el SAIL guardado; no se probó el reemplazo en pantalla. |
+| Documentación → MODIFICAR (Designer) | Se añadió un PDF sintético inicial sin asociarlo a una solicitud. Al pulsar MODIFICAR con el PDF de 51 MiB, el editor siguió abierto con el error y la referencia del documento original no cambió. El PDF pequeño se pudo seleccionar sin error; se retiró y se canceló sin guardar ningún reemplazo. |
 
-**Contra Anulación:** `SCA2_ContraAnulacionOpciones` tiene cuatro llamadas a `a!submitUploadedFiles` sin `documents:`, en ramas que requieren una lista de adjuntos no vacía y que encadenan completar o posponer una acción. La lectura del SAIL identifica una posible consolidación de temporales, pero no demuestra que se consolide un archivo grande pendiente. No se accionaron esos botones en TEST para no tramitar una acción real; el resultado queda sin confirmar y el padre no se modificó.
+## Contra Anulación: alcance de la comprobación
+
+En Designer de TEST, con una solicitud de prueba, el campo de documentación de `SCA2_ContraAnulacionOpciones` mostró el error para el PDF de 51 MiB y permitió seleccionar el pequeño. No aparecieron los botones REVISIÓN, POSPONER ni FINALIZAR en esa previsualización. Se retiraron los archivos temporales y se canceló el adjunto; no se completó ni pospuso ninguna acción contra CORE.
+
+La versión vigente del padre (v82) tiene cuatro llamadas a `a!submitUploadedFiles` sin `documents:`. Las cuatro requieren que `listaNombreDocs` no esté vacía; POSPONER requiere además que no esté marcada la no entrega de documentos. Seleccionar un archivo temporal en el campo, por sí solo, no lo añade a esa lista.
+
+| Recorrido en el SAIL | Validación del botón | Efecto al confirmar |
+|---|---|---|
+| REVISIÓN | `submit: true`; `validate` por defecto; sin grupo. | Ejecuta `SCA2 CMD CompletarAccion` con estado 6. Pasa a crear la acción de autorización, con posible alta de gestión en CORE. |
+| POSPONER | `submit: true`; `validate` por defecto; sin grupo. | En función del contexto puede persistir la catalogación en CORE antes de consolidar. `SCA2 CMD Posponer` puede abrir gestión SGC, registrar observaciones en CORE y enviar adjuntos a GD. |
+| Recuperación de póliza → ACEPTAR (`onFinalizarPositivo`) | `submit: false` en la aceptación principal; el aviso de continuación omite `submit`. Ambos omiten `validate` y el grupo. | Ejecuta `SCA2 CMD CompletarAccion` para el cierre positivo, con envío a GD y cierre en CORE. |
+| FINALIZAR → Sí/No, incluidas las ramas de ilocalizables (`onFinalizar`) | FINALIZAR usa `submit: true` y abre el modal; Sí/No tienen `submit` condicional. Ninguno especifica `validate` ni grupo. | Las confirmaciones de cierre ejecutan `SCA2 CMD CompletarAccion`; algunas ramas del modal pueden escribir en CORE antes de invocar el proceso. |
+
+Ninguno de estos botones selecciona el grupo `documento`, así que el mensaje del campo no garantiza que se bloquee el botón antes de ejecutar su acción. No se cambió el padre: asignarle el grupo `documento` también aplicaría las validaciones preexistentes de extensión y obligatoriedad, no solo la de tamaño.
+
+### Prueba aislada de consolidación
+
+En Designer de TEST, `SCA2_TMP_PruebaLimite50MB` v1 reprodujo el patrón: campo en el grupo `documento` con la misma validación, botón con `submit: true` sin grupo y `a!submitUploadedFiles()` sin `documents:`. Los callbacks solo escribían variables locales; no había procesos ni llamadas a CORE o GD.
+
+| PDF sintético | Vista previa tras pulsar el botón | Comprobación independiente |
+|---|---|---|
+| 51 MiB (53.477.944 bytes) | `onSuccess`, con el mismo ID que tenía el temporal; el mensaje de tamaño seguía visible. | El PDF apareció como documento en la carpeta destino de Appian. |
+| Pequeño (608 bytes) | `onSuccess`, con el mismo ID que tenía el temporal y sin error de tamaño. | El PDF apareció como documento en la misma carpeta. |
+
+La prueba confirma que la llamada sin `documents:` puede consolidar un PDF sobredimensionado aun con el error visible. No se ejecutó una acción de Contra Anulación: en el padre, la llamada sigue condicionada a que ya haya adjuntos en `listaNombreDocs`. Se eliminaron la interfaz temporal, los dos PDF de la prueba y el PDF sintético usado anteriormente para habilitar MODIFICAR.
+
+### Verificación de la propuesta con IDs explícitos
+
+En una segunda interfaz temporal de TEST, `SCA2_TMP_PruebaIdsLimite50MB` v1, AÑADIR validaba el grupo `documento` y consolidaba el PDF pequeño antes de guardar su ID. El botón de continuación mantuvo `submit: true` sin grupo: con un ID admitido invocaba `a!submitUploadedFiles(documents: ...)`; sin IDs, solo guardaba el resultado en una variable local.
+
+| Caso con el PDF de 51 MiB pendiente | Resultado al pulsar Continuar |
+|---|---|
+| Sin IDs admitidos, sin llamar a `a!submitUploadedFiles` | Continuó y el PDF grande apareció en la carpeta de Appian. |
+| Con el ID del PDF de 608 bytes ya consolidado | Se ejecutó `onSuccess` y en la carpeta quedó un único PDF pequeño. También apareció otro PDF grande. |
+
+En ambos casos seguía visible el mensaje de tamaño. La consulta de la carpeta devolvió dos PDF nuevos de 53.477.944 bytes y uno de 608 bytes. **Acotar la llamada a los IDs admitidos no basta con el patrón de continuación probado**. El caso sin llamada demuestra que la consolidación del PDF grande no depende de invocar `a!submitUploadedFiles` sin `documents:`; la prueba no aisló el comportamiento de `submit: true` fuera de Designer.
+
+La revisión del SAIL v82 no identificó otro campo de subida en el padre ni en las interfaces SCA2 que usa, aparte de AÑADIR y MODIFICAR de Documentación. Ambos añaden a `listaNombreDocs` el ID como prefijo del nombre después de validar y consolidar el archivo. El padre conserva la v82: no se cambió ninguna de sus cuatro llamadas ni se repitió la prueba de pantalla con la solicitud, ya que la prueba aislada no cumplió el requisito de bloqueo. No hubo llamadas a CORE o GD en la prueba aislada.
+
+Se eliminaron la interfaz temporal y los tres PDF nuevos; la consulta por UUID devolvió HTTP 404 para los cuatro objetos.
+
+### Rechazo al seleccionar el archivo en la interfaz hija
+
+En otra previsualización aislada de TEST, `SCA2_TMP_PruebaRechazo50MB` v1 usó la misma variante de campo que Documentación (`a!fileUploadField_26r7`). En `saveInto`, `document(tointeger(index(save!value, 1, null)), "size")` leyó el tamaño del temporal en bytes. Si superaba el límite, el campo quedaba vacío y un local mantenía visible «El archivo no puede superar los 50 MB.». Se conservó la validación basada en `fv!files.size`.
+
+| Prueba | Resultado |
+|---|---|
+| PDF de 51 MiB (53.477.944 bytes) | Campo vacío, mensaje visible. La carpeta no tenía el documento al terminar la selección, pero pasó de cero a un documento al pulsar el botón aislado con `submit: true`, sin grupo y con `a!submitUploadedFiles()` sin `documents:`. El campo siguió vacío. |
+| Dos PDF de 608 bytes | Cada uno quedó seleccionado sin aviso. Los botones aislados de AÑADIR y MODIFICAR devolvieron éxito y cada fichero apareció en la carpeta. |
+
+Dejar vacío el valor visible no retira el temporal del conjunto que Appian puede consolidar. **No se cambió `SCA2_AccionesAdministrativasDocumentacion` (v10) ni se tocó el padre (v82)**; no se ejecutaron botones de negocio ni llamadas a CORE o GD.
+
+Se eliminaron la interfaz temporal y los cuatro PDF de prueba, incluida una repetición del caso de 51 MiB para comprobar la carpeta antes y después del clic. La consulta por UUID devolvió HTTP 404 para los cinco objetos.
