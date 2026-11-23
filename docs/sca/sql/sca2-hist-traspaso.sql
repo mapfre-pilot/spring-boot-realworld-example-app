@@ -14,6 +14,7 @@ SECURITY INVOKER
 SET search_path = pg_catalog
 AS $archivo$
 DECLARE
+  version_rutina constant integer := 3;
   tablas constant text[] := ARRAY[
     'sca2_solicitud', 'sca2_transicion', 'sca2_tarea', 'sca2_error', 'sca2_llamada_servicio',
     'sca2_datos_cabecera', 'sca2_datos_solicitud', 'sca2_datos_basicos_solicitud',
@@ -56,7 +57,8 @@ BEGIN
   END IF;
 
   IF jsonb_array_length(entrada) = 0 THEN
-    p_resumen := '{"solicitados":0,"archivados":0,"repetidos":0,"excluidos":0,"conflictos":0,"filas":0,"idsArchivados":[],"clavesSync":{}}';
+    p_resumen := (jsonb_build_object('versionRutina', version_rutina) ||
+      '{"solicitados":0,"archivados":0,"repetidos":0,"excluidos":0,"conflictos":0,"filas":0,"idsArchivados":[],"clavesSync":{}}'::jsonb)::text;
     RETURN;
   END IF;
 
@@ -136,7 +138,7 @@ BEGIN
           AND NOT (upper("ESTADO_DESTINO") = ANY(terminales))
        ) OR EXISTS (
          SELECT 1 FROM sca2_anulaciones.sca2_reintento_fin r WHERE r.id_solicitud = clave
-          AND r.estado IN ('PENDIENTE', 'AGOTADO')
+          AND (r.estado IS NULL OR r.estado NOT IN ('RECUPERADO', 'OMITIDO'))
        ) THEN
       excluidos := excluidos + 1;
       CONTINUE;
@@ -197,6 +199,7 @@ BEGIN
   END LOOP;
 
   p_resumen := jsonb_build_object(
+    'versionRutina', version_rutina,
     'solicitados', cardinality(ids), 'archivados', archivados, 'repetidos', repetidos,
     'excluidos', excluidos, 'conflictos', conflictos, 'filas', filas_total,
     'idsArchivados', ids_archivados, 'clavesSync', claves_sync
