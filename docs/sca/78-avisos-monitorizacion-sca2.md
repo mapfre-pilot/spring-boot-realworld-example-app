@@ -103,7 +103,7 @@ Cotejar la versión publicada con la copia antes de aplicar; no sobrescribir cam
 
 ### Primera ronda con candidatos aislados en TEST
 
-**ProcesarLoteErrores: no se promueve.** Se configuró `SCA2 CMD ProcesarLoteErrores Candidato INBOX38` (v2.0, `0001f0c1-84b7-8000-dc08-7f0000014e7a`) y una constante que apunta solo al candidato, para que su nodo 42 no arranque el modelo activo. La paleta actual admite `appian.system.smart-services.start-process-6`, no `-5`. La copia usa la versión admitida, con `IsSynchronous = false` y `ChainIntoChild = false`.
+**ProcesarLoteErrores: comparación del candidato.** Se configuró `SCA2 CMD ProcesarLoteErrores Candidato INBOX38` (v2.0, `0001f0c1-84b7-8000-dc08-7f0000014e7a`) y una constante que apunta solo al candidato, para que su nodo 42 no arranque el modelo activo. La paleta actual admite `appian.system.smart-services.start-process-6`, no `-5`. La copia usa la versión admitida, con `IsSynchronous = false` y `ChainIntoChild = false`.
 
 Se probó la cadena de omisión completa con los mismos dos IDs sintéticos sin fila, `[-1,-2]`, y dos identificadores de lote separados. Las seis instancias terminaron `COMPLETED`. La base y el candidato conservaron el iniciador, el orden, las listas restantes y los contadores; cada uno escribió una sola transición `-FIN` con «0 tratados, 2 omitidos» (3534 y 3535). **Cambió la relación entre instancias:** la base v6.0 encadenó `9249567 → 9249568 → 9249569` con `parentId`; las continuaciones del candidato (`13455033` y `825056`, arrancadas desde `537693577`) no tienen `parentId`. El resultado de negocio en esa rama coincide, pero se pierde el árbol de procesos del lote en Monitor. No se publicó el cambio en el modelo activo ni se probaron después las ramas de descarte/relanzamiento de errores pendientes o el alertado de fallo. Se dejaron el candidato y su constante sin uso funcional para conservar la evidencia; aparte de pertenecer a la aplicación, el candidato solo está referenciado por su propia constante.
 
@@ -116,4 +116,20 @@ Se probó la cadena de omisión completa con los mismos dos IDs sintéticos sin 
 | 2002400378555 | **15789327** / 17627215 | Alta `COMPLETED`, `generar.success=true`, `wrErr=false`; llamada 513 OK; transiciones 3537, 3540, 3541; tarea 981 PENDIENTE. Quedó `EN_ACCION` en Acciones Administrativas, nivel 1. Se registró además el error de decisión 327 antes del estado final; no se considera equivalente en histórico a la otra alta. |
 | 2002200057934 | **15789328** / 17627216 | Alta `COMPLETED`, `generar.success=true`, `wrErr=false`; llamada 514 OK; transiciones 3536, 3538, 3539; tarea 980 PENDIENTE. Mismo estado final; no se encontró fila de error para esta solicitud. |
 
-No se avanzaron estas dos tareas tras el alta. Las evidencias de ejecución y los extractos de registros se guardaron junto a los payloads en `files/sca2-avisos-monitorizacion/`. Se releyó el historial de versiones: Mecanizar 52.0, MecanizarNSE 10.0, CompletarAccion 61.0, CrearAccion 34.0, ProcesarLoteErrores 6.0 y BarridoCaducidad 9.0 siguen publicados sin cambios.
+No se avanzaron estas dos tareas tras el alta. Las evidencias de ejecución y los extractos de registros se guardaron junto a los payloads en `files/sca2-avisos-monitorizacion/`. Al terminar la primera ronda seguían publicados Mecanizar 52.0, MecanizarNSE 10.0, CompletarAccion 61.0, CrearAccion 34.0, ProcesarLoteErrores 6.0 y BarridoCaducidad 9.0.
+
+### Publicación de ProcesarLoteErrores en TEST
+
+Tras la aprobación del usuario de que las continuaciones queden como instancias independientes en Monitor, se publicó **v7.0** en el UUID existente `0001f0ba-bbae-8000-da82-7f0000014e7a`. Appian no permite cambiar el tipo en el mismo ID: el nodo 43 («Iniciar siguiente error del lote») sustituye al 42 y conserva las dos entradas de flujo (33 y 39) y la salida al fin. Usa la constante existente `SCA2_PM_CMD_PROCESAR_LOTE_ERRORES`, los mismos siete parámetros y las opciones asíncrona y sin encadenamiento. El nodo 34 sigue siendo síncrono. No cambiaron las PVs ni el total de 11 nodos.
+
+La lectura de la versión publicada mostró `AUTO_DELETE` a **1 día**. Designer mostró **SCA2 Alertas** como destinatario de alertas de error. Se mantiene un día por petición del usuario, aunque Appian recomienda cero para este modelo sin tareas humanas. Designer aún recomienda convertir el subproceso restante; se conserva porque el nodo 34 debe terminar antes de registrar el histórico.
+
+La prueba posterior `INBOX38-POST-V7-1795470006760` recorrió la misma cadena de omisión con IDs sintéticos. Las instancias `16585322 → 14500628 → 825078` quedaron `COMPLETED`, sin `parentId`, con contadores de omitidos 0 → 1 → 2 y cero tratados. Se encontró una única transición final (3542): «0 tratados, 2 omitidos por no estar PENDIENTE», igual que en la primera ronda. La prueba no ejecutó el descarte ni el relanzamiento de un error pendiente, ni provocó una alerta de fallo.
+
+El candidato y su constante se dejaron sin uso, sin borrarlos. Las copias de v6.0 y v7.0, el resultado de la prueba, las tres instancias, la transición y la captura de alertas están en `files/sca2-avisos-monitorizacion/`.
+
+### Copia de MecanizarNSE en Designer
+
+«Guardar como» en la carpeta **SCA2 Process Models** creó `SCA2 CMD MecanizarNSE Designer Candidato` (`001ff0c1-883a-8000-dc1a-7f0000014e7a`) como borrador sin versión publicada. La lectura del grafo confirmó los **31 nodos** y los tres `start-process-5` (23, 30 y 36). Es una copia distinta del candidato vacío de la primera ronda. Se guardaron el JSON y las capturas. Aún falta sustituir los nodos 13 y 101 por el subproceso síncrono, comprobar los mapeos y comparar las ejecuciones por pares. No se publicó ningún troceado.
+
+La copia conserva las PVs, conexiones y asignaciones. Appian generó UUIDs nuevos para los nodos, ajustó las coordenadas y añadió traducciones inglesas vacías. En seis nodos de escritura, el literal de `PauseOnError` pasó de 0 a nulo mientras se mantuvo la expresión explícita `=false()`; la equivalencia del comportamiento ante un fallo de escritura queda por probar.
