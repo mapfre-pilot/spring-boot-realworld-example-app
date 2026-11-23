@@ -140,3 +140,21 @@ La lectura SOAP (`listarDetalleArgumentosCntrAnu` → `ContraAnularCON.consultar
 - la descripción sale del catálogo (`NOM_TIPO_ARG`), no de `TXT_FINAL_DESC_ARG`.
 
 **Conclusión:** con CORE tal cual no se puede sustituir el servicio sin cambiar el comportamiento. La vía es que el BBE exponga la escritura («guardar argumentario»: borrar pendientes + insertar con `TXT_FINAL_DESC_ARG`, y los tréboles BigData) y una lectura igual a su SQL actual; Appian prepara la request, llama a reglas y compone las descripciones. La alternativa sería cambiar CORE (nueva operación de borrado y grabar `TXT_FINAL_DESC_ARG`), fuera del alcance de SCA2.
+
+## 10. Propuesta: argumentos en Appian y una sola grabación al final [Observado + Inferido]
+
+Propuesta de ggalv10: durante la contra anulación los argumentos, estados y cambios viven en Appian, y al finalizar se llama una vez a un servicio que graba el estado final.
+
+**Es viable sin cambiar lo que ve el gestor**, con estas condiciones:
+
+| Punto | Detalle |
+|---|---|
+| Reglas | Para no cambiar el comportamiento, Appian sigue llamando a reglas tras cada positivo/negativo y recalcula los pendientes en memoria. Se ahorran el `DELETE`/`INSERT`/2 lecturas SQL del BBE y el SOAP `guardarEjecucionArgumento` de cada clic; los ~3,4 s de reglas siguen (la decisión del punto 6.1 sigue aplicando) |
+| Servicio de grabación | No existe: `generarCntrAnu` no graba estados y `guardarEjecucionArgumento` graba de uno en uno y exige que la fila exista. Hace falta una operación nueva del BBE: borrar pendientes + insertar/actualizar todas las filas de `A2139006` con estado, `MCA_EJEC_ARGUMENTO`, `MCA_FIN_POSITIVO`, `FEC_EJEC_ARGUMENTO`, `COD_USR_EJECUCION`, observaciones y `TXT_FINAL_DESC_ARG` |
+| Cuándo grabar | No solo al finalizar: también al posponer, ilocalizable y cambio de nivel. `ContraAnularCON.finalizarContraAnulacion` copia en esos casos los argumentos de `A2139006` a monitorización (`insertarGestionMon` → `guardarArgumentosMon`, `A2139032`); hay que grabar **antes** de llamar a finalizar |
+| Fechas y usuario | Guardar en Appian la fecha y el usuario de cada clic y enviarlos; hoy CORE pone la hora del momento |
+| Validaciones | Replicar en Appian las de `guardarEjecucionArgumento`: estado válido, perfil con la contra anulación cedida, un positivo no se cambia |
+| Datos en Appian | Tabla SCA2 nueva de argumentos (solicitud, gestión, nivel, tipo, estado, fechas, usuario, observaciones, descripción) |
+| Fallo al grabar | El estado quedaría solo en Appian: reintento automático y aviso en el cuadro de mando (mismo patrón que el reintento de finalización) |
+
+**Lo que sí cambia mientras la contra anulación está abierta:** quien lee `A2139006` fuera de SCA2 vería el estado de la última grabación, no el actual: la búsqueda por póliza del BBE (`GestionarAplicacionDLImpl.consultarContraAnulaciones`, que muestra los argumentos ejecutados positivo/negativo), el SCA antiguo y los informes/BigData que lean la tabla.
