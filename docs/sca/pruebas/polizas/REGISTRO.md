@@ -209,3 +209,15 @@ Excepción a la regla de bloques: solo las pólizas de campaña TTQ de `polizas-
 |---|---|---|---|---|
 | — | R52 | 16/11 | — | Sin pólizas usadas: el site SCA2 no carga para JJGONZ2 ni SISANS (servicio de roles de CORE sin respuesta, `SCA2_obtenerRolPerfilSubperfil`). Reintentos cada 17 min de 21:17 a 00:15 (17/11), todos caídos. Pruebas pendientes; ver `r52-tareas-repetidas-usuario-real.md` §7.1 |
 | — | R52 | 17/11 | — | Sin pólizas usadas: con 71 y 72 ya ejecutados (08:27), reintentos cada 20 min de 08:28 a 10:27, todos caídos (servicio de roles de CORE). Pruebas de POSPONER/RETOMAR, RECARGAR y reutilización de error pendientes; ver `r52-tareas-repetidas-usuario-real.md` §7.2 |
+
+## INBOX-38 — CompletarAccion con adjuntos
+
+| Póliza | Sesión | Fecha | Solicitud(es) | Uso / estado final |
+|---|---|---|---|---|
+| 0732000427424 | INBOX-38 | 23/11/2026 | 15789333 | NSE-Hogar, causa 1. Alta nueva, ERROR_DECISION. Ocupada; no se avanzó. |
+| 0732200362198 | INBOX-38 | 23/11/2026 | 15789334 | NSE-Hogar, causa 1. Alta nueva, tarea de Contra Anulación pendiente. Ocupada; no se avanzó. |
+| 0732500124161 | INBOX-38 | 23/11/2026 | 15789335 | NSE-Hogar, causa 32. FINALIZAR con dos adjuntos por v61.0. Ocupada; tarea de mecanización pendiente. |
+| 0731700096594 | INBOX-38 | 23/11/2026 | 15789336 | NSE-Hogar, causa 32. FINALIZAR con dos adjuntos por candidato v2.0. Ocupada; tarea de mecanización pendiente. |
+| 0732400254564 | INBOX-38 | 23/11/2026 | 15789337 | NSE-Hogar, causa 32, Cliente Alquimia. FINALIZAR con dos adjuntos por v61.0; tarea 991 completada. Ocupada; tarea de mecanización 994 pendiente. |
+| 0732400254570 | INBOX-38 | 23/11/2026 | 15789338 | NSE-Hogar, causa 32, Cliente Alquimia. Excluida por HTTP 500/1107 previo de Decidir. Ocupada; tarea 992 pendiente, no se avanzó. |
+| 0732400254572 | INBOX-38 | 23/11/2026 | 15789339 | NSE-Hogar, causa 32, Cliente Alquimia. FINALIZAR con dos adjuntos por candidato v2.0; tarea 993 completada. Ocupada; `ERROR_DECISION` tras dos HTTP 500/1108 de Decidir. |
