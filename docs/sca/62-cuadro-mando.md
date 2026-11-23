@@ -47,6 +47,7 @@ Vuelta atrás: restaurar la versión 5 de `SCA2_GestionMantenimientoMenu` (deja 
 - Tiempos en milisegundos en las gráficas; el KPI de tiempo medio en segundos.
 - Las cifras son de TEST (datos de pruebas), no representativas de producción.
 - v35: las nueve tarjetas del Resumen se pintan en filas de tres (antes, nueve columnas en una sola fila partían títulos y cifras letra a letra a 1024 px). En móvil se apilan. No cambian indicadores, cifras ni textos; se mantiene el indicador de finalizaciones fallidas de la pestaña Errores (v34).
+- v36: a 1024 px los filtros pasan a dos filas (fechas con su «Año»; Línea de negocio y Origen), el gráfico «Solicitudes por estado actual» se coloca debajo de «Altas de solicitudes por día» hasta `DESKTOP_NARROW` (en pantalla ancha siguen lado a lado) y las tarjetas de Servicios y Errores van en filas de tres, con los mismos colores. No cambian cifras, textos ni indicadores.
 
 ## 7. Pruebas realizadas (TEST)
 - `testInterface` de las seis pestañas sin errores.
@@ -54,3 +55,4 @@ Vuelta atrás: restaurar la versión 5 de `SCA2_GestionMantenimientoMenu` (deja 
 - Las siete opciones anteriores del menú siguen abriendo sin errores.
 - Fallo encontrado y corregido en la prueba UI: la tabla de errores pendientes cargaba el campo `payload` (no permitido en rejillas); ahora consulta solo los campos mostrados.
 - v35 (UI, 1024×768 y 1920×1080): Resumen en 3 filas de 3 tarjetas legibles, mismas cifras que v34 (405, 215, 157, 67, 88, 2417, 210, 501, 33); Errores conserva el indicador de finalizaciones fallidas; Gestiones y resultados y Servicios cargan sin error.
+- v36 (UI, 1024×768 y 1920×1080): filtros, gráfico de estado y tarjetas de Servicios (501, 485, 16, 96.8 %, 0.55 s) y Errores (210, 70, 66, 42, 32; finalizaciones fallidas 7) legibles; cifras del Resumen iguales a v35; el «Año» del filtro sigue cambiando la fecha; las cuatro pestañas cargan sin error.

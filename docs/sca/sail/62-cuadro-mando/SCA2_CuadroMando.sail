@@ -155,7 +155,12 @@ a!localVariables(
                 )
               },
               alignVertical: "BOTTOM"
-            )),
+            ))
+          },
+          stackWhen: {"PHONE", "TABLET_PORTRAIT"}
+        ),
+        a!columnsLayout(
+          columns: {
             a!columnLayout(contents: a!dropdownField(
               label: "Línea de negocio",
               placeholder: "Todas",
@@ -333,7 +338,7 @@ a!localVariables(
                 height: "MEDIUM"
               ))
             },
-            stackWhen: {"PHONE", "TABLET_PORTRAIT"}
+            stackWhen: {"PHONE", "TABLET_PORTRAIT", "TABLET_LANDSCAPE", "DESKTOP_NARROW"}
           ),
           a!columnsLayout(
             columns: {
@@ -698,32 +703,41 @@ a!localVariables(
         local!nErr: a!defaultValue(index(index(local!qSrvErr, 1, null), "n", null), 0),
         local!avgTot: if(local!nTot > 0, sum(a!forEach(items: local!qSrv, expression: a!defaultValue(fv!item.avg, 0) * fv!item.n)) / local!nTot, 0),
         {
-          a!columnsLayout(
-            columns: a!forEach(
-              items: {
+          a!localVariables(
+            local!tarjetasSrv: {
                 a!map(t: "Llamadas a servicios", v: local!nTot, c: "#0D82BD"),
                 a!map(t: "Correctas", v: local!nTot - local!nErr, c: "#00A651"),
                 a!map(t: "Con error", v: local!nErr, c: "#DF0027"),
                 a!map(t: "% de éxito", v: if(local!nTot > 0, round(100 * (local!nTot - local!nErr) / local!nTot, 1) & " %", "-"), c: "#2C3E50"),
                 a!map(t: "Tiempo medio de respuesta", v: round(local!avgTot / 1000, 2) & " s", c: "#FF8000")
               },
-              expression: a!columnLayout(contents: a!cardLayout(
+            a!forEach(
+              items: enumerate(ceiling(length(local!tarjetasSrv) / 3)),
+              expression: a!localVariables(
+                local!fila: fv!item,
+                a!columnsLayout(
+                  columns: a!forEach(
+                    items: 3 * local!fila + 1 + enumerate(min(3, length(local!tarjetasSrv) - 3 * local!fila)),
+                    expression: a!columnLayout(contents: a!cardLayout(
                 contents: a!richTextDisplayField(
                   labelPosition: "COLLAPSED",
                   value: {
-                    a!richTextItem(text: fv!item.t, color: "SECONDARY", size: "SMALL", style: "STRONG"),
+                    a!richTextItem(text: index(index(local!tarjetasSrv, fv!item, null), "t", null), color: "SECONDARY", size: "SMALL", style: "STRONG"),
                     char(10),
-                    a!richTextItem(text: fv!item.v, size: "LARGE", style: "STRONG", color: fv!item.c)
+                    a!richTextItem(text: index(index(local!tarjetasSrv, fv!item, null), "v", null), size: "LARGE", style: "STRONG", color: index(index(local!tarjetasSrv, fv!item, null), "c", null))
                   }
                 ),
                 showBorder: true,
                 padding: "STANDARD",
                 decorativeBarPosition: "TOP",
-                decorativeBarColor: fv!item.c,
+                decorativeBarColor: index(index(local!tarjetasSrv, fv!item, null), "c", null),
                 marginBelow: "STANDARD"
               ))
-            ),
-            stackWhen: {"PHONE"}
+                  ),
+                  stackWhen: {"PHONE"}
+                )
+              )
+            )
           ),
           a!columnsLayout(
             columns: {
@@ -799,26 +813,35 @@ a!localVariables(
             lineaNegocio: local!fLinea,
             origenPoliza: local!fOrigen
           ),
-          a!columnsLayout(
-            columns: a!forEach(
-              items: a!flatten({a!map(g: "registrados", n: sum(tointeger(index(local!qErrEst, "n", {})))), local!qErrEst}),
-              expression: a!columnLayout(contents: a!cardLayout(
+          a!localVariables(
+            local!tarjetasErr: a!flatten({a!map(g: "registrados", n: sum(tointeger(index(local!qErrEst, "n", {})))), local!qErrEst}),
+            a!forEach(
+              items: enumerate(ceiling(length(local!tarjetasErr) / 3)),
+              expression: a!localVariables(
+                local!fila: fv!item,
+                a!columnsLayout(
+                  columns: a!forEach(
+                    items: 3 * local!fila + 1 + enumerate(min(3, length(local!tarjetasErr) - 3 * local!fila)),
+                    expression: a!columnLayout(contents: a!cardLayout(
                 contents: a!richTextDisplayField(
                   labelPosition: "COLLAPSED",
                   value: {
-                    a!richTextItem(text: "Errores " & lower(fv!item.g), color: "SECONDARY", size: "SMALL", style: "STRONG"),
+                    a!richTextItem(text: "Errores " & lower(index(index(local!tarjetasErr, fv!item, null), "g", null)), color: "SECONDARY", size: "SMALL", style: "STRONG"),
                     char(10),
-                    a!richTextItem(text: fv!item.n, size: "LARGE", style: "STRONG", color: if(fv!item.g = "PENDIENTE", "#DF0027", index(local!colores, mod(fv!index - 1, 10) + 1, "#9F9F9F")))
+                    a!richTextItem(text: index(index(local!tarjetasErr, fv!item, null), "n", null), size: "LARGE", style: "STRONG", color: if(index(index(local!tarjetasErr, fv!item, null), "g", null) = "PENDIENTE", "#DF0027", index(local!colores, mod(fv!item - 1, 10) + 1, "#9F9F9F")))
                   }
                 ),
                 showBorder: true,
                 padding: "STANDARD",
                 decorativeBarPosition: "TOP",
-                decorativeBarColor: if(fv!item.g = "PENDIENTE", "#DF0027", index(local!colores, mod(fv!index - 1, 10) + 1, "#9F9F9F")),
+                decorativeBarColor: if(index(index(local!tarjetasErr, fv!item, null), "g", null) = "PENDIENTE", "#DF0027", index(local!colores, mod(fv!item - 1, 10) + 1, "#9F9F9F")),
                 marginBelow: "STANDARD"
               ))
-            ),
-            stackWhen: {"PHONE"}
+                  ),
+                  stackWhen: {"PHONE"}
+                )
+              )
+            )
           ),
           a!columnsLayout(
             columns: {
