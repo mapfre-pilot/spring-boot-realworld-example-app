@@ -43,6 +43,7 @@ exclusivamente con operaciones `get*`/`list*`. **No se ha modificado ningún obj
 27. [Resumen de cierre de la fase 1](44-resumen-fase1.md) — estado de interruptores en TEST, objetos y versiones, pruebas, hallazgos y pendientes.
 28. [Llevar a Appian el argumentario (request → reglas → argumentario)](70-argumentario-en-appian-viabilidad.md) — qué hace el servicio BBE por dentro, tiempos, qué se puede hacer en Appian y opciones.
 29. [71 — Diseño de tablas vivas e históricas de SCA2](71-diseno-tablas-vivas-historicas-sca2.md) — inventario de TEST, archivado nocturno propuesto y condiciones para conservar el comportamiento.
+30. [72 — Caducidad por acción y barrido nocturno de SCA2](72-caducidad-por-accion-sca2.md) — comparación con SCA, versiones publicadas en TEST, validación del selector sin ejecutar el barrido y pendientes antes de activarlo.
 
 ## Alcance y limitaciones
 
