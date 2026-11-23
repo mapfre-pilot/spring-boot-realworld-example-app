@@ -3,6 +3,7 @@
 Solo lectura: agrega los records SCA2 Solicitud, Datos Solicitud, Transicion, Tarea,
 Llamada Servicio y Error. Filtros: fecha de alta de la solicitud, línea de negocio y origen.
 R54: pestañas Resumen, Gestiones y resultados, Servicios y Errores.
+R56: pestaña Cuadro de Gestión (solo consulta) sobre SCA2 Ejecucion Argumento.
 */
 a!localVariables(
   local!fDesde: today() - 90,
@@ -10,7 +11,7 @@ a!localVariables(
   local!fLinea: null,
   local!fOrigen: null,
   local!tab: 1,
-  local!tabs: {"Resumen", "Gestiones y resultados", "Servicios", "Errores"},
+  local!tabs: {"Resumen", "Gestiones y resultados", "Servicios", "Errores", "Cuadro de Gestión"},
   /* Años del selector: al cambiar el año se reescribe la fecha de la caja (el calendario de Appian solo navega) */
   local!anios: reverse(enumerate(6) + year(today()) - 5),
   local!ini: if(a!isNullOrEmpty(local!fDesde), userdatetime(2000, 1, 1, 0, 0, 0), userdatetime(year(local!fDesde), month(local!fDesde), day(local!fDesde), 0, 0, 0)),
@@ -951,6 +952,174 @@ a!localVariables(
                 }
               )
             )
+          )
+        }
+      ),
+      /* 5 - Cuadro de Gestión (R56, solo consulta): argumentos cerrados en positivo o negativo que graba SCA2 CMD CompletarAccion en SCA2 Ejecucion Argumento */
+      a!localVariables(
+        local!fEje: a!queryLogicalExpression(operator: "AND", ignoreFiltersWithEmptyValues: true, filters: {
+          a!queryFilter(field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{d0235378-9ca5-400b-91da-fb8ecca22a67}fecha', operator: "between", value: {local!ini, local!fin}),
+          a!queryFilter(field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{7f18836a-6382-44cb-88e9-e199c57b8b8d}lineaNegocio', operator: "=", value: if(a!isNullOrEmpty(local!fLinea), null, tointeger(local!fLinea)))
+        }),
+        local!nEje: a!defaultValue(index(index(a!queryRecordType(recordType: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento', fields: a!aggregationFields(measures: a!measure(function: "COUNT", field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{7a4224f1-5e17-4461-8d81-a33a1149b8a3}id', alias: "n")), filters: a!queryLogicalExpression(operator: "AND", logicalExpressions: local!fEje, filters: {}), pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1)).data, 1, null), "n", null), 0),
+        local!nPos: a!defaultValue(index(index(a!queryRecordType(recordType: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento', fields: a!aggregationFields(measures: a!measure(function: "COUNT", field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{7a4224f1-5e17-4461-8d81-a33a1149b8a3}id', alias: "n")), filters: a!queryLogicalExpression(operator: "AND", logicalExpressions: local!fEje, filters: a!queryFilter(field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{ac189f6c-5ce9-4138-a9af-73f02dc43ac6}resultado', operator: "=", value: "POSITIVO")), pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1)).data, 1, null), "n", null), 0),
+        local!nEcoPos: a!defaultValue(index(index(a!queryRecordType(recordType: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento', fields: a!aggregationFields(measures: a!measure(function: "COUNT", field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{7a4224f1-5e17-4461-8d81-a33a1149b8a3}id', alias: "n")), filters: a!queryLogicalExpression(operator: "AND", logicalExpressions: local!fEje, filters: {a!queryFilter(field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{ac189f6c-5ce9-4138-a9af-73f02dc43ac6}resultado', operator: "=", value: "POSITIVO"), a!queryFilter(field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{88836392-9228-43c3-8f79-ed440ebf00c9}mcaEconomico', operator: "=", value: "S")}), pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1)).data, 1, null), "n", null), 0),
+        local!nEcoNeg: a!defaultValue(index(index(a!queryRecordType(recordType: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento', fields: a!aggregationFields(measures: a!measure(function: "COUNT", field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{7a4224f1-5e17-4461-8d81-a33a1149b8a3}id', alias: "n")), filters: a!queryLogicalExpression(operator: "AND", logicalExpressions: local!fEje, filters: {a!queryFilter(field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{ac189f6c-5ce9-4138-a9af-73f02dc43ac6}resultado', operator: "=", value: "NEGATIVO"), a!queryFilter(field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{88836392-9228-43c3-8f79-ed440ebf00c9}mcaEconomico', operator: "=", value: "S")}), pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1)).data, 1, null), "n", null), 0),
+        local!nReg: a!defaultValue(index(index(a!queryRecordType(recordType: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento', fields: a!aggregationFields(measures: a!measure(function: "COUNT", field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{7a4224f1-5e17-4461-8d81-a33a1149b8a3}id', alias: "n")), filters: a!queryLogicalExpression(operator: "AND", logicalExpressions: local!fEje, filters: a!queryFilter(field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{e04e2d7d-0d2e-43f7-b995-39cfbb95e273}mcaRegateable', operator: "=", value: "S")), pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1)).data, 1, null), "n", null), 0),
+        local!nNoReg: a!defaultValue(index(index(a!queryRecordType(recordType: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento', fields: a!aggregationFields(measures: a!measure(function: "COUNT", field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{7a4224f1-5e17-4461-8d81-a33a1149b8a3}id', alias: "n")), filters: a!queryLogicalExpression(operator: "AND", logicalExpressions: local!fEje, filters: a!queryFilter(field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{e04e2d7d-0d2e-43f7-b995-39cfbb95e273}mcaRegateable', operator: "=", value: "N")), pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 1)).data, 1, null), "n", null), 0),
+        local!qTreLinea: a!queryRecordType(
+          recordType: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento',
+          fields: a!aggregationFields(
+            groupings: a!grouping(field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{7f18836a-6382-44cb-88e9-e199c57b8b8d}lineaNegocio', alias: "g"),
+            measures: a!measure(function: "SUM", field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{0bf2157c-4234-4ca1-b084-a1dc4fda6338}numTreboles', alias: "t")
+          ),
+          filters: local!fEje,
+          pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 20)
+        ).data,
+        local!nTre: sum(a!forEach(items: local!qTreLinea, expression: a!defaultValue(tointeger(fv!item.t), 0))),
+        local!fPoliza: null,
+        local!kpisGes: {
+          a!map(t: "Argumentos cerrados", v: local!nEje, d: "Positivos y negativos en el periodo", c: "#0D82BD"),
+          a!map(t: "Positivos", v: local!nPos, d: if(local!nEje > 0, round(100 * local!nPos / local!nEje, 1) & " % de los cerrados", "Sin cierres"), c: "#00A651"),
+          a!map(t: "Negativos", v: local!nEje - local!nPos, d: "Cliente no recuperado", c: "#DF0027"),
+          a!map(t: "Económicos positivos", v: local!nEcoPos, d: "Argumento económico aceptado", c: "#6C3FB5"),
+          a!map(t: "Económicos negativos", v: local!nEcoNeg, d: "Argumento económico no aceptado", c: "#FF8000"),
+          a!map(t: "Tréboles aplicados", v: local!nTre, d: "En cierres positivos", c: "#00A3A3"),
+          a!map(t: "Regateables", v: local!nReg, d: "Campañas comerciales (marca S del catálogo)", c: "#E5B700"),
+          a!map(t: "No regateables", v: local!nNoReg, d: "Marca N del catálogo", c: "#7A4E2D"),
+          a!map(t: "Sin marca regateable", v: local!nEje - local!nReg - local!nNoReg, d: "Argumento no encontrado en el catálogo", c: "#9F9F9F")
+        },
+        {
+          a!richTextDisplayField(
+            labelPosition: "COLLAPSED",
+            value: a!richTextItem(text: "Solo consulta. Cuenta los argumentos cerrados desde que se activó su registro en SCA2; las fechas se aplican a la fecha de cierre y el filtro de origen no se aplica. El histórico anterior está en CORE.", color: "SECONDARY", size: "SMALL")
+          ),
+          a!forEach(
+            items: enumerate(ceiling(length(local!kpisGes) / 3)),
+            expression: a!localVariables(
+              local!fila: fv!item,
+              a!columnsLayout(
+                columns: a!forEach(
+                  items: index(local!kpisGes, 3 * local!fila + enumerate(3) + 1, {}),
+                  expression: a!columnLayout(contents: a!cardLayout(
+                    contents: a!richTextDisplayField(
+                      labelPosition: "COLLAPSED",
+                      value: {
+                        a!richTextItem(text: fv!item.t, color: "SECONDARY", size: "SMALL", style: "STRONG"),
+                        char(10),
+                        a!richTextItem(text: fv!item.v, size: "LARGE", style: "STRONG", color: fv!item.c),
+                        char(10),
+                        a!richTextItem(text: fv!item.d, color: "SECONDARY", size: "SMALL")
+                      }
+                    ),
+                    height: "AUTO",
+                    padding: "STANDARD",
+                    decorativeBarPosition: "TOP",
+                    decorativeBarColor: fv!item.c,
+                    marginBelow: "STANDARD"
+                  ))
+                ),
+                stackWhen: {"PHONE"}
+              )
+            )
+          ),
+          a!columnsLayout(
+            columns: {
+              a!columnLayout(contents: a!barChartField(
+                label: "Tréboles por línea de negocio",
+                categories: a!forEach(items: local!qTreLinea, expression: a!defaultValue(index(cons!SCA2_TXT_LINEA_NEGOCIO_CONSTANTE, wherecontains(tointeger(fv!item.g), tointeger(cons!SCA2_INT_ID_LINEA_NEGOCIO)), null), "Sin línea")),
+                series: a!chartSeries(label: "Tréboles", data: a!forEach(items: local!qTreLinea, expression: a!defaultValue(tointeger(fv!item.t), 0)), color: "#00A3A3"),
+                height: "MEDIUM"
+              )),
+              a!columnLayout(contents: a!barChartField(
+                label: "Tréboles por tipo de argumento",
+                data: a!recordData(recordType: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento', filters: local!fEje),
+                config: a!barChartConfig(
+                  primaryGrouping: a!grouping(field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{38db5010-03f3-4938-859c-2a779cef6e4b}descArg', alias: "arg"),
+                  measures: a!measure(function: "SUM", field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{0bf2157c-4234-4ca1-b084-a1dc4fda6338}numTreboles', alias: "t", label: "Tréboles"),
+                  sort: a!sortInfo(field: "t", ascending: false),
+                  dataLimit: 20
+                ),
+                height: "MEDIUM",
+                colorScheme: "OCEAN"
+              ))
+            },
+            stackWhen: {"PHONE", "TABLET_PORTRAIT", "TABLET_LANDSCAPE"}
+          ),
+          a!columnChartField(
+            label: "Positivos y tréboles por día",
+            data: a!recordData(recordType: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento', filters: a!queryLogicalExpression(operator: "AND", logicalExpressions: local!fEje, filters: a!queryFilter(field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{ac189f6c-5ce9-4138-a9af-73f02dc43ac6}resultado', operator: "=", value: "POSITIVO"))),
+            config: a!columnChartConfig(
+              primaryGrouping: a!grouping(field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{d0235378-9ca5-400b-91da-fb8ecca22a67}fecha', interval: "DATE_SHORT_TEXT", alias: "dia"),
+              measures: {
+                a!measure(function: "COUNT", field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{7a4224f1-5e17-4461-8d81-a33a1149b8a3}id', alias: "n", label: "Positivos"),
+                a!measure(function: "SUM", field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{0bf2157c-4234-4ca1-b084-a1dc4fda6338}numTreboles', alias: "t", label: "Tréboles")
+              },
+              dataLimit: 500
+            ),
+            height: "MEDIUM",
+            colorScheme: "OCEAN"
+          ),
+          a!columnsLayout(
+            columns: {
+              a!columnLayout(contents: a!pieChartField(
+                label: "Económicos y no económicos",
+                data: a!recordData(recordType: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento', filters: local!fEje),
+                config: a!pieChartConfig(
+                  primaryGrouping: a!grouping(field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{88836392-9228-43c3-8f79-ed440ebf00c9}mcaEconomico', alias: "eco"),
+                  measures: a!measure(function: "COUNT", field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{7a4224f1-5e17-4461-8d81-a33a1149b8a3}id', alias: "n", label: "Argumentos")
+                ),
+                colorScheme: "OCEAN"
+              )),
+              a!columnLayout(contents: a!pieChartField(
+                label: "Regateables y no regateables",
+                data: a!recordData(recordType: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento', filters: local!fEje),
+                config: a!pieChartConfig(
+                  primaryGrouping: a!grouping(field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{e04e2d7d-0d2e-43f7-b995-39cfbb95e273}mcaRegateable', alias: "reg"),
+                  measures: a!measure(function: "COUNT", field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{7a4224f1-5e17-4461-8d81-a33a1149b8a3}id', alias: "n", label: "Argumentos")
+                ),
+                colorScheme: "SUNSET"
+              )),
+              a!columnLayout(contents: a!pieChartField(
+                label: "Positivos y negativos",
+                data: a!recordData(recordType: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento', filters: local!fEje),
+                config: a!pieChartConfig(
+                  primaryGrouping: a!grouping(field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{ac189f6c-5ce9-4138-a9af-73f02dc43ac6}resultado', alias: "res"),
+                  measures: a!measure(function: "COUNT", field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{7a4224f1-5e17-4461-8d81-a33a1149b8a3}id', alias: "n", label: "Argumentos")
+                ),
+                colorScheme: "PARACHUTE"
+              ))
+            },
+            stackWhen: {"PHONE", "TABLET_PORTRAIT"}
+          ),
+          a!sectionLayout(
+            label: "Argumentos por póliza",
+            contents: {
+              a!columnsLayout(columns: {
+                a!columnLayout(contents: a!textField(label: "Póliza", placeholder: "Todas", value: local!fPoliza, saveInto: local!fPoliza, refreshAfter: "UNFOCUS")),
+                a!columnLayout(contents: {}),
+                a!columnLayout(contents: {})
+              }, stackWhen: {"PHONE"}),
+              a!gridField(
+                labelPosition: "COLLAPSED",
+                data: a!recordData(recordType: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento', filters: a!queryLogicalExpression(operator: "AND", ignoreFiltersWithEmptyValues: true, logicalExpressions: local!fEje, filters: a!queryFilter(field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{20b39ade-728f-4cf4-9882-4410bc848395}numPoliza', operator: "=", value: local!fPoliza))),
+                columns: {
+                  a!gridColumn(label: "Fecha", sortField: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{d0235378-9ca5-400b-91da-fb8ecca22a67}fecha', value: fv!row['recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{d0235378-9ca5-400b-91da-fb8ecca22a67}fecha']),
+                  a!gridColumn(label: "Solicitud", value: fv!row['recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{516c0763-d747-4742-926d-0c750b3ed785}idSolicitud']),
+                  a!gridColumn(label: "Póliza", sortField: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{20b39ade-728f-4cf4-9882-4410bc848395}numPoliza', value: fv!row['recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{20b39ade-728f-4cf4-9882-4410bc848395}numPoliza']),
+                  a!gridColumn(label: "Argumento", value: fv!row['recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{38db5010-03f3-4938-859c-2a779cef6e4b}descArg']),
+                  a!gridColumn(label: "Campaña", value: fv!row['recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{061b7b9b-3fd3-4585-b34f-9d148aaf4c7a}codIdCampana']),
+                  a!gridColumn(label: "Resultado", value: fv!row['recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{ac189f6c-5ce9-4138-a9af-73f02dc43ac6}resultado']),
+                  a!gridColumn(label: "Económico", value: fv!row['recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{88836392-9228-43c3-8f79-ed440ebf00c9}mcaEconomico'], align: "CENTER"),
+                  a!gridColumn(label: "Regateable", value: fv!row['recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{e04e2d7d-0d2e-43f7-b995-39cfbb95e273}mcaRegateable'], align: "CENTER"),
+                  a!gridColumn(label: "Tréboles", value: fv!row['recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{0bf2157c-4234-4ca1-b084-a1dc4fda6338}numTreboles'], align: "END"),
+                  a!gridColumn(label: "Usuario", value: fv!row['recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{9e55f98f-43ab-4cd9-8684-cf3a5b2e84f3}usuario'])
+                },
+                initialSorts: a!sortInfo(field: 'recordType!{22e52e08-b3bd-4770-9905-28b281f5e57b}SCA2 Ejecucion Argumento.fields.{d0235378-9ca5-400b-91da-fb8ecca22a67}fecha', ascending: false),
+                pageSize: 10,
+                emptyGridMessage: "No hay argumentos cerrados en el periodo."
+              )
+            }
           )
         }
       )

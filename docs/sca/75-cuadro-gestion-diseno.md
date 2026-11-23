@@ -48,7 +48,22 @@ Respuesta del usuario: «Regateables son argumentos de campañas de comerciales.
 ### Opción A: diseño (decisión 1)
 
 1. **Tabla** `sca2_ejecucion_argumento` con una fila por argumento cerrado en positivo o negativo. Script: [sql/77-ejecucion-argumento.sql](sql/77-ejecucion-argumento.sql), probado en PostgreSQL 14 (se puede relanzar); crea la tabla con `SET LOCAL ROLE user_sca2_anulaciones`, como `sca2-hist-ddl.sql`, para que sea del usuario de Appian. Lo ejecuta el usuario con DBeaver, primero en TEST; Devin no lanza DDL.
-2. **Record type** `SCA2 Ejecucion Argumento` sobre esa tabla, sin sincronizar (solo consulta). Se crea cuando exista la tabla.
+2. **Record type** `SCA2 Ejecucion Argumento` sobre esa tabla (sincronizado, para poder agregar en los gráficos).
 3. **Grabación:** un nodo *Write Records* nuevo en `SCA2 CMD CompletarAccion`, después del cierre (tras `Write PDTE_FINALIZAR`) y solo cuando `resultado.operacion = "CONTRAANULACION"` con un argumento seleccionado. Su fallo no lleva a `Write Error` ni para el proceso: se anota en `SCA2 Error` y el cierre sigue igual. Los datos que faltan en el `resultado` (código, descripción, campaña, económico, tréboles) se añaden como una clave nueva `ejecucionArgumento` en los `a!map` de `SCA2_ContraAnulacionOpciones` que lanzan CompletarAccion. El proceso ignora las claves que no conoce, así que el gestor no ve ningún cambio. `MCA_REGATEABLE` se copia de `SCA2 Cat Tipo Argumento` al cerrar.
 4. **Cuadro de Gestión:** pestaña de solo consulta sobre el record, con los filtros del Cuadro de Mando. Muestra positivos y negativos económicos, regateables y no regateables, tréboles por AUTOS, HOGAR y VIDA, barras por tipo y tartas.
 5. **Limitación:** solo hay datos desde el despliegue; el histórico anterior sigue en CORE.
+
+### Implementado en TEST (23/11)
+
+El usuario lanzó el script 77 en TEST. Appian escribe en la tabla: se insertó y se borró una fila de prueba con el usuario de Appian.
+
+| Objeto | Cambio |
+|---|---|
+| Record `SCA2 Ejecucion Argumento` (`22e52e08-b3bd-4770-9905-28b281f5e57b`) | Nuevo, sobre `sca2_ejecucion_argumento` |
+| `SCA2_ContraAnulacionOpciones` v82 | Clave nueva `ejecucionArgumento` en los 5 `a!map` de `resultado` con `operacion: "CONTRAANULACION"` ([línea añadida](sail/75-cuadro-gestion/Opciones-clave-ejecucionArgumento.sail)). Ningún otro objeto la lee. |
+| `SCA2 CMD CompletarAccion` | Variables `ejArgErr`/`ejArgErrMsg`. Nodos nuevos ([JSON](sail/75-cuadro-gestion/CompletarAccion-nodos-ejecucion-argumento.json)): `¿CA ok?` (OK) → `¿Argumento cerrado?` (finalizadoCA y estadoFinalizar 3 positivo, 2/4 negativo) → `Grabar ejecucion argumento` → `¿Grabacion argumento fallida?` → `Anotar fallo grabacion argumento` (SCA2 Error `EJEC_ARG_FAIL` en estado `DESCARTADO`, que no se puede relanzar) → `¿CA positiva?`. Cancelar (9) y Revisión (6) no graban. El fallo no toca `wrErr`, así que el cierre sigue igual. |
+| `SCA2_CuadroMando` v38 | Pestaña 5 «Cuadro de Gestión», de solo consulta. 9 tarjetas (cerrados, positivos, negativos, económicos +/−, tréboles, regateables, no regateables, sin marca), tréboles por línea y por tipo, positivos y tréboles por día, 3 tartas y una cuadrícula por póliza. Fecha = fecha del cierre; el filtro de origen no aplica. |
+
+- La expresión del nodo de grabación se probó con una regla temporal (ya borrada) para positivo, negativo y vacío; `MCA_REGATEABLE` sale del catálogo.
+- Una ejecución real del cierre no se probó para no cerrar contra anulaciones en CORE TEST: la primera fila real llegará con el primer cierre.
+- v38: `SCA2_INT_ID_LINEA_NEGOCIO` es texto, así que el filtro de línea usa `tointeger` sobre el campo entero.
