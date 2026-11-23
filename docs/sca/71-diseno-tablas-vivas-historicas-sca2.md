@@ -71,7 +71,7 @@ La columna «Asociadas» se cruza por `ID_SOLICITUD` contra las 36 antes de apli
 
 Los scripts solo afectan a las 15 tablas nuevas `_hist` de `sca2_anulaciones`; no incluyen Trazabilidad ni conceden acceso de consulta. El DDL copia columnas y NOT NULL sin secuencias ni índices de operativa; añade PK, `FECHA_ARCHIVADO` e índices para el histórico. Cualquier ajuste posterior de una viva exige revisar su par histórica. El [DDL 73](sql/73-promocion-bd-sca2-estructura.sql) no aplica FKs físicas; si después se proponen FKs históricas, no vincular con tablas vivas.
 
-Validado en PostgreSQL 14 **local**, sobre el DDL 73: instalación, segunda ejecución sin cambios, reversión y segunda reversión. Se comprobó también el rechazo de tablas con datos, dependencias y colisiones con tablas ajenas. No se ejecutó ningún script contra TEST.
+Validado en PostgreSQL 14 **local**, sobre el DDL 73: instalación, segunda ejecución sin cambios, reversión y segunda reversión. Se comprobó también el rechazo de tablas con datos, dependencias y colisiones con tablas ajenas. En TEST, el usuario ejecutó la instalación en DBeaver: `SCA2 histórico: 15 tablas verificadas; 15 creadas`. No se ejecutó la reversión ni ningún otro script de BD contra TEST.
 
 El índice único del histórico no impide reutilizar claves en la viva. Antes del movimiento, demostrar que ni `ID_SOLICITUD` ni las claves de idempotencia pueden reutilizarse o que reenvíos y altas con colisión conservan el resultado actual sin crear ni reintentar sobre un expediente archivado. Si no se demuestra, no mover Transicion ni su expediente; valorar un registro de claves persistente como prerrequisito separado.
 
@@ -103,14 +103,56 @@ Revisar con DBA el catálogo de restricciones y tipos en el entorno destino. Sep
 | 13A | No activar el traslado si necesita una pausa visible o no se puede garantizar una lectura coherente. |
 | 14A | Mantener en viva todo expediente aún usado por servicios o procesos hasta demostrar paridad. |
 
-## 7. Fase 1 — preparación para Appian TEST
+## 7. Fase 1 — implantación en Appian TEST
 
-**Situación actual:** pendiente de confirmación del DDL en TEST. No existen UUID ni versiones nuevas de Appian que reportar. Los 31 de §2 pertenecen al inventario de diseño, **no** a una ejecución del batch aprobado.
+El catálogo de Appian confirmó 15 tablas `_hist` en `sca2_anulaciones`, con PK `ID` y las columnas y tipos de cada tabla viva más `FECHA_ARCHIVADO`. Antes de crear los records se guardaron copias de metadatos, versiones y permisos de objeto de los vivos, junto con la estructura de cada par de tablas.
 
-1. **Copias y verificación previa.** Antes de modificar TEST, recoger en `~/memory/appian_91b2ca/files/sca2-tablas-historicas/` metadatos, versión, permisos y configuración de Data Sync de los 15 records vivos; comprobar por catálogo que existen las 15 tablas nuevas y que están vacías. No sincronizar estas copias con un destino externo. Si un paso requiere modificar objetos Appian existentes, detenerse y pedir autorización.
-2. **Nuevos records (nombres previstos).** Usar cada nombre vivo de §2 más ` Hist`, por ejemplo `SCA2 Solicitud Hist`, contra su tabla `_hist`. Fuente SQL sobre el mismo esquema, mapeo de las columnas y tipos del vivo más `FECHA_ARCHIVADO` como fecha y hora, e `ID` como identificador. Verificar primero acceso SELECT con credenciales de consulta, sin escritura. El Dev MCP instalado no ofrece un parámetro Data Sync al crear records ni lo devuelve al leerlos. No asumir un valor por defecto. Crear en Designer con Data Sync desactivado de forma explícita, o solo usar un método que pueda garantizarlo al crear. Comprobar seguridad de objeto y por expediente, incluidos perfiles sin acceso. No exponer el record si no se puede garantizar paridad. No añadir vistas o acciones de escritura.
-3. **Nuevo PM previsto: `SCA2 CMD SimularArchivoHistorico`.** Inicio manual, sin timer activo, sin nodos de escritura ni integraciones externas. Fijar un corte compartido (mes natural en `Europe/Madrid`, convertido al reloj del origen una vez comprobado), paginar por PK, excluir casos no elegibles según 1A–4A y 14A, y no leer Trazabilidad para decidir candidatos (11A). Si no puede comprobarse que servicios, procesos o reintentos han terminado, excluir como «dependencia no acreditada». Aplicar en orden un motivo principal por expediente: estado no elegible o provisional, cierre no verificable, cierre reciente, tarea pendiente, error/reintento pendiente, llamada sin terminar, reapertura permitida o dependencia no acreditada. Devolver corte, total evaluado, candidatos y recuento por motivo como variables agregadas del PM, sin identificadores de expedientes. No modificar Gestiones mantenimiento para mostrar el resultado en esta fase; antes, comprobar si existe un canal de informes reutilizable que no requiera modificar objetos.
-4. **Prueba manual.** Tras confirmar las tablas y auditar que el PM nuevo no contiene escrituras ni subprocesos que las hagan, ejecutar con `testProcessModel` (inicia una instancia real), comprobar que termina y que candidatos más excluidos suman el total. Verificar antes y después que el proceso no modifica datos de negocio y que el histórico sigue vacío. Registrar nombre, UUID y versión de cada objeto nuevo, identificador del ensayo y resumen agregado, y mantener el timer desactivado.
+### Records históricos
+
+El MCP creó los records sobre las tablas existentes con el acceso sincronizado por defecto. Según lo indicado por el usuario, se cambió cada uno en Designer a **Directo (No sincronizado)** y se comprobó el estado al volver a abrirlo. Una actualización de descripción por MCP en `SCA2 Solicitud Hist` (v3 → v4) conservó el acceso directo. Se comprobaron los tipos de campo y la coincidencia de grupos, roles y acceso por defecto con los records vivos. `listRecordData` devolvió solo la cabecera en los 15 históricos. No se añadieron acciones de escritura ni se enlazaron estos records desde pantallas existentes.
+
+| Record | Tabla | UUID | Versión |
+| --- | --- | --- | --- |
+| SCA2 Solicitud Hist | `sca2_solicitud_hist` | `3af38605-67f3-4f9e-971c-7fd784e69d87` | 4 |
+| SCA2 Transicion Hist | `sca2_transicion_hist` | `bebd74f4-f1b6-46a2-9a3a-54bab1ab9a28` | 4 |
+| SCA2 Tarea Hist | `sca2_tarea_hist` | `236c22e1-f0fb-4186-b235-72c3397b5241` | 3 |
+| SCA2 Error Hist | `sca2_error_hist` | `4d94fa0f-83f2-4b41-9c9b-f4cd11af5e18` | 3 |
+| SCA2 Llamada Servicio Hist | `sca2_llamada_servicio_hist` | `a4ce4e99-11a8-421d-924f-e52b3c80bb61` | 3 |
+| SCA2 Datos Cabecera Hist | `sca2_datos_cabecera_hist` | `57fc7a32-e00f-45b7-9d53-b17c9b9bed4e` | 3 |
+| SCA2 Datos Solicitud Hist | `sca2_datos_solicitud_hist` | `cf8fc3ec-b497-4411-93d3-5ba5256bf678` | 3 |
+| SCA2 Datos Basicos Solicitud Hist | `sca2_datos_basicos_solicitud_hist` | `6e6e4805-1fb4-4594-acd6-58188eba698c` | 3 |
+| SCA2 Datos Perfiles Pca Hist | `sca2_datos_perfiles_pca_hist` | `dc6fc066-fe86-4fb8-8625-0c2c071035cf` | 3 |
+| SCA2 Datos Productor Hist | `sca2_datos_productor_hist` | `0aae5a4f-8dd9-459f-89df-b0a145e22637` | 3 |
+| SCA2 Datos Poliza Autos Hist | `sca2_datos_poliza_autos_hist` | `66d43738-f6f4-4fe0-aa9b-d501ceb865d5` | 3 |
+| SCA2 Datos Poliza Hogar Hist | `sca2_datos_poliza_hogar_hist` | `d6b95633-c692-46b0-b37e-c31a2bad7ff2` | 3 |
+| SCA2 Datos Poliza Vida Hist | `sca2_datos_poliza_vida_hist` | `cf30d767-50cb-4932-9af2-f42a87425159` | 3 |
+| SCA2 Niveles Cobertura Autos Hist | `sca2_niveles_cobertura_autos_hist` | `8b8f9d72-188e-4da5-b50d-97bb53132be9` | 4 |
+| SCA2 Otras Solicitudes Cabecera Hist | `sca2_otras_solicitudes_cabecera_hist` | `b9df1adc-40c1-49bb-9d25-6cac076b625c` | 4 |
+
+La prueba no acredita autorización por expediente, visibilidad con perfiles de negocio ni que las credenciales del origen estén limitadas a SELECT. Deben comprobarse antes de exponer o poblar los históricos, incluidos los campos sensibles del record de errores.
+
+### Simulación manual
+
+`SCA2 CMD SimularArchivoHistorico` — UUID `0001f0c0-fab0-8000-dbb7-7f0000014e7a`, versión numerada **2.0**. Appian muestra también un borrador; los nodos y variables coinciden con la versión 2.0. Se auditó el modelo: inicio manual, sin timer, cuatro tareas de script de solo consulta y cálculo, una bifurcación y fin. No hay escrituras, subprocesos, integraciones ni referencias a Trazabilidad. No se tocó el reporte de Gestiones mantenimiento.
+
+El PM fija un corte único de un mes natural en `Europe/Madrid` y pagina por PK. Usa las fechas de transición tipadas en Appian: las escrituras analizadas usan `now()` (véase [43-G](43-G-invalidacion-cache.md)) o UTC explícito (véase [SQL de reintento](sql/sca2-reintento-finalizacion.sql)). El resultado no contiene identificadores de solicitudes. Si no se acredita que no hay dependencias de servicios, procesos o reintentos, el expediente sigue en viva.
+
+`testProcessModel`: instancia `17625407`, estado `COMPLETED`, duración `15325 ms`, corte Appian `2026-10-23 10:41:26` UTC.
+
+| Resultado por expediente (un motivo principal) | Total |
+| --- | ---: |
+| Estado no elegible o provisional | 250 |
+| Cierre no verificable | 0 |
+| Cierre reciente | 118 |
+| Tarea pendiente | 2 |
+| Error o reintento pendiente | 3 |
+| Llamada sin terminar | 0 |
+| Reapertura detectada | 0 |
+| Dependencia no acreditada | 34 |
+| Candidatos | 0 |
+| **Total evaluado** | **407** |
+
+Los 34 que superaron los filtros anteriores **no son candidatos**: con las comprobaciones actuales no se acredita que sus servicios, procesos o reintentos hayan terminado. Los 31 de §2 corresponden al inventario de diseño, no a esta ejecución. No se movió ningún dato ni se activó el batch nocturno.
 
 ## 8. Piloto y producción — fuera de la fase 1
 
