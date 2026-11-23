@@ -1,6 +1,6 @@
 # 71 · SCA2 — Tablas vivas sincronizadas e histórico de solo consulta
 
-**Estado (23/11/2026):** las 15 tablas históricas ya existen en TEST y están vacías. El sitio aislado «SCA2 Piloto Histórico» ya está disponible para los dos perfiles autorizados. Las pruebas muestran diferencias en el enlace directo y en el orden de los argumentos del detalle. No se ha movido ningún dato y el traspaso requiere aprobación separada.
+**Estado (23/11/2026):** las 15 tablas históricas ya existen en TEST y están vacías. El sitio aislado «SCA2 Piloto Histórico» ya está disponible para los dos perfiles autorizados y su enlace directo al detalle funciona para ambos. El orden de argumentos de Contra Anulación también varía en el original. No se ha movido ningún dato y el traspaso requiere aprobación separada.
 
 ## 1. Resumen
 
@@ -237,7 +237,7 @@ En esa prueba inicial, Designer devolvió `Error 403 - Prohibido/a` a ambos al a
 #### Sitio aislado en TEST: SCA2 Piloto Histórico
 
 - **Grupo:** `SCA2_GRP_PILOTO_HISTORICO`, UUID `_e-0000f0ba-6705-8000-9c9d-01075c01075c_11431`. El MCP no devolvió versión para el grupo. Sus dos únicos miembros son JJGONZ2 y SISANS, añadidos directamente por sus UPN de NO PRO.
-- **Sitio:** [SCA2 Piloto Histórico](https://mapfrespain-test.appiancloud.com/suite/sites/sca2-piloto-historico), UUID `32e46c8b-31f6-4fc4-873b-f710d1d56742`, versión 2. ACL: sin acceso por defecto, sin grupos administradores o editores y solo el grupo piloto como visor. Las ACL de las copias y de los 15 records Hist no se ampliaron: no hizo falta para las pruebas con Hist vacío y no se ha acreditado que haga falta con filas archivadas. La configuración y la ACL del sitio operativo no cambiaron.
+- **Sitio:** [SCA2 Piloto Histórico](https://mapfrespain-test.appiancloud.com/suite/sites/sca2-piloto-historico), UUID `32e46c8b-31f6-4fc4-873b-f710d1d56742`, versión 3. ACL: sin acceso por defecto, sin grupos administradores o editores y solo el grupo piloto como visor. Las ACL de las copias y de los 15 records Hist no se ampliaron: no hizo falta para las pruebas con Hist vacío y no se ha acreditado que haga falta con filas archivadas. La configuración y la ACL del sitio operativo no cambiaron.
 
 | Página | Interfaz | Condición de página |
 |---|---|---|
@@ -247,6 +247,8 @@ En esa prueba inicial, Designer devolvió `Error 403 - Prohibido/a` a ambos al a
 
 El detalle abre `SCA2_DetalleSolicitud_HistPiloto` v1 desde el buscador y la bandeja, sin página propia.
 
+**Primera prueba (sitio v2, antes de corregir la URL):**
+
 | Perfil | Buscador | Detalle permitido y enlace directo | Documentos | Bandeja y cuadro |
 |---|---|---|---|---|
 | JJGONZ2 | Mismas filas en las dos primeras páginas con Automóviles (`1–10 de 297` y `11–20 de 297`), y misma primera página al invertir el orden por fecha. | El mismo expediente abre desde la fila. En el original se puede reabrir el detalle desde su URL; copiar la URL del piloto abre el listado, no el expediente. | El visor abre el mismo justificante PDF de una página en ambos. No se descargó. | Denegados en ambos sitios. |
@@ -255,6 +257,18 @@ El detalle abre `SCA2_DetalleSolicitud_HistPiloto` v1 desde el buscador y la ban
 En ambas páginas restringidas y con ambos perfiles, la URL mostró `La página no existe o no tiene permiso para verla`. Esto acredita la misma denegación de página, no el contenido de las pantallas ni el acceso por expediente. No se identificó un expediente con denegación esperada. El piloto presenta también cabecera Appian y controles azules en lugar de la cabecera MAPFRE y el rojo del original. Las 15 tablas Hist devolvieron cabecera sin filas: estas pruebas no acreditan la lectura ni los permisos sobre expedientes archivados.
 
 Evidencias fuera de Git: `/home/ubuntu/memory/appian_91b2ca/files/sca2-tablas-historicas/piloto/sitio-test/`. Los JSON `grupo-miembros.json`, `sitio-final.json` y `sitio-acl.json` recogen la configuración. Las capturas por cuenta y sitio se identifican por `filtro-autos`, `detalle`, `enlace-directo`, `visor`, `argumentos-sin-documentos` y `denegado`; para el detalle original de JJGONZ2, véanse también las capturas previas de `piloto/sso-chrome/`.
+
+**Reprueba del detalle (sitio v3):**
+
+- **Enlace directo:** la página de buscador del piloto tenía sin marcar «Actualizar URL cuando cambien los valores de entrada de regla» y mostraba sus cinco entradas como nuevas. El clic ya guardaba la solicitud en el rule input y abría el detalle, pero la página no persistía ese valor. En Designer se activó la opción y se guardaron los mapeos de `vista`, `numPoliza`, `idSolicitud`, `tipoAccion` e `idTarea`, manteniendo el cifrado. Ahora el piloto genera `?$sp=…` como el original. Es configuración de la página, no del record ni de la copia. Al cambiar la referencia en el sitio operativo, verificar que los cinco mapeos queden asociados a la nueva interfaz y que sigan activos el cifrado y la actualización de URL; el cambio de referencia no se ensayó allí.
+- **Orden de argumentos:** el detalle original v77 y el piloto v1 ejecutan la misma llamada a `SCA2_consultaDetalleGestion` al desplegar Contra Anulación y pasan `MSSConsultaDetalleGestion.listadoContraAnul` directamente a la cuadrícula, sin ordenar ni fusionar con Hist. En el original, dos aperturas del mismo expediente como SISANS cambiaron incluso el primer argumento. No se inspeccionó la respuesta bruta de CORE; lo comprobado es que el original no garantiza un orden fijo y que la copia usa la misma ruta. No se añadió un orden solo en el piloto, porque no reproduciría el comportamiento del original.
+
+| Perfil | Enlace directo en piloto | Contra Anulación en original y piloto |
+|---|---|---|
+| JJGONZ2 | Reabrió el mismo detalle en otra pestaña desde la URL con `$sp`. | La cuadrícula cargó en ambos; el orden observado varió desde la cuarta fila. |
+| SISANS | Reabrió el mismo detalle en otra pestaña desde la URL con `$sp`. | La cuadrícula cargó en ambos; el original cambió de orden entre aperturas del mismo expediente. |
+
+Capturas de la configuración y la reprueba, y metadatos del sitio v3: subcarpeta restringida `paridad-detalle/` de `piloto/sitio-test/`. Los destinos de las tres páginas, la visibilidad y la ACL del piloto no cambiaron, ni tampoco la configuración y ACL del sitio operativo.
 
 La prueba de bandeja reutilizó la proyección, orden y paginación de la copia, sustituyendo las consultas por cuatro filas tipadas en memoria: total 4, página desde 2 con IDs 4 (histórico, `RESUELTO`) y 3 (vivo, `PENDIENTE`), sin errores. No cubre filtros interactivos ni acciones.
 
@@ -266,7 +280,7 @@ El indicador piloto de finalizaciones fallidas conserva su lectura de solicitude
 
 #### Antes de conectar las copias al sitio operativo (no ejecutado)
 
-1. Resolver en el piloto las diferencias de enlace directo y orden de argumentos. Validar un expediente explícitamente fuera de ámbito por perfil y otro archivado, incluidos enlace directo y documentos. Probar las acciones y opciones de la bandeja con casos archivados sintéticos antes de usar TEST con filas.
+1. Validar un expediente explícitamente fuera de ámbito por perfil y otro archivado, incluidos enlace directo y documentos. Probar las acciones y opciones de la bandeja con casos archivados sintéticos antes de usar TEST con filas. Si se requiere un orden fijo de argumentos, acordar primero el criterio y en qué superficies se aplicaría.
 2. Comprobar filtros, gráficos y latencia con un volumen representativo, incluido el paso de vivo a Hist tras Sync. Si Sync permite que viva e Hist devuelvan temporalmente la misma PK, no habilitar hasta ensayar cómo evitar duplicados sin cambiar el comportamiento.
 3. Después de la aprobación, cambiar las referencias de las páginas SCA2 de Buscador y Errores a `SCA2_Buscador_HistPiloto` y `SCA2_BandejaErrores_HistPiloto`, y la invocación de `SCA2_CuadroMando` en `SCA2_GestionMantenimientoMenu` a `SCA2_CuadroMando_HistPiloto`; mantener las condiciones de página y permisos. Revisar los demás puntos de entrada SCA2 al detalle antes de reemplazarlos y conservar los originales para revertir cada referencia. No tocar SCA, SCAC ni CORE.
 
