@@ -164,3 +164,27 @@ Se consultó por póliza el registro de CORE TEST en siete referencias históric
 - **MecanizarNSE:** dos pólizas de TEST NSE-Autos/NSE-Hogar no wAutemis, sin solicitud en curso, con simulación y fecha que dejen por el flujo normal la solicitud en `MECANIZADA`, con ANL activo, y permitan superar la actualización previa al nodo 12. Hace falta otro par equivalente que permita provocar un error de autorización o de su escritura dentro del tramo extraído.
 
 No se escribieron solicitudes ni filas de CORE o ANL. Las lecturas y versiones de los hijos están en `files/sca2-avisos-monitorizacion/` (`inbox38-busqueda-sca2-vivos.json`, `inbox38-busqueda-anl-lecturas.json`, `inbox38-busqueda-cartera-consultas.json`, `inbox38-hijo-*-v2.0.json`).
+
+### Candidatos de CompletarAccion y CrearAccion; bloqueo de las pruebas por pares
+
+Las URLs directas del modelador con `idToOpen=1177` y `idToOpen=1178` no abrieron los modelos activos en una pestaña nueva. Tras liberar las pestañas del modelador, el buscador de objetos de Designer sí abrió **CompletarAccion v61.0** y **CrearAccion v34.0**. «Guardar como» conservó los 46 y 40 nodos respectivos; Designer limitó a 40 caracteres el nombre de la copia de CompletarAccion.
+
+| PM activo (sin cambios) | Copia aislada publicada solo en TEST | Corte verificado |
+| --- | --- | --- |
+| CompletarAccion v61.0 | `SCA2 CMD CompletarAccion Designer Candid` v2.0 (`002ef0c1-8dfb-8000-dc22-7f0000014e7a`) | 25 nodos; el nodo 8002 llama a Documentos y Cierre Externo v2.0; se conservan los arranques heredados 8, 10 y 12. |
+| CrearAccion v34.0 | `SCA2 CMD CrearAccion Designer Candidato` v3.0 (`0028f0c1-8e2f-8000-dc23-7f0000014e7a`) | 28 nodos; el nodo 8002 llama a Alta CORE y Registro de Acción v2.0; se conservan los arranques heredados 14, 15 y 36. |
+
+La API no permite sustituir el tipo de un nodo reutilizando su ID. La actualización atómica de cada copia con un ID nuevo para el subproceso sí conservó el tipo, los datos y la asignación de los arranques `start-process-5` existentes. La operación previa de añadir el enrutador de CrearAccion por nodo publicó automáticamente la copia v1.0; era intermedia y sin llamadores. En la primera versión con el corte, la API había asignado literal 1 a `PauseOnError` en las escrituras que seguían en el padre. Las versiones de la tabla recuperan `=false()` y literal 0 en los padres; las escrituras de los hijos mantienen ese mismo valor. La lectura publicada confirma llamadas síncronas con encadenamiento, borrado a un día y ningún llamador para los padres candidatos. Designer confirma el grupo **SCA2 Alertas** en los dos padres y en los dos hijos. No se comprobó la recepción de alertas ni se verificó la desaparición de los avisos en los modelos activos.
+
+**CompletarAccion.** Se verificó que las cuatro pólizas NSE-Autos de TEST estaban vigentes y sin solicitud en curso. Se lanzaron cuatro altas nuevas con `SCA2 CMD Alta` v50.0, en dos pares por producto. Las cuatro altas terminaron `COMPLETED`, con `generar.success=true` y `wrErr=false`. Las solicitudes llegaron a `EN_ACCION`, Acciones Administrativas, versión 3, con tarea pendiente asignada a `devin`. Pero las cuatro registraron `DECISION_ERROR` previo al llegar a ese estado (HTTP 500, código de servicio `1107`, en «Consultar reglas» de Decidir). No se usaron como pares limpios, no se avanzó ninguna tarea ni se creó la copia del formulario. Para probar el corte, un par nuevo debe llegar sin ese error y poder finalizar las tareas aportando documentación; una finalización sin `listaNombreDocs` no prueba el tramo extraído.
+
+| Par | Solicitud | Instancia Alta | Tarea pendiente | Error previo |
+| --- | --- | --- | --- | --- |
+| AU01 | 15789329 | 15569424 | 982 | 328 |
+| AU01 | 15789330 | 537693715 | 983 | 329 |
+| AU02 | 15789331 | 12392677 | 984 | 330 |
+| AU02 | 15789332 | 14500847 | 985 | 331 |
+
+**CrearAccion.** El alta normal ya ejecuta el modelo activo antes de devolver el control: Alta v50.0 (nodo 12) espera a Decidir v32.0, cuyo nodo 12 espera a `cons!SCA2_PM_CMD_CREAR_ACCION`. Las cuatro altas lo confirman con una transición `DECIDIDA → EN_ACCION` de CrearAccion y una tarea ya creada. Ejecutar el candidato sobre esas solicitudes no prueba la creación de la primera tarea desde el mismo estado y podría repetir una gestión; tampoco se tomó el estado `DECIDIDA` transitorio como un punto de prueba aislado. Falta un modo autorizado de dejar dos altas nuevas en el mismo estado antes de que CrearAccion se dispare, sin redirigir el despacho compartido ni alterar Decidir. No se creó el arranque aislado.
+
+Se dejan las copias sin llamadores ni ejecución. No se promovió ningún modelo activo; tampoco se alteraron o avanzaron solicitudes anteriores. Las únicas escrituras de datos procedieron del flujo normal de las cuatro altas de TEST, sin DDL/DML directo. **Mecanizar v52.0 y MecanizarNSE v10.0** quedan a la espera de los datos ANL indicados arriba. Las copias originales, los candidatos publicados, las capturas `inbox38-*-corte-designer.png` y `inbox38-*-alertas-designer.png`, y las lecturas de las altas y registros `inbox38-pruebas-*` están en `files/sca2-avisos-monitorizacion/`.
