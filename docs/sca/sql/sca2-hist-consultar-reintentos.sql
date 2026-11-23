@@ -1,4 +1,4 @@
--- Instalar en TEST desde DBeaver por el responsable de BD. No ejecuta el batch de reintento.
+-- Referencia del criterio y fixture PostgreSQL local; no instalar en TEST ni producción.
 BEGIN;
 SET LOCAL ROLE user_sca2_anulaciones;
 SET LOCAL search_path = pg_catalog;
