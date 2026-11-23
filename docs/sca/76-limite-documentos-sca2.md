@@ -38,4 +38,17 @@ La versión vigente del padre (v82) tiene cuatro llamadas a `a!submitUploadedFil
 | Recuperación de póliza → ACEPTAR (`onFinalizarPositivo`) | `submit: false` en la aceptación principal; el aviso de continuación omite `submit`. Ambos omiten `validate` y el grupo. | Ejecuta `SCA2 CMD CompletarAccion` para el cierre positivo, con envío a GD y cierre en CORE. |
 | FINALIZAR → Sí/No, incluidas las ramas de ilocalizables (`onFinalizar`) | FINALIZAR usa `submit: true` y abre el modal; Sí/No tienen `submit` condicional. Ninguno especifica `validate` ni grupo. | Las confirmaciones de cierre ejecutan `SCA2 CMD CompletarAccion`; algunas ramas del modal pueden escribir en CORE antes de invocar el proceso. |
 
-Ninguno de estos botones selecciona el grupo `documento`, así que el mensaje del campo no garantiza que se bloquee el botón antes de ejecutar su acción. Esto no demuestra que un PDF grande pendiente llegue a consolidarse: falta probar la rama con un adjunto previo y un temporal sobredimensionado en un entorno que aísle los efectos contra CORE. No se cambió el padre: asignarle el grupo `documento` también aplicaría las validaciones preexistentes de extensión y obligatoriedad, no solo la de tamaño.
+Ninguno de estos botones selecciona el grupo `documento`, así que el mensaje del campo no garantiza que se bloquee el botón antes de ejecutar su acción. No se cambió el padre: asignarle el grupo `documento` también aplicaría las validaciones preexistentes de extensión y obligatoriedad, no solo la de tamaño.
+
+### Prueba aislada de consolidación
+
+En Designer de TEST, `SCA2_TMP_PruebaLimite50MB` v1 reprodujo el patrón: campo en el grupo `documento` con la misma validación, botón con `submit: true` sin grupo y `a!submitUploadedFiles()` sin `documents:`. Los callbacks solo escribían variables locales; no había procesos ni llamadas a CORE o GD.
+
+| PDF sintético | Vista previa tras pulsar el botón | Comprobación independiente |
+|---|---|---|
+| 51 MiB (53.477.944 bytes) | `onSuccess`, con el mismo ID que tenía el temporal; el mensaje de tamaño seguía visible. | El PDF apareció como documento en la carpeta destino de Appian. |
+| Pequeño (608 bytes) | `onSuccess`, con el mismo ID que tenía el temporal y sin error de tamaño. | El PDF apareció como documento en la misma carpeta. |
+
+La prueba confirma que la llamada sin `documents:` puede consolidar un PDF sobredimensionado aun con el error visible. No se ejecutó una acción de Contra Anulación: en el padre, la llamada sigue condicionada a que ya haya adjuntos en `listaNombreDocs`. Se eliminaron la interfaz temporal, los dos PDF de la prueba y el PDF sintético usado anteriormente para habilitar MODIFICAR.
+
+**Propuesta, no aplicada:** acotar las cuatro llamadas del padre con `documents:` a los IDs de `listaNombreDocs`, que AÑADIR y MODIFICAR registran tras validar y consolidar. No invocar la variante sin documentos si no hay IDs admitidos; se mantienen los grupos y el flujo de negocio. Antes de aplicar el cambio, verificar en TEST aislado que la llamada con IDs explícitos admite los adjuntos ya consolidados y no cambia el recorrido de un PDF válido.
