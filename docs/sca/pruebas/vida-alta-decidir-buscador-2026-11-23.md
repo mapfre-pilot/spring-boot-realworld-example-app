@@ -95,8 +95,22 @@ Tipo de póliza no acredita existencia: tanto 0006004392 como 9999999999 devuelv
 
 Antes de actualizar, testRule con pólizas reales de SCA2 Solicitud: Hogar 15788299 / 0732400125892 → NSE-Hogar; Autos 15787863 / 0000253500328 → wAutemis. No se desvían a la rama Vida.
 
-Prueba en pantalla del buscador: (pendiente)
+Prueba en pantalla del buscador: probado en TEST con JJGONZ2, con entrada por SSO Mapfre NO PRO. «Acceso Básico» rechazó la credencial guardada.
+
+| Caso | Resultado en pantalla |
+|---|---|
+| VIDA `0006004392` | Sin aviso rojo, botón BUSCAR habilitado; listado «No hay resultados para dicha búsqueda» |
+| VIDA `9999999999` | Aviso rojo «La póliza no es una póliza válida o no se encuentra disponible, por lo tanto, no se puede gestionar la anulación por SCA.» |
+| Regresión NO VIDA/Hogar `0732400125892` | Sin aviso; devuelve la solicitud `15788299` |
+
+[Recording](https://mapfre.devinenterprise.com/sessions/f5cc1abcc59b4671b48177f5dabd76d4?testRecording=18ac2d9c-ac59-40c1-a558-caa55053d7c0).
+
+![VIDA válida: sin aviso rojo y sin resultados](../img/vida-buscador-valida-2026-11-23.png)
+
+![VIDA inexistente: aviso rojo de póliza no válida](../img/vida-buscador-inexistente-2026-11-23.png)
+
+![Regresión NO VIDA/Hogar: solicitud 15788299](../img/vida-buscador-regresion-hogar-2026-11-23.png)
 
 ## 6. Límites
 
-Sin prueba visual en esta sesión. Las advertencias de guardado señalan casos de prueba guardados incompletos y local!dummy no leído en Buscador; no se tocaron. La mejora del diagnóstico no prueba por sí sola recuperación de todos los fallos externos: el servicio puede seguir devolviendo errores de negocio/técnicos. No se alteraron PMs ni se editaron datos a mano.
+La prueba visual posterior del buscador queda documentada en el apartado 5 con la grabación y las capturas aportadas. Las advertencias de guardado señalan casos de prueba guardados incompletos y local!dummy no leído en Buscador; no se tocaron. La mejora del diagnóstico no prueba por sí sola recuperación de todos los fallos externos: el servicio puede seguir devolviendo errores de negocio/técnicos. No se alteraron PMs ni se editaron datos a mano.
