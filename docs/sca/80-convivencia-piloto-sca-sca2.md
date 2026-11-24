@@ -1,6 +1,6 @@
 # Convivencia SCA y SCA2 en TEST
 
-La entrada manual sigue siendo `sca-site/b-squeda`. Con `SCA2_BOOL_PILOTO_ACTIVO` encendido, los miembros de `SCA2 Piloto` ven el buscador de SCA2; el resto sigue en `SCA_BuscadorSolicitudPrincipal`. Los enlaces que llegan de Decisora y las entradas legacy explícitas conservan esa misma interfaz. No se cambiaron Decisora, portales ni los procesos de alta y relanzamiento.
+La fachada se publicó en `sca-site/b-squeda`. Con `SCA2_BOOL_PILOTO_ACTIVO` encendido, los miembros de `SCA2 Piloto` ven allí el buscador de SCA2; el resto sigue en `SCA_BuscadorSolicitudPrincipal`. Las entradas de Decisora que llegan a ese site y las entradas legacy explícitas conservan esa misma interfaz. No se cambiaron Decisora, portales ni los procesos de alta y relanzamiento.
 
 El alta nueva en la fachada exige pertenecer al piloto y tener encendido el interruptor. En el site nativo `sca2/buscador`, pueden dar altas los miembros de `SCA2 Piloto` o de `SCA2 Administrators` (`SCA2_GRP_ADMINISTRADORES`), incluso con el interruptor apagado. El site nativo sigue disponible para tramitar. La ACL de `SCA2 CMD Alta` no se modificó; las pruebas abrieron el popup sin confirmar el alta. En la primera publicación de TEST solo el piloto podía abrir un alta nativa; la última revisión restituyó ese acceso a los administradores.
 
@@ -17,7 +17,7 @@ El alta nueva en la fachada exige pertenecer al piloto y tener encendido el inte
 | `SCA2_BandejaErrores` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055578` | 18 → 19 |
 | `SCA2_DetalleSolicitud` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055572` | 78 → 79 |
 | `SCA2_DetalleTareas` | `_a-0000f069-4f37-8000-9cc8-011c48011c48_20055554` | 45 → 46 |
-| `SCA2_BOOL_PILOTO_ACTIVO` | `_a-0000f09c-d8f4-8000-9d41-011c48011c48_5632095` | 5 → 13 → 15; `false` tras las activaciones temporales |
+| `SCA2_BOOL_PILOTO_ACTIVO` | `_a-0000f09c-d8f4-8000-9d41-011c48011c48_5632095` | 5 → 13 → 15 (`false`); 16 (`true`, confirmado en la revisión de ambos sites) |
 
 La fachada se creó duplicando la interfaz en Designer para mantener el tipo `mssConsultarSolicitudesDTO` y la metadata de `solicitud`. El MCP de TEST rechazó ese tipo para la creación de la interfaz. El resto de las publicaciones se hizo por MCP.
 
@@ -41,3 +41,23 @@ Las páginas `errores-sca2` y `gestion-mantenimiento-sca2` de SCA se muestran so
 - SISANS conservó el buscador legacy y no vio las pestañas SCA2 aunque el interruptor estaba encendido; en el buscador nativo SCA2 no vio el botón de alta (`ajustes-sca-sisans-encendido.png`, `ajustes-sca2-sisans-sin-alta.png`).
 - `devin` abrió el popup de alta nativa con el interruptor apagado y vio la cuadrícula nativa de Errores sin el aviso (`ajustes-sca2-alta-devin-apagado.png`, `ajustes-sca2-errores-devin.png`). No se confirmó el alta ni se ejecutaron operaciones administrativas.
 - El nodo `Start Alta` de `SCA2 CMD MarcarErrorRelanzado` continúa llamando directamente a `SCA2 CMD Alta`. No se ejecutó un relanzamiento ni se hizo DML directo.
+
+## Comparación de los dos sites de SCA — TEST, 24 de noviembre de 2026
+
+Appian registró más actividad en **`/decidir-accion`**. Fuente: `audit/sites_usage.csv` del nodo `mapfrespain-test-jboss-1`, entre el 26 de octubre a las 18:59 UTC y el 24 de noviembre a las 21:47 UTC. Son eventos de un nodo, no sesiones, usuarios únicos, inicios de proceso ni un recuento de toda la plataforma. No se consultó PRO.
+
+| Evento | `decidir-accion` | `sca-site` |
+| --- | ---: | ---: |
+| View Site Interface | 471 | 56 |
+| View Process Task Form | 437 | 3 |
+| Submit Process Task Form | 435 | 0 |
+
+Sin parámetros, ambos sites muestran un buscador y un botón de alta, pero solo `sca-site/b-squeda` presentó el buscador SCA2 y las pestañas SCA2 a CFERNA7. En `decidir-accion/decidiraccion`, CFERNA7 siguió en el buscador SCA de Estratégicas. SISANS vio el recorrido legacy de cada site sin pestañas SCA2. Capturas en `/home/ubuntu/convivencia-capturas/sites-{sca-site,decidir-accion}-{cferna7,sisans}.png`.
+
+La Web API `GET /suite/webapi/decisora` llama a `SCA_DecisoraMain` y `SCA_responseDecisora`. `SCA_crearUriDecisora` construye la URL de `decidir-accion/decidiraccion` para el flujo habitual de Appian, con `entradaDecisora`, `creacionSolicitud`, `revisionSolicitud`, `numPoliza`, `numSolicitud` y los indicadores de error. Una rama de error no Vida apunta a `sca-site/b-squeda`; se conservan las excepciones de GESVIDA. El enlace está comprobado en el código; no se ha verificado qué portales lo consumen actualmente ni se ejecutó una entrada con parámetros en esta revisión.
+
+**Propuesta, no publicada:** conservar el identificador de página y sus inputs. Los dos objetos SCA mínimos son `SCA_DecidirAccion` (rama piloto para entrada manual que reutilice `SCA2_Buscador`, con tabla mixta solo por póliza; rama actual intacta para no piloto y entradas legacy) y el site `SCA Decidir Accion` (añadir Errores y Mantenimiento SCA2 con la visibilidad piloto actual). Las filas de SCA deben seguir abriendo sus tareas SCA. Pasar el contexto del site anfitrión por `SCA2_Buscador` y `SCA2_DetalleSolicitud` hasta `SCA2_DetalleTareas`, que hoy devuelve las tareas de la fachada a `sca-site/b-squeda`.
+
+**Decisión pendiente:** confirmar si las altas nuevas del piloto que vienen de Decisora deben pasar también a SCA2. `SCA_DecidirAccion` prioriza `entradaDecisora && !revisionSolicitud` y delega en `SCA_PopUpDecisoraEstrategicas`, incluso cuando viene `creacionSolicitud`. No se debe sustituir ese bloque entero ni tratar como alta los errores, revisiones o solicitudes existentes. Si se incluye ese canal, validar la bifurcación sobre el alta positiva sin cambiar el contrato de la API ni saltarse las validaciones de Decisora. Antes de publicar, exportar las versiones vigentes del site, la interfaz y los objetos SCA2 de retorno que se modifiquen; solo copiar y tocar la Web API o sus reglas si el caso validado exige cambiar su comportamiento.
+
+El interruptor se leyó activo (`1`, versión `16`) antes y después de comparar los sites. No se adaptó `decidir-accion` ni se ejecutaron altas, pruebas de concurrencia o el batch NSE. Esas pruebas siguen pendientes tras el HTTP 500 del servicio de reglas; no se gastaron pólizas.
