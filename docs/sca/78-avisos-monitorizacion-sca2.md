@@ -245,3 +245,19 @@ Decidir v32.0 consultó `mecanizar` en ambos casos, con el mismo perfil, subperf
 A las 06:52:48 UTC, una evaluación de solo lectura de `SCA2_consultarServiciosReglas` con el DTO del caso que había fallado (`15789339`, regla `mecanizar`) devolvió `accion=MECANIZAR` sin error. La última fila `DECISION_ERROR` observada era todavía la 338 del 23/11; se comprobó el servicio directamente porque ese histórico no acreditaba su estado actual. La evaluación exitosa acredita esa consulta, no la disponibilidad general del servicio. Evidencia: `files/sca2-avisos-monitorizacion/inbox38-reglas-disponibilidad-consulta.json`.
 
 **FINALIZAR no se repitió:** la integración de lectura `SCA2_APIClients_search` devolvió HTTP 500 (`UNKNOWN_ERROR`) en dos pólizas de control previamente clasificadas. No se pudo verificar la misma clasificación, incluido Cliente Alquimia, en un par nuevo. Es un servicio distinto del de reglas y de `IGenerarContraAnul`, cuyo HTTP 500 en CORE TEST fue reportado por caducidad y no se volvió a probar. No se crearon altas, no se avanzaron solicitudes y no se publicaron modelos.
+
+### Comprobación previa a Mecanizar y MecanizarNSE (24/11/2026, 14:19 UTC)
+
+La consulta de solo lectura a `SCA2_APIClients_search` devolvió HTTP 500 (`UNKNOWN_ERROR`) en ambas pólizas de control: `0732400254564` a las 14:19:32.752 UTC y `0739980204232` a las 14:19:32.685 UTC. En la misma comprobación, el servicio de reglas devolvió `accion=MECANIZAR` sin error a las 14:19:37.461 UTC. Evidencia: `files/sca2-avisos-monitorizacion/inbox38-preflight-mecanizar-2026-11-24T14-19-32-752Z.json`.
+
+**No se inició la comparación de extremo a extremo.** El fallo de clientes impidió seguir con las altas de prueba. No se consumieron pólizas de `Polizasgeneral.xlsx`, no se crearon ni avanzaron solicitudes y no se publicó ningún modelo. No se ejecutó `IGenerarContraAnul` en esta comprobación.
+
+Se repitió la consulta de clientes, también en solo lectura, con tres pólizas de `Polizasgeneral.xlsx` distintas de las de control. En TEST constaban como vigentes, producto 73 (Hogar), canal NSE, sin filas en SCA2 Solicitud al comprobarlas. Las tres devolvieron HTTP 500 (`UNKNOWN_ERROR`) el 24/11/2026:
+
+| Póliza consultada | Hora de respuesta (UTC) |
+|---|---|
+| `0732400001493` | 14:21:26.456 |
+| `0732400001966` | 14:21:26.563 |
+| `0732400007366` | 14:21:26.446 |
+
+El fallo no se limitó a las pólizas de control. No se crearon solicitudes ni se consumieron pólizas; no se ejecutaron las pruebas por pares de MecanizarNSE o Mecanizar. Evidencia: `files/sca2-avisos-monitorizacion/inbox38-preflight-clientes-polizas-excel-2026-11-24T14-21-24-644Z.json`.
