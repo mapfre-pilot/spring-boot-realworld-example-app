@@ -210,6 +210,12 @@ Excepción a la regla de bloques: solo las pólizas de campaña TTQ de `polizas-
 | — | R52 | 16/11 | — | Sin pólizas usadas: el site SCA2 no carga para JJGONZ2 ni SISANS (servicio de roles de CORE sin respuesta, `SCA2_obtenerRolPerfilSubperfil`). Reintentos cada 17 min de 21:17 a 00:15 (17/11), todos caídos. Pruebas pendientes; ver `r52-tareas-repetidas-usuario-real.md` §7.1 |
 | — | R52 | 17/11 | — | Sin pólizas usadas: con 71 y 72 ya ejecutados (08:27), reintentos cada 20 min de 08:28 a 10:27, todos caídos (servicio de roles de CORE). Pruebas de POSPONER/RETOMAR, RECARGAR y reutilización de error pendientes; ver `r52-tareas-repetidas-usuario-real.md` §7.2 |
 
+## INBOX-38 — MecanizarNSE
+
+| Póliza | Sesión | Fecha | Solicitud(es) | Uso / estado final |
+|---|---|---|---|---|
+| 0732400001493 | INBOX-38 | 24/11/2026 | 15789357 | Alta nueva NSE-Hogar para el primer caso de MecanizarNSE. Ocupada: `EN_ACCION / AUTORIZACION`, tarea 1002 pendiente. Prueba detenida por HTTP 500/1107 de Decidir (Error 539); no se ejecutó MecanizarNSE. |
+
 ## INBOX-38 — CompletarAccion con adjuntos
 
 | Póliza | Sesión | Fecha | Solicitud(es) | Uso / estado final |
