@@ -1,6 +1,6 @@
 # Convivencia SCA y SCA2 en TEST
 
-La fachada se publicó en `sca-site/b-squeda`. Con `SCA2_BOOL_PILOTO_ACTIVO` encendido, los miembros de `SCA2 Piloto` ven allí el buscador de SCA2; el resto sigue en `SCA_BuscadorSolicitudPrincipal`. Las entradas de Decisora que llegan a ese site y las entradas legacy explícitas conservan esa misma interfaz. No se cambiaron Decisora, portales ni los procesos de alta y relanzamiento.
+La primera fachada se publicó en `sca-site/b-squeda`. Con `SCA2_BOOL_PILOTO_ACTIVO` encendido, los miembros de `SCA2 Piloto` ven allí el buscador de SCA2; el resto sigue en `SCA_BuscadorSolicitudPrincipal`. Las entradas de Decisora que llegan a ese site y las entradas legacy explícitas conservan esa misma interfaz. La extensión a `decidir-accion` se detalla más abajo. No se cambiaron Decisora, portales ni los procesos de alta y relanzamiento.
 
 El alta nueva en la fachada exige pertenecer al piloto y tener encendido el interruptor. En el site nativo `sca2/buscador`, pueden dar altas los miembros de `SCA2 Piloto` o de `SCA2 Administrators` (`SCA2_GRP_ADMINISTRADORES`), incluso con el interruptor apagado. El site nativo sigue disponible para tramitar. La ACL de `SCA2 CMD Alta` no se modificó; las pruebas abrieron el popup sin confirmar el alta. En la primera publicación de TEST solo el piloto podía abrir un alta nativa; la última revisión restituyó ese acceso a los administradores.
 
@@ -52,12 +52,29 @@ Appian registró más actividad en **`/decidir-accion`**. Fuente: `audit/sites_u
 | View Process Task Form | 437 | 3 |
 | Submit Process Task Form | 435 | 0 |
 
-Sin parámetros, ambos sites muestran un buscador y un botón de alta, pero solo `sca-site/b-squeda` presentó el buscador SCA2 y las pestañas SCA2 a CFERNA7. En `decidir-accion/decidiraccion`, CFERNA7 siguió en el buscador SCA de Estratégicas. SISANS vio el recorrido legacy de cada site sin pestañas SCA2. Capturas en `/home/ubuntu/convivencia-capturas/sites-{sca-site,decidir-accion}-{cferna7,sisans}.png`.
+Antes de adaptar `decidir-accion`, ambos sites mostraban un buscador y un botón de alta, pero solo `sca-site/b-squeda` presentaba el buscador SCA2 y las pestañas SCA2 a CFERNA7. En `decidir-accion/decidiraccion`, CFERNA7 veía el buscador SCA de Estratégicas. SISANS veía el recorrido legacy de cada site sin pestañas SCA2. Capturas de partida en `/home/ubuntu/convivencia-capturas/sites-{sca-site,decidir-accion}-{cferna7,sisans}.png`.
 
-La Web API `GET /suite/webapi/decisora` llama a `SCA_DecisoraMain` y `SCA_responseDecisora`. `SCA_crearUriDecisora` construye la URL de `decidir-accion/decidiraccion` para el flujo habitual de Appian, con `entradaDecisora`, `creacionSolicitud`, `revisionSolicitud`, `numPoliza`, `numSolicitud` y los indicadores de error. Una rama de error no Vida apunta a `sca-site/b-squeda`; se conservan las excepciones de GESVIDA. El enlace está comprobado en el código; no se ha verificado qué portales lo consumen actualmente ni se ejecutó una entrada con parámetros en esta revisión.
+La Web API `GET /suite/webapi/decisora` llama a `SCA_DecisoraMain` y `SCA_responseDecisora`. `SCA_crearUriDecisora` construye la URL de `decidir-accion/decidiraccion` para el flujo habitual de Appian, con `entradaDecisora`, `creacionSolicitud`, `revisionSolicitud`, `numPoliza`, `numSolicitud` y los indicadores de error. Una rama de error no Vida apunta a `sca-site/b-squeda`; se conservan las excepciones de GESVIDA. No se ha verificado qué portales lo consumen actualmente.
 
-**Propuesta, no publicada:** conservar el identificador de página y sus inputs. Los dos objetos SCA mínimos son `SCA_DecidirAccion` (rama piloto para entrada manual que reutilice `SCA2_Buscador`, con tabla mixta solo por póliza; rama actual intacta para no piloto y entradas legacy) y el site `SCA Decidir Accion` (añadir Errores y Mantenimiento SCA2 con la visibilidad piloto actual). Las filas de SCA deben seguir abriendo sus tareas SCA. Pasar el contexto del site anfitrión por `SCA2_Buscador` y `SCA2_DetalleSolicitud` hasta `SCA2_DetalleTareas`, que hoy devuelve las tareas de la fachada a `sca-site/b-squeda`.
+## Fachada piloto en `/decidir-accion` — publicada en TEST
 
-**Decisión pendiente:** confirmar si las altas nuevas del piloto que vienen de Decisora deben pasar también a SCA2. `SCA_DecidirAccion` prioriza `entradaDecisora && !revisionSolicitud` y delega en `SCA_PopUpDecisoraEstrategicas`, incluso cuando viene `creacionSolicitud`. No se debe sustituir ese bloque entero ni tratar como alta los errores, revisiones o solicitudes existentes. Si se incluye ese canal, validar la bifurcación sobre el alta positiva sin cambiar el contrato de la API ni saltarse las validaciones de Decisora. Antes de publicar, exportar las versiones vigentes del site, la interfaz y los objetos SCA2 de retorno que se modifiquen; solo copiar y tocar la Web API o sus reglas si el caso validado exige cambiar su comportamiento.
+El piloto se limita **al buscador del site**. `SCA_DecidirAccion` muestra `SCA2_Buscador` solo en la entrada manual con grupo e interruptor activos. El bloque legacy y sus 12 inputs se mantienen para el resto. Decisora y portales quedan fuera: no se cambian la Web API, sus parámetros ni el popup SCA. El site conserva las páginas originales y añade Errores y Mantenimiento de SCA2 con visibilidad piloto y los permisos internos existentes.
 
-El interruptor se leyó activo (`1`, versión `16`) antes y después de comparar los sites. No se adaptó `decidir-accion` ni se ejecutaron altas, pruebas de concurrencia o el batch NSE. Esas pruebas siguen pendientes tras el HTTP 500 del servicio de reglas; no se gastaron pólizas.
+| Objeto | Versión MCP antes → publicada |
+| --- | --- |
+| `SCA Decidir Accion` | 2 → 3 |
+| `SCA_DecidirAccion` | 9 → 11 |
+| `SCA2_Buscador` | 44 → 45 |
+| `SCA2_DetalleSolicitud` | 79 → 80 |
+| `SCA2_DetalleTareas` | 46 → 48 |
+
+El contexto `desdeDecidirAccion` llega a las tareas SCA2. Sus retornos cierran la acción o el detalle mediante el estado de la página, sin salir de `/decidir-accion` ni cambiar la configuración de parámetros URL de Decisora. Las ramas de retorno anteriores para `/sca-site` y SCA2 nativo se conservaron.
+
+**Comprobaciones en TEST** (capturas `/home/ubuntu/convivencia-capturas/decidir-*.png`):
+
+- CFERNA7 abrió el popup de alta de SCA2 sin confirmar. Al buscar una póliza de control, vio la tabla con los dos colores y etiquetas: la fila SCA abrió el detalle legacy y la SCA2 se abrió en la misma página. Errores mostró el aviso de permisos; Mantenimiento mostró el cuadro de mando.
+- SISANS conservó los mismos controles y columnas que en la línea base y no vio las dos pestañas nuevas. Ambos usuarios conservaron su recorrido en `/sca-site`.
+- Para ambos usuarios se comparó antes y después un enlace cifrado de Decisora, generado por `SCA_crearUriDecisora` con un error de control. El contenido del popup y su botón OK se conservaron; no se probó un alta o una revisión real de Decisora.
+- `testInterface` evaluó correctamente el buscador legacy, la entrada Decisora y el enlace «Volver al detalle» en `SCA2_DetalleTareas`: usa guardados locales en `decidir-accion` y conserva la URI del site nativo. No se retomó ni modificó una tarea real para pulsar ese retorno. Antes de esta publicación, la misma evaluación forzada para el retorno de `/sca-site` devolvía que su parámetro de URL `idSolicitud` no era válido; esa configuración preexistente no se cambió.
+
+No se tocaron PM, grupos ni permisos. Las copias previas `*.decidir.before-v*.json` están en `~/memory/appian_91b2ca/files/sca2-convivencia-piloto/`. El interruptor se dejó activo (`1`, v16). El alta real, la concurrencia y la exclusión del batch NSE siguen pendientes tras el HTTP 500 de Reglas. No se gastaron pólizas.
