@@ -261,3 +261,11 @@ Se repitió la consulta de clientes, también en solo lectura, con tres pólizas
 | `0732400007366` | 14:21:26.446 |
 
 El fallo no se limitó a las pólizas de control. No se crearon solicitudes ni se consumieron pólizas; no se ejecutaron las pruebas por pares de MecanizarNSE o Mecanizar. Evidencia: `files/sca2-avisos-monitorizacion/inbox38-preflight-clientes-polizas-excel-2026-11-24T14-21-24-644Z.json`.
+
+### Primer intento por el flujo normal de MecanizarNSE (24/11/2026)
+
+El botón «Solicitud de prueba» de `SCA2_APIClients_search` en **Designer de TEST** devolvió **HTTP 200** y datos de cliente en vigor para `0732400001493` (14:38:57.829 UTC) y `0732400001966` (14:39:00.177 UTC), con el cuerpo de consulta del alta. Estas comprobaciones no usaron `testRule`. Al comprobar SCA2 Solicitud a las 14:43:24.558 UTC, no había filas para ninguna de las dos pólizas de `Polizasgeneral.xlsx`.
+
+Se inició un solo caso por el sitio normal: `0732400001493` → solicitud **15789357**, NSE-Hogar, «Anulación fuera de norma», canal presencial, catalogación A FECHA (24/11/2026). La fila **838** de SCA2 Llamada Servicio registra `SCA2_generarStudAnul` con `OK / HTTP 200`. Las transiciones **3812–3814** dejan el caso en `EN_ACCION / AUTORIZACION`, con la tarea **1002** pendiente. Sin embargo, la fila **539** de SCA2 Error registra un `DECISION_ERROR` de **HTTP 500, código 1107**, en «Consultar reglas» de `SCA2 CMD Decidir`, para esta misma solicitud. El avance a Autorización no elimina el error del servicio.
+
+**Se detuvo la prueba al detectar ese error.** No se completó la tarea, no se dio de alta `0732400001966`, no se consumieron más pólizas y no se llegó a la precondición `MECANIZADA / ANL` de MecanizarNSE. No hay una pareja de ejecuciones para comparar PVs, ruta ni registros. Se verificaron las versiones MecanizarNSE **v10.0** y su candidata aislada **v1.0**. Mecanizar **v52.0** no se ejecutó; la búsqueda en TEST no devolvió un padre candidato de Mecanizar. No hubo promoción ni verificación posterior en Monitorización. Evidencia: `files/sca2-avisos-monitorizacion/inbox38-pares-mecanizar-primer-intento.json`.
