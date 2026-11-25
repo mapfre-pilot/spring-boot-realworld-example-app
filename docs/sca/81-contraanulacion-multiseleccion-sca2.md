@@ -7,7 +7,7 @@ Implementado en Appian TEST. La selección múltiple ahorra pulsaciones; no camb
 | Objeto | Antes → TEST | Cambio |
 | --- | --- | --- |
 | `SCA2_ContraAnulacionOpciones` | 84 → 85 → 86 | Habilitación, ejecución síncrona, reintento y argumento de cierre; v86 aplica al grid abierto las confirmaciones del proceso. |
-| `SCA2_ContraAnulacionArgumentarioEstrategicas` | 7 → 8 | Selección múltiple de pendientes del nivel actual; no selecciona resueltos ni filas anteriores. |
+| `SCA2_ContraAnulacionArgumentarioEstrategicas` | 7 → 8 → 9 | Selección múltiple de pendientes del nivel actual; v9 sincroniza la selección y el índice único usado por POSITIVO. |
 | `SCA2_habilitacionArgumentosContraAnulacion` | Nuevo, v2 | Calcula filas ejecutables, habilitación y aviso de obligatorios. |
 | `SCA2_ejecutarArgumentoNegativo` | Nuevo, v3 | Llama a la regla SOAP existente y considera confirmado el resultado de negocio `codigo = "2"` para un negativo. |
 | `SCA2 CMD GuardarEjecucionArgumentos` | Nuevo, v2.0 | Múltiples instancias secuenciales; devuelve un resultado por argumento. Borrado de instancias al día y alertas a SCA2 Alertas. |
@@ -51,3 +51,11 @@ En la prueba de SISANS con la solicitud `15789155`, nivel 2, el PM `15577684` co
 En TEST, la regla de actualización pasó **5/5** casos guardados (incluidos éxito doble, fallo parcial y respuesta vacía). Al reproducir por `testRule` los resultados de la instancia `15577684`, las dos filas cambiaron a `"2"` con fecha y usuario, y la regla de cierre devolvió el último argumento confirmado, código `1`. `testInterface` de Opciones v86 para la tarea de nivel 2 (`15789155 / 907`) devolvió `ContentLayout` sin error y el grid mostró las dos filas resueltas como no seleccionables. Estas comprobaciones no disparan el callback desde el navegador.
 
 Según comunicó ggalv10 el 2026-11-25, el equipo de TEST probó en la pantalla de contraanulación de Appian TEST los tres casos que quedaban pendientes: **varios obligatorios**, **positivo previo** y **fallo parcial de CORE**. Los tres funcionaron correctamente.
+
+### Corrección de POSITIVO tras un salto de nivel (grid v9)
+
+En la solicitud `15789371`, las instancias `12401337` y `833873` del PM confirmaron cuatro negativos del nivel anterior y tres del nivel actual, respectivamente. Quedó un argumento pendiente en la posición 8 de la lista completa. Opciones v86 habilitaba POSITIVO con la selección filtrada a las filas ejecutables, pero el grid v8 calculaba el índice único a partir de la selección sin filtrar, en guardados encadenados. Así, el botón podía estar habilitado y a la vez intentar guardar con un índice nulo (`Invalid index (-2147483647) for list: valid range is 1..8`).
+
+Desde el grid v9, `selectionSaveInto` calcula la selección ejecutable, el índice único y el argumento a partir del mismo evento de selección, aplicando primero el desplazamiento por filas de niveles anteriores. Se conserva el `saveInto` de POSITIVO en Opciones v86 y no cambian NEGATIVO, POSPONER ni FINALIZAR.
+
+En TEST se reprodujo el error de índice con una expresión de ocho filas que incluía una fila ya resuelta en la selección junto con la pendiente. Una selección sin esa fila no fallaba; con el filtro de v9 se obtuvo el índice 8 en ambos casos y al limpiar la selección no quedó ningún índice ni argumento. `testInterface` del grid v9 con ocho filas devolvió `ContentLayout` sin error. La regla de cierre devolvió el argumento de la posición 7 al recibirlo como último negativo confirmado. No se pulsó POSITIVO en una tarea real; no se capturó el evento original del navegador.
