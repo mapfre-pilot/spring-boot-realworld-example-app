@@ -280,3 +280,16 @@ Se hicieron dos rondas de solo lectura en TEST con `SCA2_consultarServiciosRegla
 | `accion` | 07:53:56.318 — `AUTORIZACION`, sin error | 07:56:28.672 — `AUTORIZACION`, sin error |
 
 En Designer, «Solicitud de prueba» de `SCA2_APIClients_search` devolvió **HTTP 200** y cliente en vigor para `0732400001966` a las 07:54:51.660 UTC. El bloqueo actual es el HTTP 500 de la consulta `mecanizar`; en estas rondas no se reprodujo el 1107 que se había observado en `accion`. **No se reanudaron las pruebas por pares**, no se consumieron pólizas, no se crearon ni avanzaron solicitudes y no se promovieron modelos. Evidencia: `files/sca2-avisos-monitorizacion/inbox38-20261125-preflight-reglas-y-clientes.json`.
+
+### Nueva comprobación de reglas en TEST (25/11/2026, 08:35 UTC)
+
+Las siguientes evaluaciones de `SCA2_consultarServiciosReglas` fueron de solo lectura y usaron datos de pruebas anteriores:
+
+| Consulta | Hora UTC | Resultado |
+|---|---:|---|
+| `mecanizar`, DTO de `15789337` | 08:35:22.943 | Error de evaluación; sin respuesta HTTP verificable del servicio |
+| `mecanizar`, DTO de `15789339` | 08:35:26.227 | `MECANIZAR`, sin error |
+| `accion`, entrada de «Consultar reglas» de `15789357` | 08:35:26.967 | `ERROR`, HTTP 500/1107 |
+| `mecanizar`, reintento con DTO de `15789339` | 08:35:46.173 | `MECANIZAR`, sin error |
+
+El HTTP 500/1107 de `accion` impide reanudar los pares aunque `mecanizar` haya respondido en dos consultas. No se consumieron pólizas, no se crearon ni avanzaron solicitudes y no se promovieron modelos. Las tres pólizas reservadas para convivencia del piloto, excluidas de ambas pruebas, están en [REGISTRO.md](pruebas/polizas/REGISTRO.md). Evidencia: `files/sca2-avisos-monitorizacion/inbox38-20261125-reglas-0835-y-reserva-piloto.json`.
