@@ -21,7 +21,7 @@ El alta nueva en la fachada exige pertenecer al piloto y tener encendido el inte
 
 La fachada se creó duplicando la interfaz en Designer para mantener el tipo `mssConsultarSolicitudesDTO` y la metadata de `solicitud`. El MCP de TEST rechazó ese tipo para la creación de la interfaz. El resto de las publicaciones se hizo por MCP.
 
-Las páginas `errores-sca2` y `gestion-mantenimiento-sca2` de SCA se muestran solo en el piloto activo. Apuntan a `SCA2_BandejaErrores` y `SCA2_GestionMantenimientoMenu` (`_a-0000f069-4f37-8000-9cc8-011c48011c48_20060073`) sin modificar sus permisos. Errores muestra «No tienes permiso para ver esta página» cuando se abre sin rol administrador y no presenta acciones de relanzar ni descartar. La página nativa de Errores sigue visible solo para administradores. La página de mantenimiento legacy no cambia.
+Las páginas `errores-sca2` y `gestion-mantenimiento-sca2` de SCA se mostraban inicialmente a todo el piloto activo; desde el [ajuste de visibilidad](#visibilidad-de-errores-y-mantenimiento-sca2--test) requieren además pertenecer a SCA2 Administradores. Apuntan a `SCA2_BandejaErrores` y `SCA2_GestionMantenimientoMenu` (`_a-0000f069-4f37-8000-9cc8-011c48011c48_20060073`) sin modificar sus permisos. Errores muestra «No tienes permiso para ver esta página» cuando se abre sin rol administrador y no presenta acciones de relanzar ni descartar. La página nativa de Errores sigue visible solo para administradores. La página de mantenimiento legacy no cambia.
 
 ## Tabla y activación
 
@@ -94,3 +94,13 @@ Se repusieron las dos pestañas piloto en ambos sites y el enlace de `/sca-site`
 Los otros nueve objetos revisados quedaron idénticos: `SCA_SolicitudesPiloto` v2, `SCA2_pilotoHabilitado` v1, `SCA2_BuscadorTablaPiloto` v3, `SCA2_Buscador` v45, `SCA2_AltaSolicitudPage` v60, `SCA2_DetalleSolicitud` v80, `SCA2_DetalleTareas` v48, `SCA2_BandejaErrores` v19 y `SCA2_BOOL_PILOTO_ACTIVO` v16 (activo, `1`). Las copias previas son `*.reaplicar.before-v*.json` en `~/memory/appian_91b2ca/files/sca2-convivencia-piloto/`.
 
 CFERNA7 vio las pestañas piloto y abrió el alta SCA2 en ambos sites sin confirmar; SISANS vio los buscadores legacy sin pestañas SCA2. Ambos vieron el mensaje de control de Decisora y el botón OK. `testInterface` devolvió `ContentLayout` y `error: None` para el buscador sin parámetros y la entrada de error de Decisora. Capturas: `/home/ubuntu/convivencia-capturas/reaplicado-*.png`. No se gastaron pólizas ni se crearon solicitudes; esta restauración no valida el alta real, la concurrencia ni el batch NSE.
+
+## Visibilidad de Errores y Mantenimiento SCA2 — TEST
+
+En `SCA_Site` y `SCA Decidir Accion` (ambos v5 → v6), las pestañas **Errores SCA2** y **Gestión de mantenimiento SCA2** solo se muestran si el interruptor está activo y el usuario pertenece a **SCA2 Piloto** y **SCA2 Administradores**. Se modificaron solo las dos expresiones de visibilidad de cada site. El interruptor quedó intacto (`1`, v16); tampoco se modificaron los grupos, permisos, interfaces de destino ni el site nativo SCA2.
+
+- **Antes:** CFERNA7 (piloto, no administrador) veía las pestañas y al abrir Errores recibía el aviso de permisos en ambos sites. Mantenimiento mostró el cuadro de mando en `/sca-site`; en `/decidir-accion` no se pudo verificar que cargara. Capturas: `/home/ubuntu/convivencia-capturas/visib-antes-*.png`.
+- **Después:** CFERNA7 ya no vio las pestañas en ninguno de los dos sites y pudo abrir el alta SCA2 sin confirmarla. SISANS siguió viendo el buscador legacy sin dichas pestañas en ambos. Capturas: `/home/ubuntu/convivencia-capturas/visib-despues-*.png`.
+- **Pendiente:** GGALV10 es miembro de ambos grupos en TEST. Falta validar con su sesión que ve ambas pestañas y que las dos páginas abren correctamente.
+
+Copias previas: `SCA_Site.visib.before-v5.json` y `SCA_Decidir_Accion_Site.visib.before-v5.json` en `~/memory/appian_91b2ca/files/sca2-convivencia-piloto/`.
