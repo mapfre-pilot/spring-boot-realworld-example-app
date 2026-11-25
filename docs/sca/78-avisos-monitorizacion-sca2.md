@@ -293,3 +293,26 @@ Las siguientes evaluaciones de `SCA2_consultarServiciosReglas` fueron de solo le
 | `mecanizar`, reintento con DTO de `15789339` | 08:35:46.173 | `MECANIZAR`, sin error |
 
 El HTTP 500/1107 de `accion` impide reanudar los pares aunque `mecanizar` haya respondido en dos consultas. No se consumieron pólizas, no se crearon ni avanzaron solicitudes y no se promovieron modelos. Las tres pólizas reservadas para convivencia del piloto, excluidas de ambas pruebas, están en [REGISTRO.md](pruebas/polizas/REGISTRO.md). Evidencia: `files/sca2-avisos-monitorizacion/inbox38-20261125-reglas-0835-y-reserva-piloto.json`.
+
+### Sondeos de dependencias en TEST (25/11/2026)
+
+Se exige que las cuatro dependencias respondan bien en una misma ronda para iniciar los pares. La API de clientes se prueba con «Solicitud de prueba» de Designer, en la integración `SCA2_APIClients_search`. Para CORE se usa la lectura `SCA2_consultarDetalleSolicitud` → `consultaDetalleSolicitud`, del mismo connected system y endpoint SOAP `IGenerarContraAnul`; se verifica que devuelva el detalle de la referencia de prueba existente. Este sondeo comprueba la consulta, no la operación de generación `generarStudAnul`, que no se ejecuta.
+
+| Hora UTC de la ronda | «Consultar reglas» (`accion`) | `mecanizar` | Clientes (Designer) | CORE (solo consulta) |
+|---|---|---|---|---|
+| 08:41:06 | `ERROR`, código `1107`, con estado HTTP no capturado | Error de evaluación en dos consultas; sin HTTP verificable | HTTP 200 | Detalle devuelto |
+| 08:41:24 | `AUTORIZACION`, sin error | Primero `MECANIZAR`; después HTTP 500/`1108` | HTTP 200 | Detalle devuelto |
+| 09:11:25 | `AUTORIZACION`, sin error | `MECANIZAR` a las 09:11:29.854; HTTP 500/`1108` a las 09:11:32.611 | HTTP 200 | Detalle devuelto |
+| 09:41:24 | `AUTORIZACION`, sin error | HTTP 500/`1108` a las 09:41:29.220 y 09:41:31.684 | HTTP 200 | Detalle devuelto |
+| 10:11:25 | HTTP 500/`1107` a las 10:11:29.411 | `MECANIZAR` en ambas consultas | HTTP 200 | Detalle devuelto |
+| 10:41:24 | HTTP 500/`1107` a las 10:41:29.712 | HTTP 500/`1108` a las 10:41:28.296; después `MECANIZAR` | HTTP 200 | Detalle devuelto |
+| 11:11:24 | `AUTORIZACION`, sin error | HTTP 500/`1108` a las 11:11:28.825 y 11:11:31.630 | HTTP 200 | Detalle devuelto |
+| 11:41:25 | HTTP 500/`1107` a las 11:41:28.833 | `MECANIZAR` en ambas consultas | HTTP 200 | Detalle devuelto |
+| 12:11:25 | HTTP 500/`1107` a las 12:11:29.810 | HTTP 500/`1108` a las 12:11:28.036 y 12:11:31.619 | HTTP 200 | Detalle devuelto |
+| 12:41:25 | HTTP 500/`1107` a las 12:41:28.699 | HTTP 500/`1108` a las 12:41:27.939; después `MECANIZAR` | HTTP 200 | Detalle devuelto |
+| 13:11:25 | HTTP 500/`1107` a las 13:11:32.029 | `MECANIZAR` en ambas consultas | HTTP 200 | Detalle devuelto |
+| 13:41:24 | HTTP 500/`1107` a las 13:41:28.941 | HTTP 500/`1108` a las 13:41:26.833; después `MECANIZAR` | HTTP 200 | Detalle devuelto |
+
+El sondeo se cerró a las 13:53 UTC por indicación de coordinación. Ninguna de las 12 rondas, incluidas las dos comprobaciones iniciales, tuvo éxito simultáneo en las cuatro dependencias: el servicio de reglas siguió devolviendo HTTP 500 de forma intermitente. No se iniciaron los pares de MecanizarNSE ni Mecanizar, no se crearon ni avanzaron solicitudes, no se consumió ninguna póliza y no se promovieron modelos. Las exclusiones del piloto de [REGISTRO.md](pruebas/polizas/REGISTRO.md) no cambiaron.
+
+Evidencia depurada por ronda: `files/sca2-avisos-monitorizacion/inbox38-sondeo-servicios-20261125.jsonl`.
