@@ -269,3 +269,14 @@ El botón «Solicitud de prueba» de `SCA2_APIClients_search` en **Designer de T
 Se inició un solo caso por el sitio normal: `0732400001493` → solicitud **15789357**, NSE-Hogar, «Anulación fuera de norma», canal presencial, catalogación A FECHA (24/11/2026). La fila **838** de SCA2 Llamada Servicio registra `SCA2_generarStudAnul` con `OK / HTTP 200`. Las transiciones **3812–3814** dejan el caso en `EN_ACCION / AUTORIZACION`, con la tarea **1002** pendiente. Sin embargo, la fila **539** de SCA2 Error registra un `DECISION_ERROR` de **HTTP 500, código 1107**, en «Consultar reglas» de `SCA2 CMD Decidir`, para esta misma solicitud. El avance a Autorización no elimina el error del servicio.
 
 **Se detuvo la prueba al detectar ese error.** No se completó la tarea, no se dio de alta `0732400001966`, no se consumieron más pólizas y no se llegó a la precondición `MECANIZADA / ANL` de MecanizarNSE. No hay una pareja de ejecuciones para comparar PVs, ruta ni registros. Se verificaron las versiones MecanizarNSE **v10.0** y su candidata aislada **v1.0**. Mecanizar **v52.0** no se ejecutó; la búsqueda en TEST no devolvió un padre candidato de Mecanizar. No hubo promoción ni verificación posterior en Monitorización. Evidencia: `files/sca2-avisos-monitorizacion/inbox38-pares-mecanizar-primer-intento.json`.
+
+### Revalidación antes de retomar MecanizarNSE y Mecanizar (25/11/2026)
+
+Se hicieron dos rondas de solo lectura en TEST con `SCA2_consultarServiciosReglas`. Para `accion` se reconstruyó la entrada de «Consultar reglas» de la solicitud de prueba `15789357` (instancia `537696665`) con `SCA2_mapearDatosDecidirAccion`, sin relanzar Decidir ni avanzar la tarea. Para `mecanizar` se reutilizó el DTO de prueba guardado de `15789339`.
+
+| Consulta | Primera ronda (UTC) | Reintento (UTC) |
+|---|---|---|
+| `mecanizar` | 07:53:34.879 — `ERROR`, HTTP 500/1108 | 07:56:27.453 — `ERROR`, HTTP 500/1108 |
+| `accion` | 07:53:56.318 — `AUTORIZACION`, sin error | 07:56:28.672 — `AUTORIZACION`, sin error |
+
+En Designer, «Solicitud de prueba» de `SCA2_APIClients_search` devolvió **HTTP 200** y cliente en vigor para `0732400001966` a las 07:54:51.660 UTC. El bloqueo actual es el HTTP 500 de la consulta `mecanizar`; en estas rondas no se reprodujo el 1107 que se había observado en `accion`. **No se reanudaron las pruebas por pares**, no se consumieron pólizas, no se crearon ni avanzaron solicitudes y no se promovieron modelos. Evidencia: `files/sca2-avisos-monitorizacion/inbox38-20261125-preflight-reglas-y-clientes.json`.
