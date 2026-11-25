@@ -25,9 +25,9 @@ Las páginas `errores-sca2` y `gestion-mantenimiento-sca2` de SCA se mostraban i
 
 ## Tabla y activación
 
-- La tabla mixta solo se activa en la fachada para búsqueda por póliza. Combina CORE y registros vivos/históricos de SCA2, identifica SCA por evidencia en su registro operativo, deduplica por ID antes de ordenar y paginar, y muestra etiqueta y color. Una fila CORE sin origen acreditado no se etiqueta como SCA; las colisiones quedan marcadas sin acción cruzada. Los `PDTE-*` siguen separados.
+- Para el piloto activo, la tabla mixta se muestra al buscar por póliza y, en `/decidir-accion`, también al entrar sin buscar y al buscar por cliente. Combina CORE y registros vivos/históricos de SCA2, identifica SCA por evidencia en su registro operativo, deduplica por ID antes de ordenar y paginar, y muestra etiqueta y color. Una fila CORE sin origen acreditado no se etiqueta como SCA; las colisiones quedan marcadas sin acción cruzada. Los `PDTE-*` siguen separados.
 - La columna Estado traduce el código de las filas SCA con `SCA_D_EstadosSolicitud`, la misma decisión de literales que usa `SCA_BuscadorTabla`. El estado de las demás filas no cambia.
-- El ID de una fila SCA abre `SCA Redirigir Detalle Solicitud`; el de SCA2 abre su detalle. Si alguna de las consultas informa más de 250 solicitudes, se muestra un aviso en lugar de una página parcial.
+- El ID de una fila SCA abre `SCA Redirigir Detalle Solicitud`; el de SCA2 abre su detalle. Solo al buscar por póliza, si alguna de las fuentes supera 250 solicitudes, se muestra un aviso en lugar de una página parcial.
 - Para habilitar la experiencia en TEST, configurar `SCA2_BOOL_PILOTO_ACTIVO = true`. Para deshabilitarla, usar `false`: SCA vuelve al recorrido legacy y oculta las dos pestañas. No se elimina el acceso nativo de SCA2. No se desplegó ni activó PRO.
 - En las 19 instancias de `SCA2 CMD Alta` visibles en el historial de TEST, `CFERNA7` inició 5 y la cuenta administrativa `devin`, fuera del piloto, inició 14. El historial no identifica el canal de arranque y no incluye procesos ya purgados. La excepción de alta para administradores se aplica solo al site nativo.
 
@@ -104,3 +104,13 @@ En `SCA_Site` y `SCA Decidir Accion` (ambos v5 → v6), las pestañas **Errores 
 - **Pendiente:** GGALV10 es miembro de ambos grupos en TEST. Falta validar con su sesión que ve ambas pestañas y que las dos páginas abren correctamente.
 
 Copias previas: `SCA_Site.visib.before-v5.json` y `SCA_Decidir_Accion_Site.visib.before-v5.json` en `~/memory/appian_91b2ca/files/sca2-convivencia-piloto/`.
+
+## Columna Origen al entrar y al buscar por cliente — TEST
+
+En `/decidir-accion`, el piloto ve la columna **Origen** desde la lista inicial. La lista une las últimas gestiones del gestor que tienen origen SCA acreditado con los registros SCA2. La búsqueda por cliente muestra la póliza de cada fila y mantiene la tabla incluso con un único resultado SCA2. Se conservan los filtros de Estado y Línea de negocio y la paginación de 10. La rama legacy de los no pilotos no cambia.
+
+Solo se publicaron `SCA2_Buscador` (v45 → v47) y `SCA2_BuscadorTablaPiloto` (v3 → v5). Las copias previas `*.ampliar.before-v*.json` y los borradores `*.ampliar.draft.sail` están en `~/memory/appian_91b2ca/files/sca2-convivencia-piloto/`.
+
+- **CFERNA7:** Origen visible en la entrada, en la búsqueda por cliente y en la de póliza. La consulta de últimas gestiones devolvió 20 IDs: 20 coincidencias con SCA2 y ninguna con el registro operativo de SCA. La póliza de control `0000253500328` mostró una fila **SCA** y una **SCA2** con la misma cuenta piloto; no hizo falta cambiar el grupo.
+- **SISANS:** Chrome mostró la tabla legacy sin Origen en la entrada, la búsqueda por póliza y la búsqueda por cliente.
+- Se validaron ambos borradores mediante MCP en TEST simulando el acceso de piloto y no piloto en los tres recorridos. Las pruebas de navegador se limitaron a listas y búsquedas: no se abrieron enlaces de solicitudes ni se ejecutaron acciones. Los destinos de los enlaces se comprobaron en el SAIL.
