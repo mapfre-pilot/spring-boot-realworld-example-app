@@ -212,6 +212,8 @@ Excepción a la regla de bloques: solo las pólizas de campaña TTQ de `polizas-
 
 ## INBOX-38 — MecanizarNSE
 
+**Exclusiones para MecanizarNSE y Mecanizar (25/11/2026):** `0730180067538`, `0730280137046` y `0730280073038` están reservadas para las pruebas de convivencia del piloto. No se han usado en estas pruebas y no deben seleccionarse para ninguno de los dos modelos.
+
 | Póliza | Sesión | Fecha | Solicitud(es) | Uso / estado final |
 |---|---|---|---|---|
 | 0732400001493 | INBOX-38 | 24/11/2026 | 15789357 | Alta nueva NSE-Hogar para el primer caso de MecanizarNSE. Ocupada: `EN_ACCION / AUTORIZACION`, tarea 1002 pendiente. Prueba detenida por HTTP 500/1107 de Decidir (Error 539); no se ejecutó MecanizarNSE. |
