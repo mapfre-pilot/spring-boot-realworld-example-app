@@ -6,13 +6,14 @@ Implementado en Appian TEST. La selección múltiple ahorra pulsaciones; no camb
 
 | Objeto | Antes → TEST | Cambio |
 | --- | --- | --- |
-| `SCA2_ContraAnulacionOpciones` | 84 → 85 | Habilitación, ejecución síncrona, reintento y argumento de cierre. |
+| `SCA2_ContraAnulacionOpciones` | 84 → 85 → 86 | Habilitación, ejecución síncrona, reintento y argumento de cierre; v86 aplica al grid abierto las confirmaciones del proceso. |
 | `SCA2_ContraAnulacionArgumentarioEstrategicas` | 7 → 8 | Selección múltiple de pendientes del nivel actual; no selecciona resueltos ni filas anteriores. |
 | `SCA2_habilitacionArgumentosContraAnulacion` | Nuevo, v2 | Calcula filas ejecutables, habilitación y aviso de obligatorios. |
 | `SCA2_ejecutarArgumentoNegativo` | Nuevo, v3 | Llama a la regla SOAP existente y considera confirmado el resultado de negocio `codigo = "2"` para un negativo. |
 | `SCA2 CMD GuardarEjecucionArgumentos` | Nuevo, v2.0 | Múltiples instancias secuenciales; devuelve un resultado por argumento. Borrado de instancias al día y alertas a SCA2 Alertas. |
 | `SCA2_PM_CMD_GUARDAR_EJECUCION_ARGUMENTOS` | Nueva, v1 | Referencia al proceso desde la interfaz. |
 | `SCA2_obtenerArgumentoCierreContraAnulacion` | Nueva, v2 | Único punto de decisión del argumento que se envía al Cuadro de Gestión. |
+| `SCA2_aplicarResultadosNegativosContraAnulacion` | Nueva, v1 | Calcula los tres vectores del grid, la selección pendiente y el último confirmado a partir de los resultados del PM. |
 
 `SCA2_IF_ArgumentoAplicacionUrl` (v1), el SOAP existente y `SCA2 CMD CompletarAccion` no se modificaron. Opciones libera los enlaces Argumentario y Aplicación al invocar el grid; se mantienen los requisitos de documento y URL y el flujo de positivo, tréboles, finalizar y posponer, salvo el argumento enviado al Cuadro en el cierre.
 
@@ -42,3 +43,9 @@ Se conserva una fila de cierre. En ambos caminos de FINALIZAR, el argumento prov
 - Solicitud existente `15787842`, tarea `105`: se comprobó que respondían la gestión y el listado antes de ejecutar. Una llamada individual para el argumento `8` devolvió `codigo="2"` y el listado confirmó el negativo. En la instancia `9257605`, las llamadas para `9` y `346` devolvieron ambos `guardado=true`, y una lectura posterior confirmó los dos estados `2`. No se generó ninguna póliza ni se finalizó la gestión.
 - `testInterface` de Opciones v85, solicitud `15787842`: diagnóstico sin error; grid de tipo `CHECKBOX`, sin límite de selección y con las filas ya ejecutadas deshabilitadas. `testInterface` del grid v8 sin errores con una fila anterior, una resuelta y dos pendientes. Estas comprobaciones no ejecutan el clic NEGATIVO ni reproducen un fallo de transporte SOAP.
 - En navegador se abrió el detalle de la solicitud y se vieron los negativos persistidos. La cuenta usada no ofreció **RETOMAR** para esa tarea; no se verificaron el clic múltiple, el aviso al pasar el ratón ni el reintento en la pantalla editable. Para esa prueba se necesita una cuenta habilitada para retomar la tarea o una vista previa de la interfaz con permisos.
+
+### Corrección de la actualización en pantalla (v86)
+
+En la prueba de SISANS con la solicitud `15789155`, nivel 2, el PM `15577684` confirmó dos negativos, pero en Opciones v85 las filas seguían pendientes hasta reabrir. En v86, `onSuccess` lee `fv!processInfo.pv.resultados` (lista de Map) y guarda los vectores completos de estado, fecha y usuario, en vez de guardar celdas indexadas dentro de un bucle. Guarda también el último índice confirmado en el orden devuelto por el PM. Los fallidos u omitidos mantienen el estado y la selección y se muestra el aviso; el callback no sale del formulario.
+
+En TEST, la regla de actualización pasó **5/5** casos guardados (incluidos éxito doble, fallo parcial y respuesta vacía). Al reproducir por `testRule` los resultados de la instancia `15577684`, las dos filas cambiaron a `"2"` con fecha y usuario, y la regla de cierre devolvió el último argumento confirmado, código `1`. `testInterface` de Opciones v86 para la tarea de nivel 2 (`15789155 / 907`) devolvió `ContentLayout` sin error y el grid mostró las dos filas resueltas como no seleccionables. Estas comprobaciones no disparan el callback desde el navegador.
