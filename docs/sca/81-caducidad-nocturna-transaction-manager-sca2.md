@@ -1,6 +1,6 @@
 # 81 — Caducidad nocturna de SCA2 con Transaction Manager
 
-**Estado a 25/11/2026: caducidad TM activa en Appian TEST.** `SCA2 CMD BarridoCaducidad` v11.0 sustituye el recorrido MNI por una única llamada síncrona a `SCA2 CMD Encolar Caducidad TM` v4.0, sin filtro de IDs. Designer muestra en la v11.0 el mismo temporizador diario de las **01:00 Europe/Madrid**. El productor no tiene temporizador propio. Véase [caducidad por acción](72-caducidad-por-accion-sca2.md).
+**Estado a 26/11/2026: caducidad TM activa en Appian TEST.** `SCA2 CMD BarridoCaducidad` v11.0 sustituye el recorrido MNI por una única llamada síncrona a `SCA2 CMD Encolar Caducidad TM` (v5.0 publicada), sin filtro de IDs. Designer muestra en la v11.0 el mismo temporizador diario de las **01:00 Europe/Madrid**. El productor no tiene temporizador propio. Véase [caducidad por acción](72-caducidad-por-accion-sca2.md).
 
 **Publicación y arranque inmediato:** al publicar `BarridoCaducidad` v11.0, Appian disparó un barrido a las **12:41 CET** (instancia `13463306`), sin lanzamiento manual. El productor `13463307` encoló **100** transacciones, que quedaron pendientes con el tipo 209 desactivado. No se observó ningún arranque de `Caducar TM` ni de `Caducar` tras la publicación. Tener en cuenta que publicar puede disparar el barrido de inmediato, sin esperar a las 01:00.
 
@@ -15,7 +15,7 @@
 | `SCA2_INT_CADUCIDAD_TM_HORA_FIN` | 3 / 7 | Hora local de cierre, excluida de la ventana. |
 | `SCA2_INT_CADUCIDAD_TM_CONCURRENCIA` | 1 / 2 | Valor inicial de referencia de `maxRunning`; TM almacena un número, no una referencia a la constante. |
 | `SCA2 CMD Caducar TM` | 3.0 publicada | Recibe `idSolicitud` y `transaction`; revalida elegibilidad y ventana antes de llamar a `SCA2 CMD Caducar` en un subproceso síncrono. |
-| `SCA2 CMD Encolar Caducidad TM` | 4.0 publicada | Resuelve el tipo por UUID del trabajador (209 en TEST), lee transacciones activas, recorre las candidatas y encola una lista por página. Parámetro opcional `idSolicitudes` para el piloto; sin temporizador. |
+| `SCA2 CMD Encolar Caducidad TM` | 5.0 publicada | Resuelve el tipo por UUID del trabajador (209 en TEST), lee transacciones activas, recorre las candidatas y encola una lista por página. Parámetro opcional `idSolicitudes` para el piloto; sin temporizador. |
 
 El barrido, el productor y el trabajador tienen autoborrado al día y alertas a `SCA2 Alertas`.
 
@@ -50,6 +50,14 @@ Fuera de ventana (constante en 7), las cuatro entradas `4857794–4857797` queda
 Para probar la rama de negocio de día, se amplió **solo en TEST** la hora de fin de 7 a 14 (v2) y se comprobó que la regla devolvía ventana abierta. Un nuevo despacho manual de los mismos IDs creó 4 transacciones (`4857837–4857840`), todas completadas en TM. Hubo exactamente 4 llamadas a `SCA2 CMD Caducar` v10.0 y 4 llamadas a CORE con HTTP 500: las 4 solicitudes quedaron en `ERROR`, con un nuevo registro `SCA2 Error` por solicitud, acción activa y tarea pendiente, sin reintento. El máximo observado fue **2** concurrentes; se completaron **4 en 20,24 s** desde la activación del tipo (**11,86 intentos/min**), o **4 en 16,38 s** del inicio del primer trabajador al fin del último (**14,65 intentos/min**). Son cifras de una muestra de cuatro con CORE en error, no una prueba de carga.
 
 Al terminar se desactivó el tipo, se restauró el corte a **07:00** (v3) y se comprobó que la ventana volvía a estar cerrada. Balance TM: **8 completadas, 0 pendientes, 0 en curso, 0 fallidas y 0 canceladas**. No se probó CORE OK, el solapamiento de dos productores ni la pausa programada bajo carga a las 07:00 reales.
+
+## Primer barrido programado y correcciones del 26/11
+
+- A las **01:00:01 CET**, el barrido v11.0 (`537704556`) lanzó al productor v4.0 (`537704557`), que encoló **100** y no volvió al nodo de selección. TM completó las 100 entre **01:00:12 y 01:01:11**; las 100 llamadas a CORE devolvieron HTTP 500 y las solicitudes quedaron en `ERROR`.
+- Se reconstruyeron **211 candidatas a las 01:00** aplicando el mismo criterio de elegibilidad en datos de solo lectura y sustituyendo `now()` por el corte de esa noche. Faltaron **111** por encolar. La consulta posterior al selector con el cursor `caducidadTarea,id` devolvió **100 + 100 + 15 + 0**; cuatro vencían justo a las 01:00 y quedaban fuera del corte estricto.
+- La v4.0 contaba directamente la salida de tipo genérico del nodo y dejó `leerMasCandidatas=false` aunque había encolado 100. La v5.0 cuenta una marca por fila con `a!forEach`, como el barrido v10.0, tanto para las candidatas como para las transacciones activas. Conserva los cursores y la deduplicación. Se verificaron las expresiones publicadas y el recorrido del selector en lectura; no se lanzó el productor corregido ni se republicó el barrido. Falta observar el primer barrido nocturno con v5.0.
+- El pico de **20** trabajadores correspondió a la ejecución `9257598` de **TM Create or Update Job Type** del 25/11 a las **13:08 CET**, iniciada por `GGALV10@mapfre.net`. Fue posterior e independiente del script de activación, que había usado **TM Toggle Job Type** (`269268429`) con **2**. El proceso público **TM Create or Update Job Type** `15581164` restauró `maxRunning=2`, con el tipo 209 activo y el paso de contexto intacto, alineado con la constante SCA2.
+- Las instancias antiguas `17635149` (v3.0) y `269268287` (v2.0) eran pruebas con un ID ficticio y **0** transacciones encoladas. Se cancelaron en Designer TEST (no se eliminaron); se verificó `CANCELLED` en ambas.
 
 ## Vuelta al barrido anterior en TEST
 
