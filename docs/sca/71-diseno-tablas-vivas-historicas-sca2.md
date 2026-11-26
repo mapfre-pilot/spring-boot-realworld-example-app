@@ -394,4 +394,12 @@ No se inició ningún modelo manualmente. El temporizador tiene un retraso inici
 
 La sonda de solo lectura (sin rutina, Sync ni envío de alertas) reprodujo el rechazo con v3.0. Con el contexto corregido devolvió `COMPLETED`, informe válido de 251 filas, 0 abiertas, 428 evaluadas, 0 candidatas y 34 retenidas, sin intentar traspaso ni alerta. Se eliminó la sonda. No se crearon instancias nuevas en los tres modelos al publicar la cadena **simulador v6.0 → lanzador v4.0 → traspaso v9.0**. Evidencia en `~/sca2-respaldos/2026-11-25-diagnostico-0816-*`.
 
-En la revisión posterior al lote del 26/11, comprobar las instancias del simulador y lanzador: estado, iniciador, validez del informe y número de candidatas. Si arrancó el PM real, verificar su versión, manifiesto, Sync y post-check. Confirmar que no queden instancias pausadas ni errores sin resolver. Si falla, conservar la evidencia sin reintentar manualmente.
+### Ejecución programada en TEST — 26/11/2026, 04:30 Europe/Madrid
+
+El informe de instancias **no bloqueó el lote**. El simulador **v6.0** (`16599028`, inicio 04:30:00.660 CET) y su subproceso, el lanzador **v4.0** (`16599029`, inicio 04:30:21.300 CET), terminaron `COMPLETED`. El historial de ambos registra a `devin` como iniciador; el lanzador guardó `Administrator` en `identidadNocturna`.
+
+El lanzador guardó `valido: true`, **219 filas, 0 abiertas**, `idsBloqueados: []` y `errorDisparo: null`. Evaluó **444 solicitudes**, con **0 candidatas**, **0 permitidas** y **34 retenidas fuera**. No ejecutó el nodo de alerta. El historial del PM real no registra ninguna instancia de este lote: no hubo IDs archivados, Sync, post-check ni expedientes nuevos que verificar en el sitio.
+
+No quedaron instancias abiertas, pausadas o con error en los tres modelos del lote. El monitor general de SCA2 sí mostró **2 errores de proceso sin resolver en las últimas 24 horas**, ambos ajenos al traspaso: `SCA2 CMD Encolar Caducidad TM` v3.0 (`17635149`, 25/11 12:27 CET; incompatibilidad de tipos en `difference` al seleccionar candidatas) y v2.0 (`269268287`, 25/11 12:26 CET; índice `id` no válido sobre una lista de variantes al leer pendientes). Aparecen en la vista filtrada por pausas y el historial devuelve `ACTIVE` con error para ambas. No se cancelaron ni reintentaron: no se comprobó que cancelarlas carezca de efectos secundarios.
+
+Comprobación de solo lectura, sin lanzar procesos manualmente ni cambiar datos. Evidencia en `~/sca2-respaldos/2026-11-26-lote.json`, `2026-11-26-encolar.log` y las capturas `2026-11-26-monitor-*-sca2.png`.
