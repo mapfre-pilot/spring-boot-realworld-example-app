@@ -316,3 +316,52 @@ Se exige que las cuatro dependencias respondan bien en una misma ronda para inic
 El sondeo se cerró a las 13:53 UTC por indicación de coordinación. Ninguna de las 12 rondas, incluidas las dos comprobaciones iniciales, tuvo éxito simultáneo en las cuatro dependencias: el servicio de reglas siguió devolviendo HTTP 500 de forma intermitente. No se iniciaron los pares de MecanizarNSE ni Mecanizar, no se crearon ni avanzaron solicitudes, no se consumió ninguna póliza y no se promovieron modelos. Las exclusiones del piloto de [REGISTRO.md](pruebas/polizas/REGISTRO.md) no cambiaron.
 
 Evidencia depurada por ronda: `files/sca2-avisos-monitorizacion/inbox38-sondeo-servicios-20261125.jsonl`.
+
+### Nueva comprobación en TEST (26/11/2026)
+
+| Comprobación de solo lectura | Hora UTC | Resultado |
+|---|---:|---|
+| «Consultar reglas» (`accion`), control de `15789357` | 08:20:27.750 | Appian devolvió HTTP 404, `Process instance not found: 537696665`. No se llamó al servicio de reglas para `accion` con este control. |
+| CORE, `consultaDetalleSolicitud` | 08:20:27.905 | Devolvió el detalle de la referencia esperada; no se ejecutó `generarStudAnul`. |
+| `mecanizar`, DTO de `15789339` | 08:20:32.189 y 08:20:34.509 | `MECANIZAR`, sin error en ambas consultas. |
+| API de clientes, «Solicitud de prueba» de Designer | 08:20:32.491 | HTTP 200, cliente en vigor. |
+| `accion`, comprobación diagnóstica con la copia guardada de `15789339` | 08:21:16.489 | `ACCIONES ADMINISTRATIVAS`, sin error. |
+
+El 404 corresponde a la lectura del historial de Appian, no al servicio de reglas. No se observó HTTP 500 en las consultas que llegaron al servicio. Como la ronda inicial no pudo completar `accion` con el control previsto y la lectura diagnóstica usó otro caso, no se inició ningún par de MecanizarNSE ni Mecanizar. No se consumieron pólizas, no se crearon ni avanzaron solicitudes y no se promovieron modelos. Evidencia: `files/sca2-avisos-monitorizacion/inbox38-sondeo-servicios-20261126.jsonl` e `inbox38-sondeo-accion-20261126.json`.
+
+### Ronda rápida y primer caso de MecanizarNSE en TEST (26/11/2026)
+
+El 404 anterior se debió al borrado de la instancia de control al cabo de un día. La ronda rápida de solo lectura pasó con el caso alternativo y las demás dependencias en la misma ronda:
+
+| Comprobación | Hora UTC | Resultado |
+|---|---:|---|
+| CORE, `consultaDetalleSolicitud` | 08:22:31.840 | Detalle de la referencia esperada. |
+| API de clientes, «Solicitud de prueba» de Designer | 08:22:34.804 | HTTP 200, cliente en vigor. |
+| `accion`, copia guardada de `15789339` | 08:22:35.127 | `ACCIONES ADMINISTRATIVAS`, sin error. |
+| `mecanizar`, dos consultas | 08:22:36.241 y 08:22:38.768 | `MECANIZAR`, sin error en ambas. |
+
+Se comprobó que la póliza NSE-Hogar `0732400001966` de Polizasgeneral.xlsx no tenía una solicitud previa en SCA2. Se creó por el flujo normal la solicitud `15789388` (alta `13468189`), se tramitó la autorización con adjuntos y se llegó a `PDTE_MECANIZAR / MECANIZAR` con la tarea `1029`. La simulación devolvió nivel `INFORMATIVO` y permitió pulsar «ANULAR PÓLIZA».
+
+| SCA2 Llamada Servicio | Servicio | Hora UTC | Resultado registrado |
+|---|---|---:|---|
+| 1179 | `SCA2_generarStudAnul` | 08:30:06 | OK / HTTP 200 |
+| 1180 | `SCA2_aceptarAutorizacionIntegracion` | 08:32:24 | OK / HTTP 200 |
+| 1181 | `SCA2_guardarMecanizacionIntegracion` | 08:34:15 | OK / HTTP 200 |
+
+**No se obtuvo una entrada utilizable para MecanizarNSE.** La anulación ejecutó **Mecanizar v52.0** (instancia `9262022`) como paso previo: `success=true`, `err=null`, `wrErr=false`, `observaciones=null`, `llamadaHttp=200`. La transición `3915` registró `MECANIZADA` a las 08:34:16. El historial muestra que la instancia siguió del nodo 324 a «Recargar solicitud» y «Write Cambio nivel», no a la espera de ANL reservada a wAutemis con observaciones `00000005`/`00000006`. A las 08:34:19 la transición `3916` marcó `IR A NIVEL 2` y se finalizó la tarea `1029`; a las 08:34:27 la solicitud llegó a `FIN / FIN PROCESO`. La tarea de inducción `1030` seguía pendiente en la última lectura (08:34:46.439), que no devolvió filas en SCA2 Error.
+
+El caso no quedó en `MECANIZADA / ANL`, condición que comprueba el nodo 4 de MecanizarNSE. No se ejecutó ese modelo, ni publicado ni candidato. Tampoco se probó por pares el tramo de espera de Mecanizar: la instancia v52.0 fue solo la preparación del caso NSE y no pasó por ese tramo. Se detuvo el intento sin consumir más pólizas. No hay comparación de PVs, ruta, Solicitud, Tarea, Transición, Llamada Servicio y Error entre versiones, ni promoción ni comprobaciones posteriores a una promoción. Para retomar, hace falta identificar antes de consumir otra póliza una ruta ordinaria que deje un caso NSE elegible para MecanizarNSE; para Mecanizar, hacen falta entradas wAutemis que alcancen la espera y un padre candidato aislado.
+
+Única póliza consumida en esta ronda: `0732400001966`, anotada en [REGISTRO.md](pruebas/polizas/REGISTRO.md). Evidencia en `files/sca2-avisos-monitorizacion/`: `inbox38-sondeo-servicios-20261126.jsonl` e `inbox38-flujo-26nov-15789388-{antes-mecanizar,tras-anular,despues-mecanizacion,mecanizar-pv-ruta}.json`.
+
+### Reutilización del control v52.0 y selección de pólizas en solo lectura (26/11/2026)
+
+La ronda de 08:38:48.856–08:38:55.382 UTC volvió a pasar: `accion` devolvió `ACCIONES ADMINISTRATIVAS`, las dos consultas `mecanizar` devolvieron `MECANIZAR`, clientes devolvió HTTP 200 desde Designer y CORE devolvió el detalle esperado.
+
+**Mecanizar: `15789388` queda como mitad publicada del par NSE-Hogar.** Se conserva la ruta de la instancia `9262022`, v52.0, con nivel de entrada 1, `observaciones=null`, `success=true`, `err=null`, `wrErr=false` y `llamadaHttp=200`. La rama principal pasó por `MECANIZADA → IR A NIVEL 2 → FIN`, cerró la tarea de mecanización `1029` y alcanzó el nodo End. La solicitud terminó en `FINALIZADA / COMPLETADA` a las 08:39:15 UTC, mediante la transición de `SCA2 CMD Finalizar`; `SCA2_finalizarSolicitudIntegracion` registró `OK / HTTP 200` a las 08:39:13 UTC. La lectura de las 08:39:45.245 UTC no devolvió filas de SCA2 Error. La tarea de inducción `1030` seguía pendiente y la instancia de Mecanizar aún figuraba `Active` a las 08:41:22.024 UTC. Este control sirve para la ruta NSE, no para validar la espera ANL de wAutemis.
+
+`0732400007366` aparece en la columna NSE-Hogar del Excel, no tenía solicitudes en SCA2 a las 08:39:31.846 UTC y dio HTTP 200 con cliente en vigor desde Designer a las 08:41:38.986 UTC. Comparte el tipo del control; no se verificó equivalencia de la tarea ni de los parámetros de la simulación. En TEST, la búsqueda de modelos por `Mecanizar` devolvió solo el padre publicado para Mecanizar y cuatro objetos de MecanizarNSE; las búsquedas por los dos nombres de los subprocesos proyectados para Mecanizar no encontraron objetos. La acción «ANULAR PÓLIZA» de `SCA2_MecanizacionPrincipal` sigue apuntando a `cons!SCA2_PM_CMD_MECANIZAR`. No se usó la póliza sugerida: habría que preparar el padre reestructurado con sus subprocesos y un arranque aislado que conserve los parámetros y el contexto de oficina. Arrancar otra vez v52.0 con el botón normal no probaría la candidata.
+
+**MecanizarNSE: no se identificaron pólizas nuevas aptas.** Se cruzaron las columnas de tipo de Polizasgeneral.xlsx con 445 solicitudes y 2.767 transiciones de SCA2. Las cuatro solicitudes que seguían en `MECANIZADA / ANL` eran wAutemis, de nivel de intervención 1; la evidencia previa de ANL muestra `observaciones=00000005` en las cuatro. Ninguna figuraba en el Excel y todas quedan fuera de MecanizarNSE por origen. De las 63 solicitudes NSE con transición a `MECANIZADA` (49 Autos y 14 Hogar; 11 pólizas presentes en el Excel), las 63 registraron después `IR A NIVEL 2`. El Excel identifica el tipo, no el nivel de cumplimiento ni la ruta. En v52.0, el nodo 324 solo conserva la espera para wAutemis con `00000005`/`00000006`; los demás casos siguen a recarga y cambio de nivel. Se confirmó además que `SCA2_BOOL_BATCH_NSE` sigue desactivado. No se identificó una vía ordinaria que deje una póliza NSE nueva en el estado requerido por el nodo 4 de MecanizarNSE.
+
+**Pólizas adicionales consumidas: 0 de 6.** No se crearon solicitudes ni se usaron las excluidas. No se pudo ejecutar la mitad candidata de Mecanizar ni iniciar MecanizarNSE. No hubo comparación completa, promoción ni comprobaciones posteriores a una promoción. Evidencia en `files/sca2-avisos-monitorizacion/`: `inbox38-sondeo-servicios-20261126.jsonl`, `inbox38-26nov-control-y-candidatos.json`, `inbox38-26nov-elegibilidad-nse.json`, `inbox38-26nov-clientes-0732400007366.json` e `inbox38-flujo-26nov-15789388-control-publicado.json`.

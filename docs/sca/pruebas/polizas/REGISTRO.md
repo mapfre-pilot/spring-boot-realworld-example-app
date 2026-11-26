@@ -217,6 +217,7 @@ Excepción a la regla de bloques: solo las pólizas de campaña TTQ de `polizas-
 | Póliza | Sesión | Fecha | Solicitud(es) | Uso / estado final |
 |---|---|---|---|---|
 | 0732400001493 | INBOX-38 | 24/11/2026 | 15789357 | Alta nueva NSE-Hogar para el primer caso de MecanizarNSE. Ocupada: `EN_ACCION / AUTORIZACION`, tarea 1002 pendiente. Prueba detenida por HTTP 500/1107 de Decidir (Error 539); no se ejecutó MecanizarNSE. |
+| 0732400001966 | INBOX-38 | 26/11/2026 | 15789388 | Consumida: alta NSE-Hogar, autorización completada y mecanización v52.0 por el flujo normal. Pasó por `FIN / FIN PROCESO` y luego a `FINALIZADA`; no quedó en `MECANIZADA / ANL` ni se ejecutó MecanizarNSE. Evidencia reutilizada como mitad publicada de Mecanizar; no reutilizar la póliza como caso nuevo. |
 
 ## INBOX-38 — CompletarAccion con adjuntos
 
