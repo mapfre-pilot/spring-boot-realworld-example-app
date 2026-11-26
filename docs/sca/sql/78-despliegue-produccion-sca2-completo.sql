@@ -14,7 +14,8 @@
 --    7. Reintento de finalización: 3 tablas, funciones y procedures; queda DESACTIVADO
 --       (habilitado = false) (sca2-reintento-finalizacion).
 --    8. Procedure de traspaso al histórico v3; instalarlo no mueve datos (sca2-hist-traspaso).
---    9. Catálogos sca2_cat_* con los ID de TEST (sustituye a 74).
+--    9. Catálogos sca2_cat_* con los ID de TEST (sustituye a 74), sin las filas que solo
+--       existen en TEST por pruebas (tipos de argumento 342–346, valor de concepto 101).
 --   10. Verificación final (solo lectura, un único JSON).
 --
 -- Cómo ejecutarlo:
@@ -4104,7 +4105,7 @@ INSERT INTO sca2_anulaciones.sca2_cat_causa ("ID", "COD_LINEA_NEGOCIO", "COD_MOT
 ON CONFLICT ("ID") DO NOTHING;
 DO $$ BEGIN PERFORM setval(pg_get_serial_sequence('sca2_anulaciones.sca2_cat_causa', 'ID'), GREATEST((SELECT max("ID") FROM sca2_anulaciones.sca2_cat_causa), 1)); END $$;
 
--- sca2_cat_tipo_argumento: 347 filas (ID conservado de TEST)
+-- sca2_cat_tipo_argumento: 342 filas (ID conservado de TEST); sin las filas de prueba de TEST con ID 342, 343, 344, 345, 346
 INSERT INTO sca2_anulaciones.sca2_cat_tipo_argumento ("ID", "COD_TP_ARG", "DESC_ARG", "COD_ESTADO", "ID_LINEA_NEGOCIO", "ID_RAMO", "COD_COMPANIA", "COD_COMPANIA_ARG", "APLI_ARGUMENTO", "INSTRUCCION", "MCA_FINALIZADO", "NOMBRE_DOC", "NUM_DOC", "OBSERVACIONES", "FEC_VIGENCIA", "FEC_MODIFICADO", "COD_ID_CAMPANA", "COD_TIP_BON", "NUM_TIP_BON", "REGATEABLE", "MCA_TE_CUIDAMOS", "NUM_DIAS_SGO", "COD_TAREA_SGO", "TXT_URL_ARG", "MCA_TREB_CALC", "ORDEN", "ACTIVO", "ORIGEN", "FECHA_ALTA", "FECHA_MODIFICACION", "USUARIO_MODIFICACION") VALUES
   (1, '1', 'SERVICIOS MAPFRE', 'N', '1', 200, NULL, 41, 'VISUALIZAR_PDF', 'OBSERVACIONES', 'N', 'SERVICIOS MAPFRE.pdf', '090003e8802a0ff8', 'Prueba 7', '01/04/2015 00:00:00', '25/10/2026 11:07:21', NULL, NULL, NULL, 'N', 'N', 0, NULL, NULL, 'N', 1, 'true', 'CORE', TIMESTAMP '2026-10-21 10:30:51', TIMESTAMP '2026-11-18 07:58:12', 'JOSPENA@mapfre.net'),
   (2, '2', 'GESTION COMPETENCIA', 'N', '1', 200, NULL, NULL, 'GESTION_COMPETENCIA', 'OBSERVACIONES', 'N', NULL, NULL, NULL, '24/04/2013', '26/04/2013 14:00:45', NULL, NULL, NULL, 'N', 'N', NULL, NULL, NULL, 'N', 2, 'true', 'CORE', TIMESTAMP '2026-10-21 10:30:51', TIMESTAMP '2026-11-18 07:58:12', 'JOSPENA@mapfre.net'),
@@ -4447,11 +4448,6 @@ INSERT INTO sca2_anulaciones.sca2_cat_tipo_argumento ("ID", "COD_TP_ARG", "DESC_
   (339, '367', 'TTQ VIDA CLUB MAPFRE', 'N', '3', 101, NULL, 3, 'VISUALIZAR_PDF', 'OBSERVACIONES', 'N', NULL, NULL, NULL, '10/06/2025 00:00:00', '29/05/2026 12:20:59', 'TTQVIDA', 'TREBOLES', '0', 'S', 'N', 0, NULL, 'https://www.clubmapfre.es/particulares/ahorro-y-treboles/tarjeta-credito-mapfre-tecuidamos/', 'N', 339, 'true', 'CORE', TIMESTAMP '2026-10-21 10:30:51', TIMESTAMP '2026-11-18 07:58:12', 'JOSPENA@mapfre.net'),
   (340, '368', 'TTQ VIDA NO CLUB MAPFRE', 'N', '3', 101, NULL, 3, 'VISUALIZAR_PDF', 'OBSERVACIONES', 'N', NULL, NULL, NULL, '10/06/2025 00:00:00', '29/05/2026 12:20:44', 'TTQVIDA', 'TREBOLES', '0', 'S', 'S', 0, NULL, 'https://www.clubmapfre.es/particulares/ahorro-y-treboles/tarjeta-credito-mapfre-tecuidamos/', 'N', 340, 'true', 'CORE', TIMESTAMP '2026-10-21 10:30:51', TIMESTAMP '2026-11-18 07:58:12', 'JOSPENA@mapfre.net'),
   (341, '369', 'VENTAJAS DEL PRODUCTO', 'N', '3', 101, NULL, 3, 'VISUALIZAR_PDF', 'OBSERVACIONES', 'N', NULL, NULL, NULL, '10/06/2025 00:00:00', '08/10/2025 16:46:33', NULL, NULL, NULL, 'N', 'N', 0, NULL, NULL, 'N', 341, 'true', 'CORE', TIMESTAMP '2026-10-21 10:30:51', TIMESTAMP '2026-11-18 07:58:12', 'JOSPENA@mapfre.net'),
-  (342, '981', 'PRUEBA_DEVIN_H3_1_FIX', 'S', '1', 200, NULL, 1, 'VISUALIZAR_PDF', 'Validación GA12 fix2', 'N', '090003e88029cba7', '090003e88029cbe2', NULL, '13/10/2026', '13/10/2026 13:17:41', NULL, NULL, NULL, 'N', 'N', 0, NULL, NULL, 'N', 343, 'true', 'CORE', TIMESTAMP '2026-10-21 10:30:51', TIMESTAMP '2026-11-18 07:58:12', 'JOSPENA@mapfre.net'),
-  (343, '982', 'PRUEBA_DEVIN_H3_2', 'S', '1', 200, NULL, 1, 'VISUALIZAR_PDF', 'Prueba funcional H3 argumento 2', 'N', NULL, NULL, NULL, '13/10/2026', '13/10/2026 13:18:37', NULL, NULL, NULL, 'N', 'N', 0, NULL, NULL, 'N', 344, 'true', 'CORE', TIMESTAMP '2026-10-21 10:30:51', TIMESTAMP '2026-11-18 07:58:12', 'JOSPENA@mapfre.net'),
-  (344, '999', 'Prueba', 'N', '1', 200, NULL, 41, 'VISUALIZAR_PDF', 'istrucc', 'S', 'DNI', '090003e8802a1862', 'Onserva', '26/10/2026', '26/10/2026 16:40:01', NULL, 'TREBOLES', '45', 'S', 'S', 0, NULL, NULL, 'S', 346, 'true', 'CORE', TIMESTAMP '2026-10-27 09:24:45', TIMESTAMP '2026-11-18 07:58:12', 'JOSPENA@mapfre.net'),
-  (345, '999', 'Prueba', 'N', '1', 200, NULL, 41, 'VISUALIZAR_PDF', 'istrucc', 'S', 'DNI', '090003e8802a1862', 'Onserva', '26/10/2026', '26/10/2026 16:40:01', NULL, 'TREBOLES', '45', 'S', 'S', 0, NULL, NULL, 'S', 344, 'false', 'CORE', TIMESTAMP '2026-10-27 09:24:45', TIMESTAMP '2026-10-27 10:33:45', 'devin'),
-  (346, '991', 'PRUEBA_DEVIN_R34_991_MOD', 'S', '1', 200, NULL, 41, 'VISUALIZAR_PDF', 'Instrucciones R34 v8', 'S', 'PRUEBA_DEVIN_R34_991', '090003e8802a1abf', 'Observaciones R34 v8', '27/10/2026', '27/10/2026 11:28:30', 'PAGOTARJ', NULL, NULL, 'S', 'S', 0, NULL, 'https://www.clubmapfre.es/particulares/ahorro-y-treboles/tarjeta-credito-mapfre-tecuidamos/', 'S', 345, 'true', 'CORE', TIMESTAMP '2026-10-27 09:38:51', TIMESTAMP '2026-11-18 07:58:12', 'JOSPENA@mapfre.net'),
   (347, '370', 'Bajada de Prima', 'S', '1', 200, NULL, 41, 'VISUALIZAR_PDF', 'Argumento para la bajada de prima en renovación.', 'N', 'PDF Bajada de Prima', '090003e8802ab99c', 'Dado de alta por primera vez, inactivo, el 04/11', '04/11/2026', '04/11/2026 12:32:15', 'BAJAPRIM', NULL, NULL, 'N', 'N', 0, NULL, NULL, 'N', 342, 'true', 'CORE', TIMESTAMP '2026-11-17 22:42:43', TIMESTAMP '2026-11-18 07:58:12', 'JOSPENA@mapfre.net')
 ON CONFLICT ("ID") DO NOTHING;
 DO $$ BEGIN PERFORM setval(pg_get_serial_sequence('sca2_anulaciones.sca2_cat_tipo_argumento', 'ID'), GREATEST((SELECT max("ID") FROM sca2_anulaciones.sca2_cat_tipo_argumento), 1)); END $$;
@@ -4478,7 +4474,7 @@ INSERT INTO sca2_anulaciones.sca2_cat_concepto ("ID", "IDN_CONCEPTO_PCA", "DES_C
 ON CONFLICT ("ID") DO NOTHING;
 DO $$ BEGIN PERFORM setval(pg_get_serial_sequence('sca2_anulaciones.sca2_cat_concepto', 'ID'), GREATEST((SELECT max("ID") FROM sca2_anulaciones.sca2_cat_concepto), 1)); END $$;
 
--- sca2_cat_valor_concepto: 101 filas (ID conservado de TEST)
+-- sca2_cat_valor_concepto: 100 filas (ID conservado de TEST); sin las filas de prueba de TEST con ID 101
 INSERT INTO sca2_anulaciones.sca2_cat_valor_concepto ("ID", "IDN_CONCEPTO_PCA", "IDN_PCA", "VALOR_CONCEPTO", "DES_CONCEPTO", "MCA_INH", "FEC_ACTU", "ORDEN", "ACTIVO", "ORIGEN", "FECHA_ALTA", "FECHA_MODIFICACION", "USUARIO_MODIFICACION") VALUES
   (1, '3', '0', '10014717', '10014717', 'N', DATE '2015-10-11', 1, 'true', 'CORE', TIMESTAMP '2026-10-21 10:30:54', TIMESTAMP '2026-11-13 10:06:19', 'devin'),
   (2, '3', '1', '10014895', '10014895', 'N', DATE '2015-10-11', 2, 'true', 'CORE', TIMESTAMP '2026-10-21 10:30:54', TIMESTAMP '2026-10-27 10:46:42', 'devin'),
@@ -4579,8 +4575,7 @@ INSERT INTO sca2_anulaciones.sca2_cat_valor_concepto ("ID", "IDN_CONCEPTO_PCA", 
   (97, 'CAMP', '15', 'BAJAPRIM', 'Bajada de Prima', 'N', DATE '2026-11-04', 16, 'true', 'CORE', TIMESTAMP '2026-10-21 10:30:54', TIMESTAMP '2026-11-25 11:33:49', 'devin'),
   (98, 'URL', '0', 'https://webvida.pre.mapfre.net/WSS000AEjec/accesodirecto/WSS018Gesvida/VJ0180007_DetallePolizaCliente.do', 'Gesvida', 'N', DATE '2026-01-30', 1, 'true', 'CORE', TIMESTAMP '2026-10-21 10:30:54', TIMESTAMP '2026-10-27 10:46:42', 'devin'),
   (99, 'URL', '1', 'https://www.clubmapfre.es/particulares/ahorro-y-treboles/tarjeta-credito-mapfre-tecuidamos/', 'Club Mapfre', 'N', DATE '2026-01-30', 2, 'true', 'CORE', TIMESTAMP '2026-10-21 10:30:54', TIMESTAMP '2026-10-27 10:46:42', 'devin'),
-  (100, 'URL', '2', 'https://wportalinterno.pre.mapfre.net/webclub20/CHSinicio.do?p_CodCanal=20&p_NumDoc=', 'Aplicación Club Mapfre', 'N', DATE '2026-01-30', 3, 'true', 'CORE', TIMESTAMP '2026-10-21 10:30:54', TIMESTAMP '2026-10-27 10:46:42', 'devin'),
-  (101, 'CAMP', '16', 'PRUEBA_DEVIN_R34_2', 'Prueba Devin R34 2', 'N', DATE '2026-10-27', 17, 'false', 'CORE', TIMESTAMP '2026-10-27 09:20:05', TIMESTAMP '2026-10-27 10:42:26', 'devin')
+  (100, 'URL', '2', 'https://wportalinterno.pre.mapfre.net/webclub20/CHSinicio.do?p_CodCanal=20&p_NumDoc=', 'Aplicación Club Mapfre', 'N', DATE '2026-01-30', 3, 'true', 'CORE', TIMESTAMP '2026-10-21 10:30:54', TIMESTAMP '2026-10-27 10:46:42', 'devin')
 ON CONFLICT ("ID") DO NOTHING;
 DO $$ BEGIN PERFORM setval(pg_get_serial_sequence('sca2_anulaciones.sca2_cat_valor_concepto', 'ID'), GREATEST((SELECT max("ID") FROM sca2_anulaciones.sca2_cat_valor_concepto), 1)); END $$;
 
@@ -4643,9 +4638,9 @@ WITH esperado(tabla, columnas) AS (VALUES
     ('sca2_cat_motivo', 14),
     ('sca2_cat_detalle', 22),
     ('sca2_cat_causa', 146),
-    ('sca2_cat_tipo_argumento', 347),
+    ('sca2_cat_tipo_argumento', 342),
     ('sca2_cat_concepto', 17),
-    ('sca2_cat_valor_concepto', 101)
+    ('sca2_cat_valor_concepto', 100)
 ), comprobacion AS (
   SELECT
     (SELECT coalesce(json_agg(json_build_object('tabla', coalesce(e.tabla, r.tabla), 'esperado', e.columnas, 'real', r.columnas)), '[]'::json)
