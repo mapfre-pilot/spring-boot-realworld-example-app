@@ -316,3 +316,15 @@ Se exige que las cuatro dependencias respondan bien en una misma ronda para inic
 El sondeo se cerró a las 13:53 UTC por indicación de coordinación. Ninguna de las 12 rondas, incluidas las dos comprobaciones iniciales, tuvo éxito simultáneo en las cuatro dependencias: el servicio de reglas siguió devolviendo HTTP 500 de forma intermitente. No se iniciaron los pares de MecanizarNSE ni Mecanizar, no se crearon ni avanzaron solicitudes, no se consumió ninguna póliza y no se promovieron modelos. Las exclusiones del piloto de [REGISTRO.md](pruebas/polizas/REGISTRO.md) no cambiaron.
 
 Evidencia depurada por ronda: `files/sca2-avisos-monitorizacion/inbox38-sondeo-servicios-20261125.jsonl`.
+
+### Nueva comprobación en TEST (26/11/2026)
+
+| Comprobación de solo lectura | Hora UTC | Resultado |
+|---|---:|---|
+| «Consultar reglas» (`accion`), control de `15789357` | 08:20:27.750 | Appian devolvió HTTP 404, `Process instance not found: 537696665`. No se llamó al servicio de reglas para `accion` con este control. |
+| CORE, `consultaDetalleSolicitud` | 08:20:27.905 | Devolvió el detalle de la referencia esperada; no se ejecutó `generarStudAnul`. |
+| `mecanizar`, DTO de `15789339` | 08:20:32.189 y 08:20:34.509 | `MECANIZAR`, sin error en ambas consultas. |
+| API de clientes, «Solicitud de prueba» de Designer | 08:20:32.491 | HTTP 200, cliente en vigor. |
+| `accion`, comprobación diagnóstica con la copia guardada de `15789339` | 08:21:16.489 | `ACCIONES ADMINISTRATIVAS`, sin error. |
+
+El 404 corresponde a la lectura del historial de Appian, no al servicio de reglas. No se observó HTTP 500 en las consultas que llegaron al servicio. Como la ronda inicial no pudo completar `accion` con el control previsto y la lectura diagnóstica usó otro caso, no se inició ningún par de MecanizarNSE ni Mecanizar. No se consumieron pólizas, no se crearon ni avanzaron solicitudes y no se promovieron modelos. Evidencia: `files/sca2-avisos-monitorizacion/inbox38-sondeo-servicios-20261126.jsonl` e `inbox38-sondeo-accion-20261126.json`.
