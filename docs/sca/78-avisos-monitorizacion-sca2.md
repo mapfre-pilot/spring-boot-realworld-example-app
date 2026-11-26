@@ -328,3 +328,28 @@ Evidencia depurada por ronda: `files/sca2-avisos-monitorizacion/inbox38-sondeo-s
 | `accion`, comprobación diagnóstica con la copia guardada de `15789339` | 08:21:16.489 | `ACCIONES ADMINISTRATIVAS`, sin error. |
 
 El 404 corresponde a la lectura del historial de Appian, no al servicio de reglas. No se observó HTTP 500 en las consultas que llegaron al servicio. Como la ronda inicial no pudo completar `accion` con el control previsto y la lectura diagnóstica usó otro caso, no se inició ningún par de MecanizarNSE ni Mecanizar. No se consumieron pólizas, no se crearon ni avanzaron solicitudes y no se promovieron modelos. Evidencia: `files/sca2-avisos-monitorizacion/inbox38-sondeo-servicios-20261126.jsonl` e `inbox38-sondeo-accion-20261126.json`.
+
+### Ronda rápida y primer caso de MecanizarNSE en TEST (26/11/2026)
+
+El 404 anterior se debió al borrado de la instancia de control al cabo de un día. La ronda rápida de solo lectura pasó con el caso alternativo y las demás dependencias en la misma ronda:
+
+| Comprobación | Hora UTC | Resultado |
+|---|---:|---|
+| CORE, `consultaDetalleSolicitud` | 08:22:31.840 | Detalle de la referencia esperada. |
+| API de clientes, «Solicitud de prueba» de Designer | 08:22:34.804 | HTTP 200, cliente en vigor. |
+| `accion`, copia guardada de `15789339` | 08:22:35.127 | `ACCIONES ADMINISTRATIVAS`, sin error. |
+| `mecanizar`, dos consultas | 08:22:36.241 y 08:22:38.768 | `MECANIZAR`, sin error en ambas. |
+
+Se comprobó que la póliza NSE-Hogar `0732400001966` de Polizasgeneral.xlsx no tenía una solicitud previa en SCA2. Se creó por el flujo normal la solicitud `15789388` (alta `13468189`), se tramitó la autorización con adjuntos y se llegó a `PDTE_MECANIZAR / MECANIZAR` con la tarea `1029`. La simulación devolvió nivel `INFORMATIVO` y permitió pulsar «ANULAR PÓLIZA».
+
+| SCA2 Llamada Servicio | Servicio | Hora UTC | Resultado registrado |
+|---|---|---:|---|
+| 1179 | `SCA2_generarStudAnul` | 08:30:06 | OK / HTTP 200 |
+| 1180 | `SCA2_aceptarAutorizacionIntegracion` | 08:32:24 | OK / HTTP 200 |
+| 1181 | `SCA2_guardarMecanizacionIntegracion` | 08:34:15 | OK / HTTP 200 |
+
+**No se obtuvo una entrada utilizable para MecanizarNSE.** La anulación ejecutó **Mecanizar v52.0** (instancia `9262022`) como paso previo: `success=true`, `err=null`, `wrErr=false`, `observaciones=null`, `llamadaHttp=200`. La transición `3915` registró `MECANIZADA` a las 08:34:16. El historial muestra que la instancia siguió del nodo 324 a «Recargar solicitud» y «Write Cambio nivel», no a la espera de ANL reservada a wAutemis con observaciones `00000005`/`00000006`. A las 08:34:19 la transición `3916` marcó `IR A NIVEL 2` y se finalizó la tarea `1029`; a las 08:34:27 la solicitud llegó a `FIN / FIN PROCESO`. La tarea de inducción `1030` seguía pendiente en la última lectura (08:34:46.439), que no devolvió filas en SCA2 Error.
+
+El caso no quedó en `MECANIZADA / ANL`, condición que comprueba el nodo 4 de MecanizarNSE. No se ejecutó ese modelo, ni publicado ni candidato. Tampoco se probó por pares el tramo de espera de Mecanizar: la instancia v52.0 fue solo la preparación del caso NSE y no pasó por ese tramo. Se detuvo el intento sin consumir más pólizas. No hay comparación de PVs, ruta, Solicitud, Tarea, Transición, Llamada Servicio y Error entre versiones, ni promoción ni comprobaciones posteriores a una promoción. Para retomar, hace falta identificar antes de consumir otra póliza una ruta ordinaria que deje un caso NSE elegible para MecanizarNSE; para Mecanizar, hacen falta entradas wAutemis que alcancen la espera y un padre candidato aislado.
+
+Única póliza consumida en esta ronda: `0732400001966`, anotada en [REGISTRO.md](pruebas/polizas/REGISTRO.md). Evidencia en `files/sca2-avisos-monitorizacion/`: `inbox38-sondeo-servicios-20261126.jsonl` e `inbox38-flujo-26nov-15789388-{antes-mecanizar,tras-anular,despues-mecanizacion,mecanizar-pv-ruta}.json`.
