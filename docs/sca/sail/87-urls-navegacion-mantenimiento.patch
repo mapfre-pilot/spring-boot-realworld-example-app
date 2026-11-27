@@ -25,7 +25,7 @@
      a!isNullOrEmpty(ri!codigos),
 --- a/SCA2_validarCambioVariableAplicacion.sail
 +++ b/SCA2_validarCambioVariableAplicacion.sail
-@@ -17,6 +17,47 @@
+@@ -17,6 +17,65 @@
      date(tointeger(left(local!texto, 4)), tointeger(mid(local!texto, 6, 2)), tointeger(right(local!texto, 2))),
      null
    ),
@@ -49,13 +49,31 @@
 +            ),
 +            local!resto: right(fv!item, len(fv!item) - local!esquema),
 +            local!servidor: index(split(substitute(substitute(local!resto, "?", "/"), "#", "/"), "/"), 1, ""),
++            local!partesServidor: split(local!servidor, ":"),
++            local!host: index(local!partesServidor, 1, ""),
++            local!puerto: index(local!partesServidor, 2, ""),
++            local!puertoValido: if(
++              exact(local!servidor, local!host),
++              true,
++              if(
++                and(
++                  len(local!puerto) >= 1,
++                  len(local!puerto) <= 5,
++                  exact(cleanwith(local!puerto, "0123456789"), local!puerto),
++                  exact(local!servidor, local!host & ":" & local!puerto)
++                ),
++                and(tointeger(local!puerto) >= 1, tointeger(local!puerto) <= 65535),
++                false
++              )
++            ),
 +            and(
 +              local!esquema > 0,
 +              not(contains({"/", "?", "#"}, left(local!resto, 1))),
-+              len(local!servidor) > 0,
-+              left(local!servidor, 1) <> ".",
-+              right(local!servidor, 1) <> ".",
-+              exact(cleanwith(lower(local!servidor), "abcdefghijklmnopqrstuvwxyz0123456789.-"), lower(local!servidor)),
++              len(local!host) > 0,
++              left(local!host, 1) <> ".",
++              right(local!host, 1) <> ".",
++              exact(cleanwith(lower(local!host), "abcdefghijklmnopqrstuvwxyz0123456789.-"), lower(local!host)),
++              local!puertoValido,
 +              not(or(
 +                find(" ", fv!item) > 0,
 +                find(char(9), fv!item) > 0,
@@ -73,7 +91,7 @@
    local!valor: if(
      a!isNullOrEmpty(local!variable),
      null,
-@@ -38,12 +79,24 @@
+@@ -38,12 +97,24 @@
        then: if(isnull(local!fecha), null, if(text(local!fecha, "yyyy-MM-dd") = local!texto, local!fecha, null)),
        equals: "TEXTO",
        then: if(len(trim(local!texto)) > 0, trim(local!texto), null),
