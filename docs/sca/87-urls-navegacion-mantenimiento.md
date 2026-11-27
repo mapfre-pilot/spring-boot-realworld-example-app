@@ -10,6 +10,8 @@ En **Gestiones de mantenimiento → Variables de la aplicación** de SCA2, los a
 
 El editor acepta HTTP y HTTPS y conserva literalmente los parámetros, fragmentos y marcadores. Al editar rutas de argumentos, escribir las diez URLs en su orden original, una por línea; wAutemis es la segunda. Los saltos de línea son solo el formato del editor: el proceso guarda una lista de texto. Para editar esta lista mediante el ICF se mantiene, en cambio, el [formato del paquete](85-urls-por-entorno.md#desplegar-el-paquete). La pantalla no comprueba que el destino exista: antes de guardar, confirmar el enlace para el entorno y conservar los separadores o marcadores de los que depende el consumidor.
 
+Para NSE guiado, indicar solo la URL base, sin consulta (`?`) ni fragmento (`#`): SCA2 añade los parámetros al construir el enlace.
+
 ## Implementación en Appian TEST
 
 - [Diff SAIL](sail/87-urls-navegacion-mantenimiento.patch): `SCA2_obtenerVariablesAplicacion`, `SCA2_validarCambioVariableAplicacion` y `SCA2_GestionVariablesAplicacion`.

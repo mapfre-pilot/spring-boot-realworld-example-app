@@ -25,7 +25,7 @@
      a!isNullOrEmpty(ri!codigos),
 --- a/SCA2_validarCambioVariableAplicacion.sail
 +++ b/SCA2_validarCambioVariableAplicacion.sail
-@@ -17,6 +17,65 @@
+@@ -17,6 +17,70 @@
      date(tointeger(left(local!texto, 4)), tointeger(mid(local!texto, 6, 2)), tointeger(right(local!texto, 2))),
      null
    ),
@@ -38,6 +38,11 @@
 +    and(
 +      if(local!esListaUrl, count(local!urls) = 10, count(local!urls) = 1),
 +      exact(joinarray(local!urls, char(10)), local!textoUrl),
++      if(
++        ri!codigo = "TXT_URL_NSE_GUIADO",
++        and(find("?", local!textoUrl) = 0, find("#", local!textoUrl) = 0),
++        true
++      ),
 +      and(
 +        a!forEach(
 +          items: local!urls,
@@ -91,7 +96,7 @@
    local!valor: if(
      a!isNullOrEmpty(local!variable),
      null,
-@@ -38,12 +97,24 @@
+@@ -38,12 +102,24 @@
        then: if(isnull(local!fecha), null, if(text(local!fecha, "yyyy-MM-dd") = local!texto, local!fecha, null)),
        equals: "TEXTO",
        then: if(len(trim(local!texto)) > 0, trim(local!texto), null),
@@ -119,7 +124,7 @@
  )
 --- a/SCA2_GestionVariablesAplicacion.sail
 +++ b/SCA2_GestionVariablesAplicacion.sail
-@@ -67,6 +67,21 @@
+@@ -67,6 +67,25 @@
                      a!save(local!estado, null)
                    }
                  ),
@@ -134,14 +139,18 @@
 +                equals: "URL",
 +                then: a!textField(
 +                  label: "Nueva URL",
-+                  instructions: "Introduzca una URL HTTP o HTTPS. Conserve los parámetros, marcadores y separadores que utilice el enlace.",
++                  instructions: if(
++                    local!codigo = "TXT_URL_NSE_GUIADO",
++                    "Introduzca la URL base HTTP o HTTPS, sin parámetros ni fragmento. SCA2 añade los parámetros.",
++                    "Introduzca una URL HTTP o HTTPS. Conserve los parámetros, marcadores y separadores que utilice el enlace."
++                  ),
 +                  value: local!propuesto,
 +                  saveInto: {local!propuesto, a!save(local!estado, null)}
 +                ),
                  default: a!textField(
                    label: "Nuevo valor",
                    value: local!propuesto,
-@@ -140,6 +155,7 @@
+@@ -140,6 +159,7 @@
                        value: fv!row.tipo,
                        equals: "BOOLEANO", then: if(fv!row.valor, "true", "false"),
                        equals: "FECHA", then: text(fv!row.valor, "yyyy-MM-dd"),
@@ -149,7 +158,7 @@
                        default: tostring(fv!row.valor)
                      )),
                      a!save(local!estado, null)
-@@ -154,6 +170,7 @@
+@@ -154,6 +174,7 @@
                  value: fv!row.tipo,
                  equals: "BOOLEANO", then: if(fv!row.valor, "Sí", "No"),
                  equals: "FECHA", then: text(fv!row.valor, "dd/MM/yyyy"),
