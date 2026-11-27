@@ -15,6 +15,8 @@ En `SCA2_GetUrlArgumento` y `SCA2_IF_ArgumentoAplicacionUrl` se sustituye la rut
 
 Sin cambios: los enlaces al portal de documentación y al sitio público Tecuidamos (sin indicios de variar por entorno), los alias/rutas relativas y los namespaces SOAP. Las URLs de sistemas conectados se configuran en sus propios objetos; no se cambiaron sistemas compartidos como CMP LoopBack y CMP API Clients.
 
+Las [14 URLs de navegación](87-urls-navegacion-mantenimiento.md) también se pueden editar en Gestiones de mantenimiento; los cinco destinos de integración se mantienen fuera del editor.
+
 ## Desplegar el paquete
 
 1. Exportar únicamente **SCA2 Caducidad TM 27-11-2026** (`230be394-bb39-4d0c-bb48-e7966391839f`) y descargar su plantilla de personalización de importación (ICF). Las [claves de URL sin valores](sca2-urls-por-entorno.properties) son las que generó Appian para ese paquete.

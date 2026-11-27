@@ -2,6 +2,8 @@
 
 Implementado en **SCA2 TEST**, en Gestiones mantenimiento → Variables de la aplicación. Es una pantalla nueva de SCA2; no cambia SCA, SCAC ni CORE. Se descartó el script de catálogo e histórico: el almacenamiento y la auditoría son las constantes y sus versiones en Appian. No hay que ejecutar SQL.
 
+Este documento recoge el catálogo inicial. Véanse las ampliaciones de [DNI obligatorio](86-dni-opcional-sca2.md) y [URLs de navegación](87-urls-navegacion-mantenimiento.md).
+
 ## Catálogo inicial
 
 Se revisaron las 266 constantes de la aplicación SCA2 en TEST, sus dependencias para los candidatos, los PM operativos indicados y los documentos de mantenimiento. «Usos» cuenta objetos directos distintos que devuelve el índice MCP, sin contar la aplicación; puede incluir pilotos/pruebas y no equivale a ejecuciones ni a consumidores indirectos. «Literal» se cuenta por objeto cuando no existe una constante independiente. Los nombres abreviados de la primera columna llevan el prefijo `SCA2_`, salvo donde se indica un objeto con su nombre completo. Las 22 constantes existentes conservaron el valor vigente. Las dos constantes nuevas se inicializaron con los literales que reemplazan.
