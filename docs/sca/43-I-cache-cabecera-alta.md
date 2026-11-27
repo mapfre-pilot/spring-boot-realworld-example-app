@@ -38,4 +38,5 @@ Tiempos medidos desde el MCP (incluyen ~1 s de ida y vuelta). La salida de la 2�
 
 - Filas creadas: `POL-2002300300497`, `POL-8739204450170`, `POL-0001047017079`, una por póliza, `validaHasta` 28/11 04:00 UTC (05:00 Madrid), con `clienteCodint` informado.
 - Regresión: solicitud 15789437 sigue leyendo su fila; las llamadas sin `cachearPorPoliza` y sin solicitud siguen en vivo y no crean filas.
-- No se ha probado la pantalla de alta en el navegador; la interfaz solo cambia en el argumento nuevo.
+- Pantalla de alta (`testInterface` de `SCA2_AltaSolicitudPage` v61): 2002100194588 sin fila previa, 9,4 s la 1.ª vez y 2,3 s al reabrir, con los mismos 38 textos de cabecera y una sola fila `POL-2002100194588`; 2002300300497, ya cacheada, 3,1 s y 3 otras solicitudes.
+- En el site no se pudo abrir el alta de esas pólizas porque ya tienen una solicitud en curso. No se envió ni se creó nada.
