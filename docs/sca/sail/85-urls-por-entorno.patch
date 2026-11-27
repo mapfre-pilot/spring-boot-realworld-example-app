@@ -1,0 +1,19 @@
+--- a/SCA2_GetUrlArgumento.sail
++++ b/SCA2_GetUrlArgumento.sail
+@@ -42 +42 @@
+-        "https://wportalinterno.es.mapfre.net/EVT21_NSE_FWEB/indexGuiado.jsp?h=41&t=05&x=35&g=11&m=N&i=S&r=2&s=1&u=73&f=" & ri!numPoliza,
++        cons!SCA2_TXT_URL_NSE_GUIADO & "?h=41&t=05&x=35&g=11&m=N&i=S&r=2&s=1&u=73&f=" & ri!numPoliza,
+@@ -51 +51 @@
+-        "https://wportalinterno.es.mapfre.net/EVT21_NSE_FWEB/indexGuiado.jsp?h=41&t=05&x=35&g=11&m=N&i=S&r=2&s=1&u=200&f=" & ri!numPoliza,
++        cons!SCA2_TXT_URL_NSE_GUIADO & "?h=41&t=05&x=35&g=11&m=N&i=S&r=2&s=1&u=200&f=" & ri!numPoliza,
+--- a/SCA2_IF_ArgumentoAplicacionUrl.sail
++++ b/SCA2_IF_ArgumentoAplicacionUrl.sail
+@@ -45 +45 @@
+-            "https://wportalinterno.es.mapfre.net/EVT21_NSE_FWEB/indexGuiado.jsp?h=41&t=05&x=35&g=11&m=N&i=S&r=2&s=1&u=200&f=" & ri!numPoliza,
++            cons!SCA2_TXT_URL_NSE_GUIADO & "?h=41&t=05&x=35&g=11&m=N&i=S&r=2&s=1&u=200&f=" & ri!numPoliza,
+@@ -47 +47 @@
+-            "https://wportalinterno.es.mapfre.net/EVT21_NSE_FWEB/indexGuiado.jsp?h=41&t=05&x=35&g=11&m=N&i=S&r=2&s=1&u=73&f=" & ri!numPoliza,
++            cons!SCA2_TXT_URL_NSE_GUIADO & "?h=41&t=05&x=35&g=11&m=N&i=S&r=2&s=1&u=73&f=" & ri!numPoliza,
+@@ -50 +50 @@
+-              "http://apps.es.mapfre.net/wautemisdist/wautemisdist.asp?Navega=NO&fOrigen=PCA&Operacion=SUP&Perfil=CCC&Plataforma=PCW&",
++              cons!SCA2_TXT_RUTAS_ARGUMENTOS_VAL[2],
