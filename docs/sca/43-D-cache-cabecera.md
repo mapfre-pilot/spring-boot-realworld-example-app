@@ -544,6 +544,8 @@ Limpieza: las filas CACHE de prueba (ids 207–209, 211–213, 217–219 por API
 
 ## 7. Lo que sigue siempre en vivo
 
+> 27/11/2026: la pantalla de alta ya no va siempre en vivo; usa una fila por póliza (`POL-numPoliza`). Ver [43-I](43-I-cache-cabecera-alta.md).
+
 - `SCA2_obtenerEstadoPoliza` y `SCA2_consultarAnulacionPoliza` no se invocan dentro de `SCA2_obtenerDatosCabecera` (0 apariciones en la expresión): no quedan cacheadas.
 - `otrasSolicitudesCabecera` se consulta en vivo también con caché vigente.
 - Alta sin solicitud (`idSolicitud` nulo/0) y `forzarRefresco = true`: en vivo.
