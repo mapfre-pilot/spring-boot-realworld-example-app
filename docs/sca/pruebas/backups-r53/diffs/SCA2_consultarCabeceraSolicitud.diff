@@ -1,0 +1,19 @@
+--- live/SCA2_consultarCabeceraSolicitud.sail	2026-11-17 09:20:07.182996434 +0000
++++ mod/SCA2_consultarCabeceraSolicitud.sail	2026-11-17 09:44:59.052132349 +0000
+@@ -24,7 +24,14 @@
+   ),
+   /*Recibimos la respuesta y nos quedamos con el xml del body*/
+   local!tmp: index(local!resultado, "result","body", null), 
++  /* R53: si CORE no devuelve body, se devuelve el centinela de CORE no disponible en lugar de reventar en xpathsnippet */
++  if(
++    a!isNullOrEmpty(local!tmp),
++    rule!SCA2_valorCoreNoDisponible(),
++    a!localVariables(
+   local!cdtTmp: xpathsnippet(local!tmp, "/*/soapenv:Body/*"),
+   /*Convertimos la respuesta al CDT en cuestion.*/
+   torecord(local!cdtTmp, 'type!{http://ejb.cfsa.pca.mapfami.dgtp.mapfre.com/}consultarCabeceraResponse'())
+ )
+\ No newline at end of file
++  )
++)
+\ No newline at end of file

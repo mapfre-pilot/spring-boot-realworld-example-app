@@ -1,0 +1,59 @@
+SCA2_actualizarSolicitud <- FREE:SCA2_guardarGestionSCA_actualizarSolicitud, APPL:SCA2 Sistema Comercial de Anulaciones
+SCA2_actualizarVariable <- INTE:SCA2_MensajeDesactivarAplicacion, APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_MensajeDesactivarAplicacion
+SCA2_buscarMatricula <- INTE:SCA2_Buscador, APPL:SCA2 Sistema Comercial de Anulaciones
+SCA2_cargaGestionPCA <- FREE:SCA2_finalizarGestionSGC, APPL:SCA2 Sistema Comercial de Anulaciones, FREE:SCA2_guardarGestionSGC, FREE:SCA2_notificarNivel
+SCA2_comprobarPropietario <- APPL:SCA2 Sistema Comercial de Anulaciones, FREE:SCA2_setDatosGestionSGC
+SCA2_consultaClasificacionTC <- INTE:SCA2_ContraAnulacionOpciones, APPL:SCA2 Sistema Comercial de Anulaciones
+SCA2_consultaClave <- APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_AltaSolicitudPage, FREE:SCA2_construirContextoAlta
+SCA2_consultaDetalleGestion <- INTE:SCA2_MecanizacionPrincipal, INTE:SCA2_DetalleSolicitud, INTE:SCA2_DetalleSolicitud, APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_DetalleSolicitud
+SCA2_consultaGestion <- INTE:SCA2_Buscador, FREE:SCA2_vieneDeAccionAdministrativa, INTE:SCA2_DetalleTareas, INTE:SCA2_BuscadorTabla, APPL:SCA2 Sistema Comercial de Anulaciones, PROC:SCA2 CMD Finalizar, INTE:SCA2_ContraAnulacionOpciones, PROC:SCA2 CMD CompletarAccion, INTE:SCA2_SolicitudAnulacion, INTE:SCA2_TablaOtrasSolAnulacion, FREE:SCA2_actualizarMecanizacionAnulacionNse, INTE:SCA2_MecanizacionPrincipal, INTE:SCA2_BuscadorTabla, INTE:SCA2_DetalleSolicitud, PROC:SCA2 CMD CompletarAccion
+SCA2_consultaImpr <- APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_ContraAnulacionOpciones, PROC:SCA2 CMD CompletarAccion
+SCA2_consultaPropiedadClave <- FREE:SCA2_esPropietarioPoliza, APPL:SCA2 Sistema Comercial de Anulaciones, FREE:SCA2_evaluarPropietarioContraAnulacion
+SCA2_consultarAccAdm <- FREE:SCA2_posponerGestionSGC, INTE:SCA2_AccionesAdministrativasPrincipal, APPL:SCA2 Sistema Comercial de Anulaciones
+SCA2_consultarAccesoStudPorModo <- FREE:SCA2_comprobacionesPreviasWM, APPL:SCA2 Sistema Comercial de Anulaciones
+SCA2_consultarAnulacionPoliza <- FREE:SCA2_consultarNewAlta, APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_MecanizacionPrincipal, FREE:SCA2_consultarNewAlta, INTE:SCA2_MecanizacionPrincipal
+SCA2_consultarAutorizacion <- INTE:SCA2_DetalleSolicitud, INTE:SCA2_MantenimientoPendientesAutorizar, APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_AnulacionFueraNormaPrincipal
+SCA2_consultarCabeceraSolicitud <- FREE:SCA2_construirSolicitudAnulacionAnlTraducida, INTE:SCA2_DetalleSolicitud, INTE:SCA2_SolicitudAnulacion, INTE:SCA2_MecanizacionPrincipal, INTE:SCA2_DetalleSolicitud, APPL:SCA2 Sistema Comercial de Anulaciones, PROC:SCA2 CMD Mecanizar
+SCA2_consultarCausaCore <- APPL:SCA2 Sistema Comercial de Anulaciones, FREE:SCA2_consultarCausa, FREE:SCA2_catConstruirCarga, FREE:SCA2_consultarCausa
+SCA2_consultarConceptoCore <- FREE:SCA2_catConstruirCarga, INTE:SCA2_ValoresConceptoGestionConceptosyClases, FREE:SCA2_catConstruirCarga, INTE:SCA2_EliminarValorConcepto, INTE:SCA2_AnadirGestionConceptosyClases, FREE:SCA2_catConstruirCarga, FREE:SCA2_catConstruirCarga, INTE:SCA2_EliminarValorConcepto, APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_AnadirGestionConceptosyClases, INTE:SCA2_GestionConceptosYClases, INTE:SCA2_AnadirGestionConceptosyClases, FREE:SCA2_consultarConcepto, FREE:SCA2_consultarConcepto
+SCA2_consultarDP <- INTE:SCA2_Buscador, INTE:SCA2_Buscador, APPL:SCA2 Sistema Comercial de Anulaciones
+SCA2_consultarDetalleCore <- FREE:SCA2_consultarDetalle, FREE:SCA2_catConstruirCarga, FREE:SCA2_consultarDetalle, APPL:SCA2 Sistema Comercial de Anulaciones
+SCA2_consultarDetalleSolicitud <- APPL:SCA2 Sistema Comercial de Anulaciones, FREE:SCA2_setDatosGestionSGC
+SCA2_consultarDocumentos <- PROC:SCA2 CMD CompletarAccion, INTE:SCA2_AccionesAdministrativasDocumentacion, FREE:SCA2_subirDocumentosGD, FREE:SCA2_posponerGestionSGC, INTE:SCA2_DetalleSolicitud, INTE:SCA2_AccionesAdministrativasPrincipal, INTE:SCA2_AnulacionFueraNormaPrincipal, APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_ContraAnulacionOpciones
+SCA2_consultarDocumentosREST <- APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_MensajeEliminacionDocumento
+SCA2_consultarEquipos <- FREE:SCA2_actualizarMecanizacionAnulacionNse, INTE:SCA2_ContraAnulacionOpciones, APPL:SCA2 Sistema Comercial de Anulaciones, PROC:SCA2 CMD Mecanizar, PROC:SCA2 CMD MecanizarNSE
+SCA2_consultarListadoObs <- APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_AccionesAdministrativasPrincipal
+SCA2_consultarMotivoCore <- FREE:SCA2_catConstruirCarga, FREE:SCA2_catConstruirCarga, FREE:SCA2_consultarMotivo, APPL:SCA2 Sistema Comercial de Anulaciones, FREE:SCA2_consultarMotivo
+SCA2_consultarNotificacionesExt <- INTE:SCA2_TablaNotificaciones, APPL:SCA2 Sistema Comercial de Anulaciones, FREE:SCA2_notificarNivel
+SCA2_consultarPlanPagoPorPoliza <- FREE:SCA2_obtenerDatosCabeceraLive, APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_ModalPlanPago
+SCA2_consultarPolizas <- FREE:SCA2_polizaVigente, INTE:SCA2_ModalClaveProduccion, FREE:SCA2_validacionesPreviasPopupAlta, INTE:SCA2_AltaSolicitudAnulacionPopUp, FREE:SCA2_obtenerEstadoPoliza, FREE:SCA2_construirContextoAlta, INTE:SCA2_ContraAnulacionOpciones, APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_AltaSolicitudPage, FREE:SCA2_obtenerDatosCabeceraLive
+SCA2_consultarSolicitudes <- FREE:SCA2_obtenerDatosCabeceraLive, APPL:SCA2 Sistema Comercial de Anulaciones, FREE:SCA2_tieneSolicMismaAnualidad, FREE:SCA2_obtenerDatosCabecera, FREE:SCA2_obtenerDatosCabeceraLive, INTE:SCA2_TablaOtrasSolAnulacion, INTE:SCA2_AltaSolicitudAnulacionPopUp, FREE:SCA2_obtenerDatosCabecera, INTE:SCA2_SolicitudAnulacion, INTE:SCA2_Buscador, INTE:SCA2_Buscador, PROC:SCA2 CMD Alta
+SCA2_consultarTipoArgCore <- FREE:SCA2_consultarTipoArg, INTE:SCA2_GestionArgumentos, FREE:SCA2_catConstruirCarga, INTE:SCA2_GestionArgumentos, INTE:SCA2_GestionArgumentos, FREE:SCA2_consultarTipoArg, APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_AltaGestionArgumento
+SCA2_consultarVariable <- INTE:SCA2_MensajeDesactivarAplicacion, APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_GestionAplicacionRecords, FREE:SCA2_comprobacionesPreviasWM, FREE:SCA2_comprobacionesPreviasWM
+SCA2_finalizarContraAnulPca <- FREE:SCA2_guardarGestionSCA_actualizarSolicitud, INTE:SCA2_DetalleSolicitud, APPL:SCA2 Sistema Comercial de Anulaciones
+SCA2_guardarAccAdm <- INTE:SCA2_AccionesAdministrativasPrincipal, APPL:SCA2 Sistema Comercial de Anulaciones, FREE:SCA2_guardarGestionSCA_actualizarSolicitud
+SCA2_guardarAutorizacion <- APPL:SCA2 Sistema Comercial de Anulaciones, PROC:SCA2 CMD CompletarAccion, FREE:SCA2_guardarGestionSCA_actualizarSolicitud, INTE:SCA2_MantenimientoPendientesAutorizar, INTE:SCA2_AnulacionFueraNormaPrincipal, PROC:SCA2 CMD Mecanizar
+SCA2_guardarConcepto <- INTE:SCA2_AltaGestionConcepto, INTE:SCA2_EliminarValorConcepto, INTE:SCA2_AnadirGestionConceptosyClases, APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_AnadirGestionConceptosyClases
+SCA2_guardarEjecuArg <- INTE:SCA2_ContraAnulacionModalRecuperacionPoliza, APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_ContraAnulacionModalRecuperacionPoliza, INTE:SCA2_ContraAnulacionOpciones
+SCA2_guardarImpr <- INTE:SCA2_AccionesAdministrativasDocumentacion, APPL:SCA2 Sistema Comercial de Anulaciones
+SCA2_guardarTipoArg <- APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_AltaGestionArgumento
+SCA2_inBSDeleteDocumentDTO <- INTE:SCA2_MensajeEliminacionDocumento, APPL:SCA2 Sistema Comercial de Anulaciones
+SCA2_insertarNotificacionExterna <- APPL:SCA2 Sistema Comercial de Anulaciones, FREE:SCA2_altaSGO, FREE:SCA2_altaSGOVida, FREE:SCA2_finalizarGestionSGC, FREE:SCA2_notificarNivel, PROC:SCA2 CMD Decidir, FREE:SCA2_guardarGestionSCA_actualizarSolicitud, FREE:SCA2_altaSGORehabilitar
+SCA2_insertarObservaciones <- INTE:SCA2_ContraAnulacionModalSiNo, INTE:SCA2_ContraAnulacionModalSiNo, PROC:SCA2 CMD Posponer, INTE:SCA2_AnulacionFueraNormaPrincipal, INTE:SCA2_AccionesAdministrativasPrincipal, APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_AccionesAdministrativasPrincipal
+SCA2_insertarObservacionesInfoUsuario <- INTE:SCA2_MecanizacionPrincipal, INTE:SCA2_MecanizacionPrincipal, APPL:SCA2 Sistema Comercial de Anulaciones, PROC:SCA2 CMD CrearAccion
+SCA2_mapSalidaGenerarStudAnul <- PROC:SCA2 CMD Alta, APPL:SCA2 Sistema Comercial de Anulaciones
+SCA2_mapSalidaRespuestaMecanizar <- APPL:SCA2 Sistema Comercial de Anulaciones, PROC:SCA2 CMD Mecanizar
+SCA2_modificarArgumento <- INTE:SCA2_AltaGestionArgumento, APPL:SCA2 Sistema Comercial de Anulaciones
+SCA2_modificarCatalogacionCodCiaCntrAnul <- INTE:SCA2_ContraAnulacionModalSiNo, INTE:SCA2_ContraAnulacionCompaniaCatalogacion, INTE:SCA2_ContraAnulacionOpciones, APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_AccionesAdministrativasPrincipal, INTE:SCA2_ContraAnulacionOpciones, INTE:SCA2_ContraAnulacionModalSiNo
+SCA2_modificarCrearDocumentoDni <- FREE:SCA2_subirDocumentosGD, FREE:SCA2_subirDocumentosGD, APPL:SCA2 Sistema Comercial de Anulaciones, FREE:SCA2_subirDocumentosGD
+SCA2_modificarCrearDocumentosAdmin <- FREE:SCA2_subirDocumentosGD, APPL:SCA2 Sistema Comercial de Anulaciones, FREE:SCA2_subirDocumentosGD, FREE:SCA2_subirDocumentosGD
+SCA2_modificarCrearDocumentosCarta <- FREE:SCA2_subirDocumentosGD, FREE:SCA2_subirDocumentosGD, FREE:SCA2_subirDocumentosGD, APPL:SCA2 Sistema Comercial de Anulaciones
+SCA2_obtenerDatosProductor <- FREE:SCA2_construirContextoAlta, APPL:SCA2 Sistema Comercial de Anulaciones, FREE:SCA2_obtenerDatosCabeceraLive, INTE:SCA2_AltaSolicitudPage
+SCA2_obtenerEstComNuuma <- APPL:SCA2 Sistema Comercial de Anulaciones, FREE:SCA2_flagVerti
+SCA2_obtenerEstructuraComercial <- INTE:SCA2_ModalClaveProduccion, APPL:SCA2 Sistema Comercial de Anulaciones
+SCA2_obtenerOficinasFisicasNuuma <- INTE:SCA2_AccionesAdministrativasPrincipal, INTE:SCA2_AnulacionFueraNormaPrincipal, APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_ContraAnulacionOpciones
+SCA2_obtenerRolPerfilSubperfil <- FREE:SCA2_obtenerInformacionUsuario, FREE:SCA2_obtenerInfoUsuarioDTODelNUUMALogueado, APPL:SCA2 Sistema Comercial de Anulaciones
+SCA2_pBuscarPoliza <- APPL:SCA2 Sistema Comercial de Anulaciones, FREE:SCA2_obtenerTipoPoliza
+SCA2_pObtenerPolizaFecha <- INTE:SCA2_ContraAnulacionOpciones, FREE:SCA2_validacionesPreviasPopupAlta, FREE:SCA2_polizaRenovada, FREE:SCA2_polizaRenovada, FREE:SCA2_construirContextoAlta, INTE:SCA2_AltaSolicitudAnulacionPopUp, APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_AltaSolicitudAnulacionPopUp, FREE:SCA2_construirContextoAlta, FREE:SCA2_obtenerDatosCabeceraLive, FREE:SCA2_obtenerEstadoPoliza, INTE:SCA2_AltaSolicitudPage, INTE:SCA2_Buscador, INTE:SCA2_AltaSolicitudPage, FREE:SCA2_polizaVigente, INTE:SCA2_ModalClaveProduccion
+SCA2_simularAnulacionPoliza <- FREE:SCA2_simularAnulacionAltaNse, FREE:SCA2_simularAnulacionAltaNse, INTE:SCA2_MecanizacionPrincipal, APPL:SCA2 Sistema Comercial de Anulaciones, INTE:SCA2_MecanizacionPrincipal
+SCA2_visualizarDatosSolicitud <- FREE:SCA2_setDatosGestionSGC, APPL:SCA2 Sistema Comercial de Anulaciones

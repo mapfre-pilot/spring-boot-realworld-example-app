@@ -1,0 +1,20 @@
+--- live/SCA2_BuscadorTabla.sail	2026-11-17 09:20:27.370038871 +0000
++++ mod/SCA2_BuscadorTabla.sail	2026-11-17 09:31:40.471453727 +0000
+@@ -85,6 +85,10 @@
+       a!map(codigo: if(a!isNullOrEmpty(local!codigo), cons!SCA2_TXT_COD_EST_MECANIZACION_SIN, local!codigo))
+     )
+   ),
++  /* R53: si CORE no responde al pedir los roles, aviso en lugar del error */
++  if(
++    rule!SCA2_esCoreNoDisponible(index(local!usuario, "roles", null)),
++    rule!SCA2_AvisoCoreNoDisponible(mensaje: cons!SCA2_TXT_CORE_NO_DISPONIBLE),
+   a!gridField_25r3(
+     labelPosition: "ABOVE",
+     label: "",
+@@ -588,3 +592,4 @@
+     validations: {}
+   )
+ )
+\ No newline at end of file
++)
+\ No newline at end of file

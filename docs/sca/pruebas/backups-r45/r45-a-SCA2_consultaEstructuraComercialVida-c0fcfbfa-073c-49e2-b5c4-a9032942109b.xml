@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<contentHaul xmlns:a="http://www.appian.com/ae/types/2009">
+    <versionUuid>_a-0000f09f-42ed-8000-9d42-011c48011c48_5650645</versionUuid>
+    <bodyVersionUuid></bodyVersionUuid>
+    <outboundIntegration>
+        <name>SCA2_consultaEstructuraComercialVida</name>
+        <uuid>c0fcfbfa-073c-49e2-b5c4-a9032942109b</uuid>
+        <description>Integración para llamar al servicio estructuraComercial [SCA2] copia de SCAC_consultaEstructuraComercialVida</description>
+        <parentUuid>_a-0000f069-4f37-8000-9cc8-011c48011c48_20050135</parentUuid>
+        <visibility>
+            <advertise>false</advertise>
+            <hierarchy>true</hierarchy>
+            <indexable>true</indexable>
+            <quota>false</quota>
+            <searchable>true</searchable>
+            <system>false</system>
+            <unlogged>false</unlogged>
+        </visibility>
+        <definition></definition>
+        <namedTypedValue>
+            <name>codCompania</name>
+            <type>
+                <name>int</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>codOficinaDirecta</name>
+            <type>
+                <name>int</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>codAgenteVida</name>
+            <type>
+                <name>int</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+        </namedTypedValue>
+        <metadataExpr></metadataExpr>
+        <preferredEditor>legacy</preferredEditor>
+        <offlineEnabled>false</offlineEnabled>
+        <sharedConfigParameters>
+            <a:Dictionary xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <url xsi:type="xsd:string"/>
+                <isInheritedUrlOptionSelected xsi:type="xsd:boolean">true</isInheritedUrlOptionSelected>
+                <relativePath xsi:type="a:Expression">"ES_AUAD_ESTRUAGE_SERVICIOS_REST_be-web/api/1.0/estructurasComerciales?codCompania=" &amp; ri!codCompania &amp; "&amp;codOficinaDirecta=" &amp; ri!codOficinaDirecta &amp; "&amp;codAgenteVida=" &amp; ri!codAgenteVida</relativePath>
+                <authType xsi:type="xsd:string">None</authType>
+                <authDetails xsi:nil="true" xsi:type="a:Null"/>
+            </a:Dictionary>
+        </sharedConfigParameters>
+        <configParameters>
+            <a:Dictionary xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <contentType xsi:type="xsd:string"/>
+                <automaticallyConvert xsi:type="xsd:boolean">true</automaticallyConvert>
+                <shouldReceiveDocuments xsi:type="xsd:boolean">false</shouldReceiveDocuments>
+                <jsonSchema xsi:nil="true" xsi:type="a:NestedChoice?list"/>
+                <receiveFolderConfig xsi:type="a:Dictionary">
+                    <asExpr xsi:type="xsd:boolean">false</asExpr>
+                    <saveDocOption xsi:type="xsd:int">0</saveDocOption>
+                    <value xsi:type="a:Variant?list"/>
+                </receiveFolderConfig>
+                <parameters xsi:type="a:NameValue?list">
+                    <item>
+                        <a:name>responseDetailLevel</a:name>
+                        <a:value xsi:type="a:Expression">"A"</a:value>
+                    </item>
+                </parameters>
+                <removeNullOrEmptyJsonFields xsi:type="xsd:boolean">true</removeNullOrEmptyJsonFields>
+                <method xsi:type="xsd:string">GET</method>
+                <headers xsi:type="a:NameValue?list">
+                    <item>
+                        <a:name>Accept-Language</a:name>
+                        <a:value xsi:type="a:Expression">"es-ES"</a:value>
+                    </item>
+                    <item>
+                        <a:name>X-Request-companyId</a:name>
+                        <a:value xsi:type="a:Expression">"0511"</a:value>
+                    </item>
+                    <item>
+                        <a:name>X-Request-issueCompanyId</a:name>
+                        <a:value xsi:type="a:Expression">"0511"</a:value>
+                    </item>
+                    <item>
+                        <a:name>X-Request-applicationId</a:name>
+                        <a:value xsi:nil="true"/>
+                    </item>
+                    <item>
+                        <a:name>X-Request-distributionChannel</a:name>
+                        <a:value xsi:type="a:Expression">"200"</a:value>
+                    </item>
+                    <item>
+                        <a:name>X-Request-insuranceBrokerCIF</a:name>
+                        <a:value xsi:nil="true"/>
+                    </item>
+                    <item>
+                        <a:name>X-Request-issueOfficeCode</a:name>
+                        <a:value xsi:type="a:Expression">"1"</a:value>
+                    </item>
+                    <item>
+                        <a:name>X-Request-operationCode</a:name>
+                        <a:value xsi:nil="true"/>
+                    </item>
+                    <item>
+                        <a:name>Host</a:name>
+                        <a:value xsi:type="a:Expression">#"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050857"</a:value>
+                    </item>
+                </headers>
+                <excludeNullHeaders xsi:type="xsd:boolean">true</excludeNullHeaders>
+                <documentConfig xsi:type="xsd:string"/>
+                <excludeNullParams xsi:type="xsd:boolean">true</excludeNullParams>
+                <featureVersion xsi:type="xsd:int">1</featureVersion>
+                <timeout xsi:type="xsd:int">10</timeout>
+                <body xsi:nil="true" xsi:type="a:Expression"/>
+                <flattenedJsonSchema xsi:nil="true" xsi:type="a:Text?list"/>
+            </a:Dictionary>
+        </configParameters>
+        <isWrite>false</isWrite>
+        <integrationType>system.http</integrationType>
+        <connectedSystemUuid>_a-0000ee64-4a6f-8000-9c9f-011c48011c48_17990330</connectedSystemUuid>
+        <isConnectedSystemConnectionOptionSelected>true</isConnectedSystemConnectionOptionSelected>
+        <integrationOutputs>
+            <a:Dictionary xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <outputs xsi:type="a:IntegrationOutput?list"/>
+            </a:Dictionary>
+        </integrationOutputs>
+        <isRequestResponseLoggingEnabled>false</isRequestResponseLoggingEnabled>
+    </outboundIntegration>
+    <roleMap public="true">
+        <role inherit="true" allowForAll="false" name="readers">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="authors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="administrators">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyReaders">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAuthors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAdministrators">
+            <users/>
+            <groups/>
+        </role>
+    </roleMap>
+    <history>
+        <historyInfo versionUuid="_a-0000f069-4f37-8000-9cc8-011c48011c48_20064320"/>
+        <historyInfo versionUuid="_a-0000f09f-42ed-8000-9d42-011c48011c48_5650645"/>
+    </history>
+</contentHaul>

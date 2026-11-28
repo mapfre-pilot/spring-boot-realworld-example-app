@@ -1,0 +1,194 @@
+Incidencias y mejoras de SCA 2.0
+Consolidación por problema y revisión de los mensajes de la aplicación
+Fuente: «PRUEBAS SCA 2.0.one»; selección de 26 números de póliza facilitada por captura de pantalla el 16/11/2026.
+Alcance confirmado: SOLO las pólizas del pantallazo. Se agrupan las manifestaciones repetidas; se conserva el texto del usuario cuando consta y se asocia cada evidencia a su póliza. Las capturas se han tomado del OneNote facilitado.
+Importante: los mensajes idénticos pueden tener causas técnicas diferentes. Las tres observaciones de negocio se muestran separadas de las siete incidencias / anomalías para evitar calificarlas prematuramente como defectos.
+Complemento de alcance: el anexo «Mejoras de mensajes» recoge la página «Mensajes» del mismo OneNote. Son observaciones transversales sobre redacción y usabilidad, no nuevos fallos asociados automáticamente a las 26 pólizas. Las propuestas de mejora son recomendaciones de revisión, no textos o requisitos expresados literalmente por los usuarios.
+Índice de problemas agrupados
+Lectura: las claves INC indican errores, bloqueos o síntomas anómalos documentados; las OBS son avisos o comportamientos cuyo encaje funcional debe confirmarse. No se afirma una causa raíz común sin evidencia.
+INC-01 · No se puede crear la solicitud: ALTA_ERROR / datos insuficientes
+Naturaleza: Error explícito
+Descripción: Durante el alta de anulación, la aplicación no guarda la solicitud y devuelve un error técnico en el paso generarStudAnul.
+Mensaje o relato documentado
+«Los datos no se han podido guardar correctamente. La solicitud no se ha podido crear. Error: ALTA_ERROR - Datos insuficientes para la operación (paso: generarStudAnul)».
+Pólizas y evidencias
+Póliza 0006000283
+Página de OneNote: Vida Prueba 0006000283
+Referencia PDTE-537645161; el texto indica que se contacte con mantenimiento SCA.
+
+Captura de OneNote — Vida Prueba 0006000283 (recorte de la zona relevante)
+Póliza 0006000495
+Página de OneNote: Vida Prueba 0006000495
+Referencia PDTE-17579838; se reproduce el mismo tipo de error.
+
+Captura de OneNote — Vida Prueba 0006000495
+INC-02 · Póliza rechazada como no válida o no disponible en SCA
+Naturaleza: Error explícito
+Descripción: Al introducir la póliza seleccionada, SCA muestra una validación que impide continuar con la anulación. No se acredita el motivo interno del rechazo.
+Mensaje o relato documentado
+«La póliza no es una póliza válida o no se encuentra disponible, por lo tanto, no se puede gestionar la anulación por SCA».
+Pólizas y evidencias
+Póliza 732400122940
+Página de OneNote: Prueba 732400122940
+Mismo mensaje mostrado al introducir el número de póliza.
+
+Captura de OneNote — Prueba 732400122940
+INC-03 · Alta de anulación bloqueada porque la póliza figura renovada
+Naturaleza: Bloqueo funcional mostrado
+Descripción: Al guardar una solicitud de anulación con catalogación «A FECHA», SCA comunica una renovación y exige cancelar un suplemento antes de retomar la solicitud.
+Mensaje o relato documentado
+«Se han detectado los siguientes errores: La póliza está renovada. Cancele el suplemento para poder retomar la solicitud de anulación».
+Pólizas y evidencias
+Póliza 2002500484784
+Página de OneNote: Red Prueba 2002500484784
+Motivo «DECISIÓN DE CLIENTE»; detalle «VENTA DEL VEHÍCULO»; fecha de anulación 12/11/2026.
+
+Captura de OneNote — Red Prueba 2002500484784 (recorte de la zona relevante)
+Póliza 0730080000252
+Página de OneNote: Red Prueba 0730080000252
+Motivo «DECISIÓN DE CLIENTE»; detalle «VENTA/DESAPARICIÓN DEL RIESGO»; fecha de anulación 11/11/2026.
+
+Captura de OneNote — Red Prueba 0730080000252 (recorte de la zona relevante)
+INC-04 · Ventana genérica «Error del servicio» durante la gestión
+Naturaleza: Error explícito; causa desconocida
+Descripción: En la prueba aparece la ventana genérica «Error del servicio», con las opciones «REINTENTAR» y «ENTENDIDO». El mensaje no incluye código ni causa comprobable.
+Mensaje o relato documentado
+«Error del servicio» (sin código ni descripción adicional visible).
+Pólizas y evidencias
+Póliza 2002500484915
+Página de OneNote: Red Prueba 2002500484915
+La captura aparece durante la tramitación, con otras pantallas de RGPD y gestión de vencimiento.
+
+Captura de OneNote — Red Prueba 2002500484915
+INC-05 · La solicitud no se recupera de forma coherente en búsqueda o histórico
+Naturaleza: Inconsistencia reportada / capturada
+Descripción: Dos pruebas muestran discrepancias al localizar solicitudes existentes. No está demostrado que ambas compartan la misma causa.
+Mensaje o relato documentado
+Los síntomas difieren: una solicitud TTQ deja de aparecer o se recupera sin el argumento; en otra, la búsqueda indica que no hay resultados pero el alta advierte de una solicitud en curso.
+Pólizas y evidencias
+Póliza 2001900000562
+Página de OneNote: Si24 Prueba 2001900000562
+Relato del usuario: «a ver si podéis reproducir lo que me ha pasado con la póliza 001», «he dado TTQ ahora no aparece esa solicitud si la busco», «al dar de alta una nueva, en el histórico sí me busca la que hice», «pero me sale como Pendiente. La retomo y no me sale ya el argumento TTQ».
+
+Captura de OneNote — Si24 Prueba 2001900000562
+Póliza 0002729391736
+Página de OneNote: Prueba 0002729391736
+En búsqueda figura «No hay resultados para dicha búsqueda»; al intentar el alta aparece «Existe una solicitud en curso para la póliza indicada ¿Quiere consultar la solicitud?».
+
+Captura de OneNote — Prueba 0002729391736 (recorte de la zona relevante)
+Nota de interpretación: ambas pólizas presentan incoherencias en búsqueda/recuperación de solicitudes, pero sus síntomas no son idénticos y no se ha acreditado una causa técnica común.
+INC-06 · La aplicación queda bloqueada tras un aviso temporal del servicio de reglas
+Naturaleza: Incidencia narrada por usuario
+Descripción: Durante la creación de una solicitud aparece un mensaje transitorio por demora del servicio de reglas. Tras desaparecer, se ve el mensaje normal de éxito, pero al pulsar «Aceptar» la aplicación queda bloqueada según el usuario.
+Mensaje o relato documentado
+Relato: «mensaje nuevo. A los 15 seg aprox ha desaparecido», «ha sacado mensaje normal», «pulso aceptar y se queda pillada». En el intercambio se indica que el primer mensaje aparece cuando tarda más de la cuenta el servicio de reglas.
+Pólizas y evidencias
+Póliza 2002600074290
+Página de OneNote: Si24 Prueba 2002600074290
+La página contiene una captura de una conversación con la secuencia temporal y el bloqueo descrito.
+
+Captura de OneNote — Si24 Prueba 2002600074290
+INC-07 · No se asignan tréboles al no constar el cliente en Te Cuidamos
+Naturaleza: Mensaje funcional; revisar expectativa
+Descripción: Al finalizar positivamente un argumento de contraanulación, SCA indica que no se han podido asignar tréboles porque el cliente no está dado de alta en Te Cuidamos. Conviene confirmar si es el comportamiento previsto antes de clasificarlo como defecto.
+Mensaje o relato documentado
+«No se han podido asignar tréboles al cliente porque no está dado de alta en Te Cuidamos […] Mensaje obtenido de Te Cuidamos: El cliente no tiene ningún contrato en vigor en la fecha indicada».
+Pólizas y evidencias
+Póliza 732400122931
+Página de OneNote: Red Prueba 732400122931
+La página incluye el texto del aviso; la captura disponible muestra «Activo Club Mapfre: No» (no es la propia ventana de error).
+
+Captura de OneNote — Red Prueba 732400122931
+OBS-01 · Aviso de acuerdo especial: la póliza debe gestionarse en SI24
+Naturaleza: Observación; posible regla de negocio
+Descripción: La aplicación muestra que el acuerdo especial impide gestionar la anulación desde la pantalla actual. No se puede dar por defecto sin comprobar el tratamiento esperado.
+Mensaje o relato documentado
+«Esta póliza pertenece a un acuerdo especial y debe gestionarla SI24. No es posible anularla desde esta pantalla».
+Pólizas y evidencias
+Póliza 0005726696720
+Página de OneNote: Rci Prueba 0005726696720
+Se observa el mismo aviso durante la prueba de contraanulación.
+
+Captura de OneNote — Rci Prueba 0005726696720
+Pendiente de validación funcional: la pantalla acredita la advertencia, pero no demuestra por sí sola un defecto de aplicación.
+OBS-02 · Gestión de nivel 2 sin argumentos disponibles
+Naturaleza: Observación; comprobar funcionalidad
+Descripción: Aparece una gestión de contraanulación de nivel 2 con el texto «No hay argumentos para esta gestión». Debe confirmarse si la ausencia de argumentos es esperada en esos expedientes.
+Mensaje o relato documentado
+«No hay argumentos para esta gestión».
+Pólizas y evidencias
+Póliza 2001900000747
+Página de OneNote: Si24 Prueba 2001900000747
+Gestión de nivel 2, grupo 124 EXPERT/S124.
+
+Captura de OneNote — Si24 Prueba 2001900000747 (recorte de la zona relevante)
+Pendiente de validación funcional: la pantalla acredita la advertencia, pero no demuestra por sí sola un defecto de aplicación.
+OBS-03 · Aviso de póliza de flota sin tratamiento en SCA
+Naturaleza: Observación; posible ruta prevista
+Descripción: SCA advierte que la póliza de flota se gestionará en otra aplicación. La anotación acredita el aviso, pero no demuestra un fallo de navegación.
+Mensaje o relato documentado
+«La póliza que está gestionando es una flota y no tiene tratamiento en SCA; va a acceder a Mecanizar en wAutemis».
+Pólizas y evidencias
+Póliza 2002600073906
+Página de OneNote: Si24 Prueba 2002600073906
+Mensaje mostrado durante el alta de anulación.
+
+Captura de OneNote — Si24 Prueba 2002600073906 (recorte de la zona relevante)
+Pendiente de validación funcional: la pantalla acredita la advertencia, pero no demuestra por sí sola un defecto de aplicación.
+Anexo · control de las 26 pólizas seleccionadas
+La siguiente tabla permite comprobar que ninguna póliza ajena al pantallazo se ha incorporado al análisis. «Sin incidencia identificada» significa únicamente que no se ha localizado en esa página una anomalía explícita; no certifica que la póliza esté libre de fallos.
+Criterios y límites de la revisión
+1. Selección: se han transcrito los 26 números visibles en la captura; el cero inicial se conserva literalmente. En la página de la póliza 732400122931, la aplicación muestra también la variante 0732400122931, que se trata como el mismo expediente de pruebas por el contexto de su propia página.
+2. Trazabilidad: los mensajes y relatos provienen del OneNote. Las capturas adjuntas son evidencias ilustrativas de la página citada; si una ventana literal no se ha recuperado como imagen, se indica.
+3. Repetición: una sola entrada agrupa las pólizas con la misma manifestación. No se confunde similitud de síntomas con identidad de causa raíz.
+4. Las ocho pólizas con prefijo 200240... están en el listado suministrado, pero no se ha encontrado su página de pruebas individual en el archivo. Para incorporarlas a incidencias concretas haría falta esa evidencia.
+5. No se han realizado pruebas funcionales adicionales en SCA ni se han contrastado las reglas de negocio con especificaciones oficiales.
+Anexo · Mejoras de los mensajes de SCA 2.0
+Fuente: página «Mensajes» de «PRUEBAS SCA 2.0.one». Se han recuperado siete capturas y se han consolidado en seis temas de mejora. La página ofrece capturas subrayadas/resaltadas, pero no detalla por escrito requisitos de cambio; las observaciones y propuestas que siguen se formulan a partir de esos ejemplos.
+Criterio de alcance: estas mejoras son transversales a los textos de la aplicación; los ejemplos de «Mensajes» pueden contener números de póliza fuera de los 26 seleccionados. No se han incorporado esas pólizas al inventario ni a los recuentos de incidencias.
+MEJ-01 · Confirmación de retención: tono y acción final poco precisos
+«¡Enhorabuena en la retención de la póliza! Se van a finalizar las acciones de contra anulación en SCA. ¿Desea continuar?»
+Qué se observa: Mensaje de confirmación con tono celebratorio y una pregunta genérica. No detalla qué consecuencias tiene pulsar «ACEPTAR» o «CANCELAR».
+Propuesta de mejora: Reformular el texto de manera directa y neutral, describiendo la operación exacta que se va a confirmar y el resultado esperado. Utilizar etiquetas de acción específicas si la aplicación lo permite.
+Trazabilidad: No se atribuye a ninguna póliza del listado a partir de esta captura.
+
+Página «Mensajes» · Confirmación de retención y cierre de las acciones de contraanulación
+MEJ-02 · Te Cuidamos: distinguir el impedimento de la actuación necesaria
+«No se han podido asignar tréboles al cliente porque no está dado de alta en te cuidamos. Utilice el enlace a te cuidamos existente en el argumento para dar de alta al cliente en te cuidamos y posteriormente finalizar el argumento como positivo. Mensaje obtenido de Te Cuidamos: El cliente no tiene ningún contrato en vigor en la fecha indicada».
+Qué se observa: La advertencia combina un problema de asignación de tréboles, la falta de alta y una respuesta de Te Cuidamos sobre ausencia de contrato. La actuación que debe realizar el gestor queda diluida en un párrafo extenso.
+Propuesta de mejora: Separar claramente el motivo del aviso, la instrucción concreta para el gestor y la respuesta recibida del sistema externo; homogeneizar la denominación «Te Cuidamos». Comprobar funcionalmente cuál debe ser el siguiente paso.
+Trazabilidad: Relacionado con INC-07 por el mismo mensaje; aquí se trata la claridad de la comunicación, no se contabiliza otra incidencia.
+
+Página «Mensajes» · Aviso de asignación de tréboles y respuesta de Te Cuidamos
+MEJ-03 · Confirmaciones correctas que remiten a otra pantalla
+Variantes documentadas: «Los datos se han guardado correctamente. La siguiente tarea (Contra Anular Nivel 2) se gestiona desde el Detalle de la solicitud» y «Los datos se han guardado correctamente. La siguiente tarea (Gestión Verti/vencimiento) se gestiona desde el Detalle de la solicitud».
+Qué se observa: Ambos mensajes comunican éxito pero dejan al usuario la tarea de navegar hasta «Detalle de la solicitud», aunque ya conocen el siguiente paso. En una captura aparece resaltada precisamente esa indicación.
+Propuesta de mejora: Proporcionar, cuando sea viable, acceso directo al detalle o a la tarea siguiente y utilizar botones explícitos («Ir al detalle», «Continuar con la gestión»). Mantener visible el tipo de tarea siguiente.
+Trazabilidad: Mejora común a dos textos distintos; las dos capturas se conservan en un solo tema.
+
+Página «Mensajes» · Éxito: siguiente tarea «Contra Anular Nivel 2»
+
+Página «Mensajes» · Éxito: siguiente tarea «Gestión Verti/vencimiento» (recorte)
+MEJ-04 · Advertencia sobre documentación no adjuntada y anulación al vencimiento
+«¿Desea continuar? Al no adjuntar la documentación requerida, la póliza se anulará al vencimiento».
+Qué se observa: La pantalla avisa de una consecuencia relevante, pero no identifica qué documentos faltan ni cuándo se producirá el cambio. El título «¿Desea continuar?» no expresa la consecuencia de la confirmación.
+Propuesta de mejora: Destacar la consecuencia antes de la confirmación, indicar qué documentación es necesaria cuando esa información esté disponible y diferenciar mejor entre continuar y volver para adjuntar documentos.
+Trazabilidad: Mejora de información y confirmación; no se presume un fallo de la regla de anulación.
+
+Página «Mensajes» · Confirmación que condiciona la anulación al vencimiento
+MEJ-05 · Texto de validación previo al alta de solicitud excesivamente técnico
+«Se han completado todas las validaciones para permitir generar la solicitud de anulación, se va a proceder a dar de alta la solicitud en el sistema».
+Qué se observa: El texto mezcla validación, intención de alta y acción de aceptar, sin mostrar de forma sintética qué operación va a ejecutar el gestor. En la captura aparece una póliza de ejemplo ajena al listado de 26.
+Propuesta de mejora: Simplificar y orientar el mensaje a la decisión: informar de que las comprobaciones se han superado y preguntar si desea crear la solicitud. Evitar terminología interna innecesaria («dar de alta ... en el sistema»).
+Trazabilidad: La captura muestra la póliza 2001900001478, fuera de la selección facilitada. Solo se utiliza para evaluar el texto genérico del mensaje; no se agrega como incidencia de póliza.
+
+Página «Mensajes» · Confirmación de validaciones previa a la creación de la solicitud (recorte)
+MEJ-06 · Derivación a SI24 por acuerdo especial sin guía operativa
+«Esta póliza pertenece a un acuerdo especial y debe gestionarla SI24. No es posible anularla desde esta pantalla».
+Qué se observa: El aviso bloquea la gestión desde la pantalla actual y menciona SI24, pero no detalla la ruta de acceso ni el siguiente paso. La página «Mensajes» subraya esta advertencia.
+Propuesta de mejora: Añadir una acción de navegación o instrucciones breves sobre cómo tramitar la solicitud en SI24, si la integración y los permisos lo permiten. Precisar el procedimiento alternativo sin afirmar que deba habilitarse la anulación en SCA.
+Trazabilidad: Relacionado con OBS-01; se amplía la propuesta de mejora del aviso, sin considerar que la derivación constituya por sí sola un error.
+
+Página «Mensajes» · Aviso de acuerdo especial y derivación a SI24
+Cierre de la revisión de mensajes
+Las seis propuestas no equivalen a seis errores técnicos nuevos. Deben contrastarse con el equipo funcional y, cuando proceda, con el responsable de experiencia de usuario y las integraciones SI24/Te Cuidamos. Las capturas se reproducen como evidencias del texto mostrado; no prueban por sí solas que las reglas de negocio sean incorrectas.

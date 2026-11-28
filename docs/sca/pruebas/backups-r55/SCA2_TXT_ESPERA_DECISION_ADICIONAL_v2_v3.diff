@@ -1,0 +1,5 @@
+--- SCA2_TXT_ESPERA_DECISION_ADICIONAL_antes.json
++++ SCA2_TXT_ESPERA_DECISION_ADICIONAL_despues.json
+@@ -7 +7 @@
+- "value": "El sistema está tardando en responder más de lo habitual. Espere, por favor: su solicitud se está procesando. No vuelva a pulsar GUARDAR ni cierre la pantalla."
++ "value": "El sistema está tardando en responder más de lo habitual. Espere, por favor: su solicitud se está procesando. No vuelva a dar de alta la solicitud ni cierre la pantalla."

@@ -1,0 +1,713 @@
+{
+ "creator": "devin",
+ "uuid": "0000f095-81a8-8000-d613-7f0000014e7a",
+ "name": {
+  "en_US": "",
+  "es": "SCA2 CMD RefrescarCacheCabecera"
+ },
+ "description": {
+  "en_US": "",
+  "es": "[SCA2] Renovación diaria (07:05) de las filas de caché de cabecera caducadas (SCA2 Datos Cabecera, origenCache = CACHE) de solicitudes no finalizadas: recarga con SCA2_obtenerDatosCabeceraLive y actualiza la misma fila; tolerante a errores por fila; límite por lote cons!SCA2_CACHE_REFRESCO_BATCH."
+ },
+ "parentFolderUuid": "_g-0000f069-4ee2-8000-64c6-7f0000014e7a_711",
+ "processVariables": [
+  {
+   "name": "ahora",
+   "type": "Date and Time",
+   "isParameter": false,
+   "isRequired": false,
+   "multiple": false
+  },
+  {
+   "name": "cabecera",
+   "type": "Any Type",
+   "isParameter": false,
+   "isRequired": false,
+   "multiple": false
+  },
+  {
+   "name": "errorEscritura",
+   "type": "Text",
+   "isParameter": false,
+   "isRequired": false,
+   "multiple": false
+  },
+  {
+   "name": "errores",
+   "type": "Text",
+   "isParameter": false,
+   "isRequired": false,
+   "multiple": true
+  },
+  {
+   "name": "filas",
+   "type": "{urn:com:appian:recordtype:datatype}04f597de-5acd-45b2-9ab3-277713cd00a6",
+   "isParameter": false,
+   "isRequired": false,
+   "multiple": true
+  },
+  {
+   "name": "huboErrorEscritura",
+   "type": "Boolean",
+   "isParameter": false,
+   "isRequired": false,
+   "multiple": false
+  },
+  {
+   "name": "indice",
+   "type": "Number (Integer)",
+   "isParameter": false,
+   "isRequired": false,
+   "multiple": false,
+   "value": "0"
+  },
+  {
+   "name": "procesadas",
+   "type": "Number (Integer)",
+   "isParameter": false,
+   "isRequired": false,
+   "multiple": false,
+   "value": "0"
+  },
+  {
+   "name": "excesosCache",
+   "type": "Text",
+   "isParameter": false,
+   "isRequired": false,
+   "multiple": true
+  }
+ ],
+ "nodes": [
+  {
+   "id": 2,
+   "type": "internal.16",
+   "name": {
+    "en_US": "",
+    "es": "Seleccionar filas caducadas"
+   },
+   "coordinates": [
+    168,
+    140
+   ],
+   "uuid": "76327714-8bfe-464e-b4ea-d2c565b97933",
+   "typeName": "Unattended Multiple Questions",
+   "description": {
+    "en_US": "",
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 8,
+     "activityChained": false,
+     "overridesAssignment": true,
+     "synchronizeData": false
+    }
+   ],
+   "data": {
+    "inputs": [],
+    "customInputs": [],
+    "outputs": [],
+    "customOutputs": [
+     {
+      "expression": "=a!localVariables(\n  local!abiertas: a!queryRecordType(\n    recordType: 'recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud',\n    fields: 'recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud.fields.{f2b6f90b-183b-493e-81c1-d1dd65a6cbd9}idSolicitud',\n    filters: a!queryFilter(\n      field: 'recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud.fields.{65f4378b-cf90-4761-b1d0-16ace177a82c}estadoSolicitud',\n      operator: \"not in\",\n      value: {\"FINALIZADA\", \"FINALIZADA_POSITIVO\", \"CANCELADA\", \"CADUCADA\"}\n    ),\n    pagingInfo: a!pagingInfo(startIndex: 1, batchSize: 5000),\n    fetchTotalCount: false\n  ).data['recordType!{c531595c-c3b5-454c-a355-8145e7e27e9a}SCA2 Solicitud.fields.{f2b6f90b-183b-493e-81c1-d1dd65a6cbd9}idSolicitud'],\n  a!queryRecordType(\n    recordType: 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera',\n    fields: {'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{6757400e-5b8a-42fb-874b-19e5fbd8edbc}id', 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{09dabc7f-a0c8-468c-9b60-085a8a9bd1cc}idSolicitud', 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{b4fbe9d5-5949-4693-9c2f-8acce0349ff5}polizaNumeropoliza', 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{c2c91c9b-df4f-4a96-96fc-1dcf1e6902bf}validaHasta'},\n    filters: a!queryLogicalExpression(\n      operator: \"AND\",\n      filters: {\n        a!queryFilter(field: 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{81701765-3488-401d-9169-822a28ca8451}origenCache', operator: \"=\", value: \"CACHE\"),\n        a!queryFilter(field: 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{c2c91c9b-df4f-4a96-96fc-1dcf1e6902bf}validaHasta', operator: \"<=\", value: now()),\n        a!queryFilter(field: 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{09dabc7f-a0c8-468c-9b60-085a8a9bd1cc}idSolicitud', operator: \"in\", value: a!defaultValue(touniformstring(local!abiertas), {\"-\"}))\n      }\n    ),\n    pagingInfo: a!pagingInfo(\n      startIndex: 1,\n      batchSize: cons!SCA2_CACHE_REFRESCO_BATCH,\n      sort: a!sortInfo(field: 'recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{c2c91c9b-df4f-4a96-96fc-1dcf1e6902bf}validaHasta', ascending: true)\n    ),\n    fetchTotalCount: false\n  ).data\n)",
+      "saveInto": "filas"
+     }
+    ]
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER",
+    "overrideLane": false
+   }
+  },
+  {
+   "id": 3,
+   "type": "core.4",
+   "name": {
+    "en_US": "",
+    "es": "¿Quedan filas?"
+   },
+   "coordinates": [
+    308,
+    140
+   ],
+   "uuid": "0e433dba-f3a6-46b8-b233-db3f25120e53",
+   "typeName": "XOR",
+   "description": {
+    "en_US": "",
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 4,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    },
+    {
+     "targetNodeId": 9,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "decision": {
+    "conditions": [
+     {
+      "expression": "and(a!isNotNullOrEmpty(pv!filas), pv!indice <= length(pv!filas))",
+      "targetNodeId": 4,
+      "label": "Sí"
+     }
+    ],
+    "defaultPath": 9
+   }
+  },
+  {
+   "id": 5,
+   "type": "core.4",
+   "name": {
+    "en_US": "",
+    "es": "¿Cabecera válida?"
+   },
+   "coordinates": [
+    616,
+    140
+   ],
+   "uuid": "c8137fa2-6490-4885-9d6f-edf729850180",
+   "typeName": "XOR",
+   "description": {
+    "en_US": "",
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 6,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    },
+    {
+     "targetNodeId": 7,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "decision": {
+    "conditions": [
+     {
+      "expression": "a!isNotNullOrEmpty(pv!cabecera)",
+      "targetNodeId": 6,
+      "label": "Sí"
+     }
+    ],
+    "defaultPath": 7
+   }
+  },
+  {
+   "id": 6,
+   "type": "internal3.write_records_to_source_23r3",
+   "name": {
+    "en_US": "",
+    "es": "Actualizar fila caché"
+   },
+   "coordinates": [
+    756,
+    140
+   ],
+   "uuid": "7997918d-6112-4dba-9b41-f8c5b48d3c8f",
+   "typeName": "Write Records and Related Records",
+   "description": {
+    "en_US": "",
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 10,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "data": {
+    "inputs": [
+     {
+      "name": "Records",
+      "type": "Any Type",
+      "required": true,
+      "expression": "=if(cons!SCA2_RECORTAR_FILA_CACHE_CABECERA, rule!SCA2_ajustarFilaCacheCabecera(fila: rule!SCA2_construirFilaCacheCabecera(cabecera: pv!cabecera, filaActual: pv!filas[pv!indice], ahora: pv!ahora)).fila, rule!SCA2_construirFilaCacheCabecera(cabecera: pv!cabecera, filaActual: pv!filas[pv!indice], ahora: pv!ahora))",
+      "saveInto": ""
+     },
+     {
+      "name": "PauseOnError",
+      "type": "Boolean",
+      "required": false,
+      "expression": "=false()",
+      "saveInto": ""
+     },
+     {
+      "name": "RecordType",
+      "type": "RecordType2",
+      "required": false,
+      "expression": "",
+      "value": "",
+      "saveInto": ""
+     },
+     {
+      "name": "CaptureEvents",
+      "type": "Boolean",
+      "required": true,
+      "expression": "",
+      "value": 0,
+      "saveInto": ""
+     }
+    ],
+    "customInputs": [],
+    "outputs": [
+     {
+      "name": "RecordsUpdated",
+      "type": "Any Type"
+     },
+     {
+      "name": "ErrorOccurred",
+      "type": "Boolean",
+      "saveInto": "huboErrorEscritura"
+     },
+     {
+      "name": "Error",
+      "type": "Text",
+      "saveInto": "errorEscritura"
+     }
+    ],
+    "customOutputs": [
+     {
+      "expression": "=if(cons!SCA2_RECORTAR_FILA_CACHE_CABECERA, rule!SCA2_ajustarFilaCacheCabecera(fila: rule!SCA2_construirFilaCacheCabecera(cabecera: pv!cabecera, filaActual: pv!filas[pv!indice], ahora: pv!ahora)).excesos, {})",
+      "saveInto": "excesosCache"
+     }
+    ]
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER",
+    "overrideLane": false
+   }
+  },
+  {
+   "id": 11,
+   "type": "internal.16",
+   "name": {
+    "en_US": "",
+    "es": "Contar renovada"
+   },
+   "coordinates": [
+    1036,
+    140
+   ],
+   "uuid": "59ccc452-d37d-4105-867b-69bcf3abeddf",
+   "typeName": "Unattended Multiple Questions",
+   "description": {
+    "en_US": "",
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 13,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "data": {
+    "inputs": [],
+    "customInputs": [],
+    "outputs": [],
+    "customOutputs": [
+     {
+      "expression": "=pv!procesadas + 1",
+      "saveInto": "procesadas"
+     }
+    ]
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER",
+    "overrideLane": false
+   }
+  },
+  {
+   "id": 7,
+   "type": "internal.16",
+   "name": {
+    "en_US": "",
+    "es": "Anotar error de la fila"
+   },
+   "coordinates": [
+    756,
+    308
+   ],
+   "uuid": "dc46089b-6ff8-424f-93c5-062f99abebcb",
+   "typeName": "Unattended Multiple Questions",
+   "description": {
+    "en_US": "",
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 12,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "data": {
+    "inputs": [],
+    "customInputs": [],
+    "outputs": [],
+    "customOutputs": [
+     {
+      "expression": "=append(pv!errores, \"idSolicitud \" & pv!filas[pv!indice]['recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{09dabc7f-a0c8-468c-9b60-085a8a9bd1cc}idSolicitud'] & \": \" & if(a!isNullOrEmpty(pv!cabecera), \"la carga en vivo no devolvió cabecera (o superó el tiempo máximo)\", a!defaultValue(pv!errorEscritura, \"error al actualizar la fila de caché\")))",
+      "saveInto": "errores"
+     }
+    ]
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER",
+    "overrideLane": false
+   }
+  },
+  {
+   "id": 12,
+   "type": "internal3.write_records_to_source_23r3",
+   "name": {
+    "en_US": "",
+    "es": "Registrar en SCA2 Error"
+   },
+   "coordinates": [
+    896,
+    308
+   ],
+   "uuid": "05ee74ca-f552-4b09-a0c8-ee7927d3e9da",
+   "typeName": "Write Records and Related Records",
+   "description": {
+    "en_US": "",
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 8,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "data": {
+    "inputs": [
+     {
+      "name": "Records",
+      "type": "Any Type",
+      "required": true,
+      "expression": "={'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error'(/* R52: reutiliza el error PENDIENTE equivalente (R50-B) */ 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{e5dc602a-1e18-44df-bbde-5d580de8ad21}id': index(rule!SCA2_obtenerErrorPendiente(idSolicitud: pv!filas[pv!indice]['recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{09dabc7f-a0c8-468c-9b60-085a8a9bd1cc}idSolicitud'], comando: \"SCA2 CMD RefrescarCacheCabecera\", nodo: if(a!isNullOrEmpty(pv!cabecera), \"Cargar cabecera en vivo\", \"Actualizar fila caché\"), codigo: if(and(a!isNotNullOrEmpty(pv!cabecera), not(a!defaultValue(pv!huboErrorEscritura, false())), a!isNotNullOrEmpty(pv!excesosCache)), \"REFRESCO_CACHE_RECORTE\", \"REFRESCO_CACHE_ERROR\")), \"id\", null), 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{263ccc68-f8c2-4913-b78d-8fce31e7ed9a}idSolicitud': pv!filas[pv!indice]['recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{09dabc7f-a0c8-468c-9b60-085a8a9bd1cc}idSolicitud'], 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{bf283c94-bf1e-49f4-840c-9a96ce858a37}comando': \"SCA2 CMD RefrescarCacheCabecera\", 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{4b654a26-b60f-478f-ad9c-31f5be706df2}nodo': if(a!isNullOrEmpty(pv!cabecera), \"Cargar cabecera en vivo\", \"Actualizar fila caché\"), 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{975c87c8-8ee9-49ca-a414-15e1e45393a4}codigo': if(and(a!isNotNullOrEmpty(pv!cabecera), not(a!defaultValue(pv!huboErrorEscritura, false())), a!isNotNullOrEmpty(pv!excesosCache)), \"REFRESCO_CACHE_RECORTE\", \"REFRESCO_CACHE_ERROR\"), 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{7e3bd67f-1c1d-4721-a6ac-98d3f688cb68}mensaje': if(a!isNullOrEmpty(pv!cabecera), \"la carga en vivo no devolvió cabecera (o superó el tiempo máximo)\", if(and(a!isNotNullOrEmpty(pv!excesosCache), not(a!defaultValue(pv!huboErrorEscritura, false()))), left(\"Campos recortados al límite de su columna: \" & joinarray(pv!excesosCache, \"; \"), 4000), a!defaultValue(pv!errorEscritura, \"error al actualizar la fila de caché\"))), 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{f4cbb383-4659-42ed-a22b-d5fa91a09a5f}payload': \"numPoliza=\" & pv!filas[pv!indice]['recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{b4fbe9d5-5949-4693-9c2f-8acce0349ff5}polizaNumeropoliza'] & \"; idFilaCache=\" & pv!filas[pv!indice]['recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{6757400e-5b8a-42fb-874b-19e5fbd8edbc}id'], 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{8c9c24c7-239a-4f72-b442-88508c7836ea}intentos': a!defaultValue(index(rule!SCA2_obtenerErrorPendiente(idSolicitud: pv!filas[pv!indice]['recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{09dabc7f-a0c8-468c-9b60-085a8a9bd1cc}idSolicitud'], comando: \"SCA2 CMD RefrescarCacheCabecera\", nodo: if(a!isNullOrEmpty(pv!cabecera), \"Cargar cabecera en vivo\", \"Actualizar fila caché\"), codigo: if(and(a!isNotNullOrEmpty(pv!cabecera), not(a!defaultValue(pv!huboErrorEscritura, false())), a!isNotNullOrEmpty(pv!excesosCache)), \"REFRESCO_CACHE_RECORTE\", \"REFRESCO_CACHE_ERROR\")), \"intentos\", 0), 0) + 1, 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{f891dbfa-4fcb-42e9-9d7d-b5799ddf7d02}estado': \"PENDIENTE\", 'recordType!{d7111f93-55f3-4b43-b921-aedadd2af7c3}SCA2 Error.fields.{4cedd947-8bd9-4a5c-aa77-cf8e5c65308a}fechaCreacion': now())}",
+      "saveInto": ""
+     },
+     {
+      "name": "PauseOnError",
+      "type": "Boolean",
+      "required": false,
+      "expression": "=false()",
+      "value": 1,
+      "saveInto": ""
+     },
+     {
+      "name": "RecordType",
+      "type": "RecordType2",
+      "required": false,
+      "expression": "",
+      "value": "",
+      "saveInto": ""
+     },
+     {
+      "name": "CaptureEvents",
+      "type": "Boolean",
+      "required": true,
+      "expression": "",
+      "value": 0,
+      "saveInto": ""
+     }
+    ],
+    "customInputs": [],
+    "outputs": [
+     {
+      "name": "RecordsUpdated",
+      "type": "Any Type"
+     },
+     {
+      "name": "ErrorOccurred",
+      "type": "Boolean"
+     },
+     {
+      "name": "Error",
+      "type": "Text"
+     }
+    ],
+    "customOutputs": []
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER",
+    "overrideLane": false
+   }
+  },
+  {
+   "id": 8,
+   "type": "internal.16",
+   "name": {
+    "en_US": "",
+    "es": "Siguiente"
+   },
+   "coordinates": [
+    1036,
+    308
+   ],
+   "uuid": "c3f88ded-b2cb-40ce-87eb-52ba4e3a2772",
+   "typeName": "Unattended Multiple Questions",
+   "description": {
+    "en_US": "",
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 3,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "data": {
+    "inputs": [],
+    "customInputs": [],
+    "outputs": [],
+    "customOutputs": [
+     {
+      "expression": "=pv!indice + 1",
+      "saveInto": "indice"
+     },
+     {
+      "expression": "=null",
+      "saveInto": "cabecera"
+     },
+     {
+      "expression": "=null",
+      "saveInto": "errorEscritura"
+     },
+     {
+      "expression": "=false()",
+      "saveInto": "huboErrorEscritura"
+     },
+     {
+      "expression": "=null",
+      "saveInto": "excesosCache"
+     }
+    ]
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER",
+    "overrideLane": false
+   }
+  },
+  {
+   "id": 9,
+   "type": "core.1",
+   "name": {
+    "en_US": "",
+    "es": "Fin"
+   },
+   "coordinates": [
+    308,
+    308
+   ],
+   "uuid": "ab6974c7-765a-4ff8-8d5b-c1e6b814bce2",
+   "typeName": "End Node",
+   "description": {
+    "en_US": "",
+    "es": ""
+   },
+   "connections": []
+  },
+  {
+   "id": 4,
+   "type": "internal.16",
+   "name": {
+    "en_US": "",
+    "es": "Cargar cabecera en vivo"
+   },
+   "coordinates": [
+    448,
+    140
+   ],
+   "uuid": "58c8f285-4559-42ec-a1c7-daa538e16229",
+   "typeName": "Unattended Multiple Questions",
+   "description": {
+    "en_US": "",
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 5,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "data": {
+    "inputs": [],
+    "customInputs": [],
+    "outputs": [],
+    "customOutputs": [
+     {
+      "expression": "=now()",
+      "saveInto": "ahora"
+     },
+     {
+      "expression": "=rule!SCA2_obtenerDatosCabeceraLive(numPoliza: pv!filas[pv!indice]['recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{b4fbe9d5-5949-4693-9c2f-8acce0349ff5}polizaNumeropoliza'], idSolicitud: pv!filas[pv!indice]['recordType!{04f597de-5acd-45b2-9ab3-277713cd00a6}SCA2 Datos Cabecera.fields.{09dabc7f-a0c8-468c-9b60-085a8a9bd1cc}idSolicitud'])",
+      "saveInto": "cabecera"
+     }
+    ]
+   },
+   "assignment": {
+    "attended": false,
+    "runAs": "DESIGNER",
+    "overrideLane": false
+   },
+   "exceptionFlow": {
+    "targetNodeId": 7,
+    "delay": {
+     "delayFor": 2,
+     "delayUnit": "MINUTES"
+    }
+   }
+  },
+  {
+   "id": 10,
+   "type": "core.4",
+   "name": {
+    "en_US": "",
+    "es": "¿Escritura correcta?"
+   },
+   "coordinates": [
+    896,
+    140
+   ],
+   "uuid": "ee729b88-61f9-4262-9c15-9eb6a17672a7",
+   "typeName": "XOR",
+   "description": {
+    "en_US": "",
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 11,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    },
+    {
+     "targetNodeId": 7,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "decision": {
+    "conditions": [
+     {
+      "expression": "not(a!defaultValue(pv!huboErrorEscritura, false))",
+      "targetNodeId": 11,
+      "label": "Sí"
+     }
+    ],
+    "defaultPath": 7
+   }
+  },
+  {
+   "id": 13,
+   "type": "core.4",
+   "name": {
+    "en_US": "",
+    "es": "¿Hubo recorte?"
+   },
+   "coordinates": [
+    1176,
+    140
+   ],
+   "uuid": "1058b88c-e60b-441a-b69f-b0f4b4695d1b",
+   "typeName": "XOR",
+   "description": {
+    "en_US": "",
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 12,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    },
+    {
+     "targetNodeId": 8,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ],
+   "decision": {
+    "conditions": [
+     {
+      "expression": "a!isNotNullOrEmpty(pv!excesosCache)",
+      "targetNodeId": 12,
+      "label": "Sí"
+     }
+    ],
+    "defaultPath": 8
+   }
+  },
+  {
+   "id": 1,
+   "type": "core.0",
+   "name": {
+    "en_US": "",
+    "es": "Inicio 07:05"
+   },
+   "coordinates": [
+    28,
+    140
+   ],
+   "uuid": "4eb9608d-ce0e-49e4-b432-9af97ef4b4f2",
+   "typeName": "Start Node",
+   "description": {
+    "en_US": "",
+    "es": ""
+   },
+   "connections": [
+    {
+     "targetNodeId": 2,
+     "activityChained": false,
+     "overridesAssignment": false,
+     "synchronizeData": false
+    }
+   ]
+  }
+ ],
+ "lanes": [],
+ "versionId": "",
+ "processDisplayName": {
+  "en_US": "",
+  "es": "=\"SCA2 CMD RefrescarCacheCabecera - \" & pp!starttime"
+ },
+ "cleanupAction": "AUTO_DELETE",
+ "autoArchiveDelay": 7,
+ "autoDeleteDelay": 1,
+ "alertConfigured": true,
+ "alertUsesGroups": true
+}

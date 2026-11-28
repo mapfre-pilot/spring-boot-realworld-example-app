@@ -1,0 +1,22 @@
+R50-B continuación — TEST — listRecordData, solo lectura
+Tarea uuid 696285d3-cb21-4f27-adce-66354ebf2b89
+Baseline 909 filas. Lectura final offset=909 limit=100. Filas propias:
+id,idSolicitud,numPoliza,tipo,estado,fechaCierre
+910,15789172,0732300314838,CONTRAANULAR,COMPLETADA,2026-11-16 15:47:49
+916,15789179,0731800083179,CONTRAANULAR,COMPLETADA,2026-11-16 15:56:46
+917,15789179,0731800083179,CONTRA ANULAR NIVEL 2,PENDIENTE,
+920,15789182,2002400004454,ACCIONES ADMINISTRATIVAS,COMPLETADA,2026-11-16 16:09:00
+921,15789182,2002400004454,MECANIZAR,PENDIENTE,
+
+Alta AA: offset=917 limit=100 devolvió 920 PENDIENTE.
+Tras finalizar AA: offset=919 limit=100 devolvió 920 COMPLETADA y 921 PENDIENTE.
+Lectura final offset=909 no muestra otras filas de esas solicitudes.
+Máximo PENDIENTE por tipo/solicitud propia: 1.
+
+Error uuid d7111f93-55f3-4b43-b921-aedadd2af7c3
+Baseline 149 filas, último id 226.
+offset=149 limit=100 tras negativa, alta AA, finalizar AA y final:
+id,idSolicitud,comando,nodo,codigo,mensaje,payload,intentos,proximoIntento,estado,fechaCreacion,resueltoPor,fechaResolucion
+(sin filas)
+
+Otras tareas visibles 911-915,918-919: ejecuciones paralelas, no manipuladas.

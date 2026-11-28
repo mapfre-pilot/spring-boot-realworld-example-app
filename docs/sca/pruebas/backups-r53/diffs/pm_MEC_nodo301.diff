@@ -1,0 +1,9 @@
+--- MEC nodo 301 antes
++++ MEC nodo 301 después
+@@ -81,5 +81,5 @@
+     "type": "Text",
+     "required": false,
+-    "expression": "a!localVariables(local!fecCore: index(rule!SCA2_consultarCabeceraSolicitud(codSolicitud: pv!idSolicitud), \"MSSConsultarCabecera\", \"fecAnulacion\", null), if(a!isNullOrEmpty(local!fecCore), index(index(index(pv!sol,\"datosCompletosSolicitud\",null),\"datosSolicitud\",null),\"fecanulacion\",null), left(tostring(local!fecCore), 10)))"
++    "expression": "a!localVariables(/* R53: si CORE no responde, el nodo falla como antes de R53 (sin respaldo a BBDD) */ local!cabR53: rule!SCA2_consultarCabeceraSolicitud(codSolicitud: pv!idSolicitud), local!fecCore: index(local!cabR53, \"MSSConsultarCabecera\", \"fecAnulacion\", null), if(rule!SCA2_esCoreNoDisponible(local!cabR53), xpathsnippet(null, \"/*/soapenv:Body/*\"), if(a!isNullOrEmpty(local!fecCore), index(index(index(pv!sol,\"datosCompletosSolicitud\",null),\"datosSolicitud\",null),\"fecanulacion\",null), left(tostring(local!fecCore), 10))))"
+    },
+    {

@@ -1,0 +1,23 @@
+--- live/SCA2_obtenerRolPerfilSubperfil.sail	2026-11-17 09:20:05.159992185 +0000
++++ mod/SCA2_obtenerRolPerfilSubperfil.sail	2026-11-17 09:30:41.766330333 +0000
+@@ -13,6 +13,12 @@
+ a!localVariables(
+   /*Llamada a la integración para recuperar los roles*/
+   local!response: rule!CMP_APIUsuarios_ObtenerRoles(nuuma: ri!nuuma),
++  /* R53: si CORE no devuelve body, se devuelve el centinela de CORE no disponible en lugar de reventar en xpathsnippet */
++  local!body: index(index(local!response, "result", null), "body", null),
++  if(
++    a!isNullOrEmpty(local!body),
++    rule!SCA2_valorCoreNoDisponible(),
++    a!localVariables(
+   /*Transformamos la respuesta XML*/
+   local!xpathSnippet: xpathsnippet(index(index(local!response, "result", null),"body", null), "/*/soapenv:Body/*"),
+   local!roles: torecord(local!xpathSnippet, 'type!{http://ARQ_Usuarios_SMED/wsdl/ARQ_Usuarios_SMED}consultarRolesResponse'()),
+@@ -22,3 +28,5 @@
+     {"roles", "rol"}
+   )
+ )
+\ No newline at end of file
++  )
++)
+\ No newline at end of file

@@ -1,0 +1,29 @@
+--- live/SCA2_DetalleSolicitud.sail	2026-11-17 09:20:27.069038240 +0000
++++ mod/SCA2_DetalleSolicitud.sail	2026-11-17 09:45:07.391149878 +0000
+@@ -6,6 +6,19 @@
+    Inputs: idSolicitud (Text), idSel (Text), tipoAccion (Text), idTarea (Integer), numPoliza (Text, opcional: filas sólo-CORE del Buscador)
+    tipoAccion/idTarea vienen del Buscador para persistir la acción abierta en la URL ($sp) */
+ a!localVariables(
++  /* R53: si CORE no responde (roles o cabecera de la solicitud), aviso en lugar del error al cargar el Detalle */
++  local!coreNoDisponibleR53: if(
++    a!isNullOrEmpty(ri!idSolicitud),
++    false,
++    or(
++      rule!SCA2_esCoreNoDisponible(index(rule!SCA2_obtenerInformacionUsuario(), "roles", null)),
++      rule!SCA2_esCoreNoDisponible(rule!SCA2_consultarCabeceraSolicitud(codSolicitud: ri!idSolicitud))
++    )
++  ),
++  if(
++    local!coreNoDisponibleR53,
++    rule!SCA2_AvisoCoreNoDisponible(mensaje: cons!SCA2_TXT_CORE_NO_DISPONIBLE),
++    a!localVariables(
+   local!resRetomarCore: null,
+   local!solBase: rule!SCA2_cargarSolicitud(ri!idSolicitud),
+   /* Solicitud sin registro SCA2 (creada en SCA o histórica de CORE): Detalle de sólo consulta con datos de CORE, como SCA_DetalleSolicitud */
+@@ -3802,3 +3815,5 @@
+     )
+   }
+ )
+\ No newline at end of file
++  )
++)

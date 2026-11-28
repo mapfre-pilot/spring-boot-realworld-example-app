@@ -1,0 +1,12 @@
+--- SCA2_CMD_Posponer_v19_antes.json
++++ SCA2_CMD_Posponer_v20_despues.json
+@@ -113 +113 @@
+-'recordType!{9a9209c7-aab4-4078-9bef-280de47fdd6e}SCA2 Datos Solicitud.fields.{ef1b0aa7-41ee-4590-83b2-52f89c8be7f5}fecimpresion': left(if(a!isNullOrEmpty(pv!motivo),
++'recordType!{9a9209c7-aab4-4078-9bef-280de47fdd6e}SCA2 Datos Solicitud.fields.{ef1b0aa7-41ee-4590-83b2-52f89c8be7f5}fecimpresion': if(a!isNullOrEmpty(pv!motivo),
+@@ -115,2 +115,2 @@
+-tostring(pv!motivo)),
+-255),
++left(tostring(pv!motivo),
++255)),
+@@ -162,0 +163 @@
++      "saveInto": "wrErr",

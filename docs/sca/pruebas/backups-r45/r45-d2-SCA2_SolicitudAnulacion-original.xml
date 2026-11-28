@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<contentHaul xmlns:a="http://www.appian.com/ae/types/2009">
+    <versionUuid>_a-0000f08e-9304-8000-9d31-011c48011c48_5574546</versionUuid>
+    <bodyVersionUuid>aiEBSRyM</bodyVersionUuid>
+    <interface>
+        <name>SCA2_SolicitudAnulacion</name>
+        <uuid>_a-0000f069-4f37-8000-9cc8-011c48011c48_20064988</uuid>
+        <description></description>
+        <parentUuid>_a-0000f069-4f37-8000-9cc8-011c48011c48_20050135</parentUuid>
+        <visibility>
+            <advertise>false</advertise>
+            <hierarchy>true</hierarchy>
+            <indexable>true</indexable>
+            <quota>false</quota>
+            <searchable>true</searchable>
+            <system>false</system>
+            <unlogged>false</unlogged>
+        </visibility>
+        <definition>/* [SCA2] Tab "Solicitud Anulación" — port de SCA_SolicitudAnulaci_n:
+   etiqueta gris (SCA2_VAL_COLOR_GRIS_MEDIO) + valor en negrita,
+   mismo orden de columnas que el original:
+   Fecha solicitud anulación / Origen / Causa / Canal entrada
+   Estado solicitud anulación / Fecha estado / Fecha anulación
+   Nivel intervención / Catalogación / Fecha impresión / Fecha efecto recibo impago
+   Reserva prima / Compañía contraria / Número de Solicitud
+   Inputs: idSolicitud (Text), sol (Map: resultado de SCA2_cargarSolicitud) */
+a!localVariables(
+  local!cab: a!refreshVariable(
+    value: index(#"_a-0000f069-4f37-8000-9cc8-011c48011c48_20051080"(codSolicitud: ri!idSolicitud), "MSSConsultarCabecera", null),
+    refreshOnVarChange: ri!sol),
+  local!ciasContrarias: #"SYSTEM_SYSRULES_forEach"(
+    items: a!defaultValue(reduce(index(_, _, null), #"72f32878-406b-498e-98a5-3457e06d5cca"(), {"result", "body", "data", "item", "str"}), {}),
+    expression: a!map(codigo: tostring(index(fv!item, 1, null)), descripcion: index(fv!item, 2, null))),
+  local!ds: a!defaultValue(index(index(ri!sol, "datosCompletosSolicitud", null), "datosSolicitud", null),
+    a!defaultValue(index(ri!sol, "datosSolicitud", null), {})),
+  local!est: a!defaultValue(index(ri!sol, "estado", null), {}),
+  /* [S4] Fechas/origen/estado desde la cabecera CORE (mismo origen que SCA_SolicitudAnulaci_n): solo fecha dd/mm/yyyy */
+  local!fecCabSol: index(local!cab, "fecSolicitudAnul", null),
+  local!fec: if(
+    a!isNotNullOrEmpty(local!fecCabSol),
+    left(tostring(local!fecCabSol), 10),
+    index(local!ds, "fecsolicitudanul",
+      index(local!ds, "fecSolicitud",
+        if(a!isNullOrEmpty(index(local!est, "createdAt", null)), null, text(index(local!est, "createdAt", null), "dd/MM/yyyy"))))),
+  #"SYSTEM_SYSRULES_cardLayout"(
+    contents: {
+      #"SYSTEM_SYSRULES_columnsLayout"(
+        columns: {
+          #"SYSTEM_SYSRULES_columnLayout"(
+            contents: {
+              #"SYSTEM_SYSRULES_richTextDisplayField"(
+                labelPosition: "COLLAPSED",
+                value: {
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: "Fecha solicitud anulación" &amp; char(10),
+                    color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833"
+                  ),
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: a!defaultValue(local!fec, "-"),
+                    color: "ACCENT",
+                    style: { "STRONG", "UNDERLINE" }
+                  )
+                }
+              )
+            }
+          ),
+          #"SYSTEM_SYSRULES_columnLayout"(
+            contents: {
+              #"SYSTEM_SYSRULES_richTextDisplayField"(
+                labelPosition: "COLLAPSED",
+                value: {
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: "Origen" &amp; char(10),
+                    color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833"
+                  ),
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: if(
+                      a!isNotNullOrEmpty(index(local!cab, "origen", null)),
+                      index(#"_a-0000f069-4f37-8000-9cc8-011c48011c48_20065476",
+                        tointeger(index(local!cab, "origen", null)),
+                        "-"),
+                      "-"
+                    ),
+                    style: "STRONG"
+                  )
+                }
+              )
+            }
+          ),
+          #"SYSTEM_SYSRULES_columnLayout"(
+            contents: {
+              #"SYSTEM_SYSRULES_richTextDisplayField"(
+                labelPosition: "COLLAPSED",
+                value: {
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: "Causa" &amp; char(10),
+                    color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833"
+                  ),
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: if(
+                      a!isNotNullOrEmpty(index(local!ds, "codcausa", null)),
+                      index(#"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050611",
+                        tointeger(index(local!ds, "codcausa", null)),
+                        a!defaultValue(index(local!ds, "desccausa", null), "-")),
+                      a!defaultValue(index(local!ds, "desccausa", null), "-")
+                    ),
+                    style: "STRONG"
+                  )
+                }
+              )
+            }
+          ),
+          #"SYSTEM_SYSRULES_columnLayout"(
+            contents: {
+              #"SYSTEM_SYSRULES_richTextDisplayField"(
+                labelPosition: "COLLAPSED",
+                value: {
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: "Canal entrada" &amp; char(10),
+                    color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833"
+                  ),
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: if(
+                      a!isNotNullOrEmpty(index(local!ds, "canalentrada", null)),
+                      index(#"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050605",
+                        tointeger(index(local!ds, "canalentrada", null)),
+                        "-"),
+                      "-"
+                    ),
+                    style: "STRONG"
+                  )
+                }
+              )
+            }
+          )
+        }
+      ),
+      #"SYSTEM_SYSRULES_columnsLayout"(
+        columns: {
+          #"SYSTEM_SYSRULES_columnLayout"(
+            contents: {
+              #"SYSTEM_SYSRULES_richTextDisplayField"(
+                labelPosition: "COLLAPSED",
+                value: {
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: "Estado solicitud anulación" &amp; char(10),
+                    color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833"
+                  ),
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: upper(if(
+                      a!isNotNullOrEmpty(index(local!cab, "estadoSolicitud", null)),
+                      #"5aa6904a-415c-40a6-9697-8e6cc6465f45"(estado: tointeger(index(local!cab, "estadoSolicitud", null))),
+                      #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20063670"(
+                        estado: index(local!est, "estadoSolicitud", null)))),
+                    style: "STRONG"
+                  )
+                }
+              )
+            }
+          ),
+          #"SYSTEM_SYSRULES_columnLayout"(
+            contents: {
+              #"SYSTEM_SYSRULES_richTextDisplayField"(
+                labelPosition: "COLLAPSED",
+                value: {
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: "Fecha estado " &amp; char(10),
+                    color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833"
+                  ),
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: if(
+                      a!isNotNullOrEmpty(index(local!cab, "fecEstado", null)),
+                      left(tostring(index(local!cab, "fecEstado", null)), 10),
+                      a!defaultValue(
+                        index(local!ds, "fecestado",
+                          if(a!isNullOrEmpty(index(local!est, "modifiedAt", null)), null, text(index(local!est, "modifiedAt", null), "dd/MM/yyyy"))),
+                        "-")),
+                    style: "STRONG"
+                  )
+                }
+              )
+            }
+          ),
+          #"SYSTEM_SYSRULES_columnLayout"(
+            contents: {
+              #"SYSTEM_SYSRULES_richTextDisplayField"(
+                labelPosition: "COLLAPSED",
+                value: {
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: "Fecha anulación" &amp; char(10),
+                    color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833"
+                  ),
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: a!defaultValue(
+                      if(a!isNullOrEmpty(index(local!cab, "fecAnulacion", null)), index(local!ds, "fecanulacion", null),
+                        if(
+  mid(tostring(index(local!cab, "fecAnulacion", null)), 3, 1) = "/",
+  left(tostring(index(local!cab, "fecAnulacion", null)), 10),
+  if(
+    mid(tostring(index(local!cab, "fecAnulacion", null)), 5, 1) = "-",
+    mid(tostring(index(local!cab, "fecAnulacion", null)), 9, 2) &amp; "/" &amp; mid(tostring(index(local!cab, "fecAnulacion", null)), 6, 2) &amp; "/" &amp; left(tostring(index(local!cab, "fecAnulacion", null)), 4),
+    "-"
+  )
+)),
+                      "-"),
+                    style: "STRONG"
+                  )
+                }
+              )
+            }
+          ),
+          #"SYSTEM_SYSRULES_columnLayout"(contents: {})
+        }
+      ),
+      #"SYSTEM_SYSRULES_columnsLayout"(
+        columns: {
+          #"SYSTEM_SYSRULES_columnLayout"(
+            contents: {
+              #"SYSTEM_SYSRULES_richTextDisplayField"(
+                labelPosition: "COLLAPSED",
+                value: {
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: "Nivel intervención" &amp; char(10),
+                    color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833"
+                  ),
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: if(
+                      a!isNotNullOrEmpty(index(local!est, "nivelIntervencion", null)),
+                      index(#"_a-0000f069-4f37-8000-9cc8-011c48011c48_20065482",
+                        tointeger(index(local!est, "nivelIntervencion", null)),
+                        "-"),
+                      "-"
+                    ),
+                    style: "STRONG"
+                  )
+                }
+              )
+            }
+          ),
+          #"SYSTEM_SYSRULES_columnLayout"(
+            contents: {
+              #"SYSTEM_SYSRULES_richTextDisplayField"(
+                labelPosition: "COLLAPSED",
+                value: {
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: "Catalogación" &amp; char(10),
+                    color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833"
+                  ),
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: a!localVariables(
+                      local!catalog: a!defaultValue(index(local!cab, "catalogacion", null), index(local!ds, "catalogacion", null)),
+                      if(
+                        a!isNotNullOrEmpty(local!catalog),
+                        index(#"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050761", tointeger(local!catalog), local!catalog),
+                        "-"
+                      )
+                    ),
+                    style: "STRONG"
+                  )
+                }
+              )
+            }
+          ),
+          #"SYSTEM_SYSRULES_columnLayout"(
+            contents: {
+              #"SYSTEM_SYSRULES_richTextDisplayField"(
+                labelPosition: "COLLAPSED",
+                value: {
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: "Fecha impresion" &amp; char(10),
+                    color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833"
+                  ),
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: if(a!isNullOrEmpty(index(local!cab, "fecImpresion", null)), "-", left(index(local!cab, "fecImpresion", null), 10)),
+                    style: "STRONG"
+                  )
+                }
+              )
+            }
+          ),
+          #"SYSTEM_SYSRULES_columnLayout"(
+            contents: {
+              #"SYSTEM_SYSRULES_richTextDisplayField"(
+                labelPosition: "COLLAPSED",
+                value: {
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: "Fecha efecto recibo impago" &amp; char(10),
+                    color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833"
+                  ),
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: a!defaultValue(index(local!ds, "fecefecimpagado", null), "-"),
+                    style: "STRONG"
+                  )
+                }
+              )
+            }
+          )
+        }
+      ),
+      #"SYSTEM_SYSRULES_columnsLayout"(
+        columns: {
+          #"SYSTEM_SYSRULES_columnLayout"(
+            contents: {
+              #"SYSTEM_SYSRULES_richTextDisplayField"(
+                labelPosition: "COLLAPSED",
+                value: {
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: "Reserva prima" &amp; char(10),
+                    color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833"
+                  ),
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: if(tointeger(a!defaultValue(index(local!ds, "rsvPrima", 0), 0)) = 1, "SOLICITADA /", "NO SOLICITADA / -"),
+                    style: "STRONG"
+                  )
+                }
+              )
+            }
+          ),
+          #"SYSTEM_SYSRULES_columnLayout"(
+            contents: {
+              #"SYSTEM_SYSRULES_richTextDisplayField"(
+                labelPosition: "COLLAPSED",
+                value: {
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: "Compañía contraria" &amp; char(10),
+                    color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833"
+                  ),
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: a!defaultValue(
+                      index(local!ciasContrarias,
+                        a!defaultValue(index(
+                          wherecontains(
+                            tostring(a!defaultValue(index(local!ds, "idcompania", null), index(local!cab, "idCompania", null))),
+                            touniformstring(#"SYSTEM_SYSRULES_forEach"(
+                              items: local!ciasContrarias,
+                              expression: tostring(index(fv!item, "codigo", null))))),
+                          1, 0), 0), "descripcion", null), "-"),
+                    style: "STRONG"
+                  )
+                }
+              )
+            }
+          ),
+          #"SYSTEM_SYSRULES_columnLayout"(contents: {}),
+          #"SYSTEM_SYSRULES_columnLayout"(
+            contents: {
+              #"SYSTEM_SYSRULES_richTextDisplayField"(
+                labelPosition: "COLLAPSED",
+                value: {
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: "Número de Solicitud" &amp; char(10),
+                    color: #"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050833"
+                  ),
+                  #"SYSTEM_SYSRULES_richTextItem_v1"(
+                    text: ri!idSolicitud,
+                    style: "STRONG"
+                  )
+                },
+                showWhen: #"urn:appian:function:v1:a:isusermemberofgroup?okey=a!isUserMemberOfGroup"(loggedInUser(), {#"_a-0000f069-4f37-8000-9cc8-011c48011c48_20050329"})
+              )
+            }
+          )
+        }
+      )
+    },
+    height: "AUTO",
+    style: "TRANSPARENT",
+    marginBelow: "STANDARD",
+    showBorder: false()
+  )
+)
+</definition>
+        <namedTypedValue>
+            <name>idSolicitud</name>
+            <type>
+                <name>string</name>
+                <namespace>http://www.w3.org/2001/XMLSchema</namespace>
+            </type>
+            <value/>
+        </namedTypedValue>
+        <namedTypedValue>
+            <name>sol</name>
+            <type>
+                <name>Map</name>
+                <namespace>http://www.appian.com/ae/types/2009</namespace>
+            </type>
+        </namedTypedValue>
+        <preferredEditor>interface</preferredEditor>
+        <offlineEnabled>false</offlineEnabled>
+        <isCustom>false</isCustom>
+    </interface>
+    <roleMap public="true">
+        <role inherit="true" allowForAll="false" name="readers">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="authors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="true" allowForAll="false" name="administrators">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyReaders">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAuthors">
+            <users/>
+            <groups/>
+        </role>
+        <role inherit="false" allowForAll="false" name="denyAdministrators">
+            <users/>
+            <groups/>
+        </role>
+    </roleMap>
+    <history>
+        <historyInfo versionUuid="_a-0000f069-4f37-8000-9cc8-011c48011c48_20067053"/>
+        <historyInfo versionUuid="_a-0000f069-4f37-8000-9cc8-011c48011c48_20070780"/>
+        <historyInfo versionUuid="_a-0000f08e-9304-8000-9d31-011c48011c48_5574546"/>
+    </history>
+</contentHaul>
